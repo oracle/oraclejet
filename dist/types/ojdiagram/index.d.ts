@@ -411,7 +411,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
         };
     };
     tooltip?: {
-        renderer: ((context: ojDiagram.TooltipContext<K1, K2, D1, D2>) => ({
+        renderer: ((context: ojDiagram.TooltipRendererContext<K1, K2, D1, D2>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
@@ -584,6 +584,29 @@ export namespace ojDiagram {
         width?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type LinkContentTemplateContext<K1, K2, D2> = {
+        componentElement: Element;
+        data: Link<K2, K1>;
+        id: K2;
+        itemData: D2 | D2[];
+        parentElement: Element;
+        points: any[] | string;
+        previousState: {
+            focused: boolean;
+            hovered: boolean;
+            inActionableMode: boolean;
+            selected: boolean;
+        };
+        rootElement: Element | null;
+        state: {
+            focused: boolean;
+            hovered: boolean;
+            inActionableMode: boolean;
+            selected: boolean;
+        };
+        type: 'link' | 'promotedLink';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type LinkItemContext<K1, K2, D2> = {
         componentElement: Element;
         data: Link<K2, K1>;
@@ -666,6 +689,40 @@ export namespace ojDiagram {
         showDisclosure?: 'on' | 'off';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type NodeContentTemplateContext<K1, D1> = {
+        componentElement: Element;
+        content: {
+            element: Element;
+            height: number;
+            width: number;
+        };
+        data: Node<K1>;
+        id: K1;
+        itemData: D1;
+        parentElement: Element;
+        previousState: {
+            expanded: boolean;
+            focused: boolean;
+            hovered: boolean;
+            inActionableMode: boolean;
+            selected: boolean;
+            zoom: number;
+        };
+        renderDefaultFocus: (() => void);
+        renderDefaultHover: (() => void);
+        renderDefaultSelection: (() => void);
+        rootElement: Element | null;
+        state: {
+            expanded: boolean;
+            focused: boolean;
+            hovered: boolean;
+            inActionableMode: boolean;
+            selected: boolean;
+            zoom: number;
+        };
+        type: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
         index: number;
         subId: 'oj-diagram-link' | 'oj-diagram-node';
@@ -739,6 +796,16 @@ export namespace ojDiagram {
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K1, K2, D1, D2> = {
+        componentElement: Element;
+        data: Node<K1> | Link<K2, K1> | Link<K2, K1>[];
+        id: K1 | K2;
+        itemData: D1 | D2 | D2[];
+        label: string;
+        parentElement: Element;
+        type: 'node' | 'link' | 'promotedLink';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipRendererContext<K1, K2, D1, D2> = {
         componentElement: Element;
         data: Node<K1> | Link<K2, K1> | Link<K2, K1>[];
         id: K1 | K2;
@@ -1053,7 +1120,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
         };
     };
     tooltip?: {
-        renderer: ((context: ojDiagram.TooltipContext<K1, K2, D1, D2>) => ({
+        renderer: ((context: ojDiagram.TooltipRendererContext<K1, K2, D1, D2>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
@@ -1422,56 +1489,91 @@ export namespace DiagramElement {
         type: 'node';
     };
     // tslint:disable-next-line interface-over-type-literal
-    type LinkItemContext<K1, K2, D2> = {
+    type LinkContentTemplateContext<K1, K2, D2> = {
         componentElement: Element;
         data: ojDiagram.Link<K2, K1>;
         id: K2;
-        itemData: D2;
-        label: string;
-        type: 'link';
+        itemData: D2 | D2[];
+        parentElement: Element;
+        points: any[] | string;
+        previousState: {
+            focused: boolean;
+            hovered: boolean;
+            inActionableMode: boolean;
+            selected: boolean;
+        };
+        rootElement: Element | null;
+        state: {
+            focused: boolean;
+            hovered: boolean;
+            inActionableMode: boolean;
+            selected: boolean;
+        };
+        type: 'link' | 'promotedLink';
     };
     // tslint:disable-next-line interface-over-type-literal
-    type LinkShortDescContext<K1, K2, D2> = {
-        data: ojDiagram.Link<K2, K1> | ojDiagram.Link<K2, K1>[];
+    type LinkRendererContext<K1, K2, D2> = {
+        componentElement: Element;
+        data: ojDiagram.Link<K2, K1>;
         id: K2;
         itemData: D2 | D2[];
-        label: string;
+        parentElement: Element;
+        points: any[] | string;
+        previousState: {
+            focused: boolean;
+            hovered: boolean;
+            inActionableMode: boolean;
+            selected: boolean;
+        };
+        rootElement: Element | null;
+        state: {
+            focused: boolean;
+            hovered: boolean;
+            inActionableMode: boolean;
+            selected: boolean;
+        };
+        type: 'link' | 'promotedLink';
     };
     // tslint:disable-next-line interface-over-type-literal
-    type Node<K1, D1 = any> = {
-        categories?: string[];
-        descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
-        icon?: {
-            borderColor?: string;
-            borderRadius?: string;
-            borderWidth?: number;
-            color?: string;
-            height?: number;
-            opacity?: number;
-            pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
-               'smallDiamond' | 'smallTriangle' | string;
-            shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
-            source?: string;
-            sourceHover?: string;
-            sourceHoverSelected?: string;
-            sourceSelected?: string;
-            svgClassName?: string;
-            svgStyle?: Partial<CSSStyleDeclaration>;
-            width?: number;
+    type LinkTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeContentTemplateContext<K1, D1> = {
+        componentElement: Element;
+        content: {
+            element: Element;
+            height: number;
+            width: number;
         };
-        id?: K1;
-        label?: string;
-        labelStyle?: Partial<CSSStyleDeclaration> | null;
-        overview?: {
-            icon?: {
-                shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
-                svgClassName?: string;
-                svgStyle?: Partial<CSSStyleDeclaration>;
-            };
+        data: ojDiagram.Node<K1>;
+        id: K1;
+        itemData: D1;
+        parentElement: Element;
+        previousState: {
+            expanded: boolean;
+            focused: boolean;
+            hovered: boolean;
+            inActionableMode: boolean;
+            selected: boolean;
+            zoom: number;
         };
-        selectable?: 'auto' | 'off';
-        shortDesc?: (string | ((context: ojDiagram.NodeShortDescContext<K1, D1>) => string));
-        showDisclosure?: 'on' | 'off';
+        renderDefaultFocus: (() => void);
+        renderDefaultHover: (() => void);
+        renderDefaultSelection: (() => void);
+        rootElement: Element | null;
+        state: {
+            expanded: boolean;
+            focused: boolean;
+            hovered: boolean;
+            inActionableMode: boolean;
+            selected: boolean;
+            zoom: number;
+        };
+        type: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeItemContext<K1, D1> = {
@@ -1523,6 +1625,16 @@ export namespace DiagramElement {
             zoom: number;
         };
         type: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipRendererContext<K1, K2, D1, D2> = {
+        componentElement: Element;
+        data: ojDiagram.Node<K1> | ojDiagram.Link<K2, K1> | ojDiagram.Link<K2, K1>[];
+        id: K1 | K2;
+        itemData: D1 | D2 | D2[];
+        label: string;
+        parentElement: Element;
+        type: 'node' | 'link' | 'promotedLink';
     };
 }
 export namespace DiagramLinkElement {

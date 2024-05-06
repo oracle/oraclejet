@@ -1,233 +1,346 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import { __getBundle } from 'ojs/ojlocaledata';
-import { OraTimeZone } from 'ojs/ojoratimezone';
 import { OraI18nUtils } from 'ojs/ojconverterutils-i18n';
 import { getLocale } from 'ojs/ojconfig';
+import { getISODateOffset } from 'ojs/ojconverter-nativedatetime';
 
 const LocalOraI18nUtils = OraI18nUtils;
 const _UTC = 'UTC';
-class AvailableTimeZones {
-    static getAvailableTimeZonesImpl() {
-        return AvailableTimeZones._availableTimeZonesImpl(__getBundle());
-    }
-    static _getBCP47Lang(tag) {
-        const arr = tag.split('-');
-        return arr[0];
-    }
-    static getDatesNode(localeElements) {
-        function getDates(locale) {
-            let datesNode = null;
-            const mainNode = localeElements.main[locale];
-            if (mainNode) {
-                datesNode = mainNode.dates;
-            }
-            return datesNode;
+let intlOptions = {
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    timeZoneName: 'long'
+};
+const timeZoneIDs = [
+    'Africa/Abidjan',
+    'Africa/Addis_Ababa',
+    'Africa/Algiers',
+    'Africa/Bangui',
+    'Africa/Blantyre',
+    'Africa/Cairo',
+    'Africa/Casablanca',
+    'Africa/Ceuta',
+    'Africa/Johannesburg',
+    'Africa/Khartoum',
+    'Africa/Tripoli',
+    'Africa/Tunis',
+    'America/Adak',
+    'America/Anchorage',
+    'America/Anguilla',
+    'America/Argentina/Buenos_Aires',
+    'America/Atikokan',
+    'America/Belem',
+    'America/Belize',
+    'America/Boa_Vista',
+    'America/Bogota',
+    'America/Caracas',
+    'America/Chicago',
+    'America/Chihuahua',
+    'America/Creston',
+    'America/Detroit',
+    'America/Ensenada',
+    'America/Fort_Wayne',
+    'America/Glace_Bay',
+    'America/Godthab',
+    'America/Guatemala',
+    'America/Guyana',
+    'America/Havana',
+    'America/Los_Angeles',
+    'America/Managua',
+    'America/Merida',
+    'America/Miquelon',
+    'America/Montevideo',
+    'America/Noronha',
+    'America/Santiago',
+    'America/Sao_Paulo',
+    'America/Scoresbysund',
+    'America/St_Johns',
+    'America/Winnipeg',
+    'Antarctica/DumontDUrville',
+    'Antarctica/McMurdo',
+    'Antarctica/Syowa',
+    'Antarctica/Vostok',
+    'Asia/Almaty',
+    'Asia/Amman',
+    'Asia/Anadyr',
+    'Asia/Aqtau',
+    'Asia/Aqtobe',
+    'Asia/Ashgabat',
+    'Asia/Baghdad',
+    'Asia/Baku',
+    'Asia/Bangkok',
+    'Asia/Beirut',
+    'Asia/Brunei',
+    'Asia/Calcutta',
+    'Asia/Chongqing',
+    'Asia/Colombo',
+    'Asia/Dacca',
+    'Asia/Damascus',
+    'Asia/Dubai',
+    'Asia/Gaza',
+    'Asia/Hong_Kong',
+    'Asia/Irkutsk',
+    'Asia/Istanbul',
+    'Asia/Jakarta',
+    'Asia/Jerusalem',
+    'Asia/Kabul',
+    'Asia/Karachi',
+    'Asia/Kathmandu',
+    'Asia/Krasnoyarsk',
+    'Asia/Magadan',
+    'Asia/Manila',
+    'Asia/Nicosia',
+    'Asia/Novosibirsk',
+    'Asia/Omsk',
+    'Asia/Rangoon',
+    'Asia/Seoul',
+    'Asia/Tehran',
+    'Asia/Tokyo',
+    'Asia/Vladivostok',
+    'Asia/Yakutsk',
+    'Asia/Yekaterinburg',
+    'Atlantic/Canary',
+    'Atlantic/Cape_Verde',
+    'Atlantic/South_Georgia',
+    'Atlantic/Stanley',
+    'Australia/ACT',
+    'Australia/Adelaide',
+    'Australia/Brisbane',
+    'Australia/Currie',
+    'Australia/Darwin',
+    'Australia/LHI',
+    'Australia/Perth',
+    'Chile/EasterIsland',
+    'Eire',
+    'Europe/Belfast',
+    'Europe/Kaliningrad',
+    'Europe/Moscow',
+    'Europe/Riga',
+    'Europe/Samara',
+    'Europe/Tallinn',
+    'Europe/Vilnius',
+    'HST',
+    'Pacific/Fiji',
+    'Pacific/Guam',
+    'Pacific/Marquesas',
+    'Pacific/Midway',
+    'Pacific/Norfolk',
+    'Pacific/Tongatapu',
+    'Africa/Djibouti',
+    'Africa/Harare',
+    'Africa/Lagos',
+    'Africa/Maputo',
+    'Africa/Mogadishu',
+    'Africa/Nairobi',
+    'Africa/Nouakchott',
+    'America/Buenos_Aires',
+    'America/Costa_Rica',
+    'America/Denver',
+    'America/Edmonton',
+    'America/El_Salvador',
+    'America/Guayaquil',
+    'America/Halifax',
+    'America/Indiana/Indianapolis',
+    'America/Indianapolis',
+    'America/Lima',
+    'America/Manaus',
+    'America/Mazatlan',
+    'America/Mexico_City',
+    'America/Montreal',
+    'America/New_York',
+    'America/Panama',
+    'America/Phoenix',
+    'America/Puerto_Rico',
+    'America/Regina',
+    'America/Tijuana',
+    'America/Toronto',
+    'America/Vancouver',
+    'Asia/Aden',
+    'Asia/Bahrain',
+    'Asia/Dhaka',
+    'Asia/Kamchatka',
+    'Asia/Katmandu',
+    'Asia/Kolkata',
+    'Asia/Kuala_Lumpur',
+    'Asia/Kuwait',
+    'Asia/Muscat',
+    'Asia/Qatar',
+    'Asia/Riyadh',
+    'Asia/Saigon',
+    'Asia/Shanghai',
+    'Asia/Singapore',
+    'Asia/Taipei',
+    'Asia/Tashkent',
+    'Atlantic/Azores',
+    'Atlantic/Bermuda',
+    'Atlantic/Reykjavik',
+    'Australia/Hobart',
+    'Australia/Lord_Howe',
+    'Australia/Sydney',
+    'Europe/Amsterdam',
+    'Europe/Athens',
+    'Europe/Belgrade',
+    'Europe/Belgrade',
+    'Europe/Berlin',
+    'Europe/Brussels',
+    'Europe/Bucharest',
+    'Europe/Budapest',
+    'Europe/Copenhagen',
+    'Europe/Dublin',
+    'Europe/Helsinki',
+    'Europe/Istanbul',
+    'Europe/Kiev',
+    'Europe/Lisbon',
+    'Europe/London',
+    'Europe/Luxembourg',
+    'Europe/Madrid',
+    'Europe/Oslo',
+    'Europe/Paris',
+    'Europe/Prague',
+    'Europe/Rome',
+    'Europe/Sofia',
+    'Europe/Stockholm',
+    'Europe/Tirane',
+    'Europe/Vienna',
+    'Europe/Warsaw',
+    'Europe/Zurich',
+    'Indian/Chagos',
+    'Indian/Cocos',
+    'Pacific/Auckland',
+    'Pacific/Easter',
+    'Pacific/Gambier',
+    'Pacific/Honolulu',
+    'Pacific/Kwajalein',
+    'Pacific/Noumea',
+    'Pacific/Pago_Pago',
+    'Pacific/Pitcairn',
+    'US/Aleutian',
+    'US/Hawaii',
+    'UTC'
+];
+function getBCP47Lang(tag) {
+    const arr = tag.split('-');
+    return arr[0];
+}
+function getDatesNode(localeElements) {
+    function getDates(locale) {
+        let datesNode = null;
+        const mainNode = localeElements.main[locale];
+        if (mainNode) {
+            datesNode = mainNode.dates;
         }
-        let locale = getLocale();
-        let dates = getDates(locale);
+        return datesNode;
+    }
+    let locale = getLocale();
+    let dates = getDates(locale);
+    if (dates) {
+        return dates;
+    }
+    let parts = locale.split('-');
+    parts.pop();
+    while (parts.length > 0) {
+        locale = parts.join('-');
+        dates = getDates(locale);
         if (dates) {
             return dates;
         }
-        let parts = locale.split('-');
         parts.pop();
-        while (parts.length > 0) {
-            locale = parts.join('-');
-            dates = getDates(locale);
-            if (dates) {
-                return dates;
-            }
-            parts.pop();
+    }
+    return localeElements.main['en-US'].dates;
+}
+function getLocalizedCityName(mainNodeKey, tzID, offset, cities) {
+    const parts = tzID.split('/');
+    const region = parts[0];
+    const city = parts[1];
+    let locCity;
+    let locZone;
+    const lang = getBCP47Lang(mainNodeKey);
+    const d = new Date();
+    const nameObject = { offsetLocName: null, locName: null };
+    const metaRegion = cities[region];
+    if (lang === 'en') {
+        if (parts[1] !== undefined) {
+            locCity = ' ' + parts[1];
+            locCity = locCity.replace(/_/g, ' ');
+            locCity = locCity.replace('Saigon', 'Ho Chi Minh City');
         }
-        return localeElements.main['en-US'].dates;
+    }
+    else if (metaRegion !== undefined) {
+        locCity = metaRegion[city];
+        if (locCity !== undefined) {
+            locCity = locCity.exemplarCity;
+            if (locCity !== undefined) {
+                locCity = ' ' + locCity;
+            }
+        }
+    }
+    if (locCity === undefined) {
+        return null;
+    }
+    intlOptions.timeZone = tzID;
+    let intlCnv = new Intl.DateTimeFormat(mainNodeKey, intlOptions);
+    locZone = intlCnv.formatToParts(d).find((obj) => obj.type === 'timeZoneName').value;
+    let locName = `(${_UTC})`;
+    if (offset !== 0) {
+        locName = LocalOraI18nUtils.getTimeStringFromOffset(_UTC, offset, true, true);
+        locName = `(${locName})`;
+    }
+    locZone = ' - ' + locZone;
+    nameObject.offsetLocName = locName + locCity + locZone;
+    nameObject.locName = locCity + locZone;
+    return nameObject;
+}
+function pushZoneNameObject(sortedZones, offsets) {
+    const localeElements = __getBundle();
+    const mainNode = LocalOraI18nUtils.getLocaleElementsMainNode(localeElements);
+    const mainNodeKey = LocalOraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
+    const dates = getDatesNode(localeElements);
+    const cities = dates.timeZoneNames.zone;
+    const d = new Date();
+    const dateParts = {
+        year: d.getFullYear(),
+        month: d.getMonth() + 1,
+        date: d.getDate(),
+        hours: d.getHours(),
+        minutes: d.getMinutes()
+    };
+    for (let i = 0; i < timeZoneIDs.length; i++) {
+        let zoneID = timeZoneIDs[i];
+        const offset = -getISODateOffset(dateParts, zoneID);
+        const localizedName = getLocalizedCityName(mainNodeKey, zoneID, offset, cities);
+        if (localizedName !== null) {
+            if (zoneID === 'Asia/Saigon') {
+                zoneID = 'Asia/Ho_Chi_Minh';
+            }
+            sortedZones.push({
+                id: zoneID,
+                displayName: localizedName
+            });
+        }
+        offsets[zoneID] = offset;
+    }
+}
+class AvailableTimeZones {
+    static getAvailableTimeZonesImpl() {
+        const localeElements = __getBundle();
+        const locale = LocalOraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
+        const cached = AvailableTimeZones?._timeZoneDataCache[locale]?.availableTimeZones;
+        return cached || AvailableTimeZones._availableTimeZonesImpl(localeElements);
     }
     static _availableTimeZonesImpl(localeElements) {
-        const tz = OraTimeZone.getInstance();
         const sortOptions = { sensitivity: 'variant' };
-        const sortLocale = LocalOraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
-        const mainNode = LocalOraI18nUtils.getLocaleElementsMainNode(localeElements);
-        const mainNodeKey = LocalOraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
-        const lang = AvailableTimeZones._getBCP47Lang(mainNodeKey);
-        const dates = AvailableTimeZones.getDatesNode(localeElements);
-        const metaZones = dates.timeZoneNames.metazone;
-        const cities = dates.timeZoneNames.zone;
         const sortedZones = [];
-        const offsets = {};
-        const tzData = localeElements.supplemental.timeZoneData;
-        const d = new Date();
-        const dParts = [
-            d.getFullYear(),
-            d.getMonth() + 1,
-            d.getDate(),
-            d.getHours(),
-            d.getMinutes(),
-            d.getSeconds()
-        ];
-        function _parseZone(zone, parts, dst, ignoreDst, dateTime) {
-            const utcDate = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
-            return zone.parse(utcDate, dst, ignoreDst, dateTime);
-        }
-        function _getStdOffset(zone, value) {
-            const index = _parseZone(zone, value, false, true, false);
-            const offset0 = zone.ofset(index);
-            const offset1 = zone.ofset(index + 1);
-            return Math.max(offset0, offset1);
-        }
-        function _parseMetaDate(str) {
-            const parts = str.split(' ');
-            let dParts = parts[0].split('-');
-            const d = new Date(dParts[0], dParts[1] - 1, dParts[2]);
-            if (parts.length > 1) {
-                dParts = parts[1].split(':');
-                d.setHours(dParts[0]);
-                d.setMinutes(dParts[1]);
-            }
-            return d.getTime();
-        }
-        function _getMetazone(value, zoneName, metazones) {
-            const nowObj = new Date(value[0], value[1] - 1, value[2], value[3], value[4], value[5]);
-            const now = nowObj.getTime();
-            const parts = zoneName.split('/');
-            const country = parts[0];
-            const city = parts[1];
-            let zone = metazones[country];
-            if (zone === undefined) {
-                return null;
-            }
-            zone = zone[city];
-            if (zone === undefined) {
-                return null;
-            }
-            const length = zone.length;
-            let mzoneStartTime;
-            let mzoneEndTime;
-            for (var i = 0; i < length; i++) {
-                const mzoneStart = zone[i].usesMetazone._from;
-                const mzoneEnd = zone[i].usesMetazone._to;
-                const mzoneName = zone[i].usesMetazone._mzone;
-                if (mzoneStart === undefined && mzoneEnd === undefined) {
-                    return mzoneName;
-                }
-                if (mzoneStart === undefined && mzoneEnd !== undefined) {
-                    mzoneEndTime = _parseMetaDate(mzoneEnd);
-                    if (now <= mzoneEndTime) {
-                        return mzoneName;
-                    }
-                }
-                if (mzoneStart !== undefined && mzoneEnd === undefined) {
-                    mzoneStartTime = _parseMetaDate(mzoneStart);
-                    if (now >= mzoneStartTime) {
-                        return mzoneName;
-                    }
-                }
-                if (mzoneStart !== undefined && mzoneEnd !== undefined) {
-                    mzoneStartTime = _parseMetaDate(mzoneStart);
-                    mzoneEndTime = _parseMetaDate(mzoneEnd);
-                    if (now >= mzoneStartTime && now < mzoneEndTime) {
-                        return mzoneName;
-                    }
-                }
-            }
-            return undefined;
-        }
-        function getLocalizedName(id, offset, _metaZones, _cities) {
-            const parts = id.split('/');
-            const region = parts[0];
-            const city = parts[1];
-            let locCity;
-            let locZone;
-            const nameObject = { offsetLocName: null, locName: null };
-            const metaRegion = _cities[region];
-            if (lang === 'en') {
-                if (parts[1] !== undefined) {
-                    locCity = ' ' + parts[1];
-                    locCity = locCity.replace(/_/g, ' ');
-                    locCity = locCity.replace('Saigon', 'Ho Chi Minh City');
-                }
-            }
-            else if (metaRegion !== undefined) {
-                locCity = metaRegion[city];
-                if (locCity !== undefined) {
-                    locCity = locCity.exemplarCity;
-                    if (locCity !== undefined) {
-                        locCity = ' ' + locCity;
-                    }
-                }
-            }
-            const _id = region + '/' + city;
-            const metazones = localeElements.supplemental.metazones;
-            let metaZone = _getMetazone(dParts, _id, metazones);
-            if (_metaZones !== undefined) {
-                metaZone = _metaZones[metaZone];
-            }
-            if (metaZone !== undefined && metaZone !== null && metaZone.long !== undefined) {
-                locZone = metaZone.long.generic;
-                if (locZone === undefined) {
-                    locZone = metaZone.long.standard;
-                }
-            }
-            if (locCity === undefined) {
-                return null;
-            }
-            let locName = `(${_UTC})`;
-            if (offset !== 0) {
-                locName = LocalOraI18nUtils.getTimeStringFromOffset(_UTC, offset, true, true);
-                locName = `(${locName})`;
-            }
-            if (locZone === undefined) {
-                locZone = '';
-            }
-            if (locZone !== '') {
-                locZone = ' - ' + locZone;
-            }
-            nameObject.offsetLocName = locName + locCity + locZone;
-            nameObject.locName = locCity + locZone;
-            return nameObject;
-        }
-        function isDuplicateZone(sZones, lName) {
-            return sZones.find(({ displayName }) => displayName.offsetLocName === lName.offsetLocName);
-        }
-        function pushZoneNameObject(zones, sortedZones) {
-            let zone;
-            let offset;
-            const zoneNames = Object.keys(zones);
-            for (let i = 0; i < zoneNames.length; i++) {
-                let zoneName = zoneNames[i];
-                if (zoneName.indexOf('Etc/') === -1 && zoneName.indexOf('Ho_Chi_Minh') === -1) {
-                    zone = tz.getZone(zoneName, localeElements);
-                    offset = _getStdOffset(zone, dParts);
-                    const localizedName = getLocalizedName(zoneName, offset, metaZones, cities);
-                    if (localizedName !== null) {
-                        var isDuplicate = isDuplicateZone(sortedZones, localizedName);
-                        if (!isDuplicate) {
-                            if (zoneName === 'Asia/Saigon') {
-                                zoneName = 'Asia/Ho_Chi_Minh';
-                            }
-                            sortedZones.push({
-                                id: zoneName,
-                                displayName: localizedName
-                            });
-                        }
-                    }
-                    offsets[zoneName] = offset;
-                }
-            }
-        }
+        let offsets = {};
         const locale = LocalOraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
-        if (AvailableTimeZones._timeZoneDataCache !== undefined &&
-            AvailableTimeZones._timeZoneDataCache[locale] !== undefined) {
-            const ret = AvailableTimeZones._timeZoneDataCache[locale].availableTimeZones;
-            if (ret !== undefined) {
-                return ret;
-            }
-        }
-        pushZoneNameObject(tzData.zones, sortedZones);
-        pushZoneNameObject(tzData.links, sortedZones);
+        const sortLocale = LocalOraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
+        pushZoneNameObject(sortedZones, offsets);
         sortedZones.sort(function (a, b) {
             const res1 = offsets[b.id] - offsets[a.id];
             const res2 = a.displayName.locName.localeCompare(b.displayName.locName, sortLocale, sortOptions);
@@ -237,11 +350,7 @@ class AvailableTimeZones {
         for (let j = 0; j < len; j++) {
             sortedZones[j].displayName = sortedZones[j].displayName.offsetLocName;
         }
-        if (AvailableTimeZones._timeZoneDataCache !== undefined &&
-            AvailableTimeZones._timeZoneDataCache[locale] === undefined) {
-            AvailableTimeZones._timeZoneDataCache[locale] = { availableTimeZones: null };
-            AvailableTimeZones._timeZoneDataCache[locale].availableTimeZones = sortedZones;
-        }
+        AvailableTimeZones._timeZoneDataCache[locale] = { availableTimeZones: sortedZones };
         return sortedZones;
     }
 }

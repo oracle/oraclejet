@@ -1,17 +1,19 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { OraI18nUtils } from 'ojs/ojconverterutils-i18n';
+import { OraI18nUtils, IntlConverterUtils as IntlConverterUtils$1 } from 'ojs/ojconverterutils-i18n';
 import Converter from 'ojs/ojconverter';
 import { __getBundle } from 'ojs/ojlocaledata';
-import { NativeParserImpl, DateTimePreferencesUtils, NativeDateTimePatternConverter, NativeDateTimeConverter } from 'ojs/ojconverter-nativedatetime';
+import { NativeParserImpl, NativeDateTimePatternConverter, NativeDateTimeConverter } from 'ojs/ojconverter-nativedatetime';
 import { getLocale } from 'ojs/ojconfig';
 import oj$1 from 'ojs/ojcore-base';
+import { getMergedDateTimePreferencesWithOptions } from 'ojs/ojconverter-preferences';
 import { AvailableTimeZones } from 'ojs/ojavailabletimezones';
+import { _processConverterError } from 'ojs/ojconverter-datetimeerror';
 
 /**
  * DateTimeConverter Contract.
@@ -271,7 +273,7 @@ DateTimeConverter.prototype.compareISODates = function (isoStr, isoStr2) {
  * @memberof oj.DateTimeConverter
  * @instance
  * @method getAvailableTimeZones
- * @ojdeprecated {since: '11.0.0', description: 'Use <a href="TimeZoneUtils.html#getAvailableTimeZones">TimeZoneUtils.getAvailableTimeZones</a> instead.'}
+ * @ojdeprecated {since: '11.0.0', description: 'Use <a href="TimeZoneUtils.html#.getAvailableTimeZones">TimeZoneUtils.getAvailableTimeZones</a> instead.'}
  */
 DateTimeConverter.prototype.getAvailableTimeZones = function () {
   return DateTimeConverter.superclass.getAvailableTimeZones.call(this);
@@ -736,6 +738,8 @@ const RelativeDateTimeFormatter = (function () {
   };
 })();
 
+const IntlConverterUtils = IntlConverterUtils$1;
+
 /**
  * @export
  * Placeholder here as closure compiler objects to export annotation outside of top level
@@ -748,26 +752,36 @@ const RelativeDateTimeFormatter = (function () {
  * @classdesc Constructs an immutable instance and initializes it with the options provided.
  * <p>
  *  The converter instance uses locale symbols for the locale set on the page (returned by
- *  {@link oj.Config.getLocale}.
+ *  {@link oj.Config.getLocale}).
  *  </p>
- * There are several ways to initialize the converter.
- * <ul>
- * <li>Using the standard date, datetime and time format lengths defined by Unicode CLDR, these
- * would include the properties formatType, dateFormat, timeFormat.</li>
- * <li>Using options defined by the ECMA 402 Specification, these would be the properties year,
- * month, day, hour, minute, second, weekday, era, timeZoneName, hour12</li>
- * <li>Using a custom date and/or time format pattern using the pattern property.
- * This way is deprecated and not recommended; Applications should not use pattern
- * because it is not locale sensitive.</li>
- * </ul>
- *
  * <p>
- * The options when specified take precedence in the following order:<br>
- * 1. pattern (deprecated). If pattern is set, the ECMA options and formatType/dateFormat/timeFormat are ignored.<br>
- * 2. ECMA options. If pattern is not set, and ECMA options are set, ECMA options are used, and formatType/dateFormat/timeFormat are ignored.<br>
- * 3. formatType/dateFormat/timeFormat (recommended).
+ * There are several ways to initialize the converter. However, the recommended method involves utilizing the formatType, dateFormat, and timeFormat options.
+ * This approach ensures automatic formatting of the date and/or time in a locale-specific manner.
  * </p>
- * <p>If no options are provided, they default to day:"numeric", month:"numeric", year:"numeric".
+ * <p>
+ * The following initialization methods are available:
+ * <ul>
+ * <li>Using the standard date, datetime and time format lengths such as 'short', 'medium', etc., as defined by Unicode CLDR.
+ * For example: formatType: 'date', dateFormat: 'short'.
+ * </li>
+ * <li>Using options defined by the ECMA 402 Specification, which are year,
+ * month, day, hour, minute, second, weekday, era, timeZoneName, hour12.
+ * This method is suitable when a specific format is desired irrespective of the locale.
+ * However, it's not recommended as it lacks locale sensitivity.</li>
+ * <li>Using a custom date and/or time format pattern using the pattern property.
+ * This way is deprecated and discouraged since it is not locale sensitive. Applications should not use pattern.</li>
+ * </ul>
+ * </p>
+ * <p>
+ * The options when specified take precedence in the following order:
+ * <ol>
+ * <li>pattern (deprecated). If pattern is set, the ECMA options and formatType/dateFormat/timeFormat are ignored.</li>
+ * <li>ECMA options (not locale sensitive). If pattern is not set, and ECMA options are set, ECMA options are used, and formatType/dateFormat/timeFormat are ignored.</li>
+ * <li>formatType/dateFormat/timeFormat (recommended).</li>
+ * </ol>
+ * </p>
+ * <p>If no options are provided, they default to day:"numeric", month:"numeric", year:"numeric". As this formatting remains consistent across locales and is not sensitive to locale variations,
+ * it is not recommended. The recommended approach is to create the converter using the options formatType: "date", dateFormat: "short" to ensure locale sensitivity.
  * </p>
  * The converter provides great leniency when parsing a user input value to a date in the following
  * ways: <br/>
@@ -804,7 +818,7 @@ const RelativeDateTimeFormatter = (function () {
  * @example <caption>Create a date time converter using new IntlDateTimeConverter with no options.
  * This uses the default value for year, month, day properties</caption>
  * converter = new IntlDateTimeConverter();
- * var resolved = converter.resolvedOpions();
+ * var resolved = converter.resolvedOptions();
  * // logs "day=numeric, month=numeric, year=numeric"
  * console.log("day=" + resolved.day + ", month=" + resolved.month + ", year=" + resolved.year);
  * <br/>
@@ -854,12 +868,15 @@ const IntlDateTimeConverter = function (options) {
   // e.g., dateFormat is mapped to dateStyle (but we keep dateFormat too for bw compatibility)
   let mappedOptions = options ? IntlDateTimeConverter.mapOptions(options) : null;
 
-  // Next we merge in User Preferences pattern and timezone, if any.
-  // Options passed into the converter's constructor takes precedence.
-  const mo = DateTimePreferencesUtils.getPreferencesMergedWithConverterOptions(mappedOptions);
+  // getMergedDateTimePreferencesWithOptions merges DateTimePreferences with the options, giving precedence to options.
+  // The DateTimePreferences has dateStyle.short.year or a pattern. If it has dateStyle.short.year: 'numeric'|'2-digit', this means
+  // when dateStyle:'short', merge in the year in this format. To do this, it passes in
+  // the dateStyleShortYear option to the NativeDateTimeConverter.
+  const mo = getMergedDateTimePreferencesWithOptions(mappedOptions);
 
-  const defaultOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
+  // if no options, then use the default options.
   const optionsAreEmpty = Object.keys(mo).length === 0;
+  const defaultOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
   const newOptions = optionsAreEmpty ? defaultOptions : mo;
   this.Init(newOptions);
 };
@@ -1405,7 +1422,7 @@ const IntlDateTimeConverter = function (options) {
  *     <tr>
  *       <td>VV</td>
  *       <td>Time zone ID</td>
- *       <td>Americs/Los_Angeles</td>
+ *       <td>America/Los_Angeles</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -1510,10 +1527,10 @@ const IntlDateTimeConverter = function (options) {
  * </table>
  * </p>
  *
- *  @property {('full'|'none')=} lenientParse - The lenientParse property can be used to enable or disable leninet parsing.
+ *  @property {('full'|'none')=} lenientParse - The lenientParse property can be used to enable or disable lenient parsing.
  *  Allowed values: "full" (default), "none".
  * <p style='padding-left: 5px;'>
- * By default the lenient parse is enabled and the leniency rules descibed above will be used. When lenientParse is
+ * By default the lenient parse is enabled and the leniency rules described above will be used. When lenientParse is
  * set to "none" the lenient parse is disabled and the user input must match the expected input otherwise an exception will
  * be thrown.</p>
  */
@@ -1546,10 +1563,13 @@ IntlDateTimeConverter.prototype._getWrapped = function () {
 
 IntlDateTimeConverter.prototype._initConverter = function () {
   var thisOptions = this.getOptions();
-  // Always set numbering system to lain because IntlDateTimeConverter did not
+  // Always set numbering system to latn because IntlDateTimeConverter did not
   // support other numbering systems. Also the only supported calendar was gregory
   thisOptions.numberingSystem = 'latn';
   thisOptions.calendar = 'gregory';
+  // pattern is deprecated as a constructor option but still available to use.
+  // And pattern could be from the preferences and that is supported.
+  // See DateTimePreferencesUtils for more info.
   if (thisOptions.pattern) {
     this._wrapped = new NativeDateTimePatternConverter(thisOptions);
   } else {
@@ -1594,7 +1614,7 @@ IntlDateTimeConverter.prototype.format = function (value) {
   ) {
     return '';
   }
-  // for backward compatibiliity
+  // for backward compatibility
   // format should only take an iso string, but in previous versions it allowed
   // new Date() or Date.now().
   let valToFormat = value;
@@ -1605,7 +1625,12 @@ IntlDateTimeConverter.prototype.format = function (value) {
   } else {
     return null;
   }
-  return this._getWrapped().format(valToFormat);
+  try {
+    return this._getWrapped().format(valToFormat);
+  } catch (e) {
+    var converterError = this._processConverterError(e);
+    throw converterError;
+  }
 };
 
 /**
@@ -2014,7 +2039,14 @@ IntlDateTimeConverter.prototype.parse = function (value) {
       return value;
     }
   }
-  var isoStr = this._getWrapped().parse(value);
+  var isoStr;
+  try {
+    isoStr = this._getWrapped().parse(value);
+  } catch (e) {
+    var converterError = this._processConverterError(e);
+    throw converterError;
+  }
+
   timePart = isoStr.substring(isoStr.indexOf('T'));
   var isLocalValue =
     timePart.indexOf('Z') === -1 && timePart.indexOf('+') === -1 && timePart.indexOf('-') === -1;
@@ -2041,7 +2073,7 @@ IntlDateTimeConverter.prototype.parse = function (value) {
 IntlDateTimeConverter.prototype.compareISODates = function (isoStr1, isoStr2) {
   // If I get TIME ONLY I need to add a date to it so that I can use the javascript Date constructor.
   // You can't pass TIME ONLY to new Date. I chose today, local time, because that is what
-  // the converter's compareISODates method did (we are deprecating it), andd the less
+  // the converter's compareISODates method did (we are deprecating it), and the less
   // behavior change, the better.
   const today = new Date();
   const month = today.getMonth() + 1;
@@ -2074,6 +2106,17 @@ IntlDateTimeConverter.prototype.compareISODates = function (isoStr1, isoStr2) {
   const dateMin = new Date(isoString1);
   const dateValue = new Date(isoString2);
   return dateMin.getTime() - dateValue.getTime();
+};
+
+/**
+ * Processes the error returned by format or parse and returns a new oj.ConverterError.
+ * @param {Error} e the error to process.
+ * @returns an instance of oj.ConverterError.
+ * @private
+ */
+IntlDateTimeConverter.prototype._processConverterError = function (e) {
+  const { summary, detail } = _processConverterError(e, this.format.bind(this), 'datetime');
+  return IntlConverterUtils.__getConverterError(summary, detail);
 };
 
 /**
@@ -2133,7 +2176,7 @@ IntlDateTimeConverter.prototype._isOptionSet = function (optionName) {
  * @memberof oj.IntlDateTimeConverter
  * @instance
  * @method getAvailableTimeZones
- * @ojdeprecated {since: '11.0.0', description: 'Use <a href="TimeZoneUtils.html#getAvailableTimeZones">TimeZoneUtils.getAvailableTimeZones</a> instead.'}
+ * @ojdeprecated {since: '11.0.0', description: 'Use <a href="TimeZoneUtils.html#.getAvailableTimeZones">TimeZoneUtils.getAvailableTimeZones</a> instead.'}
  */
 IntlDateTimeConverter.prototype.getAvailableTimeZones = function () {
   return AvailableTimeZones.getAvailableTimeZonesImpl();

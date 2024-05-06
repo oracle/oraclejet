@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -591,10 +591,10 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
                 }
             }
             if (data == null) {
-                return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsxRuntime.jsx("div", Object.assign({ role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsxRuntime.jsx("div", Object.assign({ role: "row", style: this._getContentDivStyle(), tabIndex: 0, "aria-label": Translations.getTranslatedString('oj-ojWaterfallLayout.msgFetchingData'), "data-oj-context": true }, { children: content })) })) })));
+                return (jsxRuntime.jsx(ojvcomponent.Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], children: jsxRuntime.jsx("div", { role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], children: jsxRuntime.jsx("div", { role: "row", style: this._getContentDivStyle(), tabIndex: 0, "aria-label": Translations.getTranslatedString('oj-ojWaterfallLayout.msgFetchingData'), "data-oj-context": true, children: content }) }) }));
             }
             else {
-                return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsxRuntime.jsx("div", Object.assign({ onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsxRuntime.jsx("div", Object.assign({ role: "row", style: this._getContentDivStyle(), "data-oj-context": true }, { children: content })) })) })));
+                return (jsxRuntime.jsx(ojvcomponent.Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], children: jsxRuntime.jsx("div", { onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], children: jsxRuntime.jsx("div", { role: "row", style: this._getContentDivStyle(), "data-oj-context": true, children: content }) }) }));
             }
         }
         _getScrollPolicyOptions() {
@@ -949,7 +949,6 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
             return Promise.all(promises);
         }
         _updateScrollPosition() {
-            var _a, _b;
             const scrollTop = this._getScroller().scrollTop;
             const iterator = this.contentHandler.getLayout().getPositions().entries();
             let result = iterator.next();
@@ -977,7 +976,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
                 offsetY
             };
             this.lastInternalScrollPositionUpdate = scrollPosition;
-            (_b = (_a = this.props).onScrollPositionChanged) === null || _b === void 0 ? void 0 : _b.call(_a, scrollPosition);
+            this.props.onScrollPositionChanged?.(scrollPosition);
         }
         _syncScrollTopWithProps() {
             const scrollPosition = this.props.scrollPosition;
@@ -1162,7 +1161,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
                     style.width = position.width + 'px';
                 }
             }
-            return (jsxRuntime.jsx("div", Object.assign({ class: "oj-waterfalllayout-skeleton", style: style }, { children: jsxRuntime.jsx("div", { class: "oj-waterfalllayout-skeleton-content oj-animation-skeleton" }) })));
+            return (jsxRuntime.jsx("div", { class: "oj-waterfalllayout-skeleton", style: style, children: jsxRuntime.jsx("div", { class: "oj-waterfalllayout-skeleton-content oj-animation-skeleton" }) }));
         }
     };
     exports.WaterfallLayout.defaultProps = {

@@ -23,8 +23,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getComponentJSONObj = exports.getParentDirPath = void 0;
+exports.getInstalledDependenciesPackMap = exports.getComponentJSONObj = exports.getParentDirPath = void 0;
 const ts = __importStar(require("typescript"));
+const MetaTypes = __importStar(require("./MetadataTypes"));
+const path = __importStar(require("path"));
 function getParentDirPath(tsFileName) {
     let rtnParentDirPath = null;
     const pathSegments = tsFileName.split('/');
@@ -35,18 +37,61 @@ function getParentDirPath(tsFileName) {
 }
 exports.getParentDirPath = getParentDirPath;
 function getComponentJSONObj(dirPath) {
-    let rtnComponentJSONObj;
-    const jsonFilePath = `${dirPath}/component.json`;
-    if (ts.sys.fileExists(jsonFilePath)) {
-        const componentJSON = ts.sys.readFile(jsonFilePath, 'utf-8');
-        try {
-            rtnComponentJSONObj = JSON.parse(componentJSON);
-        }
-        catch (err) {
-            console.log(`Invalid JSON read from file ${jsonFilePath}`);
-        }
-    }
-    return rtnComponentJSONObj;
+    return _getJSONObj(`${dirPath}/component.json`);
 }
 exports.getComponentJSONObj = getComponentJSONObj;
+function getInstalledDependenciesPackMap(program) {
+    const rtnInstalledDependenciesMap = new Map();
+    const installedDependenciesDir = _getInstalledDependenciesDirPath(program);
+    if (installedDependenciesDir) {
+        const dependencies = ts.sys.getDirectories(installedDependenciesDir);
+        for (const depName of dependencies) {
+            const jsonObj = getComponentJSONObj(`${installedDependenciesDir}/${depName}`);
+            if (jsonObj) {
+                const depPack = new MetaTypes.VCompPack(jsonObj);
+                if (depPack.isJETPack() || depPack.isReferenceComponent()) {
+                    rtnInstalledDependenciesMap.set(depName, depPack);
+                }
+            }
+        }
+    }
+    return rtnInstalledDependenciesMap;
+}
+exports.getInstalledDependenciesPackMap = getInstalledDependenciesPackMap;
+function _getJSONObj(jsonFileName) {
+    let rtnJSONObj;
+    if (ts.sys.fileExists(jsonFileName)) {
+        const componentJSON = ts.sys.readFile(jsonFileName, 'utf-8');
+        try {
+            rtnJSONObj = JSON.parse(componentJSON);
+        }
+        catch (err) {
+            console.log(`Invalid JSON read from file ${jsonFileName}`);
+        }
+    }
+    return rtnJSONObj;
+}
+function _getInstalledDependenciesDirPath(program) {
+    let rtnInstalledDependenciesDirPath = null;
+    const relLookupDirs = program.getCompilerOptions().rootDirs ?? program.getCompilerOptions().rootDir
+        ? [program.getCompilerOptions().rootDir]
+        : [];
+    const lookupDirs = relLookupDirs.map((dir) => path.posix.resolve(dir));
+    lookupDirs.push(path.posix.resolve());
+    for (const dir of lookupDirs) {
+        const ojetConfigFileName = `${dir}/oraclejetconfig.json`;
+        const ojetConfig = _getJSONObj(ojetConfigFileName);
+        if (ojetConfig) {
+            const relExchangeComponentsDirPath = ojetConfig.paths?.source?.exchangeComponents;
+            if (relExchangeComponentsDirPath) {
+                rtnInstalledDependenciesDirPath = `${dir}/${relExchangeComponentsDirPath}`;
+                if (!ts.sys.directoryExists(rtnInstalledDependenciesDirPath)) {
+                    rtnInstalledDependenciesDirPath = null;
+                }
+            }
+            break;
+        }
+    }
+    return rtnInstalledDependenciesDirPath;
+}
 //# sourceMappingURL=MetadataFileUtils.js.map

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -16,7 +16,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojoffcanva
    * @ojtsmodule
    * @since 1.2.0
    * @export
-   * @ojdeprecated {since: '7.0.0', description: 'Use ojSwipeActions instead.'}
+   * @ojdeprecated {since: '7.0.0', value: ['oj-swipe-actions']}
    * @hideconstructor
    *
    *
@@ -57,8 +57,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojoffcanva
    *                 An "ojdefaultaction" event will be fired when threshold is exceed upon release.
    * @return {void}
    *
-   * @see #tearDownSwipeActions
-   * @see OffcanvasUtils.html#setupPanToReveal
+   * @see #.tearDownSwipeActions
+   * @see OffcanvasUtils.html#.setupPanToReveal
    */
   SwipeToRevealUtils.setupSwipeActions = function (elem, options) {
     var drawer;
@@ -226,8 +226,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojoffcanva
    * @param {Element} elem the DOM element (of the offcanvas) that hosts the swipe actions
    * @return {void}
    *
-   * @see #setupSwipeActions
-   * @see OffcanvasUtils.html#tearDownPanToReveal
+   * @see #.setupSwipeActions
+   * @see OffcanvasUtils.html#.tearDownPanToReveal
    */
   SwipeToRevealUtils.tearDownSwipeActions = function (elem) {
     var drawer;

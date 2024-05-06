@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -32,7 +32,7 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
    *
    * <p>When the view model is loaded by ModuleRouterAdapter, an instance of <a href="oj.ModuleRouterAdapter.html#ViewModelParameters">ViewModelParameters</a>
    * will be passed either to the model constructor or to the initialize method on the loaded model instance.
-   * See parameter passing contract in <a href="ModuleElementUtils.html#createConfig">ModuleElementUtils.createConfig()</a>.
+   * See parameter passing contract in <a href="ModuleElementUtils.html#.createConfig">ModuleElementUtils.createConfig()</a>.
    * </p>
    *
    * <pre class="prettyprint">

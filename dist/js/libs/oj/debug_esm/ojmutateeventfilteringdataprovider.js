@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -14,7 +14,7 @@ import 'ojs/ojdataprovider';
 
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -170,9 +170,8 @@ class MutateEventFilteringDataProvider {
                 this.cache = cache;
             }
             ['next']() {
-                var _b;
                 let self = this;
-                const signal = (_b = this.params) === null || _b === void 0 ? void 0 : _b.signal;
+                const signal = this.params?.signal;
                 if (signal && signal.aborted) {
                     const reason = signal.reason;
                     return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -250,7 +249,7 @@ class MutateEventFilteringDataProvider {
         return this.dataProvider.containsKeys(params);
     }
     fetchByKeys(params) {
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -266,7 +265,7 @@ class MutateEventFilteringDataProvider {
         });
     }
     fetchByOffset(params) {
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));

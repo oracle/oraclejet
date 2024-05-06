@@ -1,11 +1,12 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
+import { FilterUtils } from 'ojs/ojdataprovider';
 import { CollectionTableDataSource } from 'ojs/ojcollectiontabledatasource';
 import 'ojs/ojdataprovideradapter';
 
@@ -173,6 +174,7 @@ class CollectionDataProvider {
         this._dataProviderAdapter.destroy();
     }
     fetchFirst(parameters) {
+        FilterUtils.validateFilterCapabilities(this.getCapability('filter'), parameters?.filterCriterion);
         return this._dataProviderAdapter.fetchFirst(parameters);
     }
     fetchByKeys(parameters) {
@@ -182,6 +184,7 @@ class CollectionDataProvider {
         return this._dataProviderAdapter.containsKeys(parameters);
     }
     fetchByOffset(parameters) {
+        FilterUtils.validateFilterCapabilities(this.getCapability('filter'), parameters?.filterCriterion);
         return this._dataProviderAdapter.fetchByOffset(parameters);
     }
     getCapability(capabilityName) {

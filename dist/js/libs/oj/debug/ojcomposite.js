@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -43,9 +43,22 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
     return composite;
   };
 
-  class CompositeState extends ojcustomelementUtils.ElementState {
+  class CompositeState extends ojcustomelementUtils.LifecycleElementState {
+      constructor() {
+          super(...arguments);
+          this._templateCleanCallbacks = [];
+      }
       getTrackChildrenOption() {
           return 'immediate';
+      }
+      addTemplateCleanCallback(callback) {
+          this._templateCleanCallbacks.push(callback);
+      }
+      cleanTemplates() {
+          this._templateCleanCallbacks.forEach((callback) => {
+              callback();
+          });
+          this._templateCleanCallbacks = [];
       }
   }
 
@@ -79,6 +92,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
   CompositeElementBridge.DESC_KEY_VIEW_MODEL = 'viewModel';
   /** @ignore */
   CompositeElementBridge.SUBID_MAP = 'data-oj-subid-map';
+
+  CompositeElementBridge.DisconnectedState = 0;
+  CompositeElementBridge.ConnectedState = 1;
 
   oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
     beforePropertyChangedEvent: function (element, property, detail) {
@@ -194,33 +210,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
           vmContext
         ]) || Promise.resolve(true);
 
-      var bridge = this;
-      return activatedPromise.then(function () {
-        var params = {
-          props: bridge._PROPS,
-          slotMap: slotMap,
-          slotNodeCounts: slotNodeCounts,
-          unique: bridge._VM_CONTEXT.unique,
-          uniqueId: bridge._VM_CONTEXT.uniqueId,
-          viewModel: bridge._VIEW_MODEL,
-          viewModelContext: bridge._VM_CONTEXT
-        };
-
-        // Store the name of the binding provider on the element when we are about
-        // to insert the view. This will allow custom elements within the view to look
-        // up the binding provider used by the composite (currently only KO).
-        // eslint-disable-next-line no-param-reassign
-        element[ojcustomelementUtils.CHILD_BINDING_PROVIDER] = 'knockout';
-        // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-        if (oj.Components) {
-          oj.Components.unmarkPendingSubtreeHidden(element);
-        }
-
-        var cache = ojcustomelementRegistry.getElementRegistration(element.tagName).cache;
-        // Need to clone nodes first
-        var view = CompositeElementBridge._getDomNodes(cache.view, element);
-        oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
-      });
+      return activatedPromise.then(() => this._processCompositeTemplate(element));
     },
 
     DefineMethodCallback: function (proto, method, methodMeta) {
@@ -344,15 +334,29 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
       oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL, 'disconnected', [
         element
       ]);
+      this._verifyConnectDisconnect(element, CompositeElementBridge.DisconnectedState);
+    },
+
+    HandleAttached: function (element) {
+      this._verifyConnectDisconnect(element, CompositeElementBridge.ConnectedState);
     },
 
     HandleReattached: function (element) {
       // Invoke callback on the superclass
       oj.BaseCustomElementBridge.proto.HandleReattached.call(this, element);
 
-      oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL, 'connected', [
-        this._VM_CONTEXT
-      ]);
+      // Check if the template was not rendered and render it if it is the case.
+      // The connected callback will be called by CompositeTemplateRenderer.renderTemplate().
+      if (this._delayedTemplateRender) {
+        this._delayedTemplateRender = false;
+        this._processCompositeTemplate(element);
+      } else {
+        oj.CompositeTemplateRenderer.invokeViewModelMethod(element, this._VIEW_MODEL, 'connected', [
+          this._VM_CONTEXT
+        ]);
+      }
+
+      this._verifyConnectDisconnect(element, CompositeElementBridge.ConnectedState);
     },
 
     InitializeElement: function (element) {
@@ -559,6 +563,72 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
         throw new ojcustomelementUtils.JetElementError(this._ELEMENT, 'Cannot access methods before element is upgraded.');
       }
       return this._VIEW_MODEL;
+    },
+
+    // Called from HandleAttached, HandleReattached, HandleDetached in order
+    // to cleanup a composite on a true disconnect.
+    _verifyConnectDisconnect: function (element, state) {
+      if (this._verifyingState === undefined) {
+        window.queueMicrotask(() => {
+          if (this._verifyingState === state) {
+            if (this._verifyingState === CompositeElementBridge.ConnectedState) {
+              this._verifiedConnect(element);
+            } else {
+              this._verifiedDisconnect(element);
+            }
+            this._verifyingState = undefined;
+          }
+        });
+      }
+      this._verifyingState = state;
+    },
+
+    _verifiedConnect: function (element) {
+      const state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
+      state.executeLifecycleCallbacks(true);
+    },
+
+    _verifiedDisconnect: function (element) {
+      const state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
+      state.cleanTemplates();
+      state.executeLifecycleCallbacks(false);
+    },
+
+    _processCompositeTemplate: function (element) {
+      // Skip rendering the composite template since the it is not attached to the DOM.
+      // The template will be rendered if and when the component will be reattached.
+      // See HandleReattached().
+      if (!element.isConnected) {
+        this._delayedTemplateRender = true;
+        return;
+      }
+
+      const state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
+      const slotMap = state.getSlotMap();
+      const params = {
+        props: this._PROPS,
+        slotMap: slotMap,
+        slotNodeCounts: this._VM_CONTEXT.slotCounts,
+        unique: this._VM_CONTEXT.unique,
+        uniqueId: this._VM_CONTEXT.uniqueId,
+        viewModel: this._VIEW_MODEL,
+        viewModelContext: this._VM_CONTEXT
+      };
+
+      // Store the name of the binding provider on the element when we are about
+      // to insert the view. This will allow custom elements within the view to look
+      // up the binding provider used by the composite (currently only KO).
+      // eslint-disable-next-line no-param-reassign
+      element[ojcustomelementUtils.CHILD_BINDING_PROVIDER] = 'knockout';
+      // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
+      if (oj.Components) {
+        oj.Components.unmarkPendingSubtreeHidden(element);
+      }
+
+      const cache = ojcustomelementRegistry.getElementRegistration(element.tagName).cache;
+      // Need to clone nodes first
+      const view = CompositeElementBridge._getDomNodes(cache.view, element);
+      oj.CompositeTemplateRenderer.renderTemplate(params, element, view);
     }
   });
 
@@ -885,7 +955,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    * </ul>
    * @ojsignature [
    *               {target: "Type",
-   *                value: "<P extends PropertiesType= PropertiesType>(name: string, descriptor: {
+   *                value: "<P extends PropertiesType = PropertiesType>(name: string, descriptor: {
    *                metadata: MetadataTypes.ComponentMetadata;
    *                view: string;
    *                viewModel?: {new(context: ViewModelContext<P>): ViewModel<P>};
@@ -1012,7 +1082,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    *       <td>yes</td>
    *       <td>{string}</td>
    *       <td>The component version (following <a href="http://semver.org/">semantic version</a> rules). Note that changes to the metadata even for minor updates
-   *         like updating the jetVersion should result in at least a minor component version change, e.g. 1.0.0 -> 1.0.1.</td>
+   *         like updating the jetVersion should result in at least a patch component version change, e.g. 1.0.0 -> 1.0.1.</td>
    *     </tr>
    *     <tr>
    *       <td class="name">jetVersion</td>
@@ -1534,7 +1604,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    * <p>
    * All composite modules should contain a loader.js file which will handle registering and specifying the dependencies for a composite component.
    * We recommend using RequireJS to define your composite module with relative file dependencies.
-   * Registration is done via the <a href="Composite.html#register">Composite.register</a> API.
+   * Registration is done via the <a href="Composite.html#.register">Composite.register</a> API.
    * By registering a composite component, an application links an HTML tag with provided
    * Metadata, View, ViewModel and CSS which will be used to render the composite. These optional
    * pieces can be provided via a descriptor object passed into the register API. See below for sample loader.js file configurations.
@@ -2309,7 +2379,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    *  bindings are applied and are resolved in the application's binding context extended with additional
    *  properties provided by the composite. These additional properties are available on the $current
    *  variable in the application provided template node and should be documented in the composite's
-   *  <a href="MetadataOverview.html#slots">slot metadata</a>.
+   *  <a href="MetadataTypes.html#ComponentMetadataSlots">slot metadata</a>.
    * </p>
    *
    * <h3 id="example1-section">
@@ -2332,7 +2402,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/oj
    *
    * <h4>View</h4>
    * Note that if you want to build an HTML table using &lt;oj-bind-for-each&gt; element the html content must be parsed
-   * by <a href="HtmlUtils.html#stringToNodeArray">HtmlUtils.stringToNodeArray()</a> method. Keep in mind that the composite
+   * by <a href="HtmlUtils.html#.stringToNodeArray">HtmlUtils.stringToNodeArray()</a> method. Keep in mind that the composite
    * views and the oj-module views that are loaded via ModuleElementUtils are already using that method. Thus to create
    * a table you can either place the content into a view or call HtmlUtils.stringToNodeArray() explicitly to process the content.
    *

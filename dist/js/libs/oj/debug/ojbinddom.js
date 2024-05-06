@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -118,6 +118,8 @@ define(['ojs/ojkoshared', 'ojs/ojcustomelement-utils', 'knockout', 'ojs/ojcore-b
 
       var parent = node.parentNode;
       parent.insertBefore(openComment, node); // @HTMLUpdateOK
+      // eslint-disable-next-line no-param-reassign
+      node[ojcustomelementUtils.OJ_BIND_CONVERTED_NODE] = openComment;
 
       // Copy children into the comment node
       while (node.childNodes.length > 0) {

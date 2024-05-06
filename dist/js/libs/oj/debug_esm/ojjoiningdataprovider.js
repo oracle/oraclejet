@@ -1,12 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import ojMap from 'ojs/ojmap';
 import ojSet from 'ojs/ojset';
+import { FilterUtils } from 'ojs/ojdataprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 import { warn } from 'ojs/ojlogger';
 
@@ -270,8 +271,7 @@ class JoiningDataProvider {
                 this._params = _params;
             }
             _fetchNext() {
-                var _b;
-                const signal = (_b = this._params) === null || _b === void 0 ? void 0 : _b.signal;
+                const signal = this._params?.signal;
                 if (signal && signal.aborted) {
                     const reason = signal.reason;
                     return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -347,6 +347,7 @@ class JoiningDataProvider {
     }
     fetchFirst(params) {
         const baseParams = params;
+        FilterUtils.validateFilterCapabilities(this.getCapability('filter'), params?.filterCriterion);
         if (params && params.attributes) {
             baseParams.attributes = this._seperateBaseJoinAttributes(params);
         }
@@ -369,7 +370,7 @@ class JoiningDataProvider {
         else {
             this._mapJoinAttributes = null;
         }
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -381,7 +382,7 @@ class JoiningDataProvider {
                     return reject(new DOMException(reason, 'AbortError'));
                 });
             }
-            resolve(this.baseDataProvider.fetchByKeys(baseParams).then((baseResults) => {
+            return resolve(this.baseDataProvider.fetchByKeys(baseParams).then((baseResults) => {
                 const results = new ojMap();
                 if (baseResults != undefined && baseResults.results != undefined) {
                     const data = [];
@@ -396,7 +397,9 @@ class JoiningDataProvider {
                     return this._joiningData(data, this.options).then((joinData) => {
                         i = 0;
                         params.keys.forEach((key) => {
-                            results.set(key, new this.Item(this, metaData[i], joinData[i]));
+                            if (joinData[i] !== null) {
+                                results.set(key, new this.Item(this, metaData[i], joinData[i]));
+                            }
                             i++;
                         });
                         return new this.FetchByKeysResults(this, params, results);
@@ -407,6 +410,7 @@ class JoiningDataProvider {
     }
     fetchByOffset(params) {
         let baseParams = params;
+        FilterUtils.validateFilterCapabilities(this.getCapability('filter'), params?.filterCriterion);
         if (params && params.attributes) {
             const baseAttributes = this._seperateBaseJoinAttributes(params);
             baseParams = {
@@ -421,7 +425,7 @@ class JoiningDataProvider {
         else {
             this._mapJoinAttributes = null;
         }
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));

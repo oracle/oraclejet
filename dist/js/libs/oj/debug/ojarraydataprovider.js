@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -375,7 +375,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     this[ArrayDataProvider._FETCHPARAMETERS] = fetchParameters;
                     this[ArrayDataProvider._RESULTS] = results;
                     this[ArrayDataProvider._DONE] = done;
-                    if ((fetchParameters === null || fetchParameters === void 0 ? void 0 : fetchParameters.includeFilteredRowCount) === 'enabled') {
+                    if (fetchParameters?.includeFilteredRowCount === 'enabled') {
                         this[ArrayDataProvider._TOTALFILTEREDROWCOUNR] = totalFilteredRowCount;
                     }
                 }
@@ -424,8 +424,8 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                         offset: _offset,
                         rowKey: null,
                         data: null,
-                        filterCriterion: _params === null || _params === void 0 ? void 0 : _params.filterCriterion,
-                        sortCriteria: _params === null || _params === void 0 ? void 0 : _params.sortCriteria,
+                        filterCriterion: _params?.filterCriterion,
+                        sortCriteria: _params?.sortCriteria,
                         fetchedRowKeys: []
                     });
                     this._cacheObj = {};
@@ -440,7 +440,6 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                         }
                     }
                     return new Promise((resolve, reject) => {
-                        var _a, _b, _c, _d, _e, _f;
                         if (signal) {
                             const reason = signal.reason;
                             signal.addEventListener('abort', (e) => {
@@ -452,8 +451,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                         const resultObj = this._nextFunc(this._params, cachedOffset, false, this._cacheObj);
                         Object.defineProperty(resultObj.result.value, 'totalFilteredRowCount', {
                             get: () => {
-                                var _a;
-                                if (((_a = this._params) === null || _a === void 0 ? void 0 : _a.includeFilteredRowCount) === 'enabled') {
+                                if (this._params?.includeFilteredRowCount === 'enabled') {
                                     if (this._totalFilteredRowCount === undefined ||
                                         this._parent._resetTotalFilteredRowCount) {
                                         this._totalFilteredRowCount = this._parent._getTotalFilteredRowCount(this._params);
@@ -464,21 +462,21 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                             },
                             enumerable: true
                         });
-                        const lastRowKey = ((_a = resultObj.result.value.metadata) === null || _a === void 0 ? void 0 : _a.length) > 0
-                            ? (_b = resultObj.result.value.metadata[resultObj.result.value.metadata.length - 1]) === null || _b === void 0 ? void 0 : _b.key
+                        const lastRowKey = resultObj.result.value.metadata?.length > 0
+                            ? resultObj.result.value.metadata[resultObj.result.value.metadata.length - 1]?.key
                             : null;
-                        const lastData = ((_c = resultObj.result.value.data) === null || _c === void 0 ? void 0 : _c.length) > 0
+                        const lastData = resultObj.result.value.data?.length > 0
                             ? resultObj.result.value.data[resultObj.result.value.data.length - 1]
                             : null;
-                        const rowKeyArray = (_d = resultObj.result.value.metadata) === null || _d === void 0 ? void 0 : _d.map((itemMetadata) => itemMetadata.key);
+                        const rowKeyArray = resultObj.result.value.metadata?.map((itemMetadata) => itemMetadata.key);
                         this._parent._mapClientIdToIteratorInfo.set(this._clientId, {
                             offset: resultObj.offset,
                             rowKey: lastRowKey,
                             data: lastData,
-                            filterCriterion: (_e = this._params) === null || _e === void 0 ? void 0 : _e.filterCriterion,
-                            sortCriteria: (_f = this._params) === null || _f === void 0 ? void 0 : _f.sortCriteria,
+                            filterCriterion: this._params?.filterCriterion,
+                            sortCriteria: this._params?.sortCriteria,
                             fetchedRowKeys: rowKeyArray
-                                ? (cachedIteratorInfo === null || cachedIteratorInfo === void 0 ? void 0 : cachedIteratorInfo.fetchedRowKeys)
+                                ? cachedIteratorInfo?.fetchedRowKeys
                                     ? cachedIteratorInfo.fetchedRowKeys.concat(rowKeyArray)
                                     : rowKeyArray
                                 : []
@@ -608,7 +606,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     return resolve(new this.FetchByKeysResults(params, results));
                 }
                 else {
-                    reject('Keys are a required parameter');
+                    return reject('Keys are a required parameter');
                 }
             });
         }
@@ -661,7 +659,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     return resolve(new this.FetchByOffsetResults(params, resultsArray, done, totalFilteredRowCount));
                 }
                 else {
-                    reject('Offset is a required parameter');
+                    return reject('Offset is a required parameter');
                 }
             });
         }
@@ -742,6 +740,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     ],
                     attributeExpression: ['*'],
                     textFilter: {},
+                    textFilterMatching: { matchBy: ['startsWith', 'contains', 'phrase'] },
                     nestedFilter: {},
                     collationOptions: {
                         sensitivity: ['base', 'accent', 'case', 'variant']
@@ -793,8 +792,8 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             return keyIndex;
         }
         _adjustIteratorOffset(removeArray, addArray) {
-            const removeIndexes = removeArray === null || removeArray === void 0 ? void 0 : removeArray.indexes;
-            const addIndexes = addArray === null || addArray === void 0 ? void 0 : addArray.indexes;
+            const removeIndexes = removeArray?.indexes;
+            const addIndexes = addArray?.indexes;
             this._mapClientIdToIteratorInfo.forEach((iteratorInfo, clientId) => {
                 if (iteratorInfo.offset > 0) {
                     const filterCriterion = iteratorInfo.filterCriterion;

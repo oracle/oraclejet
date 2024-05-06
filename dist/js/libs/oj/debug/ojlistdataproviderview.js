@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -313,8 +313,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                     this._params = _params;
                 }
                 ['next']() {
-                    var _a;
-                    const signal = (_a = this._params) === null || _a === void 0 ? void 0 : _a.signal;
+                    const signal = this._params?.signal;
                     if (signal && signal.aborted) {
                         const reason = signal.reason;
                         return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -597,7 +596,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             if (fetchAttributes == null) {
                 fetchAttributes = this[ListDataProviderView._INTERNAL_FETCHATTRIBUTES];
             }
-            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            const signal = params?.signal;
             if (signal && signal.aborted) {
                 const reason = signal.reason;
                 return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -649,7 +648,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             }
             const mappedSortCriteria = this._getMappedSortCriteria(sortCriteria);
             const filterCriterion = this._combineFilters(params);
-            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            const signal = params?.signal;
             if (signal && signal.aborted) {
                 const reason = signal.reason;
                 return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -683,7 +682,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             cachedData[ListDataProviderView._STARTINDEX] = 0;
             cachedData[ListDataProviderView._LASTDONEHASDATA] = false;
             const size = params != null ? params[ListDataProviderView._SIZE] : null;
-            const signal = params === null || params === void 0 ? void 0 : params.signal;
+            const signal = params?.signal;
             let sortCriteria = params != null ? params[ListDataProviderView._SORTCRITERIA] : null;
             if (sortCriteria == null) {
                 sortCriteria = this[ListDataProviderView._INTERNAL_SORTCRITERIA];
@@ -738,7 +737,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                     return () => {
                         if (cachedData[ListDataProviderView._LASTDONEHASDATA]) {
                             cachedData[ListDataProviderView._LASTDONEHASDATA] = false;
-                            return Promise.resolve(new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, params, [], [], 0)));
+                            return Promise.resolve(new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, params, [], [], this._totalFilteredRowCount)));
                         }
                         return cachedAsyncIterator.next().then((result) => {
                             let resultValue = result[ListDataProviderView._VALUE];
@@ -754,6 +753,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                             if (this._noFilterSupport) {
                                 this._filterResult(mappedFilterCriterion, items);
                             }
+                            this._totalFilteredRowCount = totalFilteredRowCount;
                             const mappedResult = this._getMappedItems(items);
                             this._cacheResult(cachedData, mappedResult);
                             cachedData[ListDataProviderView._DONE] = result[ListDataProviderView._DONE];
@@ -883,6 +883,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                         const mappedFilterCriterion = this._getMappedFilterCriterion(params[ListDataProviderView._FILTERCRITERION]);
                         this._filterResult(mappedFilterCriterion, items);
                     }
+                    if (nextResult.done && items.length > 0) {
+                        cachedData[ListDataProviderView._LASTDONEHASDATA] = true;
+                    }
                     const mappedResult = this._getMappedItems(items);
                     this._cacheResult(cachedData, mappedResult);
                     cachedData[ListDataProviderView._DONE] = nextResult[ListDataProviderView._DONE];
@@ -904,9 +907,6 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             if (cachedData[ListDataProviderView._DONE]) {
                 if (data.length === 0) {
                     isDone = true;
-                }
-                else {
-                    cachedData[ListDataProviderView._LASTDONEHASDATA] = true;
                 }
             }
             if (isDone) {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -657,6 +657,7 @@ ConveyorBeltCommon.prototype._reinitializeInnerDom = function () {
   // hide the buttons until we know we need them
   this._hidePrevButton();
   this._hideNextButton();
+  this._bExternalScroll = true;
 };
 
 /**
@@ -756,6 +757,7 @@ ConveyorBeltCommon.prototype._adjustOverflowSize = function (bInit) {
 
   // refresh current scroll position AFTER calculating sizes above
   this._setCurrScroll(bInit ? this._scrollPosition : this._origScroll, true);
+  this._bExternalScroll = true;
   this._origScroll = this._scrollPosition;
 };
 
@@ -1484,6 +1486,7 @@ ConveyorBeltCommon.prototype._handleScroll = function (event) {
   if (this._bExternalScroll && !this._bScrolling) {
     this._setCurrScrollHelper(this._getCurrScroll(), true);
   }
+  this._bExternalScroll = true;
 };
 
 /**
@@ -1499,7 +1502,6 @@ ConveyorBeltCommon.prototype._onScrollAnimEnd = function (scroll) {
   // in case the animation introduced interpolation errors
   this._setOverflowScroll(scroll);
   this._setScrollPositionProperty(scroll);
-  this._bExternalScroll = true;
   this._bScrolling = false;
 };
 
@@ -2840,6 +2842,10 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
      * myConveyorBelt.scrollElementIntoView(element);
      */
     scrollElementIntoView: function (element) {
+      if (!this._cbCommon) {
+        // JET-56499 - ignore this method call until conveyor has been initialized
+        return;
+      }
       var currentScroll = this._cbCommon.getScroll();
       var currentViewportSize = this._cbCommon._getCurrViewportSize();
 

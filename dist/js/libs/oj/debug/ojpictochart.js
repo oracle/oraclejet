@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -764,7 +764,7 @@ var __oj_picto_chart_item_metadata =
          * @memberof! oj.ojPictoChart
          * @instance
          * @type {function(Object):Object|null}
-         * @ojsignature {target: "Type", value: "((context: oj.ojPictoChart.TooltipContext<K>) => ({insert: Element|string}|{preventDefault: boolean}))|null", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((context: oj.ojPictoChart.TooltipRendererContext<K>) => ({insert: Element|string}|{preventDefault: boolean}))|null", jsdocOverride: true}
          * @default null
          */
         renderer: null
@@ -1077,8 +1077,20 @@ var __oj_picto_chart_item_metadata =
    * @property {Element} componentElement The picto chart HTML element.
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
 
+  /**
+   * @typedef {Object} oj.ojPictoChart.TooltipRendererContext
+   * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
+   * @property {any} id The id of the hovered item.
+   * @property {string} name The name of the hovered item.
+   * @property {number} count The count of the hovered item.
+   * @property {string} color The color of the hovered item.
+   * @property {Element} componentElement The picto chart HTML element.
+   * @ojsignature [{target: "Type", value: "K", for: "id"},
+   *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+   */
   /**
    * @typedef {Object} oj.ojPictoChart.ItemShortDescContext
    * @property {any} id The id of the hovered item.
@@ -1094,6 +1106,7 @@ var __oj_picto_chart_item_metadata =
    * @property {Object} data The data object for the current item.
    * @property {number} index The zero-based index of the current item.
    * @property {any} key The key of the current item.
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
 
   // METHOD TYPEDEFS

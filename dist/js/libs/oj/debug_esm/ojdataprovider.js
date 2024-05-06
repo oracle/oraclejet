@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -324,7 +324,7 @@ oj.DataProvider = function () {};
  * </p>
  *
  * @since 4.2.0
- * @param {FetchListParameters=} params fetch parameters
+ * @param {FetchListParameters=} params fetch parameters. If an unsupported matchBy value is included in FetchListParameters, an error will be thrown.
  * @return {AsyncIterable.<FetchListResult>} AsyncIterable with {@link FetchListResult}
  * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
  * @export
@@ -512,7 +512,7 @@ oj.DataProvider = function () {};
  *
  *
  * @since 4.2.0
- * @param {FetchByOffsetParameters} parameters fetch by offset parameters
+ * @param {FetchByOffsetParameters} parameters fetch by offset parameters. If an unsupported matchBy value is included in FetchByOffsetParameters, an error will be thrown.
  * @return {Promise.<FetchByOffsetResults>} Returns Promise which resolves to {@link FetchByOffsetResults}.
  * @export
  * @expose
@@ -726,7 +726,6 @@ oj$1._registerLegacyNamespaceProp('CompoundFilterOperator', CompoundFilterOperat
 class DataCache {
     constructor() {
         this._handleMutationAdd = function (eventDetail) {
-            var _a;
             const eventDetailBeforeKeys = eventDetail[DataCache._BEFOREKEYS];
             const eventDetailKeys = eventDetail[DataCache._KEYS];
             const eventDetailKeysArray = [];
@@ -761,7 +760,7 @@ class DataCache {
                             }
                             if (outOfRange) {
                                 for (const item of this._items) {
-                                    if (oj$1.Object.compareValues((_a = item === null || item === void 0 ? void 0 : item.metadata) === null || _a === void 0 ? void 0 : _a.key, key)) {
+                                    if (oj$1.Object.compareValues(item?.metadata?.key, key)) {
                                         outOfRange = false;
                                         break;
                                     }
@@ -795,13 +794,12 @@ class DataCache {
                         }
                     }
                     eventDetailBeforeKeysClone.forEach((beforeKey, beforeKeyIndex) => {
-                        var _a, _b;
                         if (beforeKey === null) {
                             this._items.push(new this.Item(eventDetailMetadata[beforeKeyIndex], eventDetailData[beforeKeyIndex]));
                         }
                         else {
                             for (let i = 0; i < this._items.length; i++) {
-                                if (oj$1.Object.compareValues((_b = (_a = this._items[i]) === null || _a === void 0 ? void 0 : _a.metadata) === null || _b === void 0 ? void 0 : _b.key, beforeKey)) {
+                                if (oj$1.Object.compareValues(this._items[i]?.metadata?.key, beforeKey)) {
                                     this._items.splice(i, 0, new this.Item(eventDetailMetadata[beforeKeyIndex], eventDetailData[beforeKeyIndex]));
                                     break;
                                 }
@@ -898,7 +896,7 @@ class DataCache {
                 this[DataCache._FETCHPARAMETERS] = fetchParameters;
                 this[DataCache._RESULTS] = results;
                 this[DataCache._DONE] = done;
-                if ((fetchParameters === null || fetchParameters === void 0 ? void 0 : fetchParameters.includeFilteredRowCount) === 'enabled') {
+                if (fetchParameters?.includeFilteredRowCount === 'enabled') {
                     this.totalFilteredRowCount = totalFilteredRowCount;
                 }
             }
@@ -949,7 +947,7 @@ class DataCache {
     }
     getDataByOffset(params) {
         let results = [];
-        const done = true;
+        const done = params.offset + params.size >= this.getSize() && this.isDone();
         if (params) {
             results = this._items.slice(params.offset, params.offset + params.size);
         }
@@ -1276,6 +1274,28 @@ var FilterUtils;
         }
     }
     FilterUtils.satisfy = satisfy;
+    function validateFilterCapabilities(supportedCapability, filterCriterion) {
+        let matchBy;
+        const supportedMatchBy = supportedCapability?.textFilterMatching?.matchBy;
+        if (filterCriterion) {
+            if (filterCriterion.text) {
+                matchBy = filterCriterion.matchBy;
+                if (matchBy && (!supportedMatchBy || supportedMatchBy.indexOf(matchBy) < 0)) {
+                    throw new Error('This data provider does not support TextFilter with matchBy value ' + matchBy);
+                }
+            }
+            if (filterCriterion.criteria?.length > 0) {
+                for (let index = 0; index < filterCriterion.criteria.length; index++) {
+                    const item = filterCriterion.criteria[index];
+                    validateFilterCapabilities(supportedCapability, item);
+                }
+            }
+            if (filterCriterion.criterion) {
+                validateFilterCapabilities(supportedCapability, filterCriterion.criterion);
+            }
+        }
+    }
+    FilterUtils.validateFilterCapabilities = validateFilterCapabilities;
     function _buildExpressionTree(expression, collationOptions = undefined) {
         let subTree;
         const itemTreeArray = [];
@@ -1471,16 +1491,16 @@ var FilterUtils;
                         }
                     }
                 }
-                const sensitivity = collationOptions === null || collationOptions === void 0 ? void 0 : collationOptions.sensitivity;
+                const sensitivity = collationOptions?.sensitivity;
+                let option = undefined;
                 if (sensitivity === 'base' || sensitivity === 'case') {
                     itemValue = itemValue.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                     value = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                 }
                 if (sensitivity === 'base' || sensitivity === 'accent') {
-                    itemValue = itemValue.toLowerCase();
-                    value = value.toLowerCase();
+                    option = 'i';
                 }
-                const matchResult = itemValue.match(value);
+                const matchResult = itemValue.match(new RegExp(value, option));
                 return matchResult !== null;
             }
             return false;
@@ -1570,6 +1590,7 @@ class FilterImpl {
             }
             else if (filterDef['text']) {
                 this['text'] = filterDef['text'];
+                this['matchBy'] = filterDef['matchBy'];
             }
         }
     }
@@ -1604,7 +1625,19 @@ class FilterImpl {
             }
             if (op !== '$and' && op !== '$or') {
                 if (filter['text']) {
-                    filterValue = new RegExp(filter['text'].replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'), 'i');
+                    if (filter['matchBy'] === 'phrase') {
+                        filterValue = new RegExp(`${'\\b' +
+                            filter['text']
+                                .replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&')
+                                .replace(/('|")/g, '')
+                                .replace(/(\s|\t)/g, '(.*)((\\s|\\t|\\r|\\n)*)')}`, 'i');
+                    }
+                    else if (filter['matchBy'] === 'startsWith') {
+                        filterValue = new RegExp(`^${filter['text'].replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&')}`, 'i');
+                    }
+                    else {
+                        filterValue = new RegExp(filter['text'].replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'), 'i');
+                    }
                 }
                 else {
                     filterValue = filter.value;
@@ -1789,4 +1822,4 @@ var SortUtils;
     SortUtils.getNaturalSortComparator = getNaturalSortComparator;
 })(SortUtils || (SortUtils = {}));
 
-export { AttributeFilterOperator, CompoundFilterOperator, DataCache, DataProviderMutationEvent, DataProviderRefreshEvent, FetchByKeysMixin, FetchByOffsetMixin, FilterFactory, SortUtils };
+export { AttributeFilterOperator, CompoundFilterOperator, DataCache, DataProviderMutationEvent, DataProviderRefreshEvent, FetchByKeysMixin, FetchByOffsetMixin, FilterFactory, FilterUtils, SortUtils };

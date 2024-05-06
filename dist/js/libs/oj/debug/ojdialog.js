@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2866,6 +2866,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         this._unregisterResizeListener(rootElement[0]);
 
+        this.element[0].classList.remove('oj-dialog-small-screen');
+
         this._destroyResizable();
         if (isSheet) {
           // turn off body overflow for animation duration in 'sheet' mode
@@ -3037,6 +3039,11 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         if (!isSheetDisplay && this.options.dragAffordance === 'title-bar' && $.fn.draggable) {
           this._makeDraggable();
         }
+
+        if (!isSheetDisplay && this._isSmallScreen()) {
+          this.element[0].classList.add('oj-dialog-small-screen');
+        }
+
         // normalize alignments, so that start and end keywords work as expected.
         var isRtl = this._GetReadingDirection() === 'rtl';
         var position = this.options.position;
@@ -3106,6 +3113,10 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         rootElement.position(position);
 
+        // note the initial dialog width/height
+        this._initialWidth = rootElement.width();
+        this._initialHeight = rootElement.height();
+
         this._registerResizeListener(this.element[0]);
 
         // We add .oj-animate-open when the dialog is animating on open.
@@ -3143,6 +3154,20 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       _afterOpenHandler: function (psOptions) {
         var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
         rootElement.parent().removeClass('oj-animate-open');
+
+        // JET-44685: iOS may reveal address bar during open animation, need to make sure the position is set
+        // properly after the animation completes
+        if (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS) {
+          this._adjustPosition();
+        } else if (
+          this._initialWidth !== rootElement.width() ||
+          this._initialHeight !== rootElement.height()
+        ) {
+          this._adjustPosition();
+        }
+        delete this._initialWidth;
+        delete this._initialHeight;
+
         this._restoreBodyOverflow();
         this._makeResizable();
         this._trigger('open');
@@ -3192,7 +3217,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       },
 
       /**
-       * Resize handler to adujust dialog position when the size changes after
+       * Resize handler to adjust dialog position when the size changes after
        * initial render.
        *
        * @memberof oj.ojDialog
@@ -3663,7 +3688,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       },
       _isFullDisplay: function () {
         if (!this._isSheetDisplay()) {
-          // full display supported on Reddwood mobile only
+          // full display supported on Redwood mobile only
           return false;
         }
         var height = window.innerHeight;
@@ -3671,6 +3696,13 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         var elemHeight = this.element[0].offsetHeight;
         var elemWidth = this.element[0].offsetWidth;
         if (elemHeight >= height * 0.95 && elemWidth >= width * 0.95) {
+          return true;
+        }
+        return false;
+      },
+      /* need to override max-height/width on small screens */
+      _isSmallScreen: function () {
+        if (window.innerHeight < 450 || window.innerWidth < 300) {
           return true;
         }
         return false;

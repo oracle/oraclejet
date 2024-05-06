@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -86,12 +86,19 @@ bindingHandlers._ojDefer_ = {
  * <li>Menu</li>
  * <li>Composite Component Slots</li>
  * </ul>
- * Note: For composite component slots, the oj-defer element could have a slot attribute specified directly on it,
+ * <p>&lt;oj-defer> only defers applying bindings to its contents, it does not defer the loading of JavaScript modules needed to fully instantiate the DOM.
+ * For example, while &lt;oj-defer> can defer applying bindings to an &lt;oj-button> element, the containing page must still aggresively load
+ * the "ojs/ojbutton" module for the component to be created.
+ * Using an &lt;oj-module> within an &lt;oj-defer> offers a way to additionally defer the loading of JavaScript modules;
+ * any modules needed to instantiate the view of the &lt;oj-module> will not be loaded until bindings
+ * are applied to the &lt;oj-module> by the containing &lt;oj-defer>.
+ * </p>
+ * <p>Note: For composite component slots, the oj-defer element could have a slot attribute specified directly on it,
  * i.e. &lt;oj-defer slot="something">, or &lt;oj-defer> could appear within a child subtree of the element with a slot attribute. Also,
  * the current implementation may allow bindings to be applied
  * to the content within &lt;oj-defer> prematurely if the tag is used in one of the
  * 'hiding' components that is nested within another 'hiding' component. That
- * limitation will be removed in the future.
+ * limitation will be removed in the future.</p>
  */
 
 class DeferElement extends HTMLElement {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8521,7 +8521,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    * @export
    */
   OAuth.prototype.setAccessTokenResponse = function (data) {
-    this.accessTokenResopnse = OAuth._initAccessToken(this.accessTokenResponse, data);
+    this.accessTokenResponse = OAuth._initAccessToken(this.accessTokenResponse, data);
   };
 
   /**

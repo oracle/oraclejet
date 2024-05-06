@@ -5,17 +5,17 @@ import { CancelableAction, ExtendGlobalProps, ObservedGlobalProps, PropertyChang
 import { Component, ComponentChildren } from 'preact';
 import 'ojs/ojcore-base';
 import 'ojs/ojpopup';
-declare type EdgePopup = 'start' | 'end' | 'bottom';
-declare type AutoDismiss = 'focus-loss' | 'none';
-declare type CloseGesture = 'swipe' | 'none';
-declare type Modality = 'modal' | 'modeless';
-declare type ResolvedDisplayMode = 'overlay' | 'full-overlay';
-declare type State = {
+type EdgePopup = 'start' | 'end' | 'bottom';
+type AutoDismiss = 'focus-loss' | 'none';
+type CloseGesture = 'swipe' | 'none';
+type Modality = 'modal' | 'modeless';
+type ResolvedDisplayMode = 'overlay' | 'full-overlay';
+type State = {
     opened?: boolean;
     viewportResolvedDisplayMode: ResolvedDisplayMode;
     viewportResolvedDisplayModeVertical: ResolvedDisplayMode;
 };
-declare type Props = ObservedGlobalProps<'role'> & {
+type Props = ObservedGlobalProps<'role'> & {
     children?: ComponentChildren;
     opened?: boolean;
     onOpenedChanged?: PropertyChanged<boolean>;
@@ -30,13 +30,15 @@ export declare class DrawerPopup extends Component<ExtendGlobalProps<Props>, Sta
     readonly state: State;
     private readonly rootRef;
     private openedPrevState;
-    private isShiftKeyActive;
     private hammerInstance;
-    private drawerResizeHandler;
     private windowResizeHandler;
     private drawerOpener;
     private elementWithFocusBeforeDrawerCloses;
+    private ignoreUpdate;
     static getDerivedStateFromProps(props: Readonly<Props>, state: Readonly<State>): Partial<State> | null;
+    private handleGuardFocus;
+    private handleOnStartGuardFocus;
+    private handleOnEndGuardFocus;
     render(props: Readonly<Props>): ComponentChildren;
     private isDrawerOpened;
     private wasDrawerOpenedInPrevState;
@@ -46,7 +48,6 @@ export declare class DrawerPopup extends Component<ExtendGlobalProps<Props>, Sta
     private getPopupServiceOptions;
     private beforeOpenHandler;
     private afterOpenHandler;
-    private drawerResizeCallback;
     private handleFocus;
     private beforeCloseHandler;
     private afterCloseHandler;
@@ -55,7 +56,6 @@ export declare class DrawerPopup extends Component<ExtendGlobalProps<Props>, Sta
     private destroyHandler;
     private isTargetDescendantOfOwnZorderLayerOrItsNextSiblings;
     private getDrawerSurrogateLayerSelectors;
-    private getDrawerPosition;
     private getPopupStyleClasses;
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>): void;
     componentDidMount(): void;
@@ -68,6 +68,9 @@ export declare class DrawerPopup extends Component<ExtendGlobalProps<Props>, Sta
     private getSwipeCloseDirection;
     private handleSwipeAction;
     private unregisterCloseWithSwipeListener;
+    private isIOSspecificScrollCase;
+    private isAndroidSpecificScrollCase;
+    private applyPopupServiceModalChanges;
 }
 export {};
 export interface DrawerPopupElement extends JetElement<DrawerPopupElementSettableProperties>, DrawerPopupElementSettableProperties {

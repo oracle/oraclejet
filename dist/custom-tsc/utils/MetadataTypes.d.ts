@@ -1,45 +1,29 @@
 import * as Metadata from 'ojs/ojmetadata';
 import * as ts from 'typescript';
-export declare const SLOT_TYPE: string;
-export declare const TEMPLATE_SLOT_TYPE: string;
-export declare const DYNAMIC_SLOT_TYPE: string;
-export declare const DYNAMIC_TEMPLATE_SLOT_TYPE: string;
-export declare const CHILDREN_TYPE: string;
-export declare const ACTION: string;
-export declare const CANCELABLE_ACTION: string;
-export declare const PROPERTY_CHANGED: string;
-export declare const READ_ONLY_PROPERTY_CHANGED: string;
-export declare const DEFAULT_SLOT_PROP: string;
-export declare enum MDFlags {
+export declare const SLOT_TYPE = "Slot";
+export declare const DEFAULT_SLOT_PROP = "children";
+export declare const CONTENTS_TOKEN = "@contents@";
+export declare const DEPENDENCIES_TOKEN = "@dependencies@";
+export declare enum MDContext {
     COMP = 1,
     PROP = 2,
     EVENT = 4,
     SLOT = 8,
     METHOD = 16,
-    PROP_RO_WRITEBACK = 32,
-    EVENT_DETAIL = 64,
-    SLOT_DATA = 128,
-    METHOD_PARAM = 256,
-    METHOD_RETURN = 512,
-    EXT_ITEMPROPS = 1024
+    TYPEDEF = 32,
+    PROP_RO_WRITEBACK = 64,
+    EVENT_DETAIL = 128,
+    SLOT_DATA = 256,
+    METHOD_PARAM = 512,
+    METHOD_RETURN = 1024,
+    EXT_ITEMPROPS = 2048
 }
-export declare type ImportAliases = {
-    Component?: string;
-    ComponentProps?: string;
-    PureComponent?: string;
-    forwardRef?: string;
-    memo?: string;
-    customElement?: string;
-    registerCustomElement?: string;
-    method?: string;
-    ElementReadOnly?: string;
-    ExtendGlobalProps?: string;
-    GlobalProps?: string;
-    ObservedGlobalProps?: string;
-    providedBindings?: string;
-    consumedBindings?: string;
-};
-export declare type RuntimeMetadata = {
+export declare enum MDScope {
+    RT_EXTENDED = -1,
+    RT = 0,
+    DT = 1
+}
+export type RuntimeMetadata = {
     properties?: Record<string, Metadata.ComponentMetadataProperties>;
     events?: Record<string, Metadata.ComponentMetadataEvents>;
     methods?: Record<string, Metadata.ComponentMetadataMethods>;
@@ -51,10 +35,11 @@ export declare type RuntimeMetadata = {
         _OBSERVED_GLOBAL_PROPS?: string[];
     };
 };
-export declare type EventDetailsMetadata = {
+export type MethodParameterMetadata = Omit<Metadata.MethodParam, 'type'>;
+export type EventDetailsMetadata = {
     [key: string]: ExtendedEventDetailsMetadata;
 };
-export declare type SlotDataMetadata = {
+export type SlotDataMetadata = {
     [key: string]: ExtendedSlotDataMetadata;
 };
 export interface ExtendedSlotDataMetadata extends Metadata.SlotDataVariable, ALL_TYPES {
@@ -67,84 +52,99 @@ export interface ExtendedEventDetailsMetadata extends Metadata.EventDetailItem, 
 }
 export interface ExtendedPropertiesMetadata extends Metadata.ComponentMetadataProperties, ALL_TYPES {
 }
-export declare type AllMetadataTypes = Metadata.ComponentMetadata | Metadata.ComponentMetadataProperties | Metadata.ComponentMetadataMethods | Metadata.ComponentMetadataEvents | Metadata.ComponentMetadataSlots;
-export declare type ALL_TYPES = {
+export type AllMetadataTypes = Metadata.ComponentMetadata | Metadata.ComponentMetadataProperties | Metadata.ComponentMetadataMethods | Metadata.ComponentMetadataEvents | Metadata.ComponentMetadataSlots;
+export type ALL_TYPES = {
     type: string;
     reftype?: string;
     optional?: boolean;
     enumValues?: string[];
     isArrayOfObject?: boolean;
-    isStringTypeExplicit?: boolean;
+    isEnumValuesForDTOnly?: boolean;
 };
-export declare type NameValuePair = [string, any];
-export declare type PropertyBindingMetadata = Record<string, Metadata.PropertyBinding>;
-export declare type RegisteredMethodParam = Omit<Metadata.MethodParam, 'type'>;
-export declare type RegisteredMethodsMetadata = Record<string, Omit<Metadata.ComponentMetadataMethods, 'params' | 'return'> & {
-    params?: Array<RegisteredMethodParam>;
+export type MDValidationInfo = {
+    baseType: 'string' | 'number' | 'boolean' | 'object' | 'string|number' | 'any';
+    isArray: boolean;
+    context: MDContext;
+    schemaRelRef?: `#/${string}`;
+};
+export type TagTuple = [string, string];
+export type MDTuple = [string, any, MDValidationInfo];
+export type PropertyBindingMetadata = Record<string, Metadata.PropertyBinding>;
+export type RegisteredMethodsMetadata = Record<string, Omit<Metadata.ComponentMetadataMethods, 'params' | 'return'> & {
+    params?: Array<MethodParameterMetadata>;
     apidocDescription?: string;
     apidocRtnDescription?: string;
 }>;
-export declare type RegisteredMetadata = {
+export type RegisteredMetadata = {
     bindings?: PropertyBindingMetadata;
     methods?: RegisteredMethodsMetadata;
     contexts?: ts.Expression;
 };
-export declare type RegisteredMethodsInfo = {
+export type RegisteredMethodsInfo = {
     signaturesTypeNode: ts.TypeNode;
     metadata?: RegisteredMetadata['methods'];
     metadataNode?: ts.Node;
 };
-export declare type RegisteredOptions = {
+export type RegisteredOptions = {
     bindings?: RegisteredMetadata['bindings'];
     methodsInfo?: RegisteredMethodsInfo;
     contexts?: RegisteredMetadata['contexts'];
 };
-export declare enum MetadataScope {
-    RT_EXTENDED = -1,
-    RT = 0,
-    DT = 1
-}
-export declare type CircularRefInfo = {
+export type CircularRefInfo = {
     circularType: string;
 };
-export declare type GenericsTypes = {
+export type GenericsTypes = {
     genericsDeclaration: string;
     genericsTypeParams: string;
+    genericsTypeParamsArray: Array<string>;
     genericsTypeParamsAny?: string;
+    jsdoc?: Array<TypedefObj>;
 };
-export declare type HasTypeParameters = ts.ClassLikeDeclarationBase | ts.InterfaceDeclaration | ts.TypeAliasDeclaration;
-export declare type DefaultPropsElement = ts.ObjectLiteralElementLike | ts.BindingElement;
-export declare type VCompFunctionalNode = ts.VariableStatement | ts.ExpressionStatement;
+export type GenericsTypesFromType = Omit<GenericsTypes, 'genericsTypeParamsArray' | 'genericsTypeParamsAny'> & {
+    genericsTypeParamData: Array<TypeParamInfo>;
+};
+export type TypeParamInfo = {
+    name: string;
+    isGeneric: boolean;
+};
+export type GenericTypeParametersInfo = {
+    genericSignature: string;
+    genericTypeParamsArray: Array<string>;
+};
+export type HasTypeParameters = ts.ClassLikeDeclarationBase | ts.InterfaceDeclaration | ts.TypeAliasDeclaration;
+export type DefaultPropsElement = ts.ObjectLiteralElementLike | ts.BindingElement;
+export type VCompFunctionalNode = ts.VariableStatement | ts.ExpressionStatement;
 export declare enum VCompType {
     FUNCTION = 0,
     CLASS = 1
 }
-export declare type PropsInfo = {
+export type PropsInfo = {
     propsName: string;
     propsType: ts.Type;
     propsNode: ts.TypeNode;
     propsMappedTypes: Array<MappedTypeItem>;
     propsExtendGlobalPropsRef: ts.TypeReferenceType | null;
     propsTypeParams?: string;
+    propsTypeParamsArray?: Array<string>;
     propsGenericsDeclaration?: ts.Declaration;
-    propsObservedGlobalProps?: Array<string>;
+    propsRtObservedGlobalPropsSet?: Set<string>;
 };
-export declare type MappedTypeItem = {
+export type MappedTypeItem = {
     name: string;
     params?: string;
 };
-export declare type MappedTypesInfo = {
+export type MappedTypesInfo = {
     mappedTypes: Array<MappedTypeItem>;
     wrappedTypeName: string;
     wrappedTypeNode?: ts.TypeNode;
 };
-export declare type IntersectionTypeNodeInfo = {
+export type IntersectionTypeNodeInfo = {
     observedProps?: Array<string>;
     substituteTypeNode?: ts.TypeNode;
     propsName?: string;
 };
-export declare type VCompTranslationBundleInfo = {
-    additionalImports: Array<string>;
+export type VCompTranslationBundleInfo = {
+    loaderImports: Array<string>;
     bundleMapExpression: ts.Expression;
 };
 export declare class VCompPack {
@@ -154,12 +154,31 @@ export declare class VCompPack {
     get version(): string;
     get jetVersion(): string | undefined;
     get license(): string | undefined;
+    get contents(): Array<typeof CONTENTS_TOKEN | Record<string, any>> | undefined;
+    get dependencies(): typeof DEPENDENCIES_TOKEN | Record<string, string> | undefined;
+    get dependencyScope(): string | undefined;
+    get translationBundle(): string | undefined;
     isStandardPack(): boolean;
     isMonoPack(): boolean;
+    isReferenceComponent(): boolean;
     isJETPack(): boolean;
     isVCompInPack(fullName: string): boolean;
 }
-export declare type VCompClassInfo = {
+export declare enum IMAP {
+    exportToAlias = "exportToAlias",
+    aliasToExport = "aliasToExport"
+}
+type IMAP_UNION = keyof typeof IMAP;
+export declare class VCompImportMaps {
+    private _EMPTY_MAP;
+    private _sfMaps;
+    constructor();
+    private _getSfMap;
+    registerMapping(context: ts.Node, importName: string, aliasName: string): void;
+    getMap(type: IMAP, context: ts.Node): Record<string, string>;
+    getComponentImportMaps(componentNode: ts.Node): Record<IMAP_UNION, Record<string, string>>;
+}
+export type VCompClassInfo = {
     elementName: string;
     className: string;
     classNode: ts.ClassDeclaration;
@@ -169,7 +188,7 @@ export declare type VCompClassInfo = {
     consumedContextsExpression?: ts.Expression;
     packInfo?: VCompPack;
 };
-export declare type VCompFunctionInfo = {
+export type VCompFunctionInfo = {
     compRegisterCall: ts.CallExpression;
     elementName: string;
     componentNode: ts.HasJSDoc;
@@ -185,45 +204,54 @@ export declare type VCompFunctionInfo = {
     translationBundleMapExpression?: ts.Expression;
     packInfo?: VCompPack;
 };
-export declare type VCompInfo = VCompClassInfo | VCompFunctionInfo;
+export type VCompInfo = VCompClassInfo | VCompFunctionInfo;
 export declare function isClassInfo(info: VCompInfo): info is VCompClassInfo;
 export declare function isFunctionInfo(info: VCompInfo): info is VCompFunctionInfo;
-export declare type NameNodePair = {
+export type NameNodePair = {
     name: string;
     node: ts.Node;
 };
-export declare type WritebackPropInfo = {
+export type WritebackPropInfo = {
     propName?: string;
     isReadOnly?: boolean;
 };
-export declare type SlotTypeInfo = {
+export type SlotTypeInfo = {
     typeName: string;
     typeRefNode: ts.TypeReferenceNode;
     hasImplicitBusyContext?: boolean;
 };
-export declare type MetaUtilObj = {
+export type MetaUtilObj = {
     componentName: string;
     componentInfo: VCompInfo;
     typeChecker: ts.TypeChecker;
     rtMetadata: RuntimeMetadata;
     fullMetadata: Metadata.ComponentMetadata;
-    namedExportToAlias: Record<string, string>;
-    aliasToNamedExport: Record<string, string>;
+    progImportMaps: VCompImportMaps;
     dynamicSlotsInUse: number;
     dynamicSlotNameNodes: Array<NameNodePair>;
+    excludedTypes: Set<string>;
     propsName?: string;
     reservedGlobalProps?: Set<string>;
     defaultProps?: Record<string, any>;
-    excludedTypes?: Set<string>;
-    excludedTypeAliases?: Set<string>;
+    propsTypeParamsArray?: Array<string>;
+    propsClassTypeParamsArray?: Array<string>;
     classPropsAliasTypeArgs?: readonly ts.Type[];
     classConsumedBindingsDecorator?: ts.Decorator;
     classProvidedBindingsDecorator?: ts.Decorator;
     functionPropBindings?: PropertyBindingMetadata;
+    followImports?: boolean;
+    coreJetModuleMapping?: Map<string, ImportBindings>;
 };
-export declare type TypedefObj = {
+export type ImportBindings = {
+    binding?: string;
+    module?: string;
+};
+export type TypedefObj = {
     name?: string;
     jsdoc?: Record<string, string>;
     genericsDeclaration?: string;
     genericsTypeParams?: string;
+    coreJetModule?: Record<string, string>;
+    properties?: Record<string, Metadata.ComponentMetadataProperties>;
 };
+export {};

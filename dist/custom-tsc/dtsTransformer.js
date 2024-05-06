@@ -42,7 +42,7 @@ function dtsTransformWrapper(program, buildOptions) {
     view = new template_1.Template(templatePath);
     _COMPILER_OPTIONS = program.getCompilerOptions();
     const dtsTransformer = (context) => {
-        return (sf) => {
+        return ((sf) => {
             function visit(node) {
                 if (buildOptions.componentToMetadata) {
                     return generateCustomElementTypes(context, node);
@@ -54,7 +54,7 @@ function dtsTransformWrapper(program, buildOptions) {
             if (_BUILD_OPTIONS['debug'])
                 console.log(`${sf.fileName}: processing afterDeclaration`);
             return ts.visitNode(sf, visit);
-        };
+        });
     };
     return dtsTransformer;
 }
@@ -140,9 +140,8 @@ function generateCustomElementTypeContent(fileName) {
     return content;
 }
 function getImportStatements(rootNode, context) {
-    var _a, _b;
     let typeImports = '';
-    if ('GlobalProps' in ((_a = _BUILD_OPTIONS.importMaps) === null || _a === void 0 ? void 0 : _a.exportToAlias)) {
+    if ('GlobalProps' in _BUILD_OPTIONS.importMaps?.exportToAlias) {
         typeImports =
             "import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';\n" +
                 "import 'ojs/oj-jsx-interfaces';\n";
@@ -159,7 +158,7 @@ function getImportStatements(rootNode, context) {
     for (let vcomponentName in vcomponents) {
         let metadata = vcomponents[vcomponentName];
         if (metadata['useComponentPropsForSettableProperties']) {
-            if (!((_b = importMaps === null || importMaps === void 0 ? void 0 : importMaps.exportToAlias) === null || _b === void 0 ? void 0 : _b.ComponentProps)) {
+            if (!importMaps?.exportToAlias?.ComponentProps) {
                 isComponentPropsImportNeeded = true;
                 break;
             }
@@ -171,21 +170,20 @@ function getImportStatements(rootNode, context) {
     return typeImports;
 }
 function getComponentTemplateData(metadata, buildOptions, customElementName, vcomponentName) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
     const legacyComponentName = getLegacyComponentName(metadata, buildOptions, vcomponentName);
     const vcomponentElementName = MetaUtils.tagNameToElementInterfaceName(customElementName);
-    const classDataParam = (_a = metadata['classTypeParams']) !== null && _a !== void 0 ? _a : '';
+    const classDataParam = metadata['classTypeParams'] ?? '';
     const classDataParamsAny = getTypeParamsAny(classDataParam);
-    const classDataParamsDeclaration = (_b = metadata['classTypeParamsDeclaration']) !== null && _b !== void 0 ? _b : '';
-    const propsDataParam = (_c = metadata['propsTypeParams']) !== null && _c !== void 0 ? _c : '';
-    const propsClassDataParams = (_d = metadata['propsClassTypeParams']) !== null && _d !== void 0 ? _d : '';
-    const propsClassDataParamsDeclaration = (_e = metadata['propsClassTypeParamsDeclaration']) !== null && _e !== void 0 ? _e : '';
+    const classDataParamsDeclaration = metadata['classTypeParamsDeclaration'] ?? '';
+    const propsDataParam = metadata['propsTypeParams'] ?? '';
+    const propsClassDataParams = metadata['propsClassTypeParams'] ?? '';
+    const propsClassDataParamsDeclaration = metadata['propsClassTypeParamsDeclaration'] ?? '';
     const propsClassName = metadata['propsClassName'];
     let propsComponentPropsAlternateName = '';
     let propsMappedTypesClassName = '';
     let propsReadonlyMappedTypesClassName = '';
     if (metadata['useComponentPropsForSettableProperties']) {
-        const componentPropsAlias = ((_g = (_f = buildOptions.importMaps) === null || _f === void 0 ? void 0 : _f.exportToAlias) === null || _g === void 0 ? void 0 : _g.ComponentProps) || 'ComponentProps';
+        const componentPropsAlias = buildOptions.importMaps?.exportToAlias?.ComponentProps || 'ComponentProps';
         propsComponentPropsAlternateName = `${componentPropsAlias}<typeof ${vcomponentName}>`;
     }
     else if (metadata['propsMappedTypes']) {
@@ -203,13 +201,14 @@ function getComponentTemplateData(metadata, buildOptions, customElementName, vco
         propsClassTypeParams: propsClassDataParams,
         propsClassTypeParamsDeclaration: propsClassDataParamsDeclaration,
         propsTypeParams: propsDataParam,
-        propsTypeParamsAny: (_h = metadata['propsTypeParamsAny']) !== null && _h !== void 0 ? _h : '',
+        propsTypeParamsAny: metadata['propsTypeParamsAny'] ?? '',
         propsClassName: propsClassName,
         propsComponentPropsAlternateName: propsComponentPropsAlternateName,
         propsMappedTypesClassName: propsMappedTypesClassName,
         propsReadonlyMappedTypesClassName: propsReadonlyMappedTypesClassName,
         componentPropertyInterface: `${vcomponentName}IntrinsicProps`,
         customElementName: customElementName,
+        globalPropsName: buildOptions.importMaps?.exportToAlias?.GlobalProps ?? 'GlobalProps',
         vcomponentClassName: vcomponentName,
         vcomponentName: vcomponentElementName,
         eventMapInterface: `${vcomponentElementName}EventMap`,
@@ -233,8 +232,7 @@ function getComponentTemplateData(metadata, buildOptions, customElementName, vco
     return data;
 }
 function getLegacyComponentName(metadata, buildOptions, vcomponentName) {
-    var _a;
-    const legacyVersion = (_a = buildOptions.coreJetBuildOptions) === null || _a === void 0 ? void 0 : _a.enableLegacyElement;
+    const legacyVersion = buildOptions.coreJetBuildOptions?.enableLegacyElement;
     const sinceJetVersionStr = metadata['since'];
     let legacyComponentName = '';
     if (legacyVersion != null && sinceJetVersionStr != null) {
@@ -307,96 +305,102 @@ function fixCreateImportExportSpecifierCalls(text) {
 }
 exports.fixCreateImportExportSpecifierCalls = fixCreateImportExportSpecifierCalls;
 function assembleTypes(buildOptions) {
-    var _a;
-    const coreJET = !!buildOptions.coreJetBuildOptions;
-    const EXCLUDED_MODULES = ((_a = buildOptions.coreJetBuildOptions) === null || _a === void 0 ? void 0 : _a.exclude) || [];
-    function processImportedDependencies(typeDeclarName, seen) {
-        const typeDeclarCont = fs.readFileSync(typeDeclarName, 'utf-8');
-        let matches;
-        while ((matches = regexImportDep.exec(typeDeclarCont)) !== null) {
-            const importTypeFile = matches.groups.localdep;
-            const typeDeclarFile = path.join(path.dirname(typeDeclarName), `${importTypeFile}.d.ts`);
-            if (!seen.has(`${path.basename(typeDeclarFile)}`)) {
-                seen.add(`${path.basename(typeDeclarFile)}`);
-                processImportedDependencies(typeDeclarFile, seen);
-            }
-        }
-    }
-    const typeDefinitionFile = buildOptions.mainEntryFile;
-    const pathToCompiledTsCode = buildOptions.tsBuiltDir;
-    const regexExportDep = new RegExp(/^\s*export\s+[\w ,]*{\s*(?<exports>[\w ,]+)\s*}[\w ,]*(\s+from\s+)['"](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
-    const regexImportDep = new RegExp(/^[\s]*import\s+[\w\s\{\}\*,]*["'](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
-    let moduleTypeDependencies = {};
-    let destFilePath;
-    const moduleEntryFiles = glob.sync(`${pathToCompiledTsCode}/**/${typeDefinitionFile}`);
-    moduleEntryFiles.forEach((entryFile) => {
-        const moduleDir = path.dirname(entryFile);
-        const moduleName = moduleDir.substring(pathToCompiledTsCode.length + 1);
-        if (EXCLUDED_MODULES.indexOf(moduleName) > -1) {
-            return;
-        }
-        const exports_files = glob.sync(`${moduleDir}/exports_*.d.ts`);
-        if (exports_files.length == 0) {
-            return;
-        }
-        const sourceFileContent = fs.readFileSync(entryFile, 'utf-8');
-        const finalExports = [];
-        if (!coreJET) {
-            finalExports.push(sourceFileContent.replace(regexImportDep, '').trim());
-        }
-        moduleTypeDependencies[moduleName] = new Set();
-        exports_files.forEach((expfile) => {
-            const expFileContent = fs.readFileSync(expfile, 'utf-8');
-            finalExports.push(expFileContent);
-        });
-        let matches;
-        while ((matches = regexExportDep.exec(sourceFileContent)) !== null) {
-            const exportTypeFile = matches.groups.localdep;
-            const exports = matches.groups.exports;
-            if (coreJET) {
-                let inject = true;
-                let statementToInject = matches[0];
-                if (exports && allComponents[moduleName]) {
-                    let namedExports = exports.split(',').map((comp) => comp.trim());
-                    namedExports = namedExports.filter((comp) => allComponents[moduleName].indexOf(comp) < 0);
-                    if (namedExports.length > 0) {
-                        statementToInject = statementToInject.replace(matches[1], namedExports.join(','));
-                    }
-                    else {
-                        inject = false;
-                    }
-                }
-                if (inject) {
-                    finalExports.unshift(statementToInject);
+    if (buildOptions.typesDir !== undefined) {
+        const coreJET = !!buildOptions.coreJetBuildOptions;
+        const EXCLUDED_MODULES = buildOptions.coreJetBuildOptions?.exclude || [];
+        function processImportedDependencies(typeDeclarName, seen) {
+            const typeDeclarCont = fs.readFileSync(typeDeclarName, 'utf-8');
+            let matches;
+            while ((matches = regexImportDep.exec(typeDeclarCont)) !== null) {
+                const importTypeFile = matches.groups.localdep;
+                const typeDeclarFile = path.join(path.dirname(typeDeclarName), `${importTypeFile}.d.ts`);
+                if (!seen.has(`${path.basename(typeDeclarFile)}`)) {
+                    seen.add(`${path.basename(typeDeclarFile)}`);
+                    processImportedDependencies(typeDeclarFile, seen);
                 }
             }
-            const typeDeclarFile = path.join(moduleDir, `${exportTypeFile}.d.ts`);
-            if (!moduleTypeDependencies[moduleName].has(`${path.basename(typeDeclarFile)}`)) {
-                moduleTypeDependencies[moduleName].add(`${path.basename(typeDeclarFile)}`);
-                processImportedDependencies(typeDeclarFile, moduleTypeDependencies[moduleName]);
+        }
+        const pathToCompiledTsCode = buildOptions.tsBuiltDir;
+        const regexExportDep = new RegExp(/^\s*export\s+[\w ,]*{\s*(?<exports>[\w ,]+)\s*}[\w ,]*(\s+from\s+)['"](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
+        const regexImportDep = new RegExp(/^[\s]*import\s+[\w\s\{\}\*,]*["'](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
+        const moduleTypeDependencies = {};
+        const processedModuleNames = new Set();
+        let destFilePath;
+        const moduleEntryFiles = glob.sync(`${pathToCompiledTsCode}/**/*(index.d.ts|loader.d.ts)`);
+        moduleEntryFiles.forEach((entryFile) => {
+            const moduleDir = path.dirname(entryFile);
+            const typeDefinitionFile = path.basename(entryFile);
+            const moduleName = moduleDir.substring(pathToCompiledTsCode.length + 1);
+            if (EXCLUDED_MODULES.indexOf(moduleName) > -1) {
+                return;
             }
-        }
-        const destDir = buildOptions.coreJetBuildOptions
-            ? `${buildOptions.typesDir}/${moduleName}`
-            : `${buildOptions.typesDir}/${moduleName}/types/`;
-        if (buildOptions.debug) {
-            console.log(`empty ${destDir}`);
-        }
-        fs.emptyDirSync(destDir);
-        destFilePath = path.join(destDir, typeDefinitionFile);
-        if (buildOptions.debug) {
-            console.log(`create file ${destFilePath}`);
-        }
-        fs.writeFileSync(destFilePath, finalExports.join('\n'), {
-            encoding: 'utf-8'
-        });
-        moduleTypeDependencies[moduleName].forEach((dtsFile) => {
+            const exports_files = glob.sync(`${moduleDir}/exports_*.d.ts`);
+            if (exports_files.length == 0) {
+                return;
+            }
+            else if (processedModuleNames.has(moduleName)) {
+                return;
+            }
+            else {
+                processedModuleNames.add(moduleName);
+            }
+            const sourceFileContent = fs.readFileSync(entryFile, 'utf-8');
+            const finalExports = [];
+            if (!coreJET) {
+                finalExports.push(sourceFileContent.replace(regexImportDep, '').trim());
+            }
+            moduleTypeDependencies[moduleName] = new Set();
+            exports_files.forEach((expfile) => {
+                const expFileContent = fs.readFileSync(expfile, 'utf-8');
+                finalExports.push(expFileContent);
+            });
+            let matches;
+            while ((matches = regexExportDep.exec(sourceFileContent)) !== null) {
+                const exportTypeFile = matches.groups.localdep;
+                const exports = matches.groups.exports;
+                if (coreJET) {
+                    let inject = true;
+                    let statementToInject = matches[0];
+                    if (exports && allComponents[moduleName]) {
+                        let namedExports = exports.split(',').map((comp) => comp.trim());
+                        namedExports = namedExports.filter((comp) => allComponents[moduleName].indexOf(comp) < 0);
+                        if (namedExports.length > 0) {
+                            statementToInject = statementToInject.replace(matches[1], namedExports.join(','));
+                        }
+                        else {
+                            inject = false;
+                        }
+                    }
+                    if (inject) {
+                        finalExports.unshift(statementToInject);
+                    }
+                }
+                const typeDeclarFile = path.join(moduleDir, `${exportTypeFile}.d.ts`);
+                if (!moduleTypeDependencies[moduleName].has(`${path.basename(typeDeclarFile)}`)) {
+                    moduleTypeDependencies[moduleName].add(`${path.basename(typeDeclarFile)}`);
+                    processImportedDependencies(typeDeclarFile, moduleTypeDependencies[moduleName]);
+                }
+            }
+            const destDir = buildOptions.coreJetBuildOptions
+                ? `${buildOptions.typesDir}/${moduleName}`
+                : `${buildOptions.typesDir}/${moduleName}/types/`;
             if (buildOptions.debug) {
-                console.log(`copy file ${path.join(moduleDir, dtsFile)} to ${path.join(destDir, dtsFile)}`);
+                console.log(`empty ${destDir}`);
             }
-            fs.copyFileSync(path.join(moduleDir, dtsFile), path.join(destDir, dtsFile));
+            fs.emptyDirSync(destDir);
+            destFilePath = path.join(destDir, typeDefinitionFile);
+            if (buildOptions.debug) {
+                console.log(`create file ${destFilePath}`);
+            }
+            fs.writeFileSync(destFilePath, finalExports.join('\n'), { encoding: 'utf-8' });
+            moduleTypeDependencies[moduleName].forEach((dtsFile) => {
+                if (buildOptions.debug) {
+                    console.log(`copy file ${path.join(moduleDir, dtsFile)} to ${path.join(destDir, dtsFile)}`);
+                }
+                fs.copyFileSync(path.join(moduleDir, dtsFile), path.join(destDir, dtsFile));
+            });
         });
-    });
+    }
 }
 exports.assembleTypes = assembleTypes;
 //# sourceMappingURL=dtsTransformer.js.map

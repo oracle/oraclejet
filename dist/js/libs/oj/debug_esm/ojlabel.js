@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -787,6 +787,9 @@ import { isTouchSupported, validateURL, PRESS_HOLD_THRESHOLD, recentTouchStart, 
       this._super();
       // Hammer events must be cleaned up otherwise it will result in detached dom.
       this._removeHelpDefIconEventListeners();
+
+      // Remove the click event we registered on the label element
+      this.element.off('click');
     },
     /**
      * Gets called when component is created and when dom is reconnnected. E.g., oj-form-layout
@@ -799,6 +802,22 @@ import { isTouchSupported, validateURL, PRESS_HOLD_THRESHOLD, recentTouchStart, 
     _SetupResources: function () {
       this._super();
       this._addShowHelpDefinitionEventHandlers();
+
+      // Core Pack Compatibility
+      // In order to support having custom oj-label elements for the core-pack components
+      // we will be using aria-labelledby instead of the labelled-by attribute. This way
+      // we can keep the core-pack components free from the handshake mechanism. But, to
+      // get all the functionality including the label-input interaction (clicking on the label
+      // should focus the form component), we will use click event handler to focus the input
+      // field manually.
+      this.element.on(
+        'click',
+        function () {
+          if (this._targetElement) {
+            this._targetElement.focus();
+          }
+        }.bind(this)
+      );
     },
     /**
      * The translation section name for the private ojLabel() is oj-ojLabel.

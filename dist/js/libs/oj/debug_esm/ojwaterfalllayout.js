@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -599,10 +599,10 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             }
         }
         if (data == null) {
-            return (jsx(Root, Object.assign({ ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsx("div", Object.assign({ role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsx("div", Object.assign({ role: "row", style: this._getContentDivStyle(), tabIndex: 0, "aria-label": getTranslatedString('oj-ojWaterfallLayout.msgFetchingData'), "data-oj-context": true }, { children: content })) })) })));
+            return (jsx(Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], children: jsx("div", { role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], children: jsx("div", { role: "row", style: this._getContentDivStyle(), tabIndex: 0, "aria-label": getTranslatedString('oj-ojWaterfallLayout.msgFetchingData'), "data-oj-context": true, children: content }) }) }));
         }
         else {
-            return (jsx(Root, Object.assign({ ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsx("div", Object.assign({ onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] }, { children: jsx("div", Object.assign({ role: "row", style: this._getContentDivStyle(), "data-oj-context": true }, { children: content })) })) })));
+            return (jsx(Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], children: jsx("div", { onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], children: jsx("div", { role: "row", style: this._getContentDivStyle(), "data-oj-context": true, children: content }) }) }));
         }
     }
     _getScrollPolicyOptions() {
@@ -957,7 +957,6 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         return Promise.all(promises);
     }
     _updateScrollPosition() {
-        var _a, _b;
         const scrollTop = this._getScroller().scrollTop;
         const iterator = this.contentHandler.getLayout().getPositions().entries();
         let result = iterator.next();
@@ -985,7 +984,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             offsetY
         };
         this.lastInternalScrollPositionUpdate = scrollPosition;
-        (_b = (_a = this.props).onScrollPositionChanged) === null || _b === void 0 ? void 0 : _b.call(_a, scrollPosition);
+        this.props.onScrollPositionChanged?.(scrollPosition);
     }
     _syncScrollTopWithProps() {
         const scrollPosition = this.props.scrollPosition;
@@ -1170,7 +1169,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
                 style.width = position.width + 'px';
             }
         }
-        return (jsx("div", Object.assign({ class: "oj-waterfalllayout-skeleton", style: style }, { children: jsx("div", { class: "oj-waterfalllayout-skeleton-content oj-animation-skeleton" }) })));
+        return (jsx("div", { class: "oj-waterfalllayout-skeleton", style: style, children: jsx("div", { class: "oj-waterfalllayout-skeleton-content oj-animation-skeleton" }) }));
     }
 };
 WaterfallLayout.defaultProps = {

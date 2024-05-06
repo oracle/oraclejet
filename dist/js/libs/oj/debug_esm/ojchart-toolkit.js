@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2758,7 +2758,7 @@ const DvtChartPieUtils = {
 const DvtChartStyleUtils = {
   /** @const */
   MARKER_DATA_LABEL_GAP: 4, // space separating the data label from the marker
-
+  SERIES_PATTERN_BG_COLOR: '#FFFFFF',
   /**
    * Returns the series effect for the specified chart.
    * @param {Chart} chart
@@ -3229,8 +3229,9 @@ const DvtChartStyleUtils = {
       }
     }
 
-    if (displayed == 'on') return true;
-    else if (displayed == 'off') return false;
+    if (displayed === 'on') return true;
+    else if (displayed === 'off') return false;
+    else if (DvtChartTypeUtils.isCombo(chart) && displayed === 'auto') return true;
     else
       return (
         DvtChartTypeUtils.isScatterBubble(chart) ||
@@ -3690,15 +3691,19 @@ const DvtChartStyleUtils = {
     var styleDefaults = chart.getOptions().styleDefaults;
     var labelStyleArray = [styleDefaults._dataLabelStyle, styleDefaults.dataLabelStyle];
     var contrastingColor;
+    const seriesType = DvtChartDataUtils.getSeriesType(chart, seriesIndex);
     if (
-      dataColor &&
-      (DvtChartDataUtils.getSeriesType(chart, seriesIndex) == 'bar' ||
-        DvtChartTypeUtils.isBubble(chart)) &&
-      (position == 'center' ||
-        position == 'inBottom' ||
-        position == 'inTop' ||
-        position == 'inRight' ||
-        position == 'inLeft')
+      (dataColor &&
+        (seriesType == 'bar' || DvtChartTypeUtils.isBubble(chart)) &&
+        (position == 'center' ||
+          position == 'inBottom' ||
+          position == 'inTop' ||
+          position == 'inRight' ||
+          position == 'inLeft')) ||
+      (seriesType == 'area' &&
+        !DvtChartDataUtils.isRangeSeries(chart, seriesIndex) &&
+        position == 'bottom' &&
+        DvtChartTypeUtils.isVertical(chart)) // issue identified by JET-56558, JET-59519, JET-59520
     ) {
       contrastingColor =
         DvtChartStyleUtils.getPattern(chart, seriesIndex, groupIndex, itemIndex) != null
@@ -4533,13 +4538,27 @@ class DvtChartDataCursor extends Container {
     var bRtl = Agent.isRightToLeft(this.getCtx());
     var tooltipBounds;
 
+    // convert local coords to scaled stage coord for tooltip positioning
+    // however datacursor and marker position are in local coords for svg rendering.
+
+    var scaledPlotXY = this._parent.localToStage(new Point(plotAreaBounds.x, plotAreaBounds.y));
+    var scaledPlotX2Y2 = this._parent.localToStage(
+      new Point(plotAreaBounds.x + plotAreaBounds.w, plotAreaBounds.y + plotAreaBounds.h)
+    );
+    var scaledDataXY = this._parent.localToStage(new Point(dataX, dataY));
+    var scaledCoord = this._parent.localToStage(
+      new Point(bHoriz ? 0 : lineCoord, bHoriz ? lineCoord : 0)
+    );
+
+    var scaledLineCoord = bHoriz ? scaledCoord.y : scaledCoord.x;
+
     if (text != null && text != '') {
       // First render the datatip to retrieve its size.
       var stagePageCoords = this.getCtx().getStageAbsolutePosition();
       var tooltipManager = this.getCtx().getTooltipManager(DvtChartDataCursor.TOOLTIP_ID);
       tooltipManager.showDatatip(
-        dataX + stagePageCoords.x,
-        dataY + stagePageCoords.y,
+        scaledDataXY.x + stagePageCoords.x,
+        scaledDataXY.y + stagePageCoords.y,
         text,
         dataColor,
         false
@@ -4551,28 +4570,38 @@ class DvtChartDataCursor extends Container {
       var tooltipX, tooltipY; // tooltipX and tooltipY in the stage coordinate space
       if (bHoriz) {
         tooltipX = bRtl
-          ? plotAreaBounds.x - 0.75 * tooltipBounds.w
-          : plotAreaBounds.x + plotAreaBounds.w - tooltipBounds.w / 4;
-        tooltipY = lineCoord - tooltipBounds.h / 2;
+          ? scaledPlotXY.x - 0.75 * tooltipBounds.w
+          : scaledPlotXY.x + Math.abs(scaledPlotXY.x - scaledPlotX2Y2.x) - tooltipBounds.w / 4;
+        tooltipY = scaledLineCoord - tooltipBounds.h / 2;
 
         // Add a buffer between the tooltip and data point. This may be rejected in positionTip due to viewport location.
-        if (!bRtl && tooltipX - dataX < markerSizeOuter) tooltipX = dataX + markerSizeOuter;
-        else if (bRtl && dataX - (tooltipX + tooltipBounds.w) < markerSizeOuter)
-          tooltipX = dataX - markerSizeOuter - tooltipBounds.w;
+        if (!bRtl && tooltipX - scaledDataXY.x < markerSizeOuter)
+          tooltipX = scaledDataXY.x + markerSizeOuter;
+        else if (bRtl && scaledDataXY.x - (tooltipX + tooltipBounds.w) < markerSizeOuter)
+          tooltipX = scaledDataXY.x - markerSizeOuter - tooltipBounds.w;
       } else {
-        tooltipX = lineCoord - tooltipBounds.w / 2;
-        tooltipY = plotAreaBounds.y - 0.75 * tooltipBounds.h;
+        tooltipX = scaledLineCoord - tooltipBounds.w / 2;
+        tooltipY = scaledPlotXY.y - 0.75 * tooltipBounds.h;
 
         // Add a buffer between the tooltip and data point. This may be rejected in positionTip due to viewport location.
         if (dataY - (tooltipY + tooltipBounds.h) < markerSizeOuter)
           tooltipY = dataY - markerSizeOuter - tooltipBounds.h;
       }
       tooltipManager.positionTip(tooltipX + stagePageCoords.x, tooltipY + stagePageCoords.y);
-
       // Finally retrieve the rendered bounds to calculate the attachment point for the cursor line.
       tooltipBounds = tooltipManager.getTooltipBounds(); // tooltipBounds is in the page coordinate space
       tooltipBounds.x -= stagePageCoords.x;
       tooltipBounds.y -= stagePageCoords.y;
+
+      // adjust the tooltipBounds according to the scale so that data cursor length is correct.
+      var x1y1 = this._parent.stageToLocal(new Point(tooltipBounds.x, tooltipBounds.y));
+      var x2y2 = this._parent.stageToLocal(
+        new Point(tooltipBounds.x + tooltipBounds.w, tooltipBounds.y + tooltipBounds.h)
+      );
+      tooltipBounds.x = x1y1.x;
+      tooltipBounds.y = x1y1.y;
+      tooltipBounds.w = Math.abs(x2y2.x - x1y1.x);
+      tooltipBounds.h = Math.abs(x2y2.y - x1y1.y);
     }
 
     // Position the cursor line. Use 1px fudge factor to ensure that the line connects to the tooltip.
@@ -4587,7 +4616,8 @@ class DvtChartDataCursor extends Container {
         x2Pos = plotAreaBounds.x + plotAreaBounds.w;
       } else {
         x1Pos = plotAreaBounds.x;
-        x2Pos = tooltipBounds ? tooltipBounds.x + 1 : plotAreaBounds.x + plotAreaBounds.w;
+        const plotAreaEnd = plotAreaBounds.x + plotAreaBounds.w;
+        x2Pos = Math.min(tooltipBounds ? tooltipBounds.x + 1 : plotAreaEnd, plotAreaEnd);
       }
       this._cursorLine.setX1(x1Pos);
       this._cursorLine.setX2(x2Pos);
@@ -10737,22 +10767,25 @@ const DvtChartAxisUtils = {
           }
         }
 
-        var nestedDataCount = DvtChartDataUtils.getNestedDataItemCount(
-          chart,
-          seriesIndex,
-          groupIndex
-        );
-        if (nestedDataCount > 0) {
-          for (var itemIndex = 0; itemIndex < nestedDataCount; itemIndex++) {
-            var item = DvtChartDataUtils.getNestedDataItem(
-              chart,
-              seriesIndex,
-              groupIndex,
-              itemIndex
-            );
-            var isItemNumeric = typeof item === 'number';
-            maxValue = isItemNumeric ? Math.max(maxValue, item) : Math.max(maxValue, item.value);
-            minValue = isItemNumeric ? Math.min(minValue, item) : Math.min(minValue, item.value);
+        // Only include nested item when type is not x.
+        if (type != 'x') {
+          var nestedDataCount = DvtChartDataUtils.getNestedDataItemCount(
+            chart,
+            seriesIndex,
+            groupIndex
+          );
+          if (nestedDataCount > 0) {
+            for (var itemIndex = 0; itemIndex < nestedDataCount; itemIndex++) {
+              var item = DvtChartDataUtils.getNestedDataItem(
+                chart,
+                seriesIndex,
+                groupIndex,
+                itemIndex
+              );
+              var isItemNumeric = typeof item === 'number';
+              maxValue = isItemNumeric ? Math.max(maxValue, item) : Math.max(maxValue, item.value);
+              minValue = isItemNumeric ? Math.min(minValue, item) : Math.min(minValue, item.value);
+            }
           }
         }
       }
@@ -11774,13 +11807,13 @@ class DvtChartFunnelSlice extends Path {
         2
       );
       var bbox = new Path(this.getCtx(), cmd);
-      bbox.setSolidFill('#FFFFFF', 0.9);
+      bbox.setSolidFill(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR, 0.9);
       pos = pos.translate(displacement * textDim.h, -displacement * textDim.w);
       bbox.setMatrix(pos);
       this.addChild(bbox);
     }
     var labelColor = isPatternBg
-      ? '#000000'
+      ? ColorUtils.getContrastingTextColor(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR)
       : barBounds.containsPoint(sliceBounds.x, sliceBounds.y + (sliceBounds.h - textDim.w) / 2)
       ? ColorUtils.getContrastingTextColor(this._dataColor)
       : ColorUtils.getContrastingTextColor(this._backgroundColor);
@@ -12108,7 +12141,14 @@ const DvtChartEventUtils = {
       var dataPos = peer.getDataPosition();
 
       if (dataPos) {
-        dataPos = chart.getPlotArea().localToStage(dataPos);
+        // since marquee coords are converted from (possibly scaled) stage to local (unscaled svg) coords,
+        // we want to get the unscaled stage coord here.
+        dataPos = chart
+          .getPlotArea()
+          .ConvertCoordSpaceRect(
+            { x: dataPos.x, y: dataPos.y, h: 0, w: 0 },
+            chart.getCtx().getStage()
+          );
         var withinX = event.x == null || (dataPos.x >= event.x && dataPos.x <= event.x + event.w);
         var withinY = event.y == null || (dataPos.y >= event.y && dataPos.y <= event.y + event.h);
         if (withinX && withinY) boundedPeers.push(peer);
@@ -13101,13 +13141,13 @@ class DvtChartPyramidSlice extends Path {
         2
       );
       var bbox = new Path(this.getCtx(), cmd);
-      bbox.setSolidFill('#FFFFFF', 0.9);
+      bbox.setSolidFill(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR, 0.9);
       pos = pos.translate(-0.5 * textDim.w, -0.5 * textDim.h);
       bbox.setMatrix(pos);
       this.addChild(bbox);
     }
     var labelColor = isPatternBg
-      ? '#000000'
+      ? ColorUtils.getContrastingTextColor(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR)
       : sliceBounds.containsPoint(sliceBounds.x + (sliceBounds.w - textDim.w) / 2, sliceBounds.y)
       ? ColorUtils.getContrastingTextColor(this._dataColor)
       : ColorUtils.getContrastingTextColor(null);
@@ -14740,10 +14780,22 @@ const DvtChartPieLabelUtils = {
     var pieChart = slice.getPieChart();
 
     var context = pieChart.getCtx();
-    var sliceLabel = isInside ? new OutputText(context) : new MultilineText(context);
+    var isOtherSlice = slice.getId().series === DvtChartPieUtils.OTHER_ID;
+    var hasPattern =
+      DvtChartStyleUtils.getPattern(pieChart.chart, slice.getSeriesIndex(), 0) != null ||
+      (isOtherSlice && DvtChartStyleUtils.getSeriesEffect(pieChart) == 'pattern');
+    var needsPatternBg = isInside && hasPattern;
+    var sliceLabel;
+    if (needsPatternBg) {
+      sliceLabel = new BackgroundOutputText(context);
+    } else {
+      sliceLabel = isInside ? new OutputText(context) : new MultilineText(context);
+    }
 
     // Apply the label color- read all applicable styles and merge them.
-    var contrastColor = isInside
+    var contrastColor = needsPatternBg
+      ? ColorUtils.getContrastingTextColor(DvtChartStyleUtils.SERIES_PATTERN_BG_COLOR)
+      : isInside
       ? ColorUtils.getContrastingTextColor(slice.getFillColor())
       : ColorUtils.getContrastingTextColor(ColorUtils.getColorFromName('black'));
     var contrastColorStyle = new CSSStyle({ color: contrastColor });
@@ -14760,6 +14812,13 @@ const DvtChartPieLabelUtils = {
 
     if (isHighContrast) {
       labelStyleArray.push(contrastColorStyle);
+    }
+    if (needsPatternBg) {
+      var backgroundColorStyle = new CSSStyle({
+        'background-color': 'rgba(255, 255, 255, 0.9)',
+        'border-radius': '2px'
+      });
+      labelStyleArray.push(backgroundColorStyle);
     }
     var style = CSSStyle.mergeStyles(labelStyleArray);
     sliceLabel.setCSSStyle(style);
@@ -17933,7 +17992,10 @@ class DvtChartEventManager extends EventManager {
       if (this.GetLogicalObjectAndDisplayable(event.target).displayable instanceof IconButton)
         // don't show DC over buttons
         this._dataCursorHandler.processEnd();
-      else this._dataCursorHandler.processMove(relPos);
+      else {
+        relPos = this._component.stageToLocal(relPos);
+        this._dataCursorHandler.processMove(relPos);
+      }
     }
 
     // Update the cursor
@@ -17953,7 +18015,10 @@ class DvtChartEventManager extends EventManager {
     var axisSpace = this._chart.__getAxisSpace();
     if (axisSpace) this.setDragButtonsVisible(axisSpace.containsPoint(relPos.x, relPos.y));
 
-    if (this._dataCursorHandler) this._dataCursorHandler.processOut(relPos);
+    if (this._dataCursorHandler) {
+      relPos = this._component.stageToLocal(relPos);
+      this._dataCursorHandler.processMove(relPos);
+    }
 
     var obj = this.GetLogicalObject(event.target);
     if (!obj) return;
@@ -17976,7 +18041,10 @@ class DvtChartEventManager extends EventManager {
         this._callback.call(this._callbackObj, panZoomEvent);
 
         // Update the data cursor since the viewport has changed
-        if (this._dataCursorHandler) this._dataCursorHandler.processMove(relPos);
+        if (this._dataCursorHandler) {
+          relPos = this._component.stageToLocal(relPos);
+          this._dataCursorHandler.processMove(relPos);
+        }
       }
     }
   }
@@ -25364,7 +25432,6 @@ const DvtChartPlotAreaRenderer = {
       // TODO: change to formal location for displayed data
       chart._currentMarkers = [];
       chart._currentAreas = [];
-
       DvtChartPlotAreaRenderer._renderBackgroundObjs(chart, container, availSpace);
       DvtChartPlotAreaRenderer._renderTicks(chart, container, availSpace);
       DvtChartPlotAreaRenderer._renderForegroundObjs(chart, container, availSpace);
@@ -25409,8 +25476,12 @@ const DvtChartPlotAreaRenderer = {
       var areaContainer = new Container(chart.getCtx());
       container.addChild(areaContainer);
       chart.__setAreaContainer(areaContainer);
+      const comboSeriesOrder = options['comboSeriesOrder'];
 
-      if (DvtChartDataUtils.hasAreaSeries(chart))
+      if (
+        DvtChartDataUtils.hasAreaSeries(chart) &&
+        (comboSeriesOrder === 'seriesType' || !DvtChartTypeUtils.isCombo(chart))
+      )
         DvtChartPlotAreaRenderer._renderAreas(chart, areaContainer, availSpace, false);
     }
   },
@@ -25727,8 +25798,10 @@ const DvtChartPlotAreaRenderer = {
     // the axis lines.
     var options = chart.getOptions();
 
-    // Get container for clipping
-    var clipGroup = DvtChartPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
+    const hasLayering = options['comboSeriesOrder'] === 'data' && DvtChartTypeUtils.isCombo(chart);
+    var clipGroup = hasLayering
+      ? null
+      : DvtChartPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
 
     // Render axis lines after the clipGroup
     DvtChartPlotAreaRenderer._renderAxisLines(chart, container, availSpace);
@@ -25746,21 +25819,43 @@ const DvtChartPlotAreaRenderer = {
 
     // Data Objects for BLAC
     if (DvtChartTypeUtils.isBLAC(chart)) {
-      // Areas were drawn in the background. Draw lineWithAreas, bars, and lines
-      if (DvtChartDataUtils.hasLineWithAreaSeries(chart))
-        DvtChartPlotAreaRenderer._renderAreas(chart, container, availSpace, true);
+      const seriesCount = options['series'].length;
+      if (hasLayering) {
+       for(let index = seriesCount - 1; index >= 0; index--){
+          const seriesType = DvtChartDataUtils.getSeriesType(chart, index);
+          if (seriesType !== 'area' && seriesType !== 'lineWithArea')
+            clipGroup = DvtChartPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
 
-      if (DvtChartDataUtils.hasBarSeries(chart))
-        DvtChartPlotAreaRenderer._renderBars(chart, clipGroup, availSpace);
+          if (seriesType === 'area')
+            DvtChartPlotAreaRenderer._renderAreas(chart, container, availSpace, false, index);
+          else if (seriesType === 'lineWithArea')
+            DvtChartPlotAreaRenderer._renderAreas(chart, container, availSpace, true, index);
+          else if (seriesType === 'bar')
+            DvtChartPlotAreaRenderer._renderBars(chart, clipGroup, availSpace, index);
+          else if (seriesType === 'stock')
+            DvtChartPlotAreaRenderer._renderStock(chart, clipGroup, index);
+          else if (seriesType === 'boxPlot')
+            DvtChartPlotAreaRenderer._renderBoxPlot(chart, clipGroup, availSpace, index);
+          else if (seriesType === 'line')
+            DvtChartPlotAreaRenderer._renderLines(chart, container, clipGroup, availSpace, index);
+       }
+      } else {
+        // Areas were drawn in the background. Draw lineWithAreas, bars, and lines
+        if (DvtChartDataUtils.hasLineWithAreaSeries(chart))
+          DvtChartPlotAreaRenderer._renderAreas(chart, container, availSpace, true);
 
-      if (DvtChartDataUtils.hasCandlestickSeries(chart))
-        DvtChartPlotAreaRenderer._renderStock(chart, clipGroup);
+        if (DvtChartDataUtils.hasBarSeries(chart))
+          DvtChartPlotAreaRenderer._renderBars(chart, clipGroup, availSpace);
 
-      if (DvtChartDataUtils.hasBoxPlotSeries(chart))
-        DvtChartPlotAreaRenderer._renderBoxPlot(chart, clipGroup, availSpace);
+        if (DvtChartDataUtils.hasCandlestickSeries(chart))
+          DvtChartPlotAreaRenderer._renderStock(chart, clipGroup);
 
-      if (DvtChartDataUtils.hasLineSeries(chart))
-        DvtChartPlotAreaRenderer._renderLines(chart, container, clipGroup, availSpace);
+        if (DvtChartDataUtils.hasBoxPlotSeries(chart))
+          DvtChartPlotAreaRenderer._renderBoxPlot(chart, clipGroup, availSpace);
+
+        if (DvtChartDataUtils.hasLineSeries(chart))
+          DvtChartPlotAreaRenderer._renderLines(chart, container, clipGroup, availSpace);
+      }
     } else if (DvtChartTypeUtils.isScatterBubble(chart)) {
       DvtChartPlotAreaRenderer._renderScatterBubble(chart, container, clipGroup, true, availSpace);
     }
@@ -26822,7 +26917,7 @@ const DvtChartPlotAreaRenderer = {
    * @param {dvt.Rectangle} availSpace
    * @private
    */
-  _renderBars: (chart, container, availSpace) => {
+  _renderBars: (chart, container, availSpace, barSeriesIndex) => {
     var bHoriz = DvtChartTypeUtils.isHorizontal(chart);
     var bPolar = DvtChartTypeUtils.isPolar(chart);
     var bStock = DvtChartTypeUtils.isStock(chart);
@@ -26847,7 +26942,11 @@ const DvtChartPlotAreaRenderer = {
       seriesIndex < DvtChartDataUtils.getSeriesCount(chart);
       seriesIndex++
     ) {
-      if (DvtChartDataUtils.getSeriesType(chart, seriesIndex) != 'bar') continue;
+      if (
+        DvtChartDataUtils.getSeriesType(chart, seriesIndex) != 'bar' ||
+        (barSeriesIndex !== undefined && barSeriesIndex !== seriesIndex)
+      )
+        continue;
 
       DvtChartPlotAreaRenderer._filterPointsForSeries(chart, seriesIndex);
 
@@ -27154,7 +27253,7 @@ const DvtChartPlotAreaRenderer = {
    * @param {dvt.Rectangle} availSpace
    * @private
    */
-  _renderBoxPlot: (chart, container, availSpace) => {
+  _renderBoxPlot: (chart, container, availSpace, boxPlotSeriesIndex) => {
     var xAxis = chart.xAxis;
 
     for (
@@ -27162,6 +27261,7 @@ const DvtChartPlotAreaRenderer = {
       seriesIndex < DvtChartDataUtils.getSeriesCount(chart);
       seriesIndex++
     ) {
+      if (boxPlotSeriesIndex !== undefined && boxPlotSeriesIndex !== seriesIndex) continue;
       var minMaxGroupIndex = DvtChartAxisUtils.getViewportMinMaxGroupIdx(chart, seriesIndex);
 
       for (
@@ -27321,7 +27421,7 @@ const DvtChartPlotAreaRenderer = {
    * @param {dvt.Rectangle} availSpace
    * @private
    */
-  _renderLines: (chart, container, clipGroup, availSpace) => {
+  _renderLines: (chart, container, clipGroup, availSpace, lineSeriesIndex) => {
     // Find all series that are lines
     var lineSeries = [],
       seriesIndex;
@@ -27330,7 +27430,8 @@ const DvtChartPlotAreaRenderer = {
       // Skip the series if it shouldn't be rendered or if the series type is not line.
       if (
         !DvtChartDataUtils.isSeriesRendered(chart, seriesIndex) ||
-        DvtChartDataUtils.getSeriesType(chart, seriesIndex) != 'line'
+        DvtChartDataUtils.getSeriesType(chart, seriesIndex) != 'line' ||
+        (lineSeriesIndex !== undefined && lineSeriesIndex !== seriesIndex)
       )
         continue;
       else lineSeries.push(seriesIndex);
@@ -27366,7 +27467,7 @@ const DvtChartPlotAreaRenderer = {
    * @param {boolean} isLineWithArea True if rendering lineWithArea.
    * @private
    */
-  _renderAreas: (chart, container, availSpace, isLineWithArea) => {
+  _renderAreas: (chart, container, availSpace, isLineWithArea, areaSeriesIndex) => {
     // Find all series that are areas
     var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
     var seriesType = isLineWithArea ? 'lineWithArea' : 'area';
@@ -27377,7 +27478,8 @@ const DvtChartPlotAreaRenderer = {
       // Skip the series if it shouldn't be rendered or if the series type is not area.
       if (
         !DvtChartDataUtils.isSeriesRendered(chart, seriesIndex) ||
-        DvtChartDataUtils.getSeriesType(chart, seriesIndex) != seriesType
+        DvtChartDataUtils.getSeriesType(chart, seriesIndex) != seriesType ||
+        (areaSeriesIndex !== undefined && areaSeriesIndex !== seriesIndex)
       )
         continue;
 
@@ -29474,6 +29576,16 @@ const DvtChartLegendRenderer = {
     legendOptions['dnd'] = options['dnd'];
     legendOptions['_dropColor'] = options['_dropColor'];
     legendOptions['translations'] = options['translations'];
+
+    // Moving over to non deprecated api
+    legendOptions['sectionTitleStyle'] = {
+      ...legendOptions.sectionTitleStyle,
+      ...legendOptions.titleStyle
+    };
+    legendOptions['sectionTitleHalign'] =
+      legendOptions['titleHalign'] || legendOptions['sectionTitleHalign'];
+    delete legendOptions['titleStyle'];
+    delete legendOptions['titleHalign'];
 
     // Evaluate the automatic position
     // Position the legend to occupy the larger dimension so that the plot area is more square

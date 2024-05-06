@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -162,14 +162,57 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
      * delegates to fetchFirst (because the fetchByKeys capability has not be set with an implementation of "lookup" or "batchLookup"). In the fetchByKeys case,
      * fetchFirst has to iterate through all the data in search of rows corresponding to the provided keys. Without an iteration limit, the iteration can continue
      * for a long time if the provided keys are invalid or the corresponding rows are at the end of the dataset.
+     * @property {Function} error - Callback function that is executed when a fetch error has occurred.
      * @ojsignature [
      *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
      *  {target: "Type", value: "string | string[]", for: "keyAttributes"},
      *  {target: "Type", value: "Transforms<K, D>", for: "transforms"},
      *  {target: "Type", value: "Capabilities", for: "capabilities"},
      *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
-     *  {target: "Type", value: "string[]", for: "textFilterAttributes"}
+     *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
+     *  {target: "Type", value: "?((response: FetchErrorDetail<K,D > | FetchResponseErrorDetail<K,D>) => void)", for: "error", jsdocOverride: true}]
+     */
+
+    /**
+     * @typedef {Object} RESTDataProvider.FetchResponseOptions
+     * @property {number} status - response status number
+     * @property {Object} headers - response headers object
+     * @property {Object} body - response body
+     * @ojsignature [
+     *  {target: "Type", value: "Headers", for: "headers"},
+     *  {target: "Type", value: "any", for: "body"}
      * ]
+     */
+
+    /**
+     * This type will be returned to the error callback when underlying fetch call has resulted in a type error.
+     * @typedef {Object} RESTDataProvider.FetchErrorDetail
+     * @property {string} fetchType - Type of fetch that was made
+     * @property {Object} options - Options passed in to RESTDataProvider
+     * @property {TypeError} error - TypeError returned from fetch call
+     * @property {TypeError} err - TypeError returned from fetch call (Deprecated use error instead)
+     * @property {Object} fetchParameters - FetchParams passed into the fetch call
+     * @ojsignature [
+     *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+     *  {target: "Type", value: "'fetchFirst' | 'fetchByKeys' | 'fetchByOffset'", for: "fetchType"},
+     *  {target: "Type", value: "RESTDataProvider.Options<K, D>", for: "options"},
+     *  {target: "Type", value: "FetchListParameters<D> | FetchByKeysParameters<K> | FetchByOffsetParameters<D>", for: "fetchParameters"}]
+     * @ojdeprecated [{target:'propertyValue', for:"err", since: "15.1.0", description: "Use Error instead."}]
+     */
+
+    /**
+     * This type will be returned to the error callback when underlying fetch call has resulted in an response with response.ok = false.
+     * @typedef {Object} RESTDataProvider.FetchResponseErrorDetail
+     * @property {string} fetchType - Type of fetch that was made
+     * @property {Object} options - Options passed in to RESTDataProvider
+     * @property {Object} response - Response returned from server
+     * @property {Object} fetchParameters - FetchParams passed into the fetch call
+     * @ojsignature [
+     *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+     *  {target: "Type", value: "'fetchFirst' | 'fetchByKeys' | 'fetchByOffset'", for: "fetchType"},
+     *  {target: "Type", value: "RESTDataProvider.FetchResponseOptions", for: "response"},
+     *  {target: "Type", value: "RESTDataProvider.Options<K, D>", for: "options"},
+     *  {target: "Type", value: "FetchListParameters<D> | FetchByKeysParameters<K> | FetchByOffsetParameters<D>", for: "fetchParameters"}]
      */
 
     /**
@@ -444,109 +487,112 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
 
     // end of jsdoc
 
-    var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    };
     class RESTHelper {
         constructor(options) {
             this.options = options;
         }
-        fetch() {
-            return __awaiter(this, void 0, void 0, function* () {
-                const request = yield this._createRequest();
-                const signal = this.options.fetchParameters.signal;
-                const response = yield fetch(request, { signal: signal });
-                return this._parseResponse(response);
-            });
+        async fetch() {
+            const request = await this._createRequest();
+            const signal = this.options.fetchParameters.signal;
+            try {
+                const response = await fetch(request, { signal: signal });
+                return await this._parseResponse(response);
+            }
+            catch (err) {
+                if (this.options.errorHandler) {
+                    if (err.status != null) {
+                        const errorContext = {
+                            fetchType: this.options.fetchType,
+                            fetchParameters: this.options.fetchParameters,
+                            options: this.options.options,
+                            response: err
+                        };
+                        this.options.errorHandler(errorContext);
+                    }
+                    else {
+                        const errorContext = {
+                            fetchType: this.options.fetchType,
+                            fetchParameters: this.options.fetchParameters,
+                            options: this.options.options,
+                            error: err
+                        };
+                        Object.defineProperty(errorContext, 'err', {
+                            get() {
+                                return errorContext.error;
+                            },
+                            enumerable: true
+                        });
+                        this.options.errorHandler(errorContext);
+                    }
+                }
+                throw err;
+            }
         }
-        _createRequest() {
-            return __awaiter(this, void 0, void 0, function* () {
-                const { url, transforms, fetchParameters, fetchType, fetchOptions } = this.options;
-                const transform = transforms[fetchType].request;
-                if (transform) {
-                    const transformOptions = ojmetadatautils.deepFreeze({ url, fetchParameters, fetchType, fetchOptions });
-                    return transform(transformOptions);
-                }
-                return new Request(url);
-            });
+        async _createRequest() {
+            const { url, transforms, fetchParameters, fetchType, fetchOptions } = this.options;
+            const transform = transforms[fetchType].request;
+            if (transform) {
+                const transformOptions = ojmetadatautils.deepFreeze({ url, fetchParameters, fetchType, fetchOptions });
+                return transform(transformOptions);
+            }
+            return new Request(url);
         }
-        _parseResponse(response) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const parsedResponse = {
-                    status: response.status,
-                    headers: response.headers,
-                    body: yield this._getResponseBody(response)
-                };
-                if (!response.ok) {
-                    throw parsedResponse;
-                }
-                return this._applyResponseTransforms(parsedResponse);
-            });
+        async _parseResponse(response) {
+            const parsedResponse = {
+                status: response.status,
+                headers: response.headers,
+                body: await this._getResponseBody(response)
+            };
+            if (!response.ok) {
+                throw parsedResponse;
+            }
+            return this._applyResponseTransforms(parsedResponse);
         }
-        _getResponseBody(response) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    return yield response.json();
-                }
-                catch (_a) {
-                    return;
-                }
-            });
+        async _getResponseBody(response) {
+            try {
+                return await response.json();
+            }
+            catch {
+                return;
+            }
         }
-        _applyResponseTransforms({ status, headers, body }) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const { transforms = {}, fetchType } = this.options;
-                const transform = transforms[fetchType].response;
-                let data;
-                let keys;
-                let metadata;
-                let hasMore;
-                let totalSize;
-                if (transform) {
-                    const transformOptions = ojmetadatautils.deepFreeze({ status, headers, body });
-                    const transformResult = yield transform(transformOptions);
-                    data = transformResult.data;
-                    keys = transformResult.keys;
-                    metadata = transformResult.metadata;
-                    hasMore = transformResult.hasMore;
-                    totalSize = transformResult.totalSize;
-                }
-                else if (body !== null && typeof body === 'object') {
-                    data = body.data;
-                    keys = body.keys;
-                    metadata = body.metadata;
-                    hasMore = body.hasMore;
-                    totalSize = body.totalSize;
-                }
-                if (!Array.isArray(data)) {
-                    throw '"data" should be an array. Please use the response transform to extract the data array from the response if needed.';
-                }
-                return {
-                    data,
-                    keys,
-                    metadata,
-                    hasMore,
-                    totalSize
-                };
-            });
+        async _applyResponseTransforms({ status, headers, body }) {
+            const { transforms = {}, fetchType } = this.options;
+            const transform = transforms[fetchType].response;
+            let data;
+            let keys;
+            let metadata;
+            let hasMore;
+            let totalSize;
+            if (transform) {
+                const transformOptions = ojmetadatautils.deepFreeze({ status, headers, body });
+                const transformResult = await transform(transformOptions);
+                data = transformResult.data;
+                keys = transformResult.keys;
+                metadata = transformResult.metadata;
+                hasMore = transformResult.hasMore;
+                totalSize = transformResult.totalSize;
+            }
+            else if (body !== null && typeof body === 'object') {
+                data = body.data;
+                keys = body.keys;
+                metadata = body.metadata;
+                hasMore = body.hasMore;
+                totalSize = body.totalSize;
+            }
+            if (!Array.isArray(data)) {
+                throw '"data" should be an array. Please use the response transform to extract the data array from the response if needed.';
+            }
+            return {
+                data,
+                keys,
+                metadata,
+                hasMore,
+                totalSize
+            };
         }
     }
 
-    var __awaiter$1 = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    };
     const _SORT = 'sort';
     const _FILTER = 'filter';
     const _ATINDEX = '@index';
@@ -587,23 +633,21 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
                     this._clientId = (_fetchParameters && _fetchParameters.clientId) || Symbol();
                     _parent._mapClientIdToProps.set(this._clientId, { hasMore: true, offset: _offset });
                 }
-                next() {
-                    return __awaiter$1(this, void 0, void 0, function* () {
-                        const propObject = this._parent._mapClientIdToProps.get(this._clientId);
-                        const cachedOffset = propObject.offset;
-                        const hasMore = propObject.hasMore;
-                        const { result, offset, hasNoMore } = yield this._nextFunc(_FETCHFIRST, this._fetchParameters, cachedOffset, hasMore);
-                        this._parent._mapClientIdToProps.set(this._clientId, {
-                            hasMore: !hasNoMore,
-                            offset: offset
-                        });
-                        const data = result.value.data;
-                        this._rowsFetched += data.length;
-                        if (Number.isInteger(this._iterationLimit) && this._rowsFetched >= this._iterationLimit) {
-                            result.done = true;
-                        }
-                        return result;
+                async next() {
+                    const propObject = this._parent._mapClientIdToProps.get(this._clientId);
+                    const cachedOffset = propObject.offset;
+                    const hasMore = propObject.hasMore;
+                    const { result, offset, hasNoMore } = await this._nextFunc(_FETCHFIRST, this._fetchParameters, cachedOffset, hasMore);
+                    this._parent._mapClientIdToProps.set(this._clientId, {
+                        hasMore: !hasNoMore,
+                        offset: offset
                     });
+                    const data = result.value.data;
+                    this._rowsFetched += data.length;
+                    if (Number.isInteger(this._iterationLimit) && this._rowsFetched >= this._iterationLimit) {
+                        result.done = true;
+                    }
+                    return result;
                 }
             };
             this.AsyncIteratorYieldResult = class {
@@ -619,50 +663,44 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
                 }
             };
         }
-        fetchFirst(fetchParameters) {
-            return new this.AsyncIterable(new this.AsyncIterator(this, this._fetchFrom.bind(this), fetchParameters, 0, this.options.iterationLimit));
+        fetchFirst(parameters) {
+            return new this.AsyncIterable(new this.AsyncIterator(this, this._fetchFrom.bind(this), parameters, 0, this.options.iterationLimit));
         }
-        fetchByKeys(fetchParameters) {
-            return __awaiter$1(this, void 0, void 0, function* () {
-                if (!fetchParameters) {
-                    throw Error('"keys" is a required parameter');
+        async fetchByKeys(parameters) {
+            if (!parameters) {
+                throw Error('"keys" is a required parameter');
+            }
+            const capabilities = this._getCapabilitiesFromOptions();
+            if (capabilities.fetchByKeys) {
+                if (capabilities.fetchByKeys.implementation === _LOOKUP) {
+                    return this._fetchByKeysLookup(parameters);
                 }
-                const capabilities = this._getCapabilitiesFromOptions();
-                if (capabilities.fetchByKeys) {
-                    if (capabilities.fetchByKeys.implementation === _LOOKUP) {
-                        return this._fetchByKeysLookup(fetchParameters);
-                    }
-                    if (capabilities.fetchByKeys.implementation === _BATCHLOOKUP) {
-                        return this._fetchByKeysBatchLookup(fetchParameters);
-                    }
+                if (capabilities.fetchByKeys.implementation === _BATCHLOOKUP) {
+                    return this._fetchByKeysBatchLookup(parameters);
                 }
-                return this._fetchByKeysIteration(fetchParameters);
-            });
+            }
+            return this._fetchByKeysIteration(parameters);
         }
-        fetchByOffset(fetchParameters) {
-            return __awaiter$1(this, void 0, void 0, function* () {
-                if (!fetchParameters) {
-                    throw Error('"offset" is a required parameter');
-                }
-                const offset = fetchParameters.offset > 0 ? fetchParameters.offset : 0;
-                const capabilities = this._getCapabilitiesFromOptions();
-                if (capabilities.fetchByOffset && capabilities.fetchByOffset.implementation === _RANDOMACCESS) {
-                    return this._fetchByOffsetRandomAccess(fetchParameters, offset);
-                }
-                return this._fetchByOffsetIteration(fetchParameters, offset);
-            });
+        async fetchByOffset(parameters) {
+            if (!parameters) {
+                throw Error('"offset" is a required parameter');
+            }
+            const offset = parameters.offset > 0 ? parameters.offset : 0;
+            const capabilities = this._getCapabilitiesFromOptions();
+            if (capabilities.fetchByOffset && capabilities.fetchByOffset.implementation === _RANDOMACCESS) {
+                return this._fetchByOffsetRandomAccess(parameters, offset);
+            }
+            return this._fetchByOffsetIteration(parameters, offset);
         }
-        containsKeys(containsParameters) {
-            return __awaiter$1(this, void 0, void 0, function* () {
-                const results = new ojSet();
-                const fetchByKeysResults = yield this.fetchByKeys(containsParameters);
-                containsParameters.keys.forEach((key) => {
-                    if (fetchByKeysResults.results.get(key) != null) {
-                        results.add(key);
-                    }
-                });
-                return { containsParameters, results };
+        async containsKeys(parameters) {
+            const results = new ojSet();
+            const fetchByKeysResults = await this.fetchByKeys(parameters);
+            parameters.keys.forEach((key) => {
+                if (fetchByKeysResults.results.get(key) != null) {
+                    results.add(key);
+                }
             });
+            return { containsParameters: parameters, results };
         }
         createOptimizedKeySet(initialSet) {
             return initialSet ? new ojSet(initialSet) : new ojSet();
@@ -703,187 +741,186 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
             this._adjustIteratorOffset(remove, add);
             this.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(detail));
         }
-        _fetchFrom(fetchType, fetchParameters, offset, hasMore) {
-            var _a;
-            return __awaiter$1(this, void 0, void 0, function* () {
-                if ((_a = fetchParameters.signal) === null || _a === void 0 ? void 0 : _a.aborted) {
-                    throw new DOMException('Signal was previously aborted.', 'AbortError');
+        async _fetchFrom(fetchType, fetchParameters, offset, hasMore) {
+            if (fetchParameters.signal?.aborted) {
+                throw new DOMException('Signal was previously aborted.', 'AbortError');
+            }
+            if (hasMore) {
+                const convertedFetchParameters = this._convertFetchListToFetchByOffsetParameters(fetchParameters, offset);
+                const fetchSize = this._getFetchSize(convertedFetchParameters);
+                const fullFetchParameters = {
+                    ...convertedFetchParameters,
+                    size: fetchSize,
+                    filterCriterion: ojdataprovider.FilterFactory.getFilter({
+                        filterDef: convertedFetchParameters.filterCriterion,
+                        filterOptions: this.options
+                    })
+                };
+                ojdataprovider.FilterUtils.validateFilterCapabilities(this.getCapability('filter'), fullFetchParameters.filterCriterion);
+                const restHelper = new RESTHelper({
+                    fetchType,
+                    fetchParameters: fullFetchParameters,
+                    url: this.options.url,
+                    transforms: this.options.transforms,
+                    fetchOptions: {
+                        textFilterAttributes: this.options.textFilterAttributes
+                    },
+                    errorHandler: this.options.error,
+                    options: this.options
+                });
+                const fetchResult = await restHelper.fetch();
+                const { data, totalSize, hasMore } = fetchResult;
+                let metadata;
+                if (fetchResult.metadata) {
+                    metadata = fetchResult.metadata.map((entry) => ({ ...entry }));
                 }
-                if (hasMore) {
-                    const convertedFetchParameters = this._convertFetchListToFetchByOffsetParameters(fetchParameters, offset);
-                    const fetchSize = this._getFetchSize(convertedFetchParameters);
-                    const fullFetchParameters = Object.assign(Object.assign({}, convertedFetchParameters), { size: fetchSize, filterCriterion: ojdataprovider.FilterFactory.getFilter({
-                            filterDef: convertedFetchParameters.filterCriterion,
-                            filterOptions: this.options
-                        }) });
-                    const restHelper = new RESTHelper({
-                        fetchType,
-                        fetchParameters: fullFetchParameters,
-                        url: this.options.url,
-                        transforms: this.options.transforms,
-                        fetchOptions: {
-                            textFilterAttributes: this.options.textFilterAttributes
-                        }
-                    });
-                    const fetchResult = yield restHelper.fetch();
-                    const { data, totalSize, hasMore } = fetchResult;
-                    let metadata;
-                    if (fetchResult.metadata) {
-                        metadata = fetchResult.metadata.map((entry) => (Object.assign({}, entry)));
-                    }
-                    else {
-                        const keys = fetchResult.keys || this._generateKeysFromData(data);
-                        metadata = this._generateMetadataFromKeys(keys);
-                    }
-                    const mergedSortCriteria = this._mergeSortCriteria(fetchParameters.sortCriteria);
-                    if (mergedSortCriteria) {
-                        fetchParameters.sortCriteria = mergedSortCriteria;
-                    }
-                    const result = { fetchParameters, data, metadata };
-                    if (Number.isInteger(totalSize) && this._totalSize !== totalSize) {
-                        this._totalSize = totalSize;
-                    }
-                    if (typeof hasMore === 'boolean' && (hasMore || data.length > 0)) {
-                        return {
-                            result: new this.AsyncIteratorYieldResult(result),
-                            offset: offset + data.length,
-                            hasNoMore: !hasMore
-                        };
-                    }
+                else {
+                    const keys = fetchResult.keys || this._generateKeysFromData(data);
+                    metadata = this._generateMetadataFromKeys(keys);
+                }
+                const mergedSortCriteria = this._mergeSortCriteria(fetchParameters.sortCriteria);
+                if (mergedSortCriteria) {
+                    fetchParameters.sortCriteria = mergedSortCriteria;
+                }
+                const result = { fetchParameters, data, metadata };
+                if (Number.isInteger(totalSize) && this._totalSize !== totalSize) {
+                    this._totalSize = totalSize;
+                }
+                if (typeof hasMore === 'boolean' && (hasMore || data.length > 0)) {
                     return {
-                        result: new this.AsyncIteratorReturnResult(result),
+                        result: new this.AsyncIteratorYieldResult(result),
                         offset: offset + data.length,
                         hasNoMore: !hasMore
                     };
                 }
                 return {
-                    result: new this.AsyncIteratorReturnResult({ fetchParameters: fetchParameters, data: [], metadata: [] }),
-                    offset: offset,
-                    hasNoMore: true
+                    result: new this.AsyncIteratorReturnResult(result),
+                    offset: offset + data.length,
+                    hasNoMore: !hasMore
                 };
-            });
+            }
+            return {
+                result: new this.AsyncIteratorReturnResult({ fetchParameters: fetchParameters, data: [], metadata: [] }),
+                offset: offset,
+                hasNoMore: true
+            };
         }
-        _fetchByKeysIteration(fetchParameters) {
-            return __awaiter$1(this, void 0, void 0, function* () {
-                const fetchListParameters = this._convertFetchByKeysToFetchListParameters(fetchParameters);
-                const asyncIterator = this.fetchFirst(fetchListParameters)[Symbol.asyncIterator]();
-                const fetchedData = [];
-                const fetchedDataMetadata = [];
-                let done = false;
-                while (!done) {
-                    const fetchResult = yield asyncIterator.next();
-                    const { data, metadata } = fetchResult.value;
-                    metadata.forEach((entry, index) => {
-                        if (fetchParameters.keys.has(entry.key)) {
-                            fetchedData.push(data[index]);
-                            fetchedDataMetadata.push(entry);
-                        }
-                    });
-                    if (fetchParameters.keys.size === fetchedDataMetadata.length) {
-                        done = true;
-                    }
-                    else {
-                        done = fetchResult.done;
-                    }
-                }
-                return this._createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataMetadata);
-            });
-        }
-        _fetchByKeysLookup(fetchParameters) {
-            var _a;
-            return __awaiter$1(this, void 0, void 0, function* () {
-                if ((_a = fetchParameters.signal) === null || _a === void 0 ? void 0 : _a.aborted) {
-                    throw new DOMException('Signal was previously aborted.', 'AbortError');
-                }
-                const fetchPromises = [];
-                const fetchedData = [];
-                const fetchedDataMetadata = [];
-                for (let key of fetchParameters.keys) {
-                    const restHelper = new RESTHelper({
-                        fetchType: _FETCHBYKEYS,
-                        fetchParameters: Object.assign(Object.assign({}, fetchParameters), { keys: new Set([key]) }),
-                        url: this.options.url,
-                        transforms: this.options.transforms
-                    });
-                    fetchPromises.push(restHelper.fetch());
-                }
-                (yield Promise.all(fetchPromises)).forEach((fetchResult) => {
-                    fetchResult.data.forEach((item) => {
-                        fetchedData.push(item);
-                    });
-                    const keys = fetchResult.keys || this._generateKeysFromData(fetchResult.data);
-                    const metadata = fetchResult.metadata || this._generateMetadataFromKeys(keys);
-                    metadata.forEach((entry) => {
+        async _fetchByKeysIteration(fetchParameters) {
+            const fetchListParameters = this._convertFetchByKeysToFetchListParameters(fetchParameters);
+            const asyncIterator = this.fetchFirst(fetchListParameters)[Symbol.asyncIterator]();
+            const fetchedData = [];
+            const fetchedDataMetadata = [];
+            let done = false;
+            while (!done) {
+                const fetchResult = await asyncIterator.next();
+                const { data, metadata } = fetchResult.value;
+                metadata.forEach((entry, index) => {
+                    if (fetchParameters.keys.has(entry.key)) {
+                        fetchedData.push(data[index]);
                         fetchedDataMetadata.push(entry);
-                    });
+                    }
                 });
-                return this._createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataMetadata);
-            });
-        }
-        _fetchByKeysBatchLookup(fetchParameters) {
-            var _a;
-            return __awaiter$1(this, void 0, void 0, function* () {
-                if ((_a = fetchParameters.signal) === null || _a === void 0 ? void 0 : _a.aborted) {
-                    throw new DOMException('Signal was previously aborted.', 'AbortError');
+                if (fetchParameters.keys.size === fetchedDataMetadata.length) {
+                    done = true;
                 }
+                else {
+                    done = fetchResult.done;
+                }
+            }
+            return this._createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataMetadata);
+        }
+        async _fetchByKeysLookup(fetchParameters) {
+            if (fetchParameters.signal?.aborted) {
+                throw new DOMException('Signal was previously aborted.', 'AbortError');
+            }
+            const fetchPromises = [];
+            const fetchedData = [];
+            const fetchedDataMetadata = [];
+            for (let key of fetchParameters.keys) {
                 const restHelper = new RESTHelper({
                     fetchType: _FETCHBYKEYS,
-                    fetchParameters,
+                    fetchParameters: {
+                        ...fetchParameters,
+                        keys: new Set([key])
+                    },
                     url: this.options.url,
-                    transforms: this.options.transforms
+                    transforms: this.options.transforms,
+                    errorHandler: this.options.error,
+                    options: this.options
                 });
-                const fetchResult = yield restHelper.fetch();
+                fetchPromises.push(restHelper.fetch());
+            }
+            (await Promise.all(fetchPromises)).forEach((fetchResult) => {
+                fetchResult.data.forEach((item) => {
+                    fetchedData.push(item);
+                });
                 const keys = fetchResult.keys || this._generateKeysFromData(fetchResult.data);
                 const metadata = fetchResult.metadata || this._generateMetadataFromKeys(keys);
-                return this._createFetchByKeysResults(fetchParameters, fetchResult.data, metadata);
+                metadata.forEach((entry) => {
+                    fetchedDataMetadata.push(entry);
+                });
             });
+            return this._createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataMetadata);
         }
-        _fetchByOffsetRandomAccess(fetchParameters, offset) {
-            return __awaiter$1(this, void 0, void 0, function* () {
-                const fetchResult = yield this._fetchFrom(_FETCHBYOFFSET, this._convertFetchByOffsetToFetchListParameters(fetchParameters), offset, true);
-                if (fetchResult.hasNoMore) {
-                    fetchResult.result.done = true;
-                }
-                const { value, done } = fetchResult.result;
+        async _fetchByKeysBatchLookup(fetchParameters) {
+            if (fetchParameters.signal?.aborted) {
+                throw new DOMException('Signal was previously aborted.', 'AbortError');
+            }
+            const restHelper = new RESTHelper({
+                fetchType: _FETCHBYKEYS,
+                fetchParameters,
+                url: this.options.url,
+                transforms: this.options.transforms,
+                errorHandler: this.options.error,
+                options: this.options
+            });
+            const fetchResult = await restHelper.fetch();
+            const keys = fetchResult.keys || this._generateKeysFromData(fetchResult.data);
+            const metadata = fetchResult.metadata || this._generateMetadataFromKeys(keys);
+            return this._createFetchByKeysResults(fetchParameters, fetchResult.data, metadata);
+        }
+        async _fetchByOffsetRandomAccess(fetchParameters, offset) {
+            const fetchResult = await this._fetchFrom(_FETCHBYOFFSET, this._convertFetchByOffsetToFetchListParameters(fetchParameters), offset, true);
+            if (fetchResult.hasNoMore) {
+                fetchResult.result.done = true;
+            }
+            const { value, done } = fetchResult.result;
+            const { data, metadata } = value;
+            const results = data.map((value, index) => ({ metadata: metadata[index], data: value }));
+            return { fetchParameters, results, done };
+        }
+        async _fetchByOffsetIteration(fetchParameters, offset) {
+            const fetchListParameters = this._convertFetchByOffsetToFetchListParameters(fetchParameters);
+            const asyncIterator = this.fetchFirst(fetchListParameters)[Symbol.asyncIterator]();
+            const fetchResultData = [];
+            const fetchResultMetadata = [];
+            const size = this._getFetchSize(fetchParameters);
+            let done = false;
+            let fetchResultDone = true;
+            while (!done) {
+                const fetchResult = await asyncIterator.next();
+                const value = fetchResult.value;
                 const { data, metadata } = value;
-                const results = data.map((value, index) => ({ metadata: metadata[index], data: value }));
-                return { fetchParameters, results, done };
-            });
-        }
-        _fetchByOffsetIteration(fetchParameters, offset) {
-            return __awaiter$1(this, void 0, void 0, function* () {
-                const fetchListParameters = this._convertFetchByOffsetToFetchListParameters(fetchParameters);
-                const asyncIterator = this.fetchFirst(fetchListParameters)[Symbol.asyncIterator]();
-                const fetchResultData = [];
-                const fetchResultMetadata = [];
-                const size = this._getFetchSize(fetchParameters);
-                let done = false;
-                let fetchResultDone = true;
-                while (!done) {
-                    const fetchResult = yield asyncIterator.next();
-                    const value = fetchResult.value;
-                    const { data, metadata } = value;
-                    fetchResultDone = fetchResult.done;
-                    data.forEach((entry) => {
-                        fetchResultData.push(entry);
-                    });
-                    metadata.forEach((entry) => {
-                        fetchResultMetadata.push(entry);
-                    });
-                    if (typeof fetchResultData[offset + size - 1] !== 'undefined') {
-                        done = true;
-                    }
-                    else {
-                        done = fetchResultDone;
-                    }
+                fetchResultDone = fetchResult.done;
+                data.forEach((entry) => {
+                    fetchResultData.push(entry);
+                });
+                metadata.forEach((entry) => {
+                    fetchResultMetadata.push(entry);
+                });
+                if (typeof fetchResultData[offset + size - 1] !== 'undefined') {
+                    done = true;
                 }
-                const start = offset;
-                const end = offset + size;
-                const data = fetchResultData.slice(start, end);
-                const metadata = fetchResultMetadata.slice(start, end);
-                const results = data.map((value, index) => ({ metadata: metadata[index], data: value }));
-                return { fetchParameters, results, done: fetchResultDone };
-            });
+                else {
+                    done = fetchResultDone;
+                }
+            }
+            const start = offset;
+            const end = offset + size;
+            const data = fetchResultData.slice(start, end);
+            const metadata = fetchResultMetadata.slice(start, end);
+            const results = data.map((value, index) => ({ metadata: metadata[index], data: value }));
+            return { fetchParameters, results, done: fetchResultDone };
         }
         _generateKeysFromData(data) {
             const keyAttributes = this.options != null ? this.options.keyAttributes : null;
@@ -981,10 +1018,11 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/
             const capabilities = this._getCapabilitiesFromOptions();
             const fetchCapabilityDefaults = RESTDataProvider._getFetchCapabilityDefaults();
             if (fetchType === _FETCHFIRST) {
-                return Object.assign(Object.assign({}, fetchCapabilityDefaults), { iterationSpeed: _DELAYED });
+                return { ...fetchCapabilityDefaults, iterationSpeed: _DELAYED };
             }
             return capabilities[fetchType]
-                ? Object.assign(Object.assign({}, fetchCapabilityDefaults), (capabilities[fetchType] || {})) : null;
+                ? { ...fetchCapabilityDefaults, ...(capabilities[fetchType] || {}) }
+                : null;
         }
         static _getFetchCapabilityDefaults() {
             return {

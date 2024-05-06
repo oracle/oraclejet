@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -523,7 +523,12 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       this.m_cachedOffset =
         Math.max(0, affordance.offsetLeft - item.offsetLeft) + affordance.offsetWidth / 2;
 
+      var isCardLayout = this.listview.isCardLayout();
+      var isRtl = this.listview.ojContext._GetReadingDirection() === 'rtl';
       var itemOffset = this._calculateOffset(item);
+      if (isCardLayout && isRtl) {
+        itemOffset += this.listview.getListContainer().get(0).offsetWidth;
+      }
       var listviewOffset = this._calculateOffset(this.listview.getListContainer().get(0));
       this.m_cachedOffset += Math.max(listviewOffset, itemOffset - listviewOffset);
     }

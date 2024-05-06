@@ -1,6 +1,6 @@
 import { GlobalProps } from 'ojs/ojvcomponent';
 import { ComponentChildren } from 'preact';
-import CommonTypes = require('../ojcommontypes');
+import ojcommontypes = require('../ojcommontypes');
 import { KeySet } from '../ojkeyset';
 import { DataProvider, Item } from '../ojdataprovider';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
@@ -46,7 +46,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     };
     editMode: 'none' | 'rowEdit';
     editRow: ojTable.EditRow<K> | null;
-    readonly firstSelectedRow: CommonTypes.ItemContext<K, D>;
+    readonly firstSelectedRow: ojcommontypes.ItemContext<K, D>;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
     layout: 'contents' | 'fixed';
     row: {
@@ -54,12 +54,14 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         selectable?: ((item: Item<K, D>) => 'on' | 'off') | null;
         sticky?: ((item: Item<K, D>) => 'on' | 'off') | null;
     };
-    rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
+    rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => {
+        insert: HTMLElement;
+    } | void) | null;
     scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
         fetchSize?: number;
         maxCount?: number;
-        scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
+        scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string | null;
         scrollerOffsetBottom?: number | null;
         scrollerOffsetEnd?: number | null;
         scrollerOffsetStart?: number | null;
@@ -67,7 +69,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     };
     scrollPosition: {
         columnIndex?: number;
-        columnKey?: any;
+        columnKey?: string;
         offsetX?: number;
         offsetY?: number;
         rowIndex?: number;
@@ -79,9 +81,9 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     selectAllControl: 'visible' | 'hidden';
     selected: {
         row?: KeySet<K>;
-        column?: KeySet<K>;
+        column?: KeySet<string>;
     };
-    selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart<K> & ojTable.ColumnSelectionEnd<K>>;
+    selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart & ojTable.ColumnSelectionEnd>;
     selectionMode: {
         column?: 'none' | 'single' | 'multiple';
         row?: 'none' | 'single' | 'multiple';
@@ -103,6 +105,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         accessibleStateUnselected?: string;
         accessibleSummaryEstimate?: string;
         accessibleSummaryExact?: string;
+        editableSummary?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;
         labelColumnWidth?: string;
@@ -207,11 +210,14 @@ export namespace ojTable {
             parentElement: Element;
             status: ContextStatus<K>;
         };
+        setUpdatedItem: (param: Promise<{
+            updatedItem: Item<K, D>;
+        }>) => void;
         [propName: string]: any;
     }> {
     }
     interface ojRowAction<K, D> extends CustomEvent<{
-        context: CommonTypes.ItemContext<K, D>;
+        context: ojcommontypes.ItemContext<K, D>;
         originalEvent: Event;
         [propName: string]: any;
     }> {
@@ -365,35 +371,35 @@ export namespace ojTable {
         width?: string | number | null;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ColumnSelectionEnd<K> = {
+    type ColumnSelectionEnd = {
         endIndex: {
             column: number;
         };
         endKey?: {
-            column: K;
+            column: string;
         };
     } | {
         endIndex?: {
             column: number;
         };
         endKey: {
-            column: K;
+            column: string;
         };
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ColumnSelectionStart<K> = {
+    type ColumnSelectionStart = {
         startIndex: {
             column: number;
         };
         startKey?: {
-            column: K;
+            column: string;
         };
     } | {
         startIndex?: {
             column: number;
         };
         startKey: {
-            column: K;
+            column: string;
         };
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -618,7 +624,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     };
     editMode: 'none' | 'rowEdit';
     editRow: ojTable.EditRow<K> | null;
-    readonly firstSelectedRow: CommonTypes.ItemContext<K, D>;
+    readonly firstSelectedRow: ojcommontypes.ItemContext<K, D>;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
     layout: 'contents' | 'fixed';
     row: {
@@ -626,12 +632,14 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         selectable?: ((item: Item<K, D>) => 'on' | 'off') | null;
         sticky?: ((item: Item<K, D>) => 'on' | 'off') | null;
     };
-    rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
+    rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => {
+        insert: HTMLElement;
+    } | void) | null;
     scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
         fetchSize?: number;
         maxCount?: number;
-        scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
+        scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string | null;
         scrollerOffsetBottom?: number | null;
         scrollerOffsetEnd?: number | null;
         scrollerOffsetStart?: number | null;
@@ -639,7 +647,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     };
     scrollPosition: {
         columnIndex?: number;
-        columnKey?: any;
+        columnKey?: string;
         offsetX?: number;
         offsetY?: number;
         rowIndex?: number;
@@ -651,9 +659,9 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     selectAllControl: 'visible' | 'hidden';
     selected: {
         row?: KeySet<K>;
-        column?: KeySet<K>;
+        column?: KeySet<string>;
     };
-    selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart<K> & ojTable.ColumnSelectionEnd<K>>;
+    selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart & ojTable.ColumnSelectionEnd>;
     selectionMode: {
         column?: 'none' | 'single' | 'multiple';
         row?: 'none' | 'single' | 'multiple';
@@ -675,6 +683,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         accessibleStateUnselected?: string;
         accessibleSummaryEstimate?: string;
         accessibleSummaryExact?: string;
+        editableSummary?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;
         labelColumnWidth?: string;
@@ -760,11 +769,14 @@ export namespace TableElement {
             parentElement: Element;
             status: ojTable.ContextStatus<K>;
         };
+        setUpdatedItem: (param: Promise<{
+            updatedItem: Item<K, D>;
+        }>) => void;
         [propName: string]: any;
     }> {
     }
     interface ojRowAction<K, D> extends CustomEvent<{
-        context: CommonTypes.ItemContext<K, D>;
+        context: ojcommontypes.ItemContext<K, D>;
         originalEvent: Event;
         [propName: string]: any;
     }> {
@@ -880,19 +892,19 @@ export namespace TableElement {
         width?: string | number | null;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ColumnSelectionStart<K> = {
+    type ColumnSelectionStart = {
         startIndex: {
             column: number;
         };
         startKey?: {
-            column: K;
+            column: string;
         };
     } | {
         startIndex?: {
             column: number;
         };
         startKey: {
-            column: K;
+            column: string;
         };
     };
     // tslint:disable-next-line interface-over-type-literal

@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['knockout', 'ojs/ojcontext', 'ojs/ojmodule', 'ojs/ojcomposite'], function (ko, Context, ojmodule, Composite) { 'use strict';
+define(['knockout', 'ojs/ojcontext', 'ojs/ojmodule', 'ojs/ojcomposite', 'ojs/ojcustomelement-utils'], function (ko, Context, ojmodule, Composite, ojcustomelementUtils) { 'use strict';
 
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
@@ -256,7 +256,8 @@ define(['knockout', 'ojs/ojcontext', 'ojs/ojmodule', 'ojs/ojcomposite'], functio
 
     function isViewAttached(config) {
       var view = config ? config.view : null;
-      return view && view.length > 0 && element.contains(view[0]);
+      var testNode = view && view.length > 0 ? view[0][ojcustomelementUtils.OJ_BIND_CONVERTED_NODE] || view[0] : null;
+      return testNode && element.contains(testNode);
     }
 
     function invokeViewModelMethod(model, name) {

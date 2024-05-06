@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -338,7 +338,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
    *   Accessibility
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
-   *
+   * <p> <b>Important:</b> Treeview does not support actionable content (i.e. Buttons, Links, etc) inside it's templated content.</p>
    * <p>To facilitate drag and drop including item reordering using only keyboard, application must ensure that either to expose the functionality using context menu, and/or
    * allow users to perform the functionality with the appropriate keystroke.  You can find examples of how this can be done in the cookbook demos.</p>
    *
@@ -1260,6 +1260,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         this._super();
         this._initRender();
         this._render();
+        this._isInitFetch = true;
       },
       // @inheritdoc
       _CompareOptionValues: function (option, value1, value2) {
@@ -1374,6 +1375,16 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           });
         }
 
+        this.element[0].addEventListener('focusin', (event) => {
+          if (
+            this._getParents(
+              event.target,
+              this.constants.PERIOD + this.constants.OJ_TREEVIEW_SELECTOR
+            ).length > 0
+          ) {
+            this._getRoot().focus();
+          }
+        });
         this._dropLine = document.createElement('div');
         this._dropLine.classList.add(this.constants.OJ_TREEVIEW_DROPLINE);
         this.element[0].appendChild(this._dropLine); // HTMLUpdateOk
@@ -1387,7 +1398,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
 
         this._refreshId = 0;
         this._uiExpanded = new ojkeyset.KeySetImpl();
-        this.m_fetching = new Set();
+        this.m_fetching = new Map();
 
         this._expandedChildrenMap = new Map();
         this._syncSelectionState();
@@ -1449,8 +1460,22 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           }
           this._resetFocus();
           this._decorateTree();
+          if (this._isLeafOnlySelectionEnabled()) {
+            this._rawData = this._buildStaticRawData([], this._getRoot());
+            this._initLeafOnlySelectionMode();
+          }
           this.element[0].classList.add(this.constants.OJ_COMPLETE);
         }
+      },
+      _buildStaticRawData: function (rawData, subtree) {
+        for (let i = 0; i < subtree.children.length; i++) {
+          const item = { key: this._getKey(subtree.children[i]) };
+          if (!this._isLeaf(subtree.children[i])) {
+            item.children = this._buildStaticRawData([], this._getSubtree(subtree.children[i]));
+          }
+          rawData.push(item);
+        }
+        return rawData;
       },
       _getDataProvider: function () {
         var self = this;
@@ -1504,6 +1529,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                 self._skeletonTimeout = setTimeout(function () {
                   var rootMap = self._expandedChildrenMap.get(null);
                   if (parentKey === null) {
+                    self._changeStatusMessage(null, false);
                     self._renderInitialSkeletons();
                   } else if (
                     !rootMap &&
@@ -1515,6 +1541,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                       var parentSubtree = self._getSubtree(parentItem);
                       if (!parentSubtree) {
                         self._renderChildSkeletons(parentKey);
+                        self._changeStatusMessage(parentKey, false);
                       }
                     }
                   }
@@ -1633,7 +1660,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             Logger.error(self.constants.ERROR_FETCHING_DATA + reason);
             dataProviderPromiseBusyResolve();
             self._expandedChildrenMap = new Map();
-            self.m_fetching = new Set();
+            self.m_fetching = new Map();
           }
         );
       },
@@ -1674,10 +1701,8 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         return false;
       },
       _getShowStatusDelay: function () {
-        var defaultOptions = this._getOptionDefaults();
-        var delay = parseInt(defaultOptions.showIndicatorDelay, 10);
-
-        return isNaN(delay) ? 0 : delay;
+        const defaultOptions = this._getOptionDefaults();
+        return DomUtils.getCSSTimeUnitAsMillis(defaultOptions.showIndicatorDelay);
       },
       /**
        * Render the TreeView items after the data is fetched.
@@ -1920,19 +1945,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         var templateEngine = this._getTemplateEngine();
 
         if (renderer != null) {
-          var content = renderer.call(self, context);
-          if (content != null) {
-            // Allow return of document fragment from jQuery create or JS document.createDocumentFragment
-            if (content.parentNode === null || content.parentNode instanceof DocumentFragment) {
-              liElem.appendChild(content); // @HTMLUpdateOK
-            } else if (content.parentNode != null) {
-              // Parent node exists, do nothing
-            } else if (content.toString) {
-              textWrapper = document.createElement('span');
-              textWrapper.appendChild(document.createTextNode(content.toString())); // @HTMLUpdateOK
-              liElem.appendChild(textWrapper); // @HTMLUpdateOK
-            }
-          }
+          DataCollectionUtils.applyRendererContent(liElem, renderer.call(self, context), true);
         } else if (templateElement != null && templateEngine != null) {
           var componentElement = self.element[0];
           var nodes = templateEngine.execute(componentElement, templateElement, context, null);
@@ -2014,7 +2027,6 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
 
         return Promise.resolve(null);
       },
-
       /**
        * Retrieve the template engine, returns null if it has not been loaded yet
        * @private
@@ -2023,7 +2035,6 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
       _getTemplateEngine: function () {
         return this.m_engine;
       },
-
       /**
        * Returns the inline template element inside oj-tree-view
        * @return {Element|null} the inline template element
@@ -2042,7 +2053,6 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         }
         return this.m_template;
       },
-
       /**
        * Returns the slot map object.
        * @return {object} slot Map
@@ -2052,14 +2062,12 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
       _getSlotMap: function () {
         return ojcustomelementUtils.CustomElementUtils.getSlotMap(this.element[0]);
       },
-
       /**
        * Adds the necessary attributes to a TreeView root element.
        * @private
        */
       _decorateTree: function () {
         var self = this;
-
         // Keyboard focus and ARIA attributes
         var root = this._getRoot();
         if (root) {
@@ -2121,57 +2129,49 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         );
       },
       _refreshSelectionItems: function () {
-        var selectionMode = this.options.selectionMode;
+        const selectionMode = this.options.selectionMode;
         if (selectionMode === 'none') {
           return;
         }
-        var i;
-        var selected = this._getSelected();
-        var item;
-        var newSelectedItems = Array.from(this._getItemsInSelectedKeySet(selected));
-        if (!selected.isAddAll()) {
-          var currentSelectedItemContents = this._getSelectedItemContents();
-          for (i = currentSelectedItemContents.length - 1; i >= 0; i--) {
-            var selectedItem = currentSelectedItemContents[i].parentElement;
-            var indexOfSelectedItem = newSelectedItems.indexOf(selectedItem);
-            if (indexOfSelectedItem !== -1) {
-              newSelectedItems.splice(indexOfSelectedItem, 1);
-            } else {
-              this._setUnselected(selectedItem);
-            }
-          }
-
-          for (i = 0; i < newSelectedItems.length; i++) {
-            item = newSelectedItems[i];
-            this._setSelected(item);
-          }
-        } else {
-          for (i = 0; i < newSelectedItems.length; i++) {
-            item = newSelectedItems[i];
-            var itemKey = this._getKey(item);
-            if (selected.has(itemKey) && this._isActionable(item, 'select')) {
-              this._setSelected(item);
-            } else {
-              this._setUnselected(item);
-            }
+        const selected = this._getSelected();
+        const newSelectedItems = this._getItemsInSelectedKeySet(selected);
+        const currentSelectedItemContents = this._getSelectedItemContents();
+        for (let i = currentSelectedItemContents.length - 1; i >= 0; i--) {
+          const selectedItem = currentSelectedItemContents[i].parentElement;
+          const indexOfSelectedItem = newSelectedItems.indexOf(selectedItem);
+          if (indexOfSelectedItem !== -1) {
+            newSelectedItems.splice(indexOfSelectedItem, 1);
+          } else {
+            this._setUnselected(selectedItem);
           }
         }
+
+        for (let i = 0; i < newSelectedItems.length; i++) {
+          this._setSelected(newSelectedItems[i]);
+        }
+
         if (this._isLeafOnlySelectionEnabled()) {
           this._updateIndeterminateState(this._selectedKeysets.partialParents);
         }
         this._refreshTopAndBottomSelectionClasses();
       },
       _getItemsInSelectedKeySet: function (selected) {
-        var selectedItems = [];
+        const selectedItems = [];
         if (selected.isAddAll()) {
-          return this._getItems();
+          this._getItems().forEach((item) => {
+            const key = this._getKey(item);
+            if (!selected.deletedValues().has(key) && this._isActionable(item, 'select')) {
+              selectedItems.push(item);
+            }
+          });
+        } else {
+          selected.values().forEach((key) => {
+            const item = this._getItemByKey(key);
+            if (item && this._isActionable(item, 'select')) {
+              selectedItems.push(item);
+            }
+          });
         }
-        selected.values().forEach((key) => {
-          var item = this._getItemByKey(key);
-          if (item && this._isActionable(item, 'select')) {
-            selectedItems.push(item);
-          }
-        });
         return selectedItems;
       },
       /**
@@ -2180,9 +2180,6 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
        * @private
        */
       _decorateItem: function (item) {
-        var self = this;
-        var i;
-
         item.classList.add(this.constants.OJ_TREEVIEW_ITEM);
         item.setAttribute('role', 'treeitem');
         var itemKey = this._getKey(item);
@@ -2209,14 +2206,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             } else {
               selector.selectedKeys = new ojkeyset.KeySetImpl();
             }
+            selector.setAttribute('aria-hidden', 'true');
             selector.setAttribute('data-oj-binding-provider', 'none');
             selector.setAttribute('selection-mode', 'multiple');
-            selector.setAttribute(
-              'aria-label',
-              Translations.getTranslatedString('oj-ojTreeView.treeViewSelectorAria', {
-                rowKey: itemKey
-              })
-            );
             selector.addEventListener(
               'selectedKeysChanged',
               function (event) {
@@ -2259,13 +2251,13 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           var treeViewItems = itemContent.querySelectorAll(
             this.constants.PERIOD + this.constants.OJ_TREEVIEW_ITEM_ICON
           );
-          for (i = 0; i < treeViewItems.length; i++) {
+          for (let i = 0; i < treeViewItems.length; i++) {
             treeViewItems[i].classList.add(this.constants.OJ_TREEVIEW_ICON);
             treeViewItems[i].classList.add(this.constants.OJ_COMPONENT_ICON);
           }
         }
         // Initial selection
-        self._select(item);
+        this._select(item);
 
         // DnD
         itemContent.setAttribute('draggable', this._isDnD() ? 'true' : 'false');
@@ -2296,15 +2288,13 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           itemContent.classList.add(this.constants.OJ_DRAGGABLE);
         }
 
-        if (self._isLeaf(item)) {
+        if (this._isLeaf(item)) {
           this._addTreeviewLeafClass(item);
+        } else if (this._isInitExpanded(itemKey)) {
+          this._expand(item, false);
+          this._addDisclosureClasses(disclosureIcon);
         } else {
-          // Expanded option
-          if (self._isInitExpanded(itemKey)) {
-            self._expand(item, false);
-          } else {
-            self._collapse(item, false);
-          }
+          this._collapse(item, false);
           this._addDisclosureClasses(disclosureIcon);
         }
       },
@@ -2682,11 +2672,11 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
       _initLeafOnlySelectionMode: function () {
         const attributesMap = { keyAttributes: 'key', childrenAttribute: 'children' };
         let createKeyMap = (m) => new Map(m);
-        if (this.options.data.createOptimizedKeyMap) {
+        if (this.options.data && this.options.data.createOptimizedKeyMap) {
           createKeyMap = (m) => this.options.data.createOptimizedKeyMap(m);
         }
         let createKeySet = (s) => new Set(s);
-        if (this.options.data.createOptimizedKeySet) {
+        if (this.options.data && this.options.data.createOptimizedKeySet) {
           createKeySet = (s) => this.options.data.createOptimizedKeySet(s);
         }
         this.treeviewSelectionManager = new TreeviewSelectionManager(
@@ -3020,10 +3010,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
 
             if (isMetaKey) {
               selected = this._getSelected();
-            } else {
-              this._clearSelection();
             }
-
             // Select a range from the last selected item to the current item
             var getNextItem =
               nextItem && nextItem.offsetTop < item.offsetTop
@@ -3034,7 +3021,6 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
               var nextKey = this._getKey(nextItem);
               if (!selected.has(nextKey)) {
                 selected = selected.add([nextKey]);
-                this._setSelected(nextItem);
               }
               nextItem = getNextItem(nextItem, 'select');
             }
@@ -3122,7 +3108,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         itemContent.classList.add(this.constants.OJ_SELECTED);
         item.setAttribute('aria-selected', 'true');
         var key = this._getKey(item);
-        this._setupSelector(key, item, false);
+        this._setupSelector(key, item, true);
       },
       _isHiddenElement: function (item) {
         const parents = this._getParents(
@@ -3170,7 +3156,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         itemContent.classList.remove(this.constants.OJ_SELECTED);
         item.setAttribute('aria-selected', 'false');
         var key = this._getKey(item);
-        this._setupSelector(key, item, true);
+        this._setupSelector(key, item, false);
       },
       /**
        * Clears the selection of all items.
@@ -3196,12 +3182,16 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           });
         }
       },
-      _setupSelector: function (key, item, isEmpty) {
+      _setupSelector: function (key, item, isSelected) {
         if (this._isDefaultCheckBoxesEnabled()) {
           var selector = this._getSelectorByItem(item);
-          var initialVal = isEmpty ? [] : [key];
           if (selector) {
-            selector.selectedKeys = new ojkeyset.KeySetImpl(initialVal);
+            const initialVal = isSelected ? [key] : [];
+            const isSelectorSelected =
+              selector.querySelector(this.constants.PERIOD + this.constants.OJ_SELECTED) !== null;
+            if (isSelected !== isSelectorSelected) {
+              selector.selectedKeys = new ojkeyset.KeySetImpl(initialVal);
+            }
           }
         }
       },
@@ -3292,9 +3282,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         return item.getAttribute('id');
       },
       _getUniqueItemId: function () {
-        return ojcustomelementUtils.ElementUtils.getUniqueId(this.element[0].getAttribute('id')).concat(
-          '_' + this._getTreeViewItemCount()
-        );
+        return ojcustomelementUtils.ElementUtils.getUniqueId() + '_' + this.element[0].getAttribute('id');
       },
       _getTreeViewItemCount: function () {
         return this._getItems().length;
@@ -3312,11 +3300,17 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         var busyContextPromise = busyContext.addBusyState({
           description: "The component identified by '" + id + "', " + description
         });
-        this.m_fetching.add(key);
-        this._changeStatusMessage(key, false);
+        if (this.m_fetching.has(key)) {
+          this.m_fetching.set(key, this.m_fetching.get(key) + 1);
+        } else {
+          this.m_fetching.set(key, 1);
+        }
         return function () {
-          this._changeStatusMessage(key, true);
-          this.m_fetching.delete(key);
+          if (this.m_fetching.get(key) === 1) {
+            this.m_fetching.delete(key);
+          } else {
+            this.m_fetching.set(key, this.m_fetching.get(key) - 1);
+          }
           busyContextPromise();
           Promise.resolve(this._processEventQueue());
         }.bind(this);
@@ -3341,7 +3335,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             nodeText: nodeText
           });
         }
-        status.textContent = statusText;
+        if (status.textContent !== statusText) {
+          status.textContent = statusText;
+        }
       },
       /**
        * Returns node text by key,
@@ -3665,15 +3661,8 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           (this._isLeafOnlySelectionEnabled() || this._isMultiSelectionEnabled())
         ) {
           // CTRL - A
-          event.preventDefault(); // prevent default ctrl a
-          var items = this._getItems();
-          var selected = new ojkeyset.AllKeySetImpl();
-          for (var i = 0; i < items.length; i++) {
-            if (this._isActionable(items[i], 'select')) {
-              this._setSelected(items[i]);
-            }
-          }
-          this._userSelectedOptionChange(selected, event);
+          event.preventDefault(); // prevent default ctrl
+          this._userSelectedOptionChange(new ojkeyset.AllKeySetImpl(), event);
         }
       },
       /**
@@ -3868,36 +3857,29 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             dragData.push(item.parentElement.innerHTML);
           }
 
-          var itemSpacer = self._getItemSpacer(item);
-          var offset = item.getBoundingClientRect();
+          const offset = item.getBoundingClientRect();
 
           // added in case window has scrolled the treeview down
-          const windowScrollLeft =
-            window.pageXOffset !== undefined
-              ? window.pageXOffset
-              : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
-          const windowScrollTop =
-            window.pageYOffset !== undefined
-              ? window.pageYOffset
-              : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+          const windowScrollLeft = window.scrollX;
+          const windowScrollTop = window.scrollY;
 
-          var offsetTop = offset.top + windowScrollTop;
-          var offsetLeft = itemSpacer === undefined ? 0 : itemSpacer.offsetWidth + windowScrollLeft;
+          const offsetTop = offset.top + windowScrollTop;
+          let offsetLeft = offset.left + windowScrollLeft;
 
-          if (isRTL) {
-            var itemContentChildren = self._getItemContent(item).children;
-            var childrenWidth = 0;
+          const itemContentChildren = self._getItemContent(item).children;
+          let childrenWidth = 0;
 
-            for (var j = 0; j < itemContentChildren.length; j++) {
-              childrenWidth += itemContentChildren[j].offsetWidth;
-            }
-            offsetLeft = self._getTreeviewWidth() + offset.x - childrenWidth - offsetLeft;
+          for (var j = 0; j < itemContentChildren.length; j++) {
+            childrenWidth += itemContentChildren[j].offsetWidth;
           }
 
-          offsetTop += document.body.scrollTop;
-          offsetLeft += document.body.scrollLeft;
+          if (isRTL) {
+            offsetLeft += self._getTreeviewWidth() - childrenWidth;
+          } else {
+            offsetLeft += childrenWidth;
+          }
 
-          var clonedItem = item.cloneNode(true);
+          const clonedItem = item.cloneNode(true);
           clonedItem.style.top = offsetTop + 'px';
           clonedItem.style.left = offsetLeft + 'px';
 
@@ -4070,6 +4052,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           (eventType === 'dragEnter' || eventType === 'dragOver') &&
           event.originalEvent.defaultPrevented
         ) {
+          this.dragLeftTreeview = false;
           var isRTL = this._GetReadingDirection() === 'rtl';
           // Draw the drop target effect on dragEnter and dragOver
           var dropLineTop = targetItem.offsetTop;
@@ -4104,6 +4087,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                 dropLineOffset += disclosureIcon.offsetHeight;
               }
             }
+            if (this._isExpanded(targetItem) && position !== 'before') {
+              dropLineOffset += 8; // line up with children even though dropline is still on parent
+            }
             this._removeDropClass(targetItem);
             var width = this._getTreeviewWidth() - parseInt(dropLineOffset, 10) + 'px';
             var left = isRTL ? '0px' : dropLineOffset + 'px';
@@ -4115,46 +4101,22 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             this._dropLine.style.display = 'none';
             this._addDropClass(targetItem);
           }
-        } else {
-          if (eventType === 'drop') {
-            this._removeGhostElements();
-            this._dropLine.style.display = 'none';
+        } else if (eventType === 'drop') {
+          this._removeGhostElements();
+          this._dropLine.style.display = 'none';
+          this._removeDropClass(targetItem);
+        } else if (eventType === 'dragLeave') {
+          this.dragLeftTreeview = true;
+          if (position !== 'inside') {
             this._removeDropClass(targetItem);
           }
-
-          /* Only remove the dropline on dragLeave if it's leaving treeview or else it will flicker in-between items.
-           *  For X: we only care about the last DragLeave before exiting the treeview witch will be on div itemContent
-           *  and where that drag happens in respect to the itemContent width.
-           *  For Y: only process dragLeave if it gets fired on the appropriate item with the appropriate position.
-           */
-          if (eventType === 'dragLeave') {
-            var targetWidth = targetItem.offsetWidth;
-            if (
-              event.target.nodeName === 'DIV' &&
-              event.target.classList.contains(this.constants.OJ_TREEVIEW_ITEM_CONTENT) &&
-              (event.offsetX >= targetWidth || event.offsetX <= 0)
-            ) {
+          setTimeout(() => {
+            if (this.dragLeftTreeview) {
               this._dropLine.style.display = 'none';
-              this._removeDropClass(targetItem);
-            } else if (event.offsetY >= targetItem.offsetHeight || event.offsetY <= 0) {
-              var treeviewItems = this._getItems();
-              if (treeviewItems.length > 0) {
-                var firstItem = treeviewItems[0];
-                var lastItem = treeviewItems[treeviewItems.length - 1];
-                if (
-                  (targetItem === lastItem && position === 'after') ||
-                  (targetItem === firstItem && position === 'before')
-                ) {
-                  this._dropLine.style.display = 'none';
-                }
-              } else if (treeviewItems.length === 0) {
-                this._dropLine.style.display = 'none';
-              }
+              this.dragLeftTreeview = false;
+              this._removeAllDropZones();
             }
-            if (position !== 'inside') {
-              this._removeDropClass(targetItem);
-            }
-          }
+          }, 50);
         }
       },
       _addDropClass: function (item) {
@@ -4171,6 +4133,14 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         );
         for (var i = ghostElements.length - 1; i >= 0; i--) {
           ghostElements[i].classList.remove(this.constants.OJ_TREEVIEW_DRAG_SOURCE);
+        }
+      },
+      _removeAllDropZones: function () {
+        var dropZones = this.element[0].querySelectorAll(
+          this.constants.PERIOD + this.constants.OJ_TREEVIEW_DROP_ZONE
+        );
+        for (var i = dropZones.length - 1; i >= 0; i--) {
+          dropZones[i].classList.remove(this.constants.OJ_TREEVIEW_DROP_ZONE);
         }
       },
       // @inheritdoc
@@ -4202,12 +4172,16 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         this._super();
         this._refreshId += 1;
 
+        if (this._getItemTemplate() != null) {
+          this._cleanTemplateNodes(this._getRoot());
+        }
+
         delete this.m_template;
         delete this.m_engine;
         delete this.m_dataSource;
 
         this._expandedChildrenMap = new Map();
-        this.m_fetching = new Set();
+        this.m_fetching = new Map();
 
         this._render();
       },
@@ -4394,15 +4368,41 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
       _SetupResources: function () {
         this._super();
         this._addDataProviderEventListeners();
+        if (this._isInitFetch) {
+          this._isInitFetch = false;
+        } else {
+          this.refresh();
+        }
       },
       _ReleaseResources: function () {
         this._super();
+        if (this._getItemTemplate() != null) {
+          this._cleanTemplateNodes(this._getRoot());
+        }
         this._removeDataProviderEventListeners();
+      },
+      /**
+       * Override to do the delay connect/disconnect
+       * @memberof oj.ojTreeView
+       * @override
+       * @protected
+       */
+      _VerifyConnectedForSetup: function () {
+        return true;
       },
       // @inheritdoc
       _destroy: function () {
+        if (this._getItemTemplate() != null) {
+          this._cleanTemplateNodes(this._getRoot());
+        }
         this._removeDataProviderEventListeners();
         this._super();
+      },
+      _cleanTemplateNodes: function (node) {
+        const templateEngine = this._getTemplateEngine();
+        if (node != null && templateEngine != null) {
+          templateEngine.clean(node, this.element[0]);
+        }
       },
       _addDataProviderEventListeners: function () {
         var dataProvider = this.options.data;
@@ -4498,18 +4498,23 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         keys.forEach(function (key) {
           let savedParentKey;
           const addEvent = event.detail.add;
-          if (!addEvent || (addEvent && !addEvent.keys.has(key))) {
-            const itemParentKey = self._getKey(self._getParentItem(self._getItemByKey(key)));
-            if (addEvent && addEvent.parentKeys) {
-              const foundParentKey = addEvent.parentKeys.find((parentKey) =>
-                oj.KeyUtils.equals(parentKey, itemParentKey)
-              );
-              if (foundParentKey) {
-                savedParentKey = foundParentKey;
-              }
+
+          const itemParentKey = self._getKey(self._getParentItem(self._getItemByKey(key)));
+          if (addEvent && addEvent.parentKeys) {
+            const foundParentKey = addEvent.parentKeys.find((parentKey) =>
+              oj.KeyUtils.equals(parentKey, itemParentKey)
+            );
+            if (foundParentKey) {
+              savedParentKey = foundParentKey;
             }
-            removedKeys = removedKeys.concat(self._removeAllChildrenOfParentKey(key, savedParentKey));
           }
+          removedKeys = removedKeys.concat(
+            self._removeAllChildrenOfParentKey(
+              key,
+              savedParentKey,
+              addEvent && addEvent.keys.has(key)
+            )
+          );
         });
 
         if (removedKeys.length === 0) {
@@ -4637,7 +4642,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
       _getItemDisclosureIcon: function (item) {
         return item.getElementsByTagName('ins')[0];
       },
-      _removeAllChildrenOfParentKey: function (key, savedParentKey) {
+      _removeAllChildrenOfParentKey: function (key, savedParentKey, reorder) {
         /* savedParentKey means remove all children but leave parent called when we have a smart refresh event from the dp*/
         var self = this;
         var removedKeys = [];
@@ -4645,16 +4650,19 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         if (elem) {
           this._getChildItems(elem).forEach(function (child) {
             var childkey = self._getKey(child);
-            var childKeys = self._removeAllChildrenOfParentKey(childkey, savedParentKey);
+            var childKeys = self._removeAllChildrenOfParentKey(childkey, savedParentKey, reorder);
             removedKeys = removedKeys.concat(childKeys);
           });
           var subtree = elem.parentNode;
           if (!oj.KeyUtils.equals(key, savedParentKey)) {
             subtree.removeChild(elem);
+            this._cleanTemplateNodes(elem);
             this._keyList.delete(key);
-            removedKeys.push(key);
+            if (!reorder) {
+              removedKeys.push(key);
+            }
           }
-          if (subtree.getElementsByTagName('li').length === 0 && !savedParentKey) {
+          if (subtree.getElementsByTagName('li').length === 0 && !savedParentKey && !reorder) {
             this._changeNodeToLeaf(subtree.parentNode, subtree);
           }
         }
@@ -4689,7 +4697,6 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         var i = 0;
         var self = this;
         var addKeys = event.detail.add.keys;
-        const keys = [];
         const addEventBusyResolve = this._addBusyState(
           'validating mutation data for add event',
           null
@@ -4702,34 +4709,6 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           this._truncateIfOverMaxCount(validatededEventData);
           const data = validatededEventData.data;
           const metadata = validatededEventData.metadata;
-          addKeys.forEach((key) => {
-            if (
-              !event.detail.remove ||
-              (event.detail.remove && !event.options.detail.remove.keys.has(key))
-            ) {
-              keys.push(key);
-            } else if (
-              addEvent.addBeforeKeys &&
-              addEvent.addBeforeKeys[i] &&
-              addEvent.addBeforeKeys.length !== 0
-            ) {
-              this.handleModelReorder(key, addEvent.addBeforeKeys[i], false);
-            } else {
-              var locationKey;
-              if (addEvent.parentKeys && addEvent.parentKeys[i] && addEvent.parentKeys.length !== 0) {
-                var parent = this._getItemByKey(addEvent.parentKeys[i]);
-                var parentItemList = this._getChildItems(parent);
-                locationKey = this.getLastItemKey(parentItemList);
-              } else {
-                var rootList = this._getItems();
-                locationKey = this.getLastItemKey(rootList);
-              }
-              if (locationKey) {
-                this.handleModelReorder(key, locationKey, true);
-              }
-            }
-            i += 1;
-          });
           parentKeys.forEach(function (key) {
             var parentItem = self._getItemByKey(key);
             if (parentItem && self._isLeafIcon(parentItem)) {
@@ -4740,9 +4719,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           const finalKeys = DataCollectionUtils.getAddEventKeysResult(initialKeys, addEvent, true);
           if (
             data &&
-            keys.length > 0 &&
+            addKeys.size > 0 &&
             data.length > 0 &&
-            keys.length === data.length &&
+            addKeys.size === data.length &&
             (indexes == null || indexes.length === data.length)
           ) {
             for (i = 0; i < data.length; i++) {
@@ -4757,14 +4736,11 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
               var subtree;
               if (parentKey == null) {
                 subtree = this._getRoot();
-                if (subtree) {
-                  this._renderItem(subtree, { data: [data[i]], metadata: [metadata[i]] }, 0, index);
-                }
               } else if (parentItem) {
                 subtree = this._getSubtree(parentItem);
-                if (subtree) {
-                  this._renderItem(subtree, { data: [data[i]], metadata: [metadata[i]] }, 0, index);
-                }
+              }
+              if (subtree) {
+                this._renderItem(subtree, { data: [data[i]], metadata: [metadata[i]] }, 0, index);
               }
             }
             this._refreshTopAndBottomSelectionClasses();
@@ -4987,6 +4963,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           function (resolve) {
             var self = this;
             var skeletonBusyResolve = self._addBusyState('removing skeleton', parentKey);
+            self._changeStatusMessage(parentKey, true);
             var skeletonContainer;
             if (parentKey === null) {
               skeletonContainer = this._getSkeletonContainer(self.element[0]);

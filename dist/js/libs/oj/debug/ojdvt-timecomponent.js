@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -186,16 +186,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
         if (item._itemData.taskId) {
           // Specifically for Gantt with row data supplied and no task template,
           // _itemData does not have the task's id prop (it has the taskId prop)
-          const itemCopy = Object.assign({}, item._itemData);
+          // Note that the spread operation below is much faster than using Object.assign,
+          // and much faster than a simple rest operation "const { taskId, ...itemCopy } = item._itemData"
+          // delete is also much slower than just setting value to undefined
+          const itemCopy = { ...item._itemData };
           itemCopy.id = itemCopy.taskId;
-          delete itemCopy.taskId;
+          itemCopy.taskId = undefined;
           return itemCopy;
         }
         return item._itemData;
       };
       const sanitizeItemData = (item) => {
-        const itemCopy = Object.assign({}, item);
-        delete itemCopy._itemData;
+        // Note that the spread operation below is much faster than using Object.assign,
+        // and much faster than a simple rest operation "const { _itemData, ...itemCopy } = item"
+        // delete is also much slower than just setting value to undefined
+        const itemCopy = { ...item };
+        itemCopy._itemData = undefined;
         return itemCopy;
       };
       const isSeriesData = type === 'series' || type === 'row';
@@ -841,16 +847,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     }
 
     /**
-     * Gets the scrollbar in the content direction.
-     * @param {number=} index The content index.
-     * @return {dvt.SimpleScrollbar} The scrollbar in the content direction.
-     */
-    getContentDirScrollbar(index) {
-      if (index) return this.contentDirScrollbar[index];
-      else return this.contentDirScrollbar;
-    }
-
-    /**
      * Sets the scrollbar in the time direction.
      * @param {dvt.SimpleScrollbar} timeDirScrollbar The scrollbar in the time direction.
      */
@@ -1301,6 +1297,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     }
 
     /**
+     * @override
+     */
+    UpdateActiveElement(obj, displayable) {
+      super.UpdateActiveElement(
+        obj,
+        // JET-61323 and JET-61322
+        // Currently, on mouse hover over any element associated with a logical object that has a getAriaLabel method implemented will cause the aria-label to be set on that element.
+        // See DvtEventManager.OnMouseOver, where UpdateActiveElement is called with the displayable associated with the hover event target passed to it. We need this association for tooltips to work
+        // on all those elements.
+        // In the specific Gantt and Timeline cases, this is causing multiple elements to have the same aria-label applied on mouse hover. For some, no role is set
+        // on them because they were not the intended accessible target, and this triggers an axe-core violation.
+        // What we want in those cases instead is for a single representative displayable of the logical object to have the aria-label (and role) set on it, i.e. the displayable
+        // returned by getDisplayable(s). This can be accomplished by omitting the optional "displayable" argument to UpdateActiveElement:
+        obj.getAriaLabel && (obj.getDisplayable || obj.getDisplayables) ? null : displayable
+      );
+    }
+
+    /**
      * Drag start callback.
      * @param {dvt.BaseEvent} event
      * @return {boolean} Whether drag is initiated.
@@ -1502,7 +1516,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
           // TODO: Encapsulate panning logic into a dragHandler, so that only else block is needed.
           if (this._comp.IsPanningEnabled()) {
             this._comp.beginDragPan(relPos.x, relPos.y);
-            consumeEvent(event);
+            // JET-59003 for custom renderer, menu button does not launch a menu in mobile. See also _onTouchDragEnd.
+            // If timeline supports marquee selection event in the future,
+            // we may need to do something similar in the marquee logic below.
+            if (!this._comp.getOptions().itemBubbleContentRenderer) {
+              consumeEvent(event);
+            }
             return true;
           } else if (dragHandler) {
             if (this._comp.IsMarqueeEnabled()) {
@@ -1582,7 +1601,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
       if (!this._isPinchZoom) {
         if (this._comp.IsPanningEnabled()) {
           this._comp.endDragPan();
-          event.preventDefault();
+          // JET-59003 for custom renderer, menu button does not launch a menu in mobile. See also _onTouchDragStart.
+          // If timeline supports marquee selection event in the future,
+          // we may need to do something similar in the marquee logic below.
+          if (!this._comp.getOptions().itemBubbleContentRenderer) {
+            event.preventDefault();
+          }
         } else if (this._comp.IsMarqueeEnabled()) {
           var dragHandler = this._getDragHandler();
           if (dragHandler) {

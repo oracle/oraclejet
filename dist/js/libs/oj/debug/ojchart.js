@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -295,7 +295,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @default null
    */
   /**
-   * Specifies the start group of the current viewport. Only applies to charts with group or time axis. If not specified, the default start group is the first group in the data set.
+   * Specifies the start group of the current viewport. Only applies to charts with group or time axis. If not specified, the default start group is the first group in the data set. The application should set either the viewportMin or viewportStartGroup and not both at the same time. If both viewportStartGroup and viewportMin are specified, viewportMin takes precedence.
    * @expose
    * @name viewportStartGroup
    * @ojtypedefmember
@@ -305,7 +305,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @default null
    */
   /**
-   * Specifies the end group of the current viewport. Only applies to charts with group or time axis. If not specified, the default end group is the last group in the data set.
+   * Specifies the end group of the current viewport. Only applies to charts with group or time axis. If not specified, the default end group is the last group in the data set. The application should set either the viewportMax or viewportEndGroup and not both at the same time. If both viewportEndGroup and viewportMax are specified, viewportMax takes precedence.
    * @expose
    * @name viewportEndGroup
    * @ojtypedefmember
@@ -684,7 +684,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    *   <tbody>
    *     <tr>
    *       <td><kbd>Tab</kbd></td>
-   *       <td>Move focus to next element.</td>
+   *       <td>Move focus to next element. For pie charts, the focus will move to center content if center content is focusable.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>Shift + Tab</kbd></td>
@@ -723,23 +723,23 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    *       <td>Move focus and multi-select next data item (on right).</td>
    *     </tr>
    *     <tr>
-   *       <td><kbd>Ctrl + UpArrow</kbd></td>
+   *       <td><kbd>Ctrl + UpArrow / CMD + UpArrow</kbd></td>
    *       <td>Move focus to previous data item, without changing the current selection.</td>
    *     </tr>
    *     <tr>
-   *       <td><kbd>Ctrl + DownArrow</kbd></td>
+   *       <td><kbd>Ctrl + DownArrow / CMD + DownArrow</kbd></td>
    *       <td>Move focus to next data item, without changing the current selection.</td>
    *     </tr>
    *     <tr>
-   *       <td><kbd>Ctrl + LeftArrow</kbd></td>
+   *       <td><kbd>Ctrl + LeftArrow / CMD + LeftArrow</kbd></td>
    *       <td>Move focus to previous data item (on left), without changing the current selection.</td>
    *     </tr>
    *     <tr>
-   *       <td><kbd>Ctrl + RightArrow</kbd></td>
+   *       <td><kbd>Ctrl + RightArrow / CMD + RightArrow</kbd></td>
    *       <td>Move focus to next data item (on right), without changing the current selection.</td>
    *     </tr>
    *     <tr>
-   *       <td><kbd>Ctrl + Spacebar</kbd></td>
+   *       <td><kbd>Ctrl + Spacebar / CMD + Spacebar</kbd></td>
    *       <td>Multi-select data item with focus.</td>
    *     </tr>
    *     <tr>
@@ -773,6 +773,84 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    *   </tbody>
    * </table>
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojChart
+   */
+
+  /**
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * oj-chart is being broken down into multiple core pack chart components (oj-c-line-chart, oj-c-area-chart, oj-c-bar-chart, etc) according to the type of the chart. To migrate from oj-chart to new core pack chart components (oj-c-area-chart, oj-c-line-chart), you need to revise the import statement and references of oj-chart in your app. JET 16.0.0 core pack has support for only oj-c-line-chart and oj-c-area-chart. Oj-c-line-chart is analogous to oj-chart with type set to ‘line’, and oj-c-area-chart is analogous to oj-chart with type set to ‘area’. Support for other chart types will be added in upcoming versions of JET. Please note the changes below.
+   * <h5>animation-on-data-change</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, animaton-on-data-change attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>animation-on-display</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, animaton-on-display attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>coordinate-system</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, coordinate-system attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>data-label</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, data-label attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>dnd</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, dnd attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>drag-mode</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, drag-mode attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>initial-zooming</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, initial-zooming attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>overview</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, overview attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5> polar-grid-shape </h5>
+   * <p> For the initial version of oj-c-line-chart and oj-c-area-chart, polar-grid-shape attribute is not supported. We plan on supporting this use case in a future release. </p>
+   * <h5>sorting</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, sorting attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>split-dual-y</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, split-dual-y attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>splitter-position</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, splitter-position attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>stack-label</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, stack-label attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>stack-label-provider</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, stack-label-provider attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>zoom-direction</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, zoom-direction attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>type</h5>
+   * <p>
+   * Corepack chart components (oj-c-line-chart, oj-c-area-chart) will not support the type attribute. Each type of chart will be broken down into separate core pack component.
+   * </p>
+   * <h5>touch-response</h5>
+   * <p>
+   * For the initial version of oj-c-line-chart and oj-c-area-chart, coordinate-system attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5> track-resize </h5>
+   * <p> For the initial version of oj-c-line-chart and oj-c-area-chart, track-resize attribute is not supported. The component will itself resize on change in dimension. </p>
+   * @ojfragment migrationDoc
    * @memberof oj.ojChart
    */
 
@@ -942,7 +1020,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @default {}
    */
   /**
-   * A function that returns custom center content. The function takes a <a href="#PieCenterContext">PieCenterContext</a> argument,
+   * A function that returns custom center content. The function takes a <a href="#PieCenterRendererContext">PieCenterRendererContext</a> argument,
    * provided by the chart, and returns an object with the following properties:
    * <ul>
    *   <li>insert: HTMLElement | string - HTML content, which will be overlaid on top of the pie chart.
@@ -959,7 +1037,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @memberof! oj.ojChart.PieCenter
    * @ojshortdesc A function that returns custom center content. The function takes a context argument, provided by the chart. See the Help documentation for more information.
    * @type {(function(Object):Object|null)=}
-   * @ojsignature {target: "Type", value: "oj.dvtBaseComponent.PreventableDOMRendererFunction<oj.ojChart.PieCenterContext>", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "oj.dvtBaseComponent.PreventableDOMRendererFunction<oj.ojChart.PieCenterRendererContext>", jsdocOverride: true}
    * @default null
    */
 
@@ -1089,8 +1167,43 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    *               {target: "Type", value: "oj.ojChart.Series<K, I>|null", for: "seriesData", jsdocOverride: true},
    *               {target: "Type", value: "Array<oj.ojChart.Group>|null", for: "groupData", jsdocOverride: true},
    *               {target: "Type", value: "<K, D, I extends Array<oj.ojChart.Item<any, null>>|Array<number>|null>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
 
+  /**
+   * @typedef {Object} oj.ojChart.TooltipRendererContext
+   * @property {Element} parentElement The tooltip element. This can be used to change the tooltip border or background color.
+   * @property {any} id The id of the hovered item.
+   * @property {string} series The id of the series the hovered item belongs to.
+   * @property {string|Array.<string>} group The ids or an array of ids of the group(s) the hovered item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.
+   * @property {string} label The data label of the hovered item.
+   * @property {number} totalValue The total of all values in the chart. This will only be included for pie charts.
+   * @property {number} value The value of the hovered item.
+   * @property {number|string} x The x value of the hovered item.
+   * @property {number} y The y value of the hovered item.
+   * @property {number} z The z value of the hovered item.
+   * @property {number} q1 The first quartile value of the hovered the box plot item.
+   * @property {number} q2 The second quartile (median) value of the hovered box plot item.
+   * @property {number} q3 The third quartile value of the hovered box plot item.
+   * @property {number} low The low value of the data item present in range bar/area, stock candlestick, or box plot item.
+   * @property {number} high The high value of the data item present in range bar/area, stock candlestick, or box plot item.
+   * @property {number} open The open value of the hovered stock chart item.
+   * @property {number} close The close value of the hovered stock chart item.
+   * @property {number} volume The volume value of the hovered stock chart item.
+   * @property {number} targetValue The target value of the hovered funnel item.
+   * @property {Object|null} data The data object of the hovered item. For nested items, it will be an array containing the parent item data and nested item data.
+   * @property {Object|null} itemData The row data object for the hovered item. This will only be set if a DataProvider is being used.
+   * @property {Object|null} seriesData The data for the series the hovered item belongs to.
+   * @property {Array.<Object>|null} groupData An array of data for the group the hovered item belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the hovered item.
+   * @property {Element} componentElement The chart element.
+   * @property {string} color The color of the hovered item.
+   * @ojsignature [{target: "Type", value: "D", for: "itemData"},
+   *               {target: "Type", value: "oj.ojChart.Item<K, Array<oj.ojChart.Item<any, null>>|Array<number>|null>|number|null", for: "data", consumedBy: "js"},
+   *               {target: "Type", value: "oj.ojChart.Item<K, I>|Array<number>|null>|number|null", for: "data", consumedBy: "ts"},
+   *               {target: "Type", value: "oj.ojChart.Series<K, I>|null", for: "seriesData", jsdocOverride: true},
+   *               {target: "Type", value: "Array<oj.ojChart.Group>|null", for: "groupData", jsdocOverride: true},
+   *               {target: "Type", value: "<K, D, I extends Array<oj.ojChart.Item<any, null>>|Array<number>|null>", for: "genericTypeParameters"}]
+   */
   /**
    * @typedef {Object} oj.ojChart.ItemShortDescContext
    * @property {any} id The id of the hovered item.
@@ -1124,6 +1237,26 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    */
   /**
    * @typedef {Object} oj.ojChart.PieCenterContext
+   * @property {Object} outerBounds Object containing (x, y, width, height) of the rectangle circumscribing the center area. The x and y coordinates are relative to the top, left corner of the element.
+   * @property {number} outerBounds.x The x coordinate of the rectangle circumscribing the center area, relative to the top, left corner of the element.
+   * @property {number} outerBounds.y The y coordinate of the rectangle circumscribing the center area, relative to the top, left corner of the element.
+   * @property {number} outerBounds.width The width of the rectangle circumscribing the center area.
+   * @property {number} outerBounds.height The height of the rectangle circumscribing the center area.
+   * @property {Object} innerBounds Object containing (x, y, width, height) of the rectangle inscribed in the center area. The x and y coordinates are relative to the top, left corner of the element.
+   * @property {number} innerBounds.x The x coordinate of the rectangle inscribed in the center area, relative to the top, left corner of the element.
+   * @property {number} innerBounds.y The y coordinate of the rectangle inscribed in the center area, relative to the top, left corner of the element.
+   * @property {number} innerBounds.width The width of the rectangle inscribed in the center area.
+   * @property {number} innerBounds.height The height of the rectangle inscribed in the center area.
+   * @property {Object} labelStyle The CSS style object defining the style of the label. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+   * @property {string} label The pieCenter label.
+   * @property {number} totalValue The total of all values in the pie chart.
+   * @property {Element} componentElement The chart element.
+   * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>=", for: "labelStyle", jsdocOverride: true}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
+   */
+
+  /**
+   * @typedef {Object} oj.ojChart.PieCenterRendererContext
    * @property {Object} outerBounds Object containing (x, y, width, height) of the rectangle circumscribing the center area. The x and y coordinates are relative to the top, left corner of the element.
    * @property {number} outerBounds.x The x coordinate of the rectangle circumscribing the center area, relative to the top, left corner of the element.
    * @property {number} outerBounds.y The y coordinate of the rectangle circumscribing the center area, relative to the top, left corner of the element.
@@ -1280,6 +1413,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @property {any} items.key The key of the current item
    * @ojsignature [{target: "Type", value: "D", for: "items.data"},
    *               {target: "Type", value: "<D>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
 
   /**
@@ -1295,6 +1429,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @property {any} items.key The key of the current item
    * @ojsignature [{target: "Type", value: "D", for: "items.data"},
    *               {target: "Type", value: "<D>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
 
   /**
@@ -1306,6 +1441,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojsignature [{target:"Type", value:"<K = any,D = any>", for:"genericTypeParameters"},
    * {target:"Type", value:"D", for:"data", jsdocOverride: true},
    * {target:"Type", value:"K", for:"key", jsdocOverride: true}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
 
   // Slots
@@ -2286,6 +2422,8 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * Object type that specifies the properties for a legend section.
    * @ojtypedef oj.ojChart.LegendSection
    * @ojimportmembers oj.ojChartLegendSectionProperties
+   * @ojdeprecated [{target:"property", for: "titleHalign", since: "15.1.0", description: "Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles." },
+   * {target:"property", for: "titleStyle", since: "15.1.0", description: "Individual section title style is no longer supported. Use section-title-style in legend to style all section titles." }]
    */
   /**
    * An array of objects with the following properties defining the legend items. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
@@ -2309,11 +2447,15 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * Object type that specifies the properties for the series section in the legend.
    * @ojtypedef oj.ojChart.LegendSeriesSection
    * @ojimportmembers oj.ojChartLegendSectionProperties
+   * @ojdeprecated [{target:"property", for: "titleHalign", since: "15.1.0", description: "Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles." },
+   * {target:"property", for: "titleStyle", since: "15.1.0", description: "Individual section title style is no longer supported. Use section-title-style in legend to style all section titles." }]
    */
   /**
    * Object type that specifies the properties for the reference object section in the legend.
    * @ojtypedef oj.ojChart.LegendReferenceObjectSection
    * @ojimportmembers oj.ojChartLegendSectionProperties
+   * @ojdeprecated [{target:"property", for: "titleHalign", since: "15.1.0", description: "Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles." },
+   * {target:"property", for: "titleStyle", since: "15.1.0", description: "Individual section title style is no longer supported. Use section-title-style in legend to style all section titles." }]
    */
 
   /**
@@ -2428,7 +2570,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    */
   /**
    * The CSS style object defining the style of the legend text.
-   * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+   * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight and textDecoration.
    * @expose
    * @name textStyle
    * @ojtypedefmember
@@ -2465,20 +2607,21 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojtypedefmember
    * @memberof! oj.ojChart.Legend
    * @type {string=}
+   * @ojdeprecated {since: '15.1.0', description: 'Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles'}
    * @ojvalue {string} "center" The title will be center-aligned within the legend.
    * @ojvalue {string} "end" The title will be end-aligned within the legend.
    * @ojvalue {string} "start" The title will be start-aligned within the legend.
-   * @default "start"
    */
   /**
    * The CSS style object defining the style of the title.
-   * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+   * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight and textDecoration.
    * @expose
    * @name titleStyle
    * @ojtypedefmember
    * @ojshortdesc The CSS style object defining the style of the title.
    * @memberof! oj.ojChart.Legend
    * @type {Object=}
+   * @ojdeprecated {since: '15.1.0', description: 'Individual section title style is no longer supported. Use section-title-style in legend to style all section titles'}
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
@@ -2493,6 +2636,29 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojvalue {string} "off" The legend will not be scrollable.
    * @ojvalue {string} "asNeeded" The legend will be scrollable if items do not fit in the specified space.
    * @default "asNeeded"
+   */
+  /**
+   * The horizontal alignment of the section titles.
+   * @expose
+   * @name sectionTitleHalign
+   * @ojtypedefmember
+   * @memberof! oj.ojChart.Legend
+   * @type {string=}
+   * @ojvalue {string} "center" The title will be center-aligned within the legend.
+   * @ojvalue {string} "end" The title will be end-aligned within the legend.
+   * @ojvalue {string} "start" The title will be start-aligned within the legend.
+   * @default "start"
+   */
+  /**
+   * The CSS style object defining the style of the section titles' text. The following style properties are supported: color, fontFamily, fontSize, fontStyle, fontWeight and textDecoration.
+   * @expose
+   * @name sectionTitleStyle
+   * @ojtypedefmember
+   * @ojshortdesc The CSS style object defining the style of the section titles' text. The following style properties are supported: color, fontFamily, fontSize, fontStyle, fontWeight and textDecoration.
+   * @memberof! oj.ojChart.Legend
+   * @type {Object=}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+   * @default {}
    */
 
   /**
@@ -2894,7 +3060,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @default null
    */
   /**
-   * Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
+   * Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed for combo chart and whenever the data points are not connected by a line.
    * @expose
    * @name markerDisplayed
    * @ojtypedefmember
@@ -2902,7 +3068,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @type {string=}
    * @ojvalue {string} "on" Data markers will be displayed.
    * @ojvalue {string} "off" Data markers will not be displayed.
-   * @ojvalue {string} "auto" Data markers will be displayed whenever the data points are not connected by a line.
+   * @ojvalue {string} "auto" Data markers will be displayed for combo chart and whenever the data points are not connected by a line.
    * @default "auto"
    */
   /**
@@ -3766,6 +3932,14 @@ var __oj_chart_metadata =
       "type": "string",
       "value": ""
     },
+    "comboSeriesOrder": {
+      "type": "string",
+      "enumValues": [
+        "data",
+        "seriesType"
+      ],
+      "value": "seriesType"
+    },
     "coordinateSystem": {
       "type": "string",
       "enumValues": [
@@ -4122,6 +4296,19 @@ var __oj_chart_metadata =
           ],
           "value": "asNeeded"
         },
+        "sectionTitleHalign": {
+          "type": "string",
+          "enumValues": [
+            "center",
+            "end",
+            "start"
+          ],
+          "value": "start"
+        },
+        "sectionTitleStyle": {
+          "type": "object",
+          "value": {}
+        },
         "sections": {
           "type": "Array<Object>",
           "value": []
@@ -4169,8 +4356,7 @@ var __oj_chart_metadata =
             "center",
             "end",
             "start"
-          ],
-          "value": "start"
+          ]
         },
         "titleStyle": {
           "type": "object",
@@ -7149,6 +7335,8 @@ var __oj_spark_chart_item_metadata =
    *
    * {@ojinclude "name":"keyboardDoc"}
    *
+   * {@ojinclude "name":"migrationDoc"}
+   *
    * <h3 id="perf-section">
    *   Performance
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
@@ -7286,7 +7474,7 @@ var __oj_spark_chart_item_metadata =
        */
       tooltip: {
         /**
-         * A function that returns a custom tooltip for chart. The function takes a <a href="#TooltipContext">TooltipContext</a> argument,
+         * A function that returns a custom tooltip for chart. The function takes a <a href="#TooltipRendererContext">TooltipRendererContext</a> argument,
          * provided by the chart, and returns an object with the following properties:
          *  <ul>
          *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
@@ -7298,7 +7486,7 @@ var __oj_spark_chart_item_metadata =
          * @ojshortdesc A function that returns a custom tooltip for chart. The function takes a context argument, provided by the chart. See the Help documentation for more information.
          * @instance
          * @type {?(function(Object):Object)}
-         * @ojsignature {target: "Type", value: "oj.dvtBaseComponent.PreventableDOMRendererFunction<oj.ojChart.TooltipContext<K, D, I>>", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "oj.dvtBaseComponent.PreventableDOMRendererFunction<oj.ojChart.TooltipRendererContext<K, D, I>>", jsdocOverride: true}
          * @default null
          */
         renderer: null
@@ -7441,7 +7629,21 @@ var __oj_spark_chart_item_metadata =
        *               {target: "Type", value: "Array.<oj.ojChart.DrillItem<K, D, I>>", for: "items", jsdocOverride: true},
        *               {target: "Type", value: "<K, D, I extends Array.<oj.ojChart.Item<any, null>>|Array.<number>|null>", for: "genericTypeParameters"}]
        */
-      multiSeriesDrill: null
+      multiSeriesDrill: null,
+
+      /**
+       * Specifies the series render order for combo charts.
+       * If set to 'seriesType', the combo chart rendering order between series types will follow a set z-ordering aimed at minimizing overlap:  area and line with area series type in the background, then bar series, then line series in the foreground. Series within the same type are rendered in the order presented in the data. If set to 'data', series z-order follows the series order in the data. Note that, series-comparator can be used to change the series order in the data.
+       * @expose
+       * @name comboSeriesOrder
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string=}
+       * @ojvalue {string} "data" Series z order follows the series order in the data.
+       * @ojvalue {string} "seriesType" The combo chart rendering order between series types will follow a set z-ordering aimed at minimizing overlap:  area and line with area series type in the background, then bar series, then line series in the foreground. Series within the same type are rendered in the order presented in the data.
+       * @default "seriesType"
+       */
+      comboSeriesOrder: 'seriesType'
     },
     /**
      * @override
@@ -7678,10 +7880,16 @@ var __oj_spark_chart_item_metadata =
       // Legend, should be kept in sync with oj-legend
       styleClasses['oj-legend'] = { path: 'legend/textStyle', property: 'TEXT' };
       styleClasses['oj-legend-title'] = { path: 'legend/titleStyle', property: 'TEXT' };
-      styleClasses['oj-legend-section-title'] = {
-        path: 'legend/_sectionTitleStyle',
-        property: 'TEXT'
-      };
+      styleClasses['oj-legend-section-title'] = [
+        {
+          path: 'legend/_sectionTitleStyle',
+          property: 'TEXT'
+        },
+        {
+          path: 'legend/sectionTitleStyle',
+          property: 'TEXT'
+        }
+      ];
       styleClasses['oj-legend-hover'] = {
         path: 'legend/_hoverBorderRadius',
         property: 'border-radius'
@@ -8010,7 +8218,7 @@ var __oj_spark_chart_item_metadata =
     /**
      * Returns an object that contains sizing information for the chart X-Axis.
      *
-     * @property {Object} bounds An object containing the bounds of the legend.
+     * @property {Object} bounds An object containing the bounds of the x axis.
      * @property {number} bounds.x
      * @property {number} bounds.y
      * @property {number} bounds.width
@@ -8035,7 +8243,7 @@ var __oj_spark_chart_item_metadata =
     /**
      * Returns an object that contains sizing information for the chart Y-Axis.
      *
-     * @property {Object} bounds An object containing the bounds of the legend.
+     * @property {Object} bounds An object containing the bounds of the y axis.
      * @property {number} bounds.x
      * @property {number} bounds.y
      * @property {number} bounds.width
@@ -8060,7 +8268,7 @@ var __oj_spark_chart_item_metadata =
     /**
      * Returns an object that contains sizing information for the chart Y2-Axis.
      *
-     * @property {Object} bounds An object containing the bounds of the legend.
+     * @property {Object} bounds An object containing the bounds of the y2 axis.
      * @property {number} bounds.x
      * @property {number} bounds.y
      * @property {number} bounds.width

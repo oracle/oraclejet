@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1571,7 +1571,7 @@ var __oj_gantt_reference_object_metadata =
    */
 
   /**
-   *<p>The Gantt supports a simplified version of the ISO 8601 extended date/time format. The format is as follows: <font color="#4B8A08">YYYY-MM-DDTHH:mm:ss.sssZ</font></p>
+   *<p>The Gantt supports a simplified version of the ISO 8601 extended date/time format. The format is as follows: YYYY-MM-DDTHH:mm:ss.sssZ</p>
    *<table  class="keyboard-table">
    *<thead>
    *<tr>
@@ -1583,31 +1583,31 @@ var __oj_gantt_reference_object_metadata =
    *</thead>
    *<tbody>
    *<tr>
-   *<td><font color="#4B8A08">-, :, .,T</font></td><td>Characters actually in the string. T specifies the start of a time.</td><td></td><td></td>
+   *<td>-, :, .,T</td><td>Characters actually in the string. T specifies the start of a time.</td><td></td><td></td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">YYYY</font></td><td>Year</td><td></td><td rowspan="3">2013-03-22<br>2014-02</td>
+   *<td>YYYY</td><td>Year</td><td></td><td rowspan="3">2013-03-22<br>2014-02</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">MM</font></td><td>Month</td><td>01 to 12</td>
+   *<td>MM</td><td>Month</td><td>01 to 12</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">DD</font></td><td>Day of the month</td><td>01 to 31</td>
+   *<td>DD</td><td>Day of the month</td><td>01 to 31</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">HH</font></td><td>Hours</td><td>00 to 24</td><td rowspan="3">2013-02-04T15:20Z<br>2013-02-10T15:20:45.300Z</td>
+   *<td>HH</td><td>Hours</td><td>00 to 24</td><td rowspan="3">2013-02-04T15:20Z<br>2013-02-10T15:20:45.300Z</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">mm</font></td><td>Minutes</td><td>00 to 59</td>
+   *<td>mm</td><td>Minutes</td><td>00 to 59</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">ss</font></td><td>Seconds. The seconds and milliseconds are optional if a time is specified.</td><td>00 to 59</td>
+   *<td>ss</td><td>Seconds. The seconds and milliseconds are optional if a time is specified.</td><td>00 to 59</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">sss</font></td><td>Milliseconds</td><td>00 to 999</td><td></td>
+   *<td>sss</td><td>Milliseconds</td><td>00 to 999</td><td></td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">Z</font></td><td>The value in this position can be one of the following.
+   *<td>Z</td><td>The value in this position can be one of the following.
       If the value is omitted, character 'Z' should be used to specify UTC time.
       <br><ul><li><b>Z</b> indicates UTC time.</li>
         <li><b>+hh:mm</b> indicates that the input time is the specified offset after UTC time.</li>
@@ -1716,6 +1716,20 @@ var __oj_gantt_reference_object_metadata =
    *               {target: "Type", value: "oj.ojGantt.Row<K2,D2,K3,D3>", for: "rowData", jsdocOverride:true},
    *               {target: "Type", value: "D2", for: "itemData"},
    *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
+   */
+  /**
+   * @typedef {Object} oj.ojGantt.TooltipRendererContext
+   * @property {Element} parentElement The tooltip element. This can be used to change the tooltip border or background color.
+   * @property {Object} data The data object of the hovered task.
+   * @property {Object} rowData The data for the row the hovered task belongs to.
+   * @property {Object|null} itemData The data provider data object for the hovered task.
+   * @property {Element} componentElement The gantt element.
+   * @property {string} color The color of the hovered task.
+   * @ojsignature [{target: "Type", value: "oj.ojGantt.RowTask<K2,D2>", for: "data", jsdocOverride:true},
+   *               {target: "Type", value: "oj.ojGantt.Row<K2,D2,K3,D3>", for: "rowData", jsdocOverride:true},
+   *               {target: "Type", value: "D2", for: "itemData"},
+   *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for: "genericTypeParameters"}]
    */
   /**
    * @typedef {Object} oj.ojGantt.RowShortDescContext
@@ -1755,6 +1769,26 @@ var __oj_gantt_reference_object_metadata =
    *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for: "genericTypeParameters"}]
    */
   /**
+   * @typedef {Object} oj.ojGantt.RowAxisLabelTemplateContext
+   * @property {Element} parentElement A parent group element that takes a custom SVG fragment as the row label content. Modifications of the parentElement are not supported.
+   * @property {Object} rowData The data for the row.
+   * @property {Array.<Object>|null} itemData An array of the data provider data objects associated with the tasks belonging to the gantt row.
+   * @property {Element} componentElement The gantt element.
+   * @property {number} maxWidth The maximum available width in px, as constrained by the row-axis.width and row-axis.max-width values.
+   *    If row-axis.width is 'max-content' and row-axis.max-width is 'none',
+   *    then this is -1, and the component will automatically allocate enough width space to accommodate the content.
+   * @property {number} maxHeight The maximum available height in px.
+   * @property {Object} data The data object for the row from the row-data DataProvider.
+   * @property {number} depth The depth of the row. The depth of the outermost row under the invisible root is 1. This is available if the supplied row-data DataProvider is a TreeDataProvider.
+   * @property {boolean} leaf True if the current row is a leaf row. This is available if the supplied row-data DataProvider is a TreeDataProvider.
+   * @property {any} parentKey The key of the parent row. The parent key is null for (the invisible) root. This is available if the supplied row-data DataProvider is a TreeDataProvider.
+   * @ojsignature [{target: "Type", value: "oj.ojGantt.Row<K2,D2,K3,D3>", for: "rowData", jsdocOverride:true},
+   *               {target: "Type", value: "D2[]", for: "itemData"},
+   *               {target: "Type", value: "D3|null", for: "data"},
+   *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
+   */
+  /**
    * @typedef {Object} oj.ojGantt.DependencyTemplateContext
    * @property {Element} componentElement The &lt;oj-gantt> custom element
    * @property {Object} data The data object for the current dependency
@@ -1763,6 +1797,7 @@ var __oj_gantt_reference_object_metadata =
    * @ojsignature [{target: "Type", value: "K1", for: "key"},
    *               {target: "Type", value: "D1", for: "data"},
    *               {target: "Type", value: "<K1, D1>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
   /**
    * @typedef {Object} oj.ojGantt.RowTemplateContext
@@ -2016,7 +2051,7 @@ var __oj_gantt_reference_object_metadata =
    * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
    * <ul>
    *   <li>$current - an object that contains information for the current row.
-   *    (See [oj.ojGantt.RowAxisLabelRendererContext]{@link oj.ojGantt.RowAxisLabelRendererContext} or the table below for a list of properties available on $current)
+   *    (See [oj.ojGantt.RowAxisLabelTemplateContext]{@link oj.ojGantt.RowAxisLabelTemplateContext} or the table below for a list of properties available on $current)
    *   </li>
    * </ul>
    *
@@ -2024,7 +2059,7 @@ var __oj_gantt_reference_object_metadata =
    * @ojslot rowAxisLabelTemplate
    * @ojmaxitems 1
    * @ojshortdesc The rowAxisLabelTemplate slot is used to specify custom row axis label content. See the Help documentation for more information.
-   * @ojtemplateslotprops oj.ojGantt.RowAxisLabelRendererContext
+   * @ojtemplateslotprops oj.ojGantt.RowAxisLabelTemplateContext
    * @memberof oj.ojGantt
    *
    * @example <caption>Initialize the Gantt with a row axis label template specified:</caption>
@@ -4418,7 +4453,7 @@ var __oj_gantt_reference_object_metadata =
          * @memberof! oj.ojGantt
          * @instance
          * @type {?(function(Object):Object)}
-         * @ojsignature {target: "Type", value: "((context: oj.ojGantt.TooltipContext<K2, D2, K3, D3>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((context: oj.ojGantt.TooltipRendererContext<K2, D2, K3, D3>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
          * @default null
          */
         renderer: null

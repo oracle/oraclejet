@@ -1,4 +1,4 @@
-import { DataGridProvider, FetchByOffsetGridParameters, FetchByOffsetGridResults } from '../ojdatagridprovider';
+import { DataGridProvider, FetchByOffsetGridParameters, FetchByOffsetGridResults, GridBodyItem, DataGridProviderUpdateOperationEventDetail } from '../ojdatagridprovider';
 import { KeySet } from '../ojkeyset';
 import { DataProvider, Item } from '../ojdataprovider';
 export class RowDataGridProvider<D, K, R> implements DataGridProvider<{
@@ -12,6 +12,7 @@ export class RowDataGridProvider<D, K, R> implements DataGridProvider<{
     getCapability(capabilityName: string): any;
     isEmpty(): 'yes' | 'no' | 'unknown';
     removeEventListener(eventType: string, listener: EventListener): void;
+    updateItemMetadata(ranges: DataGridProviderUpdateOperationEventDetail['ranges']): void;
 }
 export namespace RowDataGridProvider {
     // tslint:disable-next-line interface-over-type-literal
@@ -39,6 +40,10 @@ export namespace RowDataGridProvider {
         rowEnd?: 'attributeName' | string[] | RowHeaderLabelsFunction<R>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemMetadata<D> = {
+        databody?: (item: GridBodyItem<D>) => object;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NestedHeader = {
         children?: NestedHeader[];
         data?: string;
@@ -57,7 +62,9 @@ export namespace RowDataGridProvider {
                 closed(): boolean;
             };
         };
+        filterable?: boolean;
         headerLabels?: HeaderLabels<R>;
+        itemMetadata?: ItemMetadata<R>;
         sortable?: boolean;
     };
     // tslint:disable-next-line interface-over-type-literal

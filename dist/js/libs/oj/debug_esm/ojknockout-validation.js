@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -882,15 +882,17 @@ ValueBinding._registerInvalidComponentTrackerWriteback = function (
 /**
  * editableValue Behavior Definition and Injection
  */
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
-  for: 'editableValue',
-  attributes: [
-    ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER,
-    ValueBinding._OPTION_DISABLED,
-    ValueBinding._OPTION_READONLY
-  ],
-  init: ValueBinding._init,
-  update: ValueBinding._update,
-  afterCreate: ValueBinding._afterCreate,
-  beforeDestroy: ValueBinding._beforeDestroy
-});
+if (oj.ComponentBinding.getDefaultInstance) {
+  oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
+    for: 'editableValue',
+    attributes: [
+      ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER,
+      ValueBinding._OPTION_DISABLED,
+      ValueBinding._OPTION_READONLY
+    ],
+    init: ValueBinding._init,
+    update: ValueBinding._update,
+    afterCreate: ValueBinding._afterCreate,
+    beforeDestroy: ValueBinding._beforeDestroy
+  });
+}

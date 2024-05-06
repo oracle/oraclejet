@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
-import { CHECKVIEWPORT_THRESHOLD } from 'ojs/ojdatacollection-common';
+import { getScrollEventElement, CHECKVIEWPORT_THRESHOLD } from 'ojs/ojdatacollection-common';
 import { warn } from 'ojs/ojlogger';
 
 /* jslint browser: true*/
@@ -40,6 +40,7 @@ const DomScroller = function (element, dataprovider, options) {
   this._maxCount = options.maxCount;
   this._maxCount = this._maxCount > 0 ? this._maxCount : 500;
   this._rowCount = options.initialRowCount > 0 ? options.initialRowCount : 0;
+  this._controller = options.controller;
   this._successCallback = options.success;
   this._requestCallback = options.request;
   this._errorCallback = options.error;
@@ -58,8 +59,12 @@ const DomScroller = function (element, dataprovider, options) {
   this._checkViewportCount = 0;
   this._fetchThreshold = 0.25;
 
-  var elem = this._getScrollEventElement();
+  var elem = getScrollEventElement(this._element);
   this._scrollEventListener = function () {
+    if (this._isScrollTrackingPaused) {
+      // do not trigger any scroll notifications if scroll tracking is paused
+      return;
+    }
     if (this._beforeScrollCallback) {
       this._beforeScrollCallback();
     }
@@ -96,25 +101,26 @@ DomScroller.prototype.setAsyncIterator = function (asyncIterator) {
 };
 
 /**
+ * Pause scroll tracking for this DomScroller instance
+ */
+DomScroller.prototype.pauseScrollTracking = function () {
+  this._isScrollTrackingPaused = true;
+};
+
+/**
+ * Resume scroll tracking for this DomScroller instance
+ */
+DomScroller.prototype.resumeScrollTracking = function () {
+  this._isScrollTrackingPaused = false;
+};
+
+/**
  * Update value for fetch trigger
  */
 DomScroller.prototype.setFetchTrigger = function (fetchTrigger) {
   if (fetchTrigger != null && !isNaN(fetchTrigger) && fetchTrigger >= 0) {
     this._fetchTrigger = fetchTrigger;
   }
-};
-
-/**
- * Retrieve the element where the scroll listener is registered on.
- * @private
- */
-DomScroller.prototype._getScrollEventElement = function () {
-  // if scroller is the body, listen for window scroll event.  This is the only way that works consistently across all browsers.
-  if (this._element === document.body || this._element === document.documentElement) {
-    return window;
-  }
-
-  return this._element;
 };
 
 /**
@@ -126,7 +132,7 @@ DomScroller.prototype._getScrollEventElement = function () {
  */
 DomScroller.prototype.destroy = function () {
   this._unregisterDataSourceEventListeners();
-  var elem = this._getScrollEventElement();
+  var elem = getScrollEventElement(this._element);
   if (elem) {
     elem.removeEventListener('scroll', this._scrollEventListener);
     elem.removeEventListener('wheel', this._wheelEventListener, { passive: true });
@@ -189,7 +195,8 @@ DomScroller.prototype._doFetch = function (scrollTop) {
       },
       function (reason) {
         if (self._errorCallback) {
-          self._errorCallback(reason);
+          var isAbort = self._controller != null ? self._controller.signal.aborted : false;
+          self._errorCallback(reason, isAbort);
           self._fetchPromise = null;
           self._nextFetchTrigger = undefined;
         }
@@ -203,9 +210,13 @@ DomScroller.prototype._doFetch = function (scrollTop) {
 
 DomScroller.prototype._handleExternalScrollerScrollTop = function (scrollTop, scrollerHeight) {
   if (!this._fetchPromise && this._asyncIterator) {
-    var bounds = this._contentElement.getBoundingClientRect();
-    var bottom = bounds.bottom - this._fetchTrigger - bounds.height * this._fetchThreshold;
-    if (bottom <= scrollerHeight) {
+    var contentBounds = this._contentElement.getBoundingClientRect();
+    var scrollerBottom =
+      this._element === document.body || this._element === document.documentElement
+        ? scrollerHeight
+        : this._element.getBoundingClientRect().bottom;
+    var scrollDiff = contentBounds.bottom - scrollerBottom;
+    if (scrollDiff <= this._fetchTrigger + contentBounds.height * this._fetchThreshold) {
       this._doFetch(scrollTop);
     }
   }

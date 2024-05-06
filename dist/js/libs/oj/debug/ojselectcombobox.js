@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -7223,10 +7223,12 @@ var __oj_select_many_metadata =
 
       // add aria associations
       selection.find('.' + this._classNm + '-input').attr('id', this._classNm + '-input-' + idSuffix);
-      if (!this.results.attr('id')) {
-        this.results.attr('id', 'oj-listbox-results-' + idSuffix);
+
+      let resultId = this.results.attr('id');
+      if (!resultId) {
+        resultId = 'oj-listbox-results-' + idSuffix;
+        this.results.attr('id', resultId);
       }
-      this._contentElement.attr('aria-owns', this.results.attr('id'));
 
       if (!this.ojContext._IsCustomElement()) {
         elementLabel = $("label[for='" + this._getAttribute('id') + "']");
@@ -7244,9 +7246,8 @@ var __oj_select_many_metadata =
         this._contentElement.attr('aria-label', ariaLabel);
       }
 
-      if (ariaControls) {
-        this._contentElement.attr('aria-controls', ariaControls);
-      }
+      const contentElementAriaControls = ariaControls ? resultId + ' ' + ariaControls : resultId;
+      this._contentElement.attr('aria-controls', contentElementAriaControls);
 
       if (this.elementTabIndex) {
         this._contentElement.attr('tabindex', this.elementTabIndex);
@@ -8863,8 +8864,11 @@ var __oj_select_many_metadata =
 
       // add aria associations
       selection.find('.' + this._classNm + '-input').attr('id', this._classNm + '-input-' + idSuffix);
-      if (!this.results.attr('id')) {
-        this.results.attr('id', 'oj-listbox-results-' + idSuffix);
+
+      let resultId = this.results.attr('id');
+      if (!resultId) {
+        resultId = 'oj-listbox-results-' + idSuffix;
+        this.results.attr('id', resultId);
       }
 
       var liveRegion = container.find('.oj-listbox-liveregion');
@@ -8873,7 +8877,7 @@ var __oj_select_many_metadata =
       }
       //  - Accessibility : JAWS does not read aria-controls attribute set on ojselect
       if (this._classNm !== 'oj-select') {
-        this.search.attr('aria-owns', this.results.attr('id'));
+        this.search.attr('aria-controls', this.results.attr('id'));
       }
 
       if (!this.ojContext._IsCustomElement()) {
@@ -8892,9 +8896,8 @@ var __oj_select_many_metadata =
         this._contentElement.attr('aria-label', ariaLabel);
       }
 
-      if (ariaControls) {
-        this._contentElement.attr('aria-controls', ariaControls);
-      }
+      const contentElementAriaControls = ariaControls ? resultId + ' ' + ariaControls : resultId;
+      this._contentElement.attr('aria-controls', contentElementAriaControls);
 
       selection.on('keydown', this._bind(this._containerKeydownHandler));
 
@@ -9033,7 +9036,7 @@ var __oj_select_many_metadata =
             if (
               (!selectionData && value !== '') ||
               (selectionData && selectionData.label !== value) ||
-              (!this.ojContext.isValid() && value !== this._previousDisplayValue)
+              (!this.ojContext.isValid() && value !== this.ojContext._GetDisplayValue())
             ) {
               var onSelectReturn = this._onSelect(valopt, options, e);
               optionalCleanupPromise = onSelectReturn;
@@ -12967,6 +12970,11 @@ var __oj_select_many_metadata =
     _setupComboboxResources: function () {
       if (!this._isComboboxInstantiated()) {
         this._initComboboxInstance();
+        // JET-60973 - Combo box label hint is not displayed when the drawer is opened for the second time
+        // If we are creating a new instance of combobox, then
+        // we need to reactivate the component messaging which includes
+        // label
+        this._initComponentMessaging();
       }
       // Check if the dp is already wrapped
       if (!_ComboUtils.isDataProviderWrapped(this)) {
@@ -13679,6 +13687,13 @@ var __oj_select_many_metadata =
       }
       // returns Promise that resolves to true|false or boolean
       returnValue = this._SetValue(valueCandidate, null, this._VALIDATE_METHOD_OPTIONS);
+
+      if (returnValue === false && !this._CanSetValue()) {
+        // FIX JET-45885, validate() returns 'invalid' for readonly or disabled on valid value.
+        // In _SetValue/_AsyncValidate, validation is skipped when !this._CanSetValue(), and _SetValue returns false.
+        // We want validate() to return 'valid' when validation is skipped.
+        returnValue = true;
+      }
 
       if (this._IsCustomElement()) {
         if (!(returnValue instanceof Promise)) {
@@ -16319,7 +16334,7 @@ var __oj_select_many_metadata =
    * @since 0.6.0
    * @ojdisplayname Select (One)
    * @ojshortdesc A select one is a dropdown list that supports single selection and search filtering.
-   * @ojdeprecated {since: "8.1.0", description: "Please use &lt;oj-select-single&gt; instead."}
+   * @ojdeprecated {since: "8.1.0", value: ['oj-select-single']}
    * @ojrole combobox
    * @ojsignature [{
    *                target: "Type",
@@ -16640,6 +16655,13 @@ var __oj_select_many_metadata =
    * @ojcomponent oj.ojSelectMany
    * @augments oj.ojSelect
    * @since 0.6.0
+   * @ojdeprecated [
+   *   {
+   *     type: "maintenance",
+   *     since: "15.0.0",
+   *     value: ["oj-c-select-multiple"]
+   *   }
+   * ]
    * @ojdisplayname Select (Many)
    * @ojshortdesc A select many is a dropdown list that supports multiple selections and search filtering.
    * @ojrole combobox
@@ -16876,6 +16898,19 @@ var __oj_select_many_metadata =
    * as the user scrolls.
    * </p>
    *
+   * <h5>MessagesCustom attribute</h5>
+   * <p>
+   * The type of the <code class="prettyprint">severity</code> property of the messages in the
+   * array has changed from
+   * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+   * essentially <code class="prettyprint">string | number</code>, to simply
+   * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+   * values are the same as the previously supported string values.
+   * The application can no longer specify severity as a number, including hardcoded numbers,
+   * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+   * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+   * </p>
+   *
    * <h5>MinimumResultsForSearch attribute</h5>
    * <p>
    * This attribute is not supported.  Searching is always enabled by typing into the text field.
@@ -16883,8 +16918,8 @@ var __oj_select_many_metadata =
    *
    * <h5>OptionRenderer attribute</h5>
    * <p>
-   * This attribute is not supported.  The text rendered for an item can be customized via the
-   * <a href="#itemText">item-text</a> attribute.
+   * This attribute is replaced with the itemTemplate slot. You can provide a &lt;template> element that will be used to
+   * render each row in the dropdown.
    * </p>
    *
    * <h5>Options attribute</h5>
@@ -16925,7 +16960,7 @@ var __oj_select_many_metadata =
    * </p>
    * <h5>Translations attribute</h5>
    * <p>
-   * The translations.required.message-detail attribute has changed to required-message-detail.
+   * The translations.required.message-detail attribute has changed to required-message-detail. Other component-level translations are not supported.
    * </p>
    *
    * <h5>Value attribute</h5>
@@ -16935,26 +16970,14 @@ var __oj_select_many_metadata =
    *
    * <h5>ValueOptions attribute</h5>
    * <p>
-   * The value-options attribute is not supported.  The replacement is the
-   * <a href="#valueItems">valueItems</a> attribute.
+   * The value-options attribute is replaced with value-items attribute. This attribute accepts a map of objects that contain both
+   * a key and data, and optional metadata.
    * </p>
    *
    * <h5>Refresh method</h5>
    * <p>
    * The refresh method is no longer supported. The application should no longer need to use this method. If the application
    * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
-   * </p>
-   *
-   * <h5>Reset method</h5>
-   * <p>
-   * This method does not synchronously reset the component. The application should wait on the busy context of the component after
-   * invoking this method for the changes to appear.
-   * </p>
-   *
-   * <h5>ShowMessages method</h5>
-   * <p>
-   * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
-   * of the component after invoking this method for the changes to appear.
    * </p>
    *
    * <h5>Animation Events</h5>
@@ -16972,25 +16995,24 @@ var __oj_select_many_metadata =
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
    *
-   * <h5>User Assistance Density - Compact mode</h5>
+   * <h5>DescribedBy attribute</h5>
    * <p>
-   * Rendering the component in compact userAssistanceDensity mode is not supported in this release. Please use 'reflow' or 'efficient' instead.
+   * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+   * This attribute is not carried forward to the core pack component.
    * </p>
    *
    * <h5>Usage in Dynamic Form</h5>
    * <p>
-   * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+   * Using the component in oj-dyn-form is not supported in this release; use oj-dynamic-form instead.
    * </p>
    *
    * <h5>Limitations</h5>
    * <p>
-   * Note that oj-c-select-multiple supports a limited feature set in JET 14. It does not support:
+   * Note that oj-c-select-multiple supports a limited feature set in JET 15. It does not support:
    * </p>
    * <ul>
-   * <li>a mobile specific dropdown</li>
    * <li>hierarchical data</li>
-   * <li>customizing dropdown collection rendering beyond the text of each item (no itemTemplate or collectionTemplate)</li>
-   * <li>rendering in collection components like oj-data-grid and oj-table</li>
+   * <li>customizing dropdown content by providing a customized collection component (no collectionTemplate)</li>
    * </ul>
    * @ojfragment migrationDoc
    * @memberof oj.ojSelectMany
@@ -17191,6 +17213,19 @@ var __oj_select_many_metadata =
    * as the user scrolls.
    * </p>
    *
+   * <h5>MessagesCustom attribute</h5>
+   * <p>
+   * The type of the <code class="prettyprint">severity</code> property of the messages in the
+   * array has changed from
+   * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+   * essentially <code class="prettyprint">string | number</code>, to simply
+   * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+   * values are the same as the previously supported string values.
+   * The application can no longer specify severity as a number, including hardcoded numbers,
+   * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+   * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+   * </p>
+   *
    * <h5>MinimumResultsForSearch attribute</h5>
    * <p>
    * This attribute is not supported.  Searching is always enabled by typing into the text field.
@@ -17260,18 +17295,6 @@ var __oj_select_many_metadata =
    * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
    * </p>
    *
-   * <h5>Reset method</h5>
-   * <p>
-   * This method does not synchronously reset the component. The application should wait on the busy context of the component after
-   * invoking this method for the changes to appear.
-   * </p>
-   *
-   * <h5>ShowMessages method</h5>
-   * <p>
-   * This method does not synchronously show the hidden messages of the component. The application should wait on the busy context
-   * of the component after invoking this method for the changes to appear.
-   * </p>
-   *
    * <h5>Animation Events</h5>
    * <p>
    * ojAnimateStart and ojAnimateEnd events are no longer supported.
@@ -17286,6 +17309,13 @@ var __oj_select_many_metadata =
    * The application should no longer need to use the &lt;oj-label-value> component to layout the form component. The application
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
+   *
+   * <h5>DescribedBy attribute</h5>
+   * <p>
+   * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+   * This attribute is not carried forward to the core pack component.
+   * </p>
+   *
    * @ojfragment selectCommon
    * @memberof oj.ojSelect
    */
@@ -19487,6 +19517,13 @@ var __oj_select_many_metadata =
       // converter, this will always return true or false. validate needs to
       // return a Promise if customElement.
       returnValue = this._SetValue(newValue, null, this._VALIDATE_METHOD_OPTIONS);
+
+      if (returnValue === false && !this._CanSetValue()) {
+        // FIX JET-45885, validate() returns 'invalid' for readonly or disabled on valid value.
+        // In _SetValue/_AsyncValidate, validation is skipped when !this._CanSetValue(), and _SetValue returns false.
+        // We want validate() to return 'valid' when validation is skipped.
+        returnValue = true;
+      }
 
       // for widget components, validate() returns boolean. Else it returns a Promise
       // that resolves to 'valid' or 'invalid'

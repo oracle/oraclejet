@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -39,7 +39,51 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * </table>
    * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
    * @memberof oj.ojTagCloud
+   *
    */
+
+  /**
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * To migrate from oj-tagcloud to oj-c-tagcloud, you need to revise the import statement and references to oj-tagcloud in your app.
+   * <h5>animaton-on-data-change attribute</h5>
+   * <p>
+   * For the initial version of oj-c-tagcloud, animaton-on-data-change attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>animation-on-diaplay attribute</h5>
+   * <p>
+   * For the initial version of oj-c-tagcloud, animation-on-diaplay attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>style-defaults.animation-duration attribute</h5>
+   * <p>
+   * For the initial version of oj-c-tagcloud, animation-duration attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>tooltip attribute</h5>
+   * <p>
+   * For initial version of oj-c-tagcloud, use datatip instead of tooltip. Support of complex datatip usecase will be handled in a future release.
+   * </p>
+   * <h5>touch-response attribute</h5>
+   * <p>
+   * For the initial version of oj-c-tagcloud, touch-response attribute is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>contextMenu slot</h5>
+   * <p>
+   * For the initial version of oj-c-tag-cloud, contextMenu slot is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>getContextByNode method</h5>
+   * <p>
+   * For the initial version of oj-c-tag-cloud, getContextByNode method is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * <h5>oj-tag-cloud-item's svg-class-name attribute</h5>
+   * <p>
+   * For the inital version of oj-c-tag-cloud-item, svg-class-name is not supported. We plan on supporting this use case in a future release.
+   * </p>
+   * @ojfragment migrationDoc
+   * @memberof oj.ojTagCloud
+   */
+
   /**
    * <table class="keyboard-table">
    *   <thead>
@@ -132,6 +176,8 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @property {string=} svgClassName The CSS style class defining the style of the item text.
    * @property {string=} url The url this item references.
    * @property {number} value The value of this item which will be used to scale its font-size within the tag cloud.
+   * @ojdeprecated {since: '15.0.0', description: 'This is not recommended in the Redwood design system.', target: 'property', for: 'svgStyle'}
+   *
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"},
    *               {target: "Type", value: "?(string | ((context: oj.ojTagCloud.ItemShortDescContext<K>) => string))", jsdocOverride: true, for: "shortDesc"},
@@ -139,6 +185,19 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    */
   /**
    * @typedef {Object} oj.ojTagCloud.TooltipContext
+   * @property {string} color The color of the hovered item.
+   * @property {Element} componentElement The tag cloud element.
+   * @property {any} id The id of the hovered item.
+   * @property {string} label The data label of the hovered item.
+   * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
+   * @property {number} value The value of the hovered item.
+   * @ojsignature [{target: "Type", value: "K", for: "id"},
+   *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
+   */
+
+  /**
+   * @typedef {Object} oj.ojTagCloud.TooltipRendererContext
    * @property {string} color The color of the hovered item.
    * @property {Element} componentElement The tag cloud element.
    * @property {any} id The id of the hovered item.
@@ -164,6 +223,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @property {any} key The key of the current item.
    * @ojsignature [{target: "Type", value: "K", for: "key"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
 
   // METHOD TYPEDEFS
@@ -337,6 +397,15 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * &lt;/oj-tag-cloud>
    * </code>
    * </pre>
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * To migrate from oj-tag-cloud-item to oj-c-tag-cloud-item, you need to revise the import statement and references to oj-tag-cloud-item in your app. Please note the changes between the two components below.
+   * <h5>svg-class-name attribute</h5>
+   * <p>
+   * For the inital version of oj-c-tag-cloud-item, svg-class-name is not supported. We plan on supporting this use case in a future release.
+   * </p>
    */
   /**
    * An array of category strings corresponding to the tag cloud items. This allows highlighting and filtering of items.
@@ -419,6 +488,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @type {Object=}
    * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}]
    * @default {}
+   * @ojdeprecated {since: '15.0.0', description: 'This is not recommended in the Redwood design system.'}
    *
    * @example <caption>Initialize tag cloud item with the
    * <code class="prettyprint">svg-style</code> attribute specified:</caption>
@@ -793,6 +863,8 @@ var __oj_tag_cloud_item_metadata =
    * in the default value ramp provided by oj.ColorAttributeGroupHandler
    * will meet minimum contrast requirements.</p>
    *
+   * {@ojinclude "name":"migrationDoc"}
+   *
    * <h3 id="touch-section">
    *   Touch End User Information
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -828,8 +900,6 @@ var __oj_tag_cloud_item_metadata =
    *    on the individual data items. The tag cloud can take advantage of these higher level properties to apply the style properties on
    *    containers, saving expensive DOM calls.
    * </p>
-   *
-   * {@ojinclude "name":"fragment_trackResize"}
    *
    * {@ojinclude "name":"rtl"}
    */
@@ -1193,7 +1263,7 @@ var __oj_tag_cloud_item_metadata =
          * @instance
          * @type {function(Object):Object|null}
          * @default null
-         * @ojsignature {target: "Type", value: "((context: oj.ojTagCloud.TooltipContext<K>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((context: oj.ojTagCloud.TooltipRendererContext<K>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
          *
          * @example <caption>See the <a href="#tooltip">tooltip</a> attribute for usage examples.</caption>
          */
@@ -1259,6 +1329,7 @@ var __oj_tag_cloud_item_metadata =
          * @ojunits milliseconds
          * @ojsignature {target: "Type", value: "?"}
          * @default 200
+         * @ojdeprecated {since: '15.0.0', description: 'This is not recommended in the Redwood design system. The default theme value will be used.'}
          *
          * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
          */
@@ -1274,6 +1345,7 @@ var __oj_tag_cloud_item_metadata =
          * @type {Object=}
          * @default {}
          * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+         * @ojdeprecated {since: '15.0.0', description: 'This is not recommended in the Redwood design system.'}
          *
          * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
          */
@@ -1309,7 +1381,35 @@ var __oj_tag_cloud_item_metadata =
        * // setter
        * myTagCloud.touchResponse="touchStart";
        */
-      touchResponse: 'auto'
+      touchResponse: 'auto',
+      /**
+       * Defines whether the element will automatically render in response to
+       * changes in size. If set to <code class="prettyprint">off</code>, then the
+       * application is responsible for calling <code class="prettyprint">refresh</code>
+       * to render the element at the new size.
+       * @expose
+       * @name trackResize
+       * @ojshortdesc Defines whether the element will automatically render in response to changes in size. See the Help documentation for more information.
+       * @memberof oj.ojTagCloud
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "on"
+       * @ojdeprecated {since: '15.0.0', description: 'This is no longer needed due to performance enhancements. The default behaviour will be used.'}
+       * @example <caption>Initialize the data visualization element with the
+       * <code class="prettyprint">track-resize</code> attribute specified:</caption>
+       * &lt;oj-some-dvt track-resize='off'>&lt;/oj-some-dvt>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">trackResize</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myComponent.trackResize;
+       *
+       * // setter
+       * myComponent.trackResize="off";
+       */
+      trackResize: 'on'
     },
 
     _CreateDvtComponent: function (context, callback, callbackObj) {
@@ -1427,6 +1527,16 @@ var __oj_tag_cloud_item_metadata =
       }
 
       return null;
+    },
+
+    /**
+     * @protected
+     * @override
+     * @instance
+     * @memberof! oj.ojTagCloud
+     */
+    _GetTranslationsSectionName: function () {
+      return 'oj-ojTagCloud';
     },
 
     _GetComponentDeferredDataPaths: function () {

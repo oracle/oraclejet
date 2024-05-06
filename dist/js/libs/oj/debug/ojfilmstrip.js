@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1228,12 +1228,19 @@ var __oj_film_strip_metadata =
           this._needsSetup = [isInit || oldIsInit];
           return;
         }
+
+        // JET-56619: occasionally, initialization may still be needed when refreshing a previously hidden
+        // filmstrip
+        var needsSetup = false;
+        if (this._needsSetup) {
+          needsSetup = this._needsSetup[0];
+        }
         this._needsSetup = null;
 
         this._bRTL = this._GetReadingDirection() === 'rtl';
         this._bTouchSupported = DomUtils.isTouchSupported();
         const elem = this.element;
-        if (isInit) {
+        if (isInit || needsSetup) {
           this._itemsPerPage = 0;
           this._handlePageFunc = function (event) {
             self._handlePage(event);
@@ -1288,7 +1295,7 @@ var __oj_film_strip_metadata =
         }
 
         const pagingModel = this._pagingModel;
-        if (isInit) {
+        if (isInit || needsSetup) {
           // register the page change listener
           pagingModel.on('page', this._handlePageFunc);
         }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -34,10 +34,12 @@ export type ComponentMetadata = {
     paths?: {
         cdn: Paths;
     };
+    preferredParent?: PreferredParent[];
     properties?: {
         [key: string]: ComponentMetadataProperties;
     };
     propertyLayout?: PropertyLayoutGroup[];
+    since?: string;
     slots?: {
         [key: string]: ComponentMetadataSlots;
     };
@@ -161,6 +163,13 @@ export type Paths = {
     min?: string;
 };
 // tslint:disable-next-line interface-over-type-literal
+export type PreferredParent = {
+    extension?: object;
+    isDirectParent?: boolean;
+    parentInterface: string;
+    status?: Status[];
+};
+// tslint:disable-next-line interface-over-type-literal
 export type PropertyBinding = {
     consume?: {
         name: string;
@@ -196,7 +205,8 @@ export type Status = {
     description?: string;
     since?: string;
     target?: 'propertyType' | 'propertyValue' | 'parameterType' | 'returnType';
-    type?: 'deprecated';
+    themes?: Array<('Alta' | 'Redwood' | 'Stable' | string)>;
+    type?: 'antiPattern' | 'deprecated' | 'maintenance' | 'supersedes';
     value?: string[];
 };
 // tslint:disable-next-line interface-over-type-literal

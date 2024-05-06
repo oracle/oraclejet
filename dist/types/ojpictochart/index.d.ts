@@ -24,7 +24,7 @@ export interface ojPictoChart<K, D extends ojPictoChart.Item<K> | any> extends d
     selection?: K[];
     selectionMode?: 'none' | 'single' | 'multiple';
     tooltip?: {
-        renderer: ((context: ojPictoChart.TooltipContext<K>) => ({
+        renderer: ((context: ojPictoChart.TooltipRendererContext<K>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
@@ -167,6 +167,15 @@ export namespace ojPictoChart {
         name: string;
         parentElement: Element;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipRendererContext<K> = {
+        color: string;
+        componentElement: Element;
+        count: number;
+        id: K;
+        name: string;
+        parentElement: Element;
+    };
 }
 export interface ojPictoChartEventMap<K, D extends ojPictoChart.Item<K> | any> extends dvtBaseComponentEventMap<ojPictoChartSettableProperties<K, D>> {
     'ojDrill': ojPictoChart.ojDrill;
@@ -213,7 +222,7 @@ export interface ojPictoChartSettableProperties<K, D extends ojPictoChart.Item<K
     selection?: K[];
     selectionMode?: 'none' | 'single' | 'multiple';
     tooltip?: {
-        renderer: ((context: ojPictoChart.TooltipContext<K>) => ({
+        renderer: ((context: ojPictoChart.TooltipRendererContext<K>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
@@ -431,6 +440,15 @@ export namespace PictoChartElement {
     type NodeContext = {
         index: number;
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipRendererContext<K> = {
+        color: string;
+        componentElement: Element;
+        count: number;
+        id: K;
+        name: string;
+        parentElement: Element;
     };
 }
 export namespace PictoChartItemElement {

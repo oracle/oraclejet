@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,14 +20,14 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent'], function
         }
         render(props) {
             const content = this._highlighter(props.text, props.matchText);
-            return jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: "oj-highlighttext" }, { children: content }));
+            return jsxRuntime.jsx(ojvcomponent.Root, { class: "oj-highlighttext", children: content });
         }
         _highlighter(unhighlightedText, matchText) {
             if (matchText) {
                 const escapedMatchText = this._escapeRegExp(matchText);
                 const highlightedText = unhighlightedText.replace(new RegExp(escapedMatchText, 'gi'), this._HIGHLIGHT_TOKEN + '$&' + this._HIGHLIGHT_TOKEN);
                 const tokens = highlightedText.split(this._HIGHLIGHT_TOKEN);
-                const nodes = tokens.map((current, index) => index % 2 == 0 ? current : jsxRuntime.jsx("span", Object.assign({ class: "oj-highlighttext-highlighter" }, { children: current })));
+                const nodes = tokens.map((current, index) => index % 2 == 0 ? current : jsxRuntime.jsx("span", { class: "oj-highlighttext-highlighter", children: current }));
                 return jsxRuntime.jsx("span", { children: nodes });
             }
             return jsxRuntime.jsx("span", { children: unhighlightedText });

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -43,8 +43,16 @@
 
  env.opts.destination = env.opts.query.destination || env.opts.destination;
  var outdir = path.normalize(env.opts.destination);
- logger.setLevel(logger.LEVELS.INFO);
- // [csaba] whitelist for global members
+ const LOGGING_LEVELS = {
+  INFO: logger.LEVELS.INFO,
+  ERROR: logger.LEVELS.ERROR,
+  WARNING: logger.LEVELS.WARN,
+  DEBUG: logger.LEVELS.DEBUG
+}
+
+env.opts.loggingLevel = env.opts.query.loggingLevel || env.opts.loggingLevel;
+logger.setLevel(LOGGING_LEVELS[env.opts.loggingLevel]);
+logger.info(`Logger set to ${env.opts.loggingLevel}`);
  const GLOBAL_APIS = ["ajax", "sync", "version", "revision"];
  var ALL_VIOLATIONS = {
    MISSING_LINKS: {
@@ -535,7 +543,8 @@
      }
      name = cleanUpClassSignatureFromAbstractSuperClasses(name);
      if (item.ojcomponent && item.domInterface) {
-       name = name.replace(new RegExp("\\b" + item.name + "\\b", "g"), item.domInterface);
+       // make sure we are not capturing everything in the word boundary, dots are not considered as wb here
+      name = name.replace(new RegExp("\\b(?<!\\.)" + item.name + "\\b(?!\\.)", "g"), item.domInterface);
      }
      types = tryToFindAllPossibleLinks(name, item);
    }
@@ -645,8 +654,8 @@
  function tryToFindAllPossibleLinks(name, doc) {
    var parseSuccess = tryTypeParsing(name);
    //Parse succeeds for something like FilterOperator<D>
-   //But it wont generate any link. Becuase linkto('FilterOperator<D>', htmlsafe('FilterOperator<D>'))
-   //wont link to the type. The first paraqmeter will need to be qualified name like
+   //But it wont generate any link. Because linkto('FilterOperator<D>', htmlsafe('FilterOperator<D>'))
+   //wont link to the type. The first parameter will need to be qualified name like
    //linkto('oj.FilterOperator', htmlsafe('FilterOperator<D>'))
 
    //To handle this, we would need to do this.
@@ -661,10 +670,10 @@
      linked = linkto(name, htmlsafe(name));
      if (linked.indexOf('<a href=') < 0) {
        // no link created. We need to see if we have any possible types inside
-       // No link is created could be of 2 reasons. 1 -> it is a prmitive type
+       // No link is created could be of 2 reasons. 1 -> it is a primitive type
        // or we are dealing with a type like myType<K,D> or Array<myType> or myType= and things like that
        // we need to run the second case through our advanced algorithm to find all links.
-       // we dont need the other one to go through it as it might just be a performance issue.
+       // we don't need the other one to go through it as it might just be a performance issue.
 
        if (name.indexOf('<') > -1 || name.indexOf('=') > -1 || name.indexOf('.') > -1) {
          // TODO -> optimize this somehow to exclude string= or Array<String>
@@ -700,7 +709,7 @@
    }
    else {
      //we need to parse the string. The string my contain reference to other classes/interfaces/typedefs.
-     //we find all those and parse to them and then convert those in to links.
+     //we try to find all those, and then convert those into links.
 
      var tdused = [];
      var tdlongName = [];
@@ -745,14 +754,22 @@
        }
        //this is when oj.ArrayDataprovider is referring some thing from oj with only the name and not long name
        else if (name.indexOf(td.name) >= 0 && isPossibleTypeReference(name, td.name)) {
-         if (doc.memberof && doc.memberof.startsWith(td.memberof + '.')) {
+        if (doc.memberof && doc.memberof.startsWith(td.memberof + '.')) {
            let regex = new RegExp("\\b" + td.name + "(?!\\.)\\b");
            if (regex.test(name) && tdused.indexOf(td.name) == -1) {
              //logger.info(name);
              tdused.push(td.name);
              tdlongName.push(td.longname);
            }
-         }
+        }
+        else if(td.memberof.startsWith(doc.memberof + '.')){
+          let regex = new RegExp("\\b" + td.name + "(?!\\.)\\b");
+          if (regex.test(name) && tdused.indexOf(td.name) == -1) {
+             logger.info(`Discovered that ${doc.name}: ${name} has a linkable type ${td.name}`);
+             tdused.push(td.name);
+             tdlongName.push(td.longname);
+          }
+        }
        }
      }
      //we found a type that's being used by the type of this member doclet
@@ -801,10 +818,10 @@
    })
    // [csaba]: Bug 27832562
    // as a last step, search and replace the type 'any' with a link to the generic section in
-   // our API Doc: CustomElementOverview.html#ce-attrs-any-section
+   // our API Doc: https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview#ce-attrs-any-section
    let regexp = new RegExp('(?<![\\w])any(?![\\w])', 'g');
    if (regexp.test(types[0])) {
-     let anyLink = `<a href="CustomElementOverview.html#ce-attrs-any-section">any</a>`;
+     let anyLink = `<a href="https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview#ce-attrs-any-section">any</a>`;
      types[0] = types[0].replace(regexp, anyLink);
    }
 
@@ -1050,12 +1067,12 @@
    }
    // [csaba]: Bug 27832562
    // search and replace the type 'any' with a link to the generic section in
-   // our API Doc: CustomElementOverview.html#ce-attrs-any-section
+   // our API Doc: https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview#ce-attrs-any-section
    // if we had an ojsignature, type any was already processed
    if (returnTypesString.indexOf('CustomElementOverview') < 0) {
      let regexp = new RegExp('(?<![\\w])any(?![\\w])', 'g');
      if (regexp.test(returnTypesString)) {
-       let anyLink = `<a href="CustomElementOverview.html#ce-attrs-any-section">any</a>`;
+       let anyLink = `<a href="https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview#ce-attrs-any-section">any</a>`;
        returnTypesString = returnTypesString.replace(regexp, anyLink);
      }
    }
@@ -1958,6 +1975,35 @@
        path.basename(conf.default.layoutFile)) :
      'layout.tmpl';
 
+    // set up templating for external apps
+    // save the current env.pwd
+    const tmp_pwd = env.pwd;
+    try{
+      env.pwd = env.opts.query.docletSource;
+      if (opts.main){
+        view.main = path.getResourcePath(path.dirname(opts.main), path.basename(opts.main));
+        if (view.main){
+          view.mainContent = fs.readFileSync(view.main, "utf-8");
+        }
+      }
+      if (opts.footer){
+        view.footer = path.getResourcePath(path.dirname(opts.footer), path.basename(opts.footer));
+        if (view.footer){
+          view.footerContent = fs.readFileSync(view.footer, "utf-8");
+        }
+      }
+      if (opts.header){
+        view.header = path.getResourcePath(path.dirname(opts.header), path.basename(opts.header));
+        if (view.header){
+          view.headerContent = fs.readFileSync(view.header, "utf-8");
+        }
+      }
+    }
+    finally{
+      //restore
+      env.pwd = tmp_pwd;
+    }
+
    // set up tutorials for helper
    helper.setTutorials(tutorials);
    data = helper.prune(data);
@@ -2198,10 +2244,7 @@
 
    if (members.globals.length) { generate('Global', [{ kind: 'globalobj' }], globalUrl); }
 
-   // index page displays information from package.json and lists files
-   var files = find({ kind: 'file' }),
-     packages = find({ kind: 'package' });
-   var mainPageDoc = [{ kind: 'mainpage', readme: opts.readme, longname: (opts.mainpagetitle) ? opts.mainpagetitle : 'Main Page' }];
+   const mainPageDoc = [{ kind: 'mainpage', readme: opts.readme, longname: (opts.mainpagetitle) ? opts.mainpagetitle : 'Main Page' }];
 
    // generate the jet module files
    if (Object.getOwnPropertyNames(moduleNav[MODULES]).length > 0) {
@@ -2294,9 +2337,7 @@
      logger.error(new Error("JSDOC build failed. Check the log for more information"));
    }
 
-   generate('Introduction',
-     packages.concat(mainPageDoc).concat(files),
-     indexUrl, true, classes);
+   generate('Introduction', mainPageDoc, indexUrl, true, classes);
 
    var searchMdFilePath = path.join(outdir, 'jsDocMd.json');
    fs.writeFileSync(searchMdFilePath, JSON.stringify(searchMetadata), 'utf8');

@@ -1,21 +1,12 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdataprovider', 'ojs/ojcomponentcore'], function (exports, ojeventtarget, ojrestdataprovider, ojdataprovider, ojcomponentcore) { 'use strict';
 
-    var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    };
     class RESTTreeDataProvider {
         constructor(options) {
             var _a;
@@ -25,17 +16,15 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
                     this._rootDataProvider = _rootDataProvider;
                     this._baseIterable = _baseIterable;
                 }
-                ['next']() {
-                    return __awaiter(this, void 0, void 0, function* () {
-                        const result = yield this._baseIterable[Symbol.asyncIterator]().next();
-                        for (let i = 0; i < result.value.data.length; i++) {
-                            this._rootDataProvider._setMapEntry(result.value.metadata[i].key, {
-                                data: result.value.data[i],
-                                metadata: result.value.metadata[i]
-                            });
-                        }
-                        return result;
-                    });
+                async ['next']() {
+                    const result = await this._baseIterable[Symbol.asyncIterator]().next();
+                    for (let i = 0; i < result.value.data.length; i++) {
+                        this._rootDataProvider._setMapEntry(result.value.metadata[i].key, {
+                            data: result.value.data[i],
+                            metadata: result.value.metadata[i]
+                        });
+                    }
+                    return result;
                 }
             };
             this.TreeAsyncIterable = (_a = class {
@@ -56,45 +45,42 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
             const rootDataProvider = this._getRootDataProvider();
             return new this.TreeAsyncIterable(new this.TreeAsyncIterator(rootDataProvider, baseIterable));
         }
-        fetchByKeys(fetchParameters) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const unCachedKeys = new Set();
-                const results = new Map();
-                fetchParameters.keys.forEach((key) => {
-                    const item = this._getItemFromKey(key);
-                    if (item) {
-                        results.set(key, item);
-                    }
-                    else {
-                        unCachedKeys.add(key);
-                    }
-                });
-                if (unCachedKeys.size) {
-                    const fetchByKeysResult = yield this._baseDataProvider.fetchByKeys(Object.assign(Object.assign({}, fetchParameters), { keys: unCachedKeys }));
-                    fetchByKeysResult.results.forEach((item) => {
-                        this._setMapEntry(item.metadata.key, item);
-                        results.set(item.metadata.key, item);
-                    });
+        async fetchByKeys(parameters) {
+            const unCachedKeys = new Set();
+            const results = new Map();
+            parameters.keys.forEach((key) => {
+                const item = this._getItemFromKey(key);
+                if (item) {
+                    results.set(key, item);
                 }
-                return {
-                    fetchParameters,
-                    results
-                };
+                else {
+                    unCachedKeys.add(key);
+                }
             });
-        }
-        fetchByOffset(fetchParameters) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const fetchByOffsetResult = yield this._baseDataProvider.fetchByOffset(fetchParameters);
-                fetchByOffsetResult.results.forEach((item) => {
-                    this._setMapEntry(item.metadata.key, item);
+            if (unCachedKeys.size) {
+                const fetchByKeysResult = await this._baseDataProvider.fetchByKeys({
+                    ...parameters,
+                    keys: unCachedKeys
                 });
-                return fetchByOffsetResult;
-            });
+                fetchByKeysResult.results.forEach((item) => {
+                    this._setMapEntry(item.metadata.key, item);
+                    results.set(item.metadata.key, item);
+                });
+            }
+            return {
+                fetchParameters: parameters,
+                results
+            };
         }
-        containsKeys(containsParameters) {
-            return __awaiter(this, void 0, void 0, function* () {
-                return this._baseDataProvider.containsKeys(containsParameters);
+        async fetchByOffset(parameters) {
+            const fetchByOffsetResult = await this._baseDataProvider.fetchByOffset(parameters);
+            fetchByOffsetResult.results.forEach((item) => {
+                this._setMapEntry(item.metadata.key, item);
             });
+            return fetchByOffsetResult;
+        }
+        async containsKeys(containsParameters) {
+            return this._baseDataProvider.containsKeys(containsParameters);
         }
         createOptimizedKeySet(initialSet) {
             return this._baseDataProvider.createOptimizedKeySet(initialSet);
@@ -126,6 +112,7 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
             if (detail.update) {
                 this._updateMapFromMutationDetail('update', detail.update);
             }
+            this._baseDataProvider.mutate(detail);
             this.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(detail));
         }
         getChildDataProvider(key) {
@@ -147,8 +134,8 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
             const currentValue = rootDataProvider._mapKeyToItem.get(key);
             if (currentValue) {
                 rootDataProvider._mapKeyToItem.set(key, {
-                    data: Object.assign(Object.assign({}, currentValue.data), item.data),
-                    metadata: Object.assign(Object.assign({}, currentValue.metadata), item.metadata)
+                    data: { ...currentValue.data, ...item.data },
+                    metadata: { ...currentValue.metadata, ...item.metadata }
                 });
             }
             else {
@@ -209,23 +196,17 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
         constructor(dataprovider) {
             this.dataprovider = dataprovider;
         }
-        fetchFirst(fetchParameters) {
-            return this.dataprovider.fetchFirst(fetchParameters);
+        fetchFirst(parameters) {
+            return this.dataprovider.fetchFirst(parameters);
         }
-        fetchByKeys(fetchParameters) {
-            return __awaiter(this, void 0, void 0, function* () {
-                return this.dataprovider.fetchByKeys(fetchParameters);
-            });
+        async fetchByKeys(fetchParameters) {
+            return this.dataprovider.fetchByKeys(fetchParameters);
         }
-        fetchByOffset(fetchParameters) {
-            return __awaiter(this, void 0, void 0, function* () {
-                return this.dataprovider.fetchByOffset(fetchParameters);
-            });
+        async fetchByOffset(fetchParameters) {
+            return this.dataprovider.fetchByOffset(fetchParameters);
         }
-        containsKeys(containsParameters) {
-            return __awaiter(this, void 0, void 0, function* () {
-                return this.dataprovider.containsKeys(containsParameters);
-            });
+        async containsKeys(parameters) {
+            return this.dataprovider.containsKeys(parameters);
         }
         createOptimizedKeySet(initialSet) {
             return this.dataprovider.createOptimizedKeySet(initialSet);

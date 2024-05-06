@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,7 +20,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojtr
                 : this._renderDeterminateCircle(props);
         }
         _renderIndeterminateCircle(props) {
-            return (jsxRuntime.jsx(ojvcomponent.Root, Object.assign({ class: 'oj-progress-circle oj-progress-circle-' + props.size, role: "progressbar", "aria-valuetext": Translations.getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText') }, { children: jsxRuntime.jsx("div", Object.assign({ class: "oj-progress-circle-indeterminate" }, { children: jsxRuntime.jsx("div", { class: "oj-progress-circle-indeterminate-inner" }) })) })));
+            return (jsxRuntime.jsx(ojvcomponent.Root, { class: 'oj-progress-circle oj-progress-circle-' + props.size, role: "progressbar", "aria-valuetext": Translations.getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText'), children: jsxRuntime.jsx("div", { class: "oj-progress-circle-indeterminate", children: jsxRuntime.jsx("div", { class: "oj-progress-circle-indeterminate-inner" }) }) }));
         }
         _renderDeterminateCircle(props) {
             let max = props.max;
@@ -33,7 +33,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojtr
             }
             const percentage = max === 0 ? 0 : value > max ? 1 : value / max;
             const clipPath = this._getClipPath(percentage);
-            return (jsxRuntime.jsxs(ojvcomponent.Root, Object.assign({ class: 'oj-progress-circle oj-progress-circle-' + props.size, role: "progressbar", "aria-valuemin": "0", "aria-valuemax": max, "aria-valuenow": value }, { children: [jsxRuntime.jsx("div", { class: "oj-progress-circle-tracker" }), jsxRuntime.jsx("div", { class: "oj-progress-circle-value", style: { clipPath } })] })));
+            return (jsxRuntime.jsxs(ojvcomponent.Root, { class: 'oj-progress-circle oj-progress-circle-' + props.size, role: "progressbar", "aria-valuemin": 0, "aria-valuemax": max, "aria-valuenow": value, children: [jsxRuntime.jsx("div", { class: "oj-progress-circle-tracker" }), jsxRuntime.jsx("div", { class: "oj-progress-circle-value", style: { clipPath } })] }));
         }
         _getClipPath(percentage) {
             let tangent;
@@ -80,7 +80,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojtr
         value: 0,
         size: 'md'
     };
-    exports.ProgressCircle._metadata = { "properties": { "max": { "type": "number" }, "value": { "type": "number" }, "size": { "type": "string", "enumValues": ["lg", "md", "sm"] } } };
+    exports.ProgressCircle._metadata = { "properties": { "max": { "type": "number" }, "value": { "type": "number" }, "size": { "type": "string", "enumValues": ["sm", "md", "lg"] } } };
     exports.ProgressCircle = __decorate([
         ojvcomponent.customElement('oj-progress-circle')
     ], exports.ProgressCircle);

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -396,13 +396,16 @@ var __oj_diagram_metadata =
       "writeback": true,
       "properties": {
         "centerX": {
-          "type": "number"
+          "type": "number",
+          "writeback": true
         },
         "centerY": {
-          "type": "number"
+          "type": "number",
+          "writeback": true
         },
         "zoom": {
           "type": "number",
+          "writeback": true,
           "value": 0
         }
       }
@@ -1214,6 +1217,9 @@ var __oj_diagram_link_metadata =
    *
    * {@ojinclude "name":"a11yKeyboard"}
    *
+   * <p>When selection is toggled through CTRL-SPACE, the screenreader may not read out the selection state.
+   * We recommend the user to press 'Insert + 8(Numpad)' to read the selection state of the node.</p>
+   *
    * <h3 id="touch-section">
    *   Touch End User Information
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -1964,6 +1970,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {number}
          * @default 0.0
+         * @ojwriteback
          */
         zoom: 0.0,
         /**
@@ -1976,6 +1983,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {number|null}
          * @default null
+         * @ojwriteback
          */
         centerX: null,
         /**
@@ -1988,6 +1996,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {number|null}
          * @default null
+         * @ojwriteback
          */
         centerY: null
       },
@@ -2035,7 +2044,7 @@ var __oj_diagram_link_metadata =
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Object):Object|null}
-         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.TooltipContext<K1,K2,D1,D2>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.TooltipRendererContext<K1,K2,D1,D2>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
          * @default null
          */
         renderer: null
@@ -4495,7 +4504,7 @@ var __oj_diagram_link_metadata =
    *     </tr>
    *     <tr>
    *       <td><kbd>Ctrl + Alt + 0 (zero)</kbd></td>
-   *       <td>Zoom and center.</td>
+   *       <td>Zoom and Centers the focused node or link.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>PageUp or PageDown</kbd></td>
@@ -4527,7 +4536,7 @@ var __oj_diagram_link_metadata =
    *     </tr>
    *     <tr>
    *       <td><kbd>Alt + &lt; or Alt + &gt;</kbd></td>
-   *       <td>Move focus from the node to a link.</td>
+   *       <td>When focus is on a node, move focus and selection to nearest link left/right.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>UpArrow or DownArrow</kbd></td>
@@ -4643,7 +4652,21 @@ var __oj_diagram_link_metadata =
    *               {target: "Type", value: "D1|D2|D2[]", for: "itemData"},
    *               {target: "Type", value: "oj.ojDiagram.Node<K1>|oj.ojDiagram.Link<K2, K1>|oj.ojDiagram.Link<K2, K1>[]", for: "data"},
    *               {target: "Type", value: "<K1,K2,D1,D2>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
+
+  /**
+   * @typedef {Object} oj.ojDiagram.TooltipRendererContext
+   * @ojimportmembers oj.ojDiagramItemContextProperties
+   * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
+   * @ojsignature [{target: "Type", value: "'node'|'link'|'promotedLink'", for: "type"},
+   *               {target: "Type", value: "K1|K2", for: "id"},
+   *               {target: "Type", value: "D1|D2|D2[]", for: "itemData"},
+   *               {target: "Type", value: "oj.ojDiagram.Node<K1>|oj.ojDiagram.Link<K2, K1>|oj.ojDiagram.Link<K2, K1>[]", for: "data"},
+   *               {target: "Type", value: "<K1,K2,D1,D2>", for: "genericTypeParameters"}]
+   *
+   */
+
   /**
    * @typedef {Object} oj.ojDiagram.NodeShortDescContext
    * @property {any} id The id of the node
@@ -4753,6 +4776,43 @@ var __oj_diagram_link_metadata =
    */
 
   /**
+   * @typedef {Object} oj.ojDiagram.NodeContentTemplateContext
+   * @property {Element}  parentElement A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported.
+   * @property {Element}  componentElement The diagram element.
+   * @property {Element|null}  rootElement Null on initial rendering or SVG element for the node.
+   * @property {Object}   data The data object for the node. If DataProvider is being used, this property contains template processed data.
+   * @property {Object|null} itemData The row data object for the node. This will only be set if an DataProvider is being used.
+   * @property {Object}   content  An object that describes child content. The object has the following properties
+   * @property {Element}  content.element SVG group element that contains child nodes for the container.
+   * @property {number}   content.width Width of the child content.
+   * @property {number}   content.height Height of the child content.
+   * @property {Object}   state An object that reflects the current state of the data item.
+   * @property {boolean}  state.hovered True if the node is currently hovered.
+   * @property {boolean}  state.selected True if the node is currently selected.
+   * @property {boolean}  state.focused True if the node is currently selected.
+   * @property {boolean}  state.expanded True if the node is expanded.
+   * @property {boolean}  state.inActionableMode True if the node is currently in actionable mode.
+   * @property {number}   state.zoom Current zoom state.
+   * @property {Object}   previousState An object that reflects the previous state of the data item.
+   * @property {boolean}  previousState.hovered True if the node was previously hovered.
+   * @property {boolean}  previousState.selected True if the node was previously selected.
+   * @property {boolean}  previousState.focused True if the node was previously selected.
+   * @property {boolean}  previousState.expanded True if the node was previously expanded.
+   * @property {boolean}  previousState.inActionableMode True if the node was previously in actionable mode.
+   * @property {number}   previousState.zoom Previous zoom state.
+   * @property {any}      id Node id.
+   * @property {string}   type Object type = node.
+   * @property {function():void} renderDefaultFocus Function for rendering default focus effect for the node
+   * @property {function():void} renderDefaultHover Function for rendering default hover effect for the node
+   * @property {function():void} renderDefaultSelection Function for rendering default selection effect for the node
+   * @ojsignature [{target: "Type", value: "K1", for: "id"},
+   *            {target: "Type", value: "oj.ojDiagram.Node<K1>", for: "data"},
+   *            {target: "Type", value: "D1", for: "itemData"},
+   *            {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
+   */
+
+  /**
    * @typedef {Object} oj.ojDiagram.LinkRendererContext
    * @property {Element}  parentElement A parent group element that takes a custom SVG fragment as the link content. Modifications of the parentElement are not supported.
    * @property {Element}  componentElement The diagram element.
@@ -4784,11 +4844,44 @@ var __oj_diagram_link_metadata =
    */
 
   /**
+   * @typedef {Object} oj.ojDiagram.LinkContentTemplateContext
+   * @property {Element}  parentElement A parent group element that takes a custom SVG fragment as the link content. Modifications of the parentElement are not supported.
+   * @property {Element}  componentElement The diagram element.
+   * @property {Element|null}  rootElement Null on initial rendering or SVG element for the link.
+   * @property {Object}   data The data object for the link or an array of data objects for the promoted link.
+   *                           If DataProvider is being used, this property contains template processed data.
+   * @property {Object|null} itemData The row data object for the link or an array of row data objects for the promoted link.
+   *                           This will only be set if an DataProvider is being used.
+   * @property {Object}   state An object that reflects the current state of the data item.
+   * @property {boolean}  state.hovered True if the link is currently hovered.
+   * @property {boolean}  state.selected True if the link is currently selected.
+   * @property {boolean}  state.focused True if the link is currently selected.
+   * @property {boolean}  state.inActionableMode True if the link is currently in actionable mode.
+   * @property {Object}   previousState An object that reflects the previous state of the data item.
+   * @property {boolean}  previousState.hovered True if the link was previously hovered.
+   * @property {boolean}  previousState.selected True if the link was previously selected.
+   * @property {boolean}  previousState.focused True if the link was previously selected.
+   * @property {boolean}  previousState.inActionableMode True if the link was previously in actionable mode.
+   * @property {any}      id Link id.
+   * @property {string}   type Object type is 'link' or 'promotedLink'.
+   * @property {array|string} points An array of points or a string with SVG path to use for rendering this link as set by diagram layout.
+   *            When custom renderer is used for link creation, the property will contain an array of x and y points for the link start
+   *            and link end calculated by Diagram.
+   * @ojsignature [{target: "Type", value: "K2", for: "id"},
+   *            {target: "Type", value: "'link'|'promotedLink'", for: "type"},
+   *            {target: "Type", value: "oj.ojDiagram.Link<K2, K1>", for: "data"},
+   *            {target: "Type", value: "D2|D2[]", for: "itemData"},
+   *            {target: "Type", value: "<K1,K2,D2>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
+   */
+
+  /**
    * @typedef {Object} oj.ojDiagram.LinkTemplateContext
    * @property {Element} componentElement The &lt;oj-diagram> custom element.
    * @property {Object} data The data object for the current link.
    * @property {number} index The zero-based index of the current link.
    * @property {any} key The key of the current link.
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
   /**
    * @typedef {Object} oj.ojDiagram.NodeTemplateContext
@@ -4797,6 +4890,7 @@ var __oj_diagram_link_metadata =
    * @property {any} key The key of the current node.
    * @property {array} parentData  An array of data for the leaf and its parents. Eg: parentData[0] is the outermost parent and parentData[1] is the second outermost parent of the leaf.
    * @property {any} parentKey The key of the parent item. The parent key is null for root nodes.
+   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
 
   // KEEP FOR WIDGET SYNTAX
@@ -5487,7 +5581,7 @@ var __oj_diagram_link_metadata =
    * properties on the nodeContent object if specified.
    * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
    * <ul>
-   *   <li>$current - an object that contains information for the current node. (See [oj.ojDiagram.RendererContext]{@link oj.ojDiagram.RendererContext} or the table below for a list of properties available on $current) </li>
+   *   <li>$current - an object that contains information for the current node. (See [oj.ojDiagram.NodeContentTemplateContext]{@link oj.ojDiagram.NodeContentTemplateContext} or the table below for a list of properties available on $current) </li>
    * </ul>
    * <p>The template for a container node must include an [oj-diagram-child-content]{@link oj.ojDiagramChildContent} element.
    * Diagram will replace this element with the node child contents.</p>
@@ -5511,7 +5605,7 @@ var __oj_diagram_link_metadata =
    * @ojslot nodeContentTemplate
    * @ojmaxitems 1
    * @ojshortdesc The nodeContentTemplate slot is used to specify custom node content. See the Help documentation for more information.
-   * @ojtemplateslotprops oj.ojDiagram.RendererContext
+   * @ojtemplateslotprops oj.ojDiagram.NodeContentTemplateContext
    * @memberof oj.ojDiagram
    * @since 7.1.0
    *
@@ -5580,7 +5674,7 @@ var __oj_diagram_link_metadata =
    * @ojslot linkContentTemplate
    * @ojmaxitems 1
    * @ojshortdesc The linkContentTemplate slot is used to specify custom link content. See the Help documentation for more information.
-   * @ojtemplateslotprops oj.ojDiagram.LinkRendererContext
+   * @ojtemplateslotprops oj.ojDiagram.LinkContentTemplateContext
    * @memberof oj.ojDiagram
    * @since 8.0.0
    *

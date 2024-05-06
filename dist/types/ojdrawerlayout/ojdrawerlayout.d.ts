@@ -1,14 +1,14 @@
 import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
-import { CancelableAction, ExtendGlobalProps, ObservedGlobalProps, PropertyChanged, Slot } from 'ojs/ojvcomponent';
+import { CancelableAction, ExtendGlobalProps, PropertyChanged, Slot } from 'ojs/ojvcomponent';
 import { Component, ComponentChild, ComponentChildren } from 'preact';
 import 'ojs/ojcore-base';
 import 'ojs/ojpopup';
-declare type DisplayMode = 'reflow' | 'overlay' | 'auto';
-declare type ResolvedDisplayMode = 'reflow' | 'overlay' | 'full-overlay';
-declare type EdgeLayout = 'start' | 'end' | 'bottom';
-declare type State = {
+type DisplayMode = 'reflow' | 'overlay' | 'auto';
+type ResolvedDisplayMode = 'reflow' | 'overlay' | 'full-overlay';
+type EdgeLayout = 'start' | 'end' | 'bottom';
+type State = {
     startOpened: boolean;
     endOpened: boolean;
     bottomOpened: boolean;
@@ -25,13 +25,13 @@ declare type State = {
     endStateToChangeTo: GenericObject;
     bottomStateToChangeTo: GenericObject;
 };
-declare type GenericObject = {
+type GenericObject = {
     [key: string]: any;
 };
-declare type ToggleDetail = {
+type ToggleDetail = {
     edge: EdgeLayout;
 };
-declare type Props = ObservedGlobalProps<'role'> & {
+type Props = {
     children?: ComponentChildren;
     start?: Slot;
     end?: Slot;

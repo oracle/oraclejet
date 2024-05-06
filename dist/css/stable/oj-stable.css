@@ -128,10 +128,11 @@
   --oj-core-text-color-warning:      rgb(var(--oj-palette-warning-rgb-120));
   --oj-core-text-color-success:      rgb(var(--oj-palette-success-rgb-120));
   --oj-core-bg-color-content:       rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-bg-color-hover:         rgba(var(--oj-palette-neutral-rgb-190), .04);
-  --oj-core-bg-color-active:        rgba(var(--oj-palette-neutral-rgb-190), .06);
+  --oj-core-bg-color-hover:         rgba(var(--oj-palette-neutral-rgb-190), .08);
+  --oj-core-bg-color-active:        rgba(var(--oj-palette-neutral-rgb-190), .16);
   --oj-core-bg-color-selected:      rgb(var(--oj-palette-brand-rgb-30));
   --oj-core-border-color-selected:  rgb(var(--oj-palette-brand-rgb-110));
+  --oj-core-border-color-enabled:  rgba(var(--oj-palette-neutral-rgb-190), 0.5);
   --oj-core-color-disabled-1:      rgba(var(--oj-palette-neutral-rgb-190), 0.05);
   --oj-core-color-disabled-2:  rgba(var(--oj-palette-neutral-rgb-190),.1);
   --oj-core-icon-size-lg:              1.5rem;
@@ -246,6 +247,7 @@
   --oj-core-bg-color-content:     rgb(var(--oj-palette-neutral-rgb-170));
   --oj-core-bg-color-hover:       rgba(var(--oj-palette-neutral-rgb-0), .08);
   --oj-core-bg-color-active:      rgba(var(--oj-palette-neutral-rgb-0), .12);
+  --oj-core-border-color-enabled:  rgba(var(--oj-palette-neutral-rgb-0), 0.5);
   --oj-core-divider-color:        rgba(var(--oj-palette-neutral-rgb-0), .3);
   --oj-core-text-color-danger:    rgb(var(--oj-palette-danger-rgb-70));
   --oj-core-text-color-warning:   rgb(var(--oj-palette-warning-rgb-70));
@@ -333,7 +335,7 @@
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"stable","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v14.1.0"}' !important; }
+  font-family: '{"name":"stable","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v16.0.0"}' !important; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -4549,31 +4551,31 @@ html.oj-agent-os-windows {
   --oj-button-borderless-chrome-text-color-active:     var(--oj-core-text-color-primary);
   --oj-button-borderless-chrome-text-color-disabled:   var(--oj-core-text-color-disabled);
   --oj-button-borderless-chrome-bg-color-selected:     transparent;
-  --oj-button-borderless-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-borderless-chrome-border-color-selected: var(--oj-core-border-color-enabled);
   --oj-button-borderless-chrome-text-color-selected:   var(--oj-core-text-color-primary);
   --oj-button-borderless-chrome-bg-color-selected-hover:     var(--oj-core-bg-color-hover);
-  --oj-button-borderless-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-borderless-chrome-border-color-selected-hover: var(--oj-core-border-color-enabled);
   --oj-button-borderless-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary);
   --oj-button-borderless-chrome-bg-color-selected-disabled:     transparent;
   --oj-button-borderless-chrome-border-color-selected-disabled: var(--oj-core-color-disabled-2);
   --oj-button-borderless-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
-  --oj-button-outlined-chrome-border-color:          rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-border-color:          var(--oj-core-border-color-enabled);
   --oj-button-outlined-chrome-text-color:            var(--oj-core-text-color-primary);
   --oj-button-outlined-chrome-bg-color:              transparent;
   --oj-button-outlined-chrome-bg-color-hover:        var(--oj-core-bg-color-hover);
-  --oj-button-outlined-chrome-border-color-hover:    rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-border-color-hover:    var(--oj-core-border-color-enabled);
   --oj-button-outlined-chrome-text-color-hover:      var(--oj-core-text-color-primary);
   --oj-button-outlined-chrome-bg-color-active:       var(--oj-core-bg-color-active);
-  --oj-button-outlined-chrome-border-color-active:   rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-border-color-active:   var(--oj-core-border-color-enabled);
   --oj-button-outlined-chrome-text-color-active:     var(--oj-core-text-color-primary);
   --oj-button-outlined-chrome-border-color-disabled: var(--oj-core-text-color-disabled);
   --oj-button-outlined-chrome-text-color-disabled:   var(--oj-core-text-color-disabled);
   --oj-button-outlined-chrome-bg-color-disabled:     transparent;
   --oj-button-outlined-chrome-bg-color-selected:     transparent;
-  --oj-button-outlined-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-border-color-selected: var(--oj-core-border-color-enabled);
   --oj-button-outlined-chrome-text-color-selected:   var(--oj-core-text-color-primary);
   --oj-button-outlined-chrome-bg-color-selected-hover:    var(--oj-core-bg-color-hover);
-  --oj-button-outlined-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-border-color-selected-hover: var(--oj-core-border-color-enabled);
   --oj-button-outlined-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary);
   --oj-button-outlined-chrome-bg-color-selected-disabled:     transparent;
   --oj-button-outlined-chrome-border-color-selected-disabled: var(--oj-core-text-color-disabled);
@@ -4762,7 +4764,7 @@ html.oj-agent-os-windows {
 .oj-fwk-icon-cross:before, .oj-combobox-clear-entry-icon:before, .oj-panel-remove-icon:before, .oj-select-clear-entry-icon:before, .oj-tabbar-remove-icon:before {
   content: "\f133"; }
 
-.oj-fwk-icon-cross02:before, .oj-inputtext-clear-icon:before, .oj-inputsearch-clear-icon:before, .oj-menu-option-start-icon .oj-menu-cancel-icon:before, .oj-searchselect-clear-value-icon:before {
+.oj-fwk-icon-cross02:before, .oj-inputdatetime-clear-icon:before, .oj-inputtext-clear-icon:before, .oj-inputsearch-clear-icon:before, .oj-menu-option-start-icon .oj-menu-cancel-icon:before, .oj-searchselect-clear-value-icon:before {
   content: "\f134"; }
 
 .oj-fwk-icon-cross03:before {
@@ -6440,12 +6442,13 @@ div.oj-avatar.oj-avatar-image {
   --oj-badge-font-weight: 700;
   --oj-badge-font-stretch: condensed;
   --oj-badge-height: 1.5rem;
-  --oj-badge-border-radius: var(--oj-core-border-radius-lg); }
+  --oj-badge-border-radius: var(--oj-core-border-radius-lg);
+  --oj-badge-padding: 0 var(--oj-core-spacing-2x); }
 
 .oj-badge {
   background-color: var(--oj-badge-bg-color);
   color: var(--oj-badge-text-color);
-  padding: 0 var(--oj-core-spacing-2x);
+  padding: var(--oj-badge-padding);
   display: inline-flex;
   box-sizing: border-box;
   border-radius: var(--oj-badge-border-radius);
@@ -6458,9 +6461,6 @@ div.oj-avatar.oj-avatar-image {
   justify-content: center;
   align-items: center;
   white-space: nowrap; }
-
-.oj-badge-sm {
-  padding: 0 0.25rem; }
 
 html[dir="rtl"] .oj-badge-end {
   border-top-left-radius: 0;
@@ -6538,10 +6538,15 @@ html:not([dir="rtl"]) .oj-badge-end {
 /* badge                      */
 /* -------------------------- */
 .oj-badge-sm {
+  --oj-badge-padding: 0 var(--oj-core-spacing-1x);
   --oj-badge-height: 1rem;
   --oj-badge-font-size: 0.5625rem;
   --oj-badge-font-weight: 700;
   --oj-badge-border-radius: var(--oj-core-border-radius-md); }
+
+.oj-color-invert {
+  --oj-badge-text-color: var(--oj-core-neutral-contrast);
+  --oj-badge-bg-color: var(--oj-core-neutral-1); }
 
 /* button */
 /* --------------------------------------------------------------- */
@@ -6721,7 +6726,8 @@ input.oj-button[type="reset"] {
 
 .oj-button-toggle.oj-hover.oj-button-full-chrome,
 .oj-button.oj-hover.oj-button-full-chrome .oj-button-button {
-  background-color: var(--oj-button-solid-chrome-bg-color-hover);
+  background-color: var(--oj-button-solid-chrome-bg-color);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-solid-chrome-border-color-hover);
   color: var(--oj-button-solid-chrome-text-color-hover); }
 
@@ -6732,7 +6738,8 @@ input.oj-button[type="reset"] {
        by the mouse button or Enter or Spacebar. */
 .oj-button-toggle.oj-active.oj-button-full-chrome,
 .oj-button.oj-active.oj-button-full-chrome .oj-button-button {
-  background-color: var(--oj-button-solid-chrome-bg-color-active);
+  background-color: var(--oj-button-solid-chrome-bg-color);
+  background-image: linear-gradient(var(--oj-core-bg-color-active), var(--oj-core-bg-color-active));
   border-color: var(--oj-button-solid-chrome-border-color-active);
   color: var(--oj-button-solid-chrome-text-color-active); }
 
@@ -6748,7 +6755,8 @@ input.oj-button[type="reset"] {
 .oj-button-toggle.oj-selected.oj-hover.oj-button-full-chrome,
 .oj-button.oj-selected.oj-hover.oj-button-full-chrome .oj-button-button {
   color: var(--oj-button-solid-chrome-text-color-selected-hover);
-  background-color: var(--oj-button-solid-chrome-bg-color-selected-hover);
+  background-color: var(--oj-button-solid-chrome-bg-color);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-solid-chrome-border-color-selected-hover); }
 
 .oj-button.oj-selected.oj-button-full-chrome .oj-button-icon {
@@ -6808,13 +6816,15 @@ input.oj-button[type="reset"] {
 .oj-button-toggle.oj-hover.oj-button-half-chrome,
 .oj-button.oj-hover.oj-button-half-chrome .oj-button-button {
   color: var(--oj-button-borderless-chrome-text-color-hover);
-  background-color: var(--oj-button-borderless-chrome-bg-color-hover);
+  background-color: transparent;
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-borderless-chrome-border-color-hover); }
 
 .oj-button-toggle.oj-active.oj-button-half-chrome,
 .oj-button.oj-active.oj-button-half-chrome .oj-button-button {
   color: var(--oj-button-borderless-chrome-text-color-active);
-  background-color: var(--oj-button-borderless-chrome-bg-color-active);
+  background-color: transparent;
+  background-image: linear-gradient(var(--oj-core-bg-color-active), var(--oj-core-bg-color-active));
   border-color: var(--oj-button-borderless-chrome-border-color-active); }
 
 .oj-button-toggle.oj-selected.oj-button-half-chrome,
@@ -6826,7 +6836,8 @@ input.oj-button[type="reset"] {
 .oj-button-toggle.oj-selected.oj-hover.oj-button-half-chrome,
 .oj-button.oj-selected.oj-hover.oj-button-half-chrome .oj-button-button {
   color: var(--oj-button-borderless-chrome-text-color-selected-hover);
-  background-color: var(--oj-button-borderless-chrome-bg-color-selected-hover);
+  background-color: var(--oj-button-borderless-chrome-bg-color-selected);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-borderless-chrome-border-color-selected-hover); }
 
 .oj-button-toggle.oj-disabled.oj-button-half-chrome,
@@ -6905,13 +6916,15 @@ input.oj-button[type="reset"] {
 .oj-button-toggle.oj-hover.oj-button-outlined-chrome,
 .oj-button.oj-hover.oj-button-outlined-chrome .oj-button-button {
   color: var(--oj-button-outlined-chrome-text-color-hover);
-  background-color: var(--oj-button-outlined-chrome-bg-color-hover);
+  background-color: var(--oj-button-outlined-chrome-bg-color);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-outlined-chrome-border-color-hover); }
 
 .oj-button-toggle.oj-active.oj-button-outlined-chrome,
 .oj-button.oj-active.oj-button-outlined-chrome .oj-button-button {
   color: var(--oj-button-outlined-chrome-text-color-active);
-  background-color: var(--oj-button-outlined-chrome-bg-color-active);
+  background-color: var(--oj-button-outlined-chrome-bg-color);
+  background-image: linear-gradient(var(--oj-core-bg-color-active), var(--oj-core-bg-color-active));
   border-color: var(--oj-button-outlined-chrome-border-color-active); }
 
 .oj-button-toggle.oj-selected.oj-button-outlined-chrome,
@@ -6923,7 +6936,8 @@ input.oj-button[type="reset"] {
 .oj-button-toggle.oj-selected.oj-hover.oj-button-outlined-chrome,
 .oj-button.oj-selected.oj-hover.oj-button-outlined-chrome .oj-button-button {
   color: var(--oj-button-outlined-chrome-text-color-selected-hover);
-  background-color: var(--oj-button-outlined-chrome-bg-color-selected-hover);
+  background-color: var(--oj-button-outlined-chrome-bg-color-selected);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   border-color: var(--oj-button-outlined-chrome-border-color-selected-hover); }
 
 .oj-button-toggle.oj-disabled.oj-button-outlined-chrome,
@@ -7019,7 +7033,8 @@ input.oj-button[type="reset"] {
 
 .oj-button-toggle.oj-hover.oj-button-cta-chrome,
 .oj-button.oj-hover.oj-button-cta-chrome .oj-button-button {
-  background-color: var(--oj-button-call-to-action-chrome-bg-color-hover);
+  background-color: var(--oj-button-call-to-action-chrome-bg-color);
+  background-image: linear-gradient(rgba(var(--oj-palette-neutral-rgb-0), 0.08), rgba(var(--oj-palette-neutral-rgb-0), 0.08));
   border-color: var(--oj-button-call-to-action-chrome-border-color-hover);
   color: var(--oj-button-call-to-action-chrome-text-color-hover); }
 
@@ -7030,7 +7045,8 @@ input.oj-button[type="reset"] {
         by the mouse button or Enter or Spacebar. */
 .oj-button-toggle.oj-active.oj-button-cta-chrome,
 .oj-button.oj-active.oj-button-cta-chrome .oj-button-button {
-  background-color: var(--oj-button-call-to-action-chrome-bg-color-active);
+  background-color: var(--oj-button-call-to-action-chrome-bg-color);
+  background-image: linear-gradient(rgba(var(--oj-palette-neutral-rgb-0), 0.12), rgba(var(--oj-palette-neutral-rgb-0), 0.08));
   border-color: var(--oj-button-call-to-action-chrome-border-color-active);
   color: var(--oj-button-call-to-action-chrome-text-color-active); }
 
@@ -7918,6 +7934,11 @@ oj-legend {
   fill: var(--oj-button-borderless-chrome-bg-color-hover);
   border-radius: 4px; }
 
+.oj-legend-focus {
+  stroke: var(--oj-core-focus-border-color);
+  stroke-width: 0.5;
+  stroke-dasharray: 1; }
+
 :root {
   --oj-chart-axis-title-text-color:         var(--oj-core-text-color-secondary);
   --oj-chart-axis-tick-label-text-color:    var(--oj-core-text-color-secondary);
@@ -8058,7 +8079,7 @@ oj-chart {
   --oj-text-field-font-size:        var(--oj-typography-body-md-font-size);
   --oj-private-text-field-font-size-adjust: 100%;
   --oj-text-field-bg-color:               rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-text-field-border-color:           rgba(var(--oj-palette-neutral-rgb-190),.5);
+  --oj-text-field-border-color:           var(--oj-core-border-color-enabled);
   --oj-text-field-placeholder-color:      var(--oj-core-text-color-secondary);
   --oj-text-field-placeholder-font-style: normal;
   --oj-text-field-text-color:      var(--oj-core-text-color-primary);
@@ -8339,8 +8360,12 @@ html[dir="rtl"] .oj-message-content .oj-message-detail {
   z-index: 1; }
 
 .oj-root-layer-host {
-  position: absolute;
+  position: relative;
   z-index: 999; }
+
+.oj-top-layer-host {
+  position: relative;
+  z-index: 2000; }
 
 .oj-popup {
   --oj-current-bg-color:            var(--oj-popup-bg-color); }
@@ -8608,7 +8633,9 @@ oj-label:not(.oj-complete) {
   white-space: normal; }
 
 .oj-text-field-label-inside:not(.oj-read-only) .oj-label,
-.oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside .oj-label {
+.oj-form-control-label-inside:not(.oj-read-only) .oj-label,
+.oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside .oj-label,
+.oj-form-layout .oj-form.oj-enabled .oj-form-control-label-inside .oj-label {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; }
@@ -8617,7 +8644,26 @@ oj-label:not(.oj-complete) {
        to float modifiers (required, help, changed) to the end of the label */
 .oj-label-group {
   display: inline-block;
-  vertical-align: bottom; }
+  vertical-align: bottom;
+  overflow: inherit;
+  text-overflow: inherit; }
+
+.oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label > .oj-label-group,
+.oj-text-field-label-inside > .oj-text-field-container .oj-label > .oj-label-group,
+.oj-form-control-label-inside > .oj-flex > .oj-flex-item > .oj-label > .oj-label-group,
+.oj-form-control-label-inside > .oj-label > .oj-label-group {
+  display: flex;
+  flex-direction: row-reverse;
+  width: fit-content;
+  max-width: 100%; }
+
+.oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label > .oj-label-group > .oj-component-initnode,
+.oj-text-field-label-inside > .oj-text-field-container .oj-label > .oj-label-group > .oj-component-initnode,
+.oj-form-control-label-inside > .oj-flex > .oj-flex-item > .oj-label > .oj-label-group > .oj-component-initnode,
+.oj-form-control-label-inside > .oj-label > .oj-label-group > .oj-component-initnode {
+  display: block;
+  overflow: inherit;
+  text-overflow: inherit; }
 
 .oj-label-help-icon {
   vertical-align: middle; }
@@ -9559,8 +9605,8 @@ oj-checkboxset:not(.oj-complete) {
   min-height: var(--oj-radio-checkbox-row-height);
   box-sizing: border-box; }
 
-.oj-checkboxset:not(.oj-read-only) label,
-.oj-radioset:not(.oj-read-only) label {
+.oj-checkboxset:not(.oj-read-only) .oj-checkbox-label,
+.oj-radioset:not(.oj-read-only) .oj-radio-label {
   padding-top: calc((var(--oj-radio-checkbox-row-height) - var(--oj-typography-body-md-line-height) * var(--oj-typography-body-md-font-size) - 1px) / 2);
   padding-bottom: calc((var(--oj-radio-checkbox-row-height) - var(--oj-typography-body-md-line-height) * var(--oj-typography-body-md-font-size) - 1px) / 2); }
 
@@ -10235,13 +10281,14 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
   flex-grow: 1; }
 
 /* Styling to suppress default padding */
-.oj-listview-item-padding-off .oj-listview-item-layout {
+.oj-listview-item-padding-off .oj-listview-item-element.oj-listview-item-layout {
   padding: 0; }
 
-/* Styling for the items alignment on list header */
+/* Styling for the content on list header */
 .oj-listview-group-item .oj-listview-cell-element {
   display: flex;
-  align-items: center; }
+  align-items: center;
+  flex-grow: 1; }
 
 /* Styling for single line skeleton */
 .oj-listview-skeleton-line-height {
@@ -10295,6 +10342,10 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
 .oj-listview-card-layout .oj-listview-group {
   padding-top: 0;
   padding-bottom: var(--oj-panel-gutter);
+  padding-inline-start: var(--oj-core-gutter-start, 0);
+  padding-inline-end: var(--oj-core-gutter-end, 0); }
+
+.oj-listview-no-data-card {
   padding-inline-start: var(--oj-core-gutter-start, 0);
   padding-inline-end: var(--oj-core-gutter-end, 0); }
 
@@ -10714,12 +10765,12 @@ html[dir="rtl"] .oj-slider-horizontal .oj-slider-range-max {
   border: 1px dotted; }
 
 .oj-slider:not(.oj-disabled):not(.oj-slider-color-picker) .oj-slider-thumb:hover {
-  background-color: var(--oj-slider-thumb-bg-color-hover);
+  background-image: linear-gradient(var(--oj-slider-thumb-bg-color-hover), var(--oj-slider-thumb-bg-color-hover));
   box-shadow: var(--oj-slider-thumb-box-shadow-hover);
   cursor: var(--oj-core-cursor-clickable); }
 
 .oj-slider:not(.oj-disabled):not(.oj-slider-color-picker) .oj-slider-thumb.oj-active {
-  background-color: var(--oj-slider-thumb-bg-color-active);
+  background-image: linear-gradient(var(--oj-slider-thumb-bg-color-active), var(--oj-slider-thumb-bg-color-active));
   border-color: var(--oj-slider-thumb-border-color-active);
   box-shadow: var(--oj-slider-thumb-box-shadow-active);
   cursor: var(--oj-core-cursor-clickable);
@@ -11834,7 +11885,8 @@ html[dir="rtl"] .oj-conveyorbelt-overflow-indicator.oj-end {
   color: var(--oj-button-borderless-chrome-text-color-active); }
 
 :root {
-  --oj-data-grid-column-width:                             6.25rem; }
+  --oj-data-grid-column-width:                             6.25rem;
+  --oj-private-data-grid-global-load-indicator-default:    skeleton; }
 
 oj-data-grid:not(.oj-complete) {
   visibility: hidden; }
@@ -11870,13 +11922,15 @@ oj-data-grid:not(.oj-complete) {
 /* The default column width should be set here*/
 .oj-datagrid-cell,
 .oj-datagrid-column-header-cell,
-.oj-datagrid-column-end-header-cell {
+.oj-datagrid-column-end-header-cell,
+.oj-datagrid-skeleton-cell {
   width: var(--oj-data-grid-column-width); }
 
 /* The default row height should be set here*/
 .oj-datagrid-cell,
 .oj-datagrid-row-header-cell,
-.oj-datagrid-row-end-header-cell {
+.oj-datagrid-row-end-header-cell,
+.oj-datagrid-skeleton-cell {
   height: var(--oj-collection-grid-row-height); }
 
 /* Styling on the row header and row end header containere*/
@@ -11926,9 +11980,9 @@ oj-data-grid:not(.oj-complete) {
   border-bottom-width: 1px; }
 
 /* Style for disabling vertical gridlines */
-.oj-datagrid-column-header-spacer.oj-datagrid-small-content-border-vertical,
-.oj-datagrid-bottom-corner.oj-datagrid-small-content-border-vertical,
-.oj-datagrid-end-header-cell.oj-datagrid-small-content-border-vertical {
+.oj-datagrid .oj-datagrid-column-header-spacer.oj-datagrid-small-content-border-vertical,
+.oj-datagrid .oj-datagrid-bottom-corner.oj-datagrid-small-content-border-vertical,
+.oj-datagrid .oj-datagrid-end-header-cell.oj-datagrid-small-content-border-vertical {
   border-inline-end-width: 1px; }
 
 /* Styling on header cells both for rows and columns, start and end */
@@ -11953,6 +12007,7 @@ oj-data-grid:not(.oj-complete) {
   height: var(--oj-collection-grid-header-height);
   padding: var(--oj-collection-grid-cell-padding);
   justify-content: flex-end;
+  text-align: end;
   align-items: center;
   box-sizing: border-box; }
 
@@ -11994,7 +12049,8 @@ oj-data-grid:not(.oj-complete) {
 
 .oj-datagrid-column-header-label,
 .oj-datagrid-column-end-header-label {
-  justify-content: flex-end; }
+  justify-content: flex-end;
+  text-align: end; }
 
 /* Styling on the cells in the column header */
 html:not([dir="rtl"]) .oj-datagrid-column-header-cell {
@@ -12018,6 +12074,7 @@ html[dir="rtl"] .oj-datagrid-column-end-header-cell, html[dir="rtl"]
 .oj-datagrid-row-header-cell,
 .oj-datagrid-row-end-header-cell {
   justify-content: flex-start;
+  text-align: start;
   align-items: center;
   width: var(--oj-data-grid-column-width);
   border-color: var(--oj-collection-border-color);
@@ -12087,21 +12144,25 @@ html[dir="rtl"] .oj-datagrid-row-end-header-cell, html[dir="rtl"]
   border-width: 0 1px 1px 0; }
 
 /* Styling on databody cells */
-.oj-datagrid-cell {
+.oj-datagrid-cell,
+.oj-datagrid-skeleton-cell {
   position: absolute;
   box-sizing: border-box;
   border-style: solid;
   overflow: hidden;
   align-items: center;
   justify-content: flex-end;
+  text-align: end;
   font-size: inherit;
   background-color: var(--oj-collection-bg-color);
   border-color: var(--oj-core-divider-color);
   padding: var(--oj-collection-grid-cell-padding);
   display: flex; }
-  html:not([dir="rtl"]) .oj-datagrid-cell {
+  html:not([dir="rtl"]) .oj-datagrid-cell, html:not([dir="rtl"])
+  .oj-datagrid-skeleton-cell {
     border-width: 0 1px 1px 0; }
-  html[dir="rtl"] .oj-datagrid-cell {
+  html[dir="rtl"] .oj-datagrid-cell, html[dir="rtl"]
+  .oj-datagrid-skeleton-cell {
     border-width: 0 0 1px 1px; }
 
 /* Base styling on databody cell outlines when they are focused/edited */
@@ -12114,7 +12175,11 @@ html[dir="rtl"] .oj-datagrid-row-end-header-cell, html[dir="rtl"]
 .oj-datagrid-cell.oj-datagrid-cell-edit-top::before,
 .oj-datagrid-cell.oj-datagrid-cell-edit-start::before,
 .oj-datagrid-cell.oj-datagrid-floodfill-top::before,
-.oj-datagrid-cell.oj-datagrid-floodfill-start::before {
+.oj-datagrid-cell.oj-datagrid-floodfill-start::before,
+.oj-datagrid-header-cell.oj-datagrid-floodfill-top::before,
+.oj-datagrid-header-cell.oj-datagrid-floodfill-start::before,
+.oj-datagrid-header-label.oj-datagrid-floodfill-top::before,
+.oj-datagrid-header-label.oj-datagrid-floodfill-start::before {
   content: "";
   position: absolute;
   box-sizing: border-box;
@@ -12131,7 +12196,11 @@ html[dir="rtl"] .oj-datagrid-row-end-header-cell, html[dir="rtl"]
   .oj-datagrid-cell.oj-datagrid-cell-edit-top::before, html:not([dir="rtl"])
   .oj-datagrid-cell.oj-datagrid-cell-edit-start::before, html:not([dir="rtl"])
   .oj-datagrid-cell.oj-datagrid-floodfill-top::before, html:not([dir="rtl"])
-  .oj-datagrid-cell.oj-datagrid-floodfill-start::before {
+  .oj-datagrid-cell.oj-datagrid-floodfill-start::before, html:not([dir="rtl"])
+  .oj-datagrid-header-cell.oj-datagrid-floodfill-top::before, html:not([dir="rtl"])
+  .oj-datagrid-header-cell.oj-datagrid-floodfill-start::before, html:not([dir="rtl"])
+  .oj-datagrid-header-label.oj-datagrid-floodfill-top::before, html:not([dir="rtl"])
+  .oj-datagrid-header-label.oj-datagrid-floodfill-start::before {
     left: 0; }
   html[dir="rtl"] .oj-datagrid-cell.oj-focus::before, html[dir="rtl"]
   .oj-datagrid-header-cell.oj-focus::before, html[dir="rtl"]
@@ -12142,39 +12211,71 @@ html[dir="rtl"] .oj-datagrid-row-end-header-cell, html[dir="rtl"]
   .oj-datagrid-cell.oj-datagrid-cell-edit-top::before, html[dir="rtl"]
   .oj-datagrid-cell.oj-datagrid-cell-edit-start::before, html[dir="rtl"]
   .oj-datagrid-cell.oj-datagrid-floodfill-top::before, html[dir="rtl"]
-  .oj-datagrid-cell.oj-datagrid-floodfill-start::before {
+  .oj-datagrid-cell.oj-datagrid-floodfill-start::before, html[dir="rtl"]
+  .oj-datagrid-header-cell.oj-datagrid-floodfill-top::before, html[dir="rtl"]
+  .oj-datagrid-header-cell.oj-datagrid-floodfill-start::before, html[dir="rtl"]
+  .oj-datagrid-header-label.oj-datagrid-floodfill-top::before, html[dir="rtl"]
+  .oj-datagrid-header-label.oj-datagrid-floodfill-start::before {
     right: 0; }
 
 .oj-datagrid-cell.oj-datagrid-selected-end,
 .oj-datagrid-cell.oj-datagrid-cell-edit-end,
-.oj-datagrid-cell.oj-datagrid-floodfill-end {
+.oj-datagrid-cell.oj-datagrid-floodfill-end,
+.oj-datagrid-header-cell.oj-datagrid-floodfill-end,
+.oj-datagrid-header-label.oj-datagrid-floodfill-end {
   border-inline-end-color: var(--oj-core-border-color-selected); }
 
 .oj-datagrid-cell.oj-datagrid-selected-bottom,
 .oj-datagrid-cell.oj-datagrid-cell-edit-bottom,
-.oj-datagrid-cell.oj-datagrid-floodfill-bottom {
+.oj-datagrid-cell.oj-datagrid-floodfill-bottom,
+.oj-datagrid-header-cell.oj-datagrid-floodfill-bottom,
+.oj-datagrid-header-label.oj-datagrid-floodfill-bottom {
   border-bottom-color: var(--oj-core-border-color-selected); }
 
 .oj-datagrid-cell.oj-datagrid-selected-top::before,
 .oj-datagrid-cell.oj-datagrid-cell-edit-top::before,
-.oj-datagrid-cell.oj-datagrid-floodfill-top::before {
+.oj-datagrid-cell.oj-datagrid-floodfill-top::before,
+.oj-datagrid-header-cell.oj-datagrid-floodfill-top::before,
+.oj-datagrid-header-label.oj-datagrid-floodfill-top::before {
   border-top: 1px solid var(--oj-core-border-color-selected); }
 
 .oj-datagrid-cell.oj-datagrid-selected-start::before,
 .oj-datagrid-cell.oj-datagrid-cell-edit-start::before,
-.oj-datagrid-cell.oj-datagrid-floodfill-start::before {
+.oj-datagrid-cell.oj-datagrid-floodfill-start::before,
+.oj-datagrid-header-cell.oj-datagrid-floodfill-start::before,
+.oj-datagrid-header-label.oj-datagrid-floodfill-start::before {
   border-inline-start: 1px solid var(--oj-core-border-color-selected); }
 
-.oj-datagrid-cell.oj-datagrid-floodfill-end:not(.oj-datagrid-selected-end):not(.oj-datagrid-cell-edit-end) {
+.oj-datagrid-cell.oj-datagrid-cell-edit-end-invalid {
+  border-inline-end-color: var(--oj-core-danger-3); }
+
+.oj-datagrid-cell.oj-datagrid-cell-edit-bottom-invalid {
+  border-bottom-color: var(--oj-core-danger-3); }
+
+.oj-datagrid-cell.oj-datagrid-cell-edit-top-invalid::before {
+  border-top: 1px solid var(--oj-core-danger-3); }
+
+.oj-datagrid-cell.oj-datagrid-cell-edit-start-invalid::before {
+  border-inline-start: 1px solid var(--oj-core-danger-3); }
+
+.oj-datagrid-cell.oj-datagrid-floodfill-end:not(.oj-datagrid-selected-end):not(.oj-datagrid-cell-edit-end),
+.oj-datagrid-header-cell.oj-datagrid-floodfill-end:not(.oj-datagrid-selected-end),
+.oj-datagrid-header-label.oj-datagrid-floodfill-end:not(.oj-datagrid-selected-end) {
   border-inline-end-style: dashed; }
 
-.oj-datagrid-cell.oj-datagrid-floodfill-bottom:not(.oj-datagrid-selected-bottom):not(.oj-datagrid-cell-edit-bottom) {
+.oj-datagrid-cell.oj-datagrid-floodfill-bottom:not(.oj-datagrid-selected-bottom):not(.oj-datagrid-cell-edit-bottom),
+.oj-datagrid-header-cell.oj-datagrid-floodfill-bottom:not(.oj-datagrid-selected-bottom),
+.oj-datagrid-header-label.oj-datagrid-floodfill-bottom:not(.oj-datagrid-selected-bottom) {
   border-bottom-style: dashed; }
 
-.oj-datagrid-cell.oj-datagrid-floodfill-top:not(.oj-datagrid-selected-top):not(.oj-datagrid-cell-edit-top)::before {
+.oj-datagrid-cell.oj-datagrid-floodfill-top:not(.oj-datagrid-selected-top):not(.oj-datagrid-cell-edit-top)::before,
+.oj-datagrid-header-cell.oj-datagrid-floodfill-top:not(.oj-datagrid-selected-top)::before,
+.oj-datagrid-header-label.oj-datagrid-floodfill-top:not(.oj-datagrid-selected-top)::before {
   border-top-style: dashed; }
 
-.oj-datagrid-cell.oj-datagrid-floodfill-start:not(.oj-datagrid-selected-start):not(.oj-datagrid-cell-edit-start)::before {
+.oj-datagrid-cell.oj-datagrid-floodfill-start:not(.oj-datagrid-selected-start):not(.oj-datagrid-cell-edit-start)::before,
+.oj-datagrid-header-cell.oj-datagrid-floodfill-start:not(.oj-datagrid-selected-start)::before,
+.oj-datagrid-header-label.oj-datagrid-floodfill-start:not(.oj-datagrid-selected-start)::before {
   border-inline-start-style: dashed; }
 
 /* Styling on databody cell outlines when they can be overwritten, to use a background color don't use the after psuedo class */
@@ -12261,7 +12362,8 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
   font-size: inherit; }
 
 .oj-datagrid-cell .oj-checkboxset .oj-checkbox-label {
-  justify-content: flex-end; }
+  justify-content: flex-end;
+  text-align: end; }
 
 /* Styling on header and cell default text for vertical alignment, add this class name to headers when using a
             knockout template or custom renderer to bottom align text*/
@@ -12278,7 +12380,8 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
 /* styling to center align outside grouped headers */
 .oj-datagrid-header-grouping > :first-child.oj-datagrid-column-header-cell:not(.oj-datagrid-hierarchical-group),
 .oj-datagrid-header-grouping > :first-child.oj-datagrid-column-end-header-cell {
-  justify-content: center; }
+  justify-content: center;
+  text-align: center; }
 
 /* Styling on row and column banding */
 .oj-datagrid-cell.oj-datagrid-banded {
@@ -12290,12 +12393,12 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
 
 /* Styling on row and cell hover */
 .oj-datagrid-cell.oj-hover {
-  background-color: var(--oj-core-bg-color-hover); }
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover)); }
 
 /* Styling on row and cell selection, only applied when cell is not being actively edited */
 .oj-datagrid.oj-focus .oj-datagrid-cell.oj-selected:not(.oj-datagrid-cell-edit),
 .oj-datagrid-cell.oj-selected:not(.oj-datagrid-cell-edit) {
-  background-color: var(--oj-core-bg-color-selected); }
+  background-color: var(--oj-core-bg-color-selected) !important; }
 
 /* Styling on focused row and cell outlines, to use a background color don't use the after pseudo class */
 .oj-datagrid.oj-focus.oj-read-only .oj-datagrid-cell.oj-focus-highlight::before,
@@ -12344,6 +12447,12 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
   position: absolute;
   overflow: auto; }
 
+.oj-datagrid-databody-frozen-column,
+.oj-datagrid-databody-frozen-row,
+.oj-datagrid-databody-frozen-corner {
+  position: absolute;
+  overflow: hidden; }
+
 /* Styling on scroller region, used for positioning*/
 .oj-datagrid-scroller {
   position: absolute;
@@ -12364,19 +12473,19 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
 .oj-datagrid-header-cell.oj-hover,
 .oj-datagrid-end-header-cell.oj-hover,
 .oj-datagrid-top-corner.oj-hover {
-  background-color: var(--oj-collection-header-bg-color-hover); }
+  background-image: linear-gradient(var(--oj-collection-header-bg-color-hover), var(--oj-collection-header-bg-color-hover)); }
 
 /* Styling for headers when a sub set > 1 of its respective cells are selected */
 .oj-datagrid-header-label.oj-partial-selected,
 .oj-datagrid-header-cell.oj-partial-selected,
 .oj-datagrid-end-header-cell.oj-partial-selected {
-  background-color: var(--oj-collection-header-bg-color-partial-selected); }
+  background-color: var(--oj-collection-header-bg-color-partial-selected) !important; }
 
 /* Styling for headers when all of its respective cells are selected */
 .oj-datagrid-header-label.oj-selected,
 .oj-datagrid-header-cell.oj-selected,
 .oj-datagrid-end-header-cell.oj-selected {
-  background-color: var(--oj-collection-header-bg-color-selected); }
+  background-color: var(--oj-collection-header-bg-color-selected) !important; }
 
 /* Styling on the status text, such as fetching data */
 .oj-datagrid-status {
@@ -12442,9 +12551,11 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
   height: var(--oj-core-touch-target-min-size);
   border-radius: var(--oj-button-border-radius); }
 
-.oj-datagrid-sort-icon {
+.oj-datagrid-sort-icon,
+.oj-datagrid-filter-icon {
   width: var(--oj-core-touch-target-min-size);
-  min-width: var(--oj-core-touch-target-min-size); }
+  min-width: var(--oj-core-touch-target-min-size);
+  visibility: visible; }
 
 .oj-datagrid-disclosure-icon {
   width: 1.5rem;
@@ -12461,30 +12572,20 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
 /* Styling for both the sort icons and click area */
 .oj-datagrid-sort-ascending-icon,
 .oj-datagrid-sort-descending-icon,
-.oj-datagrid-sort-default-icon {
+.oj-datagrid-sort-default-icon,
+.oj-datagrid-filterable-icon,
+.oj-datagrid-filtered-icon {
   flex: 0 1 auto;
   font-size: inherit; }
-
-/* Styling for disabled sort icons */
-.oj-datagrid-sort-ascending-icon.oj-disabled,
-.oj-datagrid-sort-descending-icon.oj-disabled,
-.oj-datagrid-sort-default-icon.oj-disabled {
-  display: block;
-  color: inherit; }
-
-.oj-datagrid-row-header-cell .oj-datagrid-sort-default-icon::before,
-.oj-datagrid-row-header-cell .oj-datagrid-sort-ascending-icon::before,
-.oj-datagrid-row-header-cell .oj-datagrid-sort-descending-icon::before {
-  transform: rotate(90deg); }
 
 .oj-datagrid-icon-container .oj-component-icon, .oj-datagrid-icon-container .oj-menucheckbox-icon {
   color: var(--oj-private-button-ghost-chrome-text-color); }
 
 .oj-datagrid-icon-container.oj-hover .oj-component-icon, .oj-datagrid-icon-container.oj-hover .oj-menucheckbox-icon {
-  color: var(--oj-private-button-ghost-chrome-text-color-hover); }
+  color: var(--oj-core-text-color-secondary); }
 
 .oj-datagrid-icon-container.oj-active .oj-component-icon, .oj-datagrid-icon-container.oj-active .oj-menucheckbox-icon {
-  color: var(--oj-private-button-ghost-chrome-text-color-active); }
+  color: var(--oj-core-text-color-secondary); }
 
 /* Styling for the row that is cut during a context menu or CTRL-X cut and paste operation */
 .oj-datagrid-cell.oj-datagrid-cut {
@@ -12572,11 +12673,6 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
   padding: 5px;
   text-align: end; }
 
-/* Redwood theme - on resize the header text should be clipped */
-.oj-datagrid-column-header-cell > * {
-  white-space: nowrap;
-  overflow: hidden; }
-
 .oj-datagrid-tree-spacer {
   height: var(--oj-collection-grid-row-height);
   display: inline-block;
@@ -12585,7 +12681,8 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
 
 .oj-datagrid-column-header-cell.oj-datagrid-hierarchical-group,
 .oj-datagrid-column-header-cell.oj-datagrid-hierarchical-tree {
-  justify-content: flex-start; }
+  justify-content: flex-start;
+  text-align: start; }
 
 .oj-datagrid-row-header-cell.oj-datagrid-hierarchical-group .oj-datagrid-icon-container.oj-datagrid-disclosure-icon {
   margin-top: calc(-1 * var(--oj-collection-grid-cell-padding)); }
@@ -12611,6 +12708,18 @@ html[dir="rtl"] .oj-datagrid-col-drop-target-line {
   border-left: 2px solid var(--oj-core-drag-drop-line-color);
   position: absolute; }
 
+.oj-datagrid-row-frozen-indicator {
+  border-bottom: 4px solid var(--oj-collection-border-color);
+  position: absolute; }
+
+html:not([dir="rtl"]) .oj-datagrid-col-frozen-indicator {
+  border-right: 4px solid var(--oj-collection-border-color);
+  position: absolute; }
+
+html[dir="rtl"] .oj-datagrid-col-frozen-indicator {
+  border-left: 4px solid var(--oj-collection-border-color);
+  position: absolute; }
+
 .dndContainer {
   position: absolute;
   overflow: auto;
@@ -12622,6 +12731,70 @@ html[dir="rtl"] .oj-datagrid-col-drop-target-line {
 
 .oj-datagrid-drop-target {
   background-color: var(--oj-core-drag-drop-color-1); }
+
+.oj-datagrid-skeleton {
+  width: 100%;
+  height: 19px;
+  background-color: var(--oj-animation-skeleton-bg-end-color); }
+
+html:not([dir="rtl"]) .oj-datagrid-row-end-header .oj-datagrid-skeleton-cell {
+  border-width: 0 0 1px 1px; }
+
+html[dir="rtl"] .oj-datagrid-row-end-header .oj-datagrid-skeleton-cell {
+  border-width: 0 1px 1px 0; }
+
+html:not([dir="rtl"]) .oj-datagrid-column-end-header .oj-datagrid-skeleton-cell {
+  border-width: 1px 1px 0 0; }
+
+html[dir="rtl"] .oj-datagrid-column-end-header .oj-datagrid-skeleton-cell {
+  border-width: 1px 0 0 1px; }
+
+html:not([dir="rtl"]) .oj-datagrid-col-hidden-indicator {
+  border-right: 1px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+html[dir="rtl"] .oj-datagrid-col-hidden-indicator {
+  border-left: 1px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+.oj-datagrid-row-hidden-indicator {
+  border-bottom: 1px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+.oj-datagrid-row-header-hidden-indicator {
+  border-bottom: 3px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+html:not([dir="rtl"]) .oj-datagrid-col-header-hidden-indicator {
+  border-right: 3px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+html[dir="rtl"] .oj-datagrid-col-header-hidden-indicator {
+  border-left: 3px solid var(--oj-core-drag-drop-line-color);
+  position: absolute; }
+
+.oj-datagrid-icon-hidden {
+  display: flex;
+  visibility: hidden;
+  width: 0px;
+  min-width: 0px; }
+
+.oj-datagrid-header-cell-content {
+  display: -webkit-box;
+  min-width: 1rem;
+  white-space: normal;
+  overflow: hidden; }
+
+.oj-datagrid-cell-validation-error {
+  width: 0;
+  height: 0;
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  border-bottom: 5px solid transparent;
+  border-left: 5px solid transparent;
+  border-right: 5px solid var(--oj-core-danger-3);
+  border-top: 5px solid var(--oj-core-danger-3); }
 
 /* Styling for the default sort icon */
 /* Styling for the sort ascending icon */
@@ -12701,6 +12874,24 @@ oj-calendar:not(.oj-complete) {
 .oj-inputdatetime-calendar-icon.oj-disabled,
 .oj-inputdatetime-time-icon.oj-disabled {
   cursor: default; }
+
+.oj-inputdatetime-clear-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--oj-text-field-height);
+  width: 1.5625rem;
+  text-decoration: none;
+  cursor: var(--oj-core-cursor-clickable); }
+
+a.oj-inputdatetime-clear-icon-btn:active {
+  background-color: transparent; }
+
+.oj-inputdatetime-clear-icon {
+  color: inherit; }
+
+.oj-text-field-container.oj-form-control-empty-clearicon .oj-inputdatetime-clear-icon-btn {
+  display: none; }
 
 .oj-datepicker-popup {
   min-width: 17.5rem;
@@ -13300,7 +13491,7 @@ html[dir="rtl"] .oj-drawer-reflow-wrapper.oj-drawer-reflow.oj-drawer-end {
   width: 100%;
   max-width: 100%; }
 
-.oj-drawer-full-overlay.oj-drawer-bottom {
+.oj-drawer-layout-surrogate .oj-drawer-full-overlay.oj-drawer-bottom {
   max-height: 100vh; }
 
 html:not([dir="rtl"]) .oj-drawer-layout-surrogate .oj-drawer-overlay.oj-drawer-start {
@@ -13330,6 +13521,13 @@ oj-drawer-popup:not(.oj-complete) {
 .oj-drawer-disable-body-overflow {
   overflow: hidden !important; }
 
+.oj-drawer-focus-guard {
+  height: 0;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 1px; }
+
 .oj-drawer-popup-surrogate:not(.oj-component-overlay) {
   position: relative; }
 
@@ -13343,35 +13541,40 @@ oj-drawer-popup:not(.oj-complete) {
   z-index: calc(var(--oj-core-z-index-dialog) + 1); }
 
 .oj-drawer-popup-surrogate oj-drawer-popup {
-  position: absolute;
+  position: fixed;
   background: var(--oj-drawer-overlay-bg-color);
   overflow-y: auto; }
 
+.oj-drawer-popup-surrogate:not(.oj-drawer-modal) oj-drawer-popup {
+  overscroll-behavior: contain; }
+
 .oj-drawer-popup-surrogate .oj-drawer-start,
 .oj-drawer-popup-surrogate .oj-drawer-end {
-  height: 100vh;
-  max-height: 100vh;
   max-width: 90vw;
-  min-width: 320px; }
+  min-width: 320px;
+  top: 0;
+  bottom: 0; }
 
-@supports (-webkit-touch-callout: none) {
-  .oj-drawer-popup-surrogate .oj-drawer-start,
-  .oj-drawer-popup-surrogate .oj-drawer-end {
-    height: -webkit-fill-available;
-    max-height: -webkit-fill-available; } }
+html:not([dir="rtl"]) .oj-drawer-popup-surrogate .oj-drawer-start {
+  left: 0; }
+
+html[dir="rtl"] .oj-drawer-popup-surrogate .oj-drawer-start {
+  right: 0; }
+
+html:not([dir="rtl"]) .oj-drawer-popup-surrogate .oj-drawer-end {
+  right: 0; }
+
+html[dir="rtl"] .oj-drawer-popup-surrogate .oj-drawer-end {
+  left: 0; }
 
 .oj-drawer-popup-surrogate .oj-drawer-full-overlay {
   width: 100%;
   max-width: 100%; }
 
 .oj-drawer-popup-surrogate .oj-drawer-bottom {
-  width: 100vw;
-  max-width: 100vw;
-  max-height: 100vh; }
-
-@supports (-webkit-touch-callout: none) {
-  .oj-drawer-popup-surrogate .oj-drawer-bottom {
-    max-height: -webkit-fill-available; } }
+  left: 0;
+  right: 0;
+  bottom: 0; }
 
 html:not([dir="rtl"]) .oj-drawer-popup-surrogate .oj-drawer-start {
   box-shadow: 0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb), 0.05); }
@@ -13543,6 +13746,12 @@ oj-diagram {
   top: -5px; }
 
 :root {
+  --oj-toolbar-button-margin:.5rem;
+  --oj-toolbar-borderless-button-margin:.125rem;
+  --oj-toolbar-separator-margin:.5rem;
+  --oj-private-toolbar-global-chroming-default:borderless; }
+
+:root {
   --oj-dialog-bg-color:                 rgb(var(--oj-palette-neutral-rgb-0));
   --oj-dialog-border-color:             rgba(var(--oj-palette-neutral-rgb-190),.1);
   --oj-dialog-border-radius:            var(--oj-core-border-radius-lg);
@@ -13633,6 +13842,11 @@ oj-dialog {
 .oj-dialog-sheet-animating {
   overflow: hidden !important; }
 
+/* remove dialog max size limits on small screens */
+.oj-dialog.oj-dialog-small-screen {
+  max-height: initial;
+  max-width: initial; }
+
 .oj-dialog.oj-resizable {
   position: absolute; }
 
@@ -13700,8 +13914,9 @@ oj-dialog {
   text-align: end; }
 
 .oj-dialog-footer > .oj-button,
-.oj-dialog-footer > .oj-button > .oj-button-button {
-  margin-left: var(--oj-core-spacing-1x); }
+.oj-dialog-footer > .oj-button > .oj-button-button,
+.oj-dialog-footer > oj-c-button {
+  margin-left: var(--oj-toolbar-button-margin); }
 
 .oj-dialog:focus,
 .oj-dialog-header-close-wrapper:focus {
@@ -13760,13 +13975,13 @@ oj-file-picker:not(.oj-complete) {
   border-color: var(--oj-core-danger-1); }
 
 .oj-filepicker-dropzone:active {
-  background-color: var(--oj-core-bg-color-active); }
+  background-image: linear-gradient(var(--oj-core-bg-color-active), var(--oj-core-bg-color-active)); }
 
 .oj-filepicker-dropzone.oj-valid-drop {
-  background-color: var(--oj-core-bg-color-hover); }
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover)); }
 
 .oj-filepicker-dropzone:hover:not(.oj-filepicker-disabled) {
-  background-color: var(--oj-core-bg-color-hover);
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
   cursor: pointer; }
 
 /* 
@@ -14295,7 +14510,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for all row labels */
 .oj-gantt-row-label {
-  fill: var(--oj-core-text-color-primary);
+  color: var(--oj-core-text-color-primary);
   font-size: var(--oj-dvt-label-font-size-lg);
   font-weight: normal;
   padding-inline-start: calc(var(--oj-core-gutter-start, 1rem) - var(--oj-core-gutter-start, 0px));
@@ -14470,7 +14685,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the major time axis labels */
 .oj-gantt-major-axis-label {
-  fill: var(--oj-core-text-color-primary);
+  color: var(--oj-core-text-color-primary);
   font-size: var(--oj-dvt-label-font-size-lg);
   font-weight: 600; }
 
@@ -14486,7 +14701,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the minor time axis labels */
 .oj-gantt-minor-axis-label {
-  fill: var(--oj-core-text-color-primary);
+  color: var(--oj-core-text-color-primary);
   font-size: var(--oj-dvt-label-font-size-md);
   font-weight: normal; }
 
@@ -15355,7 +15570,7 @@ oj-input-password:not(.oj-complete) {
   align-items: center;
   justify-content: center;
   height: var(--oj-text-field-height);
-  width: 25px;
+  width: 1.5625rem;
   text-decoration: none;
   cursor: var(--oj-core-cursor-clickable); }
 
@@ -16024,19 +16239,19 @@ oj-message:not(.oj-complete) {
 .oj-messages-inline .oj-error .oj-message-leading-header > .oj-message-summary,
 .oj-messages-general .oj-error .oj-message-status-icon.oj-message-error-icon,
 .oj-messages-inline .oj-error .oj-message-status-icon.oj-message-error-icon {
-  color: var(--oj-core-danger-secondary-contrast); }
+  color: var(--oj-core-danger-3); }
 
 .oj-messages-general .oj-confirmation .oj-message-leading-header > .oj-message-summary,
 .oj-messages-inline .oj-confirmation .oj-message-leading-header > .oj-message-summary,
 .oj-messages-general .oj-confirmation .oj-message-status-icon.oj-message-confirmation-icon,
 .oj-messages-inline .oj-confirmation .oj-message-status-icon.oj-message-confirmation-icon {
-  color: var(--oj-core-success-secondary-contrast); }
+  color: var(--oj-core-success-3); }
 
 .oj-messages-general .oj-warning .oj-message-leading-header > .oj-message-summary,
 .oj-messages-inline .oj-warning .oj-message-leading-header > .oj-message-summary,
 .oj-messages-general .oj-warning .oj-message-status-icon.oj-message-warning-icon,
 .oj-messages-inline .oj-warning .oj-message-status-icon.oj-message-warning-icon {
-  color: var(--oj-core-warning-secondary-contrast); }
+  color: var(--oj-core-warning-3); }
 
 .oj-messages-general .oj-info .oj-message-leading-header > .oj-message-summary,
 .oj-messages-inline .oj-info .oj-message-leading-header > .oj-message-summary,
@@ -16044,7 +16259,7 @@ oj-message:not(.oj-complete) {
 .oj-messages-inline .oj-message-leading-header > .oj-message-summary,
 .oj-messages-general .oj-info .oj-message-status-icon.oj-message-info-icon,
 .oj-messages-inline .oj-info .oj-message-status-icon.oj-message-info-icon {
-  color: var(--oj-core-info-secondary-contrast); }
+  color: var(--oj-core-info-3); }
 
 .oj-messages-notification .oj-error .oj-message-status-icon.oj-message-error-icon,
 .oj-messages-notification .oj-confirmation .oj-message-status-icon.oj-message-confirmation-icon,
@@ -16181,58 +16396,117 @@ html[dir="rtl"] .oj-message-header .oj-message-status-icon {
 oj-message-banner:not(.oj-complete) {
   visibility: hidden; }
 
+.oj-messagebanner-container-gap {
+  gap: var(--oj-core-spacing-1x); }
+
+.oj-messagebanner-item {
+  background-color: var(--oj-private-message-banner-background-color);
+  border-bottom-width: 1px;
+  border-bottom-style: 'solid';
+  border-bottom-color: var(--oj-core-divider-color); }
+
+.oj-messagebanner-item:focus-visible {
+  outline-style: 'dotted';
+  outline-width: 1px;
+  outline-color: var(--oj-core-focus-border-color);
+  outline-offset: 1px; }
+
+.oj-messagebanner-item.oj-messagebanner-section {
+  border: 1px solid var(--oj-core-divider-color);
+  border-radius: var(--oj-core-border-radius-lg); }
+
+.oj-messagebanner-content {
+  align-items: 'center';
+  box-sizing: 'border-box';
+  display: 'flex';
+  flex-wrap: 'wrap';
+  padding-top: var(--oj-core-spacing-4x);
+  padding-bottom: var(--oj-core-spacing-4x);
+  padding-inline-start: var(--oj-core-gutter-start, var(--oj-core-spacing-4x));
+  padding-inline-end: var(--oj-core-gutter-start, var(--oj-core-spacing-4x)); }
+
+.oj-messagebanner-content-gap {
+  gap: var(--oj-core-spacing-2x); }
+
+.oj-messagebanner-start-icon-container {
+  color: var(--oj-private-message-banner-start-icon-color);
+  font-size: var(--oj-private-message-banner-start-icon-size);
+  height: var(--oj-private-message-banner-summary-line-height);
+  align-self: 'flex-start';
+  display: 'flex';
+  margin-inline-end: var(--oj-core-spacing-2x); }
+
+.oj-messagebanner-start-icon {
+  height: calc(var(--oj-private-message-banner-summary-text-size) * var(--oj-private-message-banner-summary-line-height));
+  display: 'flex';
+  align-items: 'center'; }
+
+.oj-messagebanner-header {
+  box-sizing: 'border-box';
+  display: 'flex';
+  flex-wrap: 'wrap';
+  flex-direction: 'row';
+  line-height: var(--oj-private-message-banner-summary-line-height); }
+
+@media screen and (max-width: 599.9px) {
+  .oj-messagebanner-header {
+    flex-direction: column; } }
+
+.oj-messagebanner-summary {
+  flex: 1;
+  overflow-wrap: 'anywhere';
+  font-size: var(--oj-private-message-banner-summary-text-size);
+  font-weight: var(--oj-private-message-banner-summary-text-weight);
+  color: var(--oj-private-message-banner-summary-text-color); }
+
+.oj-messagebanner-timestamp {
+  flex-shrink: 0;
+  font-size: var(--oj-typography-body-xs-font-size);
+  color: var(--oj-core-text-color-secondary); }
+
+.oj-messagebanner-detail {
+  overflow-wrap: 'anywhere';
+  font-size: var(--oj-typography-body-sm-font-size);
+  color: var(--oj-core-text-color-primary); }
+
+.oj-messagebanner-close-button {
+  align-self: 'flex-start';
+  display: 'flex';
+  margin-inline-start: var(--oj-core-spacing-1x);
+  margin-inline-end: calc(-1 * var(--oj-core-spacing-2x));
+  margin-top: calc(-1 * var(--oj-core-spacing-2x));
+  margin-bottom: calc(-1 * var(--oj-core-spacing-2x)); }
+
 :root {
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-background-color:         var(--oj-core-info-secondary-3);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-start-icon-color:         var(--oj-core-info-3);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-start-icon-size:          1rem;
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-text-color:       var(--oj-core-info-3);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-text-weight:      var(--oj-typography-subheading-xs-font-weight);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-text-size:        var(--oj-typography-subheading-xs-font-size);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-line-height:      1.25rem;
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-global-enter-animation:   '[{ "effect": "expand", "duration": "0.25s", "direction": "height" }]';
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-global-exit-animation:    '[{ "effect": "collapse", "duration": "0.25s", "direction": "height" }]';
-  --oj-c-PRIVATE-DO-NOT-USE-core-border-radius-lg:                   var(--oj-core-border-radius-lg);
-  --oj-c-PRIVATE-DO-NOT-USE-core-danger-3:                           var(--oj-core-danger-3);
-  --oj-c-PRIVATE-DO-NOT-USE-core-danger-secondary-3:                 var(--oj-core-danger-secondary-3);
-  --oj-c-PRIVATE-DO-NOT-USE-core-divider-color:                      var(--oj-core-divider-color);
-  --oj-c-PRIVATE-DO-NOT-USE-core-focus-border-color:                 var(--oj-core-focus-border-color);
-  --oj-c-PRIVATE-DO-NOT-USE-core-info-3:                             var(--oj-core-info-3);
-  --oj-c-PRIVATE-DO-NOT-USE-core-info-3:                             var(--oj-core-info-3);
-  --oj-c-PRIVATE-DO-NOT-USE-core-info-secondary-3:                   var(--oj-core-info-secondary-3);
-  --oj-c-PRIVATE-DO-NOT-USE-core-info-secondary-3:                   var(--oj-core-info-secondary-3);
-  --oj-c-PRIVATE-DO-NOT-USE-core-spacing-1x:                         var(--oj-core-spacing-1x);
-  --oj-c-PRIVATE-DO-NOT-USE-core-spacing-2x:                         var(--oj-core-spacing-2x);
-  --oj-c-PRIVATE-DO-NOT-USE-core-spacing-4x:                         var(--oj-core-spacing-4x);
-  --oj-c-PRIVATE-DO-NOT-USE-core-success-3:                          var(--oj-core-success-3);
-  --oj-c-PRIVATE-DO-NOT-USE-core-success-secondary-3:                var(--oj-core-success-secondary-3);
-  --oj-c-PRIVATE-DO-NOT-USE-core-text-color-primary:                 var(--oj-core-text-color-primary);
-  --oj-c-PRIVATE-DO-NOT-USE-core-text-color-secondary:               var(--oj-core-text-color-secondary);
-  --oj-c-PRIVATE-DO-NOT-USE-core-warning-3:                          var(--oj-core-warning-3);
-  --oj-c-PRIVATE-DO-NOT-USE-core-warning-secondary-3:                var(--oj-core-warning-secondary-3);
-  --oj-c-PRIVATE-DO-NOT-USE-typography-body-sm-font-size:            var(--oj-typography-body-sm-font-size);
-  --oj-c-PRIVATE-DO-NOT-USE-typography-body-xs-font-size:            var(--oj-typography-body-xs-font-size);
-  --oj-c-PRIVATE-DO-NOT-USE-typography-subheading-xs-font-size:      var(--oj-typography-subheading-xs-font-size);
-  --oj-c-PRIVATE-DO-NOT-USE-typography-subheading-xs-font-weight:    var(--oj-typography-subheading-xs-font-weight); }
+  --oj-private-message-banner-background-color:         var(--oj-core-info-secondary-3);
+  --oj-private-message-banner-start-icon-color:         var(--oj-core-info-3);
+  --oj-private-message-banner-start-icon-size:          1rem;
+  --oj-private-message-banner-summary-text-color:       var(--oj-core-info-3);
+  --oj-private-message-banner-summary-text-weight:      var(--oj-typography-subheading-xs-font-weight);
+  --oj-private-message-banner-summary-text-size:        var(--oj-typography-subheading-xs-font-size);
+  --oj-private-message-banner-summary-line-height:      var(--oj-typography-subheading-xs-line-height);
+  --oj-private-message-banner-global-enter-animation:   '[{ "effect": "expand", "duration": "0.25s", "direction": "height" }]';
+  --oj-private-message-banner-global-exit-animation:    '[{ "effect": "collapse", "duration": "0.25s", "direction": "height" }]'; }
 
-.oj-c-messagebanner-error {
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-background-color:   var(--oj-core-danger-secondary-3);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-start-icon-color:   var(--oj-core-danger-3);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-text-color: var(--oj-core-danger-3); }
+.oj-messagebanner-error {
+  --oj-private-message-banner-background-color:   var(--oj-core-danger-secondary-3);
+  --oj-private-message-banner-start-icon-color:   var(--oj-core-danger-3);
+  --oj-private-message-banner-summary-text-color: var(--oj-core-danger-3); }
 
-.oj-c-messagebanner-warning {
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-background-color:   var(--oj-core-warning-secondary-3);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-start-icon-color:   var(--oj-core-warning-3);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-text-color: var(--oj-core-warning-3); }
+.oj-messagebanner-warning {
+  --oj-private-message-banner-background-color:   var(--oj-core-warning-secondary-3);
+  --oj-private-message-banner-start-icon-color:   var(--oj-core-warning-3);
+  --oj-private-message-banner-summary-text-color: var(--oj-core-warning-3); }
 
-.oj-c-messagebanner-confirmation {
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-background-color:   var(--oj-core-success-secondary-3);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-start-icon-color:   var(--oj-core-success-3);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-text-color: var(--oj-core-success-3); }
+.oj-messagebanner-confirmation {
+  --oj-private-message-banner-background-color:   var(--oj-core-success-secondary-3);
+  --oj-private-message-banner-start-icon-color:   var(--oj-core-success-3);
+  --oj-private-message-banner-summary-text-color: var(--oj-core-success-3); }
 
-.oj-c-messagebanner-info {
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-background-color:   var(--oj-core-info-secondary-3);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-start-icon-color:   var(--oj-core-info-3);
-  --oj-c-PRIVATE-DO-NOT-USE-message-banner-summary-text-color: var(--oj-core-info-3); }
+.oj-messagebanner-info {
+  --oj-private-message-banner-background-color:   var(--oj-core-info-secondary-3);
+  --oj-private-message-banner-start-icon-color:   var(--oj-core-info-3);
+  --oj-private-message-banner-summary-text-color: var(--oj-core-info-3); }
 
 .oj-messages-layer {
   z-index: var(--oj-core-z-index-messages); }
@@ -16523,12 +16797,6 @@ oj-n-box {
   font-size: var(--oj-dvt-label-font-size-md); }
 
 :root {
-  --oj-toolbar-button-margin:.5rem;
-  --oj-toolbar-borderless-button-margin:.125rem;
-  --oj-toolbar-separator-margin:.5rem;
-  --oj-private-toolbar-global-chroming-default:borderless; }
-
-:root {
   --oj-tree-view-indent-width:                    1.5rem;
   --oj-tree-view-row-height:                      2.5rem;
   --oj-tree-view-text-color:                      var(--oj-core-text-color-primary);
@@ -16706,7 +16974,8 @@ a.oj-navigationlist-item-content .oj-navigationlist-item-label {
   color: var(--oj-navigation-list-item-label-color);
   flex: 0 0 auto;
   font-size: var(--oj-navigation-list-icon-size);
-  margin: var(--oj-navigation-list-icon-margin); }
+  margin: var(--oj-navigation-list-icon-margin);
+  width: var(--oj-navigation-list-icon-size); }
 
 .oj-navigationlist-group-item {
   display: flex;
@@ -18054,7 +18323,9 @@ oj-progress-bar {
   margin: 0;
   box-sizing: border-box;
   height: 100%;
-  background-color: var(--oj-progress-bar-track-bg-color); }
+  background-color: var(--oj-progress-bar-track-bg-color);
+  border-radius: inherit;
+  box-shadow: 0px 0px 0px 1px var(--oj-core-border-color-enabled) inset; }
 
 .oj-progress-bar-value {
   margin: 0;
@@ -18066,7 +18337,11 @@ oj-progress-bar {
   width: 100%;
   border-style: none;
   background-color: transparent;
-  border-radius: 0; }
+  border-radius: 0;
+  box-shadow: 0px -1px 0px 0px var(--oj-core-border-color-enabled) inset; }
+
+.oj-progress-bar-embedded .oj-progress-bar-track {
+  box-shadow: unset; }
 
 .oj-progress-bar-indeterminate {
   width: 25%;
@@ -18447,6 +18722,11 @@ oj-row-expander:not(.oj-complete) {
 .oj-rowexpander-lazyload-icon {
   outline: none;
   flex: 0 1 auto; }
+
+/* Ghost button styling on hover */
+.oj-rowexpander-expand-icon:hover.oj-clickable-icon-nocontext,
+.oj-rowexpander-collapse-icon:hover.oj-clickable-icon-nocontext {
+  color: var(--oj-core-text-color-secondary); }
 
 /* Focus border for highlighted icons */
 .oj-rowexpander-leaf-icon.oj-focus-highlight::before,
@@ -19323,546 +19603,6 @@ oj-selector:not(.oj-complete) {
   left: 0; }
 
 :root {
-  --oj-palette-danger-rgb-10:    255, 248, 247;
-  --oj-palette-danger-rgb-20:    255, 241, 239;
-  --oj-palette-danger-rgb-30:    255, 235, 232;
-  --oj-palette-danger-rgb-40:    255, 217, 211;
-  --oj-palette-danger-rgb-50:    255, 193, 184;
-  --oj-palette-danger-rgb-60:    255, 157, 144;
-  --oj-palette-danger-rgb-70:    255, 134, 117;
-  --oj-palette-danger-rgb-80:    254, 104, 84;
-  --oj-palette-danger-rgb-90:    236, 79, 58;
-  --oj-palette-danger-rgb-100:   214, 59, 37;
-  --oj-palette-danger-rgb-110:   195, 53, 34;
-  --oj-palette-danger-rgb-120:   179, 49, 31;
-  --oj-palette-danger-rgb-130:   170, 34, 34;
-  --oj-palette-danger-rgb-140:   143, 39, 25;
-  --oj-palette-danger-rgb-150:   124, 34, 22;
-  --oj-palette-danger-rgb-160:   102, 28, 18;
-  --oj-palette-danger-rgb-170:   86, 24, 15;
-  --oj-palette-warning-rgb-10:   254, 249, 242;
-  --oj-palette-warning-rgb-20:   253, 242, 229;
-  --oj-palette-warning-rgb-30:   252, 237, 220;
-  --oj-palette-warning-rgb-40:   249, 221, 188;
-  --oj-palette-warning-rgb-50:   246, 199, 146;
-  --oj-palette-warning-rgb-60:   240, 169, 87;
-  --oj-palette-warning-rgb-70:   235, 150, 50;
-  --oj-palette-warning-rgb-80:   225, 128, 18;
-  --oj-palette-warning-rgb-90:   198, 113, 14;
-  --oj-palette-warning-rgb-100:  172, 99, 12;
-  --oj-palette-warning-rgb-110:  156, 89, 11;
-  --oj-palette-warning-rgb-120:  143, 82, 10;
-  --oj-palette-warning-rgb-130:  129, 73, 9;
-  --oj-palette-warning-rgb-140:  114, 65, 8;
-  --oj-palette-warning-rgb-150:  99, 56, 7;
-  --oj-palette-warning-rgb-160:  81, 47, 6;
-  --oj-palette-warning-rgb-170:  69, 39, 5;
-  --oj-palette-success-rgb-10:   244, 252, 235;
-  --oj-palette-success-rgb-20:   235, 248, 222;
-  --oj-palette-success-rgb-30:   228, 245, 211;
-  --oj-palette-success-rgb-40:   207, 235, 179;
-  --oj-palette-success-rgb-50:   177, 221, 136;
-  --oj-palette-success-rgb-60:   138, 201, 79;
-  --oj-palette-success-rgb-70:   125, 186, 69;
-  --oj-palette-success-rgb-80:   111, 169, 57;
-  --oj-palette-success-rgb-90:   94, 148, 43;
-  --oj-palette-success-rgb-100:  80, 130, 35;
-  --oj-palette-success-rgb-110:  73, 118, 32;
-  --oj-palette-success-rgb-120:  67, 107, 29;
-  --oj-palette-success-rgb-130:  60, 96, 26;
-  --oj-palette-success-rgb-140:  53, 86, 23;
-  --oj-palette-success-rgb-150:  46, 73, 20;
-  --oj-palette-success-rgb-160:  38, 61, 16;
-  --oj-palette-success-rgb-170:  31, 51, 14;
-  --oj-palette-info-rgb-10:      246, 250, 252;
-  --oj-palette-info-rgb-20:      237, 246, 249;
-  --oj-palette-info-rgb-30:      228, 241, 247;
-  --oj-palette-info-rgb-40:      208, 229, 238;
-  --oj-palette-info-rgb-50:      180, 213, 225;
-  --oj-palette-info-rgb-60:      143, 191, 208;
-  --oj-palette-info-rgb-70:      121, 177, 198;
-  --oj-palette-info-rgb-80:      95, 162, 186;
-  --oj-palette-info-rgb-90:      65, 144, 172;
-  --oj-palette-info-rgb-100:     34, 126, 158;
-  --oj-palette-info-rgb-110:     14, 114, 151;
-  --oj-palette-info-rgb-120:     0, 104, 140;
-  --oj-palette-info-rgb-130:     2, 94, 126;
-  --oj-palette-info-rgb-140:     4, 83, 111;
-  --oj-palette-info-rgb-150:     6, 72, 95;
-  --oj-palette-info-rgb-160:     6, 60, 78;
-  --oj-palette-info-rgb-170:     5, 50, 66;
-  --oj-palette-brand-rgb-10:     246, 250, 252;
-  --oj-palette-brand-rgb-20:     237, 246, 249;
-  --oj-palette-brand-rgb-30:     228, 241, 247;
-  --oj-palette-brand-rgb-40:     208, 229, 238;
-  --oj-palette-brand-rgb-50:     180, 213, 225;
-  --oj-palette-brand-rgb-60:     143, 191, 208;
-  --oj-palette-brand-rgb-70:     121, 177, 198;
-  --oj-palette-brand-rgb-80:     95, 162, 186;
-  --oj-palette-brand-rgb-90:     65, 144, 172;
-  --oj-palette-brand-rgb-100:    34, 126, 158;
-  --oj-palette-brand-rgb-110:    14, 114, 151;
-  --oj-palette-brand-rgb-120:    0, 104, 140;
-  --oj-palette-brand-rgb-130:    2, 94, 126;
-  --oj-palette-brand-rgb-140:    4, 83, 111;
-  --oj-palette-brand-rgb-150:    6, 72, 95;
-  --oj-palette-brand-rgb-160:    6, 60, 78;
-  --oj-palette-brand-rgb-170:    5, 50, 66;
-  --oj-palette-neutral-rgb-0:    255, 255, 255;
-  --oj-palette-neutral-rgb-10:   251, 249, 248;
-  --oj-palette-neutral-rgb-20:   245, 244, 242;
-  --oj-palette-neutral-rgb-30:   241, 239, 237;
-  --oj-palette-neutral-rgb-40:   228, 225, 221;
-  --oj-palette-neutral-rgb-50:   212, 207, 202;
-  --oj-palette-neutral-rgb-60:   188, 182, 177;
-  --oj-palette-neutral-rgb-70:   174, 168, 162;
-  --oj-palette-neutral-rgb-80:   158, 152, 146;
-  --oj-palette-neutral-rgb-90:   139, 133, 128;
-  --oj-palette-neutral-rgb-100:  123, 117, 112;
-  --oj-palette-neutral-rgb-110:  111, 105, 100;
-  --oj-palette-neutral-rgb-120:  101, 95, 91;
-  --oj-palette-neutral-rgb-130:  92, 86, 81;
-  --oj-palette-neutral-rgb-140:  81, 76, 71;
-  --oj-palette-neutral-rgb-150:  71, 66, 62;
-  --oj-palette-neutral-rgb-160:  58, 54, 50;
-  --oj-palette-neutral-rgb-170:  49, 45, 42;
-  --oj-palette-neutral-rgb-180:  32, 30, 28;
-  --oj-palette-neutral-rgb-190:  22, 21, 19;
-  --oj-palette-neutral-rgb-200:  00, 00, 00;
-  --oj-palette-dvt-rgb-1:      36, 93, 99;
-  --oj-palette-dvt-rgb-2:      222, 127, 17;
-  --oj-palette-dvt-rgb-3:      95, 185, 181;
-  --oj-palette-dvt-rgb-4:      78, 65, 55;
-  --oj-palette-dvt-rgb-5:      160, 201, 139;
-  --oj-palette-dvt-rgb-6:      180, 114, 130;
-  --oj-palette-dvt-rgb-7:      131, 64, 30;
-  --oj-palette-dvt-rgb-8:      158, 127, 204;
-  --oj-palette-dvt-rgb-9:      251, 194, 106;
-  --oj-palette-dvt-rgb-10:     88, 49, 110;
-  --oj-palette-dvt-rgb-11:     95, 162, 186;
-  --oj-palette-dvt-rgb-12:     49, 122, 69; }
-
-/* palette                    */
-/* -------------------------- */
-.oj-contrast-marker,
-.oj-color-invert {
-  --oj-palette-brand-rgb-10:     254, 249, 233;
-  --oj-palette-brand-rgb-20:     253, 244, 223;
-  --oj-palette-brand-rgb-30:     252, 239, 203;
-  --oj-palette-brand-rgb-40:     247, 224, 161;
-  --oj-palette-brand-rgb-50:     240, 204, 113;
-  --oj-palette-brand-rgb-60:     213, 179, 100;
-  --oj-palette-brand-rgb-70:     199, 165, 93;
-  --oj-palette-brand-rgb-80:     179, 149, 84;
-  --oj-palette-brand-rgb-90:     157, 130, 73;
-  --oj-palette-brand-rgb-100:    137, 114, 63;
-  --oj-palette-brand-rgb-110:    113, 94, 52;
-  --oj-palette-brand-rgb-120:    113, 94, 52;
-  --oj-palette-brand-rgb-130:    102, 85, 47;
-  --oj-palette-brand-rgb-140:    91, 74, 41;
-  --oj-palette-brand-rgb-150:    79, 66, 36;
-  --oj-palette-brand-rgb-160:    64, 54, 29;
-  --oj-palette-brand-rgb-170:    55, 44, 24; }
-
-:root {
-  --oj-core-text-color-primary:      rgb(var(--oj-palette-neutral-rgb-190));
-  --oj-core-text-color-secondary:    rgba(var(--oj-palette-neutral-rgb-190), .65);
-  --oj-core-text-color-disabled:     rgba(var(--oj-palette-neutral-rgb-190), .4);
-  --oj-core-text-color-brand:        rgb(var(--oj-palette-brand-rgb-110));
-  --oj-core-text-color-danger:       rgb(var(--oj-palette-danger-rgb-120));
-  --oj-core-text-color-warning:      rgb(var(--oj-palette-warning-rgb-120));
-  --oj-core-text-color-success:      rgb(var(--oj-palette-success-rgb-120));
-  --oj-core-bg-color-content:       rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-bg-color-hover:         rgba(var(--oj-palette-neutral-rgb-190), .04);
-  --oj-core-bg-color-active:        rgba(var(--oj-palette-neutral-rgb-190), .06);
-  --oj-core-bg-color-selected:      rgb(var(--oj-palette-info-rgb-30));
-  --oj-core-border-color-selected:  rgb(var(--oj-palette-info-rgb-100));
-  --oj-core-color-disabled-1:      rgba(var(--oj-palette-neutral-rgb-190), 0.05);
-  --oj-core-color-disabled-2:  rgba(var(--oj-palette-neutral-rgb-190),.12);
-  --oj-core-icon-size-lg:              1.5rem;
-  --oj-core-icon-size-sm:              1rem;
-  --oj-core-divider-color:             rgba(var(--oj-palette-neutral-rgb-190),.1);
-  --oj-core-divider-margin:            0.5rem;
-  --oj-core-neutral-1:                      rgb(var(--oj-palette-neutral-rgb-100));
-  --oj-core-neutral-2:                      rgb(var(--oj-palette-neutral-rgb-110));
-  --oj-core-neutral-3:                      rgb(var(--oj-palette-neutral-rgb-120));
-  --oj-core-neutral-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-neutral-secondary-1:            rgb(var(--oj-palette-neutral-rgb-30));
-  --oj-core-neutral-secondary-2:            rgb(var(--oj-palette-neutral-rgb-20));
-  --oj-core-neutral-secondary-3:            rgb(var(--oj-palette-neutral-rgb-10));
-  --oj-core-neutral-secondary-contrast:     rgb(var(--oj-palette-neutral-rgb-120));
-  --oj-core-brand-1:                      rgb(var(--oj-palette-brand-rgb-100));
-  --oj-core-brand-2:                      rgb(var(--oj-palette-brand-rgb-110));
-  --oj-core-brand-3:                      rgb(var(--oj-palette-brand-rgb-120));
-  --oj-core-brand-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-danger-1:                      rgb(var(--oj-palette-danger-rgb-100));
-  --oj-core-danger-2:                      rgb(var(--oj-palette-danger-rgb-110));
-  --oj-core-danger-3:                      rgb(var(--oj-palette-danger-rgb-120));
-  --oj-core-danger-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-danger-secondary-1:            rgb(var(--oj-palette-danger-rgb-30));
-  --oj-core-danger-secondary-2:            rgb(var(--oj-palette-danger-rgb-20));
-  --oj-core-danger-secondary-3:            rgb(var(--oj-palette-danger-rgb-10));
-  --oj-core-danger-secondary-contrast:     rgb(var(--oj-palette-danger-rgb-120));
-  --oj-core-warning-1:                    rgb(var(--oj-palette-warning-rgb-100));
-  --oj-core-warning-2:                    rgb(var(--oj-palette-warning-rgb-110));
-  --oj-core-warning-3:                    rgb(var(--oj-palette-warning-rgb-120));
-  --oj-core-warning-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-warning-secondary-1:          rgb(var(--oj-palette-warning-rgb-30));
-  --oj-core-warning-secondary-2:          rgb(var(--oj-palette-warning-rgb-20));
-  --oj-core-warning-secondary-3:          rgb(var(--oj-palette-warning-rgb-10));
-  --oj-core-warning-secondary-contrast:   rgb(var(--oj-palette-warning-rgb-120));
-  --oj-core-success-1:                    rgb(var(--oj-palette-success-rgb-100));
-  --oj-core-success-2:                    rgb(var(--oj-palette-success-rgb-110));
-  --oj-core-success-3:                    rgb(var(--oj-palette-success-rgb-120));
-  --oj-core-success-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-success-secondary-1:          rgb(var(--oj-palette-success-rgb-30));
-  --oj-core-success-secondary-2:          rgb(var(--oj-palette-success-rgb-20));
-  --oj-core-success-secondary-3:          rgb(var(--oj-palette-success-rgb-10));
-  --oj-core-success-secondary-contrast:   rgb(var(--oj-palette-success-rgb-120));
-  --oj-core-info-1:                    rgb(var(--oj-palette-info-rgb-100));
-  --oj-core-info-2:                    rgb(var(--oj-palette-info-rgb-110));
-  --oj-core-info-3:                    rgb(var(--oj-palette-info-rgb-120));
-  --oj-core-info-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-info-secondary-1:          rgb(var(--oj-palette-info-rgb-30));
-  --oj-core-info-secondary-2:          rgb(var(--oj-palette-info-rgb-20));
-  --oj-core-info-secondary-3:          rgb(var(--oj-palette-info-rgb-10));
-  --oj-core-info-secondary-contrast:   rgb(var(--oj-palette-info-rgb-120));
-  --oj-core-focus-border-color:     rgb(var(--oj-palette-neutral-rgb-190));
-  --oj-core-cursor-clickable:      pointer;
-  --oj-core-drag-drop-color-1:       rgb(var(--oj-palette-brand-rgb-40));
-  --oj-core-drag-drop-color-2:       rgb(var(--oj-palette-brand-rgb-100));
-  --oj-core-drag-drop-line-color:    rgb(var(--oj-palette-brand-rgb-100));
-  --oj-core-touch-target-min-size:    2.25rem;
-  --oj-core-box-shadow-rgb:     var(--oj-palette-neutral-rgb-200);
-  --oj-core-box-shadow-xs:      0px 1px 4px 0px    rgba(var(--oj-core-box-shadow-rgb),.12);
-  --oj-core-box-shadow-sm:      0px 4px 8px 0px    rgba(var(--oj-core-box-shadow-rgb),.16);
-  --oj-core-box-shadow-md:      0px 6px 12px 0px   rgba(var(--oj-core-box-shadow-rgb),.2);
-  --oj-core-box-shadow-lg:      0px 8px 16px 0px   rgba(var(--oj-core-box-shadow-rgb),0.24);
-  --oj-core-box-shadow-xl:      0px 12px 20px 0px  rgba(var(--oj-core-box-shadow-rgb),0.28);
-  --oj-core-dropdown-box-shadow:  var(--oj-core-box-shadow-sm);
-  --oj-private-core-global-dropdown-offset: 4;
-  --oj-core-scrim-color:   rgba(var(--oj-palette-neutral-rgb-190), .4);
-  --oj-core-spacing-1x:                  .25rem;
-  --oj-core-spacing-2x:                  .5rem;
-  --oj-core-spacing-3x:                  .75rem;
-  --oj-core-spacing-4x:                  1rem;
-  --oj-core-spacing-5x:                  1.25rem;
-  --oj-core-spacing-6x:                  1.5rem;
-  --oj-core-spacing-7x:                  1.75rem;
-  --oj-core-spacing-8x:                  2rem;
-  --oj-core-spacing-9x:                  2.25rem;
-  --oj-core-spacing-10x:                 2.5rem;
-  --oj-core-spacing-11x:                 2.75rem;
-  --oj-core-spacing-12x:                 3rem;
-  --oj-private-core-wrappable-margin-bottom:       0px;
-  --oj-core-border-radius-sm:                2px;
-  --oj-core-border-radius-md:               .25rem;
-  --oj-core-border-radius-lg:               .375rem;
-  --oj-core-border-radius-xl:               .5rem;
-  --oj-private-core-z-index-fixed:           100;
-  --oj-private-core-z-index-off-canvas:      200;
-  --oj-private-core-z-index-resizable:       900;
-  --oj-core-z-index-popup:                   1000;
-  --oj-core-z-index-dialog:                  1050;
-  --oj-core-z-index-messages:                2000;
-  --oj-private-core-global-loading-indicator-delay-duration: 0.05s; }
-
-:root {
-  --oj-typography-heading-2xl-font-size:                     2.5rem;
-  --oj-typography-heading-2xl-font-weight:                   900;
-  --oj-typography-heading-2xl-line-height:                   1.3;
-  --oj-typography-heading-xl-font-size:                      2.25rem;
-  --oj-typography-heading-xl-font-weight:                    900;
-  --oj-typography-heading-xl-line-height:                    1.222;
-  --oj-typography-heading-lg-font-size:                      2rem;
-  --oj-typography-heading-lg-font-weight:                    900;
-  --oj-typography-heading-lg-line-height:                    1.25;
-  --oj-typography-heading-md-font-size:                      1.75rem;
-  --oj-typography-heading-md-font-weight:                    900;
-  --oj-typography-heading-md-line-height:                    1.2857;
-  --oj-typography-heading-sm-font-size:                      1.5rem;
-  --oj-typography-heading-sm-font-weight:                    900;
-  --oj-typography-heading-sm-line-height:                    1.3333;
-  --oj-typography-heading-xs-font-size:                      1.25rem;
-  --oj-typography-heading-xs-font-weight:                    900;
-  --oj-typography-heading-xs-line-height:                    1.4;
-  --oj-typography-subheading-2xl-font-size:                  2.25rem;
-  --oj-typography-subheading-2xl-font-weight:                bold;
-  --oj-typography-subheading-2xl-line-height:                1.2222;
-  --oj-typography-subheading-xl-font-size:                   2rem;
-  --oj-typography-subheading-xl-font-weight:                 bold;
-  --oj-typography-subheading-xl-line-height:                 1.25;
-  --oj-typography-subheading-lg-font-size:                   1.75rem;
-  --oj-typography-subheading-lg-font-weight:                 bold;
-  --oj-typography-subheading-lg-line-height:                 1.2857;
-  --oj-typography-subheading-md-font-size:                   1.5rem;
-  --oj-typography-subheading-md-font-weight:                 bold;
-  --oj-typography-subheading-md-line-height:                 1.3333;
-  --oj-typography-subheading-sm-font-size:                   1.25rem;
-  --oj-typography-subheading-sm-font-weight:                 bold;
-  --oj-typography-subheading-sm-line-height:                 1.4;
-  --oj-typography-subheading-xs-font-size:                   1rem;
-  --oj-typography-subheading-xs-font-weight:                 bold;
-  --oj-typography-subheading-xs-line-height:                 1.5;
-  --oj-typography-body-xl-font-size:                         1.25rem;
-  --oj-typography-body-xl-line-height:                       1.4;
-  --oj-typography-body-lg-font-size:                         1.125rem;
-  --oj-typography-body-lg-line-height:                       1.3333;
-  --oj-typography-body-md-font-size:                         1rem;
-  --oj-typography-body-md-line-height:                       1.25;
-  --oj-typography-body-sm-font-size:                         0.859rem;
-  --oj-typography-body-sm-line-height:                       1.2;
-  --oj-typography-body-xs-font-size:                         0.75rem;
-  --oj-typography-body-xs-line-height:                       1.3333;
-  --oj-typography-body-2xs-font-size:                        0.625rem;
-  --oj-typography-body-2xs-line-height:                      1.2; }
-
-/* core                       */
-/* -------------------------- */
-.oj-contrast-marker,
-.oj-color-invert {
-  --oj-core-text-color-primary:   rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-text-color-secondary: rgba(var(--oj-palette-neutral-rgb-0), .6);
-  --oj-core-text-color-disabled:  rgba(var(--oj-palette-neutral-rgb-0), .3);
-  --oj-core-bg-color-content:     rgb(var(--oj-palette-neutral-rgb-170));
-  --oj-core-bg-color-hover:       rgba(var(--oj-palette-neutral-rgb-0), .08);
-  --oj-core-bg-color-active:      rgba(var(--oj-palette-neutral-rgb-0), .12);
-  --oj-core-divider-color:        rgba(var(--oj-palette-neutral-rgb-0), .3);
-  --oj-core-text-color-danger:    rgb(var(--oj-palette-danger-rgb-70));
-  --oj-core-text-color-warning:   rgb(var(--oj-palette-warning-rgb-70));
-  --oj-core-text-color-success:   rgb(var(--oj-palette-success-rgb-70));
-  --oj-core-brand-1:                      rgb(var(--oj-palette-brand-rgb-50));
-  --oj-core-brand-2:                      rgb(var(--oj-palette-brand-rgb-60));
-  --oj-core-brand-3:                      rgb(var(--oj-palette-brand-rgb-70));
-  --oj-core-brand-contrast:               rgb(var(--oj-palette-neutral-rgb-190));
-  --oj-core-neutral-1:                      rgb(var(--oj-palette-neutral-rgb-100));
-  --oj-core-neutral-2:                      rgb(var(--oj-palette-neutral-rgb-90));
-  --oj-core-neutral-3:                      rgb(var(--oj-palette-neutral-rgb-70));
-  --oj-core-neutral-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-neutral-secondary-1:            rgb(var(--oj-palette-neutral-rgb-140));
-  --oj-core-neutral-secondary-2:            rgb(var(--oj-palette-neutral-rgb-150));
-  --oj-core-neutral-secondary-3:            rgb(var(--oj-palette-neutral-rgb-160));
-  --oj-core-neutral-secondary-contrast:     rgb(var(--oj-palette-neutral-rgb-40));
-  --oj-core-success-1:                    rgb(var(--oj-palette-success-rgb-100));
-  --oj-core-success-2:                    rgb(var(--oj-palette-success-rgb-90));
-  --oj-core-success-3:                    rgb(var(--oj-palette-success-rgb-70));
-  --oj-core-success-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-success-secondary-1:          rgb(var(--oj-palette-success-rgb-140));
-  --oj-core-success-secondary-2:          rgb(var(--oj-palette-success-rgb-150));
-  --oj-core-success-secondary-3:          rgb(var(--oj-palette-success-rgb-160));
-  --oj-core-success-secondary-contrast:   rgb(var(--oj-palette-success-rgb-40));
-  --oj-core-warning-1:                    rgb(var(--oj-palette-warning-rgb-100));
-  --oj-core-warning-2:                    rgb(var(--oj-palette-warning-rgb-90));
-  --oj-core-warning-3:                    rgb(var(--oj-palette-warning-rgb-70));
-  --oj-core-warning-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-warning-secondary-1:          rgb(var(--oj-palette-warning-rgb-140));
-  --oj-core-warning-secondary-2:          rgb(var(--oj-palette-warning-rgb-150));
-  --oj-core-warning-secondary-3:          rgb(var(--oj-palette-warning-rgb-160));
-  --oj-core-warning-secondary-contrast:   rgb(var(--oj-palette-warning-rgb-40));
-  --oj-core-danger-1:                      rgb(var(--oj-palette-danger-rgb-100));
-  --oj-core-danger-2:                      rgb(var(--oj-palette-danger-rgb-90));
-  --oj-core-danger-3:                      rgb(var(--oj-palette-danger-rgb-70));
-  --oj-core-danger-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-danger-secondary-1:            rgb(var(--oj-palette-danger-rgb-140));
-  --oj-core-danger-secondary-2:            rgb(var(--oj-palette-danger-rgb-150));
-  --oj-core-danger-secondary-3:            rgb(var(--oj-palette-danger-rgb-160));
-  --oj-core-danger-secondary-contrast:     rgb(var(--oj-palette-danger-rgb-40));
-  --oj-core-info-1:                    rgb(var(--oj-palette-info-rgb-100));
-  --oj-core-info-2:                    rgb(var(--oj-palette-info-rgb-90));
-  --oj-core-info-3:                    rgb(var(--oj-palette-info-rgb-70));
-  --oj-core-info-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-core-info-secondary-1:          rgb(var(--oj-palette-info-rgb-140));
-  --oj-core-info-secondary-2:          rgb(var(--oj-palette-info-rgb-150));
-  --oj-core-info-secondary-3:          rgb(var(--oj-palette-info-rgb-160));
-  --oj-core-info-secondary-contrast:   rgb(var(--oj-palette-info-rgb-40));
-  --oj-core-box-shadow-rgb:     var(--oj-palette-neutral-rgb-200);
-  --oj-core-box-shadow-xs:      0px 1px 4px 0px    rgba(var(--oj-core-box-shadow-rgb),.12);
-  --oj-core-box-shadow-sm:      0px 4px 8px 0px    rgba(var(--oj-core-box-shadow-rgb),.16);
-  --oj-core-box-shadow-md:      0px 6px 12px 0px   rgba(var(--oj-core-box-shadow-rgb),.2);
-  --oj-core-box-shadow-lg:      0px 8px 16px 0px   rgba(var(--oj-core-box-shadow-rgb),0.24);
-  --oj-core-box-shadow-xl:      0px 12px 20px 0px  rgba(var(--oj-core-box-shadow-rgb),0.28);
-  --oj-core-focus-border-color: rgb(var(--oj-palette-neutral-rgb-0)); }
-
-:root.oj-scale-sm {
-  --oj-core-icon-size-lg: 1.3333rem; }
-
-:root.oj-scale-md {
-  --oj-core-icon-size-lg: 1.4286rem; }
-
-:root {
-  --oj-button-border-radius:        var(--oj-core-border-radius-md);
-  --oj-button-font-weight:          600;
-  --oj-button-height:                2.75rem;
-  --oj-button-sm-height:             2.25rem;
-  --oj-button-lg-height:             3.25rem;
-  --oj-button-font-size:              var(--oj-typography-body-sm-font-size);
-  --oj-button-sm-font-size:           var(--oj-typography-body-sm-font-size);
-  --oj-button-lg-font-size:           var(--oj-typography-body-sm-font-size);
-  --oj-button-text-to-edge-padding:      1rem;
-  --oj-button-sm-text-to-edge-padding:   1rem;
-  --oj-button-lg-text-to-edge-padding:   1.5rem;
-  --oj-button-icon-to-text-padding:       .625rem;
-  --oj-button-sm-icon-to-text-padding:    .5rem;
-  --oj-button-lg-icon-to-text-padding:    1rem;
-  --oj-button-icon-to-edge-padding:       .625rem;
-  --oj-button-sm-icon-to-edge-padding:    .5rem;
-  --oj-button-lg-icon-to-edge-padding:    1rem;
-  --oj-button-solid-chrome-bg-color:                      rgba(var(--oj-palette-neutral-rgb-190),.08);
-  --oj-button-solid-chrome-border-color:                  transparent;
-  --oj-button-solid-chrome-text-color:                    var(--oj-core-text-color-primary);
-  --oj-button-solid-chrome-bg-color-hover:                rgba(var(--oj-palette-neutral-rgb-190),.12);
-  --oj-button-solid-chrome-border-color-hover:            transparent;
-  --oj-button-solid-chrome-text-color-hover:              var(--oj-core-text-color-primary);
-  --oj-button-solid-chrome-bg-color-active:               rgba(var(--oj-palette-neutral-rgb-190),.16);
-  --oj-button-solid-chrome-border-color-active:           transparent;
-  --oj-button-solid-chrome-text-color-active:             var(--oj-core-text-color-primary);
-  --oj-button-solid-chrome-bg-color-disabled:             var(--oj-core-color-disabled-1);
-  --oj-button-solid-chrome-border-color-disabled:         transparent;
-  --oj-button-solid-chrome-text-color-disabled:           var(--oj-core-text-color-disabled);
-  --oj-button-solid-chrome-bg-color-selected:             var(--oj-button-solid-chrome-bg-color);
-  --oj-button-solid-chrome-border-color-selected:         var(--oj-button-solid-chrome-border-color);
-  --oj-button-solid-chrome-text-color-selected:           var(--oj-button-solid-chrome-text-color);
-  --oj-button-solid-chrome-bg-color-selected-hover:       var(--oj-button-solid-chrome-bg-color-active);
-  --oj-button-solid-chrome-border-color-selected-hover:   var(--oj-button-solid-chrome-border-color-active);
-  --oj-button-solid-chrome-text-color-selected-hover:     var(--oj-button-solid-chrome-text-color-active);
-  --oj-button-solid-chrome-bg-color-selected-disabled:     rgba(var(--oj-palette-neutral-rgb-100), .3);
-  --oj-button-solid-chrome-border-color-selected-disabled: transparent;
-  --oj-button-solid-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
-  --oj-private-button-ghost-chrome-text-color:             var(--oj-core-text-color-primary);
-  --oj-private-button-ghost-chrome-text-color-hover:       var(--oj-core-text-color-primary);
-  --oj-private-button-ghost-chrome-text-color-active:      var(--oj-core-text-color-primary);
-  --oj-button-borderless-chrome-text-color:        var(--oj-core-text-color-primary);
-  --oj-button-borderless-chrome-bg-color-hover:        var(--oj-core-bg-color-hover);
-  --oj-button-borderless-chrome-border-color-hover:    transparent;
-  --oj-button-borderless-chrome-text-color-hover:      var(--oj-core-text-color-primary);
-  --oj-button-borderless-chrome-bg-color-active:       var(--oj-core-bg-color-active);
-  --oj-button-borderless-chrome-border-color-active:   transparent;
-  --oj-button-borderless-chrome-text-color-active:     var(--oj-core-text-color-primary);
-  --oj-button-borderless-chrome-text-color-disabled:   var(--oj-core-text-color-disabled);
-  --oj-button-borderless-chrome-bg-color-selected:     transparent;
-  --oj-button-borderless-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-190), .5);
-  --oj-button-borderless-chrome-text-color-selected:   var(--oj-core-text-color-primary);
-  --oj-button-borderless-chrome-bg-color-selected-hover:     var(--oj-core-bg-color-hover);
-  --oj-button-borderless-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-190), .5);
-  --oj-button-borderless-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary);
-  --oj-button-borderless-chrome-bg-color-selected-disabled:     transparent;
-  --oj-button-borderless-chrome-border-color-selected-disabled: var(--oj-core-color-disabled-2);
-  --oj-button-borderless-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
-  --oj-button-outlined-chrome-border-color:          rgba(var(--oj-palette-neutral-rgb-190), .5);
-  --oj-button-outlined-chrome-text-color:            var(--oj-core-text-color-primary);
-  --oj-button-outlined-chrome-bg-color:              transparent;
-  --oj-button-outlined-chrome-bg-color-hover:        var(--oj-core-bg-color-hover);
-  --oj-button-outlined-chrome-border-color-hover:    rgba(var(--oj-palette-neutral-rgb-190), .5);
-  --oj-button-outlined-chrome-text-color-hover:      var(--oj-core-text-color-primary);
-  --oj-button-outlined-chrome-bg-color-active:       var(--oj-core-bg-color-active);
-  --oj-button-outlined-chrome-border-color-active:   rgba(var(--oj-palette-neutral-rgb-190), .5);
-  --oj-button-outlined-chrome-text-color-active:     var(--oj-core-text-color-primary);
-  --oj-button-outlined-chrome-border-color-disabled: var(--oj-core-text-color-disabled);
-  --oj-button-outlined-chrome-text-color-disabled:   var(--oj-core-text-color-disabled);
-  --oj-button-outlined-chrome-bg-color-disabled:     transparent;
-  --oj-button-outlined-chrome-bg-color-selected:     transparent;
-  --oj-button-outlined-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-190), .5);
-  --oj-button-outlined-chrome-text-color-selected:   var(--oj-core-text-color-primary);
-  --oj-button-outlined-chrome-bg-color-selected-hover:    var(--oj-core-bg-color-hover);
-  --oj-button-outlined-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-190), .5);
-  --oj-button-outlined-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary);
-  --oj-button-outlined-chrome-bg-color-selected-disabled:     transparent;
-  --oj-button-outlined-chrome-border-color-selected-disabled: var(--oj-button-outlined-chrome-border-color-disabled);
-  --oj-button-outlined-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
-  --oj-button-call-to-action-chrome-bg-color:                      rgb(var(--oj-palette-neutral-rgb-170));
-  --oj-button-call-to-action-chrome-border-color:                  transparent;
-  --oj-button-call-to-action-chrome-text-color:                    var(--oj-core-neutral-contrast);
-  --oj-button-call-to-action-chrome-bg-color-hover:                rgb(var(--oj-palette-neutral-rgb-160));
-  --oj-button-call-to-action-chrome-border-color-hover:            transparent;
-  --oj-button-call-to-action-chrome-text-color-hover:              var(--oj-core-neutral-contrast);
-  --oj-button-call-to-action-chrome-bg-color-active:               rgb(var(--oj-palette-neutral-rgb-150));
-  --oj-button-call-to-action-chrome-border-color-active:           transparent;
-  --oj-button-call-to-action-chrome-text-color-active:             var(--oj-core-neutral-contrast);
-  --oj-button-icon-size:         var(--oj-core-icon-size-lg);
-  --oj-button-sm-icon-size:      1.25rem;
-  --oj-button-lg-icon-size:      var(--oj-core-icon-size-lg);
-  --oj-private-button-global-chroming-default:   outlined; }
-
-:root {
-  --oj-private-buttonset-solid-chrome-internal-border-color:                     rgb(var(--oj-palette-neutral-rgb-100));
-  --oj-private-buttonset-solid-chrome-internal-border-color-active:              rgb(var(--oj-palette-neutral-rgb-100));
-  --oj-private-buttonset-solid-chrome-internal-border-color-selected:            rgb(var(--oj-palette-neutral-rgb-100));
-  --oj-private-buttonset-solid-chrome-internal-border-color-selected-disabled:   var(--oj-button-solid-chrome-bg-color-disabled);
-  --oj-buttonset-outlined-chrome-internal-border-color:                   var(--oj-button-outlined-chrome-border-color);
-  --oj-buttonset-outlined-chrome-internal-border-color-active:            var(--oj-button-outlined-chrome-border-color);
-  --oj-buttonset-outlined-chrome-internal-border-color-selected:          var(--oj-button-outlined-chrome-border-color);
-  --oj-buttonset-outlined-chrome-internal-border-color-selected-disabled: var(--oj-core-color-disabled-1);
-  --oj-private-buttonset-global-chroming-default: outlined; }
-
-:root {
-  --oj-tooltip-text-color:    rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-tooltip-bg-color:      rgb(var(--oj-palette-neutral-rgb-170));
-  --oj-tooltip-font-size:     var(--oj-typography-body-xs-font-size);
-  --oj-tooltip-line-height:   var(--oj-typography-body-xs-line-height);
-  --oj-tooltip-padding:       var(--oj-core-spacing-2x);
-  --oj-tooltip-border-radius: var(--oj-core-border-radius-md);
-  --oj-tooltip-border-color:  rgb(var(--oj-palette-neutral-rgb-170)); }
-
-:root {
-  --oj-animation-duration-xshort:      0.1s;
-  --oj-animation-duration-short:       0.15s;
-  --oj-animation-duration-medium:      0.2s;
-  --oj-animation-duration-long:        0.3s;
-  --oj-animation-duration-xlong:       0.5s;
-  --oj-animation-ease-in-out:          cubic-bezier(0.4, 0, 0.2, 1);
-  --oj-animation-ease-out:             cubic-bezier(0, 0, 0.2, 1);
-  --oj-animation-ease-in:              cubic-bezier(0.4, 0, 1, 1);
-  --oj-animation-effect-ripple-bg-color: rgb(var(--oj-palette-neutral-rgb-160));
-  --oj-animation-skeleton-bg-start-color:  rgba(var(--oj-palette-neutral-rgb-170), 0.05);
-  --oj-animation-skeleton-bg-end-color: rgba(var(--oj-palette-neutral-rgb-170), 0.15);
-  --oj-private-animation-global-card-entrance-delay-increment: 50; }
-
-:root {
-  --oj-html-font-family:  -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --oj-html-font-size:   1em;
-  --oj-body-bg-color:                   rgb(var(--oj-palette-neutral-rgb-10));
-  --oj-current-bg-color: ;
-  --oj-heading-text-color:                       var(--oj-core-text-color-primary);
-  --oj-heading-margin-bottom:                   1rem;
-  --oj-heading-margin-top:                      1rem;
-  --oj-subheading-margin-top:                   0;
-  --oj-subheading-margin-bottom:                0.75rem;
-  --oj-paragraph-margin-bottom:                1rem;
-  --oj-list-margin-top:                   0.5rem;
-  --oj-list-nested-padding-start:         2.5rem;
-  --oj-list-item-line-height:             1.5;
-  --oj-list-unordered-style-type:         square;
-  --oj-link-text-decoration:              none;
-  --oj-link-text-decoration-hover:        underline;
-  --oj-link-text-color:                 rgb(var(--oj-palette-info-rgb-120));
-  --oj-link-text-color-active:          var(--oj-link-text-color);
-  --oj-link-text-color-visited:         var(--oj-link-text-color);
-  --oj-link-embedded-text-decoration:              none;
-  --oj-link-embedded-text-decoration-hover:        none;
-  --oj-link-embedded-border-bottom-width:          1px;
-  --oj-link-embedded-border-bottom-width-hover:    0px; }
-
-:root {
-  --oj-dvt-danger-color:              rgb(214, 59, 37);
-  --oj-dvt-warning-color:             rgb(207, 124, 0);
-  --oj-dvt-success-color:             rgb(80, 130, 35);
-  --oj-dvt-item-border-color-selected:   rgb(var(--oj-palette-neutral-rgb-190));
-  --oj-dvt-item-contrast-color:           rgb(var(--oj-palette-neutral-rgb-20));
-  --oj-dvt-marquee-color:                    rgba(var(--oj-palette-neutral-rgb-20),.1);
-  --oj-dvt-marquee-border-color:             rgba(var(--oj-palette-neutral-rgb-190), 0.8);
-  --oj-dvt-contrast-line-color:              rgba(var(--oj-palette-neutral-rgb-20), 0.7);
-  --oj-dvt-reference-object-area-color:      rgba(var(--oj-palette-neutral-rgb-170), 0.08);
-  --oj-dvt-reference-object-line-color:      rgba(var(--oj-palette-neutral-rgb-190), 0.8);
-  --oj-dvt-overview-bg-color:                rgb(var(--oj-palette-neutral-rgb-50));
-  --oj-dvt-overview-window-bg-color:         rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-dvt-overview-window-border-color:     rgb(var(--oj-palette-neutral-rgb-170));
-  --oj-dvt-label-font-size-sm:              var(--oj-typography-body-xs-font-size);
-  --oj-dvt-label-font-size-md:              var(--oj-typography-body-sm-font-size);
-  --oj-dvt-label-font-size-lg:              var(--oj-typography-body-md-font-size);
-  --oj-dvt-node-border-color-hover:         rgb(var(--oj-palette-neutral-rgb-20));
-  --oj-private-dvt-gridline-color:        rgba(var(--oj-palette-neutral-rgb-190), 0.3); }
-
-:root {
   --oj-spark-chart-item-color:         #267db3; }
 
 oj-spark-chart:not(.oj-complete) {
@@ -20298,7 +20038,7 @@ html[dir="rtl"] .oj-switch.oj-selected .oj-switch-thumb {
   border-width: 1px;
   border-radius: var(--oj-switch-thumb-border-radius);
   box-shadow: var(--oj-switch-thumb-box-shadow-hover);
-  background-color: var(--oj-switch-thumb-bg-color-hover);
+  background-image: linear-gradient(var(--oj-switch-thumb-bg-color-hover), var(--oj-switch-thumb-bg-color-hover));
   border-color: var(--oj-switch-thumb-border-color-hover); }
 
 .oj-switch.oj-selected.oj-hover:not(.oj-disabled):not(.oj-read-only) .oj-switch-track {
@@ -20308,7 +20048,7 @@ html[dir="rtl"] .oj-switch.oj-selected .oj-switch-thumb {
 .oj-switch.oj-selected.oj-hover:not(.oj-disabled):not(.oj-read-only) .oj-switch-thumb {
   border-radius: var(--oj-switch-thumb-border-radius);
   box-shadow: var(--oj-switch-thumb-box-shadow-selected-hover);
-  background-color: var(--oj-switch-thumb-bg-color-selected-hover);
+  background-image: linear-gradient(var(--oj-switch-thumb-bg-color-selected-hover), var(--oj-switch-thumb-bg-color-selected-hover));
   border-color: var(--oj-switch-thumb-border-color-selected-hover); }
 
 .oj-switch.oj-active .oj-switch-track,
@@ -20320,7 +20060,7 @@ html[dir="rtl"] .oj-switch.oj-selected .oj-switch-thumb {
 .oj-switch.oj-hover:not(.oj-disabled):not(.oj-read-only).oj-active .oj-switch-thumb {
   width: var(--oj-switch-thumb-width-active);
   box-shadow: var(--oj-switch-thumb-box-shadow-active);
-  background-color: var(--oj-switch-thumb-bg-color-active);
+  background-image: linear-gradient(var(--oj-switch-thumb-bg-color-active), var(--oj-switch-thumb-bg-color-active));
   border-color: var(--oj-switch-thumb-border-color-active);
   transform: translate3d(0, -50%, 0);
   transition: height var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out), width var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out); }
@@ -20333,7 +20073,7 @@ html[dir="rtl"] .oj-switch.oj-selected .oj-switch-thumb {
 .oj-switch.oj-selected.oj-active .oj-switch-thumb,
 .oj-switch.oj-selected.oj-hover:not(.oj-disabled):not(.oj-read-only).oj-active .oj-switch-thumb {
   box-shadow: var(--oj-switch-thumb-box-shadow-selected-active);
-  background-color: var(--oj-switch-thumb-bg-color-selected-active);
+  background-image: linear-gradient(var(--oj-switch-thumb-bg-color-selected-active), var(--oj-switch-thumb-bg-color-selected-active));
   border-color: var(--oj-switch-thumb-border-color-selected-active);
   transform: translate3d(0, -50%, 0);
   transition: height var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out), width var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out); }
@@ -20520,11 +20260,11 @@ a.oj-tabbar-item-content .oj-tabbar-item-label {
   color: var(--oj-tab-bar-item-label-color);
   font-weight: var(--oj-tab-bar-item-font-weight); }
 
-.oj-selected > a.oj-tabbar-item-content > .oj-tabbar-item-label {
+.oj-selected > a.oj-tabbar-item-content .oj-tabbar-item-label {
   color: var(--oj-tab-bar-item-label-color-selected);
   font-weight: var(--oj-tab-bar-item-font-weight-selected); }
 
-.oj-tabbar:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-hover:not(.oj-selected) > a.oj-tabbar-item-content > .oj-tabbar-item-label {
+.oj-tabbar:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-hover:not(.oj-selected) > a.oj-tabbar-item-content .oj-tabbar-item-label {
   color: var(--oj-tab-bar-item-label-color-hover); }
 
 /* Navigation tabs item label or arbitrary content place holder*/
@@ -20560,7 +20300,8 @@ a.oj-tabbar-item-content .oj-tabbar-item-label {
 .oj-tabbar-item-icon {
   color: var(--oj-tab-bar-item-label-color);
   flex: 0 0 auto;
-  font-size: var(--oj-tab-bar-icon-size); }
+  font-size: var(--oj-tab-bar-icon-size);
+  width: var(--oj-tab-bar-icon-size); }
 
 /* Disabled node */
 .oj-tabbar-item.oj-disabled > .oj-tabbar-item-content,
@@ -20852,7 +20593,13 @@ html:not([dir="rtl"]) .oj-hicontrast .oj-tabbar-horizontal:not(.oj-tabbar-icon-o
   padding: var(--oj-tab-bar-item-padding);
   border-bottom: 0; }
 
+.oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-element.oj-removable .oj-tabbar-item-content {
+  flex-direction: row;
+  padding: 0;
+  justify-content: end; }
+
 .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
+  flex-direction: column;
   padding: var(--oj-tab-bar-item-padding);
   justify-content: end; }
 
@@ -20871,8 +20618,24 @@ html:not([dir="rtl"]) .oj-hicontrast .oj-tabbar-horizontal:not(.oj-tabbar-icon-o
 .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item {
   padding-bottom: 2px; }
 
-.oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
-  flex-direction: column; }
+.oj-tabbar-horizontal .oj-tabbar-icon-label-container {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center; }
+
+.oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-icon-label-container {
+  flex-direction: column;
+  align-items: center;
+  padding: var(--oj-tab-bar-item-padding); }
+
+.oj-tabbar-horizontal.oj-tabbar-stack-icon-label .oj-tabbar-icon-label-container .oj-tabbar-item-end {
+  top: 0.75rem; }
+
+.oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-icon-label-container .oj-tabbar-item-end {
+  left: calc(50% - 0.875rem); }
+
+.oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-remove-icon {
+  align-self: start; }
 
 /*End of  horizontal stacked icon label navigationtabs styles */
 .oj-tabbar-horizontal .oj-tabbar-item-label {
@@ -21214,8 +20977,14 @@ oj-table:not(.oj-complete) {
   box-sizing: border-box;
   overflow: hidden; }
 
+/* Styling override to temporarily disable wrapping when sizing columns */
+.oj-table-element.oj-table-disable-wrapping,
+.oj-table-element.oj-table-disable-wrapping .oj-helper-white-space-normal {
+  white-space: nowrap !important; }
+
 .oj-table-scroller {
   background-color: inherit;
+  box-sizing: border-box;
   overflow: auto;
   -webkit-overflow-scrolling: touch; }
 
@@ -21334,8 +21103,10 @@ table.oj-table-element.oj-table-column-header-resizing {
   text-align: start;
   box-sizing: border-box; }
 
+.oj-table-fixed .oj-table-column-header-cell,
 .oj-table-header-cell-wrap-text {
-  overflow-wrap: anywhere;
+  white-space: normal;
+  overflow-wrap: break-word;
   -webkit-hyphens: none;
           hyphens: none; }
 
@@ -21564,20 +21335,33 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 .oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-start,
 .oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-start,
 .oj-table-sticky .oj-table-gutter-start-header-cell.oj-table-frozen-start {
-  z-index: 100007; }
+  z-index: 100011; }
+
+.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-start.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-start.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-start-header-cell.oj-table-frozen-start.oj-table-frozen-edge {
+  z-index: 100012; }
 
 .oj-table-sticky .oj-table-column-header-cell,
 .oj-table-sticky .oj-table-gutter-start-header-cell,
 .oj-table-sticky .oj-table-gutter-end-header-cell {
-  z-index: 100006; }
+  z-index: 100010; }
 
 .oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end,
 .oj-table-sticky .oj-table-gutter-end-header-cell.oj-table-frozen-end {
-  z-index: 100008; }
+  z-index: 100013; }
+
+.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-end-header-cell.oj-table-frozen-end.oj-table-frozen-edge {
+  z-index: 100014; }
 
 .oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start,
 .oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-start {
   z-index: 100001; }
+
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-start.oj-table-frozen-edge {
+  z-index: 100002; }
 
 .oj-table-sticky .oj-table-add-row-placeholder td,
 .oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell,
@@ -21586,43 +21370,73 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 
 .oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end,
 .oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-end {
-  z-index: 100002; }
+  z-index: 100003; }
+
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-end.oj-table-frozen-edge {
+  z-index: 100004; }
 
 .oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-start,
 .oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-start {
-  z-index: 4; }
+  z-index: 6; }
+
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-start.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-start.oj-table-frozen-edge {
+  z-index: 7; }
 
 .oj-table-sticky .oj-table-sticky-row td,
 .oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell,
 .oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell {
-  z-index: 3; }
+  z-index: 5; }
 
 .oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-end,
 .oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell.oj-table-frozen-end {
-  z-index: 5; }
+  z-index: 8; }
+
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-end.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell.oj-table-frozen-end.oj-table-frozen-edge {
+  z-index: 9; }
 
 .oj-table-sticky .oj-table-data-cell.oj-table-frozen-start,
 .oj-table-sticky .oj-table-selector-cell.oj-table-frozen-start,
 .oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-start {
   z-index: 1; }
 
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-start.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-selector-cell.oj-table-frozen-start.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-start.oj-table-frozen-edge {
+  z-index: 2; }
+
 .oj-table-sticky .oj-table-data-cell.oj-table-frozen-end,
 .oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-end {
-  z-index: 2; }
+  z-index: 3; }
+
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-end.oj-table-frozen-edge {
+  z-index: 4; }
 
 .oj-table-sticky .oj-table-footer-cell.oj-table-frozen-start,
 .oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-start,
 .oj-table-sticky .oj-table-gutter-start-footer-cell.oj-table-frozen-start {
-  z-index: 100004; }
+  z-index: 100006; }
+
+.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-start.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-start.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-start-footer-cell.oj-table-frozen-start.oj-table-frozen-edge {
+  z-index: 100007; }
 
 .oj-table-sticky .oj-table-footer-cell,
 .oj-table-sticky .oj-table-gutter-start-footer-cell,
 .oj-table-sticky .oj-table-gutter-end-footer-cell {
-  z-index: 100003; }
+  z-index: 100005; }
 
 .oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end,
 .oj-table-sticky .oj-table-gutter-end-footer-cell.oj-table-frozen-end {
-  z-index: 100005; }
+  z-index: 100008; }
+
+.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-end-footer-cell.oj-table-frozen-end.oj-table-frozen-edge {
+  z-index: 100009; }
 
 .oj-table-body-row .oj-selector,
 .oj-table-body-row .oj-selector .oj-selector-wrapper .oj-selectorbox {
@@ -21648,6 +21462,12 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 .oj-table-column-header-cell.oj-hover {
   background-image: linear-gradient(var(--oj-collection-header-bg-color-hover), var(--oj-collection-header-bg-color-hover));
   box-shadow: var(--oj-collection-border-color) 1px 0px 0px inset, var(--oj-collection-border-color) -1px 0px 0px inset; }
+
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-footer-cell.oj-selected.oj-hover,
+.oj-table:not(.oj-focus) .oj-table-column-header-cell.oj-selected.oj-hover,
+.oj-table:not(.oj-focus) .oj-table-footer-cell.oj-selected.oj-hover {
+  background-image: linear-gradient(var(--oj-collection-header-bg-color-selected), var(--oj-collection-header-bg-color-selected)), linear-gradient(var(--oj-collection-header-bg-color-hover), var(--oj-collection-header-bg-color-hover)); }
 
 /* Styling for the column header element in focused state. */
 .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-focus-highlight,
@@ -21706,13 +21526,33 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
   float: none;
   text-overflow: inherit;
   overflow: inherit;
-  white-space: normal;
-  display: inline-flex;
+  display: flex;
   align-items: center; }
+
+/* Styling for the column header flex element alignment helpers. */
+.oj-table-column-header-cell.oj-helper-text-align-start .oj-table-column-header {
+  justify-content: start; }
+
+/* Styling for the column header flex element alignment helpers. */
+.oj-table-column-header-cell.oj-helper-text-align-center .oj-table-column-header {
+  justify-content: center; }
+
+/* Styling for the column header flex element alignment helpers. */
+.oj-table-column-header-cell.oj-helper-text-align-end .oj-table-column-header {
+  justify-content: end; }
+
+/* Styling for the column header flex element alignment helpers. */
+.oj-table-column-header-cell.oj-helper-text-align-left .oj-table-column-header {
+  justify-content: left; }
+
+/* Styling for the column header flex element alignment helpers. */
+.oj-table-column-header-cell.oj-helper-text-align-right .oj-table-column-header {
+  justify-content: right; }
 
 /* Styling for the column header text. */
 .oj-table-column-header-text {
   display: -webkit-box;
+  min-width: 1rem;
   height: inherit;
   overflow: inherit;
   text-overflow: inherit;
@@ -21727,7 +21567,7 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 
 /* Styling for the sort area around the icon */
 .oj-table-sort-icon-container {
-  cursor: default;
+  cursor: var(--oj-core-cursor-clickable);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -21739,8 +21579,7 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
   border-radius: var(--oj-button-border-radius);
   position: relative;
   top: 0;
-  -webkit-user-select: none;
-  margin-inline-start: 4px; }
+  -webkit-user-select: none; }
   html:not([dir="rtl"]) .oj-table-sort-icon-container {
     right: 0; }
   html[dir="rtl"] .oj-table-sort-icon-container {
@@ -21754,16 +21593,12 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
   font-size: inherit; }
 
 /* Styling for the sort icon container in hover state*/
-.oj-table-sort-icon-container.oj-hover {
-  color: var(--oj-private-icon-color-hover);
-  background-color: var(--oj-private-icon-bg-color-hover);
-  border-color: var(--oj-private-icon-border-color-hover); }
+.oj-table-sort-icon-container.oj-hover .oj-component-icon, .oj-table-sort-icon-container.oj-hover .oj-menucheckbox-icon {
+  color: var(--oj-core-text-color-secondary); }
 
 /* Styling for the sort icon container in active state*/
-.oj-table-sort-icon-container.oj-active {
-  color: var(--oj-private-icon-color-active);
-  background-color: var(--oj-private-icon-bg-color-active);
-  border-color: var(--oj-private-icon-border-color-active); }
+.oj-table-sort-icon-container.oj-active .oj-component-icon, .oj-table-sort-icon-container.oj-active .oj-menucheckbox-icon {
+  color: var(--oj-core-text-color-secondary); }
 
 /* Styling for disabled sort icons */
 .oj-table-column-header-default-sort-icon.oj-disabled {
@@ -21983,7 +21818,7 @@ html[dir="rtl"] .oj-table-body-row-drag-image td:last-child {
   border-inline-start-style: solid;
   border-inline-start-color: var(--oj-core-drag-drop-line-color);
   border-inline-start-width: 2px;
-  z-index: 100009; }
+  z-index: 100015; }
 
 /* Styling for the data cell elements. */
 .oj-table-data-cell {
@@ -22013,8 +21848,9 @@ html[dir="rtl"] .oj-table-body-row-drag-image td:last-child {
 .oj-table-grid-display.oj-table-add-row .oj-table-body-row:nth-child(2) > .oj-table-data-cell {
   height: calc(var(--oj-collection-grid-row-height) - 1px); }
 
-/* Edit row styling for data cell elements. */
-.oj-table-data-cell.oj-table-data-cell-edit {
+/* Edit row styling for data row cell elements. */
+.oj-table-data-cell.oj-table-data-cell-edit,
+.oj-table-selector-cell.oj-table-data-cell-edit {
   outline: 1px solid var(--oj-collection-editable-cell-border-color-focus);
   outline-offset: -1px; }
 
@@ -22032,6 +21868,17 @@ html[dir="rtl"] .oj-table-body-row-drag-image td:last-child {
 .oj-table-element:not(.oj-focus) .oj-table-gutter-start-body-cell.oj-selected,
 .oj-table-element:not(.oj-focus) .oj-table-gutter-end-body-cell.oj-selected {
   background-image: linear-gradient(var(--oj-core-bg-color-selected), var(--oj-core-bg-color-selected)); }
+
+/* Styling for the data cell elements in selected and hover state when table focused. */
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-selector-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-gutter-start-body-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-table-column-header-resizing) .oj-table-gutter-end-body-cell.oj-selected.oj-hover,
+.oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected.oj-hover,
+.oj-table:not(.oj-focus) .oj-table-selector-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-focus) .oj-table-gutter-start-body-cell.oj-selected.oj-hover,
+.oj-table-element:not(.oj-focus) .oj-table-gutter-end-body-cell.oj-selected.oj-hover {
+  background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover)), linear-gradient(var(--oj-core-bg-color-selected), var(--oj-core-bg-color-selected)); }
 
 /* Styling for the data cell elements in selected state when table in high contrast mode. */
 .oj-hicontrast .oj-table-data-cell.oj-selected,
@@ -22461,7 +22308,8 @@ html[dir="rtl"]
 
 /* Styling for the status message. */
 .oj-table-status-message {
-  position: absolute; }
+  position: absolute;
+  background-color: inherit; }
 
 /* Styling for the status message text. */
 .oj-table-status-message-text {
@@ -22783,7 +22631,12 @@ oj-time-axis:not(.oj-complete) {
   --oj-private-timeline-series-bg-color:                       rgb(var(--oj-palette-neutral-rgb-20));
   --oj-private-timeline-item-padding:                          5px;
   --oj-private-timeline-item-border-radius:                    0px;
-  --oj-private-timeline-item-duration-event-overflow-bg-color: rgb(var(--oj-palette-neutral-rgb-40)); }
+  --oj-private-timeline-item-duration-event-overflow-bg-color: rgb(var(--oj-palette-neutral-rgb-40));
+  --oj-private-timeline-item-content-max-width:                        none;
+  --oj-private-timeline-item-duration-event-overflow-bg-color: rgb(var(--oj-palette-neutral-rgb-40));
+  --oj-private-timeline-item-duration-event-overflow-border-width: 0px;
+  --oj-private-timeline-item-duration-event-overflow-border-color: rgb(var(--oj-palette-neutral-rgb-40));
+  --oj-private-timeline-item-duration-event-overflow-border-radius: 0px; }
 
 .oj-timeline-item-bubble-bg-purple {
   --oj-private-timeline-item-bg-color:                       rgb(245, 236, 251);
@@ -22824,7 +22677,8 @@ oj-timeline:not(.oj-complete) {
   background-color: var(--oj-private-timeline-item-bg-color);
   border-top-color: var(--oj-private-timeline-item-border-color);
   padding-top: var(--oj-private-timeline-item-padding);
-  border-top-left-radius: var(--oj-private-timeline-item-border-radius); }
+  border-top-left-radius: var(--oj-private-timeline-item-border-radius);
+  max-width: var(--oj-private-timeline-item-content-max-width); }
 
 .oj-timeline-item.oj-hover {
   background-color: var(--oj-core-bg-color-hover);
@@ -22840,7 +22694,10 @@ oj-timeline:not(.oj-complete) {
   white-space: nowrap; }
 
 .oj-timeline-item-duration-event-overflow-bubble {
-  background-color: var(--oj-private-timeline-item-duration-event-overflow-bg-color); }
+  background-color: var(--oj-private-timeline-item-duration-event-overflow-bg-color);
+  stroke-width: var(--oj-private-timeline-item-duration-event-overflow-border-width);
+  stroke: var(--oj-private-timeline-item-duration-event-overflow-border-color);
+  border-radius: var(--oj-private-timeline-item-duration-event-overflow-border-radius); }
 
 .oj-timeline-item-title {
   color: var(--oj-core-text-color-primary);
@@ -22939,17 +22796,24 @@ oj-toolbar:not(.oj-complete) {
   padding: 0.25em 0;
   border-style: solid;
   border-color: var(--oj-core-divider-color);
-  border-width: 0; }
+  border-width: 0;
+  row-gap: var(--oj-core-spacing-2x); }
 
 .oj-toolbar .oj-button {
   margin-bottom: 0; }
 
 .oj-toolbar > .oj-button:not(:first-child),
-.oj-toolbar > .oj-buttonset:not(:first-child) {
+.oj-toolbar > .oj-buttonset:not(:first-child),
+.oj-toolbar > oj-c-button:not(:first-child),
+.oj-toolbar > oj-c-split-menu-button:not(:first-child),
+.oj-toolbar > oj-c-menu-button:not(:first-child) {
   margin-inline-start: var(--oj-toolbar-button-margin); }
 
 .oj-toolbar > .oj-button:not(:last-child),
-.oj-toolbar > .oj-buttonset:not(:last-child) {
+.oj-toolbar > .oj-buttonset:not(:last-child),
+.oj-toolbar > oj-c-button:not(:last-child),
+.oj-toolbar > oj-c-split-menu-button:not(:last-child),
+.oj-toolbar > oj-c-menu-button:not(:last-child) {
   margin-inline-end: var(--oj-toolbar-button-margin); }
 
 .oj-toolbar .oj-button:not(:first-child).oj-button-half-chrome,

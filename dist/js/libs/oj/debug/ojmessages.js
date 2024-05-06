@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -16,6 +16,13 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   /**
    * @ojcomponent oj.ojMessages
    * @since 5.0.0
+   * @ojdeprecated [
+   *   {
+   *     type: "maintenance",
+   *     since: "16.0.0",
+   *     value: ["oj-c-message-banner", "oj-c-message-toast"]
+   *   }
+   * ]
    * @ojdisplayname Messages
    * @ojshortdesc Messages manages the layout and display of child messages.
    *
@@ -1573,7 +1580,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
 
   MessagesViewModel.prototype._surrogateRemoveHandler = function () {
     this._closeOverlay();
-    this._composite.parentElement.removeChild(this._composite);
   };
 
   MessagesViewModel.prototype._createObservables = function () {

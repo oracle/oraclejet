@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -3222,10 +3222,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
       var sign;
       if (isVert) {
         sign = endCoord > baselineCoord ? -1 : 1;
-        indicatorX1 = bounds.x + ((1 - drawnIndicatorSize) / 2) * bounds.w + 0.5;
-        indicatorX2 = bounds.x + (bounds.w * (1 + drawnIndicatorSize)) / 2 - 0.5;
+        indicatorX1 = bounds.x + ((1 - drawnIndicatorSize) / 2) * bounds.w;
+        indicatorX2 = bounds.x + (bounds.w * (1 + drawnIndicatorSize)) / 2;
         indicatorY2 = baselineCoord - sign * delta;
-        indicatorY1 = endCoord + sign * delta;
+        indicatorY1 = endCoord + sign * delta + 0.5;
         plotX1 = bounds.x + ((1 - 1 / drawnPlotSize) / 2) * bounds.w;
         plotX2 = bounds.x + (bounds.w * (1 + 1 / drawnPlotSize)) / 2;
         plotY1 = bounds.y;
@@ -3233,10 +3233,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
       } else {
         var isNegative = isRTL ? endCoord > baselineCoord : endCoord < baselineCoord;
         sign = isNegative ? -1 : 1;
-        indicatorX1 = isRTL ? baselineCoord - sign * delta : baselineCoord + sign * delta;
+        indicatorX1 = isRTL ? baselineCoord - sign * delta + 0.5 : baselineCoord + sign * delta - 0.5;
         indicatorX2 = isRTL ? endCoord + sign * delta : endCoord - sign * delta;
-        indicatorY1 = bounds.y + ((1 - drawnIndicatorSize) / 2) * bounds.h + 0.5;
-        indicatorY2 = bounds.y + (bounds.h * (1 + drawnIndicatorSize)) / 2 - 0.5;
+        indicatorY1 = bounds.y + ((1 - drawnIndicatorSize) / 2) * bounds.h;
+        indicatorY2 = bounds.y + (bounds.h * (1 + drawnIndicatorSize)) / 2;
         plotX1 = bounds.x;
         plotX2 = bounds.x + bounds.w;
         plotY1 = bounds.y + ((1 - 1 / drawnPlotSize) / 2) * bounds.h;
@@ -3407,6 +3407,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
       var color = DvtGaugeStyleUtils.getColor(gauge);
       if (gauge.getCtx().getThemeBehavior() === 'redwood' || options['visualEffects'] === 'none') {
         shape.setSolidFill(color);
+        shape.setSolidStroke(color);
       } else {
         var arColors = [
           dvt.ColorUtils.adjustHSL(color, 0, -0.09, 0.04),

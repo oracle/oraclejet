@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -103,7 +103,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
         handleItemsRemoved(detail) { }
         handleItemsUpdated(detail) { }
         _handleModelEvent(event) {
-            var _a;
             const detail = event['detail'];
             if (event.type === 'refresh') {
                 this.handleModelRefresh(detail);
@@ -123,18 +122,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
                 if (detail.add) {
                     const keys = detail.add.keys;
                     const keysArray = [...keys];
-                    const metadata = (_a = this.callback.getData()) === null || _a === void 0 ? void 0 : _a.value.metadata;
-                    const addDetail = Object.assign({}, detail.add);
-                    metadata === null || metadata === void 0 ? void 0 : metadata.forEach((data) => {
-                        var _a, _b, _c, _d, _e, _f;
+                    const metadata = this.callback.getData()?.value.metadata;
+                    const addDetail = { ...detail.add };
+                    metadata?.forEach((data) => {
                         if (keys.has(data.key) && addAndRemoveKeys.indexOf(data.key) == -1) {
                             const index = keysArray.indexOf(data.key);
-                            (_a = addDetail.addBeforeKeys) === null || _a === void 0 ? void 0 : _a.splice(index, 1);
-                            (_b = addDetail.data) === null || _b === void 0 ? void 0 : _b.splice(index, 1);
-                            (_c = addDetail.indexes) === null || _c === void 0 ? void 0 : _c.splice(index, 1);
-                            (_d = addDetail.keys) === null || _d === void 0 ? void 0 : _d.delete(data.key);
-                            (_e = addDetail.metadata) === null || _e === void 0 ? void 0 : _e.splice(index, 1);
-                            (_f = addDetail.parentKeys) === null || _f === void 0 ? void 0 : _f.splice(index, 1);
+                            addDetail.addBeforeKeys?.splice(index, 1);
+                            addDetail.data?.splice(index, 1);
+                            addDetail.indexes?.splice(index, 1);
+                            addDetail.keys?.delete(data.key);
+                            addDetail.metadata?.splice(index, 1);
+                            addDetail.parentKeys?.splice(index, 1);
                         }
                     });
                     this.handleItemsAdded(addDetail);
@@ -1127,7 +1125,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
                 }
                 return this.dataProvider.getChildDataProvider(parentKey);
             };
-            this.handleNextItemInResults = (options, parentKey, results, finalResults) => {
+            this.handleNextItemInResults = (options, parentKey, currResults, finalResults) => {
+                const results = currResults === null ? null : { ...currResults };
                 if (results === null ||
                     results.value.data.length === 0 ||
                     this._checkFinalResults(options, finalResults)) {
@@ -1146,8 +1145,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
                     }
                     return this._fetchNextFromIterator(this._cachedIteratorsAndResults[parentKey === null ? 'root' : parentKey].iterator, parentKey, options, finalResults);
                 }
-                const data = results.value.data.shift();
-                const metadata = results.value.metadata.shift();
+                const resultsData = [...results.value.data];
+                const resultsMetadata = [...results.value.metadata];
+                const data = resultsData.shift();
+                const metadata = resultsMetadata.shift();
+                results.value.data = resultsData;
+                results.value.metadata = resultsMetadata;
                 const updatedMetadata = this._updateMetadata(metadata, parentKey, finalResults);
                 finalResults.value.data.push(data);
                 finalResults.value.metadata.push(updatedMetadata);
@@ -1267,8 +1270,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
                     return;
                 }
                 const showSkeletonTimeout = setTimeout(function () {
-                    var _a;
-                    if ((_a = this.callback) === null || _a === void 0 ? void 0 : _a.getExpandingKeys().has(key)) {
+                    if (this.callback?.getExpandingKeys().has(key)) {
                         this.callback.updateSkeletonKeys(key);
                     }
                 }.bind(this), 250);
@@ -1571,8 +1573,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
             return index;
         }
         handleModelRefresh(detail) {
-            var _a;
-            if (((_a = detail === null || detail === void 0 ? void 0 : detail.keys) === null || _a === void 0 ? void 0 : _a.size) > 0) {
+            if (detail?.keys?.size > 0) {
                 this.handleModelRefreshChildren(detail.keys);
             }
             else {
@@ -1705,16 +1706,16 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
                     const parentKeys = detail.parentKeys;
                     const keysToExpand = [];
                     let newMetadata;
-                    if ((indexes == null || (indexes === null || indexes === void 0 ? void 0 : indexes.length) == 0) &&
-                        (addBeforeKeys == null || (addBeforeKeys === null || addBeforeKeys === void 0 ? void 0 : addBeforeKeys.length) == 0) &&
-                        (parentKeys == null || (parentKeys === null || parentKeys === void 0 ? void 0 : parentKeys.length) == 0)) {
+                    if ((indexes == null || indexes?.length == 0) &&
+                        (addBeforeKeys == null || addBeforeKeys?.length == 0) &&
+                        (parentKeys == null || parentKeys?.length == 0)) {
                         if (newData.done && !newData.maxCountLimit) {
                             newData.value.data.push(...detail.data);
                             newMetadata = this._updateAllMetadata(detail.metadata, null, newData);
                             newData.value.metadata.push(...newMetadata);
                         }
                     }
-                    else if ((parentKeys === null || parentKeys === void 0 ? void 0 : parentKeys.length) > 0) {
+                    else if (parentKeys?.length > 0) {
                         if (indexes == null) {
                             indexes = [];
                         }

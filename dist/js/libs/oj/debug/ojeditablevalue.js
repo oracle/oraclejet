@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -992,6 +992,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     // clear all messages; run full validation on display value
     // _SetValue returns boolean or Promise that resolves to a Boolean.
     returnValue = this._SetValue(this._GetDisplayValue(), null, this._VALIDATE_METHOD_OPTIONS);
+
+    if (returnValue === false && !this._CanSetValue()) {
+      // FIX JET-45885, validate() returns 'invalid' for readonly or disabled on valid value.
+      // In _SetValue/_AsyncValidate, validation is skipped when !this._CanSetValue(), and _SetValue returns false.
+      // We want validate() to return 'valid' when validation is skipped.
+      returnValue = true;
+    }
 
     if (this._IsCustomElement()) {
       if (!(returnValue instanceof Promise)) {
@@ -3120,6 +3127,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
           case 'labelHint':
             this._setAriaLabelFromLabelHint();
+            this._getComponentMessaging().update(
+              this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.LABEL)
+            );
             break;
 
           case 'help':
@@ -4734,6 +4744,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
        * <li>'VALIDATOR_HINTS' - updates only validator hints, this is used when validators option
        * changes or when validator hints are first shown the the user.</li>
        * <li>'TITLE' - updates only title, when the title property changes</li>
+       * <li>'LABEL' - updates only label, when the labelHint property changes</li>
        * </ul>
        * @private
        * @memberof oj.editableValue
@@ -4743,7 +4754,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         VALIDITY_STATE: 2,
         CONVERTER_HINT: 3,
         VALIDATOR_HINTS: 4,
-        TITLE: 5
+        TITLE: 5,
+        LABEL: 6
       },
 
       /**
@@ -5758,6 +5770,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           }
 
           messagingContent.title = title || '';
+        }
+
+        if (
+          updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.INIT ||
+          updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.LABEL
+        ) {
+          if (this._IsCustomElement()) {
+            messagingContent.label = this.options.labelHint;
+          }
         }
 
         return messagingContent;
@@ -8010,17 +8031,20 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    */
   PopupMessagingStrategy.prototype._buildMessagesHtml = function (document) {
     var content = '';
+    var componentLabel;
     var maxSeverity = this.GetMaxSeverity();
     var messages;
     var renderSeveritySelectors = false;
 
     if (this.HasMessages()) {
       messages = this.GetMessages();
+      componentLabel = this._getMessagingContent().label;
       content = PopupMessagingStrategyUtils.buildMessagesHtml(
         document,
         messages,
         maxSeverity,
-        renderSeveritySelectors
+        renderSeveritySelectors,
+        componentLabel
       );
     }
     return content;
@@ -8180,6 +8204,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @param {Array} messages
    * @param {number} maxSeverity
    * @param {boolean} renderSeveritySelectors
+   * @param {string} componentLabel
    * @return {string} content
    * @private
    * @memberof oj.PopupMessagingStrategyUtils
@@ -8189,7 +8214,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     document,
     messages,
     maxSeverity,
-    renderSeveritySelectors
+    renderSeveritySelectors,
+    componentLabel
   ) {
     var content = '';
     var detail;
@@ -8241,7 +8267,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             summary,
             detail,
             severityLevel,
-            renderSeveritySelectors
+            renderSeveritySelectors,
+            componentLabel
           )
         );
       }
@@ -8255,6 +8282,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @param {string} summary
    * @param {string} detail
    * @param {number} severityLevel
+   * @param {boolean} addSeverityClass
+   * @param {string} componentLabel
    * @returns {string}
    * @public
    */
@@ -8263,16 +8292,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     summary,
     detail,
     severityLevel,
-    addSeverityClass
+    addSeverityClass,
+    componentLabel
   ) {
     var msgContent;
     var msgDetail;
     var msgDom;
     var msgIcon;
     var msgSummary;
+    var msgComponentLabel;
     var severityStr = PopupMessagingStrategyUtils.getSeverityTranslatedString(severityLevel);
 
     // build message
+    // (hidden-accessible) <Component Label>
     // (x) <Summary Text>
     // <Detail Text>
     msgDom = document.createElement('div');
@@ -8285,6 +8317,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       for (var i = 0, slen = severityClasses.length; i < slen; ++i) {
         msgDom.classList.add(severityClasses[i]);
       }
+    }
+
+    // build hidden accessible component label if a label is provided
+    if (componentLabel) {
+      msgComponentLabel = document.createElement('span');
+      msgComponentLabel.classList.add('oj-helper-hidden-accessible');
+      msgComponentLabel.textContent = componentLabel;
+      msgDom.appendChild(msgComponentLabel); // @HTMLUpdateOK
     }
 
     // build msg icon
@@ -9840,6 +9880,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    */
   InlineMessagingStrategy.prototype._buildMessagesHtml = function (document) {
     var content = '';
+    var componentLabel;
     var maxSeverity;
     var messages;
     var renderSeveritySelectors = true;
@@ -9847,11 +9888,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     if (this.HasMessages()) {
       messages = this.GetMessages();
       maxSeverity = this.GetMaxSeverity();
+      componentLabel = this._getMessagingContent().label;
       content = PopupMessagingStrategyUtils.buildMessagesHtml(
         document,
         messages,
         maxSeverity,
-        renderSeveritySelectors
+        renderSeveritySelectors,
+        componentLabel
       );
     }
     return content;

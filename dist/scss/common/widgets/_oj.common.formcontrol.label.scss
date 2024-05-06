@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2023, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2024, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -67,7 +67,10 @@
      }
     
     // inside labels are always truncated
-    .oj-text-field-label-inside .oj-label {
+    .oj-text-field-label-inside .oj-label,
+    .oj-form-control-label-inside .oj-label,
+    .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside .oj-label,
+    .oj-form-layout .oj-form.oj-enabled .oj-form-control-label-inside .oj-label {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -80,7 +83,26 @@
         // align bottom to take out the inherent padding. Then I can add my own padding that
         // works for non-component and component labels
         vertical-align: bottom;
+        overflow: inherit;
+        text-overflow: inherit;
     }
+    // This will affect top and inside only and only when labels are truncating.
+    .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label > .oj-label-group,
+    .oj-text-field-label-inside > .oj-text-field-container .oj-label > .oj-label-group,
+    .oj-form-control-label-inside > .oj-label > .oj-label-group {
+        display: flex;
+        flex-direction: row-reverse;
+        width: fit-content;
+        max-width: 100%;
+    }
+    .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label > .oj-label-group > .oj-component-initnode,
+    .oj-text-field-label-inside > .oj-text-field-container .oj-label > .oj-label-group > .oj-component-initnode,
+    .oj-form-control-label-inside > .oj-label > .oj-label-group > .oj-component-initnode {
+        display: block;
+        overflow: inherit;
+        text-overflow: inherit;
+    }
+
 
     // There are selectors that set float: none on oj-label-help-icon.
     // (see float:none in _oj.common.formlayout.scss/

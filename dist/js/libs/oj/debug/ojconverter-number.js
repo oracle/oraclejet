@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledata', 'ojs/ojconverter', 'ojs/ojtranslation', 'ojs/ojconfig', 'ojs/ojcore-base', 'ojs/ojvalidation-error'], function (exports, Logger, __ConverterUtilsI18n, LocaleData, Converter, Translations, Config, oj$1, ojvalidationError) { 'use strict';
+define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledata', 'ojs/ojconverter', 'ojs/ojtranslation', 'ojs/ojconfig', 'ojs/ojcore-base', 'ojs/ojvalidation-error', 'ojs/ojconverter-preferences'], function (exports, Logger, __ConverterUtilsI18n, LocaleData, Converter, Translations, Config, oj$1, ojvalidationError, ojconverterPreferences) { 'use strict';
 
   Converter = Converter && Object.prototype.hasOwnProperty.call(Converter, 'default') ? Converter['default'] : Converter;
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
@@ -2713,7 +2713,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
    * @since 0.6.0
    */
   const IntlNumberConverter = function (options) {
-    this.Init(options);
+    const mo = ojconverterPreferences.getMergedNumberPreferencesWithOptions(options);
+    this.Init(mo);
   };
 
   /**

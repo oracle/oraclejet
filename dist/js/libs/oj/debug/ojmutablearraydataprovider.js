@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -285,6 +285,45 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
     // end of jsdoc
 
     class MutableArrayDataProvider {
+        set data(value) {
+            const oldData = this._data == undefined ? [] : this._data.slice();
+            if (Array.isArray(value)) {
+                if (Object.isFrozen(value)) {
+                    this._data = value;
+                }
+                else {
+                    this._data = value.slice();
+                    Object.freeze(this._data);
+                }
+            }
+            else {
+                this._data = value == undefined ? [] : [].concat(value);
+            }
+            if (((oldData == undefined || oldData.length === 0) &&
+                this._data != undefined &&
+                this._data.length > 0) ||
+                ((this._data == undefined || this._data.length === 0) &&
+                    oldData != undefined &&
+                    oldData.length > 0)) {
+                this._keys = null;
+                this._dataRefreshed(this._data);
+                this._resetTotalFilteredRowCount = true;
+            }
+            else {
+                this._changes = this.compareArrays(oldData, this._data, false);
+                if (this._changes != null && this._changes.length > 0) {
+                    this._resetTotalFilteredRowCount = true;
+                    this._dataMutated(this._changes);
+                    this._dataRefreshed(this._data);
+                }
+            }
+        }
+        get data() {
+            return this._data;
+        }
+        get dataChanges() {
+            return this._changes;
+        }
         constructor(_data, options) {
             var _a;
             this._data = _data;
@@ -345,7 +384,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     this[MutableArrayDataProvider._FETCHPARAMETERS] = fetchParameters;
                     this[MutableArrayDataProvider._RESULTS] = results;
                     this[MutableArrayDataProvider._DONE] = done;
-                    if ((fetchParameters === null || fetchParameters === void 0 ? void 0 : fetchParameters.includeFilteredRowCount) === 'enabled') {
+                    if (fetchParameters?.includeFilteredRowCount === 'enabled') {
                         this[MutableArrayDataProvider._TOTALFILTEREDROWCOUNR] = totalFilteredRowCount;
                     }
                 }
@@ -399,8 +438,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     this._parent._mapClientIdToOffset.set(this._clientId, resultObj.offset);
                     Object.defineProperty(resultObj.result.value, 'totalFilteredRowCount', {
                         get: () => {
-                            var _a;
-                            if (((_a = this._params) === null || _a === void 0 ? void 0 : _a.includeFilteredRowCount) === 'enabled') {
+                            if (this._params?.includeFilteredRowCount === 'enabled') {
                                 if (this._totalFilteredRowCount === undefined ||
                                     this._parent._resetTotalFilteredRowCount) {
                                     this._totalFilteredRowCount = this._parent._getTotalFilteredRowCount(this._params);
@@ -485,45 +523,6 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             this._mutationSequenceNum = 0;
             this._mapClientIdToOffset = new Map();
             this.data = _data;
-        }
-        set data(value) {
-            const oldData = this._data == undefined ? [] : this._data.slice();
-            if (Array.isArray(value)) {
-                if (Object.isFrozen(value)) {
-                    this._data = value;
-                }
-                else {
-                    this._data = value.slice();
-                    Object.freeze(this._data);
-                }
-            }
-            else {
-                this._data = value == undefined ? [] : [].concat(value);
-            }
-            if (((oldData == undefined || oldData.length === 0) &&
-                this._data != undefined &&
-                this._data.length > 0) ||
-                ((this._data == undefined || this._data.length === 0) &&
-                    oldData != undefined &&
-                    oldData.length > 0)) {
-                this._keys = null;
-                this._dataRefreshed(this._data);
-                this._resetTotalFilteredRowCount = true;
-            }
-            else {
-                this._changes = this.compareArrays(oldData, this._data, false);
-                if (this._changes != null && this._changes.length > 0) {
-                    this._resetTotalFilteredRowCount = true;
-                    this._dataMutated(this._changes);
-                    this._dataRefreshed(this._data);
-                }
-            }
-        }
-        get data() {
-            return this._data;
-        }
-        get dataChanges() {
-            return this._changes;
         }
         containsKeys(params) {
             const self = this;
@@ -686,6 +685,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     ],
                     attributeExpression: ['*'],
                     textFilter: {},
+                    textFilterMatching: { matchBy: ['startsWith', 'contains', 'phrase'] },
                     nestedFilter: {},
                     collationOptions: {
                         sensitivity: ['base', 'accent', 'case', 'variant']
@@ -991,22 +991,21 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             self._fireMutationEvent(operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
         }
         _dataRefreshed(changes) {
-            var _a, _b, _c, _d;
             const self = this;
             if (self._mutationEvent) {
                 const detail = self._mutationEvent['detail'];
-                self._adjustIteratorOffset((_a = detail.remove) === null || _a === void 0 ? void 0 : _a.indexes, (_b = detail.add) === null || _b === void 0 ? void 0 : _b.indexes);
+                self._adjustIteratorOffset(detail.remove?.indexes, detail.add?.indexes);
                 self.dispatchEvent(self._mutationEvent);
             }
             else if (self._mutationRemoveEvent || self._mutationAddEvent || self._mutationUpdateEvent) {
                 if (self._mutationRemoveEvent) {
                     const detail = self._mutationRemoveEvent['detail'];
-                    self._adjustIteratorOffset((_c = detail.remove) === null || _c === void 0 ? void 0 : _c.indexes, null);
+                    self._adjustIteratorOffset(detail.remove?.indexes, null);
                     self.dispatchEvent(self._mutationRemoveEvent);
                 }
                 if (self._mutationAddEvent) {
                     const detail = self._mutationAddEvent['detail'];
-                    self._adjustIteratorOffset(null, (_d = detail.add) === null || _d === void 0 ? void 0 : _d.indexes);
+                    self._adjustIteratorOffset(null, detail.add?.indexes);
                     self.dispatchEvent(self._mutationAddEvent);
                 }
                 if (self._mutationUpdateEvent) {
@@ -1287,12 +1286,11 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             };
         }
         _mergeSortCriteria(sortCriteria) {
-            var _a;
             if (sortCriteria && sortCriteria.length > 0) {
                 return sortCriteria;
             }
             else {
-                return (_a = this.options) === null || _a === void 0 ? void 0 : _a.implicitSort;
+                return this.options?.implicitSort;
             }
         }
         _filterRowAttributes(fetchAttribute, data, updatedData) {

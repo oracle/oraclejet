@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -435,6 +435,10 @@ oj.__registerWidget('oj.ojSurrogate', $.oj.baseComponent, {
   _NotifyDetached: function () {
     this._invokeBeforeDestroy();
     this._super();
+  },
+  // This method is designed to be triggered by jquery cleanData override.
+  $$cleanElement: function () {
+    this._invokeBeforeDestroy();
   }
 });
 
@@ -443,6 +447,9 @@ var ojSurrogateMeta = {
     beforeDestroy: {
       type: 'function'
     }
+  },
+  methods: {
+    $$cleanElement: {}
   },
   extension: {
     _WIDGET_NAME: 'ojSurrogate'
@@ -547,9 +554,7 @@ PopupServiceImpl.prototype.open = function (options) {
   var _finalize = function () {
     try {
       popup.removeAttr('aria-hidden');
-
       this._assertEventSink();
-      subtreeShown(popup[0]);
     } catch (e) {
       error('Error opening popup:\n%o', e);
     } finally {
@@ -582,6 +587,7 @@ PopupServiceImpl.prototype.open = function (options) {
   var resultant;
   try {
     resultant = beforeOpenCallback(options);
+    subtreeShown(popup[0]);
   } catch (e) {
     error('Error before open popup:\n%o', e);
   } finally {
@@ -677,8 +683,12 @@ PopupServiceImpl.prototype.close = function (options) {
   var _finalize = function () {
     try {
       popup.hide();
-      // reset position units
-      popup.css({ top: 'auto', bottom: 'auto', left: 'auto', right: 'auto' });
+      // If 'null' value was provided as the position option, do not reset it.
+      // Consumer handles positioning by his own (DrawerPopup)
+      if (options[PopupService.OPTION.POSITION] !== null) {
+        // reset position units
+        popup.css({ top: 'auto', bottom: 'auto', left: 'auto', right: 'auto' });
+      }
 
       ZOrderUtils.removeFromAncestorLayer(popup);
 
@@ -763,7 +773,7 @@ PopupServiceImpl.prototype.changeOptions = function (options) {
   /** @type {PopupService.MODALITY} */
   var modality = options[PopupService.OPTION.MODALITY];
   if (modality) {
-    ZOrderUtils.applyModality(layer, modality);
+    ZOrderUtils.applyModality(layer, popup, modality);
   }
 
   /** @type {?} */
@@ -1321,7 +1331,7 @@ ZOrderUtils.addToAncestorLayer = function (
 
   ZOrderUtils._applyVDomPatch(surrogate[0], popupDom);
 
-  ZOrderUtils.applyModality(layer, modality);
+  ZOrderUtils.applyModality(layer, popup, modality);
 };
 
 /**
@@ -1551,8 +1561,43 @@ ZOrderUtils._closeDescendantPopupsCallback = function (layer, context) {
 ZOrderUtils._disableBodyOverflow = function (layer) {
   const body = document.body;
   const popup = layer.children()[0];
-  if ($(popup).width() <= window.innerWidth && $(popup).height() <= window.innerHeight) {
-    body.classList.add('oj-component-modal-open');
+  if (
+    Math.floor($(popup).width()) <= window.innerWidth &&
+    Math.floor($(popup).height()) <= window.innerHeight
+  ) {
+    // JET-44685: setting 'overflow:hidden' on body is not enough to lock background scrolling on iOS.
+    // There is the address bar which gets hidden/revealed when swiping the screen vertically and
+    // iOS seems to ignore 'overflow:hidden' until the address bar is visible.
+    // The generally recommended workaround is setting 'position: fixed' on body while preserving
+    // the current scroll position.
+    if (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS) {
+      if (this._iosScrollLockBackup) {
+        return;
+      }
+      const offsetLeft = window.visualViewport.offsetLeft;
+      const offsetTop = window.visualViewport.offsetTop;
+      const windowScrollX = window.pageXOffset;
+      const windowScrollY = window.pageYOffset;
+
+      this._iosScrollLockBackup = {
+        windowScrollX: windowScrollX,
+        windowScrollY: windowScrollY,
+        bodyPosition: body.style.position,
+        bodyOverflow: body.style.overflow,
+        bodyTop: body.style.top,
+        bodyLeft: body.style.left,
+        bodyRight: body.style.right
+      };
+
+      body.style.position = 'fixed';
+      body.style.overflow = 'hidden';
+      body.style.top = `${-(windowScrollY - Math.floor(offsetTop))}px`;
+      body.style.left = `${-(windowScrollX - Math.floor(offsetLeft))}px`;
+      body.style.right = '0';
+    } else {
+      // JET-44685: anywhere else but iOS, setting body.style.overflow='hidden' is sufficient
+      body.classList.add('oj-component-modal-open');
+    }
   }
 };
 
@@ -1560,7 +1605,27 @@ ZOrderUtils._restoreBodyOverflow = function () {
   // if there are no more modals left, enable scrolling on body
   if (!ZOrderUtils.hasModalDialogOpen()) {
     const body = document.body;
-    body.classList.remove('oj-component-modal-open');
+
+    // JET-44685: if on iOS, revert the previously applied scroll lock patch
+    if (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS) {
+      if (!this._iosScrollLockBackup) {
+        return;
+      }
+
+      const backup = this._iosScrollLockBackup;
+
+      body.style.position = backup.bodyPosition;
+      body.style.overflow = backup.bodyOverflow;
+      body.style.top = backup.bodyTop;
+      body.style.left = backup.bodyLeft;
+      body.style.right = backup.bodyRight;
+
+      window.scrollTo(backup.windowScrollX, backup.windowScrollY);
+
+      delete this._iosScrollLockBackup;
+    } else {
+      body.classList.remove('oj-component-modal-open');
+    }
   }
 };
 
@@ -1584,7 +1649,7 @@ ZOrderUtils._removeFocusWithinFromOverlayedContent = function () {
  * @return {void}
  * @public
  */
-ZOrderUtils.applyModality = function (layer, modality) {
+ZOrderUtils.applyModality = function (layer, popup, modality) {
   /** @type {?} */
   var currModality = layer.data(ZOrderUtils._MODALITY_DATA);
   layer.data(ZOrderUtils._MODALITY_DATA, modality);
@@ -1594,26 +1659,29 @@ ZOrderUtils.applyModality = function (layer, modality) {
       ZOrderUtils._addOverlayToAncestorLayer(layer);
       ZOrderUtils._disableBodyOverflow(layer);
       ZOrderUtils._removeFocusWithinFromOverlayedContent();
+      ZOrderUtils._setAriaHiddenOnBackround(layer);
     } else {
+      // Note: Calling this is probably not necessary as this is initial opening of a popup
       ZOrderUtils._removeOverlayFromAncestorLayer(layer);
     }
   } else if (currModality !== modality) {
-    if (modality !== currModality && modality === PopupService.MODALITY.MODAL) {
+    if (modality === PopupService.MODALITY.MODAL) {
       ZOrderUtils._addOverlayToAncestorLayer(layer);
       ZOrderUtils._disableBodyOverflow(layer);
       ZOrderUtils._removeFocusWithinFromOverlayedContent();
+      ZOrderUtils._setAriaHiddenOnBackround(layer);
     } else {
       ZOrderUtils._removeOverlayFromAncestorLayer(layer);
+      ZOrderUtils._restoreBodyOverflow();
+      ZOrderUtils._resetAriaHiddenOnBackround(layer);
     }
   }
   if (modality === PopupService.MODALITY.MODAL) {
-    layer.attr('aria-modal', 'true');
-    ZOrderUtils._setAriaHiddenOnBackround(layer);
+    popup.attr('aria-modal', 'true');
   } else {
     // saw a tech note that a "false" value doesn't convey the same information as
     // if the attribute wasn’t present at all screen readers.
-    layer.removeAttr('aria-modal');
-    ZOrderUtils._resetAriaHiddenOnBackround(layer);
+    popup.removeAttr('aria-modal');
   }
 };
 
@@ -3729,6 +3797,15 @@ PositionUtils.calcAvailablePopupSize = function (pos, feedback, withinElem) {
         // factor in half the width of the popup
         posLeft -= dirFactor * (data.elemWidth / 2);
 
+        // JET-53426: need to check if the popup element fits the screen after centering
+        // otherwise it could cause text reflow and popup resize which might result
+        // in another positioning cycle with a potential endless loop.
+        // If the element does not fit, apply the 'fit' collision to avoid the resize.
+        if (posLeft < withinOffset || posLeft + data.elemWidth > outerWidth - withinOffset) {
+          $.ui.position.fit.left.call(this, position, data);
+          posLeft = position.left;
+        }
+
         // Force the popup start to be within the viewport.
         // This collision rule is only used by input components internally. The notewindow will auto dismiss when
         // what it is aligned to is hidden in a scroll container.
@@ -4294,7 +4371,7 @@ class VPopup extends Component {
         };
     }
     render(props) {
-        return (jsx("div", Object.assign({ style: { display: 'none' }, ref: this._setRootRef }, { children: props.children })));
+        return (jsx("div", { style: { display: 'none' }, ref: this._setRootRef, children: props.children }));
     }
     componentDidMount() {
         this._popup = $(this._rootRef.firstChild);
@@ -4329,11 +4406,28 @@ VPopup.defaultProps = {
     position: {}
 };
 
+var _a;
 const OLD_DEFAULT_LAYER_ID = '__oj_zorder_container';
 const NEW_DEFAULT_LAYER_ID = '__root_layer_host';
+const NEW_DEFAULT_TOP_LAYER_ID = '__top_layer_host';
 const getUniqueId = ElementUtils.getUniqueId.bind(null, null);
 const V_LAYER_HOST_ID_REF = Symbol();
-function getPopupServiceOptions(element, launcherElement) {
+class VLayerUtils {
+    static findOpenVPopups() {
+        const rootLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
+        const topLayerHost = document.getElementById(NEW_DEFAULT_TOP_LAYER_ID);
+        const result = [];
+        if (rootLayerHost) {
+            result.concat([].slice.call(rootLayerHost.children));
+        }
+        if (topLayerHost) {
+            result.concat([].slice.call(topLayerHost.children));
+        }
+        return result;
+    }
+}
+_a = VLayerUtils;
+VLayerUtils._getPopupServiceOptions = (element, launcherElement) => {
     const PSOptions = {};
     const PSoption = oj.PopupService.OPTION;
     PSOptions[PSoption.POPUP] = element;
@@ -4348,13 +4442,13 @@ function getPopupServiceOptions(element, launcherElement) {
         [PSEvent.POPUP_AUTODISMISS]: () => { },
         [PSEvent.POPUP_REFRESH]: () => { },
         [PSEvent.POPUP_CLOSE]: () => {
-            closeLayerHost(element, launcherElement);
+            _a._closeLayerHost(element, launcherElement);
         },
         [PSEvent.POPUP_REMOVE]: () => { }
     };
     return PSOptions;
-}
-function getLayerHost(element) {
+};
+VLayerUtils.getLayerHost = (element, priority) => {
     const anchorRef = element['anchorRef'];
     let layerHost;
     if (!element[V_LAYER_HOST_ID_REF]) {
@@ -4387,28 +4481,54 @@ function getLayerHost(element) {
         }
     }
     if (isComponentInOldDom) {
-        return openLayerHost(element[V_LAYER_HOST_ID_REF], launcherElement);
+        return _a._openLayerHost(element[V_LAYER_HOST_ID_REF], launcherElement);
     }
-    return _getNewLayerHost();
-}
-function _getNewLayerHost() {
-    let newLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
-    if (!newLayerHost) {
-        newLayerHost = document.createElement('div');
-        newLayerHost.setAttribute('id', NEW_DEFAULT_LAYER_ID);
-        newLayerHost.setAttribute('data-oj-binding-provider', 'preact');
-        newLayerHost.classList.add('oj-root-layer-host');
+    return _a._getNewLayerHost(element, priority);
+};
+VLayerUtils._getNewLayerHost = (element, priority) => {
+    const parentLayerHost = element.closest(`#${NEW_DEFAULT_TOP_LAYER_ID}`);
+    if (parentLayerHost) {
+        return parentLayerHost;
+    }
+    let rootLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
+    if (priority === 'top') {
+        let topLayerHost = document.getElementById(NEW_DEFAULT_TOP_LAYER_ID);
+        if (!topLayerHost) {
+            topLayerHost = document.createElement('div');
+            topLayerHost.setAttribute('id', NEW_DEFAULT_TOP_LAYER_ID);
+            topLayerHost.setAttribute('data-oj-binding-provider', 'preact');
+            topLayerHost.classList.add('oj-top-layer-host');
+            if (rootLayerHost) {
+                rootLayerHost.after(topLayerHost);
+            }
+            else {
+                let zOrderContainer = document.getElementById(OLD_DEFAULT_LAYER_ID);
+                if (!zOrderContainer) {
+                    document.body.prepend(topLayerHost);
+                }
+                else {
+                    zOrderContainer.after(topLayerHost);
+                }
+            }
+        }
+        return topLayerHost;
+    }
+    if (!rootLayerHost) {
+        rootLayerHost = document.createElement('div');
+        rootLayerHost.setAttribute('id', NEW_DEFAULT_LAYER_ID);
+        rootLayerHost.setAttribute('data-oj-binding-provider', 'preact');
+        rootLayerHost.classList.add('oj-root-layer-host');
         let zOrderContainer = document.getElementById(OLD_DEFAULT_LAYER_ID);
         if (!zOrderContainer) {
-            document.body.prepend(newLayerHost);
+            document.body.prepend(rootLayerHost);
         }
         else {
-            zOrderContainer.after(newLayerHost);
+            zOrderContainer.after(rootLayerHost);
         }
     }
-    return newLayerHost;
-}
-function openLayerHost(elementId, launcherElement) {
+    return rootLayerHost;
+};
+VLayerUtils._openLayerHost = (elementId, launcherElement) => {
     if (!elementId)
         return;
     let vpopupCoreElement = document.getElementById(elementId);
@@ -4419,21 +4539,18 @@ function openLayerHost(elementId, launcherElement) {
         document.body.appendChild(vpopupCoreElement);
     }
     const popupServiceInstance = oj.PopupService.getInstance();
-    const popupServiceOptions = getPopupServiceOptions(vpopupCoreElement, launcherElement);
+    const popupServiceOptions = _a._getPopupServiceOptions(vpopupCoreElement, launcherElement);
     popupServiceInstance.open(popupServiceOptions);
     return vpopupCoreElement;
-}
-function closeLayerHost(element, launcherElement) {
+};
+VLayerUtils._closeLayerHost = (element, launcherElement) => {
     if (!element)
         return;
     const popupServiceInstance = oj.PopupService.getInstance();
-    const popupServiceOptions = getPopupServiceOptions(element, launcherElement);
+    const popupServiceOptions = _a._getPopupServiceOptions(element, launcherElement);
     popupServiceInstance.close(popupServiceOptions);
     element.remove();
-}
-function findOpenVPopups() {
-    const newLayerHost = _getNewLayerHost();
-    return [].slice.call(newLayerHost.children);
-}
+};
+oj._registerLegacyNamespaceProp('VLayerUtils', VLayerUtils);
 
-export { PopupLiveRegion, PopupService, PopupSkipLink, PopupWhenReadyMediator, PositionUtils, VPopup, findOpenVPopups, getLayerHost };
+export { PopupLiveRegion, PopupService, PopupSkipLink, PopupWhenReadyMediator, PositionUtils, VLayerUtils, VPopup };

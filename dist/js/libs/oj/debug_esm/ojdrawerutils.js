@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -26,6 +26,9 @@ class DrawerConstants {
     }
     static get styleDrawerHidden() {
         return `${this.stringOjDrawer}${this.charDash}hidden`;
+    }
+    static get clippingAreaSelector() {
+        return `${this.stringOjDrawer}${this.charDash}${this.stringClippingArea}`;
     }
     static get styleStartDrawer() {
         return `${this.stringOjDrawer}${this.charDash}${this.stringStart}`;
@@ -61,6 +64,7 @@ DrawerConstants.stringTop = 'top';
 DrawerConstants.stringBottom = 'bottom';
 DrawerConstants.stringMiddleSection = `layout-middle-section`;
 DrawerConstants.stringMainContent = `layout-main-content`;
+DrawerConstants.stringClippingArea = `clipping-area`;
 DrawerConstants.stringStyleClassDisableOverflow = `oj-drawer-disable-body-overflow`;
 DrawerConstants.stringSurrogate = 'surrogate';
 DrawerConstants.stringOpened = 'opened';
@@ -106,6 +110,14 @@ class DrawerUtils {
     static getElementWidth(element) {
         return Math.round(element.getBoundingClientRect().width);
     }
+    static getAutofocusFocusables(element) {
+        const selector = '[autofocus]:not([tabindex="-1"]):not([disabled]):not([hidden])';
+        const focusableCandidates = Array.from(element.querySelectorAll(selector));
+        const focusables = focusableCandidates.filter((item) => {
+            return !this.isHidden(item);
+        });
+        return focusables;
+    }
     static getFocusables(element) {
         const defaultFocusableElements = [
             'button',
@@ -116,24 +128,36 @@ class DrawerUtils {
             '[tabindex]',
             'video'
         ];
-        const selectorSuffix = ':not([tabindex="-1"]):not([disabled]):not([hidden])' +
-            ':not([style*="display:none"])' +
-            ':not([style*="display:none"] *)' +
-            ':not([style*="visibility:hidden"])' +
-            ':not([style*="visibility:hidden"] *)';
+        const selectorSuffix = ':not([tabindex="-1"]):not([disabled]):not([hidden])';
         const elementsCount = defaultFocusableElements.length;
         let safeFocusablesSelector = '';
         for (let i = 0; i < elementsCount; i++) {
             const elSelector = `${defaultFocusableElements[i]}${selectorSuffix}`;
             safeFocusablesSelector += i < elementsCount - 1 ? `${elSelector}, ` : `${elSelector}`;
         }
-        return element.querySelectorAll(safeFocusablesSelector);
+        const focusableCandidates = Array.from(element.querySelectorAll(safeFocusablesSelector));
+        const focusables = focusableCandidates.filter((item) => {
+            return !this.isHidden(item);
+        });
+        return focusables;
+    }
+    static isHidden(element) {
+        if (element.offsetParent === null) {
+            return true;
+        }
+        if (ojet.AgentUtils.getAgentInfo().browser === ojet.AgentUtils.BROWSER.FIREFOX) {
+            if (element.offsetParent === document.body) {
+                return true;
+            }
+        }
+        const style = window.getComputedStyle(element);
+        return style.visibility === 'hidden';
     }
     static isFocusable(element) {
         if (!element || !element.parentElement) {
             return false;
         }
-        return Array.from(DrawerUtils.getFocusables(element.parentElement)).some((item) => {
+        return DrawerUtils.getFocusables(element.parentElement).some((item) => {
             return item === element;
         });
     }
@@ -230,6 +254,21 @@ class DrawerUtils {
                 nearestAncestor.focus();
             }
         }
+    }
+    static wrapDrawerWithClippingArea(drawerElement, position) {
+        const clippingAreaEl = $(drawerElement)
+            .wrap(function () {
+            return `<div id="${DrawerConstants.clippingAreaSelector}" style="overflow:hidden; position: absolute"></div>`;
+        })
+            .parent()[0];
+        clippingAreaEl.style.setProperty('height', DrawerUtils.getElementHeight(drawerElement) + 'px');
+        clippingAreaEl.style.setProperty('width', DrawerUtils.getElementWidth(drawerElement) + 'px');
+        $(clippingAreaEl).position(position);
+        drawerElement.style.setProperty('position', 'static');
+    }
+    static unwrapDrawerClippingArea(drawerElement) {
+        drawerElement.style.removeProperty('position');
+        $(drawerElement).unwrap();
     }
 }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -579,7 +579,7 @@ var __oj_timeline_metadata =
                 "auto",
                 "off"
               ],
-              "value": "off"
+              "value": "auto"
             },
             "tooltipLabel": {
               "type": "string"
@@ -649,7 +649,7 @@ var __oj_timeline_metadata =
                 "auto",
                 "off"
               ],
-              "value": "off"
+              "value": "auto"
             },
             "tooltipLabel": {
               "type": "string"
@@ -1021,7 +1021,7 @@ var __oj_timeline_series_metadata =
    *   but also in many other places, such as the time axis, event durations, time markers,
    *   size and position calculations for the overview locator window, etc.</p>
    *<p>The Timeline supports a simplified version of the ISO 8601 extended date/time format.
-   *   The format is as follows: <font color="#4B8A08">YYYY-MM-DDTHH:mm:ss.sssZ</font></p>
+   *   The format is as follows: YYYY-MM-DDTHH:mm:ss.sssZ</p>
    *<table  class="keyboard-table">
    *<thead>
    *<tr>
@@ -1033,31 +1033,31 @@ var __oj_timeline_series_metadata =
    </thead>
    <tbody>
    *<tr>
-   *<td><font color="#4B8A08">-, :, .,T</font></td><td>Characters actually in the string. T specifies the start of a time.</td><td></td><td></td>
+   *<td>-, :, .,T</td><td>Characters actually in the string. T specifies the start of a time.</td><td></td><td></td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">YYYY</font></td><td>Year</td><td></td><td rowspan="3">2013-03-22<br>2014-02</td>
+   *<td>YYYY</td><td>Year</td><td></td><td rowspan="3">2013-03-22<br>2014-02</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">MM</font></td><td>Month</td><td>01 to 12</td>
+   *<td>MM</td><td>Month</td><td>01 to 12</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">DD</font></td><td>Day of the month</td><td>01 to 31</td>
+   *<td>DD</td><td>Day of the month</td><td>01 to 31</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">HH</font></td><td>Hours</td><td>00 to 24</td><td rowspan="3">2013-02-04T15:20Z<br>2013-02-10T15:20:45.300Z</td>
+   *<td>HH</td><td>Hours</td><td>00 to 24</td><td rowspan="3">2013-02-04T15:20Z<br>2013-02-10T15:20:45.300Z</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">mm</font></td><td>Minutes</td><td>00 to 59</td>
+   *<td>mm</td><td>Minutes</td><td>00 to 59</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">ss</font></td><td>Seconds. The seconds and milliseconds are optional if a time is specified.</td><td>00 to 59</td>
+   *<td>ss</td><td>Seconds. The seconds and milliseconds are optional if a time is specified.</td><td>00 to 59</td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">sss</font></td><td>Milliseconds</td><td>00 to 999</td><td></td>
+   *<td>sss</td><td>Milliseconds</td><td>00 to 999</td><td></td>
    *</tr>
    *<tr>
-   *<td><font color="#4B8A08">Z</font></td><td>The value in this position can be one of the following.
+   *<td>Z</td><td>The value in this position can be one of the following.
    *  If the value is omitted, character 'Z' should be used to specify UTC time.
    *  <br><ul><li><b>Z</b> indicates UTC time.</li><li><b>+hh:mm</b> indicates that the input time is the specified offset after UTC time.
    *  </li><li><b>-hh:mm</b> indicates that the input time is the absolute value of the specified offset before UTC time.
@@ -1178,10 +1178,11 @@ var __oj_timeline_series_metadata =
    * @property {boolean}  previousState.hovered True if the item was previously hovered.
    * @property {boolean}  previousState.selected True if the item was previously selected.
    * @property {boolean}  previousState.focused True if the item was previously focused.
-   * @property {Number}  durationWidth width of the duration-event bubble or null if not duration-event.
-   * @property {Number}  contentWidth The available width in pixels for content inside the duration-event bubble, or null if the item is not a duration-event.
-   * @property {Number}  maxAvailableWidth The largest value in pixels among the available width on the right, on the left, and within the duration event bubble.
-   * If the item is not a duration-event, then this is null.
+   * @property {number|null}  durationWidth width of the duration-event bubble or null if not duration-event.
+   * @property {number|null}  contentWidth The available width in pixels for content inside the duration-event bubble, or null if the item is not a duration-event. See also maxAvailableWidth.
+   * @property {number}  maxAvailableWidth The maximum available width in pixels for content.
+   * This value generally maps to the available space inside the item bubble, or in the case of duration-event items,
+   * accounts for space inside and outside the item bubble. This value also accounts for a theme-driven max width and overflow breakpoint.
    * @ojdeprecated {target: "property", for: "durationWidth", since:"13.1.0", description: "The durationWidth property is deprecated. Please use the contentWidth property instead."}
    * @ojsignature [{target: "Type", value: "oj.ojTimeline.SeriesItem<K>", for: "data"},
    *               {target: "Type", value: "oj.ojTimeline.Series<K>", for: "seriesData"},
@@ -1281,7 +1282,7 @@ var __oj_timeline_series_metadata =
   /**
    * <p>The <code class="prettyprint">itemBubbleContentTemplate</code> slot is used to specify custom item bubble content.
    *    The slot content must be a single &lt;template> element.
-   * The item bubble is defined as the content within the bubble container of a timeline item. This template is restricted to non-duration timeline items.</p>
+   * The item bubble is defined as the content within the bubble container of a timeline item.</p>
    * <p>Note that the (0,0) point is at the top left corner of the item bubble container in left-to-right reading direction,
    *    and at the top right corner in right-to-left reading direction.
    * Depending on the custom content, the developer will need to adjust the positioning based on use case.
@@ -3139,9 +3140,9 @@ var __oj_timeline_series_metadata =
            * @ojsignature {target: "Type", value: "?"}
            * @ojvalue {string} "off"
            * @ojvalue {string} "auto"
-           * @default "off"
+           * @default "auto"
            */
-          tooltipDisplay: 'off'
+          tooltipDisplay: 'auto'
         },
         /**
          * Specifies tooltip behavior for the description value.
@@ -3180,9 +3181,9 @@ var __oj_timeline_series_metadata =
            * @ojsignature {target: "Type", value: "?"}
            * @ojvalue {string} "off"
            * @ojvalue {string} "auto"
-           * @default "off"
+           * @default "auto"
            */
-          tooltipDisplay: 'off'
+          tooltipDisplay: 'auto'
         }
       },
       /**
@@ -3442,7 +3443,8 @@ var __oj_timeline_series_metadata =
         { path: 'styleDefaults/item/borderColor', property: 'border-top-color' },
         { path: 'styleDefaults/item/backgroundColor', property: 'background-color' },
         { path: 'styleDefaults/item/padding', property: 'padding-top' },
-        { path: 'styleDefaults/item/borderRadius', property: 'border-top-left-radius' }
+        { path: 'styleDefaults/item/borderRadius', property: 'border-top-left-radius' },
+        { path: 'styleDefaults/item/_maxContentWidth', property: 'max-width' }
       ];
       styleClasses['oj-timeline-item-bubble-stripe'] = [
         { path: 'styleDefaults/item/_stripeWidth', property: 'width' },
@@ -3458,7 +3460,8 @@ var __oj_timeline_series_metadata =
         { path: 'styleDefaults/item/_withStripePaddingEnd', property: 'padding-inline-end' }
       ];
       styleClasses['oj-timeline-item-duration-event-overflow-bubble'] = [
-        { path: 'styleDefaults/durationEventOverflow/backgroundColor', property: 'background-color' }
+        { path: 'styleDefaults/durationEventOverflow/backgroundColor', property: 'background-color' },
+        { path: 'styleDefaults/item/_overflowBubbleBorderRadius', property: 'border-radius' }
       ];
       styleClasses['oj-timeline-item oj-hover'] = [
         // { path: 'styleDefaults/item/hoverBorderColor', property: 'border-color' },
@@ -3675,6 +3678,16 @@ var __oj_timeline_series_metadata =
         { path: 'itemBubbleContentRenderer', slot: 'itemBubbleContentTemplate' },
         { path: 'tooltip/renderer', slot: 'tooltipTemplate' }
       ];
+    },
+
+    /**
+     * @protected
+     * @override
+     * @instance
+     * @memberof! oj.ojTimeline
+     */
+    _GetTranslationsSectionName: function () {
+      return 'oj-ojTimeline';
     },
 
     // @inheritdoc

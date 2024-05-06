@@ -1,0 +1,9 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+define(["exports","ojs/ojconverter-nativedatetime","ojs/ojconverter-preferences","ojs/ojconverter-datetimeerror","@oracle/oraclejet-preact/UNSAFE_IntlDateTime"],function(e,r,t,o,a){"use strict";e.LocalDateConverter=class{constructor(e){const o=e??{dateStyle:"short"},a=t.getMergedDateTimePreferencesWithOptions(o);delete a.timeZone;const n={isoStrFormat:"local",numberingSystem:"latn",calendar:"gregory",lenientParse:"full"};if(a.pattern){const e={pattern:a.pattern,...a,...n};this.wrapped=new r.NativeDateTimePatternConverter(e),this.exampleFormatConverter=this.wrapped}else{const e={...a,...n};this.wrapped=new r.NativeDateTimeConverter(e),this.exampleFormatConverter=new r.NativeDateTimeConverter({locale:e.locale,dateStyle:"short",dateStyleShortYear:"numeric"})}}format(e){if(!a.DateTimeUtils.isDateOnlyIsoString(e))throw new Error("The value to format must be a date-only ISO string.");try{return this.wrapped.format(e)}catch(e){throw this._processConverterError(e)}}parse(e){try{return this.wrapped.parse(e)}catch(e){throw this._processConverterError(e)}}resolvedOptions(){return this.wrapped.resolvedOptions()}_processConverterError(e){const r=this.exampleFormatConverter.format.bind(this.exampleFormatConverter),{detail:t}=o._processConverterError(e,r,"date");return new Error(t)}},Object.defineProperty(e,"__esModule",{value:!0})});
+//# sourceMappingURL=ojconverter-localdate.js.map

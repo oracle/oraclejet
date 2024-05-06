@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojcomponentcore'], function (oj, ojcustomelementUtils, Context, Logger, Components) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojcomponentcore'], function (oj$1, ojcustomelementUtils, Context, Logger, Components) { 'use strict';
 
-  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
+  oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
   /**
@@ -428,18 +428,34 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
       var firstInvalid = null;
 
       if (key === FIRST_INVALID_SHOWN_KEY) {
-        firstInvalid = _getFirstInvalidComponent();
+        // JET-50765 - AUTO SCROLL FOCUS FIELD DOESN'T WORK ON MOBILE DEVICE
+        // When this method is called, there might be cases where the core-pack
+        // component has not updated the valid property yet which is done in a microtask.
+        // So, schedule a microtask and try to focus the first invalid there. No need to set
+        // a busyContext here as it resolves on a macrotask and we will be done by then.
+        // This way, focusOn can be called synchronously after the showMessages call and it
+        // will correctly focus the first invalid component.
+        queueMicrotask(() => {
+          firstInvalid = _getFirstInvalidComponent();
 
-        if (firstInvalid) {
-          // If the component has the 'focusOn' method,
-          // call that instead of focus()
-          // to handle nested oj-validation-groups
-          if ('focusOn' in firstInvalid) {
-            firstInvalid.focusOn(FIRST_INVALID_SHOWN_KEY);
-          } else {
-            firstInvalid.focus();
+          if (firstInvalid) {
+            // If the component has the 'focusOn' method,
+            // call that instead of focus()
+            // to handle nested oj-validation-groups
+            if ('focusOn' in firstInvalid) {
+              firstInvalid.focusOn(FIRST_INVALID_SHOWN_KEY);
+            } else {
+              firstInvalid.focus();
+              // JET-50765 - AUTO SCROLL FOCUS FIELD DOESN'T WORK ON MOBILE DEVICE
+              // In ios, the browser is not scrolling to the
+              // element when calling focus on it. So, we scroll to the
+              // element explicitly.
+              if (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS) {
+                firstInvalid.scrollIntoView();
+              }
+            }
           }
-        }
+        });
       } else if (key === undefined) {
         // Get the first non readonly or disabled, then call focus
         firstFocusable = _getFirstFocusable();
@@ -452,6 +468,13 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
             firstFocusable.focusOn();
           } else {
             firstFocusable.focus();
+            // JET-50765 - AUTO SCROLL FOCUS FIELD DOESN'T WORK ON MOBILE DEVICE
+            // In ios, the browser is not scrolling to the
+            // element when calling focus on it. So, we scroll to the
+            // element explicitly.
+            if (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS) {
+              firstFocusable.scrollIntoView();
+            }
           }
         }
       } else {
@@ -931,7 +954,7 @@ var __oj_validation_group_metadata =
     __oj_validation_group_metadata.extension._CONSTRUCTOR = ojValidationGroup;
     __oj_validation_group_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
     Object.freeze(__oj_validation_group_metadata);
-    oj.CustomElementBridge.register('oj-validation-group', {
+    oj$1.CustomElementBridge.register('oj-validation-group', {
       metadata: __oj_validation_group_metadata
     });
   })();

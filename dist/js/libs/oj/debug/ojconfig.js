@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -45,6 +45,8 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
   const PREACT_TEMPLATE_PROMISE = Symbol();
 
   let trans = ojt;
+  let deploymentMode = 'production';
+
   /**
    * Retrieves the render mode the application should use.  This allows the application to render content
    * differently based on the type of device.
@@ -394,6 +396,39 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
     Config._expressionEvaluator = expressionEvaluator;
   };
 
+  /**
+   * Sets mode value for the application deployment.
+   * @method setDeploymentMode
+   * @param {string} mode Accepted values 'production' or 'development'
+   * @return {undefined}
+   * @memberof oj.Config
+   * @ojshortdesc Sets mode value for the application deployment.
+   * @export
+   * @ojsignature {target:"Type", value: "'production'|'development'", for: "mode"}
+   * @since 16.0.0
+   */
+  Config.setDeploymentMode = function (mode) {
+    if (mode === 'production' || mode === 'development') {
+      deploymentMode = mode;
+    } else {
+      throw new Error("Expected values for deployment mode are 'production' or 'development'.");
+    }
+  };
+
+  /**
+   * Gets application deployment mode.
+   * @method getDeploymentMode
+   * @return {string} 'production' or 'development'
+   * @memberof oj.Config
+   * @ojshortdesc Gets application deployment mode.
+   * @export
+   * @ojsignature {target:"Type", value: "'production'|'development'", for: "returns"}
+   * @since 16.0.0
+   */
+  Config.getDeploymentMode = function () {
+    return deploymentMode;
+  };
+
   const getDeviceRenderMode = Config.getDeviceRenderMode;
   const getDeviceType = Config.getDeviceType;
   const getLocale = Config.getLocale;
@@ -408,10 +443,13 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
   const getExpressionEvaluator = Config.getExpressionEvaluator;
   const getConfigBundle = Config.getConfigBundle;
   const __getTemplateEngine = Config.__getTemplateEngine;
+  const setDeploymentMode = Config.setDeploymentMode;
+  const getDeploymentMode = Config.getDeploymentMode;
 
   exports.__getTemplateEngine = __getTemplateEngine;
   exports.getAutomationMode = getAutomationMode;
   exports.getConfigBundle = getConfigBundle;
+  exports.getDeploymentMode = getDeploymentMode;
   exports.getDeviceRenderMode = getDeviceRenderMode;
   exports.getDeviceType = getDeviceType;
   exports.getExpressionEvaluator = getExpressionEvaluator;
@@ -420,6 +458,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
   exports.getVersionInfo = getVersionInfo;
   exports.logVersionInfo = logVersionInfo;
   exports.setAutomationMode = setAutomationMode;
+  exports.setDeploymentMode = setDeploymentMode;
   exports.setExpressionEvaluator = setExpressionEvaluator;
   exports.setLocale = setLocale;
   exports.setResourceBaseUrl = setResourceBaseUrl;

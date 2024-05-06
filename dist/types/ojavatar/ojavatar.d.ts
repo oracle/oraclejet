@@ -3,7 +3,7 @@ import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
 import { ExtendGlobalProps } from 'ojs/ojvcomponent';
 import { Component, ComponentChild } from 'preact';
-declare type Props = {
+type Props = {
     background?: 'neutral' | 'orange' | 'green' | 'teal' | 'blue' | 'slate' | 'mauve' | 'pink' | 'purple' | 'lilac' | 'gray' | 'red' | 'forest';
     initials?: string | null;
     size?: '2xs' | 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'xxl';

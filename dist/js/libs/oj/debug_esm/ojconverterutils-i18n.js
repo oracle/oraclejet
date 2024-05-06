@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,6 +8,7 @@
 import oj from 'ojs/ojcore-base';
 import { getTranslatedString } from 'ojs/ojtranslation';
 import $ from 'jquery';
+import { DateTimeUtils } from '@oracle/oraclejet-preact/UNSAFE_IntlDateTime';
 import ConverterUtils from 'ojs/ojconverterutils';
 import { ConverterError } from 'ojs/ojvalidation-error';
 
@@ -47,8 +48,7 @@ OraI18nUtils.zeros = ['0', '00', '000'];
 // -time only with timezone: any of the time values above followed by any of the following:
 // Z or +/-hh:mm or +/-hhmm or +/-hh
 // -date time: any of the date values followed by any of the time values
-OraI18nUtils._ISO_DATE_REGEXP =
-  /^[+-]?\d{4}(?:-\d{2}(?:-\d{2})?)?(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}(?::?\d{2})?)?)?$|^T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(Z|[+-]\d{2}(?::?\d{2})?)?$/;
+OraI18nUtils._ISO_DATE_REGEXP = DateTimeUtils._ISO_DATE_REGEXP;
 /**
  * Returns the timezone offset between UTC and the local time in Etc/GMT[+-]h syntax.
  * <p>
@@ -412,6 +412,8 @@ OraI18nUtils._getDaysInMonth = function (y, m) {
       return 30;
   }
 };
+
+// throws RangeError(message: string, options?: {cause?: {code?:string, parameterMap?: Record<string, string>}})
 OraI18nUtils._throwInvalidISOStringRange = function (
   isoStr,
   name,
@@ -430,32 +432,27 @@ OraI18nUtils._throwInvalidISOStringRange = function (
     displayHigh +
     ' for ' +
     name;
-  var rangeError = new RangeError(msg);
-  var errorInfo = {
-    errorCode: 'isoStringOutOfRange',
-    parameterMap: {
-      isoString: isoStr,
-      value: displayValue,
-      minValue: displayLow,
-      maxValue: displayHigh,
-      propertyName: name
+  const errorInfo = {
+    cause: {
+      code: 'isoStringOutOfRange',
+      parameterMap: {
+        isoStr: isoStr,
+        value: displayValue,
+        minValue: displayLow,
+        maxValue: displayHigh,
+        propertyName: name
+      }
     }
   };
-  rangeError.errorInfo = errorInfo;
+  const rangeError = new RangeError(msg, errorInfo);
   throw rangeError;
 };
 
+// throws Error(message: string, options?: {cause?: {code?:string, parameterMap?: Record<string, string>}})
 OraI18nUtils._throwInvalidISOStringSyntax = function (str) {
   var msg = 'The string ' + str + ' is not a valid ISO 8601 string syntax.';
-  var error = new Error(msg);
-  var errorInfo = {
-    errorCode: 'invalidISOString',
-    parameterMap: {
-      isoStr: str
-    }
-  };
-  error.errorInfo = errorInfo;
-  throw error;
+  const e = new Error(msg, { cause: { code: 'invalidISOString', parameterMap: { isoStr: str } } });
+  throw e;
 };
 
 OraI18nUtils.trim = function (value) {
@@ -511,11 +508,6 @@ OraI18nUtils.zeroPad = function (str, count, left) {
  * @method getTimeStringFromOffset
  */
 OraI18nUtils.getTimeStringFromOffset = function (prefix, offset, reverseSign, alwaysMinutes) {
-  // when offset is 0 return 'Z' instead of '+00:00'. This is standard practice and is what Java does as well.
-  // This changed in JET v14.0.0.
-  if (offset === 0) {
-    return 'Z';
-  }
   var isNegative = reverseSign ? offset > 0 : offset < 0;
   var absOffset = Math.abs(offset);
   var hours = Math.floor(absOffset / 60);

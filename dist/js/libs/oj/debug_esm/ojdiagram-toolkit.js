@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1206,7 +1206,7 @@ class DvtDiagramLink extends Container {
     var groupId = this.getGroupId();
     var startGroupId = diagram.getNodeById(this.getStartId()).getGroupId();
     var endGroupId = diagram.getNodeById(this.getEndId()).getGroupId();
-    if (groupId) {
+    if (groupId && diagram.getNodeById(groupId)) {
       var context = this.getCtx();
       var linkParent = diagram.getNodeById(groupId).GetChildNodePane();
       if (
@@ -1235,10 +1235,11 @@ class DvtDiagramLink extends Container {
    * ["M", x1, y1, "L", x2, y2, ..., "L", xn, yn].  The points are in the
    * coordinate system of the link's container.
    * @param {array} points array of points to use for rendering this link
+   * @param {boolean} forceDefault if true, will use the default renderer
    */
-  setPoints(points) {
+  setPoints(points, forceDefault) {
     var renderer = this._getCustomRenderer('renderer');
-    if (renderer) {
+    if (renderer && !forceDefault) {
       this._customPoints = points;
       var prevState = {
         hovered: false,
@@ -5240,14 +5241,15 @@ class DvtDiagramNode extends Container {
       this._containerButton = null;
     }
     if (this._customNodeContent) {
-      if (this._nodeContext) {
-        this._diagram.getOptions()['_cleanTemplate'](this.getId());
-      }
       // reparent child node pane - it is likely to be attached
       // to an element inside of custom content
       if (this._childNodePane) {
         this._childNodePane.setParent(null);
         this.addChild(this._childNodePane);
+      }
+      // JET-57658 Need to reparent the child before cleaning the template
+      if (this._nodeContext) {
+        this._diagram.getOptions()['_cleanTemplate'](this.getId());
       }
       if (this._customNodeContent.namespaceURI === ToolkitUtils.SVG_NS) {
         this.getContainerElem().removeChild(this._customNodeContent);
@@ -6503,11 +6505,11 @@ class DvtDiagramKeyboardHandler extends PanZoomCanvasKeyboardHandler {
     var direction = event.keyCode;
     if (!listOfLinks || listOfLinks.length < 1 || !node) return null;
     var link = listOfLinks[0];
-    var nodeBB = node.getKeyboardBoundingBox();
+    var nodeBB = node.getKeyboardBoundingBox(node.getCtx().getStage());
     var nodeCenterX = nodeBB.x + nodeBB.w / 2;
     for (var i = 0; i < listOfLinks.length; i++) {
       var object = listOfLinks[i];
-      var linkBB = object.getKeyboardBoundingBox();
+      var linkBB = object.getKeyboardBoundingBox(object.getCtx().getStage());
       var linkCenterX = linkBB.x + linkBB.w / 2;
       if (
         (direction == KeyboardEvent.OPEN_ANGLED_BRACKET && linkCenterX <= nodeCenterX) ||
@@ -11925,7 +11927,7 @@ class Diagram extends PanZoomComponent {
     var lcChildNodes = [];
     for (var j = 0; j < arChildIds.length; j++) {
       var childNode = this.getNodeById(arChildIds[j]);
-      if (childNode.getVisible()) {
+      if (childNode && childNode.getVisible()) {
         var lcChildNode = this.CreateLayoutContextNode(
           childNode,
           null,
@@ -12171,7 +12173,7 @@ class Diagram extends PanZoomComponent {
         .stageToLocal({ x: stagePos.x, y: stagePos.y });
       if (this._linkCreationFeedBack) {
         var points = this._linkCreationFeedBack.GetCreationFeedbackPoints(localPos);
-        this._linkCreationFeedBack.setPoints(points);
+        this._linkCreationFeedBack.setPoints(points, true);
       } else {
         var obj = this.getEventManager().DragSource.getDragObject();
         if (obj instanceof DvtDiagramNode) {
@@ -12206,7 +12208,7 @@ class Diagram extends PanZoomComponent {
           var link = new DvtDiagramLink(this.getCtx(), this, linkData, false);
           this.getNodesPane().addChild(link);
           link.setMouseEnabled(false);
-          link.setPoints([startLocalPos.x, startLocalPos.y, localPos.x, localPos.y]);
+          link.setPoints([startLocalPos.x, startLocalPos.y, localPos.x, localPos.y], true);
           this._linkCreationFeedBack = link;
         }
       }

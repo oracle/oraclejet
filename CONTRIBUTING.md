@@ -1,6 +1,6 @@
 # Contributing to Oracle JET
 
-_Copyright (c) 2014, 2023 Oracle and/or its affiliates
+_Copyright (c) 2014, 2024 Oracle and/or its affiliates
 The Universal Permissive License (UPL), Version 1.0_
 
 **Pull requests are currently not being accepted for the Oracle JET project.**

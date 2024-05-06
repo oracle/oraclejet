@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -24,13 +24,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact'], function
             if (this._hasContent(slotContent)) {
                 let defaultTabIndex = 0;
                 if (wrapperClasses && wrapperClasses.length > 0 && isAdditionalTabIndexNeeded) {
-                    return (jsxRuntime.jsx("div", Object.assign({ class: wrapperClasses, tabIndex: defaultTabIndex }, { children: slotContent })));
+                    return (jsxRuntime.jsx("div", { class: wrapperClasses, tabIndex: defaultTabIndex, children: slotContent }));
                 }
                 else if (wrapperClasses && wrapperClasses.length > 0) {
-                    return jsxRuntime.jsx("div", Object.assign({ class: wrapperClasses }, { children: slotContent }));
+                    return jsxRuntime.jsx("div", { class: wrapperClasses, children: slotContent });
                 }
                 else if (isAdditionalTabIndexNeeded) {
-                    return jsxRuntime.jsx("div", Object.assign({ tabIndex: defaultTabIndex }, { children: slotContent }));
+                    return jsxRuntime.jsx("div", { tabIndex: defaultTabIndex, children: slotContent });
                 }
                 else {
                     return jsxRuntime.jsx("div", { children: slotContent });
@@ -42,16 +42,16 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact'], function
             if (this._hasContent(slotContent)) {
                 let defaultTabIndex = 0;
                 if (wrapperClasses && wrapperClasses.length > 0 && isAdditionalTabIndexNeeded) {
-                    return (jsxRuntime.jsx("div", Object.assign({ "data-oj-clickthrough": "disabled", class: wrapperClasses, tabIndex: defaultTabIndex }, { children: slotContent })));
+                    return (jsxRuntime.jsx("div", { "data-oj-clickthrough": "disabled", class: wrapperClasses, tabIndex: defaultTabIndex, children: slotContent }));
                 }
                 else if (wrapperClasses && wrapperClasses.length > 0) {
-                    return (jsxRuntime.jsx("div", Object.assign({ "data-oj-clickthrough": "disabled", class: wrapperClasses }, { children: slotContent })));
+                    return (jsxRuntime.jsx("div", { "data-oj-clickthrough": "disabled", class: wrapperClasses, children: slotContent }));
                 }
                 else if (isAdditionalTabIndexNeeded) {
-                    return (jsxRuntime.jsx("div", Object.assign({ "data-oj-clickthrough": "disabled", tabIndex: defaultTabIndex }, { children: slotContent })));
+                    return (jsxRuntime.jsx("div", { "data-oj-clickthrough": "disabled", tabIndex: defaultTabIndex, children: slotContent }));
                 }
                 else {
-                    return jsxRuntime.jsx("div", Object.assign({ "data-oj-clickthrough": "disabled" }, { children: slotContent }));
+                    return jsxRuntime.jsx("div", { "data-oj-clickthrough": "disabled", children: slotContent });
                 }
             }
             return null;
@@ -74,7 +74,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact'], function
                 textSlotClass = textSlotClass + ' oj-listitemlayout-start-padding';
                 quaternaryClass = quaternaryClass + ' oj-listitemlayout-start-padding';
             }
-            return (jsxRuntime.jsxs("div", Object.assign({ class: "oj-listitemlayout-grid" }, { children: [this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector', false), this._getWrappedSlotContent(props.leading, leadingClass, true), jsxRuntime.jsxs("div", Object.assign({ class: textSlotClass }, { children: [this._getWrappedSlotContent(props.overline, null, true), this._getWrappedSlotContent(props.children, null, true), this._getWrappedSlotContent(props.secondary, null, true), this._getWrappedSlotContent(props.tertiary, tertiaryClass, true)] })), hasExtra ? (jsxRuntime.jsxs("div", Object.assign({ class: "oj-listitemlayout-extra" }, { children: [this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding', true), this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding', true), this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding', false)] }))) : null, this._getWrappedSlotContent(props.quaternary, quaternaryClass, true), this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation', false)] })));
+            return (jsxRuntime.jsxs("div", { class: "oj-listitemlayout-grid", children: [this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector', false), this._getWrappedSlotContent(props.leading, leadingClass, true), jsxRuntime.jsxs("div", { class: textSlotClass, children: [this._getWrappedSlotContent(props.overline, null, true), this._getWrappedSlotContent(props.children, null, true), this._getWrappedSlotContent(props.secondary, null, true), this._getWrappedSlotContent(props.tertiary, tertiaryClass, true)] }), hasExtra ? (jsxRuntime.jsxs("div", { class: "oj-listitemlayout-extra", children: [this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding', true), this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding', true), this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding', false)] })) : null, this._getWrappedSlotContent(props.quaternary, quaternaryClass, true), this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation', false)] }));
         }
     };
     exports.ListItemLayout._metadata = { "slots": { "": {}, "overline": {}, "selector": {}, "leading": {}, "secondary": {}, "tertiary": {}, "metadata": {}, "trailing": {}, "action": {}, "quaternary": {}, "navigation": {} } };

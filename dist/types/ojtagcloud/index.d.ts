@@ -21,13 +21,14 @@ export interface ojTagCloud<K, D extends ojTagCloud.Item<K> | any> extends dvtBa
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     tooltip?: {
-        renderer: ((context: ojTagCloud.TooltipContext<K>) => ({
+        renderer: ((context: ojTagCloud.TooltipRendererContext<K>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
         }));
     };
     touchResponse?: 'touchStart' | 'auto';
+    trackResize: 'on' | 'off';
     translations: {
         accessibleContainsControls?: string;
         componentName?: string;
@@ -86,11 +87,8 @@ export namespace ojTagCloud {
     type tooltipChanged<K, D extends Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["tooltip"]>;
     // tslint:disable-next-line interface-over-type-literal
     type touchResponseChanged<K, D extends Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["touchResponse"]>;
-    //------------------------------------------------------------
-    // Start: generated events for inherited properties
-    //------------------------------------------------------------
     // tslint:disable-next-line interface-over-type-literal
-    type trackResizeChanged<K, D extends Item<K> | any> = dvtBaseComponent.trackResizeChanged<ojTagCloudSettableProperties<K, D>>;
+    type trackResizeChanged<K, D extends Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["trackResize"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         categories?: string[];
@@ -138,6 +136,15 @@ export namespace ojTagCloud {
         parentElement: Element;
         value: number;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipRendererContext<K> = {
+        color: string;
+        componentElement: Element;
+        id: K;
+        label: string;
+        parentElement: Element;
+        value: number;
+    };
 }
 export interface ojTagCloudEventMap<K, D extends ojTagCloud.Item<K> | any> extends dvtBaseComponentEventMap<ojTagCloudSettableProperties<K, D>> {
     'animationOnDataChangeChanged': JetElementCustomEvent<ojTagCloud<K, D>["animationOnDataChange"]>;
@@ -174,13 +181,14 @@ export interface ojTagCloudSettableProperties<K, D extends ojTagCloud.Item<K> | 
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     tooltip?: {
-        renderer: ((context: ojTagCloud.TooltipContext<K>) => ({
+        renderer: ((context: ojTagCloud.TooltipRendererContext<K>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
         }));
     };
     touchResponse?: 'touchStart' | 'auto';
+    trackResize: 'on' | 'off';
     translations: {
         accessibleContainsControls?: string;
         componentName?: string;
@@ -294,11 +302,8 @@ export namespace TagCloudElement {
     type tooltipChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["tooltip"]>;
     // tslint:disable-next-line interface-over-type-literal
     type touchResponseChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["touchResponse"]>;
-    //------------------------------------------------------------
-    // Start: generated events for inherited properties
-    //------------------------------------------------------------
     // tslint:disable-next-line interface-over-type-literal
-    type trackResizeChanged<K, D extends ojTagCloud.Item<K> | any> = dvtBaseComponent.trackResizeChanged<ojTagCloudSettableProperties<K, D>>;
+    type trackResizeChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["trackResize"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         categories?: string[];
@@ -321,6 +326,15 @@ export namespace TagCloudElement {
     type NodeContext = {
         index: number;
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipRendererContext<K> = {
+        color: string;
+        componentElement: Element;
+        id: K;
+        label: string;
+        parentElement: Element;
+        value: number;
     };
 }
 export namespace TagCloudItemElement {

@@ -17,11 +17,111 @@
       }
     },
 
+    "propNameRestrictionsDef": {
+      "$comment": "web component property names cannot conflict with HTML global attribute names",
+      "propertyNames": {
+        "not": {
+          "enum": ["accesskey", "accessKey", "accessKeyLabel", "autocapitalize", "autoCapitalize",
+                   "class", "className", "contenteditable", "contentEditable", "dir", "draggable",
+                   "enterkeyhint", "enterKeyHint", "hidden", "id", "inputmode", "inputMode", "is",
+                   "itemid", "itemprop", "itemref", "itemscope", "itemtype", "lang", "nonce", "role",
+                   "slot", "spellcheck", "style", "tabindex", "tabIndex", "title", "translate"]
+        }
+      }
+    },
+
+    "eventNameRestrictionsDef": {
+      "$comment": "web component event names, which become 'on<name>' attributes at runtime, cannot conflict with HTML GlobalEventHandlers",
+      "propertyNames": {
+        "not": {
+          "enum": ["abort", "animationcancel", "animationend", "animationiteration", "animationstart",
+                   "auxclick", "blur", "cancel", "canplay", "canplaythrough", "change", "click", "close",
+                   "contextmenu", "copy", "cuechange", "cut", "dblclick", "drag", "dragend", "dragenter",
+                   "dragexit", "dragleave", "dragover", "dragstart", "drop", "durationchange", "emptied",
+                   "ended", "error", "focus", "gotpointercapture", "input", "invalid", "keydown", "keypress", "keyup",
+                   "load", "loadeddata", "loadedmetadata", "loadstart", "lostpointercapture", "mousedown", "mouseenter",
+                   "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup", "paste", "pause", "play", "playing",
+                   "pointercancel", "pointerdown", "pointerenter", "pointerleave", "pointermove", "pointerout",
+                   "pointerover", "pointerup", "progress", "ratechange", "reset", "resize", "scroll",
+                   "securitypolicyviolation", "seeked", "seeking", "select", "slotchange", "stalled", "submit",
+                   "suspend", "timeupdate", "toggle", "touchcancel", "touchend", "touchmove", "touchstart",
+                   "volumechange", "waiting", "wheel"]
+        }
+      }
+    },
+
+    "extensionApiDecorationDef": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "enumValues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/extensionApiDecorationDef" 
+          }
+        }
+      }
+    },
+
+    "extensionDataProviderPropsDef": {
+      "type": "object",
+
+      "$comment": "DataProvider property names follow JavaScript identifer naming restrictions",
+      "patternProperties": {
+        "^[a-zA-Z_$][0-9a-zA-Z_$]*$": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "required": {
+              "type": "boolean"
+            },
+            "value": {
+              "type": ["array", "boolean", "number", "null", "object", "string"]
+            },
+            "key": {
+              "type": "boolean"
+            },
+            "properties": {
+              "$ref": "#/definitions/extensionDataProviderPropsDef"
+            }
+          },
+          "required": ["type"]
+        }
+      }
+    },
+
     "extensionDef": {
       "type": "object",
       "properties": {
         "vbdt": {
           "type": "object"
+        },
+        "catalog": {
+          "type": "object",
+          "properties": {
+            "apiDecoration": {
+              "$ref": "#/definitions/extensionApiDecorationDef"
+            }
+          }
         },
         "jet": {
           "$ref": "#/definitions/extensionJetDef"
@@ -54,8 +154,7 @@
         "unsupportedThemes": {
           "type": "array",
           "items": {
-            "type": "string",
-            "enum": ["Alta", "Redwood", "Stable"]
+            "$ref": "#/definitions/availableThemesDef"
           }
         }
       }
@@ -110,6 +209,9 @@
         "catalog": {
           "type": "object",
           "properties": {
+            "apiDecoration": {
+              "$ref": "#/definitions/extensionApiDecorationDef"
+            },
             "dataProviderProperties": {
               "$ref": "#/definitions/extensionDataProviderPropsDef"
             }
@@ -124,39 +226,6 @@
         "webelement": {
           "$ref": "#/definitions/extensionWebElementExceptionStatusDef"
         }
-      }
-    },
-
-    "extensionDataProviderPropsDef": {
-      "type": "object",
-
-      "$comment": "DataProvider property names follow JavaScript identifer naming restrictions",
-      "patternProperties": {
-        "^[a-zA-Z_$][0-9a-zA-Z_$]*$": {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            },
-            "required": {
-              "type": "boolean"
-            },
-            "value": {
-              "type": ["array", "boolean", "number", "null", "object", "string"]
-            },
-            "key": {
-              "type": "boolean"
-            },
-            "properties": {
-              "$ref": "#/definitions/extensionDataProviderPropsDef"
-            }
-          },
-          "required": ["type"]
-        },
-        "additionalProperties": false
       }
     },
 
@@ -307,6 +376,9 @@
           "description": {
             "type": "string"
           },
+          "extension": {
+            "$ref": "#/definitions/extensionDef"
+          },
           "name": {
             "type": "string"
           },
@@ -320,6 +392,41 @@
         "required": ["name", "type"],
         "additionalProperties": false
       }
+    },
+
+    "returnDef": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/statusDef"
+        },
+        "properties": {
+          "patternProperties": {
+            "^[a-zA-Z_$][0-9a-zA-Z_$]*$": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "status": {
+                  "$ref": "#/definitions/statusDef"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     },
 
     "bindingDef": {
@@ -630,24 +737,6 @@
           "additionalProperties": false
         }
       },
-      "propertyNames": {
-
-        "$comment": "event names, which become 'on<name>' attributes at runtime, also cannot conflict with HTML GlobalEventHandlers",
-        "not": {
-          "enum": ["abort", "animationcancel", "animationend", "animationiteration", "animationstart",
-                   "auxclick", "blur", "cancel", "canplay", "canplaythrough", "change", "click", "close",
-                   "contextmenu", "copy", "cuechange", "cut", "dblclick", "drag", "dragend", "dragenter",
-                   "dragexit", "dragleave", "dragover", "dragstart", "drop", "durationchange", "emptied",
-                   "ended", "error", "focus", "gotpointercapture", "input", "invalid", "keydown", "keypress", "keyup",
-                   "load", "loadeddata", "loadedmetadata", "loadstart", "lostpointercapture", "mousedown", "mouseenter",
-                   "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup", "paste", "pause", "play", "playing",
-                   "pointercancel", "pointerdown", "pointerenter", "pointerleave", "pointermove", "pointerout",
-                   "pointerover", "pointerup", "progress", "ratechange", "reset", "resize", "scroll",
-                   "securitypolicyviolation", "seeked", "seeking", "select", "slotchange", "stalled", "submit",
-                   "suspend", "timeupdate", "toggle", "touchcancel", "touchend", "touchmove", "touchstart",
-                   "volumechange", "waiting", "wheel"]
-        }
-      },
       "additionalProperties": false
     },
 
@@ -812,7 +901,7 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["deprecated", "maintenance", "supersedes"]
+            "enum": ["antiPattern", "deprecated", "maintenance", "supersedes"]
           },
           "since": {
             "$ref": "#/definitions/semverExactDef"
@@ -824,6 +913,12 @@
             "type": "string",
             "enum": ["propertyType", "parameterType", "returnType", "propertyValue"]
           },
+          "themes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/availableThemesDef"
+            }
+          },
           "value": {
             "type": "array",
             "items": {
@@ -831,7 +926,43 @@
             }
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "$comment": "if the Status 'type' is explicitly set to anything other than 'antiPattern', then 'themes' is invalid",
+              "properties": {
+                "type": {
+                  "not": {
+                    "const": "antiPattern"
+                  }
+                }
+              },
+              "required": ["type"]
+            },
+            "then": {
+              "propertyNames": {
+                "not": {
+                  "const": "themes"
+                }
+              }
+            },
+            "else": {
+              "if": {
+                "$comment": "otherwise if the Status 'type' is explicitly set to 'antiPattern', then 'themes' is required",
+                "properties": {
+                  "type": {
+                      "const": "antiPattern"
+                  }
+                },
+                "required": ["type"]
+              },
+              "then": {
+                "required": ["themes"]
+              }
+            }
+          }
+        ]
       }
     },
 
@@ -1130,7 +1261,7 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "$ref": "#/definitions/jetCustomElementNameDef"
         },
         "defaultExport": {
           "type": "boolean"
@@ -1141,11 +1272,14 @@
         "displayName": {
           "type": "string"
         },
-        "exports": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+        "export": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "main": {
+          "type": "string"
         },
         "readme": {
           "type": "string"
@@ -1155,66 +1289,123 @@
         },
         "type": {
           "type": "string",
-          "enum": ["component", "module", "resource"]
+          "enum": ["component", "resource", "vdom", "hook", "util", "vbcs-pattern", "vbcs-fragment"]
+        },
+        "metadata": {
+          "type": "string"
         }
       },
       "required": ["name"],
-      "if": {
-        "$comment": "if the content type is 'component' (default) or 'resource', then apply JET custom element naming rules AND 'defaultExport' is invalid (only applicable to 'module' content)",
-        "oneOf": [
-          {"not": { "required": ["type"] }},
-          {
+      "allOf": [
+
+        {
+          "$comment": "if the content type is 'component' (default), 'resource', 'vdom', 'hook', 'vbcs-pattern', or 'vbcs-fragment' then 'defaultExport' is invalid",
+          "if": {
+            "oneOf": [
+              { "not": { "required": ["type"] } },
+              {
+                "properties": {
+                  "type": {
+                    "enum": ["component", "resource", "vdom", "hook", "vbcs-pattern", "vbcs-fragment"]
+                  }
+                },
+                "required": ["type"]
+              }
+            ]          
+          },
+          "then": {
+            "propertyNames": {
+              "not": {
+                "enum": ["defaultExport"]
+              }
+            }
+          }
+        },
+
+        {
+          "$comment": "if the content type is not explicitly set to 'vdom', 'hook', 'vbcs-pattern', or 'vbcs-fragment' then 'metadata' is invalid",
+          "if": {
             "properties": {
               "type": {
-                "enum": ["component", "resource"]
+                "not": {
+                  "enum": ["vdom", "hook", "vbcs-pattern", "vbcs-fragment"]
+                }
               }
             },
             "required": ["type"]
-          }
-        ]          
-      },
-      "then": {
-        "properties": {
-          "name": {
-            "$ref": "#/definitions/jetCustomElementNameDef"
-          }
-        },
-        "propertyNames": {
-          "not": {
-            "enum": ["defaultExport"]
-          }
-        }
-      },
-      "else": {
-        "$comment": "otherwise if the content type is explicitly set to 'resource', then 'exports' is invalid (only applicable to 'component' or 'module')",
-        "if": {
-          "properties": {
-            "type": {
-              "const": "resource"
-            }
           },
-          "required": ["type"]
+          "then": {
+            "propertyNames": {
+              "not": {
+                "enum": ["metadata"]
+              }
+            }
+          }
         },
-        "then": {
-          "propertyNames": {
-            "not": {
-              "enum": ["exports"]
+
+        {
+          "$comment": "if the content type is explicitly set to 'resource', 'vbcs-pattern', or 'vbcs-fragment' then 'export' is invalid",
+          "if": {
+            "properties": {
+              "type": {
+                "enum": ["resource", "vbcs-pattern", "vbcs-fragment"]
+              }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "propertyNames": {
+              "not": {
+                "enum": ["export"]
+              }
             }
           }
         }
-      },
+
+      ],
       "additionalProperties": false
     },
 
     "contentsDef": {
       "type": "array",
       "items": {
-        "$comment": "either an @components@ token string OR a contentItems object",
+        "$comment": "either an @contents@ token string OR a contentItems object",
         "anyOf": [
-          { "const": "@components@" },
+          { "const": "@contents@" },
           { "$ref": "#/definitions/contentItemsDef" }
         ]
       }
+    },
+
+    "commonContentsPropsDef": {
+      "enum": ["name", "type", "description", "displayName", "main", "since", "status",
+                "version", "jetVersion", "pack", "license", "extension", "help", "icon"]
+    },
+
+    "preferredParentItemDef": {
+      "type": "object",
+      "properties": {
+        "parentInterface": {
+          "type": "string"
+        },
+        "isDirectParent": {
+          "type": "boolean"
+        },
+        "extension": {
+          "$ref": "#/definitions/extensionDef"
+        },
+        "status": {
+          "$ref": "#/definitions/statusDef"
+        }
+      },
+      "required": ["parentInterface"]
+    },
+
+    "availableThemesDef": {
+      "anyOf": [
+        { "type": "string", "enum": ["Alta", "Redwood", "Stable"] },
+        { "type": "string" }
+      ]
     }
 
   },
@@ -1250,6 +1441,12 @@
     "contents": {
       "$ref": "#/definitions/contentsDef"
     },
+    "demoFor": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "dependencies": {
       "$comment": "either an @dependencies@ token string OR an object with key-value pairs",
       "oneOf": [
@@ -1263,11 +1460,9 @@
         }
       ]
     },
-    "demoFor": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+    "dependencyScope": {
+      "type": "string",
+      "enum": ["installable", "provided", "runtime"]
     },
     "description": {
       "type": "string"
@@ -1276,21 +1471,7 @@
       "type": "string"
     },
     "properties": {
-      "allOf": [
-        {"$ref": "#/definitions/propsDef"},
-        {
-          "propertyNames": {
-            "$comment": "top-level property names cannot conflict with HTML global attribute names",
-            "not": {
-              "enum": ["accesskey", "accessKey", "accessKeyLabel", "autocapitalize", "autoCapitalize",
-                       "class", "className", "contenteditable", "contentEditable", "dir", "draggable",
-                       "enterkeyhint", "enterKeyHint", "hidden", "id", "inputmode", "inputMode", "is",
-                       "itemid", "itemprop", "itemref", "itemscope", "itemtype", "lang", "nonce", "role",
-                       "slot", "spellcheck", "style", "tabindex", "tabIndex", "title", "translate"]
-            }
-          }
-        }
-      ]
+      "$ref": "#/definitions/propsDef"
     },
     "methods": {
       "$ref": "#/definitions/methodsDef"
@@ -1337,14 +1518,22 @@
     "package": {
       "type": "string"
     },
+    "params": {
+      "$comment": "needed for 'hook' type",
+      "$ref": "#/definitions/paramsDef"
+    },
     "paths": {
       "oneOf": [
-        {"$ref": "#/definitions/pathsDef"},
+        { "$ref": "#/definitions/pathsDef" },
         {
           "type": "array",
           "items": {"$ref": "#/definitions/pathsDef"}
         }
       ]
+    },
+    "preferredParent": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/preferredParentItemDef"}
     },
     "propertyLayout": {
       "type": "array",
@@ -1355,6 +1544,10 @@
       "items": {
         "type": "string"
       }
+    },
+    "return": {
+      "$comment": "needed for 'hook' type",
+      "$ref": "#/definitions/returnDef"
     },
     "since": {
       "$ref": "#/definitions/semverExactDef"
@@ -1378,9 +1571,18 @@
       "type": "string",
       "enum": ["data", "patternImpl", "packPrivate"]
     },
+    "translationBundle": {
+      "type": "string"
+    },
     "type": {
       "type": "string",
-      "enum": ["composite", "core", "pack", "mono-pack", "reference", "resource", "demo", "stripe", "vbcs-pattern", "vbcs-template", "vbcs-action"]
+      "enum": ["composite", "core", "pack", "mono-pack", "reference", "resource",
+                "demo", "stripe", "vdom", "hook",
+                "vbcs-pattern", "vbcs-template", "vbcs-action", "vbcs-fragment"
+              ]
+    },
+    "typesRoot": {
+      "type": "string"
     }
   },
   "patternProperties": {
@@ -1395,7 +1597,7 @@
   "allOf": [
 
     {
-      "$comment": "if the 'type' property is explicitly set to anything other than 'composite' or 'core', then 'implements' and 'main' properties are invalid",
+      "$comment": "if the 'type' property is explicitly set to anything other than 'composite' or 'core', then 'implements' and 'preferredParent' are invalid",
       "if": {
         "properties": {
           "type": {
@@ -1409,7 +1611,28 @@
       "then": {
         "propertyNames": {
           "not": {
-            "enum": ["implements", "main"]
+            "enum": ["implements", "preferredParent"]
+          }
+        }
+      }
+    },
+
+    {
+      "$comment": "if the 'type' property is explicitly set to anything other than 'composite', 'core', 'vdom' or 'hook', then 'main' is invalid",
+      "if": {
+        "properties": {
+          "type": {
+            "not": {
+              "enum": ["core", "composite", "vdom", "hook"]
+            }
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "propertyNames": {
+          "not": {
+            "enum": ["main"]
           }
         }
       }
@@ -1427,6 +1650,44 @@
       },
       "then": {
         "required": ["since"]
+      }
+    },
+
+    {
+      "$comment": "if optional 'styleClasses' metadata exists, then apply strict validation rules",
+      "if": {
+        "required": ["styleClasses"]
+      },
+      "then": {
+        "$comment": "stricter rules for 'styleClasses' metadata for validation purposes -- this will simplify once deprecated 'styleGroup' reaches end-of-life",
+        "oneOf": [
+          {
+            "$comment": "EITHER an array in which all items are instances of new 'styleClasses' metadata...",
+            "properties": {
+              "styleClasses": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {"$ref": "#/definitions/styleClassStrictDef"},
+                    {"$ref": "#/definitions/styleSetStrictDef"},
+                    {"$ref": "#/definitions/styleTemplateStrictDef"}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "$comment": "...OR an array in which all items are instances of old, deprecated 'styleGroup' metadata",
+            "properties": {
+              "styleClasses": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/deprecatedStyleGroupDef"
+                }
+              }
+            }
+          }
+        ]
       }
     },
 
@@ -1551,29 +1812,10 @@
         }
       },
       "else": {
-        "$comment": "otherwise, the 'contents' property is invalid (reserved for mono-packs)",
+        "$comment": "otherwise, the 'contents' and 'typesRoot' properties are invalid (reserved for mono-packs)",
         "propertyNames": {
           "not": {
-            "enum": ["contents"]
-          }
-        }
-      }
-    },
-
-    {
-      "$comment": "if the component type is explicitly set to 'stripe', then 'pack' property is invalid (stripe components are always singletons)",
-      "if": {
-        "properties": {
-          "type": {
-            "const": "stripe"
-          }
-        },
-        "required": ["type"]
-      },
-      "then": {
-        "propertyNames": {
-          "not": {
-            "enum": ["pack"]
+            "enum": ["contents", "typesRoot"]
           }
         }
       }
@@ -1593,6 +1835,95 @@
         "propertyNames": {
           "not": {
             "enum": ["jetVersion"]
+          }
+        }
+      }
+    },
+
+    {
+      "$comment": "if the component type is explicitly neither 'mono-pack' nor 'reference', then the 'translationBundle' property is invalid",
+      "if": {
+        "properties": {
+          "type": {
+            "not": {
+              "enum": ["mono-pack", "reference"]
+            }
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "propertyNames": {
+          "not": {
+            "enum": ["translationBundle"]
+          }
+        }
+      }
+    },
+
+    {
+      "$comment": "if the component type is explicitly set to 'vdom', then only a subset of metadata properties are supported",
+      "if": {
+        "properties": {
+          "type": {
+            "const": "vdom"
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "allOf": [
+          {
+            "propertyNames": {
+              "anyOf": [
+                { "$ref": "#/definitions/commonContentsPropsDef" },
+                { "enum": ["properties"] }
+              ]
+            }
+          },
+          {
+            "properties": {
+              "properties": {
+                "$comment": "vdom (Preact) property names follow JavaScript identifer naming restrictions",
+                "patternProperties": {
+                  "^[a-zA-Z_$][0-9a-zA-Z_$]*$": {
+                    "type": "object",
+                    "$comment": "only support a subset of metadata properties for vdom (Preact) Props",
+                    "propertyNames": {
+                      "enum": ["type", "description", "status", "value"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+
+    {
+      "$comment": "if the component type is explicitly set to 'hook', then only a subset of metadata properties are supported",
+      "if": {
+        "properties": {
+          "type": {
+            "const": "hook"
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "propertyNames": {
+          "anyOf": [
+            { "$ref": "#/definitions/commonContentsPropsDef" },
+            { "enum": ["params", "return"] }
+          ]
+        }
+      },
+      "else": {
+        "$comment": "otherwise, the 'params' and 'return' properties are invalid (reserved for 'hooks')",
+        "propertyNames": {
+          "not": {
+            "enum": ["params", "return"]
           }
         }
       }
@@ -1621,6 +1952,25 @@
     },
 
     {
+      "$comment": "if the component type is explicitly set to 'stripe', then 'pack' property is invalid (stripe components are always singletons)",
+      "if": {
+        "properties": {
+          "type": {
+            "const": "stripe"
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "propertyNames": {
+          "not": {
+            "enum": ["pack"]
+          }
+        }
+      }
+    },
+
+    {
       "$comment": "if the component type is explicitly set to 'vbcs-action', then the 'actionParams' and 'actionResult' properties are required; otherwise they are invalid",
       "if": {
         "properties": {
@@ -1643,40 +1993,36 @@
     },
 
     {
-      "$comment": "if optional 'styleClasses' metadata exists, then apply strict validation rules",
+      "$comment": "if the component type is NOT 'vbcs-fragment', then apply additional restrictions to property, event names; otherwise 'methods' is invalid",
       "if": {
-        "required": ["styleClasses"]
-      },
-      "then": {
-        "$comment": "stricter rules for 'styleClasses' metadata for validation purposes -- this will simplify once deprecated 'styleGroup' reaches end-of-life",
         "oneOf": [
+          {"not": { "required": ["type"] }},
           {
-            "$comment": "EITHER an array in which all items are instances of new 'styleClasses' metadata...",
             "properties": {
-              "styleClasses": {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {"$ref": "#/definitions/styleClassStrictDef"},
-                    {"$ref": "#/definitions/styleSetStrictDef"},
-                    {"$ref": "#/definitions/styleTemplateStrictDef"}
-                  ]
-                }
+              "type": {
+                "not": { "const": "vbcs-fragment" }
               }
-            }
-          },
-          {
-            "$comment": "...OR an array in which all items are instances of old, deprecated 'styleGroup' metadata",
-            "properties": {
-              "styleClasses": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/definitions/deprecatedStyleGroupDef"
-                }
-              }
-            }
+            },
+            "required": ["type"]
           }
         ]
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/definitions/propNameRestrictionsDef"
+          },
+          "events": {
+            "$ref": "#/definitions/eventNameRestrictionsDef"
+          }
+        }
+      },
+      "else": {
+        "propertyNames": {
+          "not": {
+            "enum": ["methods"]
+          }
+        }
       }
     }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -763,7 +763,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojkeysetimpl'], function (exports, oj
      * @constructor
      * @final
      * @since 4.1.0
-     * @ojdeprecated {since: '7.0.0', description: 'Use KeySetImpl instead.'}
+     * @ojdeprecated {since: '7.0.0', value:['KeySetImpl']}
      * @ojsignature [{target: "Type", value: "class ExpandedKeySet<K> extends KeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]},
      *               {target: "Type", value: "Set<K>|Array<K>", for:"keys"}]
      * @example <caption>Creates a new ExpandedKeySet with an initial set of keys to expand:</caption>
@@ -895,7 +895,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojkeysetimpl'], function (exports, oj
      * @constructor
      * @final
      * @since 4.1.0
-     * @ojdeprecated {since: '7.0.0', description: 'Use AllKeySetImpl instead.'}
+     * @ojdeprecated {since: '7.0.0', value:['AllKeySetImpl']}
      * @ojsignature {target: "Type", value: "class ExpandAllKeySet<K> extends KeySet<K>",
      *               genericParameters: [{"name": "K", "description": "Type of Key"}]}
      * @example <caption>Creates a new ExpandAllKeySet to expand all keys</caption>

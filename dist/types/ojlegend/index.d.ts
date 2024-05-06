@@ -17,9 +17,12 @@ export interface ojLegend<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | 
     hoverBehaviorDelay?: number;
     orientation?: 'horizontal' | 'vertical';
     scrolling?: 'off' | 'asNeeded';
+    sectionTitleHalign?: 'center' | 'end' | 'start';
+    sectionTitleStyle?: Partial<CSSStyleDeclaration>;
     symbolHeight?: number;
     symbolWidth?: number;
     textStyle?: Partial<CSSStyleDeclaration>;
+    trackResize: 'on' | 'off';
     valign?: 'middle' | 'bottom' | 'top';
     translations: {
         accessibleContainsControls?: string;
@@ -84,18 +87,19 @@ export namespace ojLegend {
     // tslint:disable-next-line interface-over-type-literal
     type scrollingChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["scrolling"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type sectionTitleHalignChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["sectionTitleHalign"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sectionTitleStyleChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["sectionTitleStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type symbolHeightChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["symbolHeight"]>;
     // tslint:disable-next-line interface-over-type-literal
     type symbolWidthChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["symbolWidth"]>;
     // tslint:disable-next-line interface-over-type-literal
     type textStyleChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["textStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type valignChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["valign"]>;
-    //------------------------------------------------------------
-    // Start: generated events for inherited properties
-    //------------------------------------------------------------
+    type trackResizeChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["trackResize"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type trackResizeChanged<K, D extends Item<K> | Section<K> | any> = dvtBaseComponent.trackResizeChanged<ojLegendSettableProperties<K, D>>;
+    type valignChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["valign"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         borderColor?: string;
@@ -165,11 +169,13 @@ export interface ojLegendEventMap<K, D extends ojLegend.Item<K> | ojLegend.Secti
     'hoverBehaviorDelayChanged': JetElementCustomEvent<ojLegend<K, D>["hoverBehaviorDelay"]>;
     'orientationChanged': JetElementCustomEvent<ojLegend<K, D>["orientation"]>;
     'scrollingChanged': JetElementCustomEvent<ojLegend<K, D>["scrolling"]>;
+    'sectionTitleHalignChanged': JetElementCustomEvent<ojLegend<K, D>["sectionTitleHalign"]>;
+    'sectionTitleStyleChanged': JetElementCustomEvent<ojLegend<K, D>["sectionTitleStyle"]>;
     'symbolHeightChanged': JetElementCustomEvent<ojLegend<K, D>["symbolHeight"]>;
     'symbolWidthChanged': JetElementCustomEvent<ojLegend<K, D>["symbolWidth"]>;
     'textStyleChanged': JetElementCustomEvent<ojLegend<K, D>["textStyle"]>;
-    'valignChanged': JetElementCustomEvent<ojLegend<K, D>["valign"]>;
     'trackResizeChanged': JetElementCustomEvent<ojLegend<K, D>["trackResize"]>;
+    'valignChanged': JetElementCustomEvent<ojLegend<K, D>["valign"]>;
 }
 export interface ojLegendSettableProperties<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> extends dvtBaseComponentSettableProperties {
     as?: string;
@@ -184,9 +190,12 @@ export interface ojLegendSettableProperties<K, D extends ojLegend.Item<K> | ojLe
     hoverBehaviorDelay?: number;
     orientation?: 'horizontal' | 'vertical';
     scrolling?: 'off' | 'asNeeded';
+    sectionTitleHalign?: 'center' | 'end' | 'start';
+    sectionTitleStyle?: Partial<CSSStyleDeclaration>;
     symbolHeight?: number;
     symbolWidth?: number;
     textStyle?: Partial<CSSStyleDeclaration>;
+    trackResize: 'on' | 'off';
     valign?: 'middle' | 'bottom' | 'top';
     translations: {
         accessibleContainsControls?: string;
@@ -396,18 +405,19 @@ export namespace LegendElement {
     // tslint:disable-next-line interface-over-type-literal
     type scrollingChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["scrolling"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type sectionTitleHalignChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["sectionTitleHalign"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sectionTitleStyleChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["sectionTitleStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type symbolHeightChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["symbolHeight"]>;
     // tslint:disable-next-line interface-over-type-literal
     type symbolWidthChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["symbolWidth"]>;
     // tslint:disable-next-line interface-over-type-literal
     type textStyleChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["textStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type valignChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["valign"]>;
-    //------------------------------------------------------------
-    // Start: generated events for inherited properties
-    //------------------------------------------------------------
+    type trackResizeChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["trackResize"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type trackResizeChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = dvtBaseComponent.trackResizeChanged<ojLegendSettableProperties<K, D>>;
+    type valignChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["valign"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         borderColor?: string;
@@ -511,11 +521,13 @@ export interface LegendIntrinsicProps extends Partial<Readonly<ojLegendSettableP
     onhoverBehaviorDelayChanged?: (value: ojLegendEventMap<any, any>['hoverBehaviorDelayChanged']) => void;
     onorientationChanged?: (value: ojLegendEventMap<any, any>['orientationChanged']) => void;
     onscrollingChanged?: (value: ojLegendEventMap<any, any>['scrollingChanged']) => void;
+    onsectionTitleHalignChanged?: (value: ojLegendEventMap<any, any>['sectionTitleHalignChanged']) => void;
+    onsectionTitleStyleChanged?: (value: ojLegendEventMap<any, any>['sectionTitleStyleChanged']) => void;
     onsymbolHeightChanged?: (value: ojLegendEventMap<any, any>['symbolHeightChanged']) => void;
     onsymbolWidthChanged?: (value: ojLegendEventMap<any, any>['symbolWidthChanged']) => void;
     ontextStyleChanged?: (value: ojLegendEventMap<any, any>['textStyleChanged']) => void;
-    onvalignChanged?: (value: ojLegendEventMap<any, any>['valignChanged']) => void;
     ontrackResizeChanged?: (value: ojLegendEventMap<any, any>['trackResizeChanged']) => void;
+    onvalignChanged?: (value: ojLegendEventMap<any, any>['valignChanged']) => void;
     children?: ComponentChildren;
 }
 export interface LegendItemIntrinsicProps extends Partial<Readonly<ojLegendItemSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {

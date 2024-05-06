@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -13,6 +13,7 @@ import { getTranslatedString } from 'ojs/ojtranslation';
 import { getLocale } from 'ojs/ojconfig';
 import oj$1 from 'ojs/ojcore-base';
 import { ConverterError } from 'ojs/ojvalidation-error';
+import { getMergedNumberPreferencesWithOptions } from 'ojs/ojconverter-preferences';
 
 /* xeslint-disable no-param-reassign */
 /**
@@ -2717,7 +2718,8 @@ NumberConverter.prototype.parse = function (value) {
  * @since 0.6.0
  */
 const IntlNumberConverter = function (options) {
-  this.Init(options);
+  const mo = getMergedNumberPreferencesWithOptions(options);
+  this.Init(mo);
 };
 
 /**

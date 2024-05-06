@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -9,7 +9,7 @@ define(['ojs/ojcspexpressionevaluator-internal', 'ojs/ojkoshared'], function (oj
 
   /**
    * @license
-   * Copyright (c) 2019 2023, Oracle and/or its affiliates.
+   * Copyright (c) 2019 2024, Oracle and/or its affiliates.
    * Licensed under The Universal Permissive License (UPL), Version 1.0
    * as shown at https://oss.oracle.com/licenses/upl/
    *
@@ -30,7 +30,7 @@ define(['ojs/ojcspexpressionevaluator-internal', 'ojs/ojkoshared'], function (oj
    * <p> The default JET expression evaluator cannot be used when Content Security Policy
    * prohibits unsafe evaluations. In order to replace the default evaluator with the JET CSP-compliant evaluator,
    * create and pass an instance of CspExpressionEvaluator class to the
-   * <a href="oj.Config.html#setExpressionEvaluator">Config.setExpressionEvaluator()</a> method.
+   * <a href="oj.Config.html#.setExpressionEvaluator">Config.setExpressionEvaluator()</a> method.
    * This method must be called before applying knockout bindings in the application for the first time.
    * </p>
    *

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,7 +20,7 @@ import 'ojs/ojpopupcore';
 /**
  * @namespace
  * @since 1.1.0
- * @ojdeprecated {since: '12.0.0', description: 'Please use &lt;oj-drawer-layout> or &lt;oj-drawer-layout> components instead.'}
+ * @ojdeprecated {since: '12.0.0', value:['oj-drawer-layout']}
  * @ojtsmodule
  * @hideconstructor
  * @ojimportmembers Offcanvas
@@ -952,7 +952,7 @@ OffcanvasUtils._setVisible = function (selector, _visible, edge) {
  * @return {void}
  * @memberof OffcanvasUtils
  *
- * @see #tearDownResponsive
+ * @see #.tearDownResponsive
  *
  * @example <caption>Setup the offcanvas:</caption>
  *    var offcanvas = {
@@ -997,7 +997,7 @@ OffcanvasUtils.setupResponsive = function (offcanvas) {
  * @return {void}
  * @memberof OffcanvasUtils
  *
- * @see #setupResponsive
+ * @see #.setupResponsive
  *
  * @example <caption>TearDown the offcanvas:</caption>
  *    var offcanvas = {
@@ -1486,8 +1486,8 @@ OffcanvasUtils._closeOldDrawer = function (offcanvas, resolve, reject, drawer, a
  * @property {string=} offcanvas.size size width or height of the offcanvas: width if edge is start or end and height if edge is to and bottom. Default to the computed width or height of the offcanvas.
  * @property {('modal'|'modeless')=} offcanvas.modality The modality of the offcanvas. Valid values are modal and modeless. Default: modeless. If the offcanvas is modal, interaction with the main content area is disabled like in a modal dialog.
  * @return {Promise.<boolean>} A promise that is resolved to boolean true when all transitions have completed. The promise is rejected if the ojbeforeopen event is vetoed.
- * @see #close
- * @see #toggle
+ * @see #.close
+ * @see #.toggle
  *
  * @memberof OffcanvasUtils
  *
@@ -1614,8 +1614,8 @@ OffcanvasUtils.open = function (offcanvas) {
  * @param {Object} offcanvas An Object contains the properties in the following table.
  * @property {string} offcanvas.selector Document selector identifying the offcanvas element
  * @return {Promise.<boolean>} A promise that is resolved to boolean true when all transitions have completed. The promise is rejected if the ojbeforeclose event is vetoed.
- * @see #open
- * @see #toggle
+ * @see #.open
+ * @see #.toggle
  *
  * @memberof OffcanvasUtils
  *
@@ -1746,8 +1746,8 @@ OffcanvasUtils._close = function (selector, animation) {
  * @property {string=} offcanvas.size size width or height of the offcanvas: width if edge is start or end and height if edge is to and bottom. Default to the computed width or height of the offcanvas.
  * @property {('modal'|'modeless')=} offcanvas.modality The modality of the offcanvas. Valid values are modal and modeless. Default: modeless. If the offcanvas is modal, interaction with the main content area is disabled like in a modal dialog.
  * @return {Promise.<boolean>} A promise that is resolved to boolean true when all transitions have completed
- * @see #open
- * @see #close
+ * @see #.open
+ * @see #.close
  *
  * @memberof OffcanvasUtils
  *
@@ -1924,7 +1924,7 @@ OffcanvasUtils._removeModality = function (offcanvas) {
  * @memberof OffcanvasUtils
  * @ojtsignore
  *
- * @see #tearDownPanToReveal
+ * @see #.tearDownPanToReveal
  *
  * @example <caption>Setup the offcanvas:</caption>
  *    var offcanvas = {
@@ -2250,7 +2250,7 @@ OffcanvasUtils._animateWrapperAndDrawer = function (wrapper, drawer, edge, size,
  * @param {Object} offcanvas An Object contains the properties in the following table.
  * @property {string} offcanvas.selector Document selector identifying the offcanvas element
  * @return {void}
- * @see #setupPanToReveal
+ * @see #.setupPanToReveal
  *
  * @memberof OffcanvasUtils
  * @ojtsignore

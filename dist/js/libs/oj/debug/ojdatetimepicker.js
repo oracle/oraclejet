@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojinputtext', 'ojs/ojconverterutils', 'ojs/ojanimation', 'ojs/ojpopup', 'ojs/ojbutton', 'ojs/ojcore-base', 'ojs/ojconfig', 'hammerjs', 'ojs/ojcomponentcore', 'ojs/ojconverterutils-i18n', 'ojs/ojvalidator-datetimerange', 'ojs/ojvalidator-daterestriction', 'ojs/ojconverter-datetime', 'ojs/ojlocaledata', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojcontext', 'ojs/ojfocusutils', 'ojs/ojdomutils', 'ojs/ojlabelledbyutils', 'ojs/ojconverter-preferences'], function (ojcore, $, ojeditablevalue, ojinputtext, ojconverterutils, ojanimation, ojpopup, ojbutton, oj, Config, Hammer, ojcomponentcore, ojconverterutilsI18n, DateTimeRangeValidator, DateRestrictionValidator, ojconverterDatetime, LocaleData, Logger, ThemeUtils, Context, FocusUtils, DomUtils, LabeledByUtils, ojconverterPreferences) { 'use strict';
+define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojinputtext', 'ojs/ojconverterutils', 'ojs/ojanimation', 'ojs/ojpopup', 'ojs/ojbutton', 'ojs/ojcore-base', 'ojs/ojconfig', 'hammerjs', 'ojs/ojcomponentcore', 'ojs/ojconverterutils-i18n', 'ojs/ojvalidator-datetimerange', 'ojs/ojvalidator-daterestriction', 'ojs/ojconverter-datetime', 'ojs/ojlocaledata', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojcontext', 'ojs/ojfocusutils', 'ojs/ojdomutils', 'ojs/ojlabelledbyutils'], function (ojcore, $, ojeditablevalue, ojinputtext, ojconverterutils, ojanimation, ojpopup, ojbutton, oj, Config, Hammer, ojcomponentcore, ojconverterutilsI18n, DateTimeRangeValidator, DateRestrictionValidator, ojconverterDatetime, LocaleData, Logger, ThemeUtils, Context, FocusUtils, DomUtils, LabeledByUtils) { 'use strict';
 
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
@@ -1225,8 +1225,6 @@ var __oj_input_date_time_metadata =
   /**
    * @private
    */
-  var _defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-inputdatetime-option-defaults') || {};
-  var _yearFormat = _defaultOptions.converterYear || 'numeric';
   var _sDefaultDateConverter;
 
   /**
@@ -1395,15 +1393,7 @@ var __oj_input_date_time_metadata =
    * @ignore
    */
   function _getDateDefaultConverter() {
-    // if user preferences dateStyle short exists, use those for the default converter.
-    // The user preferences, including timezone,
-    // get merged in within the IntlDateTimeConverter wrapped code when dateStyle is short.
-    const userPref = ojconverterPreferences.getDateTimePreferences();
-    // userPref?.dateStyle?.short doesn't compile
-    if (userPref && userPref.dateStyle && userPref.dateStyle.short) {
-      return new ojconverterDatetime.IntlDateTimeConverter({ formatType: 'date', dateFormat: 'short' });
-    }
-    return new ojconverterDatetime.IntlDateTimeConverter({ day: '2-digit', month: '2-digit', year: _yearFormat });
+    return new ojconverterDatetime.IntlDateTimeConverter({ formatType: 'date', dateFormat: 'short' });
   }
 
   /**
@@ -1431,6 +1421,17 @@ var __oj_input_date_time_metadata =
       isoStrFormat: 'local'
     });
     return _localTZConverter.parse(isoDate);
+  }
+
+  /**
+   * This is needed only for zoom % 400 or above. Without if condition, it makes the page move when
+   * we change date with no zoom.
+   * @private
+   */
+  function _scrollIntoViewFor400PercentZoom(elem) {
+    if (window.devicePixelRatio >= 4) {
+      elem.scrollIntoView();
+    }
   }
 
   /**
@@ -1630,14 +1631,223 @@ var __oj_input_date_time_metadata =
    * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
    * {@ojinclude "name":"accessibilityDisabledEditableValue"}
    * </p>
-   * <h3 id="label-section">
-   *   Label and InputDate
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
-   * </h3>
-   * <p>
-   * In the Alta theme, InputDate will decorate its associated label with required and help
-   * information, if the <code>required</code> and <code>help</code> attributes are set.
-   * </p>
+     * <h3 id="migration-section">
+     *   Migration
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+     * </h3>
+     * <p>
+     * Currently there are two oj-c date components, oj-c-input-date-text and oj-c-input-date-mask. oj-c-input-date-text is similar to oj-input-date, but without the picker.
+     * With oj-c-input-date-mask a user can individually edit, step, or spin the values of the month, day, and year fields of a calendar date.
+     * You can migrate to either component depending upon which better fits your needs.
+     * To migrate from oj-input-date to oj-c-input-date-text or oj-c-input-date-mask, you need to revise the import statement
+     * and references to oj-c-input-date-text or oj-c-input-date-mask in your app. Please note the changes between the components below.
+     * </p>
+     * <strong>oj-c-input-date-text and oj-c-input-date-mask do not include a picker. The picker will be coming in a later release.
+     * Migrate only if you do not need a picker.</strong>
+     * <h5>Date Picker Specific Attributes and Methods</h5>
+     * <p>oj-c-input-date-text and oj-c-input-date-mask do not have a datepicker calendar, so oj-input-date's picker-specific attributes and methods do not exist in the oj-c-input-date-text
+     * or oj-c-input-date-mask component.
+     * The following date picker specific attributes and methods do not exist on oj-c-input-date-text or oj-input-date-mask.
+     * </p>
+     *
+     * <ul>
+     * <li>Methods:
+     * <ul>
+     * <li>hide</li>
+     * <li>show</li>
+     * </ul>
+     * </li>
+     * <li>Attributes:
+     * <ul>
+     * <li>date-picker</li>
+     * <li>change-month</li>
+     * <li>change-year</li>
+     * <li>current-month-pos</li>
+     * <li>days-outside-month</li>
+     * <li>number-of-months</li>
+     * <li>show-on</li>
+     * <li>step-big-months</li>
+     * <li>step-months</li>
+     * <li>week-display</li>
+     * <li>year-range</li>
+     * <li>keyboard-edit</li>
+     * <li>picker-attributes: Object property class</li>
+     * <li>translations</li>
+     * <ul>
+     * <li>tooltip-calendar</li>
+     * <li>tooltip-calendar-disabled</li>
+     * <li>tooltip-calendar-time</li>
+     * <li>tooltip-calendar-time-disabled</li>
+     * <li>week-header</li>
+     * <li>next-text</li>
+     * <li>prev-text</li>
+     * <li>current-text (Today)</li>
+     * </ul>
+     * </ul>
+     * </li>
+     * </ul>
+     * <h5>Date Restriction Attributes</h5>
+     * <p>The oj-c-input-date-text or oj-c-input-date-mask do not have a datepicker calendar, so oj-input-date's date restriction attributes do not exist in the oj-c-input-date-text
+     * or oj-c-input-date-mask component.
+     * You need to write your own validators to restrict the date and throw an error if the date the user types in is a restricted date.
+     * The following date restriction specific attributes do not exist on oj-c-input-date-text or oj-c-input-date-mask.
+     * </p>
+     * <ul>
+     * <li>date-restriction</li>
+     * <ul>
+     * <li>hint</li>
+     * <li>message-detail</li>
+     * <li>message-summary</li>
+     * </ul>
+     * <li>day-formatter</li>
+     * <li>day-metadata</li>
+     * </ul>
+     *
+     * <h5>Converter attribute</h5>
+     * <p>
+     * The converter attribute no longer supports a Promise that resolves to a converter instance.
+     * The application should resolve the promise and then update the
+     * converter attribute with the resolved converter instance.
+     * oj-c-input-date-mask does not have a converter.
+     * </p>
+     * <p>
+     * The converter is no longer applied when the value is <code>null</code>, <code>undefined</code>, or <code>''</code>.
+     * When the field is empty, the value gets normalized to <code>null</code>, so the converter does not run on an empty field.
+     * <p>
+     * <p>
+     * The converter attribute for oj-c-input-date-text takes an instance of LocalDateConverter,
+     * an object that has {format: (value: DateISOString) => string, parse: (value: string) => DateISOString}, null or undefined.
+     * oj-c-input-date-text's converter attribute does not take an IntlDateTimeConverter instance since its format/parse functions return string|null,
+     * not just string.
+     * </p>
+     * <p>
+     * oj-c-input-date-text uses <a href="LocalDateConverter.html" target="_blank">LocalDateConverter</a> with lenient parsing as its default converter,
+     * whereas oj-input-date uses IntlDateTimeConverter as its default converter.
+     * The LocalDateConverter does not have any options related to time or timezone.
+     * </p>
+     * <p>
+     * LocalDateConverter supports dateStyle: 'short'|'medium'|'long'|'full'. Currently you cannot customize day, year, month separately for
+     * LocalDateConverter, so you cannot format partial dates with the LocalDateConverter.
+     * </p>
+     *
+     * <h5>Validators</h5>
+     * <p>
+     * Only the required validator is run for an empty field, and only if required is true. The component's other validators
+     * are no longer run when the field is empty.
+     * If you created your own validator to check that the field was filled in, it will not run if the
+     * field is empty. Set the required attribute to true instead which conforms to the Redwood UX design.
+     * </p>
+     *
+     * <h5>LabelEdge attribute</h5>
+     * <p>
+     * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
+     * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+     * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+     * attribute to the corresponding value.
+     * </p>
+     *
+     * <h5>MessagesCustom attribute</h5>
+     * <p>
+     * The type of the <code class="prettyprint">severity</code> property of the messages in the
+     * array has changed from
+     * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+     * essentially <code class="prettyprint">string | number</code>, to simply
+     * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+     * values are the same as the previously supported string values.
+     * The application can no longer specify severity as a number, including hardcoded numbers,
+     * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+     * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+     * </p>
+     *
+     * <h5>TextAlign attribute</h5>
+     * <p>
+     * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start and oj-form-control-text-align-end is now
+     * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+     * <ul>
+     * <li>
+     * .oj-form-control-text-align-right maps to 'right'
+     * </li>
+     * <li>
+     * .oj-form-control-text-align-start maps to 'start'
+     * </li>
+     * <li>
+     * .oj-form-control-text-align-end maps to 'end'
+     * </li>
+     * </ul>
+     * </p>
+     * <h5>Translations attribute</h5>
+     * <h6>Changes</h6>
+     * <ul>
+     * <li>The translations.required.message-detail attribute has changed to required-message-detail.</li>
+     * <li>The translations.date-time-range.message-detail.overflow attribute has changed to date-range-overflow-message-detail.</li>
+     * <li>The translations.date-time-range.message-detail.underflow attribute has changed to date-range-underflow-message-detail.</li>
+     * </ul>
+     * <h6>Removals</h6>
+     * <ul>
+     * <li>The translations.date-time-range.message-summary attribute is no longer supported. Redwood apps do not show a summary on the date component.</li>
+     * <li>The translations.date-time-range.hint attribute is no longer supported. Redwood apps do not show a hint on the date component.</li>
+     * <li>The translations.date-restriction attributes are no longer supported in oj-c-input-date-text or oj-c-input-date-mask because neither have the date restrictions apis.</li>
+     * <li>The translations.accessible-max-length attributes are no longer supported because they never did anything on oj-input-date.</li>
+     * <li>The translations.regexp.messageDetail attribute is no longer supported because it never did anything on oj-input-date</li>
+     * </ul>
+     * <h5>Value attribute</h5>
+     * <h6>Clearing the field</h6>
+     * <p>
+     * Clearing the field and committing the value will now set the value attribute to <code>null</code>
+     * instead of <code>''</code>.
+     * </p>
+     * <h6>Date-only ISO string</h6>
+     * <p>
+     * In oj-input-date the value should be a date-only iso string but it was not enforced.
+     * It was coerced to a date-only iso string once the user interacted with the component.
+     * For oj-c-input-date-text and oj-c-input-date-mask the value must be a date-only iso string or the component will not render. A date-only iso string looks like "2023-04-26"; it has no time.
+     * </p>
+     * <p>
+     * If the value is not a date-only iso string, then you will need to transform it to a date-only iso string to use with oj-c-input-date-text or oj-c-input-date-mask.
+     * For example, you can use the utility method:  IntlConverterUtils.dateToLocalIsoDateString(new Date(2023, 1, 1)).
+     * </p>
+     *
+     * <h5>Raw Value</h5>
+     * <p>
+     * oj-input-date and oj-c-input-date-text's rawValue properties are the same (both strings) and there are no steps needed to migrate.
+     * oj-input-date-mask's rawValue property is an Object of type CalendarDate, that is, {year?: number, month?: number, day?: number},
+     * so if you have code that handles onRawValueChanged, it will need to be updated.
+     * </p>
+     *
+     * <h5>Refresh method</h5>
+     * <p>
+     * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+     * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+     * </p>
+     *
+     * <h5>Animation Events</h5>
+     * <p>
+     * ojAnimateStart and ojAnimateEnd events are no longer supported.
+     * </p>
+     *
+     * <h5>Custom Label</h5>
+     * <p>
+     * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+     * label-hint attribute to add a label for the form component.
+     * </p>
+     * <p>
+     * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
+     * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+     * </p>
+     *
+     * <h5>DescribedBy attribute</h5>
+     * <p>
+     * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+     * This attribute is not carried forward to the core pack component.
+     * </p>
+     *
+     * <h5>Usage in Dynamic Form</h5>
+     * <p>
+     * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+     * </p>
+     *
+
+
    */
   // --------------------------------------------------- oj.ojInputDate Styling Start ------------------------------------------------------------
   /**
@@ -1792,6 +2002,8 @@ var __oj_input_date_time_metadata =
 
     _KEYBOARD_EDIT_OPTION_ENABLED: 'enabled',
     _KEYBOARD_EDIT_OPTION_DISABLED: 'disabled',
+
+    _INPUTDATE_CLEAR_ICON_LABEL_KEY: 'accessibleClearIconAltText',
 
     options: {
       /**
@@ -2012,7 +2224,8 @@ var __oj_input_date_time_metadata =
          *   clicked. When the picker is closed, the field regains focus and is editable.
          * @ojvalue {string} 'userFocus' when the element receives focus from a user action (such as tab key press)
          *   or the calendar image is clicked.  Programmatic calls to .focus() do not show the picker.
-         * @ojvalue {string} 'image' when the trigger calendar image is clicked
+         * @ojvalue {string} 'image' when the trigger calendar image is clicked.
+         * Keyboard users must use the Up or Down Arrow key to open the datepicker when show-on is 'image'.
          * @default "focus"
          * @ojsignature { target: "Type", value: "?string"}
          *
@@ -2108,7 +2321,7 @@ var __oj_input_date_time_metadata =
        *
        * <p>The default options for converter vary by theme. To use different options, create a custom converter and
        * set it in this property. For example:
-       * <pre class="prettyprint"><code>inputDate.converter = new DateTimeConverter.IntlDateTimeConverter({"day":"2-digit","month":"2-digit","year":"numeric"});</code></pre>
+       * <pre class="prettyprint"><code>inputDate.converter = new DateTimeConverter.IntlDateTimeConverter({ formatType: 'date', dateFormat: 'short' });</code></pre>
        * <p>If the timezone option is provided in the converter, the Today button will highlight the current day based on the timezone specified in the converter.
        * {@ojinclude "name":"inputBaseConverterOptionDoc"}
        * <p>
@@ -2145,6 +2358,7 @@ var __oj_input_date_time_metadata =
        *                description: 'Defining a converter with an object literal with converter type and its options
        *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
        *                  work again by importing the deprecated ojvalidation-datetime module.'}
+       * @default new DateTimeConverter({ formatType: 'date', dateFormat: 'short' })
        */
       converter: undefined,
 
@@ -2705,7 +2919,7 @@ var __oj_input_date_time_metadata =
       this._triggerNode = null;
       this._inputContainer = null;
       this._redirectFocusToInputContainer = false;
-      this._isMobile = false;
+      this._hasTouch = false;
 
       // only case is when of showOn of focus and one hides the element [need to avoid showing]
       this._ignoreDatePickerShow = false;
@@ -2725,6 +2939,7 @@ var __oj_input_date_time_metadata =
       this._nativePickerConverter = null;
 
       this._labelValueWrapper = null;
+      this._isMobile = Config.getDeviceRenderMode() === 'phone';
 
       var nodeName = this.element[0].nodeName.toLowerCase();
       this._isInLine = nodeName === 'div' || nodeName === 'span';
@@ -2821,6 +3036,9 @@ var __oj_input_date_time_metadata =
             if (self.options.datePicker.showOn === 'image') {
               self._dpDiv.find('.oj-datepicker-calendar').focus();
             }
+          },
+          close: function () {
+            self.element.attr({ 'aria-expanded': 'false', 'aria-controls': null });
           },
           animation: animation
         })
@@ -3042,6 +3260,9 @@ var __oj_input_date_time_metadata =
           this._resolveDateConverterBusyState();
           delete this._resolveDateConverterBusyState;
         }
+        if (this.options.readOnly !== true) {
+          this._attachClearIcon();
+        }
       }.bind(this);
 
       if (this._dateConverterPromise) {
@@ -3182,6 +3403,31 @@ var __oj_input_date_time_metadata =
       }
 
       return retVal;
+    },
+
+    /**
+     * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
+     * different tasks.
+     *
+     * @param {string} option
+     * @param {Object=} flags
+     * @protected
+     * @memberof oj.ojInputDate
+     * @instance
+     */
+    _AfterSetOption: function (option, flags) {
+      this._super(option, flags);
+
+      switch (option) {
+        case 'disabled':
+        case 'readOnly':
+        case 'value':
+          this._attachClearIcon();
+          break;
+
+        default:
+          break;
+      }
     },
 
     /**
@@ -3412,7 +3658,15 @@ var __oj_input_date_time_metadata =
     _CreateContainerWrapper: function () {
       this._inputContainer = $(this._superApply(arguments));
       this._inputContainer.attr({ role: 'presentation', tabindex: '-1' });
-      this.element.attr({ role: 'combobox', 'aria-haspopup': 'true' });
+
+      // Having role be combobox on the input element will make the screen reader tell the user
+      // that there is a dialog and to open it they can use the Up or Down Arrow key.
+      // This is useful when the show-on attribute is set to 'image' because in that mode the
+      // datepicker does not show up automatically
+      // only way to open the datepicker with a keyboard is to use the Up or Down Arrow.
+      // It is also useful when the user closes the datepicker with the Esc key and then wants to reopen
+      // the datepicker with the keyboard.
+      this.element.attr({ role: 'combobox', 'aria-haspopup': 'dialog', 'aria-expanded': 'false' });
       return this._inputContainer[0];
     },
     /**
@@ -3511,8 +3765,78 @@ var __oj_input_date_time_metadata =
     },
 
     /**
+     * Render or remove the clear icon
+     * We don't render the clear icon for non-mobile or required fields.
+     * @ignore
+     * @private
+     * @memberof oj.ojInputDate
+     * @instance
+     */
+    _attachClearIcon: function () {
+      if (this._isMobile && !this.options.required) {
+        var contentWrapper = this._GetContentWrapper();
+        // content wrapper is undefined when the component is inline or is not a
+        // custom element, so we don't need a clear icon in that case.
+        if (contentWrapper) {
+          var wrapperElem = contentWrapper.parentElement;
+          var clearIconBtn = wrapperElem.querySelector('a.oj-inputdatetime-clear-icon-btn');
+
+          if (this.options.disabled || this.options.readOnly) {
+            // remove the icon if it is there
+            if (clearIconBtn) {
+              wrapperElem.removeChild(clearIconBtn);
+            }
+
+            // if the clearIcon is not rendered, we shouldn't have this class
+            wrapperElem.classList.remove('oj-inputdatetime-clearicon-mobile');
+          } else {
+            // Only add the clear icon for mobile
+            if (clearIconBtn === null) {
+              var clearIcon;
+              clearIconBtn = document.createElement('a');
+              clearIconBtn.className =
+                'oj-inputdatetime-clear-icon-btn oj-component-icon oj-clickable-icon-nocontext';
+              clearIconBtn.setAttribute('tabindex', '-1');
+              clearIconBtn.setAttribute(
+                'aria-label',
+                this.getTranslatedString(this._INPUTDATE_CLEAR_ICON_LABEL_KEY)
+              );
+
+              clearIconBtn.setAttribute('target', '_blank');
+              clearIcon = document.createElement('span');
+              clearIcon.className = 'oj-inputdatetime-clear-icon';
+
+              clearIconBtn.appendChild(clearIcon);
+              wrapperElem.insertBefore(clearIconBtn, this._labelValueWrapper.nextElementSibling); // @HTMLUpdateOK
+
+              clearIconBtn.addEventListener(
+                this._CLICK_HANDLER_KEY,
+                this._onClearIconClickHandler.bind(this)
+              );
+            }
+
+            // clear icon is only rendered for mobile at this time.
+            // For mobile, we render oj-form-control-empty-clearicon if the input doesn't
+            // have a value, as we always want the clear icon hidden for this case.
+            wrapperElem.classList.add('oj-inputdatetime-clearicon-mobile');
+
+            var val = this._GetDisplayValue();
+
+            if (val && val !== '') {
+              wrapperElem.classList.remove('oj-form-control-empty-clearicon');
+            } else {
+              wrapperElem.classList.add('oj-form-control-empty-clearicon');
+            }
+          }
+        }
+      }
+    },
+    /**
      * This function will create the necessary calendar trigger container [i.e. image to launch the calendar]
-     * and perform any attachment to events
+     * and perform any attachment to events.
+     * Since the user cannot tab to this icon, it does not need the aria attributes on it.
+     * If showOn is image, then a keyboard or screenreader user would use the up or down arrow key
+     * on the input to open the picker.
      *
      * @private
      */
@@ -3539,7 +3863,7 @@ var __oj_input_date_time_metadata =
       var self = this;
 
       this._datepickerWrapperTouchStartListener = function () {
-        self._isMobile = true;
+        self._hasTouch = true;
       };
       this._wrapper[0].addEventListener('touchstart', this._datepickerWrapperTouchStartListener, {
         passive: true
@@ -3568,6 +3892,7 @@ var __oj_input_date_time_metadata =
         } else {
           self.show();
           self._dpDiv.find('.oj-datepicker-calendar').focus();
+          _scrollIntoViewFor400PercentZoom(self._dpDiv[0]);
         }
         event.preventDefault();
         event.stopPropagation();
@@ -3736,11 +4061,7 @@ var __oj_input_date_time_metadata =
         datePickerCalendar.addClass('oj-focus-highlight');
         datePickerCalendar.attr('aria-activedescendant', cParent.attr('id') + '');
         cParent.addClass(this._DAYOVER_CLASS);
-        // This is needed only for zoom % 400 or above. Without if condition, it makes the page move when
-        // we change date with no zoom.
-        if (window.devicePixelRatio >= 4) {
-          cParent[0].scrollIntoView();
-        }
+        _scrollIntoViewFor400PercentZoom(cParent[0]);
       }
     },
 
@@ -4001,15 +4322,12 @@ var __oj_input_date_time_metadata =
           self._setupNewView(focusOnCalendar, view, generatedHtmlContent.dayOverId);
           self._animationResolve();
           self._animationResolve = null;
+          _scrollIntoViewFor400PercentZoom(self._dpDiv[0]);
         });
       } else {
         dpContentDiv.empty().append(generatedHtmlContent.html); // @HTMLUpdateOK
         this._setupNewView(focusOnCalendar, view, generatedHtmlContent.dayOverId);
-      }
-      // This is needed only for zoom % 400 or above. Without if condition, it makes the page move when
-      // we change date with no zoom.
-      if (window.devicePixelRatio >= 4) {
-        this._dpDiv[0].scrollIntoView();
+        _scrollIntoViewFor400PercentZoom(this._dpDiv[0]);
       }
       let selectors =
         '.oj-datepicker-prev-icon.oj-enabled, .oj-datepicker-next-icon.oj-enabled,' +
@@ -4196,8 +4514,8 @@ var __oj_input_date_time_metadata =
       // prettier-ignore
       $('#' + this._GetSubId(subId + this._CALENDAR_DESCRIPTION_ID)).html( // @HTMLUpdateOK
         this._EscapeXSS(this.options.monthWide[this._drawMonth]) +
-          ' ' +
-          formatYear(this._drawYear, this._drawMonth)
+        ' ' +
+        formatYear(this._drawYear, this._drawMonth)
       );
 
       this._adjustDate(0, 0, true, period === 'M' ? 'day' : this._toYearFromView);
@@ -4244,6 +4562,15 @@ var __oj_input_date_time_metadata =
       }
 
       this._setDisplayAndValue(value, {});
+      // remove this class, since we have a value now.
+      // Only do this for oj-input-date, since oj-input-date-time doesn't
+      // update its value until done is pressed.
+      if (this.OuterWrapper.tagName === 'OJ-INPUT-DATE') {
+        let contentWrapper = this._GetContentWrapper();
+        if (contentWrapper) {
+          contentWrapper.parentElement.classList.remove('oj-form-control-empty-clearicon');
+        }
+      }
 
       if (this._isDateTimeSwitcher()) {
         this._placeFocusOnCalendar();
@@ -4877,6 +5204,7 @@ var __oj_input_date_time_metadata =
     ) {
       var dayNames = this.options.dayWide;
       var dayNamesMin = this.options.dayNarrow;
+      // firstDay is locale dependent. en-US the first day is a Sunday. en-GB it is a Monday.
       var firstDay = this.options.firstDayOfWeek;
       var dow;
       var dayOverId = '';
@@ -4952,6 +5280,8 @@ var __oj_input_date_time_metadata =
                 this._EscapeXSS(this.getTranslatedString('weekHeader')) +
                 '</th>'
               : '';
+          // Render the days of the week header
+          // ----------------------------------
           for (dow = 0; dow < 7; dow++) {
             // days of the week
             var day = (dow + parseInt(firstDay, 10)) % 7;
@@ -4970,20 +5300,34 @@ var __oj_input_date_time_metadata =
 
           calender += thead + "</tr></thead><tbody role='presentation'>";
           var daysInMonth = this._getDaysInMonth(drawYear, drawMonth);
+          // This changes the selectedDay to make sure it is within the days in the month.
+          // If the app developer chooses the correct day
           if (drawYear === selectedYear && drawMonth === selectedMonth) {
             // eslint-disable-next-line no-param-reassign
             selectedDay = Math.min(selectedDay, daysInMonth);
           }
+
+          // You need leadDays to figure out the number of rows in the month. Also, leadDays are the
+          // days in the day view that are in the previous month. Even if we do not render the
+          // day number (e.g., daysOutsideMonth is 'hidden'), we need to provide an empty cell
+          // for the lead days.
           var leadDays = (this._getFirstDayOfMonth(drawYear, drawMonth) - firstDay + 7) % 7;
           var curRows = Math.ceil((leadDays + daysInMonth) / 7); // calculate the number of rows to generate
           var numRows = isMultiMonth && this._maxRows > curRows ? this._maxRows : curRows; // If multiple months, use the higher number of rows (see #7043)
           this._maxRows = numRows;
-          var printDate = new Date(drawYear, drawMonth, 1 - leadDays); // first Sunday
+          // The printDate is the first day of in the calendar we are going to render. If the first day of the month
+          // is a Wednesday, then printDate will be the first day of the week before that Wednesday, so it would
+          // be the last days of the previous month. Whether or not we render the day number is determined
+          // by the daysOutsideMonth component option.
+          // The printDate uses leadDays, and leadDays uses firstDay and firstDay is based on the locale's region.
+          // So the printDate would be the first Sunday for en-US, and the first Monday for en-GB
+          var printDate = new Date(drawYear, drawMonth, 1 - leadDays);
           let mondayDateForWeekDisplay;
           for (var dRow = 0; dRow < numRows; dRow++) {
             // create date picker rows
             calender += "<tr role='row'>";
             var calculatedWeek = ' ';
+            // Figure out the week number if the weekDisplay option is not none.
             if (weekDisplay !== 'none') {
               try {
                 // The week number calculation follows the ISO 8601 definition:
@@ -5002,6 +5346,8 @@ var __oj_input_date_time_metadata =
               }
             }
 
+            // Render the week number if the weekDisplay option is not none.
+            // -------------------------------------------------------------
             var tbody =
               weekDisplay === 'none'
                 ? ''
@@ -5012,6 +5358,8 @@ var __oj_input_date_time_metadata =
                   "'>" +
                   calculatedWeek +
                   '</td>';
+            // Render the week
+            // ---------------
             for (dow = 0; dow < 7; dow++) {
               // create date picker days
               var otherMonth = printDate.getMonth() !== drawMonth;
@@ -5042,6 +5390,11 @@ var __oj_input_date_time_metadata =
                   }
                 }
               }
+              // selectedDate is a boolean. Is the component's value the day about to be rendered.
+              // The value is a date-only iso string,
+              // and it is broken apart into parts, and then a date is created, and the time portion
+              // is cleared out, so then it can be compared with the print date. Possibly this can
+              // be done in a simpler manner.
               var selectedDate = printDate.getTime() === valueDate.getTime();
 
               var unselectable =
@@ -5049,6 +5402,8 @@ var __oj_input_date_time_metadata =
                 !daySettings[0] ||
                 this._outSideMinMaxRange(printDate, minDateParams, maxDateParams);
 
+              // Render a day cell. printDate.getDate() is the day number.
+              // ---------------------------------------------------------
               tbody +=
                 "<td role='gridcell' aria-disabled='" +
                 !!unselectable +
@@ -5092,6 +5447,7 @@ var __oj_input_date_time_metadata =
                     (otherMonth ? ' oj-priority-secondary' : '') + // distinguish dates from other months
                     "' " +
                     (dayOverClass ? '' : "tabindex='-1' ") +
+                    (daySettings[2] ? " title='" + daySettings[2].replace(/'/g, '&#39;') + "'" : '') + // cell title
                     " href='#'>" +
                     printDate.getDate() +
                     '</a>') +
@@ -5561,7 +5917,7 @@ var __oj_input_date_time_metadata =
      * Find the day of the week of the first of a month.
      * Returns the day of the week for the specified date according to local time,
      * where 0 represents Sunday, and 6 represents Saturday.
-     * For example, Jan 1, 2021 is a Friday, and it returns 5.
+     * For example, Jan 1, 2021 is a Friday no matter what timezone in the world your system is in, and it returns 5.
      * @return {number} 0-6
      * @private
      */
@@ -5735,6 +6091,50 @@ var __oj_input_date_time_metadata =
     _AppendInputHelper: function () {
       if (!this._isInLine && this.options.readOnly !== true) {
         this._superApply(arguments);
+      }
+    },
+
+    /**
+     * Invoked when the input event happens
+     *
+     * @ignore
+     * @protected
+     * @memberof! oj.ojInputDate
+     * @param {Event} event
+     */
+    _onInputHandler: function (event) {
+      this._super(event);
+      var inputNode = event.target;
+      let contentWrapper = this._GetContentWrapper();
+
+      if (contentWrapper && this._isMobile) {
+        if (inputNode.value !== '') {
+          contentWrapper.parentElement.classList.remove('oj-form-control-empty-clearicon');
+        } else {
+          contentWrapper.parentElement.classList.add('oj-form-control-empty-clearicon');
+        }
+      }
+    },
+
+    /**
+     * The handler clears the value of the input element and sets the focus on the input container
+     * since this is only used for mobile.
+     *
+     * @ignore
+     * @private
+     * @memberof! oj.ojInputDate
+     * @param {Event} event
+     */
+    _onClearIconClickHandler: function (event) {
+      var elem = this.element[0];
+
+      elem.value = '';
+      // we need to update the raw value to keep it in sync
+      this._SetRawValue('', event);
+      elem.focus();
+      let contentWrapper = this._GetContentWrapper();
+      if (contentWrapper) {
+        contentWrapper.parentElement.classList.add('oj-form-control-empty-clearicon');
       }
     },
 
@@ -6189,7 +6589,7 @@ var __oj_input_date_time_metadata =
       this._closeInProgress = true;
       try {
         const showOnIsFocusOrUserFocus = this._showOnIsFocusOrUserFocus();
-        if (this._isMobile && showOnIsFocusOrUserFocus) {
+        if (this._hasTouch && showOnIsFocusOrUserFocus) {
           this._inputContainer.focus();
         } else {
           if (showOnIsFocusOrUserFocus) {
@@ -6271,11 +6671,35 @@ var __oj_input_date_time_metadata =
       }
     },
 
+    // If the inputConverter is not one with isoStrFormat offset, then create a new converter
+    // based on the options of the inputConverter but with isoStrFormat: 'offset'.
     _createOffsetConverter: function (inputConverter) {
       var resolvedOptions = inputConverter.resolvedOptions();
+      const isoStrFormat = resolvedOptions.isoStrFormat;
+      if (isoStrFormat === 'offset') return inputConverter;
       var options = {};
       $.extend(options, resolvedOptions, { isoStrFormat: 'offset' });
       return new ojconverterDatetime.IntlDateTimeConverter(options);
+    },
+
+    // Call this function if you need to substitute the day, month, year, time, etc, of the date time iso
+    // string. You cannot substitute in a day or time to a zulu iso string.
+    // If the value is 'zulu', then the converter uses 'offset' isoStrFormat.
+    // Substituting the day into a zulu date might be a different day in the timezone and then the formatted
+    // date will be a different day than what the user selected. (See JET-54551)
+    // So if it is zulu we change it to offset.
+    // This is what a zulu and offset format looks like
+    // zulu: 2013-12-13T04:00:00Z
+    // offset: 2013-12-01T20:00:00-08:00
+    _parseValueToSubstituteDateOrTimePiece: function (converter, dateTimeIso) {
+      let parsedValue;
+      if (dateTimeIso && ojconverterutilsI18n.IntlConverterUtils._getISOStrFormatType(dateTimeIso) === 'zulu') {
+        const offsetConverter = this._createOffsetConverter(converter);
+        parsedValue = offsetConverter.parse(dateTimeIso);
+      } else {
+        parsedValue = converter.parse(dateTimeIso);
+      }
+      return parsedValue;
     },
 
     /**
@@ -6425,12 +6849,7 @@ var __oj_input_date_time_metadata =
         // zulu: 2013-12-13T04:00:00Z
         // offset: 2013-12-01T20:00:00-08:00
         const dateIso = this.options.value ? this._getDateIso() : '';
-        if (dateIso && ojconverterutilsI18n.IntlConverterUtils._getISOStrFormatType(dateIso) === 'zulu') {
-          const offsetConverter = this._createOffsetConverter(converter);
-          this._switcherPrevValue = offsetConverter.parse(dateIso);
-        } else {
-          this._switcherPrevValue = converter.parse(dateIso);
-        }
+        this._switcherPrevValue = this._parseValueToSubstituteDateOrTimePiece(converter, dateIso);
       } else {
         this._switcherPrevValue = this._getDateIso();
       }
@@ -6465,6 +6884,7 @@ var __oj_input_date_time_metadata =
         const position = this._getDropdownPosition(defPosition, rtl);
         this._popUpDpDiv.ojPopup('open', this._labelValueWrapper.parentNode, position);
       }
+      this.element.attr({ 'aria-expanded': 'true', 'aria-controls': this._popUpDpDiv.attr('id') });
 
       return this;
     },
@@ -6611,7 +7031,7 @@ var __oj_input_date_time_metadata =
    *     <tr>
    *       <td>Input element</td>
    *       <td><kbd>DownArrow or UpArrow</kbd></td>
-   *       <td>Shows the calender grid and moves the focus into the expanded grid</td>
+   *       <td>Shows the calender grid and moves the focus into the expanded grid.</td>
    *     </tr>
    *     <tr>
    *       <td>Input element</td>
@@ -6795,7 +7215,7 @@ var __oj_input_date_time_metadata =
    * </table>
    *
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojInputDate
+   * @memberof oj.ojDatePicker
    */
 
   // ////////////////     SUB-IDS     //////////////////
@@ -8419,8 +8839,8 @@ var __oj_input_date_time_metadata =
    *
    * @private
    */
-  var _defaultOptions$1 = ThemeUtils.parseJSONFromFontFamily('oj-inputdatetime-option-defaults') || {};
-  var _showPickerOnDesktop = _defaultOptions$1.showPickerOnDesktop || 'disabled';
+  var _defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-inputdatetime-option-defaults') || {};
+  var _showPickerOnDesktop = _defaultOptions.showPickerOnDesktop || 'disabled';
   var _sDefaultTimeConverter;
   /**
    * Helper function to split the timeIncrement into its constituents and returns the split object.
@@ -8509,13 +8929,7 @@ var __oj_input_date_time_metadata =
    * @ignore
    */
   function _getTimeDefaultConverter() {
-    // if user preference pattern exists for timeStyle short, use those for the default converter
-    // The user preferences, including timezone, get merged in within the IntlDateTimeConverter wrapped code.
-    const userPref = ojconverterPreferences.getDateTimePreferences();
-    if (userPref && userPref.timeStyle && userPref.timeStyle.short) {
-      return new ojconverterDatetime.IntlDateTimeConverter({ formatType: 'time', timeFormat: 'short' });
-    }
-    return new ojconverterDatetime.IntlDateTimeConverter({ hour: '2-digit', minute: '2-digit' });
+    return new ojconverterDatetime.IntlDateTimeConverter({ formatType: 'time', timeFormat: 'short' });
   }
 
   /**
@@ -8728,6 +9142,8 @@ var __oj_input_date_time_metadata =
     _KEYBOARD_EDIT_OPTION_ENABLED: 'enabled',
     _KEYBOARD_EDIT_OPTION_DISABLED: 'disabled',
 
+    _INPUTTIME_CLEAR_ICON_LABEL_KEY: 'accessibleClearIconAltText',
+
     options: {
       /**
        * A datetime converter instance or a Promise to a datetime converter instance
@@ -8767,7 +9183,7 @@ var __oj_input_date_time_metadata =
        *                description: 'Defining a converter with an object literal with converter type and its options
        *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
        *                  work again by importing the deprecated ojvalidation-datetime module.'}
-       * @default new DateTimeConverter({"hour":"2-digit","minute":"2-digit"})
+       * @default new DateTimeConverter({ formatType: 'time', timeFormat: 'short' })
        */
       converter: undefined,
 
@@ -9467,6 +9883,7 @@ var __oj_input_date_time_metadata =
         if (this.options.readOnly !== true) {
           if (this._isIndependentInput()) {
             this._attachTrigger();
+            this._attachClearIcon();
           }
         }
 
@@ -9637,6 +10054,31 @@ var __oj_input_date_time_metadata =
       }
 
       return retVal;
+    },
+
+    /**
+     * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
+     * different tasks.
+     *
+     * @param {string} option
+     * @param {Object=} flags
+     * @protected
+     * @memberof oj.ojInputTime
+     * @instance
+     */
+    _AfterSetOption: function (option, flags) {
+      this._super(option, flags);
+
+      switch (option) {
+        case 'disabled':
+        case 'readOnly':
+        case 'value':
+          this._attachClearIcon();
+          break;
+
+        default:
+          break;
+      }
     },
 
     /**
@@ -9874,6 +10316,8 @@ var __oj_input_date_time_metadata =
       this._inputContainer = $(this._superApply(arguments));
       this._inputContainer.attr({ role: 'presentation', tabindex: '-1' });
       if (this._isTimePickerSupported()) {
+        // ideally this would have aria-expanded and aria-controls like input-date and input-date-time do
+        // but since this code is only for the alta theme that has been deprecated since v10, we are not going to modify it.
         this.element.attr({ role: 'combobox', 'aria-haspopup': 'true' });
       }
       return this._inputContainer[0];
@@ -9970,6 +10414,76 @@ var __oj_input_date_time_metadata =
     },
 
     /**
+     * Render or remove the clear icon
+     * @ignore
+     * @private
+     * @memberof oj.ojInputTime
+     * @instance
+     */
+    _attachClearIcon: function () {
+      var labelValueWrapper = this.element[0].parentNode;
+      let wrapperElem = labelValueWrapper.parentNode;
+      var clearIconBtn = wrapperElem.querySelector('a.oj-inputdatetime-clear-icon-btn');
+
+      let isMobile = Config.getDeviceRenderMode() === 'phone';
+
+      if (!isMobile || this.options.disabled || this.options.readOnly || this.options.required) {
+        // remove the icon if it is there
+        if (clearIconBtn) {
+          wrapperElem.removeChild(clearIconBtn);
+        }
+
+        // if the clearIcon is not rendered, we shouldn't have this class
+        wrapperElem.classList.remove('oj-inputdatetime-clearicon-mobile');
+      } else {
+        // Only add the clear icon for mobile
+        if (clearIconBtn === null) {
+          var clearIcon;
+          clearIconBtn = document.createElement('a');
+          clearIconBtn.className =
+            'oj-inputdatetime-clear-icon-btn oj-component-icon oj-clickable-icon-nocontext';
+          clearIconBtn.setAttribute('tabindex', '-1');
+          clearIconBtn.setAttribute(
+            'aria-label',
+            this.getTranslatedString(this._INPUTTIME_CLEAR_ICON_LABEL_KEY)
+          );
+
+          clearIconBtn.setAttribute('target', '_blank');
+          clearIcon = document.createElement('span');
+          clearIcon.className = 'oj-inputdatetime-clear-icon';
+
+          clearIconBtn.appendChild(clearIcon);
+          wrapperElem.insertBefore(clearIconBtn, labelValueWrapper.nextElementSibling); // @HTMLUpdateOK
+
+          clearIconBtn.addEventListener(
+            this._CLICK_HANDLER_KEY,
+            this._onClearIconClickHandler.bind(this)
+          );
+        }
+
+        // clear icon is only rendered for mobile at this time.
+        // For mobile, we render oj-form-control-empty-clearicon if the input doesn't
+        // have a value, as we always want the clear icon hidden for this case.
+        wrapperElem.classList.add('oj-inputdatetime-clearicon-mobile');
+
+        var val;
+
+        // if the component is not fully rendered, then we need to use the value option's value
+        // instead of the input element's value
+        if (wrapperElem.classList.contains('oj-complete')) {
+          val = this.element[0].value;
+        } else {
+          val = this.options.value;
+        }
+
+        if (val && val !== '') {
+          wrapperElem.classList.remove('oj-form-control-empty-clearicon');
+        } else {
+          wrapperElem.classList.add('oj-form-control-empty-clearicon');
+        }
+      }
+    },
+    /**
      * This function will create the necessary time trigger container [i.e. image to launch the time drop down]
      * and perform any attachment to events
      *
@@ -10057,6 +10571,50 @@ var __oj_input_date_time_metadata =
       return this._isContainedInDateTimePicker()
         ? this._datePickerComp.widget.getValueForInputTime()
         : this.options.value;
+    },
+
+    /**
+     * Invoked when the input event happens
+     *
+     * @ignore
+     * @protected
+     * @memberof! oj.ojInputTime
+     * @param {Event} event
+     */
+    _onInputHandler: function (event) {
+      this._super(event);
+      var inputNode = event.target;
+      let contentWrapper = this._GetContentWrapper();
+
+      if (contentWrapper && this._isMobile) {
+        if (inputNode.value !== '') {
+          contentWrapper.parentElement.classList.remove('oj-form-control-empty-clearicon');
+        } else {
+          contentWrapper.parentElement.classList.add('oj-form-control-empty-clearicon');
+        }
+      }
+    },
+
+    /**
+     * The handler clears the value of the input element and sets the focus on the input container
+     * since this is only used for mobile.
+     *
+     * @ignore
+     * @private
+     * @memberof! oj.ojInputTime
+     * @param {Event} event
+     */
+    _onClearIconClickHandler: function (event) {
+      var elem = this.element[0];
+
+      elem.value = '';
+      // we need to update the raw value to keep it in sync
+      this._SetRawValue('', event);
+      elem.focus();
+      let contentWrapper = this._GetContentWrapper();
+      if (contentWrapper) {
+        contentWrapper.parentElement.classList.add('oj-form-control-empty-clearicon');
+      }
     },
 
     /**
@@ -10291,11 +10849,19 @@ var __oj_input_date_time_metadata =
      * @instance
      * @memberof! oj.ojInputTime
      */
-    // eslint-disable-next-line no-unused-vars
     _SetDisplayValue: function (displayValue) {
       // When not part of datePickerComp or of inline should update input element
       if (this._isIndependentInput()) {
         this._superApply(arguments);
+      }
+      // remove this class, since we have a value now.
+      let elem = this.element[0];
+      if (elem) {
+        if (displayValue) {
+          elem.parentElement.parentElement.classList.remove('oj-form-control-empty-clearicon');
+        } else {
+          elem.parentElement.parentElement.classList.add('oj-form-control-empty-clearicon');
+        }
       }
 
       // so this is a change in behavior from original design. Previously it was decided that app developer
@@ -10348,6 +10914,7 @@ var __oj_input_date_time_metadata =
           var isoValue = newValue;
           // check if time is an isostring and if it is not an isostring then parse it.
           try {
+            // This function will throw an error if it is not an isostring.
             converterUtils._dateTime(newValue, {
               month: date.getMonth(),
               date: date.getDate(),
@@ -11288,19 +11855,6 @@ var __oj_input_date_time_metadata =
    * var node = myInputTime.getNodeBySubId( {'subId': 'oj-timepicker-now'} );
    */
 
-  /**
-   *
-   * @private
-   */
-  var dateSwitcherConverter;
-
-  /**
-   * @private
-   */
-  var timeSwitcherConverter;
-
-  var _defaultOptions$2 = ThemeUtils.parseJSONFromFontFamily('oj-inputdatetime-option-defaults') || {};
-  var _yearFormat$1 = _defaultOptions$2.converterYear || 'numeric';
   var _sDefaultDateTimeConverter;
 
   /**
@@ -11309,30 +11863,10 @@ var __oj_input_date_time_metadata =
    * @ignore
    */
   function _getDateTimeDefaultConverter() {
-    // if user preferences exist, use those for the default converter
-    const userPref = ojconverterPreferences.getDateTimePreferences();
-    // User preference needs both dateStyle and timeStyle short set for
-    // use in the datetime component.
-    // The user preferences, including timezone, get merged in within the IntlDateTimeConverter wrapped code.
-    if (
-      userPref &&
-      userPref.dateStyle &&
-      userPref.dateStyle.short &&
-      userPref.timeStyle &&
-      userPref.timeStyle.short
-    ) {
-      return new ojconverterDatetime.IntlDateTimeConverter({
-        formatType: 'datetime',
-        dateFormat: 'short',
-        timeFormat: 'short'
-      });
-    }
     return new ojconverterDatetime.IntlDateTimeConverter({
-      day: '2-digit',
-      month: '2-digit',
-      year: _yearFormat$1,
-      hour: '2-digit',
-      minute: '2-digit'
+      formatType: 'datetime',
+      dateFormat: 'short',
+      timeFormat: 'short'
     });
   }
 
@@ -11596,7 +12130,7 @@ var __oj_input_date_time_metadata =
 
        * <p>The default options for converter vary by theme. To use different value for options, create a custom converter and
        * set it in this property. For example:
-       * <pre class="prettyprint"><code>inputDateTime.converter = new DateTimeConverter.IntlDateTimeConverter({"day":"2-digit","month":"2-digit","year":"numeric","hour":"2-digit","minute":"2-digit"});</code></pre>
+       * <pre class="prettyprint"><code>inputDateTime.converter = new DateTimeConverter.IntlDateTimeConverter({formatType: 'datetime',dateFormat: 'short',timeFormat: 'short'});</code></pre>
        * <p>If the timezone option is provided in the converter, the Today button will highlight the current day based on the timezone specified in the converter.
       * <p>
       * The hint exposed by the converter is shown inline by default in the Redwood theme when
@@ -11632,6 +12166,7 @@ var __oj_input_date_time_metadata =
        *                description: 'Defining a converter with an object literal with converter type and its options
        *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
        *                  work again by importing the deprecated ojvalidation-datetime module.'}
+       * @default new DateTimeConverter({ formatType: 'datetime', dateFormat: 'short', timeFormat: 'short' })
        */
       converter: undefined,
 
@@ -12349,21 +12884,43 @@ var __oj_input_date_time_metadata =
                 ($.ui.keyCode.ENTER === keyCode || $.ui.keyCode.SPACE === keyCode)) ||
               evt.type === 'click'
             ) {
+              // All manipulation (like copying in the time the user selected)
+              // should be done in offset or local, not zulu.
+              // newVal will contain the value, but in offset or local. When it
+              // is run back through the converter in SetValue then it will be converted
+              // back into the isoStrFormat of the component's converter.
               var newVal;
+              // _switcherDateValue is the date and time that is displayed in the picker. This is
+              // a local date time with no offset or zulu. This can be manipulated to merge
+              // in a new day or a new time, no problem.
               if (self._switcherDateValue) {
                 newVal = self._switcherDateValue;
               } else {
-                var formattedValue = self._GetConverter().format(self._getDateIso());
-                newVal = self._GetConverter().parse(formattedValue);
+                // dateIso could be this._switcherDateValue, this.options.value, or this._getDefaultIsoDate();
+                // if local, don't change it
+                const dateIso = self._getDateIso();
+                if (dateIso && ojconverterutilsI18n.IntlConverterUtils._getISOStrFormatType(dateIso) === 'local') {
+                  newVal = dateIso;
+                } else {
+                  const converter = self._GetConverter();
+                  newVal = self._parseValueToSubstituteDateOrTimePiece(converter, dateIso);
+                }
               }
 
+              // If the user changed the time in the datetime picker, we will
+              // have a _switcherTimeValue. We want to copy this time over into the new value.
               if (self._switcherTimeValue) {
                 newVal = ojconverterutilsI18n.IntlConverterUtils._copyTimeOver(self._switcherTimeValue, newVal);
               }
+              // but if we don't have a switcherTimeValue, we want to copy over the switcherPrevValue's
+              // time into the newValue.
               if (self._switcherPrevValue && newVal && !self._switcherTimeValue) {
                 newVal = ojconverterutilsI18n.IntlConverterUtils._copyTimeOver(self._switcherPrevValue, newVal);
               }
 
+              // At this point we have a newVal that is what the user picked. It's in local or offset format
+              // so that the user will see the day and time they picked.
+              // SetValue will parse it to whatever isoStrFormat the converter is in.
               var formatted = self._GetConverter().format(newVal);
               self._SetDisplayValue(formatted);
               self._SetValue(formatted, {});
@@ -12375,6 +12932,11 @@ var __oj_input_date_time_metadata =
               self._switcherPrevYear = null;
               self._switcherPrevValue = null;
               self._hide(self._ON_CLOSE_REASON_SELECTION);
+              // remove this class, since we have a value now.
+              let contentWrapper = self._GetContentWrapper();
+              if (contentWrapper) {
+                contentWrapper.parentElement.classList.remove('oj-form-control-empty-clearicon');
+              }
               return false;
             }
             return undefined;
@@ -12763,40 +13325,43 @@ var __oj_input_date_time_metadata =
     },
 
     /**
+     * In the UI, the switcher text shows the date when the timepicker is up and it shows the time when the
+     * datepicker is up.
      * @ignore
      */
     _updateSwitcherText: function () {
       if (!this._switcherDiv) {
         return;
       }
-      // create a converter to format the picker text
-      if (!dateSwitcherConverter) {
-        dateSwitcherConverter = new ojconverterDatetime.IntlDateTimeConverter({
-          day: '2-digit',
-          month: '2-digit',
-          year: _yearFormat$1
-        });
-      }
+
       var switcherText = '';
       if (this._isShowingDatePickerSwitcher()) {
+        // create the date switcher converter we use to format the switcher text
+        // copy timezone and isoStrFormat from the component's converter.
+        const componentConverter = this._GetConverter();
+        const timeZone = _getConverterTimezone(componentConverter);
+        const isoStrFormat = componentConverter.resolvedOptions().isoStrFormat;
+        const dateSwitcherConverter = new ojconverterDatetime.IntlDateTimeConverter({
+          dateStyle: 'short',
+          timeZone,
+          isoStrFormat
+        });
         try {
           switcherText = dateSwitcherConverter.format(this._switcherDateValue || this._getDateIso());
         } catch (e) {
           switcherText = dateSwitcherConverter.format(this._getDefaultIsoDate());
         }
       } else {
-        // create a converter to format the picker text
-        if (!timeSwitcherConverter) {
-          timeSwitcherConverter = new ojconverterDatetime.IntlDateTimeConverter({
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-        }
         try {
           switcherText = this._getTimePickerConverter().format(
             this._switcherTimeValue || this._getDateIso()
           );
         } catch (e) {
+          // create a converter to format the picker text
+          const timeSwitcherConverter = new ojconverterDatetime.IntlDateTimeConverter({
+            formatType: 'time',
+            timeFormat: 'short'
+          });
           switcherText = timeSwitcherConverter.format(this._getDefaultIsoDate());
         }
       }
@@ -12888,12 +13453,14 @@ var __oj_input_date_time_metadata =
      */
     timeSelected: function (newValue, event) {
       // TEMP TILL FIXED pass in formatted for _SetValue (should be newValue)
+      const converter = this._GetConverter();
       if (!this._dateTimeSwitcherActive) {
-        var formatted = this._GetConverter().format(newValue);
+        var formatted = converter.format(newValue);
         this._SetDisplayValue(formatted);
         this._SetValue(formatted, event);
       } else {
-        this._switcherTimeValue = newValue;
+        // switcherTimeValue will be in offset or local, but not zulu. It is the time that the user picked.
+        this._switcherTimeValue = this._parseValueToSubstituteDateOrTimePiece(converter, newValue);
       }
     },
 

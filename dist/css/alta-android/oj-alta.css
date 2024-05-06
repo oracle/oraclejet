@@ -270,7 +270,7 @@ template {
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"alta","targetPlatform":"android","behavior":"alta","jetReleaseVersion":"v14.1.0"}'; }
+  font-family: '{"name":"alta","targetPlatform":"android","behavior":"alta","jetReleaseVersion":"v16.0.0"}'; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -1192,7 +1192,7 @@ html[dir="rtl"] .oj-divider-end.oj-divider-margin {
 .oj-fwk-icon-cross02:before, .oj-menu-option-start-icon .oj-menu-cancel-icon:before {
   content: "\f12f"; }
 
-.oj-fwk-icon-cross03:before, .oj-tabs-close-icon:before, .oj-inputtext-clear-icon:before, .oj-searchselect-clear-value-icon:before {
+.oj-fwk-icon-cross03:before, .oj-tabs-close-icon:before, .oj-inputtext-clear-icon:before, .oj-inputdatetime-clear-icon:before, .oj-searchselect-clear-value-icon:before {
   content: "\f130"; }
 
 .oj-fwk-icon-dots-horizontal:before {
@@ -7158,7 +7158,12 @@ html:not([dir="rtl"]) .oj-hicontrast .oj-tabbar-horizontal:not(.oj-tabbar-icon-o
   padding: 2px 0.625rem 6px; }
 
 .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
-  padding: 1px 0.625rem 0; }
+  flex-direction: column;
+  padding: 2px 0.625rem 6px; }
+
+.oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-element.oj-removable .oj-tabbar-item-content {
+  flex-direction: row;
+  padding: 0; }
 
 .oj-tabbar-horizontal:not(.oj-tabbar-stack-icon-label):not(.oj-tabbar-icon-only) .oj-tabbar-item-icon {
   align-self: center; }
@@ -7175,11 +7180,21 @@ html:not([dir="rtl"]) .oj-hicontrast .oj-tabbar-horizontal:not(.oj-tabbar-icon-o
 .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-divider {
   height: 2.714rem; }
 
+.oj-tabbar-horizontal .oj-tabbar-icon-label-container {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center; }
+
 .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item {
   padding-bottom: 2px; }
 
-.oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
-  flex-direction: column; }
+.oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-icon-label-container {
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 0.625rem 6px; }
+
+.oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-remove-icon {
+  align-self: start; }
 
 /*End of  horizontal stacked icon label navigationtabs styles */
 .oj-tabbar-horizontal .oj-tabbar-item-label {
@@ -9658,7 +9673,8 @@ html[dir="rtl"] .oj-table-vgrid-lines:last-child, html[dir="rtl"]
 
 /* Styling for the status message. */
 .oj-table-status-message {
-  position: absolute; }
+  position: absolute;
+  pointer-events: none; }
 
 /* Styling for the status message text. */
 .oj-table-status-message-text {
@@ -10104,14 +10120,14 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer.oj-datagrid-border-vertical-no
   border-bottom-width: 1px; }
 
 /* Style for disabling vertical gridlines */
-html:not([dir="rtl"]) .oj-datagrid-column-header-spacer.oj-datagrid-small-content-border-vertical, html:not([dir="rtl"])
-.oj-datagrid-bottom-corner.oj-datagrid-small-content-border-vertical, html:not([dir="rtl"])
-.oj-datagrid-end-header-cell.oj-datagrid-small-content-border-vertical {
+html:not([dir="rtl"]) .oj-datagrid .oj-datagrid-column-header-spacer.oj-datagrid-small-content-border-vertical, html:not([dir="rtl"])
+.oj-datagrid .oj-datagrid-bottom-corner.oj-datagrid-small-content-border-vertical, html:not([dir="rtl"])
+.oj-datagrid .oj-datagrid-end-header-cell.oj-datagrid-small-content-border-vertical {
   border-right-width: 1px; }
 
-html[dir="rtl"] .oj-datagrid-column-header-spacer.oj-datagrid-small-content-border-vertical, html[dir="rtl"]
-.oj-datagrid-bottom-corner.oj-datagrid-small-content-border-vertical, html[dir="rtl"]
-.oj-datagrid-end-header-cell.oj-datagrid-small-content-border-vertical {
+html[dir="rtl"] .oj-datagrid .oj-datagrid-column-header-spacer.oj-datagrid-small-content-border-vertical, html[dir="rtl"]
+.oj-datagrid .oj-datagrid-bottom-corner.oj-datagrid-small-content-border-vertical, html[dir="rtl"]
+.oj-datagrid .oj-datagrid-end-header-cell.oj-datagrid-small-content-border-vertical {
   border-left-width: 1px; }
 
 /* Styling on header cells both for rows and columns, start and end */
@@ -10691,10 +10707,6 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
   text-align: right; }
   html[dir="rtl"] .oj-datagrid-popup-footer {
     text-align: left; }
-
-.oj-datagrid-column-header-cell > * {
-  white-space: nowrap;
-  overflow: hidden; }
 
 /* Styling for the sort ascending icon */
 /* Styling for the sort descending icon */
@@ -11577,7 +11589,10 @@ oj-label:not(.oj-complete) {
   margin-top: 0;
   vertical-align: baseline; }
 
-.oj-text-field-label-inside .oj-label {
+.oj-text-field-label-inside .oj-label,
+.oj-form-control-label-inside .oj-label,
+.oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside .oj-label,
+.oj-form-layout .oj-form.oj-enabled .oj-form-control-label-inside .oj-label {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; }
@@ -11586,7 +11601,24 @@ oj-label:not(.oj-complete) {
        to float modifiers (required, help, changed) to the end of the label */
 .oj-label-group {
   display: inline-block;
-  vertical-align: bottom; }
+  vertical-align: bottom;
+  overflow: inherit;
+  text-overflow: inherit; }
+
+.oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label > .oj-label-group,
+.oj-text-field-label-inside > .oj-text-field-container .oj-label > .oj-label-group,
+.oj-form-control-label-inside > .oj-label > .oj-label-group {
+  display: flex;
+  flex-direction: row-reverse;
+  width: fit-content;
+  max-width: 100%; }
+
+.oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label > .oj-label-group > .oj-component-initnode,
+.oj-text-field-label-inside > .oj-text-field-container .oj-label > .oj-label-group > .oj-component-initnode,
+.oj-form-control-label-inside > .oj-label > .oj-label-group > .oj-component-initnode {
+  display: block;
+  overflow: inherit;
+  text-overflow: inherit; }
 
 .oj-label-help-icon {
   vertical-align: middle; }
@@ -12893,7 +12925,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for all row labels */
 .oj-gantt-row-label {
-  fill: rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.6);
   font-size: 1rem;
   padding-left: 0.5714rem;
   padding-right: 0.5714rem; }
@@ -13008,7 +13040,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the major time axis labels */
 .oj-gantt-major-axis-label {
-  fill: rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.6);
   font-size: 1rem;
   font-weight: 500; }
 
@@ -13024,7 +13056,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the minor time axis labels */
 .oj-gantt-minor-axis-label {
-  fill: black;
+  color: black;
   font-size: 0.875rem;
   font-weight: normal; }
 
@@ -14033,7 +14065,7 @@ oj-text-area:not(.oj-complete) {
   align-items: center;
   justify-content: center;
   height: 1.75rem;
-  width: 25px;
+  width: 1.5625rem;
   text-decoration: none;
   cursor: default; }
 
@@ -15052,6 +15084,28 @@ html[dir="rtl"] .oj-inputdatetime.oj-invalid .oj-inputdatetime-input-trigger, ht
 .oj-inputdatetime-time-icon.oj-disabled {
   background-color: transparent;
   cursor: default; }
+
+.oj-inputdatetime-clear-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.75rem;
+  width: 1.5625rem;
+  text-decoration: none;
+  cursor: default; }
+
+a.oj-inputdatetime-clear-icon-btn:active {
+  background-color: transparent; }
+
+.oj-inputdatetime-clear-icon {
+  margin-top: 1px;
+  color: inherit; }
+
+.oj-inputdatetime .oj-inputtext-clear-icon-btn:focus {
+  outline: none; }
+
+.oj-text-field-container.oj-form-control-empty-clearicon .oj-inputdatetime-clear-icon-btn {
+  display: none; }
 
 .oj-datepicker-popup .oj-popup-content {
   padding: 0; }

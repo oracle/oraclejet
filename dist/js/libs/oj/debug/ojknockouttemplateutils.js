@@ -1,13 +1,48 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'knockout', 'jquery'], function (exports, ko, $) { 'use strict';
+define(['exports', 'jqueryui-amd/widget', 'jquery', 'knockout'], function (exports, widget, $, ko) { 'use strict';
 
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
+
+  /**
+   * This is added so that we could cleanup any ko references on the element when it is removed.
+   * @export
+   */
+  $.widget('oj._ojDetectCleanData', {
+    options: {
+      /**
+       * @type {boolean}
+       * @default <code class="prettyprint">false</code>
+       */
+      cleanParent: false
+    },
+    _destroy: function () {
+      var disposal = ko.utils.domNodeDisposal;
+      var cleanExternalData = 'cleanExternalData';
+
+      // need to temporarily short circuit the domNodeDisposal call otherwise
+      // the _destroy override would be invoked again
+      var oldCleanExternal = disposal[cleanExternalData];
+      disposal[cleanExternalData] = function () {};
+
+      try {
+        // provide the option to clean from the parent node for components like ojdatagrid so that the comment
+        // and text nodes aren't memory leaked with ko when remove/_destroy is not called on all node types
+        if (this.options.cleanParent && this.element[0].parentNode != null) {
+          ko.cleanNode(this.element[0].parentNode);
+        } else {
+          ko.cleanNode(this.element[0]);
+        }
+      } finally {
+        disposal[cleanExternalData] = oldCleanExternal;
+      }
+    }
+  });
 
   /**
    * Utility methods for knockout templates.

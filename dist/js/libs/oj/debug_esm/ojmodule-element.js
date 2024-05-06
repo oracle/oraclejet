@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -9,6 +9,7 @@ import { observable, ignoreDependencies } from 'knockout';
 import Context from 'ojs/ojcontext';
 import 'ojs/ojmodule';
 import { register } from 'ojs/ojcomposite';
+import { OJ_BIND_CONVERTED_NODE } from 'ojs/ojcustomelement-utils';
 
 /**
  * @ojcomponent oj.ojModule
@@ -257,7 +258,8 @@ function moduleViewModel(context) {
 
   function isViewAttached(config) {
     var view = config ? config.view : null;
-    return view && view.length > 0 && element.contains(view[0]);
+    var testNode = view && view.length > 0 ? view[0][OJ_BIND_CONVERTED_NODE] || view[0] : null;
+    return testNode && element.contains(testNode);
   }
 
   function invokeViewModelMethod(model, name) {

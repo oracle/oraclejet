@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -519,12 +519,21 @@ var __oj_indexer_metadata =
        * @private
        */
       _setAriaProperties: function () {
+        var firstItem = this.element.children('li').first();
+        var valueText = firstItem.data(_DATA_RANGE);
+        // convey to screen reader that it's disabled
+        if (firstItem.hasClass('oj-disabled')) {
+          valueText = valueText + '. ' + this.getTranslatedString('ariaDisabledLabel');
+        }
+
         this.element
           .attr('role', 'slider')
           .attr('aria-orientation', 'vertical')
           .attr('aria-describedby', this.element.prop('id') + ':desc')
           .attr('aria-valuemin', 0)
-          .attr('aria-valuemax', Math.max(0, this.element.children().length - 1));
+          .attr('aria-valuemax', Math.max(0, this.element.children().length - 1))
+          .attr('aria-valuenow', 0)
+          .attr('aria-valuetext', valueText);
       },
 
       /**
@@ -538,6 +547,7 @@ var __oj_indexer_metadata =
           .removeAttr('aria-describedby')
           .removeAttr('aria-valuemin')
           .removeAttr('aria-valuemax')
+          .removeAttr('aria-valuenow')
           .removeAttr('aria-valuetext');
       },
 
@@ -600,10 +610,13 @@ var __oj_indexer_metadata =
         if (model == null) {
           return;
         }
+        var sections = model.getIndexableSections();
+        if (sections == null) {
+          return;
+        }
 
         var root = this.element;
         var missingSections;
-        var sections = model.getIndexableSections();
         if (model.getMissingSections) {
           missingSections = model.getMissingSections();
         }
@@ -923,10 +936,12 @@ var __oj_indexer_metadata =
           var item = children.get(i);
           var value = $(item).data(_DATA_RANGE);
           var includes = $(item).data(_DATA_INCLUDES);
+          var others = $(item).attr(_DATA_OTHERS);
 
           if (
             (value != null && value === section) ||
-            (includes != null && includes.indexOf(section) > -1)
+            (includes != null && includes.indexOf(section) > -1) ||
+            others !== undefined
           ) {
             return $(item);
           }

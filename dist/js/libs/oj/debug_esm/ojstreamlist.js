@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -449,7 +449,6 @@ let StreamList = StreamList_1 = class StreamList extends Component {
     }
     _handleToggleExpanded(key, expanded) {
         this.setState(function (state, props) {
-            var _a, _b;
             let expandedToggleKeys = state.expandedToggleKeys;
             if (!expandedToggleKeys.has(key)) {
                 expandedToggleKeys = expandedToggleKeys.add([key]);
@@ -462,7 +461,7 @@ let StreamList = StreamList_1 = class StreamList extends Component {
                         newExpanded = newExpanded.add([key]);
                     }
                 });
-                (_b = (_a = this.props).onExpandedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, newExpanded);
+                this.props.onExpandedChanged?.(newExpanded);
                 return { expandedToggleKeys };
             }
             return {};
@@ -491,13 +490,16 @@ let StreamList = StreamList_1 = class StreamList extends Component {
                     !this.actionableMode) {
                     this.restoreFocus = true;
                 }
+                else {
+                    this.restoreFocus = false;
+                }
             }
         }
         if (data == null) {
-            return (jsx(Root, Object.assign({ ref: this.setRootElement }, { children: jsx("div", Object.assign({ role: "list", "data-oj-context": true, tabIndex: 0, "aria-label": getTranslatedString('oj-ojStreamList.msgFetchingData') }, { children: content })) })));
+            return (jsx(Root, { ref: this.setRootElement, children: jsx("div", { role: "list", "data-oj-context": true, tabIndex: 0, "aria-label": getTranslatedString('oj-ojStreamList.msgFetchingData'), children: content }) }));
         }
         else {
-            return (jsx(Root, Object.assign({ ref: this.setRootElement }, { children: jsx("div", Object.assign({ role: this._isTreeData() ? 'tree' : 'list', "data-oj-context": true, "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, { children: content })) })));
+            return (jsx(Root, { ref: this.setRootElement, children: jsx("div", { role: this._isTreeData() ? 'tree' : 'list', "data-oj-context": true, "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, children: content }) }));
         }
     }
     _doBlur() {
@@ -547,14 +549,14 @@ let StreamList = StreamList_1 = class StreamList extends Component {
         if (indented) {
             className += ' oj-stream-list-child-skeleton';
         }
-        return (jsx("div", Object.assign({ class: className }, { children: jsx("div", { class: "oj-stream-list-skeleton-content oj-animation-skeleton" }) }), key));
+        return (jsx("div", { class: className, children: jsx("div", { class: "oj-stream-list-skeleton-content oj-animation-skeleton" }) }, key));
     }
     _applySkeletonExitAnimation(skeletons) {
         const resolveFunc = this.addBusyState('apply skeleton exit animations');
         return new Promise((resolve, reject) => {
             const promises = [];
             skeletons.forEach((skeleton) => {
-                promises.push(fadeOut(skeleton));
+                promises.push(fadeOut(skeleton, { duration: '100ms' }));
             });
             Promise.all(promises).then(function () {
                 resolveFunc();
@@ -701,16 +703,14 @@ let StreamList = StreamList_1 = class StreamList extends Component {
         return this.root;
     }
     componentDidUpdate(oldProps, oldState) {
-        var _a, _b;
-        if (this._isTreeData() && ((_a = this.contentHandler) === null || _a === void 0 ? void 0 : _a.collapse)) {
-            (_b = this.contentHandler) === null || _b === void 0 ? void 0 : _b.collapse(this.state.toCollapse);
+        if (this._isTreeData() && this.contentHandler?.collapse) {
+            this.contentHandler?.collapse(this.state.toCollapse);
         }
         const oldExpandingKeys = oldState.expandingKeys;
         const expandingKeys = this.state.expandingKeys;
         expandingKeys.values().forEach(function (key) {
-            var _a;
             if (!oldExpandingKeys.has(key)) {
-                (_a = this.contentHandler) === null || _a === void 0 ? void 0 : _a.expand(key);
+                this.contentHandler?.expand(key);
             }
         }.bind(this));
         if (this.props.data != oldProps.data) {
@@ -801,7 +801,6 @@ let StreamList = StreamList_1 = class StreamList extends Component {
         scrollElement.addEventListener('scroll', this.scrollListener);
     }
     _updateScrollPosition() {
-        var _a, _b;
         const scrollPosition = {};
         const scrollTop = this._getScroller().scrollTop;
         const result = this._findClosestElementToTop(scrollTop);
@@ -819,7 +818,7 @@ let StreamList = StreamList_1 = class StreamList extends Component {
             }
         }
         this.lastInternalScrollPositionUpdate = scrollPosition;
-        (_b = (_a = this.props).onScrollPositionChanged) === null || _b === void 0 ? void 0 : _b.call(_a, scrollPosition);
+        this.props.onScrollPositionChanged?.(scrollPosition);
     }
     _syncScrollTopWithProps() {
         const scrollPosition = this.props.scrollPosition;
@@ -952,8 +951,7 @@ let StreamList = StreamList_1 = class StreamList extends Component {
         return this.props.expanded;
     }
     setExpanded(set) {
-        var _a, _b;
-        (_b = (_a = this.props).onExpandedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, set);
+        this.props.onExpandedChanged?.(set);
     }
     updateExpand(updater) {
         this.setState(function (state, props) {

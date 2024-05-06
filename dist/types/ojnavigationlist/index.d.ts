@@ -20,6 +20,7 @@ export interface ojNavigationList<K, D> extends baseComponent<ojNavigationListSe
     rootLabel: string | null;
     selection: K;
     translations: {
+        accessibleExpandCollapseInstructionText?: string;
         defaultRootLabel?: string;
         hierMenuBtnLabel?: string;
         msgFetchingData?: string;
@@ -192,6 +193,7 @@ export interface ojNavigationListSettableProperties<K, D> extends baseComponentS
     rootLabel: string | null;
     selection: K;
     translations: {
+        accessibleExpandCollapseInstructionText?: string;
         defaultRootLabel?: string;
         hierMenuBtnLabel?: string;
         msgFetchingData?: string;

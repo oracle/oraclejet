@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -50,13 +50,13 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
             teardownInput();
         input = document.createElement('input');
         input.type = 'file';
-        if ((fileOptions === null || fileOptions === void 0 ? void 0 : fileOptions.capture) && fileOptions.capture != 'none') {
+        if (fileOptions?.capture && fileOptions.capture != 'none') {
             input.capture = fileOptions.capture;
         }
-        const acceptProp = fileOptions === null || fileOptions === void 0 ? void 0 : fileOptions.accept;
+        const acceptProp = fileOptions?.accept;
         const accept = acceptProp && acceptProp.length ? acceptProp.join(',') : null;
         input.accept = accept;
-        input.multiple = (fileOptions === null || fileOptions === void 0 ? void 0 : fileOptions.selectionMode) == 'multiple';
+        input.multiple = fileOptions?.selectionMode == 'multiple';
         input.style.display = 'none';
         if (isIOS)
             document.body.appendChild(input);

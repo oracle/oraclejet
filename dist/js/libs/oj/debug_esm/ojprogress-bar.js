@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -32,10 +32,10 @@ let ProgressBar = class ProgressBar extends Component {
             value = 0;
         }
         const percentage = max === 0 ? 0 : value > max ? 1 : value / max;
-        return (jsx(Root, Object.assign({ class: "oj-progress-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(max), "aria-valuenow": String(value) }, { children: jsx("div", Object.assign({ class: "oj-progress-bar-track" }, { children: jsx("div", { class: "oj-progress-bar-value", style: { width: percentage * 100 + '%' } }) })) })));
+        return (jsx(Root, { class: "oj-progress-bar", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": max, "aria-valuenow": value, children: jsx("div", { class: "oj-progress-bar-track", children: jsx("div", { class: "oj-progress-bar-value", style: { width: percentage * 100 + '%' } }) }) }));
     }
     _renderIndeterminateBar(props) {
-        return (jsx(Root, Object.assign({ class: "oj-progress-bar", role: "progressbar", "aria-valuetext": getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText') }, { children: jsx("div", Object.assign({ class: "oj-progress-bar-track" }, { children: jsx("div", { class: "oj-progress-bar-value oj-progress-bar-indeterminate" }) })) })));
+        return (jsx(Root, { class: "oj-progress-bar", role: "progressbar", "aria-valuetext": getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText'), children: jsx("div", { class: "oj-progress-bar-track", children: jsx("div", { class: "oj-progress-bar-value oj-progress-bar-indeterminate" }) }) }));
     }
 };
 ProgressBar.defaultProps = {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -274,20 +274,44 @@ import { KeySetImpl } from 'ojs/ojkeyset';
 
 // end of jsdoc
 
-var __awaiter = (null && null.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 class FlattenedTreeDataProviderView {
     constructor(dataProvider, options) {
         var _a;
         this.dataProvider = dataProvider;
         this.options = options;
+        this._cacheInstantiated = false;
+        this._createAddItem = (event, insertIndex) => {
+            const key = event.key;
+            const parentKey = event.parentKey;
+            const isLeaf = this.getChildDataProvider(key) === null;
+            let treeDepth = 0;
+            if (parentKey != null) {
+                const parentItem = this._getItemByKey(parentKey);
+                treeDepth = parentItem.metadata.treeDepth + 1;
+            }
+            const indexFromParent = this._getInsertIndexFromParent(treeDepth, insertIndex);
+            return this._updateItemMetadata(new this.Item(this, event.metadata, event.data), parentKey, treeDepth, indexFromParent, isLeaf);
+        };
+        this._unshiftAddToCache = (event) => {
+            let item = this._createAddItem(event, 0);
+            this._cache.unshift(item);
+            this._incrementIndexFromParent(1, item.metadata.treeDepth);
+            this._incrementIteratorOffset(0);
+            return item;
+        };
+        this._pushAddToCache = (event) => {
+            let item = this._createAddItem(event, this._cache.length);
+            this._cache.push(item);
+            this._incrementIteratorOffset(this._cache.length - 1);
+            return item;
+        };
+        this._spliceAddToCache = (event, newIndex) => {
+            let item = this._createAddItem(event, newIndex);
+            this._cache.splice(newIndex, 0, item);
+            this._incrementIndexFromParent(newIndex + 1, item.metadata.treeDepth);
+            this._incrementIteratorOffset(newIndex);
+            return item;
+        };
         this.AsyncIterable = (_a = class {
                 constructor(_parent, _asyncIterator) {
                     this._parent = _parent;
@@ -457,77 +481,210 @@ class FlattenedTreeDataProviderView {
         this.dataProvider.addEventListener('refresh', this._handleUnderlyingRefresh.bind(this));
         this._cache = [];
         this._mapClientIdToIteratorInfo = new Map();
-        this._mapParentKeyToInfo = new ojMap();
-        this._done = false;
+        this._fetchQueue = [];
+        this._notDoneKeyMap = new ojMap();
+        this._notDoneKeyMap.set(null, true);
     }
     _getChildrenFromCacheByParentKey(parentKey) {
         return this._cache.filter((item) => item.metadata.parentKey === parentKey);
     }
-    _calculateItemIndex(parentKey, addEvent, index) {
-        var _a, _b;
-        let newIndex;
-        if (this._currentSortCriteria) {
-            const children = this._getChildrenFromCacheByParentKey(parentKey);
-            const sortComparator = SortUtils.getNaturalSortCriteriaComparator(this._currentSortCriteria);
-            const lastChildItem = children[children.length - 1];
-            if (children.length > 0) {
-                if (sortComparator(lastChildItem.data, addEvent.data[index]) >= 0) {
-                    for (let i = 0; i < children.length; i++) {
-                        if (sortComparator(addEvent.data[index], children[i].data) < 0) {
-                            newIndex = this._getItemIndexByKey(children[i].metadata.key) - 1;
-                            break;
+    sortedIndex(array, value) {
+        var low = 0, high = array.length;
+        if (value.index === null) {
+            return high;
+        }
+        while (low < high) {
+            var mid = (low + high) >>> 1;
+            if (array[mid].index !== null && array[mid].index < value.index)
+                low = mid + 1;
+            else
+                high = mid;
+        }
+        return low;
+    }
+    _processAddEvent(addEventDetail) {
+        let events = [];
+        let indexInDetail = 0;
+        addEventDetail.keys.forEach(function (key) {
+            events.push({
+                key,
+                parentKey: addEventDetail.parentKeys[indexInDetail],
+                beforeKey: addEventDetail.addBeforeKeys?.[indexInDetail],
+                index: addEventDetail.indexes?.[indexInDetail],
+                data: addEventDetail.data?.[indexInDetail],
+                metadata: addEventDetail.metadata?.[indexInDetail]
+            });
+            indexInDetail++;
+        });
+        if (this._cacheSortCriteria) {
+            let leftOverLength = 0;
+            while (events.length !== leftOverLength) {
+                leftOverLength = events.length;
+                for (let i = events.length - 1; i >= 0; i--) {
+                    const event = events[i];
+                    const key = event.key;
+                    const parentKey = event.parentKey;
+                    if ((parentKey === null || (this._isExpanded(parentKey) && this._containsKey(parentKey))) &&
+                        !this._containsKey(key) &&
+                        (!this._currentFilterCriteria ||
+                            (this._currentFilterCriteria && this._currentFilterCriteria.filter(event.data)))) {
+                        const children = this._getChildrenFromCacheByParentKey(parentKey);
+                        const sortComparator = SortUtils.getNaturalSortCriteriaComparator(this._cacheSortCriteria);
+                        let added = false;
+                        for (let j = 0; j < children.length; j++) {
+                            if (sortComparator(event.data, children[j].data) < 0) {
+                                this._spliceAddToCache(event, this._getItemIndexByKey(children[j].metadata.key));
+                                added = true;
+                                events.splice(i, 1);
+                                break;
+                            }
+                        }
+                        if (!added && this._isKeyDone(parentKey)) {
+                            if (parentKey === null) {
+                                this._pushAddToCache(event);
+                                events.splice(i, 1);
+                            }
+                            else {
+                                const beforeIndex = this._getItemIndexByKey(parentKey) + this._getLocalDescendentCount(parentKey) + 1;
+                                this._spliceAddToCache(event, beforeIndex);
+                                events.splice(i, 1);
+                            }
                         }
                     }
                 }
-                else {
-                    newIndex =
-                        this._getItemIndexByKey(lastChildItem.metadata.key) +
-                            this._getLocalDescendentCount(lastChildItem.metadata.key) +
-                            1;
+            }
+        }
+        else if (addEventDetail?.addBeforeKeys?.length > 0) {
+            let leftOverLength = 0;
+            while (events.length !== leftOverLength) {
+                leftOverLength = events.length;
+                for (let i = events.length - 1; i >= 0; i--) {
+                    const event = events[i];
+                    const key = event.key;
+                    const parentKey = event.parentKey;
+                    const parentIndex = this._getItemIndexByKey(parentKey);
+                    if ((parentKey === null || (this._isExpanded(parentKey) && parentIndex !== -1)) &&
+                        !this._containsKey(key) &&
+                        (!this._currentFilterCriteria ||
+                            (this._currentFilterCriteria && this._currentFilterCriteria.filter(event.data)))) {
+                        const beforeKey = event.beforeKey;
+                        if (beforeKey != null) {
+                            const beforeIndex = this._getItemIndexByKey(beforeKey);
+                            if (beforeIndex !== -1) {
+                                this._spliceAddToCache(event, beforeIndex);
+                                events.splice(i, 1);
+                            }
+                        }
+                        else if (this._isKeyDone(parentKey)) {
+                            if (parentKey === null) {
+                                this._pushAddToCache(event);
+                                events.splice(i, 1);
+                            }
+                            else {
+                                const beforeIndex = parentIndex + this._getLocalDescendentCount(parentKey) + 1;
+                                this._spliceAddToCache(event, beforeIndex);
+                                events.splice(i, 1);
+                            }
+                        }
+                    }
                 }
             }
-            else {
-                newIndex = this._getItemIndexByKey(parentKey);
+        }
+        else if (addEventDetail?.indexes?.length > 0) {
+            let eventBuckets = Array.from(events
+                .reduce((buckets, event) => {
+                const parentKey = event.parentKey;
+                if (!buckets.has(parentKey)) {
+                    buckets.set(parentKey, [event]);
+                }
+                else {
+                    let bucket = buckets.get(parentKey);
+                    bucket.splice(this.sortedIndex(bucket, event), 0, event);
+                }
+                return buckets;
+            }, new Map())
+                .entries());
+            let leftOverLength = 0;
+            while (eventBuckets.length !== leftOverLength) {
+                leftOverLength = eventBuckets.length;
+                for (let i = 0; i < eventBuckets.length;) {
+                    const eventBucket = eventBuckets[i];
+                    const parentKey = eventBucket[0];
+                    const parentKeyIndex = this._getItemIndexByKey(parentKey);
+                    if (parentKey === null || (this._isExpanded(parentKey) && parentKeyIndex !== -1)) {
+                        const children = this._getChildrenFromCacheByParentKey(parentKey);
+                        const eventsInBucket = eventBucket[1];
+                        eventsInBucket.forEach((eventInBucket) => {
+                            const key = eventInBucket.key;
+                            if (!this._containsKey(key) &&
+                                (!this._currentFilterCriteria ||
+                                    (this._currentFilterCriteria &&
+                                        this._currentFilterCriteria.filter(eventInBucket.data)))) {
+                                const indexFromParent = eventInBucket.index;
+                                let item;
+                                if (indexFromParent === 0) {
+                                    if (parentKey === null) {
+                                        item = this._unshiftAddToCache(eventInBucket);
+                                    }
+                                    else {
+                                        item = this._spliceAddToCache(eventInBucket, parentKeyIndex + 1);
+                                    }
+                                    children.unshift(item);
+                                }
+                                else if (indexFromParent === null || indexFromParent > children.length) {
+                                    if (this._isKeyDone(parentKey)) {
+                                        if (parentKey === null) {
+                                            item = this._pushAddToCache(eventInBucket);
+                                        }
+                                        else {
+                                            const insertIndex = parentKeyIndex + this._getLocalDescendentCount(parentKey) + 1;
+                                            item = this._spliceAddToCache(eventInBucket, insertIndex);
+                                        }
+                                        children.push(item);
+                                    }
+                                }
+                                else {
+                                    const insertIndex = this._getItemIndexByKey(children[indexFromParent - 1].metadata.key) +
+                                        this._getLocalDescendentCount(children[indexFromParent - 1].metadata.key) +
+                                        1;
+                                    item = this._spliceAddToCache(eventInBucket, insertIndex);
+                                    children.splice(indexFromParent, 0, item);
+                                }
+                            }
+                        });
+                        eventBuckets.splice(i, 1);
+                    }
+                    else {
+                        i++;
+                    }
+                }
             }
         }
         else {
-            if (((_a = addEvent === null || addEvent === void 0 ? void 0 : addEvent.addBeforeKeys) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-                if (parentKey === null) {
-                    const beforeKey = addEvent.addBeforeKeys[index];
-                    if (beforeKey !== null) {
-                        let beforeIndex = this._getItemIndexByKey(addEvent.addBeforeKeys[index]);
-                        newIndex = beforeIndex - 1;
+            events.forEach((event) => {
+                const parentKey = event.parentKey;
+                const key = event.key;
+                if ((parentKey === null || (this._isExpanded(parentKey) && this._containsKey(parentKey))) &&
+                    !this._containsKey(key) &&
+                    (!this._currentFilterCriteria ||
+                        (this._currentFilterCriteria &&
+                            this._currentFilterCriteria.filter(event.data) &&
+                            this._isKeyDone(parentKey)))) {
+                    if (parentKey === null) {
+                        this._pushAddToCache(event);
                     }
                     else {
-                        newIndex = this._cache.length;
+                        const beforeIndex = this._getItemIndexByKey(parentKey) + this._getLocalDescendentCount(parentKey) + 1;
+                        this._spliceAddToCache(event, beforeIndex);
                     }
                 }
-                else {
-                    const parentIndex = this._getItemIndexByKey(parentKey);
-                    newIndex = parentIndex + this._getLocalDescendentCount(parentKey);
-                    if (newIndex === this._cache.length - 1) {
-                        newIndex += 1;
-                    }
-                }
-            }
-            else if (((_b = addEvent === null || addEvent === void 0 ? void 0 : addEvent.indexes) === null || _b === void 0 ? void 0 : _b.length) > 0) {
-                const parentIndex = this._getItemIndexByKey(parentKey);
-                newIndex =
-                    parentIndex === -1
-                        ? addEvent.indexes[index] + 1
-                        : parentIndex + this._getLocalDescendentCount(parentKey) + 1;
-            }
-            else {
-                newIndex =
-                    this._getItemIndexByKey(this._getLastItemByParentKey(parentKey).metadata.key) + 1;
-            }
+            });
         }
-        return newIndex;
     }
     _incrementIndexFromParent(newIndex, depth) {
-        const lastIndex = this._getLastIndex();
+        const lastIndex = this._getLastItemIndex();
         for (let j = newIndex; j <= lastIndex; j++) {
-            let newItem = this._getEntry(j);
+            let newItem = this._getItem(j);
             if (newItem != null) {
                 const newDepth = newItem.metadata.treeDepth;
                 if (newDepth === depth) {
@@ -540,9 +697,9 @@ class FlattenedTreeDataProviderView {
         }
     }
     _decrementIndexFromParent(newIndex, depth) {
-        const lastIndex = this._getLastIndex();
+        const lastIndex = this._getLastItemIndex();
         for (let j = newIndex; j <= lastIndex; j++) {
-            let newItem = this._getEntry(j);
+            let newItem = this._getItem(j);
             if (newItem != null) {
                 const newDepth = newItem.metadata.treeDepth;
                 if (newDepth === depth) {
@@ -567,25 +724,16 @@ class FlattenedTreeDataProviderView {
             const addParentKeys = [];
             const addAfterKeySet = new Set();
             const addKeySet = new Set();
-            addEvent.parentKeys.forEach((parentKey, index) => {
-                if ((parentKey === null || (this._isExpanded(parentKey) && this._getItemByKey(parentKey))) &&
-                    (!this._currentFilterCriteria ||
-                        (this._currentFilterCriteria &&
-                            this._currentFilterCriteria.filter(addEvent.data[index])))) {
-                    let newIndex = this._calculateItemIndex(parentKey, addEvent, index);
-                    const item = this._updateItemMetadata(new this.Item(this, addEvent.metadata[index], addEvent.data[index]), parentKey, addEvent.indexes[index]);
-                    this._spliceItemToCache(item, newIndex);
-                    this._incrementIndexFromParent(newIndex + 1, item.metadata.treeDepth);
+            this._processAddEvent(addEvent);
+            addEvent.keys.forEach((key) => {
+                const { index, item } = this._getItemAndIndexByKey(key);
+                if (item != null) {
                     addDataArray.push(item.data);
                     addMetadataArray.push(item.metadata);
-                    addIndexArray.push(newIndex + 1);
-                    addParentKeys.push(parentKey);
-                    addKeySet.add(addEvent.metadata[index].key);
-                    addBeforeKeys.push(this._getKeyByIndex(newIndex + 2));
-                    this._incrementIteratorOffset(newIndex + 1);
-                }
-                else {
-                    this._mapParentKeyToInfo.delete(parentKey);
+                    addIndexArray.push(index);
+                    addParentKeys.push(item.metadata.parentKey);
+                    addKeySet.add(key);
+                    addBeforeKeys.push(this._getKeyByIndex(index + 1));
                 }
             });
             if (addKeySet.size > 0) {
@@ -613,7 +761,7 @@ class FlattenedTreeDataProviderView {
                         removeDataArray.push(item.data);
                         removeIndexArray.push(cacheIndex + index);
                         this._decrementIteratorOffset(cacheIndex);
-                        this._mapParentKeyToInfo.delete(item.metadata.key);
+                        this._notDoneKeyMap.delete(item.metadata.key);
                     });
                 }
             });
@@ -628,7 +776,6 @@ class FlattenedTreeDataProviderView {
             const updateIndexArray = [];
             const updateKeySet = new Set();
             updateEvent.metadata.forEach((metadata, index) => {
-                this._mapParentKeyToInfo.delete(metadata.key);
                 const item = this._getItemByKey(metadata.key);
                 if (item != null) {
                     const itemIndex = this._getItemIndexByKey(metadata.key);
@@ -651,18 +798,18 @@ class FlattenedTreeDataProviderView {
         }
     }
     _handleUnderlyingRefresh(event) {
-        var _a;
-        if ((_a = event === null || event === void 0 ? void 0 : event.detail) === null || _a === void 0 ? void 0 : _a.keys) {
+        if (event?.detail?.keys) {
             const keys = event.detail.keys;
             for (let i = 0; i < this._cache.length; i++) {
                 const item = this._cache[i];
                 if (keys.has(item.metadata.key)) {
-                    this._mapParentKeyToInfo.delete(item.metadata.key);
+                    this._notDoneKeyMap.set(item.metadata.key, true);
+                    this._markParentsAsNotDone(item);
                     const refreshEvent = new DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(item.metadata.key));
                     const removedItems = this._cache.splice(i + 1, this._cache.length);
                     removedItems.forEach((item) => {
                         this._decrementIteratorOffset(i + 1);
-                        this._mapParentKeyToInfo.delete(item.metadata.key);
+                        this._notDoneKeyMap.delete(item.metadata.key);
                     });
                     this.dispatchEvent(refreshEvent);
                     break;
@@ -670,9 +817,18 @@ class FlattenedTreeDataProviderView {
             }
         }
         else {
+            this._fetchSize = null;
             this._clearCaches();
             this.dispatchEvent(new DataProviderRefreshEvent());
         }
+    }
+    _markParentsAsNotDone(item) {
+        const parentKey = item.metadata.parentKey;
+        this._notDoneKeyMap.set(parentKey, true);
+        if (parentKey === null) {
+            return;
+        }
+        this._markParentsAsNotDone(this._getItemByKey(parentKey));
     }
     _getExpandedObservableValue(expanded, completionPromise) {
         return {
@@ -681,11 +837,6 @@ class FlattenedTreeDataProviderView {
         };
     }
     getChildDataProvider(parentKey) {
-        if (!this._mapParentKeyToInfo.has(parentKey)) {
-            if (this._isExpanded(parentKey)) {
-                this._mapParentKeyToInfo.set(parentKey, { done: false });
-            }
-        }
         return this.dataProvider.getChildDataProvider(parentKey);
     }
     containsKeys(params) {
@@ -711,38 +862,41 @@ class FlattenedTreeDataProviderView {
         });
     }
     fetchByOffset(params) {
-        const size = (params === null || params === void 0 ? void 0 : params.size) != null ? params.size : -1;
-        const sortCriteria = (params === null || params === void 0 ? void 0 : params.sortCriteria) != null ? params.sortCriteria : null;
-        const offset = (params === null || params === void 0 ? void 0 : params.offset) != null ? (params.offset > 0 ? params.offset : 0) : 0;
-        const filterCriterion = (params === null || params === void 0 ? void 0 : params.filterCriterion) != null ? params.filterCriterion : null;
-        const fetchAttributes = (params === null || params === void 0 ? void 0 : params.attributes) != null ? params.attributes : null;
-        params = new this.FetchByOffsetParameters(this, offset, size, sortCriteria, filterCriterion, fetchAttributes);
-        if (this._isSameCriteria(sortCriteria, filterCriterion)) {
-            if (this._checkCacheByOffset(params)) {
-                Promise.resolve(this._getFetchByOffsetResultsFromCache(params));
+        const size = params?.size != null ? params.size : -1;
+        if (this._fetchSize == null) {
+            this._fetchSize = size;
+        }
+        const offset = params?.offset != null ? (params.offset > 0 ? params.offset : 0) : 0;
+        const clonedParams = Object.assign({}, params);
+        clonedParams.size = size;
+        clonedParams.offset = offset;
+        if (this._isSameCriteria(clonedParams.sortCriteria, clonedParams.filterCriterion)) {
+            this._currentSortCriteria = clonedParams.sortCriteria;
+            this._currentFilterCriteria = clonedParams.filterCriterion;
+            if (this._doesCacheSatisfyParameters(clonedParams)) {
+                return Promise.resolve(this._getFetchByOffsetResultsFromCache(clonedParams));
             }
         }
         else {
             this._clearCaches();
-            this._currentSortCriteria = sortCriteria;
-            this._currentFilterCriteria = filterCriterion;
+            this._currentSortCriteria = clonedParams.sortCriteria;
+            this._currentFilterCriteria = clonedParams.filterCriterion;
         }
-        return this._fetchByOffset(params);
+        return this._fetchByOffset(clonedParams);
     }
     fetchFirst(params) {
         this._fetchSize = params != null ? params.size : -1;
-        const sortCriteria = params != null ? params.sortCriteria : null;
-        const filterCriterion = params != null ? params.filterCriterion : null;
-        const fetchAttributes = params != null ? params.attributes : null;
-        if (!this._isSameCriteria(sortCriteria, filterCriterion)) {
-            this._currentSortCriteria = sortCriteria;
-            this._currentFilterCriteria = filterCriterion;
+        if (!this._isSameCriteria(params?.sortCriteria, params?.filterCriterion)) {
             this._clearCaches();
         }
+        this._currentSortCriteria = params?.sortCriteria;
+        this._currentFilterCriteria = params?.filterCriterion;
         const iteratorFunction = () => {
             const currentOffset = this._mapClientIdToIteratorInfo.get(newIterator._clientId);
-            let updatedParams = new this.FetchByOffsetParameters(this, currentOffset, this._fetchSize, sortCriteria, filterCriterion, fetchAttributes);
-            return this.fetchByOffset(updatedParams).then((result) => {
+            const clonedParams = Object.assign({}, params);
+            clonedParams.offset = currentOffset;
+            clonedParams.size = this._fetchSize;
+            return this.fetchByOffset(clonedParams).then((result) => {
                 const results = result.results;
                 const data = results.map((value) => {
                     return value.data;
@@ -751,15 +905,13 @@ class FlattenedTreeDataProviderView {
                     return value.metadata;
                 });
                 const done = data.length === 0 ? true : false;
-                if (!this._isSameCriteria(result.fetchParameters.sortCriteria, result.fetchParameters.filterCriterion)) {
-                    updatedParams.sortCriteria = result.fetchParameters.sortCriteria;
-                    updatedParams.filterCriterion = result.fetchParameters.filterCriterion;
-                }
+                const fetchFirstParameters = Object.assign({}, result.fetchParameters);
+                delete fetchFirstParameters.offset;
                 this._mapClientIdToIteratorInfo.set(newIterator._clientId, currentOffset + metadata.length);
                 if (done) {
-                    return new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, updatedParams, data, metadata));
+                    return new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, fetchFirstParameters, data, metadata));
                 }
-                return new this.AsyncIteratorYieldResult(this, new this.FetchListResult(this, updatedParams, data, metadata));
+                return new this.AsyncIteratorYieldResult(this, new this.FetchListResult(this, fetchFirstParameters, data, metadata));
             });
         };
         const newIterator = new this.AsyncIterable(this, new this.AsyncIterator(this, (() => {
@@ -833,158 +985,149 @@ class FlattenedTreeDataProviderView {
         }
         return false;
     }
-    _checkCacheByOffset(params, expandKey) {
-        if (params.size === -1 && this._done === true) {
-            return true;
+    _doesCacheSatisfyParameters(params, isExpand = false, fetchCountSoFar = 0) {
+        if (params.size === -1) {
+            return this._isDone();
         }
-        else if (expandKey != null) {
-            if (this._getLocalDescendentCount(expandKey) >= params.size && params.size !== -1) {
-                return true;
-            }
+        if (isExpand) {
+            return fetchCountSoFar >= params.size;
         }
-        else if (this._cache.length >= params.offset + params.size && params.size !== -1) {
-            return true;
-        }
-        return false;
+        return this._cache.length >= params.offset + params.size;
     }
     _getFetchByOffsetResultsFromCache(params) {
-        const data = this._cache.slice(params.offset, params.size === -1 ? undefined : params.offset + params.size);
-        const done = ![...this._mapParentKeyToInfo.values()].some((value) => value.done === false);
+        let data;
+        let done = this._isDone();
+        if (params.size === -1) {
+            data = this._cache.slice(params.offset, undefined);
+        }
+        else {
+            data = this._cache.slice(params.offset, params.offset + params.size);
+            done = done && params.offset + params.size >= this._cache.length;
+        }
+        params.sortCriteria = this._cacheSortCriteria;
+        params.filterCriterion = this._cacheFilterCriteria;
         return new this.FetchByOffsetResults(this, params, data, done);
     }
     _clearCaches() {
         this._cache = [];
-        this._mapParentKeyToInfo.clear();
+        this._cacheSortCriteria = null;
+        this._cacheFilterCriteria = null;
+        this._cacheInstantiated = false;
+        this._notDoneKeyMap.clear();
+        this._notDoneKeyMap.set(null, true);
     }
-    _fetchByOffset(params) {
-        if (this._cache.length === 0) {
-            const remainingSize = params.size === -1 ? -1 : params.offset + params.size;
-            const newParams = new this.FetchByOffsetParameters(this, 0, remainingSize, params.sortCriteria, params.filterCriterion, params.attributes);
-            return this._fetchChildrenByOffsetFromDataProvider(newParams, this.dataProvider, null, params).then((result) => {
-                return result.fetchResult;
-            });
-        }
-        const lastEntry = this._getLastEntry();
-        let key = lastEntry.metadata.key;
-        let index = 0;
-        if (lastEntry.metadata.isLeaf || !this._isExpanded(key)) {
-            key = lastEntry.metadata.parentKey;
-            index = lastEntry.metadata.indexFromParent + 1;
-        }
-        const dataProvider = key === null ? this.dataProvider : this.getChildDataProvider(key);
-        const remainingSize = this._getRemainingSize(params);
-        const newParams = new this.FetchByOffsetParameters(this, index, remainingSize, params.sortCriteria, params.filterCriterion, params.attributes);
-        return this._fetchChildrenByOffsetFromAncestors(newParams, dataProvider, key, params).then((result) => {
-            return result.fetchResult;
-        });
+    _isDone() {
+        return this._notDoneKeyMap.size === 0;
     }
-    _fetchChildrenByOffsetFromAncestors(params, dataProvider, parentKey, finalParams, expandKey) {
-        const handleFetchFromAncestors = (lastParentKey, result) => {
-            const lastEntry = this._getItemByKey(lastParentKey);
-            if (this._checkCacheByOffset(finalParams, expandKey) ||
-                (result.done && lastParentKey === null) ||
-                lastEntry === null) {
-                return Promise.resolve();
+    _isCacheEmpty() {
+        return this._cache.length === 0;
+    }
+    _getFetchDetails(levelOffset = 0, parentKey = null, level = 0, cacheOffset = this._cache.length, isExpand = false, ancestorsAddedCount = 0) {
+        return { parentKey, level, levelOffset, cacheOffset, isExpand, ancestorsAddedCount };
+    }
+    async _fetchByOffset(params) {
+        let levelOffset = 0;
+        if (!this._isCacheEmpty()) {
+            const returnVal = await this._fetchChildrenByOffsetFromAncestors(params, this._getLastItem());
+            if (returnVal.paramsSatisfied) {
+                return this._getFetchByOffsetResultsFromCache(params);
             }
-            const lastEntryParentKey = lastEntry.metadata.parentKey;
-            const lastEntryParentIndex = lastEntry.metadata.indexFromParent;
-            const childDataProvider = lastEntryParentKey === null
-                ? this.dataProvider
-                : this.getChildDataProvider(lastEntryParentKey);
-            const newParams = new this.FetchByOffsetParameters(this, lastEntryParentIndex + 1, this._getRemainingSize(finalParams), params.sortCriteria, params.filterCriterion, params.attributes);
-            const childrenPromise = this._fetchChildrenByOffsetFromDataProvider(newParams, childDataProvider, lastEntryParentKey, finalParams, expandKey);
-            return childrenPromise.then(handleFetchFromAncestors.bind(this, lastEntryParentKey));
-        };
-        return this._fetchChildrenByOffsetFromDataProvider(params, dataProvider, parentKey, finalParams, expandKey)
-            .then(handleFetchFromAncestors.bind(this, parentKey))
-            .then(() => {
-            const result = this._getFetchByOffsetResultsFromCache(finalParams);
-            return { fetchResult: result };
-        });
-    }
-    _fetchChildrenByOffsetFromDataProvider(params, dataProvider, parentKey, finalParams, expandKey) {
-        var _a;
-        if ((_a = this._mapParentKeyToInfo.get(parentKey)) === null || _a === void 0 ? void 0 : _a.done) {
-            return Promise.resolve({
-                fetchResult: new this.FetchByOffsetResults(this, params, [], true)
-            });
+            levelOffset = returnVal.ancestor.metadata.indexFromParent + 1;
         }
-        const handleNextItemInResults = (result) => __awaiter(this, void 0, void 0, function* () {
-            const results = result.results;
-            if (!this._isSameCriteria(result.fetchParameters.sortCriteria, result.fetchParameters.filterCriterion)) {
-                finalParams.sortCriteria = result.fetchParameters.sortCriteria;
-                finalParams.filterCriterion = result.fetchParameters.filterCriterion;
+        const fetchDetails = this._getFetchDetails(levelOffset);
+        await this._fetchChildrenByOffsetFromDataProvider(this.dataProvider, params, fetchDetails);
+        return this._getFetchByOffsetResultsFromCache(params);
+    }
+    async _fetchChildrenByOffsetFromAncestors(params, item, levelOffset = 0) {
+        let paramsSatisfied = false;
+        let returnVal;
+        const key = item.metadata.key;
+        const parentKey = item.metadata.parentKey;
+        const isLeaf = item.metadata.isLeaf;
+        if (!isLeaf && this._isExpanded(key) && !this._isKeyDone(key)) {
+            const dataProvider = this.getChildDataProvider(key);
+            const fetchDetails = this._getFetchDetails(levelOffset, key, item.metadata.treeDepth + 1);
+            returnVal = await this._fetchChildrenByOffsetFromDataProvider(dataProvider, params, fetchDetails);
+            paramsSatisfied = returnVal.paramsSatisfied;
+            if (paramsSatisfied) {
+                return { paramsSatisfied, ancestor: item };
             }
-            if (results.length === 0 || this._checkCacheByOffset(finalParams, expandKey)) {
-                const returnObject = {};
-                if (expandKey) {
-                    returnObject.expandKey = expandKey;
+        }
+        if (parentKey === null) {
+            return { paramsSatisfied, ancestor: item };
+        }
+        const parentItem = this._getItemByKey(parentKey);
+        const parentChildCount = item.metadata.indexFromParent + 1;
+        returnVal = await this._fetchChildrenByOffsetFromAncestors(params, parentItem, parentChildCount);
+        paramsSatisfied = returnVal.paramsSatisfied;
+        return { paramsSatisfied, ancestor: returnVal.ancestor };
+    }
+    async _fetchChildrenByOffsetFromDataProvider(dataProvider, fetchParams, fetchDetails) {
+        const { parentKey, level, levelOffset, cacheOffset, isExpand, ancestorsAddedCount } = fetchDetails;
+        const modifiedParameters = this._getModifiedFetchParameters(fetchParams, fetchDetails);
+        const results = await dataProvider.fetchByOffset(modifiedParameters);
+        const result = results.results;
+        if (!this._cacheInstantiated) {
+            this._cacheSortCriteria = results.fetchParameters.sortCriteria;
+            this._cacheFilterCriteria = results.fetchParameters.filterCriterion;
+            this._cacheInstantiated = true;
+        }
+        let paramsSatisfied = false;
+        let descendentsAddedCount = 0;
+        let allResultsCached = true;
+        for (let i = 0; i < result.length; i++) {
+            const item = result[i];
+            const key = item.metadata.key;
+            const childDataProvider = this.getChildDataProvider(key);
+            const isLeaf = childDataProvider == null;
+            const isExpanded = this._isExpanded(key);
+            const isEmpty = isLeaf ? true : childDataProvider.isEmpty() === 'yes';
+            const mightHaveChildren = !isEmpty && isExpanded;
+            if (mightHaveChildren) {
+                this._notDoneKeyMap.set(key, true);
+            }
+            const updatedItem = this._updateItemMetadata(item, parentKey, level, levelOffset + i, isLeaf);
+            this._cache.splice(cacheOffset + descendentsAddedCount, 0, updatedItem);
+            descendentsAddedCount++;
+            allResultsCached = i === result.length - 1;
+            paramsSatisfied = this._doesCacheSatisfyParameters(fetchParams, isExpand, descendentsAddedCount + ancestorsAddedCount);
+            if (paramsSatisfied) {
+                break;
+            }
+            if (mightHaveChildren) {
+                let childFetchDetails = this._getFetchDetails(0, key, level + 1, cacheOffset + descendentsAddedCount, isExpand, descendentsAddedCount);
+                let returnVal = await this._fetchChildrenByOffsetFromDataProvider(childDataProvider, fetchParams, childFetchDetails);
+                descendentsAddedCount += returnVal.descendentsAddedCount;
+                paramsSatisfied = returnVal.paramsSatisfied;
+                if (paramsSatisfied) {
+                    break;
                 }
-                returnObject.done = results.length === 0 ? result.done : false;
-                return Promise.resolve(returnObject);
             }
-            const item = results.shift();
-            const updatedItem = this._updateItemMetadata(item, parentKey);
-            this._pushItemToCache(updatedItem, parentKey);
-            if (this._isExpanded(updatedItem.metadata.key)) {
-                const parentKeyInfo = this._mapParentKeyToInfo.get(updatedItem.metadata.key);
-                const childDataProvider = this.getChildDataProvider(updatedItem.metadata.key);
-                const remainingSize = this._getRemainingSize(finalParams, expandKey);
-                if (childDataProvider != null && !parentKeyInfo.done && remainingSize !== 0) {
-                    const newParams = new this.FetchByOffsetParameters(this, 0, remainingSize, params.sortCriteria, params.filterCriterion, params.attributes);
-                    yield this._fetchChildrenByOffsetFromDataProvider(newParams, childDataProvider, updatedItem.metadata.key, finalParams, expandKey);
-                }
-            }
-            return handleNextItemInResults(new this.FetchByOffsetResults(this, params, results, result.done));
-        });
-        return dataProvider
-            .fetchByOffset(params)
-            .then(handleNextItemInResults)
-            .then((nextItemResults) => {
-            this._mapParentKeyToInfo.set(parentKey, {
-                done: nextItemResults.done
-            });
-            const result = this._getFetchByOffsetResultsFromCache(finalParams);
-            const validationObject = {
-                fetchResult: result
-            };
-            if (nextItemResults.expandKey) {
-                validationObject.returnObject = nextItemResults;
-                nextItemResults.done =
-                    nextItemResults.done === true
-                        ? this._isDescendentTreeDone(nextItemResults.expandKey)
-                        : false;
-            }
-            return validationObject;
-        });
+        }
+        if (allResultsCached && results.done) {
+            this._notDoneKeyMap.delete(parentKey);
+        }
+        return { paramsSatisfied, descendentsAddedCount };
     }
-    _isDescendentTreeDone(key) {
-        const children = this._getChildrenFromCacheByParentKey(key);
-        if (children.length === 0) {
-            return true;
-        }
-        const itemDone = this._isDone(key);
-        if (!itemDone) {
-            return false;
-        }
-        const childKey = children[children.length - 1].metadata.key;
-        return this._isDescendentTreeDone(childKey);
-    }
-    _isDone(key) {
-        return this._mapParentKeyToInfo.has(key) && this._mapParentKeyToInfo.get(key).done;
-    }
-    _getRemainingSize(params, expandKey) {
-        if (params.size === -1) {
-            return -1;
-        }
-        if (expandKey) {
-            return params.size - this._getLocalDescendentCount(expandKey);
-        }
-        return params.size + params.offset - this._cache.length;
+    _isKeyDone(key) {
+        return !this._notDoneKeyMap.has(key);
     }
     _isExpanded(key) {
-        const expanded = this.options.expanded;
-        return expanded.has(key);
+        return this.options.expanded?.has(key);
+    }
+    _getModifiedFetchParameters(params, levelInfo) {
+        let clonedParams = Object.assign({}, params);
+        let offset = levelInfo.levelOffset;
+        let size;
+        if (levelInfo.isExpand) {
+            size = params.size - levelInfo.ancestorsAddedCount;
+        }
+        else {
+            size = params.size === -1 ? -1 : params.offset + params.size - this._cache.length;
+        }
+        clonedParams.offset = offset;
+        clonedParams.size = size;
+        return clonedParams;
     }
     setExpanded(keySet) {
         const toExpand = this.createOptimizedKeySet();
@@ -1027,50 +1170,31 @@ class FlattenedTreeDataProviderView {
             this.getExpandedObservable().next(this._getExpandedObservableValue(this.options.expanded, Promise.resolve()));
             return;
         }
-        const keysInCache = this._removeKeysNotInCache(toExpand);
-        const expandPromise = this._expand(keysInCache);
+        const expandPromise = this._expand(toExpand);
         const operationRemoveEventDetail = this._collapse(toCollapse);
         const completionPromise = new Promise((resolve) => {
             expandPromise.then((expandReturnObject) => {
                 const operationAddEventDetail = expandReturnObject.operationAddEventDetail;
-                const fetchedCountMap = expandReturnObject.fetchedCountMap;
-                let disregardAfterKey = null;
-                let previousCacheIndex = null;
-                if (this._fetchSize !== -1) {
-                    fetchedCountMap.forEach((value, key) => {
-                        const fetchedCount = value.count;
-                        if (!value.done && fetchedCount >= this._fetchSize) {
-                            const currentCacheIndex = this._getItemIndexByKey(key);
-                            if (currentCacheIndex < previousCacheIndex || previousCacheIndex === null) {
-                                previousCacheIndex = currentCacheIndex;
-                                disregardAfterKey = key;
-                            }
-                        }
-                    });
-                }
-                if (previousCacheIndex !== null) {
-                    const lastDescendentItem = this._getLastDescendentByParentKey(disregardAfterKey);
-                    const lastDescendentIndex = this._getItemIndexByKey(lastDescendentItem.metadata.key);
-                    const removedItems = this._cache.splice(lastDescendentIndex + 1, this._cache.length);
+                const disregardAfterItem = expandReturnObject.disregardAfterItem;
+                const disregardAfterDescendentsAddedCount = expandReturnObject.disregardAfterDescendentsAddedCount;
+                if (disregardAfterItem != null) {
+                    const disregardAfterKey = disregardAfterItem.metadata.key;
+                    const disregardAfterKeyIndex = this._getItemIndexByKey(disregardAfterKey);
+                    const removedItems = this._cache.splice(disregardAfterKeyIndex + disregardAfterDescendentsAddedCount + 1, this._cache.length);
+                    this._markParentsAsNotDone(disregardAfterItem);
                     removedItems.forEach((item) => {
-                        this._mapParentKeyToInfo.delete(item.metadata.key);
-                        if (this._mapParentKeyToInfo.has(item.metadata.parentKey)) {
-                            this._mapParentKeyToInfo.set(item.metadata.parentKey, { done: false });
-                        }
+                        this._notDoneKeyMap.delete(item.metadata.key);
                     });
-                    const decrementValueTotal = removedItems.length + fetchedCountMap.get(disregardAfterKey).count;
-                    for (let i = 0; i < decrementValueTotal; i++) {
-                        this._decrementIteratorOffset(previousCacheIndex + 1);
+                    for (let i = 0; i < removedItems.length; i++) {
+                        this._decrementIteratorOffset(disregardAfterKeyIndex + 1);
                     }
                 }
-                if (disregardAfterKey === null) {
+                if (operationAddEventDetail?.keys?.size > 0 || operationRemoveEventDetail?.keys?.size > 0) {
                     const mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, null);
-                    if (operationAddEventDetail.keys.size > 0 || operationRemoveEventDetail.keys.size > 0) {
-                        this.dispatchEvent(new DataProviderMutationEvent(mutationEventDetail));
-                    }
+                    this.dispatchEvent(new DataProviderMutationEvent(mutationEventDetail));
                 }
-                if (disregardAfterKey !== null) {
-                    const refreshEvent = new DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(disregardAfterKey));
+                if (disregardAfterItem != null) {
+                    const refreshEvent = new DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(disregardAfterItem.metadata.key));
                     this.dispatchEvent(refreshEvent);
                 }
                 resolve();
@@ -1081,101 +1205,59 @@ class FlattenedTreeDataProviderView {
     getExpandedObservable() {
         return this._expandedObservable;
     }
-    _pushItemToCache(item, parentKey) {
-        const lastEntry = this._getLastItemByParentKey(parentKey);
-        const index = lastEntry == null
-            ? this._getItemIndexByKey(parentKey)
-            : this._getItemIndexByKey(lastEntry.metadata.key) +
-                this._getLocalDescendentCount(lastEntry.metadata.key);
-        this._cache.splice(index + 1, 0, item);
+    _updateItemMetadata(item, parentKey, treeDepth, indexFromParent, isLeaf) {
+        return new this.Item(this, new this.FlattenedTreeItemMetadata(this, item.metadata.key, parentKey, indexFromParent, treeDepth, isLeaf), item.data);
     }
-    _spliceItemToCache(item, index) {
-        this._cache.splice(index + 1, 0, item);
-    }
-    _removeKeysNotInCache(keysToExpand) {
-        const keysInCache = new Set();
-        keysToExpand.forEach((key) => {
-            const item = this._getItemByKey(key);
-            if (item) {
-                keysInCache.add(key);
-            }
+    _containsKey(key) {
+        return this._cache.some((item) => {
+            return oj.Object.compareValues(item.metadata.key, key);
         });
-        return keysInCache;
-    }
-    _updateItemMetadata(item, parentKey, indexFromParent) {
-        let treeDepth = 0;
-        const lastEntry = this._getLastItemByParentKey(parentKey);
-        let parentIndex = lastEntry == null ? 0 : lastEntry.metadata.indexFromParent + 1;
-        if (indexFromParent != null) {
-            parentIndex = indexFromParent;
-        }
-        if (parentKey != null) {
-            const parentItem = this._getItemByKey(parentKey);
-            treeDepth = parentItem.metadata.treeDepth + 1;
-        }
-        return new this.Item(this, new this.FlattenedTreeItemMetadata(this, item.metadata.key, parentKey, parentIndex, treeDepth, this.getChildDataProvider(item.metadata.key) === null), item.data);
     }
     _getItemByKey(key) {
-        let returnItem = null;
-        this._cache.some((item) => {
-            if (oj.Object.compareValues(item.metadata.key, key)) {
-                returnItem = item;
-                return true;
-            }
+        return this._cache.find((item) => {
+            return oj.Object.compareValues(item.metadata.key, key);
         });
-        return returnItem;
     }
     _getItemIndexByKey(key) {
-        let index = -1;
-        this._cache.some((item, i) => {
-            if (oj.Object.compareValues(item.metadata.key, key)) {
-                index = i;
-                return true;
-            }
+        return this._cache.findIndex((item) => {
+            return oj.Object.compareValues(item.metadata.key, key);
         });
-        return index;
     }
-    _getLastEntry() {
-        return this._cache[this._getLastIndex()];
+    _getItemAndIndexByKey(key) {
+        let index = -1;
+        let item = this._cache.find((item, i) => {
+            index = i;
+            return oj.Object.compareValues(item.metadata.key, key);
+        });
+        if (item == null) {
+            index = -1;
+        }
+        return { item, index };
     }
-    _getEntry(i) {
+    _getPreviousSibling(item) {
+        return this._cache[this._getLastItemIndex()];
+    }
+    _getLastItem() {
+        return this._cache[this._getLastItemIndex()];
+    }
+    _getItem(i) {
         return this._cache[i];
     }
-    _getLastDescendentByParentKey(parentKey) {
-        const lastItem = this._getLastItemByParentKey(parentKey);
-        if (!lastItem) {
-            return this._getItemByKey(parentKey);
-        }
-        if (lastItem.metadata.isLeaf) {
-            return lastItem;
-        }
-        return this._getLastDescendentByParentKey(lastItem.metadata.key);
-    }
-    _getLastItemByParentKey(parentKey) {
-        let returnItem = null;
-        this._cache
-            .slice()
-            .reverse()
-            .some((item) => {
-            if (oj.Object.compareValues(item.metadata.parentKey, parentKey)) {
-                returnItem = item;
-                return true;
-            }
-        });
-        return returnItem;
-    }
-    _getLastIndex() {
+    _getLastItemIndex() {
         return this._cache.length - 1;
     }
     _getLocalDescendentCount(key) {
+        if (key === null) {
+            return this._cache.length;
+        }
         const item = this._getItemByKey(key);
         let count = 0;
         if (item != null) {
             const cacheIndex = this._getItemIndexByKey(key);
             const depth = item.metadata.treeDepth;
-            const lastIndex = this._getLastIndex();
+            const lastIndex = this._getLastItemIndex();
             for (let j = cacheIndex + 1; j <= lastIndex; j++) {
-                const newItem = this._getEntry(j);
+                const newItem = this._getItem(j);
                 const newDepth = newItem.metadata.treeDepth;
                 if (newDepth > depth) {
                     count += 1;
@@ -1187,58 +1269,79 @@ class FlattenedTreeDataProviderView {
         }
         return count;
     }
-    _expand(keys) {
-        const promises = [];
-        keys.forEach((key) => {
-            const params = new this.FetchByOffsetParameters(this, 0, this._fetchSize, this._currentSortCriteria, this._currentFilterCriteria, null);
-            this._mapParentKeyToInfo.set(key, { done: false });
+    _getInsertIndexFromParent(depth, insertIndex) {
+        for (let i = insertIndex - 1; i >= 0; i--) {
+            const newItem = this._getItem(i);
+            const newDepth = newItem.metadata.treeDepth;
+            if (newDepth === depth) {
+                return newItem.metadata.indexFromParent + 1;
+            }
+            else if (newDepth < depth) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+    async _expand(keys) {
+        const orderedKeys = this._filterAndSortKeysByIndex(keys);
+        let disregardAfterItem;
+        const keySet = this.createOptimizedKeySet();
+        const afterKeySet = this.createOptimizedKeySet();
+        const beforeArray = [];
+        const metadataArray = [];
+        const dataArray = [];
+        const indexArray = [];
+        let disregardAfterDescendentsAddedCount;
+        for (let i = 0; i < orderedKeys.length; i++) {
+            const key = orderedKeys[i];
+            const itemIndex = this._getItemIndexByKey(key);
             const dataProvider = this.getChildDataProvider(key);
-            promises.push(this._fetchChildrenByOffsetFromDataProvider(params, dataProvider, key, params, key));
-        });
-        return Promise.all(promises).then((value) => {
-            const keySet = this.createOptimizedKeySet();
-            const afterKeySet = this.createOptimizedKeySet();
-            const beforeArray = [];
-            const metadataArray = [];
-            const dataArray = [];
-            const indexArray = [];
-            const fetchedCountMap = new Map();
-            keys.forEach((key) => {
-                const count = this._getLocalDescendentCount(key);
-                if (count > 0) {
-                    fetchedCountMap.set(key, { count: count, done: false });
-                    for (let i = 0; i < value.length; i++) {
-                        if (value[i].returnObject &&
-                            value[i].returnObject.expandKey === key &&
-                            value[i].returnObject.done) {
-                            fetchedCountMap.get(key).done = true;
-                            break;
-                        }
-                    }
-                    const insertIndex = this._getItemIndexByKey(key) + 1;
-                    let afterKey = key;
-                    const addedItems = this._cache.slice(insertIndex, insertIndex + count);
-                    addedItems.forEach((item, index) => {
-                        keySet.add(item.metadata.key);
-                        afterKeySet.add(afterKey);
-                        metadataArray.push(item.metadata);
-                        dataArray.push(item.data);
-                        indexArray.push(insertIndex + index);
-                        beforeArray.push(this._getKeyByIndex(insertIndex + index + 1));
-                        afterKey = item.metadata.key;
-                        this._incrementIteratorOffset(insertIndex);
-                    });
-                }
+            if (dataProvider == null) {
+                continue;
+            }
+            const item = this._getItem(itemIndex);
+            const insertIndex = itemIndex + 1;
+            const params = new this.FetchByOffsetParameters(this, 0, this._fetchSize, this._currentSortCriteria, this._currentFilterCriteria, null);
+            const fetchDetails = this._getFetchDetails(0, key, item.metadata.treeDepth + 1, insertIndex, true);
+            this._notDoneKeyMap.set(key, true);
+            let { descendentsAddedCount } = await this._fetchChildrenByOffsetFromDataProvider(dataProvider, params, fetchDetails);
+            if (!this._isKeyDone(key)) {
+                disregardAfterItem = item;
+                disregardAfterDescendentsAddedCount = descendentsAddedCount;
+                break;
+            }
+            let afterKey = key;
+            const addedItems = this._cache.slice(insertIndex, insertIndex + descendentsAddedCount);
+            addedItems.forEach((item, index) => {
+                keySet.add(item.metadata.key);
+                afterKeySet.add(afterKey);
+                metadataArray.push(item.metadata);
+                dataArray.push(item.data);
+                indexArray.push(insertIndex + index);
+                beforeArray.push(this._getKeyByIndex(insertIndex + index + 1));
+                afterKey = item.metadata.key;
+                this._incrementIteratorOffset(insertIndex);
             });
-            return {
-                operationAddEventDetail: new this.DataProviderAddOperationEventDetail(this, keySet, afterKeySet, beforeArray, metadataArray, dataArray, indexArray),
-                fetchedCountMap: fetchedCountMap
-            };
-        });
+        }
+        const operationAddEventDetail = keySet.size > 0
+            ? new this.DataProviderAddOperationEventDetail(this, keySet, afterKeySet, beforeArray, metadataArray, dataArray, indexArray)
+            : null;
+        return { operationAddEventDetail, disregardAfterItem, disregardAfterDescendentsAddedCount };
     }
     _getKeyByIndex(index) {
-        var _a, _b;
-        return ((_b = (_a = this._cache[index]) === null || _a === void 0 ? void 0 : _a.metadata) === null || _b === void 0 ? void 0 : _b.key) ? this._cache[index].metadata.key : null;
+        return this._cache[index]?.metadata?.key ? this._cache[index].metadata.key : null;
+    }
+    _filterAndSortKeysByIndex(keys) {
+        return [...keys]
+            .reduce((filtered, key) => {
+            let index = this._getItemIndexByKey(key);
+            if (index != -1) {
+                filtered.push({ key, index });
+            }
+            return filtered;
+        }, [])
+            .sort((a, b) => a.index - b.index)
+            .map((item) => item.key);
     }
     _collapse(keys) {
         const metadataArray = [];
@@ -1247,12 +1350,12 @@ class FlattenedTreeDataProviderView {
         const keySet = this.createOptimizedKeySet();
         keys.forEach((key) => {
             const count = this._getLocalDescendentCount(key);
-            this._mapParentKeyToInfo.delete(key);
+            this._notDoneKeyMap.delete(key);
             if (count > 0) {
                 const cacheIndex = this._getItemIndexByKey(key);
                 const deletedItems = this._cache.splice(cacheIndex + 1, count);
                 deletedItems.forEach((item, index) => {
-                    this._mapParentKeyToInfo.delete(item.metadata.key);
+                    this._notDoneKeyMap.delete(item.metadata.key);
                     keySet.add(item.metadata.key);
                     metadataArray.push(item.metadata);
                     dataArray.push(item.data);

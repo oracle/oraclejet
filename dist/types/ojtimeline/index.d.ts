@@ -279,9 +279,9 @@ export namespace ojTimeline {
     };
     // tslint:disable-next-line interface-over-type-literal
     type itemBubbleTemplateContext<K, D> = {
-        contentWidth: number;
+        contentWidth: number | null;
         data: SeriesItem<K>;
-        durationWidth: number;
+        durationWidth: number | null;
         itemData: D;
         maxAvailableWidth: number;
         previousState: {

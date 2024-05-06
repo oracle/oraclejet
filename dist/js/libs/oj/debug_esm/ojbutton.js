@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -316,6 +316,13 @@ if (oj.ButtonLegacy) {
    * @ojcomponent oj.ojButton
    * @augments oj.baseComponent
    * @since 0.6.0
+   * @ojdeprecated [
+   *  {
+   *    type: "maintenance",
+   *    since: "15.0.0",
+   *    value: ["oj-c-button"]
+   *  }
+   * ]
    *
    * @ojshortdesc Buttons direct users to initiate or take actions and work with a single tap, click, or keystroke.
    * @ojrole button
@@ -2593,7 +2600,13 @@ if (oj.ButtonLegacy) {
    * @ojcomponent oj.ojMenuButton
    * @ojdisplayname Menu Button
    * @since 4.0.0
-   *
+   * @ojdeprecated [
+   *  {
+   *    type: "maintenance",
+   *    since: "16.0.0",
+   *    value: ["oj-c-menu-button"]
+   *  },
+   * ]
    * @augments oj.ojButton
    * @ojshortdesc A menu button launches a menu when clicked.
    * @ojrole button
@@ -2657,6 +2670,33 @@ if (oj.ButtonLegacy) {
    * you can override the default behavior by setting <code class="prettyprint">aria-label</code> or <code class="prettyprint">aria-labelledby</code>.
    * {@ojinclude "name":"accessibilityCommon"}
    *
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * <p>
+   * To migrate from oj-menu-button to oj-c-menu-button, you need to revise the import statement
+   * and references to oj-c-menu-button in your app. Please note the changes between the two components below.
+   * </p>
+   * <strong>oj-c-menu-button no longer supports DOM-centric menus specified in the menu slot.  Instead, the menu is specified
+   * to the items property.  The selection property indicates what items are selected in selection group, oj-menu-select-many is
+   * no longer supported.  The label property is used instead of the default slot.  A on-oj-menu-action callback can be used to
+   * replace the oj-menu on-oj-menu-action, though each menu item now supports onAction callbacks as well. </strong>
+   * <h5>Menu Button Specific Attributes and Methods</h5>
+   * <p>oj-c-menu-button does not support a menu slot oj-menu, so menus must be specified via the items property.
+   * </p>
+   *
+   * <ul>
+   * <li>Attributes:
+   * <ul>
+   * <li>label</li>
+   * <li>width</li>
+   * <li>size</li>
+   * <li>edge</li>
+   * <li>tooltip</li>
+   * </ul>
+   * </li>
+   * </ul>
    *
    *
    * <h3 id="perf-section">

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -192,8 +192,7 @@ class DeferredDataProvider {
                 this._params = _params;
             }
             ['next']() {
-                var _a;
-                const signal = (_a = this._params) === null || _a === void 0 ? void 0 : _a.signal;
+                const signal = this._params?.signal;
                 if (signal && signal.aborted) {
                     const reason = signal.reason;
                     return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -219,7 +218,7 @@ class DeferredDataProvider {
         return new this.AsyncIterable(new this.AsyncIterator(asyncIteratorPromise));
     }
     fetchByKeys(params) {
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -237,7 +236,7 @@ class DeferredDataProvider {
         });
     }
     containsKeys(params) {
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -249,7 +248,7 @@ class DeferredDataProvider {
                     return reject(new DOMException(reason, 'AbortError'));
                 });
             }
-            resolve(this._getDataProvider().then((dataProvider) => {
+            return resolve(this._getDataProvider().then((dataProvider) => {
                 return dataProvider.containsKeys(params);
             }));
         });

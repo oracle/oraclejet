@@ -1,4 +1,4 @@
-# Oracle JET version 14.1.0
+# Oracle JET version 16.0.0
 
 ## About Oracle JET
 
@@ -39,7 +39,7 @@ npm install -g @oracle/ojet-cli
 ojet create <app name>
 ```
 
-See the [Oracle JET Developer Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1410&id=homepage) for complete installation details, including prerequisites.
+See the [Oracle JET Developer Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1600&id=homepage) for complete installation details, including prerequisites.
 
 ## Related GitHub Projects
 
@@ -47,7 +47,7 @@ All related projects on GitHub are associated under the [oracle-jet topic](https
 
 ## Documentation
 
-Oracle JET comes with a full [Developers Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1410&id=homepage) to help with Getting Started and many common issues.
+Oracle JET comes with a full [Developers Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1600&id=homepage) to help with Getting Started and many common issues.
 
 ## Contributing
 
@@ -59,5 +59,5 @@ Please consult the [security guide](./SECURITY.md) for our responsible security 
 
 ## License
 
-Copyright (c) 2023 Oracle and/or its affiliates and released under the
+Copyright (c) 2024 Oracle and/or its affiliates and released under the
 [Universal Permissive License (UPL)](https://oss.oracle.com/licenses/upl/), Version 1.0

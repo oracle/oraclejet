@@ -5,7 +5,7 @@ import { Action, CancelableAction, ExtendGlobalProps, ObservedGlobalProps, Slot 
 import { Component } from 'preact';
 import { ojMessage } from 'ojs/ojmessage';
 import 'jqueryui-amd/tabbable';
-declare type Props = ObservedGlobalProps<'aria-label' | 'role'> & {
+type Props = ObservedGlobalProps<'aria-label' | 'role'> & {
     accept?: string[] | null;
     capture?: 'user' | 'environment' | 'implementation' | 'none' | null;
     disabled?: boolean;
@@ -20,20 +20,20 @@ declare type Props = ObservedGlobalProps<'aria-label' | 'role'> & {
     onOjInvalidSelect?: Action<InvalidDetail>;
     onOjSelect?: Action<SelectDetail>;
 };
-declare type State = {
+type State = {
     focus: boolean;
     validity: string;
 };
-declare type BeforeDetail = {
+type BeforeDetail = {
     files: FileList;
     originalEvent: Event;
 };
-declare type InvalidDetail = {
+type InvalidDetail = {
     messages: ojMessage.Message[];
     originalEvent: Event;
     until: Promise<void> | null;
 };
-declare type SelectDetail = {
+type SelectDetail = {
     files: FileList;
     originalEvent: Event;
 };

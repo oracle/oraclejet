@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -132,11 +132,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
             if (attrValue) {
                 const trimmedVal = attrValue.trim();
                 let expArr = _ATTR_EXP.exec(trimmedVal);
-                expr = expArr === null || expArr === void 0 ? void 0 : expArr[1];
+                expr = expArr?.[1];
                 if (!expr) {
                     downstreamOnly = true;
                     expArr = _ATTR_EXP_RO.exec(trimmedVal);
-                    expr = expArr === null || expArr === void 0 ? void 0 : expArr[1];
+                    expr = expArr?.[1];
                 }
             }
             return { downstreamOnly, expr };
@@ -244,6 +244,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
         return cache.get(key);
     }
 
+    const CHILD_BINDING_PROVIDER = Symbol('childBindingProvider');
+    const CACHED_BINDING_PROVIDER = Symbol('cachedBindingProvider');
     const EMPTY_SET = new Set();
     class CustomElementUtils {
         static getElementInfo(element) {
@@ -259,7 +261,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
                 state = new StateClass(element);
                 Object.defineProperty(element, CustomElementUtils._ELEMENT_STATE_KEY, { value: state });
             }
-            return state !== null && state !== void 0 ? state : null;
+            return state ?? null;
         }
         static getElementBridge(element) {
             let bridge = element[CustomElementUtils._ELEMENT_BRIDGE_KEY];
@@ -273,7 +275,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
                 }
                 Object.defineProperty(element, CustomElementUtils._ELEMENT_BRIDGE_KEY, { value: bridge });
             }
-            return bridge !== null && bridge !== void 0 ? bridge : null;
+            return bridge ?? null;
         }
         static getSlotMap(element) {
             const slotMap = {};
@@ -288,6 +290,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
                     }
                     CustomElementUtils._possiblyApplyImplicitContext(child, slot, metadata);
                     slotMap[slot].push(child);
+                    child[CACHED_BINDING_PROVIDER] = CustomElementUtils._getBindingProviderTypeForSlot(element, child);
                 }
             }
             return slotMap;
@@ -305,11 +308,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
         }
         static getElementProperty(element, property) {
             if (ojcustomelementRegistry.isElementRegistered(element.tagName)) {
-                let vInst = element['_vcomp'];
-                if (vInst && !vInst.isCustomElementFirst()) {
-                    return CustomElementUtils.getPropertyValue(vInst.props, property);
-                }
-                else if ((vInst = element[CustomElementUtils.VCOMP_INSTANCE])) {
+                let vInst = element[CustomElementUtils.VCOMP_INSTANCE];
+                if (vInst) {
                     return CustomElementUtils.getPropertyValue(vInst.props, property);
                 }
                 return element.getProperty(property);
@@ -322,7 +322,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
             try {
                 propPath.forEach((subprop) => (propObj = propObj[subprop]));
             }
-            catch (_a) {
+            catch {
                 return undefined;
             }
             return propObj;
@@ -357,12 +357,16 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
             return EMPTY_SET;
         }
         static _possiblyApplyImplicitContext(child, slot, metadata) {
-            var _a, _b;
-            if ((child === null || child === void 0 ? void 0 : child.nodeType) === Node.ELEMENT_NODE) {
-                if ((_b = (_a = metadata.slots) === null || _a === void 0 ? void 0 : _a[slot]) === null || _b === void 0 ? void 0 : _b.implicitBusyContext) {
+            if (child?.nodeType === Node.ELEMENT_NODE) {
+                if (metadata.slots?.[slot]?.implicitBusyContext) {
                     child.setAttribute('data-oj-context', '');
                 }
             }
+        }
+        static _getBindingProviderTypeForSlot(element, child) {
+            return (child[CACHED_BINDING_PROVIDER] ||
+                (child.nodeType === 1 && child.getAttribute('data-oj-binding-provider')) ||
+                CustomElementUtils.getElementState(element)?.getBindingProviderType());
         }
     }
     CustomElementUtils._ELEMENT_STATE_KEY = '_ojElementState';
@@ -370,8 +374,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
     CustomElementUtils._ALLOW_RELOCATION_COUNT = 0;
     CustomElementUtils.VCOMP_INSTANCE = Symbol('vcompInstance');
 
-    const CHILD_BINDING_PROVIDER = Symbol('childBindingProvider');
-    const CACHED_BINDING_PROVIDER = Symbol('cachedBindingProvider');
     class ElementState {
         constructor(element) {
             this.dirtyProps = new Set();
@@ -428,9 +430,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
                 this._componentState === ComponentState.Complete);
         }
         getTrackChildrenOption() {
-            var _a, _b;
             const metadata = ojcustomelementRegistry.getElementDescriptor(this.Element.tagName).metadata;
-            return (_b = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_TRACK_CHILDREN']) !== null && _b !== void 0 ? _b : 'none';
+            return metadata?.extension?.['_TRACK_CHILDREN'] ?? 'none';
         }
         setCreateCallback(createComponentCallback) {
             if (this._isInErrorState())
@@ -476,13 +477,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
             }
         }
         disposeBindingProvider() {
-            var _a;
             if (!this.isComplete()) {
                 this.rejectBindingProvider();
                 this._updateComponentState(ComponentState.BindingsDisposed);
             }
             else {
-                (_a = this._disposedCallback) === null || _a === void 0 ? void 0 : _a.call(this);
+                this._disposedCallback?.();
             }
         }
         setBindingProviderCallback(callback) {
@@ -644,9 +644,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
             }
         }
         _bindingsApplied() {
-            var _a;
             this._updateComponentState(ComponentState.BindingsApplied);
-            (_a = this._bindingProviderCallback) === null || _a === void 0 ? void 0 : _a.call(this);
+            this._bindingProviderCallback?.();
         }
         _registerBusyState() {
             const busyContext = Context.getContext(this.Element).getBusyContext();
@@ -668,7 +667,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
             return !!template;
         }
         static _walkBindingProviders(element, startElement = element) {
-            var _a;
             let name = element[CACHED_BINDING_PROVIDER];
             if (name) {
                 return name;
@@ -686,7 +684,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
                 }
                 else {
                     name =
-                        (_a = parent[CHILD_BINDING_PROVIDER]) !== null && _a !== void 0 ? _a : ElementState._walkBindingProviders(parent, startElement);
+                        parent[CHILD_BINDING_PROVIDER] ??
+                            ElementState._walkBindingProviders(parent, startElement);
                 }
             }
             element[CACHED_BINDING_PROVIDER] = name;
@@ -760,6 +759,34 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
         ComponentState[ComponentState["BindingsDisposed"] = 8] = "BindingsDisposed";
     })(ComponentState || (ComponentState = {}));
 
+    class LifecycleElementState extends ElementState {
+        constructor() {
+            super(...arguments);
+            this._connectCallbacks = [];
+            this._disconnectCallbacks = [];
+        }
+        addLifecycleCallbacks(connectFunc, disconnectFunc) {
+            if (connectFunc) {
+                this._connectCallbacks.push(connectFunc);
+            }
+            if (disconnectFunc) {
+                this._disconnectCallbacks.push(disconnectFunc);
+            }
+        }
+        removeLifecycleCallbacks(connectFunc, disconnectFunc) {
+            if (connectFunc) {
+                this._connectCallbacks = this._connectCallbacks.filter((item) => item != connectFunc);
+            }
+            if (disconnectFunc) {
+                this._disconnectCallbacks = this._disconnectCallbacks.filter((item) => item != disconnectFunc);
+            }
+        }
+        executeLifecycleCallbacks(isConnected) {
+            const callbacks = isConnected ? this._connectCallbacks : this._disconnectCallbacks;
+            callbacks.forEach((callback) => callback());
+        }
+    }
+
     const NULL_SYMBOL = Symbol('custom element null');
     const EMPTY_STRING_SYMBOL = Symbol('custom element empty string');
     const toSymbolizedValue = (value) => {
@@ -798,6 +825,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
         return value;
     };
 
+    const OJ_BIND_CONVERTED_NODE = Symbol('ojBindConvertedNode');
+
     exports.AttributeUtils = AttributeUtils;
     exports.CACHED_BINDING_PROVIDER = CACHED_BINDING_PROVIDER;
     exports.CHILD_BINDING_PROVIDER = CHILD_BINDING_PROVIDER;
@@ -805,6 +834,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
     exports.ElementState = ElementState;
     exports.ElementUtils = ElementUtils;
     exports.JetElementError = JetElementError;
+    exports.LifecycleElementState = LifecycleElementState;
+    exports.OJ_BIND_CONVERTED_NODE = OJ_BIND_CONVERTED_NODE;
     exports.toSymbolizedValue = toSymbolizedValue;
     exports.transformPreactValue = transformPreactValue;
 

@@ -1,9 +1,9 @@
 import BufferingDataProvider = require('../ojbufferingdataprovider');
 export class BufferingDataProviderSubmittableChangeEvent<K, D> {
-    AT_TARGET: number;
-    BUBBLING_PHASE: number;
-    CAPTURING_PHASE: number;
-    NONE: number;
+    AT_TARGET: 2;
+    BUBBLING_PHASE: 3;
+    CAPTURING_PHASE: 1;
+    NONE: 0;
     bubbles: boolean;
     cancelBubble: boolean;
     cancelable: boolean;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -220,8 +220,7 @@ class SuppressNodeTreeDataProvider {
                 return this._baseIterator.next();
             }
             ['next']() {
-                var _b;
-                const signal = (_b = this._params) === null || _b === void 0 ? void 0 : _b.signal;
+                const signal = this._params?.signal;
                 if (signal && signal.aborted) {
                     const reason = signal.reason;
                     return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -273,6 +272,7 @@ class SuppressNodeTreeDataProvider {
                 this.data = data;
             }
         };
+        this._addEventListeners(treeDataProvider);
     }
     containsKeys(params) {
         return this.treeDataProvider.containsKeys(params);
@@ -301,7 +301,7 @@ class SuppressNodeTreeDataProvider {
         return new this.SuppressNodeTreeAsyncIterable(this, asyncIterable[Symbol.asyncIterator]());
     }
     fetchByOffset(params) {
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -319,7 +319,7 @@ class SuppressNodeTreeDataProvider {
         });
     }
     fetchByKeys(params) {
-        const signal = params === null || params === void 0 ? void 0 : params.signal;
+        const signal = params?.signal;
         if (signal && signal.aborted) {
             const reason = signal.reason;
             return Promise.reject(new DOMException(reason, 'AbortError'));
@@ -432,6 +432,14 @@ class SuppressNodeTreeDataProvider {
                 return Promise.resolve(false);
             }
         }
+    }
+    _addEventListeners(dataprovider) {
+        dataprovider.addEventListener('refresh', (event) => {
+            this.dispatchEvent(event);
+        });
+        dataprovider.addEventListener('mutate', (event) => {
+            this.dispatchEvent(event);
+        });
     }
 }
 EventTargetMixin.applyMixin(SuppressNodeTreeDataProvider);
