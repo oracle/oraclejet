@@ -3416,6 +3416,10 @@ var __oj_status_meter_gauge_metadata =
    * <p>title will no longer be required to make your rating gauge accessible. Use aria-label attribute instead for text to be used by screen readers, and datatip or tooltip for text to be shown on hover or focus.
    * The tooltip attribute is for readonly rating gauge only. If aria-label is not present for readonly rating gauge, tooltip will be used as aria-label. Note the datatip should be used for interactive gauges only and it takes a function.
    * </p>
+   * <h5>role change</h5>
+   * <p>The role of interactive oj-rating-gauge has been changed from 'application' to 'slider'. The screenreader behavior will be consistent with that of role slider.
+   * Slider related aria attributes (aria-valuenow, aria-valuemin, aria-valuemax, aria-valuetext) will be populated according to element value, min and max attribute.
+   * </p>
    * @ojfragment migrationDoc
    * @memberof oj.ojRatingGauge
    */
@@ -3696,9 +3700,9 @@ var __oj_status_meter_gauge_metadata =
    * <p>
    * indicator-size attribute will no longer support values greater than 1 in oj-c-meter-bar and oj-c-meter-circle.
    * </p>
-   * <h5>min height for vertical meter bar</h5>
-   * <p>
-   * The vertical oj-c-meter-bar now has a default min-height which is theme driven.
+   * <h5>role change</h5>
+   * <p>The role of interactive oj-status-meter-gauge has been changed from 'application' to 'slider'. The screenreader behavior will be consistent with that of role slider.
+   * Slider related aria attributes (aria-valuenow, aria-valuemin, aria-valuemax, aria-valuetext) will be populated according to element value, min and max attribute.
    * </p>
    * @ojfragment migrationDoc
    * @memberof oj.ojStatusMeterGauge

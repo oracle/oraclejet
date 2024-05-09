@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createTypeDefinitionFromTypeRefs = exports.removeQuotes = exports.generateStatementsFromText = exports.getValueFromNode = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isTypeTreatedAsAny = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.updateFunctionalVCompNode = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.stringToJS = exports.writebackCallbackToProperty = exports.tagNameToElementName = exports.tagNameToElementInterfaceName = void 0;
+exports.createTypeDefinitionFromTypeRefs = exports.removeQuotes = exports.generateStatementsFromText = exports.getMDValueFromNode = exports.getValueNodeFromPropertyAccessExpression = exports.getValueNodeFromIdentifier = exports.getValueNodeFromReference = exports.isValueNodeReference = exports.removeCastExpressions = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isTypeTreatedAsAny = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.updateFunctionalVCompNode = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.writebackCallbackToProperty = exports.tagNameToElementName = exports.tagNameToElementInterfaceName = void 0;
 const ts = __importStar(require("typescript"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
@@ -32,6 +32,9 @@ const TypeUtils = __importStar(require("./MetadataTypeUtils"));
 const TransformerError_1 = require("./TransformerError");
 const vm = __importStar(require("vm"));
 const _OJMETADATA_TAG = 'ojmetadata';
+const _IGNORED_BIGINT_DEFAULT_VALUE_MSG_HEADER = 'Default values of type BigInt are not reflected in the generated custom element JSON metadata.';
+const _IGNORED_FUNCTION_DEFAULT_VALUE_MSG_HEADER = 'Default values of type Function are not reflected in the generated custom element JSON metadata.';
+const _IGNORED_ARRAY_DEFAULT_VALUE_MSG_HEADER = 'Default array values with items of an unsupported type are not reflected in the generated custom element JSON metadata.';
 function tagNameToElementInterfaceName(tagName) {
     return `${tagNameToElementName(tagName)}Element`;
 }
@@ -50,29 +53,6 @@ function writebackCallbackToProperty(property) {
     return null;
 }
 exports.writebackCallbackToProperty = writebackCallbackToProperty;
-function stringToJS(memberName, type, value, metaUtilObj) {
-    try {
-        switch (type) {
-            case ts.SyntaxKind.NullKeyword:
-            case ts.SyntaxKind.NumericLiteral:
-            case ts.SyntaxKind.TrueKeyword:
-            case ts.SyntaxKind.FalseKeyword:
-                return JSON.parse(value);
-            case ts.SyntaxKind.StringLiteral:
-            case ts.SyntaxKind.ObjectLiteralExpression:
-            case ts.SyntaxKind.ArrayLiteralExpression:
-            case ts.SyntaxKind.AsExpression:
-                return _execBundle(value);
-            default:
-                return undefined;
-        }
-    }
-    catch (ex) {
-        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.CANNOT_CONVERT_TO_JSON, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Unable to convert the default value '${value}' to JSON for property '${memberName}'.`);
-        return undefined;
-    }
-}
-exports.stringToJS = stringToJS;
 function getGenericTypeParameters(propsTypeNode) {
     let genericSignature = '<';
     const genericTypeParamsArray = [];
@@ -251,11 +231,11 @@ function getDtMetadata(objWithJsDoc, context, propertyPath, metaUtilObj) {
     return dt;
 }
 exports.getDtMetadata = getDtMetadata;
-function addMetadataToClassNode(vcompClassInfo, metadata) {
+function addMetadataToClassNode(vcompClassInfo, rtMetadata) {
     const classNode = vcompClassInfo.classNode;
     let additionalPropDecls = [];
-    if (Object.keys(metadata).length > 0) {
-        const metadataNode = _metadataToAstNodes(metadata);
+    if (Object.keys(rtMetadata).length > 0) {
+        const metadataNode = _metadataToAstNodes(rtMetadata);
         additionalPropDecls.push(ts.factory.createPropertyDeclaration(ts.factory.createModifiersFromModifierFlags(ts.ModifierFlags.Static), '_metadata', undefined, undefined, metadataNode));
     }
     if (vcompClassInfo.translationBundleMapExpression) {
@@ -287,7 +267,10 @@ function updateFunctionalVCompNode(functionalCompNode, vcompFunctionInfo, metaUt
     if (Object.keys(rtMetadata).length > 0) {
         updatedCallArgs.push(_metadataToAstNodes(rtMetadata));
         if (metaUtilObj.defaultProps) {
-            updatedCallArgs.push(_metadataToAstNodes(metaUtilObj.defaultProps));
+            const keys = Object.keys(metaUtilObj.defaultProps);
+            updatedCallArgs.push(ts.factory.createObjectLiteralExpression(keys.map((key) => {
+                return ts.factory.createPropertyAssignment(ts.factory.createStringLiteral(key), _defaultPropToAstNodes(metaUtilObj.defaultProps[key]));
+            })));
         }
         else if (needPlaceholderArgs) {
             updatedCallArgs.push(ts.factory.createIdentifier('undefined'));
@@ -977,34 +960,165 @@ function updateRtExtensionMetadata(name, value, metaUtilObj) {
     metaUtilObj.rtMetadata.extension[name] = value;
 }
 exports.updateRtExtensionMetadata = updateRtExtensionMetadata;
-function getValueFromNode(exp) {
+function removeCastExpressions(vNode) {
+    while (vNode && ts.isAsExpression(vNode)) {
+        vNode = vNode.expression;
+    }
+    return vNode;
+}
+exports.removeCastExpressions = removeCastExpressions;
+function isValueNodeReference(vNode) {
+    return ts.isIdentifier(vNode) || ts.isPropertyAccessExpression(vNode);
+}
+exports.isValueNodeReference = isValueNodeReference;
+function getValueNodeFromReference(refNode, metaUtilObj) {
+    let vNode = null;
+    if (ts.isIdentifier(refNode)) {
+        vNode = getValueNodeFromIdentifier(refNode, metaUtilObj);
+    }
+    else if (ts.isPropertyAccessExpression(refNode)) {
+        vNode = getValueNodeFromPropertyAccessExpression(refNode, metaUtilObj);
+    }
+    return vNode;
+}
+exports.getValueNodeFromReference = getValueNodeFromReference;
+function getValueNodeFromIdentifier(idNode, metaUtilObj) {
+    let rtnNode = idNode;
+    const refSymbol = metaUtilObj.typeChecker.getSymbolAtLocation(idNode);
+    if (refSymbol) {
+        if (refSymbol.getName() !== 'undefined') {
+            if (refSymbol.valueDeclaration?.initializer) {
+                rtnNode = refSymbol.valueDeclaration.initializer;
+            }
+            else if (refSymbol.valueDeclaration && ts.isFunctionDeclaration(refSymbol.valueDeclaration)) {
+                rtnNode = refSymbol.valueDeclaration;
+            }
+            else {
+                rtnNode = null;
+            }
+        }
+    }
+    else {
+        rtnNode = null;
+    }
+    return rtnNode;
+}
+exports.getValueNodeFromIdentifier = getValueNodeFromIdentifier;
+function getValueNodeFromPropertyAccessExpression(propAccessNode, metaUtilObj) {
+    let rtnNode = null;
+    let targetNode = getValueNodeFromReference(propAccessNode.expression, metaUtilObj);
+    targetNode = removeCastExpressions(targetNode);
+    if (targetNode && ts.isObjectLiteralExpression(targetNode)) {
+        const propName = ts.idText(propAccessNode.name);
+        const accessedProp = targetNode.properties.find((prop) => prop.name?.getText() === propName);
+        if (accessedProp && ts.isPropertyAssignment(accessedProp)) {
+            rtnNode = accessedProp.initializer;
+        }
+    }
+    return rtnNode;
+}
+exports.getValueNodeFromPropertyAccessExpression = getValueNodeFromPropertyAccessExpression;
+function getMDValueFromNode(valueNode, prop, metaUtilObj, topLvlProp) {
     let value = undefined;
-    switch (exp.kind) {
-        case ts.SyntaxKind.StringLiteral:
-            value = exp.text;
-            break;
-        case ts.SyntaxKind.NumericLiteral:
-            value = Number(exp.text);
-            break;
-        case ts.SyntaxKind.TrueKeyword:
-            value = true;
-            break;
-        case ts.SyntaxKind.FalseKeyword:
-            value = false;
-            break;
-        case ts.SyntaxKind.NullKeyword:
-            value = null;
-            break;
-        case ts.SyntaxKind.ArrayLiteralExpression:
-            value = _getArrayLiteral(exp);
-            break;
-        case ts.SyntaxKind.ObjectLiteralExpression:
-            value = _getObjectLiteral(exp);
-            break;
+    if (metaUtilObj) {
+        valueNode = getValueNodeFromReference(valueNode, metaUtilObj) ?? valueNode;
+    }
+    if (!isValueNodeReference(valueNode)) {
+        valueNode = removeCastExpressions(valueNode);
+        switch (valueNode.kind) {
+            case ts.SyntaxKind.StringLiteral:
+                value = valueNode.text;
+                break;
+            case ts.SyntaxKind.NumericLiteral:
+                value = Number(valueNode.text);
+                break;
+            case ts.SyntaxKind.TrueKeyword:
+                value = true;
+                break;
+            case ts.SyntaxKind.FalseKeyword:
+                value = false;
+                break;
+            case ts.SyntaxKind.NullKeyword:
+                value = null;
+                break;
+            case ts.SyntaxKind.BigIntLiteral:
+                if (metaUtilObj) {
+                    const refString = topLvlProp
+                        ? `Sub-property '${prop}' of property '${topLvlProp}'.`
+                        : `Property '${prop}'.`;
+                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_BIGINT_DEFAULT_VALUE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `${_IGNORED_BIGINT_DEFAULT_VALUE_MSG_HEADER}
+  Reference:  ${refString}`, valueNode);
+                }
+                break;
+            case ts.SyntaxKind.ArrowFunction:
+            case ts.SyntaxKind.FunctionExpression:
+            case ts.SyntaxKind.FunctionDeclaration:
+                if (metaUtilObj) {
+                    const refString = topLvlProp
+                        ? `Sub-property '${prop}' of property '${topLvlProp}'.`
+                        : `Property '${prop}'.`;
+                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_FUNCTION_DEFAULT_VALUE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `${_IGNORED_FUNCTION_DEFAULT_VALUE_MSG_HEADER}
+  Reference:  ${refString}`, valueNode);
+                }
+                break;
+            case ts.SyntaxKind.ArrayLiteralExpression:
+                let valArray = [];
+                for (const elem of valueNode.elements) {
+                    const itemValue = getMDValueFromNode(elem, prop, metaUtilObj, topLvlProp);
+                    if (itemValue !== undefined) {
+                        valArray.push(itemValue);
+                    }
+                    else {
+                        if (metaUtilObj) {
+                            const refString = topLvlProp
+                                ? `Sub-property '${prop}' of property '${topLvlProp}'.`
+                                : `Property '${prop}'.`;
+                            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_ARRAY_DEFAULT_VALUE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `${_IGNORED_ARRAY_DEFAULT_VALUE_MSG_HEADER}
+  Reference:  ${refString}`, valueNode);
+                        }
+                        valArray = undefined;
+                        break;
+                    }
+                }
+                if (valArray !== undefined) {
+                    value = valArray;
+                }
+                break;
+            case ts.SyntaxKind.ObjectLiteralExpression:
+                const objExpression = valueNode;
+                let valObj = {};
+                if (objExpression.properties.length > 0) {
+                    for (const subprop of objExpression.properties) {
+                        if (ts.isPropertyAssignment(subprop)) {
+                            const sub_key = subprop.name.getText();
+                            const sub_val = getMDValueFromNode(subprop.initializer, sub_key, metaUtilObj, topLvlProp ?? prop);
+                            if (sub_val !== undefined) {
+                                valObj[sub_key] = sub_val;
+                            }
+                        }
+                    }
+                    if (Object.keys(valObj).length === 0) {
+                        valObj = undefined;
+                    }
+                }
+                if (valObj !== undefined) {
+                    value = valObj;
+                }
+                break;
+            default:
+                if (metaUtilObj) {
+                    const refString = topLvlProp
+                        ? `Sub-property '${prop}' of property '${topLvlProp}'.`
+                        : `Property '${prop}'.`;
+                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.CANNOT_CONVERT_TO_JSON, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Unable to convert the default value '${valueNode.getText()}' to JSON.
+  Reference:  ${refString}`, valueNode);
+                }
+                break;
+        }
     }
     return value;
 }
-exports.getValueFromNode = getValueFromNode;
+exports.getMDValueFromNode = getMDValueFromNode;
 function generateStatementsFromText(text) {
     let tmpNode = ts.createSourceFile('temp.ts', text, ts.ScriptTarget.Latest, false, ts.ScriptKind.TSX);
     _fixSingleQuoteAndNodeFlagsRecursively(tmpNode);
@@ -1125,26 +1239,6 @@ function _pruneSubPropsNotInSet(metadata, validSet) {
         }
     }
 }
-function _getArrayLiteral(arrayExpression) {
-    let retArray = [];
-    arrayExpression.elements.forEach((element) => {
-        const item = getValueFromNode(element);
-        if (!(item === null || item === undefined)) {
-            retArray.push(item);
-        }
-    });
-    return retArray;
-}
-function _getObjectLiteral(objExpression) {
-    let retObj = {};
-    objExpression.properties.forEach((prop) => {
-        if (ts.isPropertyAssignment(prop)) {
-            const propKey = prop.name.getText();
-            retObj[propKey] = getValueFromNode(prop.initializer);
-        }
-    });
-    return retObj;
-}
 function _getScopedSymbolDeclaration(typeNode, checker) {
     let scopedSymbolDeclaration;
     const scopedTypeAliases = checker.getSymbolsInScope(typeNode, ts.SymbolFlags.TypeAlias);
@@ -1251,10 +1345,16 @@ function _metadataToAstNodes(value) {
     switch (typeof value) {
         case 'string':
             return ts.factory.createStringLiteral(value);
+            break;
         case 'number':
             return ts.factory.createNumericLiteral(String(value));
+            break;
+        case 'bigint':
+            return ts.factory.createBigIntLiteral(`${String(value)}n`);
+            break;
         case 'boolean':
             return value ? ts.factory.createTrue() : ts.factory.createFalse();
+            break;
         case 'object':
             if (!value) {
                 return ts.factory.createNull();
@@ -1263,6 +1363,75 @@ function _metadataToAstNodes(value) {
             return ts.factory.createObjectLiteralExpression(keys.map((key) => {
                 return ts.factory.createPropertyAssignment(ts.factory.createStringLiteral(key), _metadataToAstNodes(value[key]));
             }));
+            break;
+        case 'undefined':
+        default:
+            return ts.factory.createIdentifier('undefined');
+            break;
+    }
+}
+function _defaultPropToAstNodes(defProp) {
+    return _cloneValue(defProp);
+}
+function _cloneValue(valueNode) {
+    switch (valueNode.kind) {
+        case ts.SyntaxKind.Identifier:
+            return ts.factory.createIdentifier(valueNode.getText());
+            break;
+        case ts.SyntaxKind.StringLiteral:
+            const strVal = valueNode.getText();
+            return ts.factory.createStringLiteral(strVal.substring(1, strVal.length - 1));
+            break;
+        case ts.SyntaxKind.NumericLiteral:
+            return ts.factory.createNumericLiteral(valueNode.getText());
+            break;
+        case ts.SyntaxKind.BigIntLiteral:
+            return ts.factory.createBigIntLiteral(valueNode.getText());
+            break;
+        case ts.SyntaxKind.TrueKeyword:
+            return ts.factory.createTrue();
+            break;
+        case ts.SyntaxKind.FalseKeyword:
+            return ts.factory.createFalse();
+            break;
+        case ts.SyntaxKind.NullKeyword:
+            return ts.factory.createNull();
+            break;
+        case ts.SyntaxKind.ArrayLiteralExpression:
+            return ts.factory.createArrayLiteralExpression(valueNode.elements.map((elem) => _cloneValue(elem)));
+            break;
+        case ts.SyntaxKind.ObjectLiteralExpression:
+            const propAssignments = valueNode.properties.filter((prop) => ts.isPropertyAssignment(prop));
+            return ts.factory.createObjectLiteralExpression(propAssignments.map((propAssign) => {
+                const propKey = ts.isStringLiteral(propAssign.name)
+                    ? _cloneValue(propAssign.name)
+                    : ts.factory.createStringLiteral(propAssign.name.getText());
+                return ts.factory.createPropertyAssignment(propKey, _cloneValue(propAssign.initializer));
+            }));
+            break;
+        case ts.SyntaxKind.AsExpression:
+            return _cloneValue(valueNode.expression);
+            break;
+        case ts.SyntaxKind.PropertyAccessExpression:
+            const propAccessNode = valueNode;
+            return ts.factory.createPropertyAccessExpression(propAccessNode.expression, propAccessNode.name);
+            break;
+        case ts.SyntaxKind.ArrowFunction:
+            const arrowFuncNode = valueNode;
+            return ts.factory.createArrowFunction(arrowFuncNode.modifiers, arrowFuncNode.typeParameters, arrowFuncNode.parameters, arrowFuncNode.type, arrowFuncNode.equalsGreaterThanToken, arrowFuncNode.body);
+            break;
+        case ts.SyntaxKind.FunctionExpression:
+            const funcExprNode = valueNode;
+            return ts.factory.createFunctionExpression(funcExprNode.modifiers, funcExprNode.asteriskToken, funcExprNode.name, funcExprNode.typeParameters, funcExprNode.parameters, funcExprNode.type, funcExprNode.body);
+            break;
+        case ts.SyntaxKind.FunctionDeclaration:
+            const funcDeclNode = valueNode;
+            const funcID = funcDeclNode.name ? ts.idText(funcDeclNode.name) : 'undefined';
+            return ts.factory.createIdentifier(funcID);
+            break;
+        default:
+            return ts.factory.createIdentifier('undefined');
+            break;
     }
 }
 function _execBundle(src) {

@@ -392,13 +392,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (isTabular && tooltipFunc) {
         var tooltipManager = timeline.getCtx().getTooltipManager();
-        var dataContext = seriesNode.getDataContext();
+        var dataContext = timeline.getEventManager().isDnDDragging()
+          ? seriesNode.getSandboxDataContext()
+          : seriesNode.getDataContext();
         return tooltipManager.getCustomTooltip(tooltipFunc, dataContext);
       }
 
       // Custom Tooltip via Short Desc
       var shortDesc = seriesNode.getShortDesc();
-      if (shortDesc != null) return shortDesc;
+
+      if (shortDesc != null) {
+        return shortDesc;
+      }
 
       // Behavior: If someone upgrades from 5.0.0 to 6.0.0 with no code changes (ie, no shortDesc, valueFormat set),
       // old aria-label format with the translation options will work as before. If shortDesc or valueFormat is set,
@@ -1487,6 +1492,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         : shortDesc;
     }
 
+    /**
+     * Gets a copy of node properties/data that is meant to be updated/manipulated to reflect
+     * any intermediate states of an item (e.g. the state of the item feedback during drag,
+     * which is not final until dragend, and can potentially be cancelled before)
+     * @return {object} Mutable object of properties/data for the node.
+     */
+    getSandboxData() {
+      if (!this._sandboxData) {
+        const data = this.getData(true);
+        this._sandboxData = dvt.JsonUtils.clone(data);
+        this._sandboxData['start'] = data['_start'];
+        this._sandboxData['end'] = data['_end'];
+      }
+      return this._sandboxData;
+    }
+
     getStyle() {
       return this._style;
     }
@@ -2086,17 +2107,42 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         component: this._timeline.getOptions()['_widgetConstructor']
       };
     }
+
+    /**
+     * Gets a dataContext object that is meant to be updated/manipulated to reflect
+     * any intermediate states of an item (e.g. the state of the item feedback during drag,
+     * which is not final until dragend, and can potentially be cancelled before)
+     * @return {object} Mutable dataContext object
+     */
+    getSandboxDataContext() {
+      var data = this.getSandboxData();
+      // ensure dates are iso strings
+      data['start'] = new Date(data['start']).toISOString();
+      data['end'] = new Date(data['end']).toISOString();
+      var itemData = this.getData()['_itemData'];
+      return {
+        data: data,
+        seriesData: this._series.getData(true),
+        itemData: itemData ? itemData : null,
+        color: DvtTimelineTooltipUtils.getDatatipColor(this),
+        component: this._timeline.getOptions()['_widgetConstructor']
+      };
+    }
+
     /**
      * Returns the shortDesc Context of the node.
      * @param {DvtTimelineSeriesNode} node
      * @return {object}
      */
     static getShortDescContext(node) {
-      var itemData = node.getData()['_itemData'];
+      // JET-61852 keyboard move event not updating custom tooltip
+      var dataContext = node._timeline.getEventManager().isDnDDragging()
+        ? node.getSandboxDataContext()
+        : node.getDataContext();
       return {
-        data: node.getData(true),
-        seriesData: node._series.getData(true),
-        itemData: itemData ? itemData : null
+        data: dataContext.data,
+        seriesData: dataContext.seriesData,
+        itemData: dataContext.itemData
       };
     }
 
@@ -2303,7 +2349,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             this._dragEndTime = this._timeline.getPosDate(adjustedEndPos);
 
             if (showTooltip) {
-              this._showDragFeedbackTooltip(event, this._displayable, 'center');
+              this._showDragFeedbackTooltip(
+                event,
+                this._dragStartTime,
+                this._dragEndTime,
+                this._displayable,
+                'center'
+              );
             }
 
             break;
@@ -2328,18 +2380,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
               DvtTimelineStyleUtils.getMinDurationEvent(this);
 
             if (isEndResize && adjustedEndPos > allowedStartPos) {
-              var newEndTime = this._timeline.getPosDate(adjustedEndPos);
-              this._dragEndTime = newEndTime;
+              this._dragEndTime = this._timeline.getPosDate(adjustedEndPos);
+              this._dragStartTime = this._startTime;
               this._timeline.getEventManager().handleDurationEventResize(this, this._series, transX);
             } else if (!isEndResize && adjustedStartPos < allowedEndPos) {
-              var newStartTime = this._timeline.getPosDate(adjustedStartPos);
-              this._dragStartTime = newStartTime;
+              this._dragStartTime = this._timeline.getPosDate(adjustedStartPos);
+              this._dragEndTime = this._endTime;
               this._timeline.getEventManager().handleDurationEventResize(this, this._series, transX);
             }
-
             // render feedback
             if (showTooltip) {
-              this._showDragFeedbackTooltip(event, this._displayable, isEndResize ? 'end' : 'start');
+              this._showDragFeedbackTooltip(
+                event,
+                this._dragStartTime,
+                this._dragEndTime,
+                this._displayable,
+                isEndResize ? 'end' : 'start'
+              );
             }
             break;
         }
@@ -2353,13 +2410,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {string} position The position of the tooltip relative to the feedback. One of 'center', 'start', 'end'
      * @private
      */
-    _showDragFeedbackTooltip(event, feedbackObj, position) {
+    _showDragFeedbackTooltip(event, feedbackStartTime, feedbackEndTime, feedbackObj, position) {
       var ctx = this._timeline.getCtx();
       var isRTL = dvt.Agent.isRightToLeft(ctx);
+      var sandboxData = this.getSandboxData();
 
       var durationBubbleContainer = feedbackObj.getChildAt(0);
       var feedbackDimensions = (durationBubbleContainer || feedbackObj).getDimensions(ctx.getStage());
       var coords;
+
+      sandboxData['start'] = feedbackStartTime;
+      sandboxData['end'] = feedbackEndTime;
+
       switch (position) {
         case 'start':
           coords = new dvt.Point(
@@ -2393,6 +2455,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._displayable._resizeEdge = null;
         this._type = null;
       }
+      // reset sandbox data
+      this._sandboxData = null;
       this._dragStartTime = null;
       this._dragEndTime = null;
       this._timeline.getEventManager().handleDurationEventReset(this, this._series);
@@ -3200,7 +3264,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       bubbleContainer.setClassName('oj-timeline-item-bubble-container');
 
       if (item.getLoc() >= 0) container.addChild(bubbleContainer);
-      bubbleContainer.setAriaRole('img');
+      // JET-64239 OATB Structure error - Nested
+      var bubbleContainerRole = item._timeline.getOptions().itemBubbleContentRenderer
+        ? 'region'
+        : 'img';
+      bubbleContainer.setAriaRole(bubbleContainerRole);
+
       series._callbackObj.EventManager.associate(bubbleContainer, item);
 
       // set up move/resize cursor css class.
@@ -3580,6 +3649,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       container._h = Math.max(maxHeight, textHeight);
       return container;
     },
+    /**
+     * update the content of the bubble when re-rendering
+     * @param {DvtTimelineSeriesItem} item The item being updated.
+     * @param {DvtTimelineSeries} series The series containing this item.
+     */
+    _setupDurationEvent: (item, series) => {
+      var contentContainer = item._content.getParent();
+      contentContainer.removeChild(item._content);
+      // Re-render bubble, e.g. to evaluate whether content should truncate
+      item._content = DvtTimelineSeriesItemRenderer._getBubbleContent(item, series);
+      contentContainer.addChild(item._content);
+      DvtTimelineSeriesItemRenderer._setupBubble(item, item._content);
+    },
 
     /**
      * Updates the rendering of a timeline series item bubble.
@@ -3591,13 +3673,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     _updateBubble: (item, series, index, mvAnimator) => {
       // Need to update the bubble widths before spacing if applicable
+      if (
+        item._timeline._isComponentResize ||
+        item.getItemType() === DvtTimelineSeriesNode.DURATION_EVENT
+      ) {
+        DvtTimelineSeriesItemRenderer._setupDurationEvent(item, series);
+      }
       if (item.getItemType() === DvtTimelineSeriesNode.DURATION_EVENT) {
-        var contentContainer = item._content.getParent();
-        contentContainer.removeChild(item._content);
-        // Re-render bubble, e.g. to evaluate whether content should truncate
-        item._content = DvtTimelineSeriesItemRenderer._getBubbleContent(item, series);
-        contentContainer.addChild(item._content);
-        DvtTimelineSeriesItemRenderer._setupBubble(item, item._content);
         DvtTimelineSeriesItemRenderer._updateDurationEvent(item, series, null, mvAnimator);
       } else {
         var padding = DvtTimelineStyleUtils.getBubblePadding(item);
@@ -4671,6 +4753,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     }
 
     /**
+     * @override
+     */
+    HandleImmediateTouchStartInternal(event) {
+      if (event.targetTouches.length === 1) this.setDraggedObj(event);
+    }
+
+    /**
      *
      */
     setDraggedObj(event) {
@@ -4781,6 +4870,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @override
      */
     handleDurationEventResize(item, series, transX) {
+      DvtTimelineSeriesItemRenderer._setupDurationEvent(item, series);
       DvtTimelineSeriesItemRenderer._updateDurationEvent(item, series, transX);
     }
 
@@ -4789,6 +4879,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @override
      */
     handleDurationEventReset(item, series) {
+      DvtTimelineSeriesItemRenderer._setupDurationEvent(item, series);
       DvtTimelineSeriesItemRenderer._updateDurationEvent(item, series);
     }
 
@@ -5752,16 +5843,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       } else if (this._keyboardDnDMode === 'resizeEnd' || this._keyboardDnDMode === 'resizeStart') {
         this._component.updateLiveRegionText(translations.itemResizeCancelled);
       }
-      if (this._keyboardDragObject) {
-        this._hideMoveAffordance(this._keyboardDragObject);
-        this._keyboardDragObject._dropCleanup();
-        this._applyToSelection((selectionObj) => {
-          if (selectionObj && selectionObj != this._keyboardDragObject) {
-            this._hideMoveAffordance(selectionObj);
-            selectionObj._dropCleanup();
-          }
-        });
-      }
       this._dragCancelCleanup();
       this._keyboardDnDCleanup();
     }
@@ -5773,6 +5854,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     _keyboardDnDCleanup() {
       if (this._keyboardDnDMode != null) {
         //this._keyboardDragObject.dragEndCleanup();
+        if (this._keyboardDragObject) {
+          this._hideMoveAffordance(this._keyboardDragObject);
+          this._keyboardDragObject._dropCleanup();
+          this._applyToSelection((selectionObj) => {
+            if (selectionObj && selectionObj != this._keyboardDragObject) {
+              this._hideMoveAffordance(selectionObj);
+              selectionObj._dropCleanup();
+            }
+          });
+        }
         this._keyboardDnDMode = null;
         this._isDndDragging = false;
         this._keyboardDnDTargetObj = null;
@@ -9258,6 +9349,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (series._seriesTicks == null) {
         series._seriesTicks = new dvt.Container(series.getCtx());
         series._seriesMinorTicks = new dvt.Container(series.getCtx());
+        // JET-64817 iOS VoiceOver Grid stealing focus
+        series._seriesTicks._setAriaProperty('hidden', 'true');
+        series._seriesMinorTicks._setAriaProperty('hidden', 'true');
         series._callbackObj._timeZoomCanvas.addChild(series._seriesTicks);
         series._canvas.addChild(series._seriesMinorTicks);
       } else {
@@ -9552,6 +9646,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (series._refObjectsContainer == null) {
         series._refObjectsContainer = new dvt.Container(context);
+        // JET-64817 iOS VoiceOver Grid stealing focus
+        series._refObjectsContainer._setAriaProperty('hidden', 'true');
         container.addChild(series._refObjectsContainer);
       }
       series._refObjectsContainer.removeChildren();
@@ -10538,6 +10634,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {number} height The height of the component.
      */
     render(options, width, height) {
+      this._isComponentResize = !options;
       if (!options) {
         this._handleResize(width, height);
         return;
@@ -10556,7 +10653,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       // Animation Support
       // Stop any animation in progress
-      this.StopAnimation();
+      this.StopAnimation(true);
 
       this._fetchStartPos = 0;
       if (this._isVertical) this._fetchEndPos = height;
@@ -10918,6 +11015,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
                 this._series[i]._items[0]._data.itemType !== series[i].items[0].itemType
               ) {
                 this._timeZoomCanvas.removeChild(this._series[i]);
+                this._timeZoomCanvas.removeChild(this._series[i]._seriesTicks);
+                this._series[i]._seriesTicks = null;
                 this._series[i] = null;
               }
             }
@@ -11136,9 +11235,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     createViewportChangeEvent() {
       // if custom scale, we use the name given in the custom scale.
       var scaleName = this._timeAxis.getScale();
-      if (typeof scaleName != 'string') {
-        scaleName = scaleName.name;
-      }
       return dvt.EventFactory.newTimelineViewportChangeEvent(
         this._viewStartTime,
         this._viewEndTime,

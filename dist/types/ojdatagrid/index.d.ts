@@ -396,7 +396,7 @@ export namespace ojDataGrid {
     interface ojCellResize extends CustomEvent<{
         dimension: 'columnHeaderHeight' | 'columnEndHeaderHeight' | 'rowHeaderWidth' | 'rowEndHeaderWidth' | 'columnWidth' | 'rowHeight';
         indices: number[] | undefined;
-        level: number[] | undefined;
+        levels: number[] | undefined;
         size: number;
         [propName: string]: any;
     }> {
@@ -1083,7 +1083,7 @@ export namespace DataGridElement {
     interface ojCellResize extends CustomEvent<{
         dimension: 'columnHeaderHeight' | 'columnEndHeaderHeight' | 'rowHeaderWidth' | 'rowEndHeaderWidth' | 'columnWidth' | 'rowHeight';
         indices: number[] | undefined;
-        level: number[] | undefined;
+        levels: number[] | undefined;
         size: number;
         [propName: string]: any;
     }> {

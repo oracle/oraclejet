@@ -2351,6 +2351,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var element = this.element;
       var status = oj.ZOrderUtils.getStatus(element);
       if (status === oj.ZOrderUtils.STATUS.OPEN) {
+        CustomElementUtils.cleanComponentBindings(element[0]);
         element.remove();
       }
     },

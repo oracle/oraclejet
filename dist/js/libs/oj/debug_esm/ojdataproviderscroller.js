@@ -2158,6 +2158,7 @@ IteratingDataProviderContentHandler.prototype.renderInitialSkeletons = function 
 };
 
 IteratingDataProviderContentHandler.LOAD_MORE_SKELETONS_ROW_COUNT = 3;
+IteratingDataProviderContentHandler.MAX_SKELETON_COLUMN = 10;
 
 /**
  * Adjust the load more skeleton in the case of component resize/reattach
@@ -2263,7 +2264,10 @@ IteratingDataProviderContentHandler.prototype._fillEmptySpaceWithSkeletons = fun
   var lastItem = this.m_root.lastElementChild;
   var cardWidthWithMargin = cardDim.width + this.getMargin();
   var width = this._getRootElementWidth(true);
-  var count = Math.floor((width - lastItem.offsetLeft - cardWidthWithMargin) / cardWidthWithMargin);
+  var count = Math.min(
+    IteratingDataProviderContentHandler.MAX_SKELETON_COLUMN,
+    Math.floor((width - lastItem.offsetLeft - cardWidthWithMargin) / cardWidthWithMargin)
+  );
   if (count > 0) {
     var container = this._renderSkeletons(count);
     container.style.visibility = 'hidden';
@@ -2283,7 +2287,13 @@ IteratingDataProviderContentHandler.prototype._createLoadMoreSkeletons = functio
     var cardDimension = this._getCardDimension();
     var cardWidth =
       cardDimension === undefined ? this.getDefaultSkeletonDimension().width : cardDimension.width;
-    count = cardWidth === 0 ? 0 : Math.floor(width / (cardWidth + this.getMargin()));
+    count =
+      cardWidth === 0
+        ? 0
+        : Math.min(
+            IteratingDataProviderContentHandler.MAX_SKELETON_COLUMN,
+            Math.floor(width / (cardWidth + this.getMargin()))
+          );
   } else {
     count = IteratingDataProviderContentHandler.LOAD_MORE_SKELETONS_ROW_COUNT;
   }

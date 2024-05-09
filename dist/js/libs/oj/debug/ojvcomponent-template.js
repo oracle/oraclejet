@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'preact', 'preact/jsx-runtime', 'ojs/ojcontext', 'ojs/ojdataproviderhandler', 'ojs/ojpreact-managetabstops', 'ojs/ojbindpropagation', 'ojs/ojconfig', 'ojs/ojmetadatautils', 'ojs/ojcspexpressionevaluator-internal', 'ojs/ojmonitoring'], function (exports, Logger, HtmlUtils, ojcustomelementUtils, ojcustomelementRegistry, preact, jsxRuntime, Context, ojdataproviderhandler, ojpreactManagetabstops, ojbindpropagation, ojconfig, ojmetadatautils, ojcspexpressionevaluatorInternal, ojmonitoring) { 'use strict';
+define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'preact', 'preact/jsx-runtime', 'ojs/ojcontext', 'ojs/ojdataproviderhandler', 'ojs/ojpreact-managetabstops', 'ojs/ojbindpropagation', 'ojs/ojconfig', 'ojs/ojmetadatautils', 'ojs/ojcspexpressionevaluator-internal', 'ojs/ojmonitoring', 'ojs/ojexpparser'], function (exports, Logger, HtmlUtils, ojcustomelementUtils, ojcustomelementRegistry, preact, jsxRuntime, Context, ojdataproviderhandler, ojpreactManagetabstops, ojbindpropagation, ojconfig, ojmetadatautils, ojcspexpressionevaluatorInternal, ojmonitoring, ojexpparser) { 'use strict';
 
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
@@ -94,7 +94,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
     const _PROVIDED_KEY = '$provided';
     const _CONTEXT_PARAM = [
         {
-            type: 1,
+            type: ojexpparser.IDENTIFIER,
             name: '$context'
         }
     ];
@@ -187,14 +187,14 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             return ast;
         }
         _createAst(engineContext, nodes) {
-            const arrayNode = { type: 9, elements: [] };
+            const arrayNode = { type: ojexpparser.ARRAY_EXP, elements: [] };
             arrayNode.elements = Array.prototype.reduce.call(nodes, (acc, node) => {
                 const special = this._processSpecialNodes(engineContext, node);
                 if (special) {
                     acc.push(special);
                 }
                 else if (node.nodeType === 3) {
-                    acc.push({ type: 3, value: node.nodeValue });
+                    acc.push({ type: ojexpparser.LITERAL, value: node.nodeValue });
                 }
                 else if (node.nodeType === 1) {
                     acc.push(this._createElementNode(engineContext, node));
@@ -226,7 +226,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
         }
         _createBindTemplateNode(engineContext, node) {
             const templateProps = {
-                type: 10,
+                type: ojexpparser.OBJECT_EXP,
                 properties: []
             };
             const slotName = node.getAttribute('name') || '';
@@ -274,9 +274,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             const getAstFromCacheFunc = this._getAstViaCache.bind(this);
             const evaluator = this._cspEvaluator;
             const renderProp = {
-                key: 'render',
+                type: ojexpparser.PROPERTY,
+                key: { type: ojexpparser.LITERAL, value: 'render' },
                 value: {
-                    type: 3,
+                    type: ojexpparser.LITERAL,
                     value: (itemContext, provided) => {
                         const ctx = Object.assign({}, engineContext[BINDING_CONTEXT], {
                             $current: itemContext
@@ -304,9 +305,13 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             let props = this._getElementProps(engineContext, node);
             props.push(renderProp);
             if (engineContext[BINDING_PROVIDER]) {
-                props.push({ key: 'data-oj-use-ko', value: { type: 3, value: '' } });
+                props.push({
+                    type: ojexpparser.PROPERTY,
+                    key: { type: ojexpparser.LITERAL, value: 'data-oj-use-ko' },
+                    value: { type: ojexpparser.LITERAL, value: '' }
+                });
             }
-            return this._createHFunctionCallNode('template', [{ type: 10, properties: props }]);
+            return this._createHFunctionCallNode('template', [{ type: ojexpparser.OBJECT_EXP, properties: props }]);
         }
         _createDeferContent(engineContext, nodes, context) {
             const bindDomConfig = { view: nodes, data: context };
@@ -322,9 +327,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             let deferNode;
             const deferProps = [
                 {
-                    key: 'ref',
+                    type: ojexpparser.PROPERTY,
+                    key: { type: ojexpparser.LITERAL, value: 'ref' },
                     value: {
-                        type: 3,
+                        type: ojexpparser.LITERAL,
                         value: (refObj) => {
                             if (refObj) {
                                 deferNode = refObj;
@@ -337,7 +343,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                     }
                 },
                 {
-                    key: '_activateSubtree',
+                    type: ojexpparser.PROPERTY,
+                    key: { type: ojexpparser.LITERAL, value: '_activateSubtree' },
                     value: this._createCallNodeWithContext((context) => {
                         return (parentNode) => {
                             deferContent = this._createDeferContent(engineContext, Array.from(node.childNodes), context);
@@ -348,21 +355,21 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             ];
             let props = this._getElementProps(engineContext, node);
             props = props.concat(deferProps);
-            return this._createHFunctionCallNode('oj-defer', [{ type: 10, properties: props }]);
+            return this._createHFunctionCallNode('oj-defer', [{ type: ojexpparser.OBJECT_EXP, properties: props }]);
         }
         _createIfExpressionNode(engineContext, node) {
             if (!node.hasAttribute('test')) {
                 throw new Error("Missing the retuired 'test' attribute on <oj-bind-if>");
             }
             return {
-                type: 5,
+                type: ojexpparser.UNARY_EXP,
                 operator: '...',
                 argument: {
-                    type: 8,
+                    type: ojexpparser.CONDITIONAL_EXP,
                     test: this._createExpressionNode(engineContext, node.getAttribute('test')),
                     consequent: this._createAst(engineContext, Array.from(node.childNodes)),
                     alternate: {
-                        type: 3,
+                        type: ojexpparser.LITERAL,
                         value: []
                     }
                 }
@@ -375,12 +382,14 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             }
             return this._createComponentNode(engineContext, node, BindForEachWrapper, [
                 {
-                    key: 'itemRenderer',
+                    type: ojexpparser.PROPERTY,
+                    key: { type: ojexpparser.LITERAL, value: 'itemRenderer' },
                     value: this._createNestedTemplateRendererNode(engineContext, template)
                 },
                 {
-                    key: 'componentElement',
-                    value: { type: 3, value: engineContext[COMPONENT_ELEMENT] }
+                    type: ojexpparser.PROPERTY,
+                    key: { type: ojexpparser.LITERAL, value: 'componentElement' },
+                    value: { type: ojexpparser.LITERAL, value: engineContext[COMPONENT_ELEMENT] }
                 }
             ]);
         }
@@ -422,7 +431,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             if (node.hasAttribute('data-oj-manage-tabs')) {
                 return this._createComponentNode(engineContext, null, ojpreactManagetabstops.ManageTabStops, [
                     {
-                        key: 'children',
+                        type: ojexpparser.PROPERTY,
+                        key: { type: ojexpparser.LITERAL, value: 'children' },
                         value: elementNode
                     }
                 ]);
@@ -431,7 +441,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
         }
         _createPossiblyProvidedAndConsumedProperties(localTagName, engineContext, compMetadata, props) {
             const propertyObjectNode = {
-                type: 10,
+                type: ojexpparser.OBJECT_EXP,
                 properties: props
             };
             const provideConsumeMeta = ojbindpropagation.getPropagationMetadataViaCache(localTagName, compMetadata);
@@ -439,7 +449,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                 return propertyObjectNode;
             }
             const specifiedProps = new Set();
-            props.reduce((acc, def) => acc.add(def.key), specifiedProps);
+            props.reduce((acc, def) => acc.add(def.key.value), specifiedProps);
             const consumingProps = [];
             const unwrap = this._getUnwrapObservable(engineContext);
             for (const [pName, meta] of provideConsumeMeta) {
@@ -447,7 +457,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                 if (consumeMeta) {
                     if (pName === ojbindpropagation.CONSUMED_CONTEXT) {
                         consumingProps.push({
-                            key: '__oj_private_contexts',
+                            type: ojexpparser.PROPERTY,
+                            key: { type: ojexpparser.LITERAL, value: '__oj_private_contexts' },
                             value: this._createCallNodeWithContext(($ctx) => {
                                 const providedValues = new Map();
                                 const provided = unwrap($ctx)?.[_PROVIDED_KEY];
@@ -463,7 +474,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                     else if (!(specifiedProps.has(pName) ||
                         specifiedProps.has(ojcustomelementUtils.AttributeUtils.propertyNameToAttribute(pName).toUpperCase()))) {
                         consumingProps.push({
-                            key: pName,
+                            type: ojexpparser.PROPERTY,
+                            key: { type: ojexpparser.LITERAL, value: pName },
                             value: this._createCallNodeWithContext(($ctx) => {
                                 const provided = unwrap($ctx)?.[_PROVIDED_KEY];
                                 if (provided) {
@@ -476,7 +488,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             }
             const propertyObjNodeWithConsumers = consumingProps.length === 0
                 ? propertyObjectNode
-                : { type: 10, properties: propertyObjectNode.properties.concat(consumingProps) };
+                : { type: ojexpparser.OBJECT_EXP, properties: propertyObjectNode.properties.concat(consumingProps) };
             const metadataProps = compMetadata.properties;
             return this._createCallNodeWithContext(($ctx, resolvedProps) => {
                 let provided = new Map();
@@ -543,23 +555,26 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             return this._createComponentNode(engineContext, node, BindDom, [
                 this._createPropertyNode(engineContext, 'config', configValue, (config) => Promise.resolve(config)),
                 {
-                    key: 'bindingProvider',
-                    value: { type: 3, value: engineContext[BINDING_PROVIDER] }
+                    type: ojexpparser.PROPERTY,
+                    key: { type: ojexpparser.LITERAL, value: 'bindingProvider' },
+                    value: { type: ojexpparser.LITERAL, value: engineContext[BINDING_PROVIDER] }
                 },
                 {
-                    key: 'executeFragment',
-                    value: { type: 3, value: this.executeFragment.bind(this) }
+                    type: ojexpparser.PROPERTY,
+                    key: { type: ojexpparser.LITERAL, value: 'executeFragment' },
+                    value: { type: ojexpparser.LITERAL, value: this.executeFragment.bind(this) }
                 }
             ]);
         }
         _createComponentNode(engineContext, node, component, extraProps) {
             let props = node ? this._getElementProps(engineContext, node) : [];
             props = extraProps ? props.concat(extraProps) : props;
-            return this._createHFunctionCallNode(component, [{ type: 10, properties: props }]);
+            return this._createHFunctionCallNode(component, [{ type: ojexpparser.OBJECT_EXP, properties: props }]);
         }
         _createPropertyNode(engineContext, key, value, postprocess) {
             return {
-                key: key,
+                type: ojexpparser.PROPERTY,
+                key: { type: ojexpparser.LITERAL, value: key },
                 value: this._createExpressionNode(engineContext, value, postprocess)
             };
         }
@@ -634,7 +649,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                                 }
                                 else {
                                     acc.push({
-                                        key: propName,
+                                        type: ojexpparser.PROPERTY,
+                                        key: { type: ojexpparser.LITERAL, value: propName },
                                         value: this._createExpressionEvaluator(engineContext, expValue.expr)
                                     });
                                 }
@@ -658,8 +674,9 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                         }
                         else {
                             acc.push({
-                                key: name.toUpperCase(),
-                                value: { type: 3, value: value }
+                                type: ojexpparser.PROPERTY,
+                                key: { type: ojexpparser.LITERAL, value: name.toUpperCase() },
+                                value: { type: ojexpparser.LITERAL, value: value }
                             });
                         }
                     }
@@ -675,9 +692,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             }
             else if (dotStyleValues.length > 0) {
                 attrNodes.push({
-                    key: 'style',
+                    type: ojexpparser.PROPERTY,
+                    key: { type: ojexpparser.LITERAL, value: 'style' },
                     value: {
-                        type: 10,
+                        type: ojexpparser.OBJECT_EXP,
                         properties: dotStyleValues.map((dotStyleVal) => {
                             return this._createPropertyNode(engineContext, ojcustomelementUtils.AttributeUtils.attributeToPropertyName(dotStyleVal.k), dotStyleVal.v);
                         })
@@ -705,16 +723,23 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
         }
         _createRefPropertyNodeForNestedProps(engineContext, dottedExpressions) {
             const dottedPropObjectNodes = dottedExpressions.map(({ subProps, expr }) => ({
-                type: 10,
-                properties: [{ key: subProps, value: this._createExpressionEvaluator(engineContext, expr) }]
+                type: ojexpparser.OBJECT_EXP,
+                properties: [
+                    {
+                        type: ojexpparser.PROPERTY,
+                        key: { type: ojexpparser.LITERAL, value: subProps },
+                        value: this._createExpressionEvaluator(engineContext, expr)
+                    }
+                ]
             }));
             const dottedPropsArrayNode = {
-                type: 9,
+                type: ojexpparser.ARRAY_EXP,
                 elements: dottedPropObjectNodes
             };
             const cb = VTemplateEngine._nestedPropsRefCallback;
             return {
-                key: 'ref',
+                type: ojexpparser.PROPERTY,
+                key: { type: ojexpparser.LITERAL, value: 'ref' },
                 value: this._createCallNodeWithContext(Function.prototype.bind.bind(cb, engineContext[BINDING_PROVIDER]), [dottedPropsArrayNode])
             };
         }
@@ -728,7 +753,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             const propExprEvaluators = [];
             let callbackExprEvaluator;
             return {
-                key: eventPropName,
+                type: ojexpparser.PROPERTY,
+                key: { type: ojexpparser.LITERAL, value: eventPropName },
                 value: this._createCallNodeWithContext((bindingContext) => {
                     return (event) => {
                         valuesArray.forEach((propItem, index) => {
@@ -775,7 +801,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
         _createEventListenerPropertyNode(propName, propExpr) {
             let propExprEvaluator;
             return {
-                key: propName,
+                type: ojexpparser.PROPERTY,
+                key: { type: ojexpparser.LITERAL, value: propName },
                 value: this._createCallNodeWithContext((bindingContext) => {
                     return (event) => {
                         if (!propExprEvaluator) {
@@ -793,7 +820,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             const info = ojcustomelementUtils.AttributeUtils.getExpressionInfo(attrVal);
             return info.expr
                 ? this._createExpressionEvaluator(engineContext, info.expr, postprocess)
-                : { type: 3, value: attrVal };
+                : { type: ojexpparser.LITERAL, value: attrVal };
         }
         _createExpressionEvaluator(engineContext, exp, postprocess) {
             const delegateEvaluator = this._cspEvaluator.createEvaluator(exp).evaluate;
@@ -814,9 +841,9 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
         }
         _createCallNodeWithContext(callback, extaArgs) {
             return {
-                type: 4,
+                type: ojexpparser.CALL_EXP,
                 callee: {
-                    type: 3,
+                    type: ojexpparser.LITERAL,
                     value: callback
                 },
                 arguments: extaArgs ? _CONTEXT_PARAM.concat(extaArgs) : _CONTEXT_PARAM
@@ -824,14 +851,14 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
         }
         _createHFunctionCallNode(elementName, extraArgs) {
             return {
-                type: 4,
+                type: ojexpparser.CALL_EXP,
                 callee: {
-                    type: 1,
+                    type: ojexpparser.IDENTIFIER,
                     name: '$h'
                 },
                 arguments: [
                     {
-                        type: 3,
+                        type: ojexpparser.LITERAL,
                         value: elementName
                     },
                     ...extraArgs
@@ -841,8 +868,11 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
         _getAttribute(engineContext, key, value) {
             const expr = ojcustomelementUtils.AttributeUtils.getExpressionInfo(value).expr;
             return {
-                key: key,
-                value: expr ? this._createExpressionEvaluator(engineContext, expr) : { type: 3, value: value }
+                type: ojexpparser.PROPERTY,
+                key: { type: ojexpparser.LITERAL, value: key },
+                value: expr
+                    ? this._createExpressionEvaluator(engineContext, expr)
+                    : { type: ojexpparser.LITERAL, value: value }
             };
         }
         _getWriter(evaluator) {

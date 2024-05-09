@@ -1590,7 +1590,11 @@ MessagesViewModel.prototype._refresh = function () {
 };
 
 MessagesViewModel.prototype._surrogateRemoveHandler = function () {
-  this._closeOverlay();
+  var composite = $(this._composite);
+  if (oj.ZOrderUtils.getStatus(composite) === oj.ZOrderUtils.STATUS.OPEN) {
+    CustomElementUtils.cleanComponentBindings(composite[0]);
+    this._closeOverlay();
+  }
 };
 
 MessagesViewModel.prototype._createObservables = function () {

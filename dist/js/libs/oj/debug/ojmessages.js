@@ -1579,7 +1579,11 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   };
 
   MessagesViewModel.prototype._surrogateRemoveHandler = function () {
-    this._closeOverlay();
+    var composite = $(this._composite);
+    if (oj.ZOrderUtils.getStatus(composite) === oj.ZOrderUtils.STATUS.OPEN) {
+      ojcustomelementUtils.CustomElementUtils.cleanComponentBindings(composite[0]);
+      this._closeOverlay();
+    }
   };
 
   MessagesViewModel.prototype._createObservables = function () {

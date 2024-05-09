@@ -45,6 +45,10 @@ var __oj_diagram_metadata =
       "type": "string",
       "value": ""
     },
+    "currentItem": {
+      "type": "any",
+      "writeback": true
+    },
     "data": {
       "type": "object",
       "extension": {
@@ -1320,7 +1324,20 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
      * myDiagram.animationOnDisplay="auto";
      */
     animationOnDisplay: 'none',
-
+    /**
+     * The node or link that should receive focus.  Note that if the current item is set to something invalid or to
+     * something hidden inside a collapsed parent node, then the value is not applied.
+     * @ojshortdesc Specifies the node or link that should receive focus.
+     * @expose
+     * @name currentItem
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {any=}
+     * @ojsignature {target:"Type", value:"K1|K2"}
+     * @default null
+     * @ojwriteback
+     */
+    currentItem: null,
     /**
      * Provides support for HTML5 Drag and Drop events. Please refer to <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop">third party documentation</a> on HTML5 Drag and Drop to learn how to use it.
      * @ojshortdesc Used to customize the drag and drop features.
@@ -3967,12 +3984,15 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
   },
 
   _GetOptimizedOptions: function () {
-    return this._super().concat('panZoomState');
+    return this._super().concat(['panZoomState', 'currentItem']);
   },
 
   _UpdateNoRenderOptions: function (options) {
     if (options.panZoomState !== undefined) {
       this._component.panZoom(options.panZoomState);
+    }
+    if (options.currentItem !== undefined) {
+      this._component.setCurrentItem(options.currentItem);
     }
     this._super(options);
   },
@@ -4241,6 +4261,24 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
     }
 
     this._super(options);
+  },
+
+  /**
+   * Gets the current item.
+   * @private
+   * @memberof oj.ojDiagram
+   */
+  _getCurrentItem: function () {
+    return this._component.getOptions().currentItem;
+  },
+
+  /**
+   * Handles data deletion of the current item.
+   * @private
+   * @memberof oj.ojDiagram
+   */
+  _handleRemoveCurrentItem: function () {
+    return this._component.setCurrentItem(null, true);
   },
 
   /**

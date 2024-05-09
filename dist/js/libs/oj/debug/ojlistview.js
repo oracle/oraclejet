@@ -5363,7 +5363,7 @@ var __oj_list_view_metadata =
           tempFocusDiv.setAttribute('tabindex', '-1');
           container.appendChild(tempFocusDiv);
         }
-        tempFocusDiv.focus();
+        tempFocusDiv.focus({ preventScroll: true });
       },
 
       /**

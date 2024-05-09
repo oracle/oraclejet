@@ -364,7 +364,7 @@
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v16.0.0"}' !important; }
+  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v16.1.0"}' !important; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -7779,6 +7779,7 @@ oj-buttonset-many {
   color: RGB(var(--oj-palette-dvt-rgb-12)); }
 
 .oj-dvt-tooltip {
+  box-sizing: border-box;
   border-style: solid;
   border-width: 1px;
   padding: var(--oj-tooltip-padding);
@@ -7791,6 +7792,7 @@ oj-buttonset-many {
 
 .oj-dvt-datatip {
   color: var(--oj-core-text-color-primary);
+  box-sizing: border-box;
   border-style: solid;
   border-width: 1px;
   padding: 0.5rem;
@@ -9944,7 +9946,7 @@ oj-list-view:not(.oj-complete) {
 /* remove border top for the first group or leaf item to prevent double border */
 .oj-listview-element > .oj-listview-item:first-child,
 .oj-listview:not(.oj-listview-card-layout) .oj-listview-group > .oj-listview-item:first-child,
-.oj-listview-element > .oj-listview-item-element:first-child .oj-listview-group-item {
+.oj-listview-group > .oj-listview-item-element:first-child .oj-listview-group-item {
   background-size: 0; }
 
 /* styling on each list item */
@@ -10121,7 +10123,6 @@ ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-grid
   border-width: 0 0 1px; }
 
 /* Styling for group items when gridlines are visible on expanded and collapsed state */
-.oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-group-item,
 .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-item-element.oj-expanded .oj-listview-group-item,
 .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-item-element.oj-collapsed .oj-listview-group-item {
   border-width: 1px 0 1px; }
@@ -16715,11 +16716,11 @@ oj-message-banner:not(.oj-complete) {
 .oj-messagebanner-item {
   background-color: var(--oj-private-message-banner-background-color);
   border-bottom-width: 1px;
-  border-bottom-style: 'solid';
+  border-bottom-style: solid;
   border-bottom-color: var(--oj-core-divider-color); }
 
 .oj-messagebanner-item:focus-visible {
-  outline-style: 'dotted';
+  outline-style: dotted;
   outline-width: 1px;
   outline-color: var(--oj-core-focus-border-color);
   outline-offset: 1px; }
@@ -16729,10 +16730,10 @@ oj-message-banner:not(.oj-complete) {
   border-radius: var(--oj-core-border-radius-lg); }
 
 .oj-messagebanner-content {
-  align-items: 'center';
-  box-sizing: 'border-box';
-  display: 'flex';
-  flex-wrap: 'wrap';
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
   padding-top: var(--oj-core-spacing-4x);
   padding-bottom: var(--oj-core-spacing-4x);
   padding-inline-start: var(--oj-core-gutter-start, var(--oj-core-spacing-4x));
@@ -16745,20 +16746,20 @@ oj-message-banner:not(.oj-complete) {
   color: var(--oj-private-message-banner-start-icon-color);
   font-size: var(--oj-private-message-banner-start-icon-size);
   height: var(--oj-private-message-banner-summary-line-height);
-  align-self: 'flex-start';
-  display: 'flex';
+  align-self: flex-start;
+  display: flex;
   margin-inline-end: var(--oj-core-spacing-2x); }
 
 .oj-messagebanner-start-icon {
   height: calc(var(--oj-private-message-banner-summary-text-size) * var(--oj-private-message-banner-summary-line-height));
-  display: 'flex';
-  align-items: 'center'; }
+  display: flex;
+  align-items: center; }
 
 .oj-messagebanner-header {
-  box-sizing: 'border-box';
-  display: 'flex';
-  flex-wrap: 'wrap';
-  flex-direction: 'row';
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
   line-height: var(--oj-private-message-banner-summary-line-height); }
 
 @media screen and (max-width: 599.9px) {
@@ -16767,7 +16768,7 @@ oj-message-banner:not(.oj-complete) {
 
 .oj-messagebanner-summary {
   flex: 1;
-  overflow-wrap: 'anywhere';
+  overflow-wrap: anywhere;
   font-size: var(--oj-private-message-banner-summary-text-size);
   font-weight: var(--oj-private-message-banner-summary-text-weight);
   color: var(--oj-private-message-banner-summary-text-color); }
@@ -16778,13 +16779,13 @@ oj-message-banner:not(.oj-complete) {
   color: var(--oj-core-text-color-secondary); }
 
 .oj-messagebanner-detail {
-  overflow-wrap: 'anywhere';
+  overflow-wrap: anywhere;
   font-size: var(--oj-typography-body-sm-font-size);
   color: var(--oj-core-text-color-primary); }
 
 .oj-messagebanner-close-button {
-  align-self: 'flex-start';
-  display: 'flex';
+  align-self: flex-start;
+  display: flex;
   margin-inline-start: var(--oj-core-spacing-1x);
   margin-inline-end: calc(-1 * var(--oj-core-spacing-2x));
   margin-top: calc(-1 * var(--oj-core-spacing-2x));
@@ -22807,12 +22808,16 @@ html[dir="rtl"] .oj-table-sort .oj-table-column-header-show-required-icon {
 .oj-table-gutter-start-header-cell,
 .oj-table-gutter-start-body-cell,
 .oj-table-gutter-start-footer-cell {
-  width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal)); }
+  width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
+  min-width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
+  max-width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal)); }
 
 .oj-table-gutter-end-header-cell,
 .oj-table-gutter-end-body-cell,
 .oj-table-gutter-end-footer-cell {
-  width: calc(var(--oj-core-gutter-end, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal)); }
+  width: calc(var(--oj-core-gutter-end, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
+  min-width: calc(var(--oj-core-gutter-end, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
+  max-width: calc(var(--oj-core-gutter-end, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal)); }
 
 .oj-table-custom-header {
   text-overflow: ellipsis; }

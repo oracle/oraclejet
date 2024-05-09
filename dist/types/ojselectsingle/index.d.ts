@@ -86,6 +86,8 @@ export namespace ojSelectSingle {
     // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged<V, D> = ojSelectBase.labelledByChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type matchByChanged<V, D> = ojSelectBase.matchByChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
     type messagesCustomChanged<V, D> = ojSelectBase.messagesCustomChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type placeholderChanged<V, D> = ojSelectBase.placeholderChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
@@ -139,6 +141,7 @@ export interface ojSelectSingleEventMap<V, D> extends ojSelectBaseEventMap<V, D,
     'labelEdgeChanged': JetElementCustomEvent<ojSelectSingle<V, D>["labelEdge"]>;
     'labelHintChanged': JetElementCustomEvent<ojSelectSingle<V, D>["labelHint"]>;
     'labelledByChanged': JetElementCustomEvent<ojSelectSingle<V, D>["labelledBy"]>;
+    'matchByChanged': JetElementCustomEvent<ojSelectSingle<V, D>["matchBy"]>;
     'messagesCustomChanged': JetElementCustomEvent<ojSelectSingle<V, D>["messagesCustom"]>;
     'placeholderChanged': JetElementCustomEvent<ojSelectSingle<V, D>["placeholder"]>;
     'readonlyChanged': JetElementCustomEvent<ojSelectSingle<V, D>["readonly"]>;
@@ -224,6 +227,8 @@ export namespace SelectSingleElement {
     // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged<V, D> = ojSelectBase.labelledByChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type matchByChanged<V, D> = ojSelectBase.matchByChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
     type messagesCustomChanged<V, D> = ojSelectBase.messagesCustomChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type placeholderChanged<V, D> = ojSelectBase.placeholderChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
@@ -265,6 +270,7 @@ export interface SelectSingleIntrinsicProps extends Partial<Readonly<ojSelectSin
     onlabelEdgeChanged?: (value: ojSelectSingleEventMap<any, any>['labelEdgeChanged']) => void;
     onlabelHintChanged?: (value: ojSelectSingleEventMap<any, any>['labelHintChanged']) => void;
     onlabelledByChanged?: (value: ojSelectSingleEventMap<any, any>['labelledByChanged']) => void;
+    onmatchByChanged?: (value: ojSelectSingleEventMap<any, any>['matchByChanged']) => void;
     onmessagesCustomChanged?: (value: ojSelectSingleEventMap<any, any>['messagesCustomChanged']) => void;
     onplaceholderChanged?: (value: ojSelectSingleEventMap<any, any>['placeholderChanged']) => void;
     onreadonlyChanged?: (value: ojSelectSingleEventMap<any, any>['readonlyChanged']) => void;

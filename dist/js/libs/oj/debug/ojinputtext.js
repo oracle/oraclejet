@@ -2958,6 +2958,14 @@ var __oj_text_area_metadata =
    * @ojoracleicon 'oj-ux-ico-text-input-password'
    * @ojuxspecs ['input-password']
    *
+   * @ojdeprecated [
+   *   {
+   *     "type": "maintenance",
+   *     "since": "16.0.0",
+   *     "value": ["oj-c-input-password"]
+   *   }
+   * ]
+   *
    * @classdesc
    * <h3 id="inputPasswordOverview-section">
    *   JET InputPassword Component
@@ -3625,6 +3633,14 @@ var __oj_text_area_metadata =
    *
    * @ojoracleicon 'oj-ux-ico-text-input'
    * @ojuxspecs ['input-text']
+   *
+   * @ojdeprecated [
+   *   {
+   *     "type": "maintenance",
+   *     "since": "16.0.0",
+   *     "value": ["oj-c-input-text"]
+   *   }
+   * ]
    *
    * @classdesc
    * <h3 id="inputTextOverview-section">
@@ -4637,6 +4653,14 @@ var __oj_text_area_metadata =
    *
    * @ojoracleicon 'oj-ux-ico-text-input-area'
    * @ojuxspecs ['input-text']
+   *
+   * @ojdeprecated [
+   *   {
+   *     "type": "maintenance",
+   *     "since": "16.0.0",
+   *     "value": ["oj-c-text-area"]
+   *   }
+   * ]
    *
    * @classdesc
    * <h3 id="textAreaOverview-section">

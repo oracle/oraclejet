@@ -76,7 +76,7 @@
   /* remove border top for the first group or leaf item to prevent double border */
   .oj-listview-element > .oj-listview-item:first-child,
   .oj-listview:not(.oj-listview-card-layout) .oj-listview-group > .oj-listview-item:first-child,
-  .oj-listview-element > .oj-listview-item-element:first-child .oj-listview-group-item {
+  .oj-listview-group > .oj-listview-item-element:first-child .oj-listview-group-item {
     background-size: 0;
   }
 
@@ -281,7 +281,6 @@
   }
 
   /* Styling for group items when gridlines are visible on expanded and collapsed state */
-  .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-group-item,
   .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-item-element.oj-expanded .oj-listview-group-item,
   .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-item-element.oj-collapsed .oj-listview-group-item {
     border-width: 1px 0 1px;

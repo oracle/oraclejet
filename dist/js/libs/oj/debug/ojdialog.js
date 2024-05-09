@@ -3992,6 +3992,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         var element = this.element;
         var status = oj.ZOrderUtils.getStatus(element);
         if (status === oj.ZOrderUtils.STATUS.OPEN) {
+          ojcustomelementUtils.CustomElementUtils.cleanComponentBindings(element[0]);
           element.remove();
         }
       },

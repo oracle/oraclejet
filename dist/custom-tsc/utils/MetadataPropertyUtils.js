@@ -224,7 +224,7 @@ function updateDefaultsFromDefaultProps(defaultProps, metaUtilObj) {
             if (propMetadata) {
                 if (propMetadata.required) {
                     TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.DT_REQUIRED_HAS_DEFAULT_VALUE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `The '${propName}' property has a default value and is flagged as 'required' in the design time environment.
-  Properties with default values typically should not be flagged as 'required'.`, prop.initializer);
+  Properties with default values typically should not be flagged as 'required'.`, prop);
                 }
                 updateDefaultValue(propMetadata, propName, prop, metaUtilObj);
             }
@@ -382,79 +382,53 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeS
     delete md['isEnumValuesForDTOnly'];
     return md;
 }
-function updateDefaultValue(md, propertyName, propDeclaration, metaUtilObj) {
-    let defaultValue;
-    let defValueExpression = propDeclaration.initializer;
-    if (defValueExpression) {
-        if (ts.isBindingElement(propDeclaration) && ts.isObjectLiteralExpression(defValueExpression)) {
-            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.PROP_DEFAULT_OBJECT_LITERAL, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Default object literal values can cause extra render calls on child components.
-  Use a reference to a non-primitive constant instead.`, defValueExpression);
+function updateDefaultValue(md, propertyName, propNode, metaUtilObj) {
+    let defMDValueNode = MetaUtils.removeCastExpressions(propNode.initializer);
+    if (defMDValueNode) {
+        if (ts.isBindingElement(propNode) &&
+            (ts.isObjectLiteralExpression(defMDValueNode) || ts.isArrayLiteralExpression(defMDValueNode))) {
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.PROP_DEFAULT_OBJECT_LITERAL, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Default property values specified as inline object or array literals can cause performance issues.
+  Use a reference to a non-primitive constant instead.`, defMDValueNode);
         }
-        if (ts.isIdentifier(defValueExpression)) {
-            const constSymbol = metaUtilObj.typeChecker.getSymbolAtLocation(defValueExpression);
-            if (constSymbol &&
-                constSymbol.valueDeclaration.initializer) {
-                defValueExpression = constSymbol.valueDeclaration
-                    .initializer;
-            }
+        if (MetaUtils.isValueNodeReference(defMDValueNode)) {
+            defMDValueNode = MetaUtils.getValueNodeFromReference(defMDValueNode, metaUtilObj);
+            defMDValueNode = MetaUtils.removeCastExpressions(defMDValueNode);
         }
-        else if (ts.isAsExpression(defValueExpression)) {
-            defValueExpression = defValueExpression.expression;
-        }
-        defaultValue = defValueExpression.getText();
-        if (ts.isObjectLiteralExpression(defValueExpression) ||
-            ts.isArrayLiteralExpression(defValueExpression)) {
-            let start = 0;
-            let sections = [];
-            const castRegExp = /\s+as\s+\w+/gm;
-            const quotedStringRegExp = /(['"])(?:[\s\S])*?\1/gm;
-            const quotedStringMatches = defaultValue.matchAll(quotedStringRegExp);
-            for (const match of quotedStringMatches) {
-                if (match.index > start) {
-                    const section = defaultValue.substring(start, match.index).replace(castRegExp, '');
-                    sections.push(section);
+        if (defMDValueNode) {
+            if (!ts.isIdentifier(defMDValueNode)) {
+                const value = MetaUtils.getMDValueFromNode(defMDValueNode, propertyName, metaUtilObj);
+                if (value !== undefined) {
+                    if (!md.properties || value === null) {
+                        md.value = value;
+                    }
+                    else if (isAnObject(value)) {
+                        updateComplexPropertyValues(md.properties, value, propertyName, defMDValueNode, metaUtilObj);
+                    }
+                    else {
+                        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.PROP_DEFAULT_NONOBJECT_VALUE, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Non-object default value '${value}' specified for object property '${propertyName}'.`, defMDValueNode);
+                    }
                 }
-                sections.push(defaultValue.substring(match.index, match.index + match[0].length));
-                start = match.index + match[0].length;
-            }
-            if (sections.length > 0) {
-                if (start < defaultValue.length) {
-                    sections.push(defaultValue.substring(start).replace(castRegExp, ''));
-                }
-                defaultValue = sections.join('');
-            }
-            else {
-                defaultValue = defaultValue.replace(castRegExp, '');
-            }
-        }
-        const value = MetaUtils.stringToJS(propertyName, defValueExpression.kind, defaultValue, metaUtilObj);
-        if (value !== undefined) {
-            if (!md.properties || value === null) {
-                md.value = value;
-            }
-            else if (isAnObject(value)) {
-                updateComplexPropertyValues(md.properties, value, defValueExpression, metaUtilObj);
-            }
-            else {
-                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.PROP_DEFAULT_NONOBJECT_VALUE, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Non-object default value '${value}' specified for object property '${propertyName}'.`, defValueExpression);
             }
             metaUtilObj.defaultProps = metaUtilObj.defaultProps || {};
-            metaUtilObj.defaultProps[propertyName] = value;
+            metaUtilObj.defaultProps[propertyName] = defMDValueNode;
         }
     }
 }
-function updateComplexPropertyValues(md, values, valueExpression, metaUtilObj) {
+function updateComplexPropertyValues(md, values, propName, valueNode, metaUtilObj) {
     if (md) {
         for (let [key, value] of Object.entries(values)) {
-            if (value !== undefined) {
+            if (md[key] === undefined) {
+                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNRECOGNIZED_SUBPROP_KEY, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `Sub-property '${key}' of property '${propName}' is unrecognized.`, valueNode);
+            }
+            else if (value !== undefined) {
                 if (!md[key].properties || value === null) {
                     md[key].value = value;
                 }
                 else if (isAnObject(value)) {
-                    updateComplexPropertyValues(md[key].properties, value, valueExpression, metaUtilObj);
+                    updateComplexPropertyValues(md[key].properties, value, propName, valueNode, metaUtilObj);
                 }
                 else {
-                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.PROP_DEFAULT_NONOBJECT_VALUE, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Non-object default value '${value}' specified for object sub-property '${key}'.`, valueExpression);
+                    TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.PROP_DEFAULT_NONOBJECT_VALUE, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Non-object default value '${value}' specified for object sub-property '${key}' of property '${propName}'.`, valueNode);
                 }
             }
         }

@@ -1373,7 +1373,7 @@ class TreeviewSelectionManager {
             this.constants.PERIOD + this.constants.OJ_TREEVIEW_SELECTOR
           ).length > 0
         ) {
-          this._getRoot().focus();
+          this._getRoot().focus({ preventScroll: true });
         }
       });
       this._dropLine = document.createElement('div');

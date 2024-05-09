@@ -52,8 +52,11 @@ define(['ojs/ojcspexpressionevaluator-internal', 'ojs/ojkoshared'], function (oj
    *  <li>Literals, e.g. <code>[['abc']]</code>.</li>
    *  <li>Function callbacks, e.g. <code>[[getColor('customer', id)]]</code>.</li>
    *  <li>Unary operators are limited to '-', '+', '~', '!' and '...', e.g. <code>[[-100]]</code>.</li>
+   *  <li>Instanceof or typeof operators such as <code>'date instanceof Date'</code></li>
    *  <li>Binary operators, e.g. <code>[[value + '.png']]</code>.</li>
+   *  <li>Exponentiation (**) such as <code>'3 ** 4'</code></li>
    *  <li>Logical operators, e.g. <code>[[a && b]]</code> or <code>[[a || b]]</code>.</li>
+   *  <li>Nullish coalescing operator (??) such as <code>'value ?? "default value"'</code></li>
    *  <li>Conditional or ternary operators, e.g. <code>[[test ? consequent : alternate]]</code>.</li>
    *  <li>Optional chaining operators, e.g. <code>[[a?.b]]</code>.</li>
    *  <li>Array literals, e.g. <code>[a, b, c]</code>.</li>
@@ -71,12 +74,9 @@ define(['ojs/ojcspexpressionevaluator-internal', 'ojs/ojkoshared'], function (oj
    *  <li>Assignment operators of any types such as <code>'='</code> or <code>'+='</code> or <code>'|='</code></li>
    *  <li>Blocks of code such as <code>'if (...){}'</code></li>
    *  <li>Comma operator (,) such as <code>'(expr1, expr2)'</code></li>
-   *  <li>Exponentiation (**) such as <code>' 3 ** 4'</code></li>
    *  <li>in operator such as <code>'prop in testObject'</code></li>
    *  <li>Increment/decrement operators such as <code>'x++'</code> or <code>'x--'</code></li>
    *  <li>Inline regular expressions such as <code>'testString.match(/abc/i)'</code></li>
-   *  <li>Instanceof or typeof operators such as <code>'date instanceof Date'</code></li>
-   *  <li>Nullish coalescing operator (??) such as <code>'value ?? "default value"'</code></li>
    *  <li>Spread operator (...) such as <code>'sum(...arrayValue)'</code></li>
    * <ul>
    * </h2>

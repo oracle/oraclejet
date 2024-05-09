@@ -42,6 +42,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         this.bottomClosedWithEsc = false;
         this.overlayDrawerResizeHandler = null;
         this.reflowDrawerResizeHandler = null;
+        this.drawerLayoutResizeHandler = null;
         this.windowResizeHandler = null;
         this.handleResize = true;
         this.state = {
@@ -86,6 +87,10 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             if ([DrawerConstants.stringStart, DrawerConstants.stringEnd].indexOf(edge) > -1) {
                 this.setBottomOverlayDrawerWidth();
             }
+        };
+        this.drawerLayoutResizeCallback = () => {
+            this.setStartEndOverlayDrawersHeight();
+            this.setBottomOverlayDrawerWidth();
         };
         this.lockResizeListener = () => {
             if (this.handleResize) {
@@ -436,6 +441,13 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
     componentWillUnmount() {
         window.removeEventListener(DrawerConstants.stringResize, this.windowResizeHandler);
         this.windowResizeHandler = null;
+        this.removeDrawerLayoutResizeListener();
+    }
+    removeDrawerLayoutResizeListener() {
+        if (this.drawerLayoutResizeHandler) {
+            removeResizeListener(this.rootRef.current, this.drawerLayoutResizeHandler);
+            this.drawerLayoutResizeHandler = null;
+        }
     }
     handleComponentUpdate(prevState) {
         let sides = [
@@ -475,7 +487,7 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
                 const drawerRef = this.getDrawerRef(edge).current;
                 if (drawerRef) {
                     removeResizeListener(drawerRef, this.reflowDrawerResizeHandler);
-                    this.reflowDrawerResizeHandler === null;
+                    this.reflowDrawerResizeHandler = null;
                 }
                 this.returnFocus(edge);
                 if (this.getStateToChangeTo(edge)) {
@@ -543,23 +555,32 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         }
     }
     animateOpen(edge) {
+        const busyContext = ojet.Context.getContext(this.rootRef.current).getBusyContext();
+        const resolveFunc = busyContext.addBusyState({ description: 'Animation in progress' });
         if (this.getDrawerResolvedDisplayMode(edge) === DrawerConstants.stringReflow) {
-            return expand(this.getRefToAnimate(edge).current, DrawerUtils.getAnimationOptions('expand', edge));
+            return expand(this.getRefToAnimate(edge).current, DrawerUtils.getAnimationOptions('expand', edge)).then(resolveFunc);
         }
         else {
-            return slideIn(this.getRefToAnimate(edge).current, DrawerUtils.getAnimationOptions(DrawerConstants.stringSlideIn, edge)).then(() => {
+            return slideIn(this.getRefToAnimate(edge).current, DrawerUtils.getAnimationOptions(DrawerConstants.stringSlideIn, edge))
+                .then(() => {
                 DrawerUtils.unwrapDrawerClippingArea(this.getDrawerRef(edge).current);
-            });
+            })
+                .then(resolveFunc);
         }
     }
     animateClose(edge) {
+        const busyContext = ojet.Context.getContext(this.rootRef.current).getBusyContext();
+        const resolveFunc = busyContext.addBusyState({ description: 'Animation in progress' });
         if (this.getDrawerResolvedDisplayMode(edge) === DrawerConstants.stringReflow) {
-            return collapse(this.getRefToAnimate(edge).current, DrawerUtils.getAnimationOptions('collapse', edge));
+            return collapse(this.getRefToAnimate(edge).current, DrawerUtils.getAnimationOptions('collapse', edge)).then(resolveFunc);
         }
         else {
-            return slideOut(this.getRefToAnimate(edge).current, DrawerUtils.getAnimationOptions(DrawerConstants.stringSlideOut, edge)).then(() => {
-                DrawerUtils.unwrapDrawerClippingArea(this.getDrawerRef(edge).current);
-            });
+            const drawerEl = this.getDrawerRef(edge).current;
+            return slideOut(this.getRefToAnimate(edge).current, DrawerUtils.getAnimationOptions(DrawerConstants.stringSlideOut, edge))
+                .then(() => {
+                DrawerUtils.unwrapDrawerClippingArea(drawerEl);
+            })
+                .then(resolveFunc);
         }
     }
     edgeToStateOpenedName(edge) {
@@ -640,6 +661,10 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         $drawerElement.position(position);
         this.setStartEndOverlayDrawersHeight();
         DrawerUtils.wrapDrawerWithClippingArea(drawerElement, position);
+        if (this.drawerLayoutResizeHandler === null) {
+            this.drawerLayoutResizeHandler = this.drawerLayoutResizeCallback.bind(this);
+        }
+        addResizeListener(this.rootRef.current, this.drawerLayoutResizeHandler, 50, true);
         return this.animateOpen(edge);
     }
     setBottomOverlayDrawerWidth() {
@@ -680,7 +705,8 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         DrawerUtils.disableBodyOverflow();
         this.elementWithFocusBeforeDrawerCloses = document.activeElement;
         removeResizeListener(this.getDrawerRef(edge).current, this.overlayDrawerResizeHandler);
-        this.overlayDrawerResizeHandler === null;
+        this.overlayDrawerResizeHandler = null;
+        this.removeDrawerLayoutResizeListener();
         DrawerUtils.wrapDrawerWithClippingArea(this.getDrawerRef(edge).current, this.getDrawerPosition(edge));
         return this.animateClose(edge);
     }
@@ -723,11 +749,13 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
     setStartEndOverlayDrawersHeight() {
         const middleSectionHeight = DrawerUtils.getElementHeight(this.middleSectionRef.current) + 'px';
         const startDrawerElement = this.startRef.current;
-        if (startDrawerElement) {
+        if (startDrawerElement &&
+            this.getDrawerResolvedDisplayMode(DrawerConstants.stringStart) != DrawerConstants.stringReflow) {
             startDrawerElement.style.height = middleSectionHeight;
         }
         const endDrawerElement = this.endRef.current;
-        if (endDrawerElement) {
+        if (endDrawerElement &&
+            this.getDrawerResolvedDisplayMode(DrawerConstants.stringEnd) != DrawerConstants.stringReflow) {
             endDrawerElement.style.height = middleSectionHeight;
         }
     }

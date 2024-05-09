@@ -1006,7 +1006,7 @@ class IntrinsicElement {
         }
     }
     _handleSlotUnmount(node) {
-        if (this._state.isComplete()) {
+        if (this._state.isPostCreateCallbackOrComplete()) {
             ParkingLot.parkNode(node);
             window.queueMicrotask(() => {
                 if (ParkingLot.isParked(node)) {

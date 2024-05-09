@@ -14,6 +14,7 @@ import 'ojs/ojcore-base';
 import 'ojs/ojpopup';
 import { DrawerUtils, DrawerConstants } from 'ojs/ojdrawerutils';
 import Hammer from 'hammerjs';
+import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -89,6 +90,8 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
             const $drawerElement = $(this.rootRef.current);
             const status = ZOrderUtils.getStatus($drawerElement);
             if (status === ZOrderUtils.STATUS.OPEN) {
+                CustomElementUtils.cleanComponentBindings($drawerElement[0]);
+                $drawerElement.remove();
                 const psOptions = {};
                 psOptions[PopupService.OPTION.POPUP] = $drawerElement;
                 this.ignoreUpdate = true;

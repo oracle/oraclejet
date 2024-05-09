@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Rectangle, ResourceUtils, OutputText, TextUtils, MultilineText, Automation, EventManager, TouchEvent, KeyboardEvent, KeyboardHandler, Agent, EventFactory, BaseComponent, Rect, Container, AriaUtils, SelectionEffectUtils, CustomDatatipPeer, SimpleObjPeer, CSSStyle, BlackBoxAnimationHandler, CustomAnimation, Animator, ParallelPlayable, Displayable, BaseComponentDefaults, JsonUtils, ColorUtils, Cache, Polygon, Circle, Path, DisplayableUtils, PathUtils, PolygonUtils, LinearGradientFill, Matrix, Use, ImageMarker, ImageLoader, ClipPath, Math as Math$1, Line, Stroke, Shadow, Easing } from 'ojs/ojdvt-toolkit';
+import { Rectangle, ResourceUtils, OutputText, TextUtils, MultilineText, Automation, EventManager, TouchEvent, KeyboardEvent, KeyboardHandler, Agent, EventFactory, BaseComponent, Rect, Container, SelectionEffectUtils, CustomDatatipPeer, SimpleObjPeer, CSSStyle, BlackBoxAnimationHandler, CustomAnimation, Animator, ParallelPlayable, AriaUtils, Displayable, BaseComponentDefaults, JsonUtils, ColorUtils, Cache, Polygon, Circle, Path, DisplayableUtils, PathUtils, PolygonUtils, LinearGradientFill, Matrix, Use, ImageMarker, ImageLoader, ClipPath, Math as Math$1, Line, Stroke, Shadow, Easing } from 'ojs/ojdvt-toolkit';
 import { LinearScaleAxisValueFormatter, DataAxisInfoMixin, BaseAxisInfo } from 'ojs/ojdvt-axis';
 
 /**
@@ -934,31 +934,7 @@ class DvtGauge extends BaseComponent {
     this.UpdateAriaAttributes();
 
     if (!this._bStaticRendering && !this.Options['readOnly']) {
-      container.setAriaRole('slider');
-      container.setAriaProperty('valuemin', this.Options['min']);
-      container.setAriaProperty('valuemax', this.Options['max']);
-      var value = DvtGaugeRenderer.getFormattedMetricLabel(this.Options['value'], this);
-      container.setAriaProperty('valuenow', value);
-      container.setAriaProperty('valuetext', value);
-      var tooltip = DvtGaugeRenderer.getTooltipString(this);
-
-      if (Agent.isTouchDevice()) {
-        this._container.setAriaProperty('live', 'assertive');
-        if (value !== tooltip) {
-          tooltip = value + AriaUtils.ARIA_LABEL_DESC_DELIMITER + tooltip;
-        }
-      }
-      if (value !== tooltip) {
-        container.setAriaProperty('label', tooltip);
-      }
-
-      // Generate a unique id to force screen readers to update for each render (and potential value change)
-      this._renderCount = this._renderCount != null ? this._renderCount + 1 : 0;
-      var ariaId = this.getId() + '_' + this._renderCount;
-      container.setId(ariaId);
-
-      // Set as the active element that's read by the screen reader.
-      this.getCtx().setActiveElement(container);
+      this.setAriaAttributes();
     }
 
     // . To support ADF action attribute
@@ -969,6 +945,23 @@ class DvtGauge extends BaseComponent {
     if (!this.Animation) {
       // If not animating, that means we're done rendering, so fire the ready event.
       this.RenderComplete();
+    }
+  }
+
+  setAriaAttributes() {
+    var parentContainer = this.getCtx().getContainer();
+    parentContainer.setAttribute('role', 'slider');
+    parentContainer.setAttribute('aria-valuemin', this.Options['min']);
+    parentContainer.setAttribute('aria-valuemax', this.Options['max']);
+    parentContainer.setAttribute('aria-valuenow', this.Options['value']);
+
+    var valueText = DvtGaugeRenderer.getFormattedMetricLabel(this.Options['value'], this);
+    if (Number(valueText) === this.Options['value']) valueText = this.Options['value'].toString();
+
+    parentContainer.setAttribute('aria-valuetext', valueText);
+
+    if (this.Options['disabled']) {
+      parentContainer.setAttribute('aria-disabled', true);
     }
   }
 
@@ -1151,21 +1144,6 @@ class DvtGauge extends BaseComponent {
    */
   renderUpdate() {
     this.render();
-    this.UpdateAriaLiveValue(this._container);
-  }
-
-  /**
-   * Helper function for updating the live values that are read out while editing for accessibility
-   * @param {dvt.Container} container The slider container we are using.
-   * @param {number} value The value of the gauge
-   * @protected
-   */
-  UpdateAriaLiveValue(container, value) {
-    value = DvtGaugeRenderer.getFormattedMetricLabel(value ? value : this.Options['value'], this);
-    container.setAriaProperty('valuenow', value);
-    container.setAriaProperty('valuetext', value);
-
-    if (Agent.isTouchDevice()) container.setAriaProperty('label', value);
   }
 
   /**
@@ -1350,25 +1328,19 @@ class DvtGauge extends BaseComponent {
       var tooltip = DvtGaugeRenderer.getTooltipString(this);
       if (this.IsParentRoot()) {
         var translations = this.Options.translations;
+        this.getCtx().setAriaLabel(
+          ResourceUtils.format(translations.labelAndValue, [
+            translations.labelDataVisualization,
+            Displayable.generateAriaLabel(
+              AriaUtils.processAriaLabel(this.GetComponentDescription()),
+              tooltip ? [tooltip] : null
+            )
+          ])
+        );
         if (!this.IsInteractive()) {
           this.getCtx().setAriaRole('img');
-          this.getCtx().setAriaLabel(
-            ResourceUtils.format(translations.labelAndValue, [
-              translations.labelDataVisualization,
-              Displayable.generateAriaLabel(
-                AriaUtils.processAriaLabel(this.GetComponentDescription()),
-                tooltip ? [tooltip] : null
-              )
-            ])
-          );
         } else {
-          this.getCtx().setAriaRole('application');
-          this.getCtx().setAriaLabel(
-            ResourceUtils.format(translations.labelAndValue, [
-              translations.labelDataVisualization,
-              AriaUtils.processAriaLabel(this.GetComponentDescription())
-            ])
-          );
+          this.getCtx().setAriaRole('slider');
         }
       } else if (!this.IsInteractive()) {
         this.setAriaRole('img');
@@ -2588,7 +2560,6 @@ class RatingGauge extends DvtGauge {
         hoverContainer.setClipPath(hoverClip);
       }
     }
-    this.UpdateAriaLiveValue(container, value);
   }
 
   /**

@@ -13,11 +13,11 @@ oj-message-banner:not(.oj-complete) {
 .oj-messagebanner-item {
   background-color: var(--oj-private-message-banner-background-color);
   border-bottom-width: 1px;
-  border-bottom-style: 'solid';
+  border-bottom-style: solid;
   border-bottom-color: var(--oj-core-divider-color);
 }
 .oj-messagebanner-item:focus-visible {
-  outline-style: 'dotted';
+  outline-style: dotted;
   outline-width: 1px;
   outline-color: var(--oj-core-focus-border-color);
   outline-offset: 1px;
@@ -29,10 +29,10 @@ oj-message-banner:not(.oj-complete) {
 }
 
 .oj-messagebanner-content {
-  align-items: 'center';
-  box-sizing: 'border-box';
-  display: 'flex';
-  flex-wrap: 'wrap';
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
   padding-top: var(--oj-core-spacing-4x);
   padding-bottom: var(--oj-core-spacing-4x);
   padding-inline-start: var(--oj-core-gutter-start, var(--oj-core-spacing-4x));
@@ -49,24 +49,24 @@ oj-message-banner:not(.oj-complete) {
   font-size: var(--oj-private-message-banner-start-icon-size);
   height: var(--oj-private-message-banner-summary-line-height);
 
-  align-self: 'flex-start';
-  display: 'flex';
+  align-self: flex-start;
+  display: flex;
   margin-inline-end: var(--oj-core-spacing-2x);
 }
 
 .oj-messagebanner-start-icon {
   height: calc(var(--oj-private-message-banner-summary-text-size) * var(--oj-private-message-banner-summary-line-height));
-  display: 'flex';
-  align-items: 'center';
+  display: flex;
+  align-items: center;
 }
 
 // Style message content column - this contains header and detail
 // Style message header row - this contains the summary text and timestamp
 .oj-messagebanner-header {
-  box-sizing: 'border-box';
-  display: 'flex';
-  flex-wrap: 'wrap';
-  flex-direction: 'row';
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
   line-height: var(--oj-private-message-banner-summary-line-height);
 }
 @media #{$responsiveQuerySmallOnly} {
@@ -77,7 +77,7 @@ oj-message-banner:not(.oj-complete) {
 
 .oj-messagebanner-summary {
   flex: 1;
-  overflow-wrap: 'anywhere';
+  overflow-wrap: anywhere;
   font-size: var(--oj-private-message-banner-summary-text-size);
   font-weight: var(--oj-private-message-banner-summary-text-weight);
   color: var(--oj-private-message-banner-summary-text-color);
@@ -91,15 +91,15 @@ oj-message-banner:not(.oj-complete) {
 
 // Style message detail row
 .oj-messagebanner-detail {
-  overflow-wrap: 'anywhere';
+  overflow-wrap: anywhere;
   font-size: var(--oj-typography-body-sm-font-size);
   color: var(--oj-core-text-color-primary);
 }
 
 // Style message close icon column
 .oj-messagebanner-close-button {
-  align-self: 'flex-start';
-  display: 'flex';
+  align-self: flex-start;
+  display: flex;
 
   margin-inline-start: var(--oj-core-spacing-1x);
   margin-inline-end: calc(-1 * var(--oj-core-spacing-2x));

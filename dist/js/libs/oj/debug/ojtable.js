@@ -3188,22 +3188,31 @@ var __oj_table_metadata =
             this._styleTableBodyRow(tableBodyRow, false);
 
             // set the cell attributes and styling.
-            var tableBodyCells = this._getTableElementsByTagName(tableBodyRow, Table.DOM_ELEMENT._TD);
-            var tableBodyCellsCount = tableBodyCells.length;
-            var tableBodyCell;
-            for (let i = 0; i < tableBodyCellsCount; i++) {
-              tableBodyCell = tableBodyCells[i];
-              this._setTableBodyCellAttributes(rowIdx, row[Table._CONST_KEY], i, tableBodyCell);
-              this._styleTableBodyCell(i, tableBodyCell, false);
-            }
+            var tableBodyCells = this._getChildElementsByTagName(tableBodyRow, Table.DOM_ELEMENT._TD);
+            var logicalCellArray = this._getColspanLogicalElements(tableBodyCells);
 
-            // sort the re-ordered columns in place
+            // sort the re-ordered columns in place BEFORE applying column styling
             if (this._columnsDestMap != null) {
               for (let i = 0; i < this._columnsDestMap.length; i++) {
-                var moveTableBodyCell = tableBodyCells[this._columnsDestMap[i]];
+                var moveTableBodyCell = logicalCellArray[this._columnsDestMap[i]];
                 moveTableBodyCell.parentNode.appendChild(moveTableBodyCell); // @HTMLUpdateOK
               }
+              // requery the cells as the ordering now matches the current columns array
+              tableBodyCells = this._getChildElementsByTagName(tableBodyRow, Table.DOM_ELEMENT._TD);
+              logicalCellArray = this._getColspanLogicalElements(tableBodyCells);
             }
+
+            // track which cells have been updated / styled in cases of colspans
+            var styledCells = [];
+            for (let i = 0; i < logicalCellArray.length; i++) {
+              var tableBodyCell = logicalCellArray[i];
+              if (styledCells.indexOf(tableBodyCell) === -1) {
+                this._setTableBodyCellAttributes(rowIdx, row[Table._CONST_KEY], i, tableBodyCell);
+                this._styleTableBodyCell(i, tableBodyCell, false);
+                styledCells.push(tableBodyCell);
+              }
+            }
+
             return this._finalizeTableBodyCellsRefresh(
               tableBodyRow,
               row,
@@ -7470,13 +7479,14 @@ var __oj_table_metadata =
    * @private
    */
   TableLayoutManager.prototype.registerScrollListeners = function () {
-    var scrollEventElement = DataCollectionUtils.getScrollEventElement(this.getScroller());
+    var scroller = this.getScroller();
+    var scrollEventElement = DataCollectionUtils.getScrollEventElement(scroller);
     if (scrollEventElement != null) {
       // if width or height is defined then we can have scrollbars so register scroll event listeners
       if (this._scrollEventListener == null) {
         this._scrollEventListener = function (event) {
-          var newScrollLeft = this._table._getElementScrollLeft(event.target);
-          var newScrollTop = event.target.scrollTop;
+          var newScrollLeft = this._table._getElementScrollLeft(scroller);
+          var newScrollTop = scroller.scrollTop;
           if (newScrollLeft === this._table._scrollLeft && newScrollTop === this._table._scrollTop) {
             // discard bogus scroll event
             return;
@@ -7834,7 +7844,7 @@ var __oj_table_metadata =
     var tableFooterRow = this._table._getTableFooterRow();
     var tableBody = this._table._getTableBody();
     var tableBottomSlot = this._table._getTableBottomSlot();
-    var tableScroller = this.getScroller();
+    var tableScroller = this._table._getTableScroller();
 
     var tableContainer = this._table._getTableContainer();
     tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS);
@@ -10007,7 +10017,7 @@ var __oj_table_metadata =
       for (i = 0; i < tableBodyRows.length; i++) {
         var isSticky = false;
         var tableBodyRow = tableBodyRows[i];
-        var rowCells = this._table._getTableElementsByTagName(tableBodyRow, Table.DOM_ELEMENT._TD);
+        var rowCells = this._table._getChildElementsByTagName(tableBodyRow, Table.DOM_ELEMENT._TD);
         if (tableBodyRow.classList.contains(Table.CSS_CLASSES._TABLE_STICKY_ROW_CLASS)) {
           isSticky = true;
         }
@@ -11219,6 +11229,8 @@ var __oj_table_metadata =
           }
         }
       }
+    } else {
+      tableElem.style[Table.CSS_PROP._WIDTH] = '';
     }
     return overallWidth;
   };
@@ -11230,6 +11242,9 @@ var __oj_table_metadata =
     var i;
     var columns = this._table._getColumnDefs();
     var columnsCount = columns.length;
+    if (columnsCount === 0) {
+      return 0;
+    }
 
     var totalPreferredWidth = 0; // total of all data column widths if set to their preferred or forced values
     var totalWorkingWeight = 0; // total weight of all non-forced data columns
@@ -11608,6 +11623,8 @@ var __oj_table_metadata =
     if (overallWidth > 0) {
       tableElem.style[Table.CSS_PROP._WIDTH] = overallWidth + Table.CSS_VAL._PX;
       tableElem.style['table-layout'] = 'fixed';
+    } else {
+      tableElem.style[Table.CSS_PROP._WIDTH] = '';
     }
   };
 
@@ -11618,6 +11635,9 @@ var __oj_table_metadata =
     var i = 0;
     var columns = this._table._getColumnDefs();
     var columnsCount = columns.length;
+    if (columnsCount === 0) {
+      return 0;
+    }
 
     var totalWorkingWeight = 0; // total weight of all non-forced data columns
     var forcedTotalWidth = 0; // total width of all forced data columns
@@ -15502,6 +15522,9 @@ var __oj_table_metadata =
     this._columnDefArray.splice(destColIdx + 1, 0, ...columnDefs);
     this._columnsDestMap.splice(destColIdx + 1, 0, ...columnsDestMapItems);
 
+    // clean up / reapply column selection in case colspans are present
+    this._updateSelectionStylingFromColumnReorder();
+
     // clone the array so we can trigger that it's changed
     this.option('columns', clonedColumnsOption, {
       _context: {
@@ -15750,10 +15773,12 @@ var __oj_table_metadata =
         var tableBodyRowsCount = tableBodyRows.length;
         for (i = 0; i < tableBodyRowsCount; i++) {
           var tableBodyCell = this._getTableBodyCell(i, columnIdx, null);
-          if (!add) {
-            tableBodyCell.classList.remove(styleClass);
-          } else {
-            tableBodyCell.classList.add(styleClass);
+          if (tableBodyCell != null) {
+            if (!add) {
+              tableBodyCell.classList.remove(styleClass);
+            } else {
+              tableBodyCell.classList.add(styleClass);
+            }
           }
         }
       }
@@ -15989,7 +16014,7 @@ var __oj_table_metadata =
       return;
     }
     tableFooter.classList.add(Table.CSS_CLASSES._TABLE_FOOTER_CLASS);
-    var tableFooterRow = this._getTableElementsByTagName(tableFooter, Table.DOM_ELEMENT._TR)[0];
+    var tableFooterRow = this._getChildElementsByTagName(tableFooter, Table.DOM_ELEMENT._TR)[0];
     tableFooterRow.classList.add(Table.CSS_CLASSES._TABLE_FOOTER_ROW_CLASS);
     tableFooterRow.setAttribute(Context._OJ_CONTEXT_ATTRIBUTE, ''); // @HTMLUpdateOK
   };
@@ -16053,7 +16078,7 @@ var __oj_table_metadata =
     tableHeader.classList.add(Table.CSS_CLASSES._TABLE_HEADER_CLASS);
     // eslint-disable-next-line no-param-reassign
     tableHeader.style[Table.CSS_PROP._DISPLAY] = 'table-header-group';
-    var tableHeaderRow = this._getTableElementsByTagName(tableHeader, Table.DOM_ELEMENT._TR)[0];
+    var tableHeaderRow = this._getChildElementsByTagName(tableHeader, Table.DOM_ELEMENT._TR)[0];
     tableHeaderRow.classList.add(Table.CSS_CLASSES._TABLE_HEADER_ROW_CLASS);
     tableHeaderRow.style[Table.CSS_PROP._POSITION] = Table.CSS_VAL._RELATIVE;
     tableHeaderRow.setAttribute(Context._OJ_CONTEXT_ATTRIBUTE, ''); // @HTMLUpdateOK
@@ -16424,6 +16449,26 @@ var __oj_table_metadata =
       }
     }
     return null;
+  };
+
+  /**
+   * Get the child DOM elements by tag name
+   * @param {Element} parentElement parent element
+   * @param {string} name tagName name to match on
+   * @return {Array<Element>} returns the child DOM elements
+   * @private
+   */
+  Table.prototype._getChildElementsByTagName = function (parentElement, tagName) {
+    var childElements = [];
+    if (parentElement.childNodes != null && parentElement.childNodes.length > 0) {
+      for (var i = 0; i < parentElement.childNodes.length; i++) {
+        var childTagName = parentElement.childNodes[i].tagName;
+        if (childTagName != null && childTagName.toLowerCase() === tagName) {
+          childElements.push(parentElement.childNodes[i]);
+        }
+      }
+    }
+    return childElements;
   };
 
   /**
@@ -21932,6 +21977,23 @@ var __oj_table_metadata =
         }
       }
     }
+  };
+
+  /**
+   * @private
+   */
+  Table.prototype._updateSelectionStylingFromColumnReorder = function () {
+    var selected = this.option('selected');
+    var columnKeySet = selected.column;
+
+    var headers = this._getTableHeaderColumns();
+    headers.forEach(function (header, index) {
+      if (columnKeySet.has(this._getColumnKeyForColumnIdx(index))) {
+        this._setColumnState(index, true);
+      } else {
+        this._setColumnState(index, false);
+      }
+    }, this);
   };
 
   /**

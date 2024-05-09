@@ -258,7 +258,11 @@ class DrawerUtils {
     static wrapDrawerWithClippingArea(drawerElement, position) {
         const clippingAreaEl = $(drawerElement)
             .wrap(function () {
-            return `<div id="${DrawerConstants.clippingAreaSelector}" style="overflow:hidden; position: absolute"></div>`;
+            const div = document.createElement('div');
+            div.setAttribute('id', DrawerConstants.clippingAreaSelector);
+            div.style.overflow = 'hidden';
+            div.style.position = 'absolute';
+            return $(div);
         })
             .parent()[0];
         clippingAreaEl.style.setProperty('height', DrawerUtils.getElementHeight(drawerElement) + 'px');
@@ -267,8 +271,10 @@ class DrawerUtils {
         drawerElement.style.setProperty('position', 'static');
     }
     static unwrapDrawerClippingArea(drawerElement) {
-        drawerElement.style.removeProperty('position');
-        $(drawerElement).unwrap();
+        if (drawerElement) {
+            drawerElement.style.removeProperty('position');
+            $(drawerElement).unwrap();
+        }
     }
 }
 

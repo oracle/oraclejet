@@ -37,12 +37,12 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
      * @global
      * @member {string} version JET version numberr
      */
-    version: '16.0.0',
+    version: '16.1.0',
     /**
      * @global
      * @member {string} revision JET source code revision number
      */
-    revision: '2024-02-10_08-15-32',
+    revision: '2024-05-03_10-41-36',
 
     // This function is only meant to be used outside the library, so quoting the name
     // to avoid renaming is appropriate

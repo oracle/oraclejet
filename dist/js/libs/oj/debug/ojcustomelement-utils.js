@@ -347,6 +347,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
             }
             return true;
         }
+        static cleanComponentBindings(element) {
+            CustomElementUtils.getElementState(element)?.getBindingProviderCleanNode()(element);
+        }
         static getClassSet(strClass) {
             if (strClass) {
                 const arClasses = strClass.split(/\s+/).filter((cls) => cls.length > 0);

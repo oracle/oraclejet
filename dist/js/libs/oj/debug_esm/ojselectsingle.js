@@ -94,6 +94,9 @@ var __oj_select_single_metadata =
     "labelledBy": {
       "type": "string"
     },
+    "matchBy": {
+      "type": "Array<string>"
+    },
     "messagesCustom": {
       "type": "Array<Object>",
       "writeback": true,
@@ -822,7 +825,11 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    * @override
    */
   _ReleaseSelectResources: function (shouldRetainMainFieldElem) {
+    this._bReleasingSelectResources = true;
+
     this._super(shouldRetainMainFieldElem);
+
+    this._bReleasingSelectResources = false;
   },
 
   /**
@@ -883,6 +890,34 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
     // (This may not be a bug after listView implements JET-32345 - COLLECTION ENHANCEMENTS FOR
     // LOV USECASE.)
     this._handleSelection(this._GetDefaultValueItemForPlaceholder());
+  },
+
+  /**
+   * Called when the filter field is blurred.
+   * @memberof! oj.ojSelectSingle
+   * @instance
+   * @protected
+   * @override
+   */
+  _HandleFilterFieldBlur: function () {
+    // JET-65757 - Empty value rejected when not confirmed by Enter/Tab
+    // clear the value after deleting all the filter text and clicking outside the
+    // component;
+    // check whether placeholder valueItem is already set so that we don't trigger
+    // validation unnecessarily
+    if (
+      !this._fullScreenPopup &&
+      !this._bReleasingSelectResources &&
+      this._IsFilterInputTextCleared()
+    ) {
+      if (
+        !this._IsValueForPlaceholder(this.options.value) ||
+        !this._IsValueItemForPlaceholder(this.options.valueItem)
+      ) {
+        // on desktop, if the user clears all the text and clicks out, clear the LOV value
+        this._handleSelection(this._defaultValueItemForPlaceholder, null, true);
+      }
+    }
   },
 
   /**
@@ -1564,6 +1599,7 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
     }
 
     var newVal = this.options.value;
+    var origVal = this.options.value;
     if (event.type === 'mutate') {
       if (event.detail.remove != null) {
         var keys = event.detail.remove.keys;
@@ -1579,18 +1615,41 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
       }
     }
 
-    // JET-42413: set flag while we're processing a value change so that if an app makes
-    // changes to the component from within the change listener, we can defer processing the
-    // new change until after we're done processing the current change
-    var resolveValueChangeFunc = this._StartMakingInternalValueChange();
+    var resolveBusyState = this._AddBusyState('ojSelectSingle processing DataProvider event');
 
-    // if the event wasn't dispatched internally, need to re-set the value now that the label may
-    // be available, or because a mutation event removed a selected value
-    this._setOption('value', newVal);
+    // JET-64632 - DataProvider refresh event can wipe out currently selected value
+    // defer handling the event until the throttle promise (which is hooked into JET's Knockout
+    // throttling timeout) resolves so that we can correctly handle the case where we get both a
+    // new value set and a DP event
+    var throttlePromise = this._GetThrottlePromise();
+    throttlePromise.then(
+      function () {
+        // if the component was released before the promise resolved, simply resolve the busy
+        // state and return
+        if (this._bReleasedResources) {
+          resolveBusyState();
+          return;
+        }
 
-    resolveValueChangeFunc();
+        // if the event wasn't dispatched internally, and if the value has not been changed since
+        // the event was received, need to re-set the value now that the label may be available,
+        // or because a mutation event removed a selected value
+        if (origVal === this.options.value) {
+          // JET-42413: set flag while we're processing a value change so that if an app makes
+          // changes to the component from within the change listener, we can defer processing the
+          // new change until after we're done processing the current change
+          var resolveValueChangeFunc = this._StartMakingInternalValueChange();
 
-    this._abstractLovBase.handleDataProviderEvent(event);
+          this._setOption('value', newVal);
+
+          resolveValueChangeFunc();
+        }
+
+        this._abstractLovBase.handleDataProviderEvent(event);
+
+        resolveBusyState();
+      }.bind(this)
+    );
   },
 
   /**

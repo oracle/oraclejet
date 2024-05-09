@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { ExpParser } from 'ojs/ojexpparser';
+import { ExpParser, NEW_EXP, FUNCTION_EXP, OBJECT_EXP, getKeyValue, ARRAY_EXP, CONDITIONAL_EXP, LOGICAL_EXP, BINARY_EXP, UNARY_EXP, IDENTIFIER, CALL_EXP, MEMBER_EXP, LITERAL } from 'ojs/ojexpparser';
 
 /**
  * @license
@@ -82,6 +82,9 @@ const CspExpressionEvaluatorInternal = function (options) {
     '||': function (a, b) {
       return a || b();
     },
+    '??': function (a, b) {
+      return a ?? b();
+    },
     '&&': function (a, b) {
       return a && b();
     },
@@ -141,6 +144,12 @@ const CspExpressionEvaluatorInternal = function (options) {
     },
     '%': function (a, b) {
       return a % b;
+    },
+    '**': function (a, b) {
+      return a ** b;
+    },
+    instanceof: function (a, b) {
+      return a instanceof b;
     }
   };
 
@@ -159,6 +168,9 @@ const CspExpressionEvaluatorInternal = function (options) {
     },
     '...': function (a) {
       return new _Spread(a);
+    },
+    typeof: function (a) {
+      return typeof a;
     }
   };
 
@@ -171,24 +183,24 @@ const CspExpressionEvaluatorInternal = function (options) {
   // eslint-disable-next-line consistent-return
   function _evaluate(node, contexts) {
     switch (node.type) {
-      case 1: // Identifier
+      case IDENTIFIER:
         return _getValue(contexts, node.name);
 
-      case 2: // 'MemberExpression'
+      case MEMBER_EXP:
         return _evaluateMember(node, contexts)[1];
 
-      case 3: // 'Literal'
+      case LITERAL:
         return node.value;
 
-      case 4: // 'CallExpression'
+      case CALL_EXP:
         var caller;
         var fn;
         var assign;
         switch (node.callee.type) {
-          case 1: // Identifier
+          case IDENTIFIER:
             assign = _getValueWithContext(contexts, node.callee.name);
             break;
-          case 2: // 'MemberExpression'
+          case MEMBER_EXP:
             assign = _evaluateMember(node.callee, contexts);
             break;
           default:
@@ -203,10 +215,19 @@ const CspExpressionEvaluatorInternal = function (options) {
         }
         return fn.apply(caller, _evaluateArray(node.arguments, contexts));
 
-      case 5: // 'UnaryExpression'
-        return _unops[node.operator](_evaluate(node.argument, contexts));
+      case UNARY_EXP:
+        var testValue;
+        try {
+          testValue = _evaluate(node.argument, contexts);
+        } catch (e) {
+          // Undefined identifier will throw an error, don't report it
+          if (node.argument.type !== IDENTIFIER) {
+            throw e;
+          }
+        }
+        return _unops[node.operator](testValue);
 
-      case 6: // 'BinaryExpression'
+      case BINARY_EXP:
         if (node.operator === '=') {
           return _evaluateAssignment(node.left, contexts, _evaluate(node.right, contexts));
         }
@@ -215,26 +236,26 @@ const CspExpressionEvaluatorInternal = function (options) {
           _evaluate(node.right, contexts)
         );
 
-      case 7: // 'LogicalExpression':
+      case LOGICAL_EXP:
         return _binops[node.operator](_evaluate(node.left, contexts), function () {
           return _evaluate(node.right, contexts);
         });
 
-      case 8: // 'ConditionalExpression'
+      case CONDITIONAL_EXP:
         return _evaluate(node.test, contexts)
           ? _evaluate(node.consequent, contexts)
           : _evaluate(node.alternate, contexts);
 
-      case 9: // 'ArrayExpression'
+      case ARRAY_EXP:
         return _evaluateArray(node.elements, contexts);
 
-      case 10: // 'ObjectExpression'
+      case OBJECT_EXP:
         return _evaluateObjectExpression(node, contexts);
 
-      case 11: // 'FunctionExpression'
+      case FUNCTION_EXP:
         return _evaluateFunctionExpression(node, contexts);
 
-      case 12: // 'ConstructorExpression'
+      case NEW_EXP:
         return _evaluateConstructorExpression(node, contexts);
 
       default:
@@ -256,8 +277,8 @@ const CspExpressionEvaluatorInternal = function (options) {
 
   function _evaluateMember(node, contexts) {
     var object = _evaluate(node.object, contexts);
-    if (!object && node.conditional) {
-      // handle conditional chaining operator: test?.prop
+    if (!object && node.optional) {
+      // handle optional chaining operator: test?.prop
       return [];
     } else if (node.computed) {
       return [object, object[_evaluate(node.property, contexts)]];
@@ -267,7 +288,8 @@ const CspExpressionEvaluatorInternal = function (options) {
 
   function _evaluateObjectExpression(node, contexts) {
     return node.properties.reduce(function (acc, curr) {
-      acc[curr.key] = _evaluate(curr.value, contexts);
+      const key = getKeyValue(curr.key);
+      acc[key] = _evaluate(curr.value, contexts);
       return acc;
     }, {});
   }
@@ -292,7 +314,7 @@ const CspExpressionEvaluatorInternal = function (options) {
 
   function _evaluateAssignment(node, contexts, val) {
     switch (node.type) {
-      case 1: // 'Identifier'
+      case IDENTIFIER:
         var name = node.name;
         var target = _getContextForIdentifier(contexts, name);
         if (!target) {
@@ -300,7 +322,7 @@ const CspExpressionEvaluatorInternal = function (options) {
         }
         target[name] = val;
         break;
-      case 2: // 'MemberExpression'
+      case MEMBER_EXP:
         var key = node.computed ? _evaluate(node.property, contexts) : node.property.name;
         _evaluateMember(node, contexts)[0][key] = val;
         break;

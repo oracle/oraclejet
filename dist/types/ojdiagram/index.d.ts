@@ -152,6 +152,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
     as?: string;
+    currentItem?: K1 | K2;
     dnd?: {
         drag?: {
             nodes?: {
@@ -486,6 +487,8 @@ export namespace ojDiagram {
     type animationOnDisplayChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDisplay"]>;
     // tslint:disable-next-line interface-over-type-literal
     type asChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type currentItemChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["currentItem"]>;
     // tslint:disable-next-line interface-over-type-literal
     type dndChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["dnd"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -824,6 +827,7 @@ export interface ojDiagramEventMap<K1, K2, D1 extends ojDiagram.Node<K1> | any, 
     'animationOnDataChangeChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDataChange"]>;
     'animationOnDisplayChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDisplay"]>;
     'asChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["as"]>;
+    'currentItemChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["currentItem"]>;
     'dndChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["dnd"]>;
     'expandedChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["expanded"]>;
     'focusRendererChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["focusRenderer"]>;
@@ -861,6 +865,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
     as?: string;
+    currentItem?: K1 | K2;
     dnd?: {
         drag?: {
             nodes?: {
@@ -1409,6 +1414,8 @@ export namespace DiagramElement {
     // tslint:disable-next-line interface-over-type-literal
     type asChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["as"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type currentItemChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["currentItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type dndChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["dnd"]>;
     // tslint:disable-next-line interface-over-type-literal
     type expandedChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["expanded"]>;
@@ -1694,6 +1701,7 @@ export interface DiagramIntrinsicProps extends Partial<Readonly<ojDiagramSettabl
     onanimationOnDataChangeChanged?: (value: ojDiagramEventMap<any, any, any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojDiagramEventMap<any, any, any, any>['animationOnDisplayChanged']) => void;
     onasChanged?: (value: ojDiagramEventMap<any, any, any, any>['asChanged']) => void;
+    oncurrentItemChanged?: (value: ojDiagramEventMap<any, any, any, any>['currentItemChanged']) => void;
     ondndChanged?: (value: ojDiagramEventMap<any, any, any, any>['dndChanged']) => void;
     onexpandedChanged?: (value: ojDiagramEventMap<any, any, any, any>['expandedChanged']) => void;
     onfocusRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['focusRendererChanged']) => void;

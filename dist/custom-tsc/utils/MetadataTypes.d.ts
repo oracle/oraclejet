@@ -232,7 +232,7 @@ export type MetaUtilObj = {
     excludedTypes: Set<string>;
     propsName?: string;
     reservedGlobalProps?: Set<string>;
-    defaultProps?: Record<string, any>;
+    defaultProps?: Record<string, ts.Node>;
     propsTypeParamsArray?: Array<string>;
     propsClassTypeParamsArray?: Array<string>;
     classPropsAliasTypeArgs?: readonly ts.Type[];

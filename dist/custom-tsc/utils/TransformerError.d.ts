@@ -66,7 +66,11 @@ export declare enum ExceptionKey {
     TRIMMED_METADATA_STRING = "trimmed_metadata_string",
     UNRECOGNIZED_OJMETADATA_KEY = "unrecognized_ojmetadata_key",
     INCORRECT_METADATA_VALUE_TYPE = "incorrect_metadata_value_type",
-    DT_REQUIRED_HAS_DEFAULT_VALUE = "dt_required_has_default_value"
+    DT_REQUIRED_HAS_DEFAULT_VALUE = "dt_required_has_default_value",
+    IGNORED_BIGINT_DEFAULT_VALUE = "ignored_bigint_default_value",
+    IGNORED_FUNCTION_DEFAULT_VALUE = "ignored_function_default_value",
+    IGNORED_ARRAY_DEFAULT_VALUE = "ignored_array_default_value",
+    UNRECOGNIZED_SUBPROP_KEY = "unrecognized_subprop_key"
 }
 export declare class TransformerError extends Error {
     private constructor();

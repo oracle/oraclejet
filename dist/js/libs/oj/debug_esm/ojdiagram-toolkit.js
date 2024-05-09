@@ -1224,7 +1224,8 @@ class DvtDiagramLink extends Container {
     }
 
     DvtDiagramLink._renderLinkLabels(diagram, this.getData(), this);
-    this.setAriaRole('img');
+    //JET-63792 OATB Structure error - Nested
+    this.setAriaRole(this._getCustomRenderer('renderer') ? 'region' : 'img');
     this.UpdateAriaLabel();
     this._diagram.getEventManager().associate(this, this);
   }
@@ -3495,7 +3496,9 @@ class DvtDiagramNode extends Container {
     DvtDiagramNode._renderNodeLabels(this._diagram, nodeData, this);
     this._setDraggableStyleClass();
     DvtDiagramNode._renderContainerButton(this._diagram, nodeData, this);
-    this.setAriaRole(this.isDisclosed() ? 'group' : 'img');
+    //JET-63792 OATB Structure error - Nested
+    var disclosedRole = renderer ? 'region' : 'img';
+    this.setAriaRole(this.isDisclosed() ? 'group' : disclosedRole);
     this.UpdateAriaLabel();
     this._diagram.getEventManager().associate(this, this);
   }
@@ -4158,10 +4161,10 @@ class DvtDiagramNode extends Container {
    * @protected
    * Updates accessibility attributes on selection event
    */
-  UpdateAriaLabel() {
-    if (!Agent.deferAriaCreation()) {
+  UpdateAriaLabel(bForce) {
+    if (!Agent.deferAriaCreation() || bForce) {
       var desc = this.getAriaLabel();
-      if (desc) this.setAriaProperty('label', desc);
+      if (desc) this.setAriaProperty('label', desc, bForce);
     }
   }
 
@@ -5802,6 +5805,21 @@ class DvtDiagramEventManager extends EventManager {
    */
   ShowFocusEffect(event, obj) {
     if (!this._component.isPanning()) super.ShowFocusEffect(event, obj);
+  }
+
+  /**
+   * @override
+   */
+  setFocus(navigable) {
+    super.setFocus(navigable);
+    var prevItem = this._component.getOptions().currentItem;
+    var currentItem = navigable ? navigable.getId() : prevItem;
+    this._component.getOptions().currentItem = currentItem;
+    if (!DvtDiagramDataUtils.compareValues(this._component.getCtx(), currentItem, prevItem)) {
+      this._component.dispatchEvent(
+        new EventFactory.newOptionChangeEvent('currentItem', currentItem)
+      );
+    }
   }
 
   /**
@@ -10519,6 +10537,20 @@ class Diagram extends PanZoomComponent {
     var calcViewBounds;
     if (!bEmptyDiagram) {
       this.removeChild(this._oldPanZoomCanvas);
+
+      var options = this.getOptions();
+      // If current item is invalid on initial render, null it out
+      // This matches ListView's current behavior
+      if (
+        this._renderCount === 1 &&
+        options.currentItem !== null &&
+        !this.getObjectById(options.currentItem)
+      ) {
+        this.dispatchEvent(new EventFactory.newOptionChangeEvent('currentItem', null));
+      } else {
+        this.setCurrentItem(options.currentItem);
+      }
+
       this._processHighlighting();
       this._processInitialSelections();
       this._updateKeyboardFocusEffect();
@@ -10607,6 +10639,23 @@ class Diagram extends PanZoomComponent {
     this.ClearLayoutPanZoomState();
     if (calcViewBounds) {
       this._cachedViewBounds = null;
+    }
+  }
+
+  /**
+   * Sets the currentItem
+   * @param { string|number } item id of the current item
+   */
+  setCurrentItem(item, forceDefault) {
+    var navigable = this.getObjectById(item);
+    if (!navigable && forceDefault) {
+      var arNodes = this.GetRootNodeObjects();
+      if (arNodes.length > 0) {
+        navigable = this.getEventManager().getKeyboardHandler().getDefaultNavigable(arNodes);
+      }
+    }
+    if (navigable || item == null) {
+      this.getEventManager().setFocus(navigable);
     }
   }
 
@@ -11132,6 +11181,15 @@ class Diagram extends PanZoomComponent {
    */
   getLinkById(id) {
     return this._links.get(id);
+  }
+
+  /**
+   * Gets a node or link by id
+   * @param {string} id node or link id
+   * @return {DvtDiagramNode|DvtDiagramLink} diagram node or link
+   */
+  getObjectById(id) {
+    return this.getNodeById(id) || this.getLinkById(id);
   }
 
   /**
@@ -11825,6 +11883,11 @@ class Diagram extends PanZoomComponent {
       } else {
         this.render(this.getOptions(), this.Width, this.Height);
         this.dispatchEvent(new EventFactory.newEvent('expand', nodeId));
+        // JET-50126 JAWS, Container expand collapse state not read out consistently
+        var displayable = this.getNodeById(nodeId).getDisplayable();
+        displayable.setAriaRole('group', true);
+        displayable.UpdateAriaLabel(true);
+        this.getEventManager().getCtx().setActiveElement(displayable, true);
       }
     }
   }
@@ -11856,6 +11919,15 @@ class Diagram extends PanZoomComponent {
     if (triggerEvent) {
       this.render(this.getOptions(), this.Width, this.Height);
       this.dispatchEvent(new EventFactory.newEvent('collapse', nodeId));
+      // JET-50126 JAWS, Container expand collapse state not read out consistently
+      var displayable = this.getNodeById(nodeId).getDisplayable();
+      displayable.setAriaRole('img', true);
+      displayable.UpdateAriaLabel(true);
+      this.getEventManager().getCtx().setActiveElement(displayable, true);
+      var currentItem = this.getOptions().currentItem;
+      if (!this.getObjectById(currentItem)) {
+        this.setCurrentItem(null, true);
+      }
     }
   }
 

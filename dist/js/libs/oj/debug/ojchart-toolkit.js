@@ -32737,7 +32737,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
       var context = this.getCtx();
 
-      var animationOnDataChange = this.Options ? this.Options['animationOnDataChange'] : 'none';
+      // current options takes precedent over previous options.
+      var animationOnDataChange =
+        options?.['animationOnDataChange'] || this.Options?.['animationOnDataChange'] || 'none';
 
       // Cache and cleanup objects from the previous render
       var oldChart = animationOnDataChange != 'none' ? new DvtChartDataChange(this) : null;
@@ -32760,7 +32762,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       DvtChartRenderer.render(this, container, new dvt.Rectangle(0, 0, this.Width, this.Height));
 
       // . We don't want the inner chart's listeners to be invoked when it is a spark chart, thus we are removing them.
-      if (DvtChartTypeUtils.isSpark(this)) this.EventManager.removeListeners(this);
+      if (DvtChartTypeUtils.isSpark(this)) {
+        this.EventManager.removeListeners(this);
+        // deferred data case won't have xAxis and yAxis initialized.
+        if (this.xAxis) this.xAxis.EventManager.removeListeners(this.xAxis);
+        if (this.yAxis) this.yAxis.EventManager.removeListeners(this.yAxis);
+      }
 
       // Animation Support
       this.StopAnimation();

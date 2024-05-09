@@ -1,11 +1,12 @@
 import ojcommontypes = require('../ojcommontypes');
-import { DataProvider } from '../ojdataprovider';
+import { DataProvider, TextFilter } from '../ojdataprovider';
 import { editableValue, editableValueEventMap, editableValueSettableProperties } from '../ojeditablevalue';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojSelectBase<V, D, SP extends ojSelectBaseSettableProperties<V, D>> extends editableValue<V, SP> {
     data: DataProvider<V, D>;
     itemText: keyof D | ((itemContext: ojcommontypes.ItemContext<V, D>) => string);
     labelledBy: string | null;
+    matchBy: Array<TextFilter<D>['matchBy']> | null;
     placeholder: string;
     readonly: boolean;
     required: boolean;
@@ -41,6 +42,8 @@ export namespace ojSelectBase {
     type itemTextChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["itemText"]>;
     // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type matchByChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["matchBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type placeholderChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["placeholder"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -82,6 +85,7 @@ export interface ojSelectBaseEventMap<V, D, SP extends ojSelectBaseSettablePrope
     'dataChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["data"]>;
     'itemTextChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["itemText"]>;
     'labelledByChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["labelledBy"]>;
+    'matchByChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["matchBy"]>;
     'placeholderChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["placeholder"]>;
     'readonlyChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["readonly"]>;
     'requiredChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["required"]>;
@@ -101,6 +105,7 @@ export interface ojSelectBaseSettableProperties<V, D> extends editableValueSetta
     data: DataProvider<V, D>;
     itemText: keyof D | ((itemContext: ojcommontypes.ItemContext<V, D>) => string);
     labelledBy: string | null;
+    matchBy: Array<TextFilter<D>['matchBy']> | null;
     placeholder: string;
     readonly: boolean;
     required: boolean;
@@ -130,6 +135,8 @@ export namespace SelectBaseElement {
     type itemTextChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["itemText"]>;
     // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type matchByChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["matchBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type placeholderChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["placeholder"]>;
     // tslint:disable-next-line interface-over-type-literal

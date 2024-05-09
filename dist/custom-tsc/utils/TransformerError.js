@@ -71,6 +71,10 @@ var ExceptionKey;
     ExceptionKey["UNRECOGNIZED_OJMETADATA_KEY"] = "unrecognized_ojmetadata_key";
     ExceptionKey["INCORRECT_METADATA_VALUE_TYPE"] = "incorrect_metadata_value_type";
     ExceptionKey["DT_REQUIRED_HAS_DEFAULT_VALUE"] = "dt_required_has_default_value";
+    ExceptionKey["IGNORED_BIGINT_DEFAULT_VALUE"] = "ignored_bigint_default_value";
+    ExceptionKey["IGNORED_FUNCTION_DEFAULT_VALUE"] = "ignored_function_default_value";
+    ExceptionKey["IGNORED_ARRAY_DEFAULT_VALUE"] = "ignored_array_default_value";
+    ExceptionKey["UNRECOGNIZED_SUBPROP_KEY"] = "unrecognized_subprop_key";
 })(ExceptionKey || (exports.ExceptionKey = ExceptionKey = {}));
 class TransformerError extends Error {
     constructor(vcompName, message, errNode) {

@@ -2071,9 +2071,21 @@ class DvtGanttRowLabelContent {
         ? this._addExpandCollapseButton(this._content, rowObj)
         : this._content;
       this._gantt.getEventManager().associate(this._contentDisplayable, this, true);
+
+      this._contentDisplayableContainer = this._contentDisplayable;
+      // Hierarchical labels are already wrapped with a container by _addExpandCollapseButton
+      // Non hierarchical labels should also be wrapped with a container so that a role "row" can be set on it:
+      if (!this._gantt.isRowsHierarchical()) {
+        this._contentDisplayableContainer = new Container(this._gantt.getCtx());
+        this._contentDisplayableContainer.addChild(this._contentDisplayable);
+      }
+      // Note the "true" flag; we don't want deferred aria creation for the role because the parent with role "rowheader"
+      // and the ancestor role "grid" requires role "row" children to be present on initial render. Otherwise an axe-core violation is triggered.
+      // Performance is not really a concern because there are typically far more tasks than rows.
+      this._contentDisplayableContainer.setAriaRole('row', true);
     }
-    if (!this._contentDisplayable.getParent()) {
-      this._rowAxis.addLabelContent(this._contentDisplayable);
+    if (!this._contentDisplayableContainer.getParent()) {
+      this._rowAxis.addLabelContent(this._contentDisplayableContainer);
     }
 
     // TODO consider tweaking the logic to avoid this step when an explicit width is set on the row axis for potential performance improvements, especially for custom content
@@ -2103,10 +2115,7 @@ class DvtGanttRowLabelContent {
     this._height = contentDimensions.h;
 
     this._contentDisplayable.setAriaProperty('label', this.getAriaLabel());
-    // Note the "true" flag; we don't want deferred aria creation for the role because the parent with role "rowheader"
-    // and the ancestor role "grid" requires role "row" children to be present on initial render. Otherwise an axe-core violation is triggered.
-    // Performance is not really a concern because there are typically far more tasks than rows.
-    this._contentDisplayable.setAriaRole('row', true);
+
     // DvtOutputText by default sets aria-hidden to true. We need to ensure this is unset for accessibility.
     this._contentDisplayable.setAriaProperty('hidden', null);
   }
@@ -2350,6 +2359,14 @@ class DvtGanttRowLabelContent {
   getDisplayable() {
     // TODO should this be getDisplayble() or getDisplayables() that return an array of 1 thing?
     return this._contentDisplayable;
+  }
+
+  /**
+   * Gets the content displayable container
+   * @return {dvt.Container} The content displayable container
+   */
+  getDisplayableContainer() {
+    return this._contentDisplayableContainer;
   }
 
   /**
@@ -6300,6 +6317,25 @@ class DvtGanttKeyboardHandler extends TimeComponentKeyboardHandler {
         retVal = super.isNavigationEvent(event);
     }
     return retVal;
+  }
+
+  /**
+   * @override
+   */
+  isSelectionEvent(event) {
+    var currentNavigable = this._eventManager.getFocus();
+    // JET-62641: only tasks are selectable,
+    // and rowlabel <-> task navigation should not be considered as selection events
+    return (
+      super.isSelectionEvent(event) &&
+      currentNavigable?.nodeType === 'task' &&
+      !(
+        this._gantt.isRowAxisEnabled() &&
+        event.altKey &&
+        (event.keyCode === KeyboardEvent.LEFT_ARROW ||
+          event.keyCode === KeyboardEvent.RIGHT_ARROW)
+      )
+    );
   }
 
   /**
@@ -11563,13 +11599,17 @@ class DvtGanttRowNode extends Container {
         labelDisplayable.setTextString(labelDisplayable.getUntruncatedTextString());
 
       // Truncate label to fit
-      TextUtils.fitText(
+      var container = labelContent.getDisplayableContainer();
+      var rendered = TextUtils.fitText(
         labelDisplayable,
         rowAxis.getWidth() - totalPadding,
         height,
-        labelDisplayable.getParent(),
+        container,
         1
       );
+      if (!rendered && container) {
+        container.removeFromParent();
+      }
 
       // Always start align labels
       if (isRTL) {
@@ -14499,7 +14539,7 @@ class DvtGanttAnimationManager {
     var context = this._gantt.getCtx();
 
     // Ensure clean slate
-    this._gantt.StopAnimation();
+    this._gantt.StopAnimation(true);
 
     this._animationMode = 'none';
 
@@ -14594,7 +14634,7 @@ class DvtGanttAnimationManager {
     var subPlayables, context;
 
     // Stop any unfinished animations
-    this._gantt.StopAnimation();
+    this._gantt.StopAnimation(true);
 
     context = this._gantt.getCtx();
 
@@ -16488,7 +16528,7 @@ class DvtGanttRowAxis extends Container {
   adjustPosition() {
     var isRTL = Agent.isRightToLeft(this._gantt.getCtx());
     var width = this._width;
-    var height = this._gantt.getCanvasSize() - this._gantt.getAxesHeight();
+    var height = this._gantt.getDatabodyHeight();
     var componentStartPadding = DvtGanttStyleUtils.getComponentPaddingStart(
       this._gantt.getOptions()
     );
@@ -16643,10 +16683,7 @@ class DvtGanttReferenceObjects extends Container {
     }
 
     this._y1 = y1 == null ? this._gantt.getDatabodyStart() : y1;
-    this._y2 =
-      y2 == null
-        ? this._gantt.getDatabodyStart() + this._gantt._canvasSize - this._gantt.getAxesHeight()
-        : y2;
+    this._y2 = y2 == null ? this._gantt.getDatabodyStart() + this._gantt.getDatabodyHeight() : y2;
 
     this._ref = new Path(this._gantt.getCtx(), this._calcCmds(this._y1, this._y2, 0));
     if (this._type === 'line' || this._type === 'timeCursor') {
@@ -16943,7 +16980,7 @@ const DvtGanttRenderer = {
     }
     if (gantt.isContentDirScrollbarOn()) {
       availSpaceWidth = gantt.Width - scrollbarPadding;
-      availSpaceHeight = gantt.getCanvasSize() - gantt.getAxesHeight();
+      availSpaceHeight = gantt.getDatabodyHeight();
       var scrollbarXOffset = Agent.isRightToLeft(gantt.getCtx())
         ? gantt.getScrollbarPadding()
         : 0;
@@ -16991,7 +17028,8 @@ const DvtGanttRenderer = {
       var bottomOffset = 0;
       if (gantt.getAxisPosition() === 'bottom') bottomOffset = gantt.getAxesHeight();
       gantt.contentDirScrollbar.setViewportRange(
-        databody.getTranslateY() - (gantt.getCanvasSize() - databodyStart - bottomOffset),
+        databody.getTranslateY() -
+          (Math.max(0, gantt.getCanvasSize() - bottomOffset) - databodyStart),
         databody.getTranslateY()
       );
     }
@@ -17495,7 +17533,7 @@ const DvtGanttRenderer = {
         gantt.getStartXOffset(),
         gantt.getStartYOffset() + axesHeight * (gantt.getAxisPosition() === 'top'),
         gantt.getCanvasLength(),
-        gantt.getCanvasSize() - axesHeight
+        gantt.getDatabodyHeight()
       ),
       gantt.EventManager,
       null
@@ -17627,7 +17665,7 @@ const DvtGanttRenderer = {
             pos,
             gantt.getDatabodyStart(),
             pos,
-            gantt.getDatabodyStart() + gantt._canvasSize - gantt.getAxesHeight()
+            gantt.getDatabodyStart() + gantt.getDatabodyHeight()
           );
           gridLine.setPixelHinting(true);
           gridLine.setMouseEnabled(false);
@@ -18307,7 +18345,7 @@ class Gantt extends TimeComponent {
    * @return {Object} An object with yMin and yMax properties
    */
   getViewportYBounds(translateY) {
-    var viewportHeight = this._backgroundHeight - this.getAxesHeight();
+    var viewportHeight = Math.max(0, this._backgroundHeight - this.getAxesHeight());
     var yMin = 0;
     if (translateY != null) {
       yMin = this._translateYToScrollPositionY(translateY);
@@ -18689,10 +18727,12 @@ class Gantt extends TimeComponent {
     this._backgroundHeight = this.Height;
 
     if (this.isTimeDirScrollbarOn())
-      this._backgroundHeight =
+      this._backgroundHeight = Math.max(
+        0,
         this._backgroundHeight -
-        CSSStyle.toNumber(this.timeDirScrollbarStyles.getHeight()) -
-        3 * scrollbarPadding;
+          CSSStyle.toNumber(this.timeDirScrollbarStyles.getHeight()) -
+          3 * scrollbarPadding
+      );
     if (this.isContentDirScrollbarOn()) {
       var widthOffset =
         3 * scrollbarPadding + CSSStyle.toNumber(this.contentDirScrollbarStyles.getWidth());
@@ -18713,7 +18753,7 @@ class Gantt extends TimeComponent {
 
     // The size of the canvas viewport
     this._canvasLength = this._backgroundWidth - doubleBorderWidth;
-    this._canvasSize = this._backgroundHeight - doubleBorderWidth;
+    this._canvasSize = Math.max(0, this._backgroundHeight - doubleBorderWidth);
   }
 
   /**
@@ -18951,7 +18991,7 @@ class Gantt extends TimeComponent {
    * @return {number} the databody height
    */
   getDatabodyHeight() {
-    return this.getCanvasSize() - this.getAxesHeight();
+    return Math.max(0, this.getCanvasSize() - this.getAxesHeight());
   }
 
   /**
@@ -19331,7 +19371,7 @@ class Gantt extends TimeComponent {
       this.getStartXOffset() - this.getTimeZoomCanvas().getTranslateX(),
       this._databodyStart - this._databody.getTranslateY(),
       this._canvasLength,
-      this._canvasSize - this.getAxesHeight()
+      this.getDatabodyHeight()
     );
   }
 

@@ -913,7 +913,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
    * @private
    */
   DataCollectionUtils.isFetchAborted = function (fetchResult) {
-    var signal = fetchResult.value.fetchParameters.signal;
+    if (fetchResult?.value == null) {
+      return false;
+    }
+    var signal = fetchResult.value.fetchParameters?.signal;
     if (signal == null) {
       Logger.warn(
         'Signal is missing from fetch parameters, which is set by collection component and should be present'

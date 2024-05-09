@@ -986,14 +986,14 @@ var __oj_timeline_series_metadata =
    *     </tr>
    *     <tr>
    *       <td><kbd>Alt + s</kbd></td>
-   *       <td>When focus is on a task and <code class="prettyprint">task-defaults.resizable</code> is enabled,
+   *       <td>When focus is on a task and <code class="prettyprint">item-defaults.resizable</code> is enabled,
    *          enter resize (start) mode. See also the <kbd>LeftArrow</kbd>, <kbd>RightArrow</kbd>, <kbd>PageUp or PageDown</kbd>,
    *          <kbd>Esc</kbd>, and <kbd>Enter</kbd> sections for more information.
    *       </td>
    *     </tr>
    *     <tr>
    *       <td><kbd>Alt + e</kbd></td>
-   *       <td>When focus is on a task and <code class="prettyprint">task-defaults.resizable</code> is enabled,
+   *       <td>When focus is on a task and <code class="prettyprint">item-defaults.resizable</code> is enabled,
    *          enter resize (end) mode. See also the <kbd>LeftArrow</kbd>, <kbd>RightArrow</kbd>, <kbd>PageUp or PageDown</kbd>,
    *          <kbd>Esc</kbd>, and <kbd>Enter</kbd> sections for more information.
    *       </td>
@@ -1082,6 +1082,10 @@ var __oj_timeline_series_metadata =
   /**
    *<p>The application is responsible for populating the shortDesc value in the component options object
    * with meaningful descriptors when the component does not provide a default descriptor.
+   * If item move ({@link oj.ojTimeline#dnd.move}) and/or resize ({@link oj.ojTimeline#itemDefaults.resizable}) is enabled,
+   * and if it's desirable to provide the item shortDesc ({@link oj.ojTimelineItem#shortDesc}), then it is recommended that the function
+   * form of the shortDesc is provided rather than the string form.
+   * This way, the shortDesc can dynamically update during the drag and drop gesture to provide better accessibility.
    * Since component terminology for keyboard and touch shortcuts can conflict with those of the application,
    * it is the application's responsibility to provide these shortcuts, possibly via a help popup.</p>
    *
@@ -3637,18 +3641,15 @@ var __oj_timeline_series_metadata =
       if (type === 'viewportChange') {
         var viewportStart = new Date(event.viewportStart).toISOString();
         var viewportEnd = new Date(event.viewportEnd).toISOString();
-        var majorAxisScale = event.majorAxisScale;
         var minorAxisScale = event.minorAxisScale;
         var viewportChangePayload = {
           viewportStart: viewportStart,
           viewportEnd: viewportEnd,
-          majorAxisScale: majorAxisScale,
-          minorAxisScale: minorAxisScale
+          minorAxisScale: typeof minorAxisScale !== 'string' ? minorAxisScale.name : minorAxisScale
         };
 
         this._UserOptionChange('viewportStart', viewportStart);
         this._UserOptionChange('viewportEnd', viewportEnd);
-        this._UserOptionChange('majorAxis.scale', majorAxisScale);
         this._UserOptionChange('minorAxis.scale', minorAxisScale);
         this._trigger('viewportChange', null, viewportChangePayload);
       } else if (type === 'move') {

@@ -966,6 +966,7 @@ var __oj_sunburst_metadata =
     }
   },
   "methods": {
+    "getAutomation": {},
     "getContextByNode": {},
     "getNode": {},
     "getProperty": {},
@@ -2154,6 +2155,16 @@ var __oj_sunburst_node_metadata =
      */
     getNode: function (subIdPath) {
       return this._component.getAutomation().getNode(subIdPath);
+    },
+
+    /**
+     * Returns the sunburst automation component used by webdriver.
+     * @memberof oj.ojSunburst
+     * @instance
+     * @ojhidden
+     */
+    getAutomation: function () {
+      return this._component.getAutomation();
     },
 
     /**

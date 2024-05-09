@@ -73,7 +73,7 @@ function getDecoratorParamValue(decorator, paramName) {
                 if (ts.isPropertyAssignment(prop)) {
                     const propKey = prop.name.getText();
                     if (propKey === paramName) {
-                        param = MetaUtils.getValueFromNode(prop.initializer);
+                        param = MetaUtils.getMDValueFromNode(prop.initializer, propKey);
                     }
                 }
             });

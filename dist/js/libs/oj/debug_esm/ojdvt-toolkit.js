@@ -21074,7 +21074,7 @@ Context.resetCaches = function () {
  * Sets the wai-aria active-descendent to be the given displayable.
  * @param {dvt.Displayable} displayable The new active displayable.
  */
-Context.prototype.setActiveElement = function (displayable) {
+Context.prototype.setActiveElement = function (displayable, forceNew) {
   // Clear the id of the current active element.  This field is only set if a temp id was applied earlier.
   if (this._activeElement) {
     ToolkitUtils.removeAttrNullNS(this._activeElement.getElem(), 'id');
@@ -21084,7 +21084,7 @@ Context.prototype.setActiveElement = function (displayable) {
   // Get the DOM ID of the elem. If it doesn't have an ID, create one for it.
   var elem = displayable.getElem();
   var id = ToolkitUtils.getAttrNullNS(elem, 'id');
-  if (!id) {
+  if (!id || forceNew) {
     id = Context._generateActiveElementId(displayable);
     ToolkitUtils.setAttrNullNS(elem, 'id', id);
     this._activeElement = displayable;
@@ -28081,15 +28081,15 @@ SimpleScrollbar.prototype.render = function (options, width, height) {
 
   // Add hit area to make interaction with scrollbar easier
   var hitAreaSize = Agent.isTouchDevice() ? 8 : 4;
-  var hitArea = new Rect(
+  this._hitArea = new Rect(
     this.getCtx(),
     -hitAreaSize,
     -hitAreaSize,
     this._width + 2 * hitAreaSize,
     this._height + 2 * hitAreaSize
   );
-  hitArea.setInvisibleFill();
-  this.addChild(hitArea);
+  this._hitArea.setInvisibleFill();
+  this.addChild(this._hitArea);
 
   // Add event listeners
   var hasDragTarget = this._dragTarget != null;
@@ -28243,7 +28243,9 @@ SimpleScrollbar.prototype._onDragMove = function (event) {
 
   var dragOffset = val - this._prevVal;
   // If the drag target is not the scrollbar, the thumb should move in the opposite direction as the drag target
-  if (this._dragTarget) dragOffset *= -1;
+  if (this._dragTarget && event.target !== this._hitArea) {
+    dragOffset *= -1;
+  }
 
   this._setViewportRange(this._thumbMin + dragOffset, this._thumbMax + dragOffset, 'move');
   this._prevVal = val;

@@ -2412,9 +2412,10 @@ var __oj_data_grid_metadata =
    * @param {string=} arg2 - key to extract in the value of object[arg1]
    * @param {string=} arg3 - key to extract in the value of object[arg1][arg2]
    * @param {string=} arg4 - key to extract in the value of object[arg1][arg2][arg3]
+   * @param {string=} arg5 - key to extract in the value of object[arg1][arg2][arg3][arg4]
    * @return {string|number|Object|boolean|null}
    */
-  DvtDataGridOptions.prototype.extract = function (arg1, arg2, arg3, arg4) {
+  DvtDataGridOptions.prototype.extract = function (arg1, arg2, arg3, arg4, arg5) {
     if (arg1 != null) {
       var val1 = this.options[arg1];
       if (arg2 != null && val1 != null) {
@@ -2422,7 +2423,11 @@ var __oj_data_grid_metadata =
         if (arg3 != null && val2 != null) {
           var val3 = val2[arg3];
           if (arg4 != null && val3 != null) {
-            return val3[arg4];
+            var val4 = val3[arg4];
+            if (arg5 != null && val4 != null) {
+              return val4[arg5];
+            }
+            return val4;
           }
           return val3;
         }
@@ -2884,9 +2889,12 @@ var __oj_data_grid_metadata =
     if (axis === 'cell') {
       v = this.extract('cell', 'alignment', property);
     } else if (label) {
-      v = this.getRawProperty('alignment', axis, label)[property];
+      v = this.extract('header', axis, 'label', 'alignment', property);
     } else {
       v = this.extract('header', axis, 'alignment', property);
+    }
+    if (v == null) {
+      v = 'auto';
     }
     if (obj != null) {
       return this.evaluate(v, obj);
@@ -4518,10 +4526,9 @@ var __oj_data_grid_metadata =
       ' ' +
       resources.getMappedStyle('headercell');
     this.m_root.appendChild(div); // @HTMLUpdateOK
-    // Not using offsetWidth/Height due to
-    var rect = div.getBoundingClientRect();
-    this.m_defaultColumnWidth = Math.round(rect.width);
-    this.m_defaultRowHeight = Math.round(rect.height);
+    // can use offset due to fixes in chrome partial pixel rounding fixes
+    this.m_defaultColumnWidth = div.offsetWidth;
+    this.m_defaultRowHeight = div.offsetHeight;
 
     // minimize reflows
     this.getViewportWidth();
@@ -5848,8 +5855,8 @@ var __oj_data_grid_metadata =
     this.setElementWidth(colEndHeader, columnHeaderWidth);
 
     [rowHeaderWidth, colHeaderHeight] = this._setFrozenContainerDimension(
-      availableWidth,
-      availableHeight,
+      databodyWidth,
+      databodyHeight,
       rowHeaderWidth,
       rowEndHeaderWidth,
       colHeaderHeight,
@@ -6062,7 +6069,10 @@ var __oj_data_grid_metadata =
           this.m_utils.removeCSSClassName(this.m_bottomCorner, style);
         }
       }
-      tags = this.m_rowEndHeader.firstChild.childNodes;
+      tags = Array.from(this.m_rowEndHeader.firstChild.childNodes);
+      if (this.m_rowEndHeaderFrozen?.firstChild?.childNodes?.length) {
+        tags.push(...this.m_rowEndHeaderFrozen.firstChild.childNodes);
+      }
       for (i = 0; i < tags.length; i++) {
         if (bw) {
           this.m_utils.addCSSClassName(tags[i], style);
@@ -6129,7 +6139,10 @@ var __oj_data_grid_metadata =
           this.m_utils.removeCSSClassName(this.m_bottomCorner, style);
         }
       }
-      tags = this.m_colEndHeader.firstChild.childNodes;
+      tags = Array.from(this.m_colEndHeader.firstChild.childNodes);
+      if (this.m_colEndHeaderFrozen?.firstChild?.childNodes?.length) {
+        tags.push(...this.m_colEndHeaderFrozen.firstChild.childNodes);
+      }
       const groupingContainerStyle = this.getMappedStyle('groupingcontainer');
       // Identify if the endHeader is a groupingcontainer and apply style to the first child.
       for (i = 0; i < tags.length; i++) {
@@ -8849,32 +8862,28 @@ var __oj_data_grid_metadata =
    * @param {Object|string} templateContext templateContext is template is used
    * @private
    */
-  DvtDataGrid.prototype._renderContent = function (
-    renderer,
-    context,
-    cell,
-    data,
-    templateContext,
-    headerContentDiv
-  ) {
+  DvtDataGrid.prototype._renderContent = function (renderer, context, cell, data, templateContext) {
+    let shouldAppendContentElement = false;
+    let headerContentDiv = context.contentElement;
     if (renderer != null && typeof renderer === 'function') {
       const returnObj = renderer.call(this, context);
       let element = cell;
       let content = returnObj;
       // if insertContent is provided then returned string or HTMLElement should be wrapped in div.
-      if (returnObj && (returnObj.insert != null || returnObj.insertContent != null)) {
-        if (returnObj.insert == null) {
+      if (returnObj?.insert != null) {
+        content = returnObj.insert;
+      } else if (headerContentDiv != null) {
+        if (returnObj?.insertContent != null) {
           element = headerContentDiv;
           content = returnObj.insertContent;
-        } else {
-          content = returnObj.insert;
+          shouldAppendContentElement = true;
+        } else if (headerContentDiv.hasChildNodes()) {
+          shouldAppendContentElement = true;
         }
-      }
-      if (
-        (context.axis === 'row' || context.axis === 'column') &&
-        (context.contentElement.hasChildNodes() || returnObj?.insertContent != null)
-      ) {
-        cell.appendChild(context.contentElement); // @HTMLUpdateOK
+
+        if (shouldAppendContentElement) {
+          cell.appendChild(headerContentDiv); // @HTMLUpdateOK
+        }
       }
       DataCollectionUtils.applyRendererContent(
         element,
@@ -8885,20 +8894,18 @@ var __oj_data_grid_metadata =
       this._removeFocusFromChildElements(context, cell);
     } else if (renderer != null && typeof renderer === 'object' && this.m_engine) {
       var nodes = this.m_engine.execute(this.m_root, renderer, templateContext, null);
+      shouldAppendContentElement =
+        renderer.slot === 'columnHeaderContentTemplate' ||
+        renderer.slot === 'rowHeaderContentTemplate';
+
       for (var i = 0; i < nodes.length; i++) {
-        if (
-          renderer.slot === 'columnHeaderContentTemplate' ||
-          renderer.slot === 'rowHeaderContentTemplate'
-        ) {
+        if (shouldAppendContentElement) {
           headerContentDiv.appendChild(nodes[i]); // @HTMLUpdateOK
         } else {
           cell.appendChild(nodes[i]); // @HTMLUpdateOK
         }
       }
-      if (
-        renderer.slot === 'columnHeaderContentTemplate' ||
-        renderer.slot === 'rowHeaderContentTemplate'
-      ) {
+      if (shouldAppendContentElement) {
         cell.appendChild(headerContentDiv); // @HTMLUpdateOK
       }
       this._removeFocusFromChildElements(context, cell);
@@ -8915,7 +8922,7 @@ var __oj_data_grid_metadata =
         // eslint-disable-next-line no-param-reassign
         data = '';
       }
-      if (headerContentDiv && (context.axis === 'row' || context.axis === 'column')) {
+      if (headerContentDiv) {
         headerContentDiv.appendChild(document.createTextNode(data.toString())); // @HTMLUpdateOK
         cell.appendChild(headerContentDiv); // @HTMLUpdateOK
       } else {
@@ -9208,13 +9215,16 @@ var __oj_data_grid_metadata =
       // create the header element and append the content to it
       header = document.createElement('div');
 
-      const headerContentDiv = document.createElement('div');
-      headerContentDiv.classList.add(this.getMappedStyle('headerCellContent'));
+      let headerContentDiv;
+      if (axis === 'row' || axis === 'column') {
+        headerContentDiv = document.createElement('div');
+        headerContentDiv.classList.add(this.getMappedStyle('headerCellContent'));
+      }
 
       // build headerContext to pass to renderer
       headerContext = this.createHeaderContext(
         axis,
-        index,
+        isAppend || insert ? index : index - headerExtent + 1,
         headerData,
         headerMetadata,
         header,
@@ -9386,8 +9396,7 @@ var __oj_data_grid_metadata =
         headerContext,
         header,
         headerData,
-        this.buildHeaderTemplateContext(headerContext, headerMetadata),
-        headerContentDiv
+        this.buildHeaderTemplateContext(headerContext, headerMetadata)
       );
 
       // set alignment before inline stlye to ensure inline styles win
@@ -17131,8 +17140,8 @@ var __oj_data_grid_metadata =
     // are available and insert is done at the end of the frozen section.
     if (this._hasFrozenColumns() || this._hasFrozenRows()) {
       if (
-        (axis === 'column' && offset <= this.m_frozenColIndex + 1) ||
-        (axis === 'row' && offset <= this.m_frozenRowIndex + 1)
+        (axis === 'column' && this._hasFrozenColumns() && offset <= this.m_frozenColIndex + 1) ||
+        (axis === 'row' && this._hasFrozenRows() && offset <= this.m_frozenRowIndex + 1)
       ) {
         frozenDimensions = new Array(count).fill(totalDimension / count);
       } else {
@@ -18208,11 +18217,14 @@ var __oj_data_grid_metadata =
     let frozenColExists = this.m_frozenColIndex !== null && this.m_frozenColIndex !== -1;
     let frozenRowExists = this.m_frozenRowIndex !== null && this.m_frozenRowIndex !== -1;
 
+    // * If no frozen section, mutate the rest of the databody
+    // * If either of them exists, then check if the row/col End exceeds the frozen region and mutate the rest of the databody
+    // * ensure check for frozenAxisExists as 1 > null alone shall pass
     if (
       (!frozenColExists && !frozenRowExists) ||
       ((frozenColExists || frozenRowExists) &&
-        rowEnd > this.m_frozenRowIndex &&
-        colEnd > this.m_frozenColIndex)
+        (!frozenRowExists || rowEnd > this.m_frozenRowIndex) &&
+        (!frozenColExists || colEnd > this.m_frozenColIndex))
     ) {
       this._fetchAndMutateCellsByRange(cellSet, this.m_databody, rowStart, rowEnd, colStart, colEnd);
     }
@@ -18438,6 +18450,14 @@ var __oj_data_grid_metadata =
           if (endHeaders.length) {
             this._removeAndModifyHeaders(endHeaders, dimension, dimensionToRetrieve, dirToSet, index);
           }
+          if (
+            (axis === 'column' && this._hasFrozenColumns() && index <= this.m_frozenColIndex) ||
+            (axis === 'row' && this._hasFrozenRows() && index <= this.m_frozenRowIndex)
+          ) {
+            frozenSectionDimension += dimension;
+          } else {
+            databodyDimension += dimension;
+          }
         }
         if (
           (axis === 'column' && this._hasFrozenColumns() && index <= this.m_frozenColIndex) ||
@@ -18447,14 +18467,6 @@ var __oj_data_grid_metadata =
         } else {
           insideDeletedDimension += dimension;
           dimensions.unshift(dimension);
-        }
-        if (
-          (axis === 'column' && this._hasFrozenColumns() && index <= this.m_frozenColIndex) ||
-          (axis === 'row' && this._hasFrozenRows() && index <= this.m_frozenRowIndex)
-        ) {
-          frozenSectionDimension += dimension;
-        } else {
-          databodyDimension += dimension;
         }
       } else if (flag === DvtDataGrid.AFTER && this.m_options.getScrollPolicy() === 'scroll') {
         // only concerned with after rows if virtual scroll
@@ -18593,6 +18605,9 @@ var __oj_data_grid_metadata =
       }
       var databodyContentHeight = this.getElementHeight(databodyContent) - databodyDimension;
       this.setElementHeight(databodyContent, databodyContentHeight);
+      if (this.m_databodyFrozenCol) {
+        this.setElementHeight(this.m_databodyFrozenCol, databodyContentHeight);
+      }
       if (this.m_databodyFrozenRow) {
         var frozenDatabodyContentHeight =
           this.getElementHeight(this.m_databodyFrozenRow) - frozenSectionDimension;
@@ -18629,6 +18644,9 @@ var __oj_data_grid_metadata =
       }
       var databodyContentWidth = this.getElementWidth(databodyContent) - databodyDimension;
       this.setElementWidth(databodyContent, databodyContentWidth);
+      if (this.m_databodyFrozenRow) {
+        this.setElementWidth(this.m_databodyFrozenRow, databodyContentWidth);
+      }
       if (this.m_databodyFrozenCol) {
         var frozenDatabodyContentWidth =
           this.getElementWidth(this.m_databodyFrozenCol) - frozenSectionDimension;
@@ -19178,32 +19196,23 @@ var __oj_data_grid_metadata =
     if (root == null) {
       return null;
     }
+    var sections = [];
+    var headers = [];
+    sections.push(root);
 
-    var headers;
+    if (this._hasFrozenRows() && (root === this.m_rowHeader || root === this.m_rowEndHeader)) {
+      let section = root === this.m_rowHeader ? this.m_rowHeaderFrozen : this.m_rowEndHeaderFrozen;
+      sections.push(section);
+    }
+    if (this._hasFrozenColumns() && (root === this.m_colHeader || root === this.m_colEndHeader)) {
+      let section = root === this.m_colHeader ? this.m_colHeaderFrozen : this.m_colEndHeaderFrozen;
+      sections.push(section);
+    }
 
-    // identify region based on the frozen indexes.
-    if (
-      this._hasFrozenRows() &&
-      parseInt(key, 10) <= this.m_frozenRowIndex &&
-      (root === this.m_rowHeader || root === this.m_rowEndHeader)
-    ) {
-      // eslint-disable-next-line no-param-reassign
-      root = root === this.m_rowHeader ? this.m_rowHeaderFrozen : this.m_rowEndHeaderFrozen;
+    for (let i = 0; i < sections.length; i++) {
+      headers.push(...sections[i].getElementsByClassName(className));
     }
-    if (
-      this._hasFrozenColumns() &&
-      parseInt(key, 10) <= this.m_frozenColIndex &&
-      (root === this.m_colHeader || root === this.m_colEndHeader)
-    ) {
-      // eslint-disable-next-line no-param-reassign
-      root = root === this.m_colHeader ? this.m_colHeaderFrozen : this.m_colEndHeaderFrozen;
-    }
-    // getElementsByClassName support is IE9 and up
-    if (root.getElementsByClassName) {
-      headers = root.getElementsByClassName(className);
-    } else {
-      headers = root.childNodes;
-    }
+
     for (var i = 0; i < headers.length; i++) {
       var header = headers[i];
       var headerKey = this._getKey(header);
@@ -22013,7 +22022,7 @@ var __oj_data_grid_metadata =
             let i = 1;
             while (newElement != null && this.isHeaderHidden(newElement)) {
               newIndex = index - 1 - i;
-              newElement = this._getHeaderByIndex(newIndex - 1, axis, level);
+              newElement = this._getHeaderByIndex(newIndex, axis, level);
               i += 1;
             }
             newIndex =
@@ -27110,6 +27119,13 @@ var __oj_data_grid_metadata =
       if ((resizeHeaderMode === 'column' || resizeHeaderMode === 'columnEnd') && !isHeaderLabel) {
         // index based
         dimension = 'columnWidth';
+        details.ui.size = this.getElementWidth(
+          this._getHeaderByIndex(
+            resizingElementIndex + context.extent - 1,
+            'column',
+            this.m_columnHeaderLevelCount - 1
+          )
+        );
       } else if (isHeaderLabel) {
         let isRowEndHeaderLabel = this.m_utils.containsCSSClassName(
           this.m_resizingElement,
@@ -27117,10 +27133,9 @@ var __oj_data_grid_metadata =
         );
         dimension = isRowEndHeaderLabel ? 'rowEndHeaderWidth' : 'rowHeaderWidth';
         details.ui.levels = [
-          resizeHeaderMode.includes('row')
-            ? context.level + context.depth - 1
-            : this.m_rowHeaderLevelCount - 1
+          resizeHeaderMode.includes('row') ? context.level : this.m_rowHeaderLevelCount - 1
         ];
+        details.ui.size = newWidth;
       } else {
         let isRowEndHeader = this.m_utils.containsCSSClassName(
           this.m_resizingElement,
@@ -27128,13 +27143,22 @@ var __oj_data_grid_metadata =
         );
         dimension = isRowEndHeader ? 'rowEndHeaderWidth' : 'rowHeaderWidth';
         details.ui.levels = [context.level + context.depth - 1];
+        details.ui.size = isRowEndHeader
+          ? this.m_rowEndHeaderLevelWidths[context.level + context.depth - 1]
+          : this.m_rowHeaderLevelWidths[context.level + context.depth - 1];
       }
-      details.ui.size = newWidth;
       details.ui.dimension = dimension;
     } else if (newHeight !== oldHeight) {
       if ((resizeHeaderMode === 'row' || resizeHeaderMode === 'rowEnd') && !isHeaderLabel) {
         // index based
         dimension = 'rowHeight';
+        details.ui.size = this.getElementHeight(
+          this._getHeaderByIndex(
+            resizingElementIndex + context.extent - 1,
+            'row',
+            this.m_rowHeaderLevelCount - 1
+          )
+        );
       } else if (isHeaderLabel) {
         let isColumnEndHeaderLabel = this.m_utils.containsCSSClassName(
           this.m_resizingElement,
@@ -27142,10 +27166,9 @@ var __oj_data_grid_metadata =
         );
         dimension = isColumnEndHeaderLabel ? 'columnEndHeaderHeight' : 'columnHeaderHeight';
         details.ui.levels = [
-          resizeHeaderMode.includes('column')
-            ? context.level + context.depth - 1
-            : this.m_columnHeaderLevelCount - 1
+          resizeHeaderMode.includes('column') ? context.level : this.m_columnHeaderLevelCount - 1
         ];
+        details.ui.size = newHeight;
       } else {
         let isColumnEndHeader = this.m_utils.containsCSSClassName(
           this.m_resizingElement,
@@ -27153,8 +27176,10 @@ var __oj_data_grid_metadata =
         );
         dimension = isColumnEndHeader ? 'columnEndHeaderHeight' : 'columnHeaderHeight';
         details.ui.levels = [context.level + context.depth - 1];
+        details.ui.size = isColumnEndHeader
+          ? this.m_columnEndHeaderLevelHeights[context.level + context.depth - 1]
+          : this.m_columnHeaderLevelHeights[context.level + context.depth - 1];
       }
-      details.ui.size = newHeight;
       details.ui.dimension = dimension;
     } else {
       return;
@@ -27418,7 +27443,7 @@ var __oj_data_grid_metadata =
         if ((!end && bottomEdgeCheck) || (end && topEdgeCheck)) {
           this.m_resizingElement = elem;
           return 'row-resize';
-        } else if ((!end && topEdgeCheck) || (end && bottomEdgeCheck)) {
+        } else if (((!end && topEdgeCheck) || (end && bottomEdgeCheck)) && level !== 0) {
           // can we resize the height of the parent header
           this.m_resizingElement = parent;
           this.m_resizingElementSibling = elem;
@@ -27450,8 +27475,9 @@ var __oj_data_grid_metadata =
           this.m_resizingElement = elem;
           return 'col-resize';
         } else if (
-          (!end && (rtl ? rightEdgeCheck : leftEdgeCheck)) ||
-          (end && (rtl ? leftEdgeCheck : rightEdgeCheck))
+          ((!end && (rtl ? rightEdgeCheck : leftEdgeCheck)) ||
+            (end && (rtl ? leftEdgeCheck : rightEdgeCheck))) &&
+          level !== 0
         ) {
           this.m_resizingElement = parent;
           this.m_resizingElementSibling = elem;
@@ -28485,8 +28511,8 @@ var __oj_data_grid_metadata =
     this.setElementWidth(colEndHeader, columnHeaderWidth);
 
     [rowHeaderWidth, colHeaderHeight] = this._setFrozenContainerDimension(
-      availableWidth,
-      availableHeight,
+      databodyWidth,
+      databodyHeight,
       rowHeaderWidth,
       rowEndHeaderWidth,
       colHeaderHeight,
@@ -28831,33 +28857,23 @@ var __oj_data_grid_metadata =
 
       if (!(tempArray[i] && tempArray[i][startAxisChange]) && shiftOnly !== true) {
         this.setElementDir(cell, this.getElementDir(cell, dimension) + dimensionDelta, dimension);
-        if (axis === 'row') {
-          this._updateTempArray(
-            tempArray,
-            true,
-            i,
-            startAxisChange,
-            cellContext.extents.column,
-            axisExtent - extentWithinCellToIgnore
-          );
-        } else {
-          if (forHideShow) {
-            if (this.isHidden(axis, startAxisChange)) {
-              cell.style.display = 'none';
-            } else {
-              cell.style.display = '';
-            }
+        if (forHideShow) {
+          if (this.isHidden(axis, startAxisChange)) {
+            cell.style.display = 'none';
+          } else {
+            cell.style.display = '';
           }
-
-          this._updateTempArray(
-            tempArray,
-            true,
-            i,
-            startAxisChange,
-            cellContext.extents.row,
-            axisExtent - extentWithinCellToIgnore
-          );
         }
+
+        const otherAxis = axis === 'row' ? 'column' : 'row';
+        this._updateTempArray(
+          tempArray,
+          true,
+          i,
+          startAxisChange,
+          cellContext.extents[otherAxis],
+          axisExtent - extentWithinCellToIgnore
+        );
       }
       let axisStartValue = startAxisChange;
       if (shiftOnly !== true) {
@@ -34703,9 +34719,14 @@ var __oj_data_grid_metadata =
 
   // Load translation bundles to handle asynchronous loading for oj-c components.
   // JET-63142 -> JET-64242
+  let translationBundlePromise;
   async function getPreactTranslationPromise() {
+    if (translationBundlePromise) {
+      return translationBundlePromise;
+    }
     const { default: loader } = await new Promise(function (resolve, reject) { require(['@oracle/oraclejet-preact/translationBundle'], function (m) { resolve(_interopNamespace(m)); }, reject) });
-    return ojtranslationbundleutils.getTranslationBundlePromiseFromLoader(loader);
+    translationBundlePromise = ojtranslationbundleutils.getTranslationBundlePromiseFromLoader(loader);
+    return translationBundlePromise;
   }
 
   // import { ImmutableSet } from 'ojs/ojkeyset';
@@ -39891,8 +39912,8 @@ var __oj_data_grid_metadata =
        * @instance
        * @property {'columnHeaderHeight' | 'columnEndHeaderHeight' | 'rowHeaderWidth' | 'rowEndHeaderWidth'| 'columnWidth' | 'rowHeight'} dimension the dimension for which resize is occurring
        * @property {number} size the new size of the cell with direction implied for which resize is occurring
-       * @property {Array<number>| undefined} level the level of the cell for which resize is occurring (only set if dimension = 'columnWidth' | 'rowHeight')
-       * @property {Array<number> | undefined} indices array of indexs for which resize is occurring (only set if dimension = 'columnHeaderHeight' | 'columnEndHeaderHeight' | 'rowHeaderWidth' | 'rowEndHeaderWidth'| 'columnWidth')
+       * @property {Array<number>| undefined} levels array of levels of the header / header label for which resize is occurring (only set if dimension = 'columnHeaderHeight' | 'columnEndHeaderHeight' | 'rowHeaderWidth' | 'rowEndHeaderWidth')
+       * @property {Array<number> | undefined} indices array of indexes for which resize is occurring (only set if dimension = 'columnWidth' | 'rowHeight')
        */
       cellResize: null,
 
@@ -42983,17 +43004,19 @@ var __oj_data_grid_metadata =
         this.getMappedStyle('endheadercell')
       );
       if (!isEndHeader) {
-        if (!headersUnderLevel[headerLevel]) {
-          headersUnderLevel[headerLevel] = [];
-        }
         if ((headerLevelCount > 1 && headerLevel >= level) || headerLevelCount === 1) {
+          // assign array only if the headerLevel conditions are met. JET-65934
+          if (!headersUnderLevel[headerLevel]) {
+            headersUnderLevel[headerLevel] = [];
+          }
           headersUnderLevel[headerLevel].push(headers[i]);
         }
       } else if (isEndHeader) {
-        if (!endHeadersUnderLevel[headerLevel]) {
-          endHeadersUnderLevel[headerLevel] = [];
-        }
         if ((endHeaderLevelCount > 1 && headerLevel >= level) || endHeaderLevelCount === 1) {
+          // assign array only if the headerLevel conditions are met. JET-65934
+          if (!endHeadersUnderLevel[headerLevel]) {
+            endHeadersUnderLevel[headerLevel] = [];
+          }
           endHeadersUnderLevel[headerLevel].push(headers[i]);
         }
       }
@@ -43044,7 +43067,7 @@ var __oj_data_grid_metadata =
       let adjustedRowIndex = rowIndex === -1 ? 0 : rowIndex;
       let dir = this.getResources().isRTLMode() ? 'right' : 'left';
 
-      let header = this._getHeaderByIndex(adjustedRowIndex, axis, this.m_rowHeaderLevelCount);
+      let header = this._getHeaderByIndex(adjustedRowIndex, axis, this.m_rowHeaderLevelCount - 1);
       let isHeaderWithinSelection = this._isHeaderWithinSelection(header, axis);
       if (rowIndex !== undefined && this.m_dragIndex !== rowIndex) {
         if (this.m_utils.containsCSSClassName(header, this.getMappedStyle('disabledElement'))) {
@@ -43388,7 +43411,11 @@ var __oj_data_grid_metadata =
         let axis = 'column';
         let adjustedColIndex = colIndex === -1 ? 0 : colIndex;
         let dir = this.getResources().isRTLMode() ? 'right' : 'left';
-        let header = this._getHeaderByIndex(adjustedColIndex, axis, this.m_columnHeaderLevelCount);
+        let header = this._getHeaderByIndex(
+          adjustedColIndex,
+          axis,
+          this.m_columnHeaderLevelCount - 1
+        );
         if (this.m_utils.containsCSSClassName(header, this.getMappedStyle('disabledElement'))) {
           this._removeDropTargetLine(axis);
           this._removeDropTargetClass();
@@ -45006,8 +45033,10 @@ var __oj_data_grid_metadata =
       endHeaderFetchCount: 0
     };
 
+    // null check and -1 check to fully ensure frozenSection doesn't exist.
     if (
       this.m_options._getFreezeIndex(axis) === null ||
+      this.m_options._getFreezeIndex(axis) === -1 ||
       !this._isFreezeFeasible(axis, startResults, endResults, start, 0)
     ) {
       returnObj = {
@@ -45275,7 +45304,7 @@ var __oj_data_grid_metadata =
           'row'
         );
         if (this.m_endRowHeader !== -1 && headers && Object.keys(headers).length) {
-          headers = headers[0];
+          headers = headers[Object.keys(headers)];
           header = headers[headers.length - 1];
         } else if (this.m_endRowEndHeader !== -1 && endHeaders && Object.keys(endHeaders).length) {
           endHeaders = endHeaders[0];
@@ -45370,7 +45399,7 @@ var __oj_data_grid_metadata =
           'column'
         );
         if (this.m_endColHeader !== -1 && headers && Object.keys(headers).length) {
-          headers = headers[0];
+          headers = headers[Object.keys(headers)];
           header = headers[headers.length - 1];
         } else if (this.m_endColEndHeader !== -1 && endHeaders && Object.keys(endHeaders).length) {
           endHeaders = endHeaders[0];
@@ -45830,7 +45859,7 @@ var __oj_data_grid_metadata =
       databodyFrozenColDirValue = this.getElementDir(this.m_databody, dir);
     }
     let databodyFrozenRowWidth = this.getElementWidth(this.m_databody);
-    if (this.m_databodyFrozenRow) {
+    if (this.m_databodyFrozenRow && this._hasFrozenRows()) {
       databodyFrozenRowWidth = this.getElementWidth(this.m_databodyFrozenRow);
     }
 
@@ -46042,7 +46071,7 @@ var __oj_data_grid_metadata =
       databodyFrozenRowTop = this.getElementDir(this.m_databody, 'top');
     }
     let databodyFrozenColHeight = this.getElementHeight(this.m_databody);
-    if (this.m_databodyFrozenCol) {
+    if (this.m_databodyFrozenCol && this._hasFrozenColumns()) {
       databodyFrozenColHeight = this.getElementHeight(this.m_databodyFrozenCol);
     }
 
@@ -46427,7 +46456,7 @@ var __oj_data_grid_metadata =
     let frozenColWidth = this.getElementWidth(this.m_databodyFrozenCol);
     let databodyFrozenRowWidth = this.getElementWidth(this.m_databody);
 
-    if (this.m_databodyFrozenRow) {
+    if (this.m_databodyFrozenRow && this._hasFrozenRows()) {
       databodyFrozenRowWidth = this.getElementWidth(this.m_databodyFrozenRow);
     }
     const databodyFrozenColDirValue = this.getElementDir(this.m_databodyFrozenCol, dir);
@@ -46627,7 +46656,7 @@ var __oj_data_grid_metadata =
     let databodyFrozenRowTop = this.getElementDir(this.m_databodyFrozenRow, 'top');
 
     let databodyFrozenColHeight = this.getElementHeight(this.m_databody);
-    if (this.m_databodyFrozenCol) {
+    if (this.m_databodyFrozenCol && this._hasFrozenColumns()) {
       databodyFrozenColHeight = this.getElementHeight(this.m_databodyFrozenCol);
     }
 
@@ -46638,8 +46667,8 @@ var __oj_data_grid_metadata =
     let frozenCornerCells = [];
 
     let { headers, endHeaders } = this._getRowHeadersToUnFreeze(index + 1);
-    let headerShiftStartIndex = this.m_columnHeaderLevelCount > 1 ? frozenIndex + 1 : index + 1;
-    let endHeaderShiftStartIndex = this.m_columnEndHeaderLevelCount > 1 ? frozenIndex + 1 : index + 1;
+    let headerShiftStartIndex = this.m_rowHeaderLevelCount > 1 ? frozenIndex + 1 : index + 1;
+    let endHeaderShiftStartIndex = this.m_rowEndHeaderLevelCount > 1 ? frozenIndex + 1 : index + 1;
 
     let startLoop = 0;
     if (this._hasFrozenColumns()) {
@@ -46819,7 +46848,7 @@ var __oj_data_grid_metadata =
           headers.push(...indexHeaders);
         }
       } else {
-        for (let j = startIndex; j < this.m_frozenColIndex; ) {
+        for (let j = startIndex; j <= this.m_frozenColIndex; ) {
           let container = this._getHeaderContainer(
             j,
             0,
@@ -46839,7 +46868,7 @@ var __oj_data_grid_metadata =
           endHeaders.push(...indexHeaders);
         }
       } else {
-        for (let j = startIndex; j < this.m_frozenColIndex; ) {
+        for (let j = startIndex; j <= this.m_frozenColIndex; ) {
           let container = this._getHeaderContainer(
             j,
             0,
@@ -46866,7 +46895,7 @@ var __oj_data_grid_metadata =
           headers.push(...indexHeaders);
         }
       } else {
-        for (let j = startIndex; j < this.m_frozenRowIndex; ) {
+        for (let j = startIndex; j <= this.m_frozenRowIndex; ) {
           let container = this._getHeaderContainer(
             j,
             0,
@@ -46887,7 +46916,7 @@ var __oj_data_grid_metadata =
           endHeaders.push(...indexHeaders);
         }
       } else {
-        for (let j = startIndex; j < this.m_frozenRowIndex; ) {
+        for (let j = startIndex; j <= this.m_frozenRowIndex; ) {
           let container = this._getHeaderContainer(
             j,
             0,
@@ -47890,7 +47919,7 @@ var __oj_data_grid_metadata =
       // scroll to left of data region or currently rendered skeletons
       row = rowStart;
       top = rowStartPixel;
-      rowCount = Math.max(this.getFetchCount('row', row), this.m_endRow - row);
+      rowCount = Math.max(skeletonRowEnd, this.m_endRow, 0) - Math.min(skeletonRowStart, row) + 1;
       column = Math.min(skeletonColStart - columnCount, columnStart);
       left = Math.min(
         skeletonColStartPixel,
@@ -47915,7 +47944,7 @@ var __oj_data_grid_metadata =
       } else {
         row = rowStart;
         top = rowStartPixel;
-        rowCount = Math.max(this.getFetchCount('row', row), this.m_endRow - row);
+        rowCount = Math.max(skeletonRowEnd, this.m_endRow, 0) - Math.min(skeletonRowStart, row) + 1;
         column = Math.max(skeletonColEnd + 1, columnStart);
         left = Math.max(skeletonColEndPixel, columnStartPixel);
         columnCount = this.getFetchCount('column', column);
@@ -47925,7 +47954,8 @@ var __oj_data_grid_metadata =
       // scroll above the data region or currently rendered skeletons
       column = columnStart;
       left = columnStartPixel;
-      columnCount = Math.max(this.getFetchCount('column', column), this.m_endCol - column);
+      columnCount =
+        Math.max(skeletonColEnd, this.m_endCol, 0) - Math.min(skeletonColStart, column) + 1;
       row = Math.min(skeletonRowStart - rowCount, rowStart);
       top = Math.min(skeletonRowStartPixel, rowStartPixel + rowCount * this.getDefaultRowHeight());
       rowAppend = false;
@@ -47947,7 +47977,8 @@ var __oj_data_grid_metadata =
       } else {
         column = columnStart;
         left = columnStartPixel;
-        columnCount = Math.max(this.getFetchCount('column', column), this.m_endCol - column);
+        columnCount =
+          Math.max(skeletonColEnd, this.m_endCol, 0) - Math.min(skeletonColStart, column) + 1;
         row = Math.max(skeletonRowEnd + 1, rowStart);
         top = Math.max(skeletonRowEndPixel, rowStartPixel);
         rowCount = this.getFetchCount('row', row);
@@ -50148,7 +50179,7 @@ var __oj_data_grid_metadata =
           undefined,
           true
         );
-        if (this.m_databodyFrozenRow) {
+        if (this.m_databodyFrozenRow || this.m_databodyFrozenCol) {
           this._shiftFrozenCellsAlongAxis(axis, dimensionChange, axisIndex, false, true);
         }
         // eslint-disable-next-line no-unused-expressions
@@ -50156,8 +50187,8 @@ var __oj_data_grid_metadata =
           ? (this.m_endColPixel += dimensionChange)
           : (this.m_endRowPixel += dimensionChange);
       } else if (
-        (axis === 'column' && this.m_databodyFrozenRow) ||
-        (axis === 'row' && this.m_databodyFrozenCol)
+        (axis === 'column' && this.m_databodyFrozenCol) ||
+        (axis === 'row' && this.m_databodyFrozenRow)
       ) {
         corner = true;
         this._shiftCellsAlongAxis(

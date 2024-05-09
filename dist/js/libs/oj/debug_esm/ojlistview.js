@@ -5356,7 +5356,7 @@ const _ojListView = _ListViewUtils.clazz(
         tempFocusDiv.setAttribute('tabindex', '-1');
         container.appendChild(tempFocusDiv);
       }
-      tempFocusDiv.focus();
+      tempFocusDiv.focus({ preventScroll: true });
     },
 
     /**

@@ -35,7 +35,7 @@ const AbstractLovBase = function (options) {
   // idSuffix, lovMainField, filterInputText, lovDropdown, liveRegion, enabled, readOnly, value,
   // getTranslatedStringFunc, addBusyStateFunc, showMainFieldFunc, setFilterFieldTextFunc,
   // setUiLoadingStateFunc, isValueForPlaceholderFunc, isShowValueInFilterFieldFunc,
-  // getFilterInputElemFunc}
+  // getFilterInputElemFunc, matchBy}
   this._minLength = 0;
 
   this._className = options.className;
@@ -59,6 +59,7 @@ const AbstractLovBase = function (options) {
   this._isValueForPlaceholderFunc = options.isValueForPlaceholderFunc;
   this._isShowValueInFilterFieldFunc = options.isShowValueInFilterFieldFunc;
   this._getFilterInputElemFunc = options.getFilterInputElemFunc;
+  this._matchBy = options.matchBy;
 
   this._lastDataProviderPromise = null;
 
@@ -74,6 +75,10 @@ const AbstractLovBase = function (options) {
 
 AbstractLovBase.prototype.setValue = function (value) {
   this._value = value;
+};
+
+AbstractLovBase.prototype.setMatchBy = function (matchBy) {
+  this._matchBy = matchBy;
 };
 
 AbstractLovBase.prototype.getFetchType = function () {
@@ -477,6 +482,7 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term, initial) {
 
   var filterCriteria = null;
   if (term) {
+    var matchBy;
     if (this._dataProvider) {
       var filterCapability = this._dataProvider.getCapability('filter');
       if (!filterCapability || !filterCapability.textFilter) {
@@ -484,12 +490,43 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term, initial) {
           'Select: DataProvider does not support text filter.  ' +
             'Filtering results in dropdown may not work correctly.'
         );
+      } else if (this._matchBy) {
+        // JET-60725 - Add option to specify the matchBy behavior of the text filter
+        // Find the first matchBy behavior in the array that the data provider supports.
+        matchBy = this._matchBy.reduce((result, curr) => {
+          // if we've already found a supported matchBy, use it
+          if (result) {
+            return result;
+          }
+          // if we've encountered 'unknown' in the array, return it because it's always supported
+          if (curr === 'unknown') {
+            return curr;
+          }
+          // if we haven't found a supported matchBy yet, see if the current one is supported and
+          // return it if so; if not log a warning
+          if (curr) {
+            if (
+              filterCapability.textFilterMatching &&
+              filterCapability.textFilterMatching.matchBy &&
+              filterCapability.textFilterMatching.matchBy.indexOf(curr) > -1
+            ) {
+              return curr;
+            }
+            warn(
+              `Select: DataProvider does not support text filter "${curr}" matching.  ` +
+                'Filtering results in dropdown may not work as expected.'
+            );
+          }
+          // if we haven't found a supported matchBy yet, return undefined and go on
+          return undefined;
+        }, null);
       }
     }
 
     // create filter using FilterFactory so that default local filtering will happen if
     // underlying DP doesn't support its own filtering
-    filterCriteria = oj.FilterFactory.getFilter({ filterDef: { text: term } });
+    var filterDef = matchBy ? { text: term, matchBy } : { text: term };
+    filterCriteria = oj.FilterFactory.getFilter({ filterDef });
   }
 
   var retPromise = new Promise(
@@ -2545,7 +2582,7 @@ LovMainField.prototype.updateLabel = function (labelledBy, ariaLabel) {
  * @since 8.0.0
  * @abstract
  * @hideconstructor
- * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "TextFilter"]}
  * @ojtsimport {module: "ojcommontypes", type: "AMD", importName: ["ojcommontypes"]}
  * @ojsignature [{
  *                target: "Type",
@@ -2886,7 +2923,38 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
      * @memberof oj.ojSelectBase
      * @ojfragment selectCommonLabelledBy
      */
-    labelledBy: null
+    labelledBy: null,
+
+    /**
+     * The list of text filter matching behaviors to use when fetching data filtered by a user's
+     * typed search text, in order of descending priority with the preferred behavior first.
+     * If the preferred behavior is not supported by the DataProvider, then the component will
+     * check the next behavior, and so on, until it finds one that is supported.
+     * If none of the specified behaviors are supported or if this property is not specified,
+     * then the behavior will effectively be "unknown".
+     *
+     * @example <caption>Initialize the Select with the <code class="prettyprint">match-by</code> attribute specified:</caption>
+     * &lt;oj-select-single match-by="[[matchByValue]]">&lt;/oj-select-single>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">matchBy</code> property after initialization:</caption>
+     * // getter
+     * var matchByValue = mySelect.matchBy;
+     *
+     * // setter
+     * mySelect.matchBy = ["phrase", "fuzzy", "contains", "startsWith", "unknown"];
+     *
+     * @name matchBy
+     * @ojshortdesc The ordered list of text filter matching behaviors to use when filtering data.
+     * @expose
+     * @access public
+     * @instance
+     * @memberof oj.ojSelectBase
+     * @type {Array.<string>|null}
+     * @ojsignature {target: "Type", value: "Array<TextFilter<D>['matchBy']>|null", jsdocOverride: true}
+     * @default null
+     * @since 16.0.2
+     */
+    matchBy: null
   },
 
   /**
@@ -3125,6 +3193,12 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
 
     var options = this.options;
 
+    // JET-60725 - Add option to specify the matchBy behavior of the text filter
+    // Make a copy of the array to use internally so that the application can't mutate it;
+    // they have to set a new array if they want to change it.
+    this._matchBy =
+      options.matchBy && options.matchBy.length > 0 ? [...options.matchBy] : undefined;
+
     this._wrapDataProviderIfNeeded(options.data);
     this._addDataProviderEventListeners();
 
@@ -3264,7 +3338,8 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       setUiLoadingStateFunc: this._setUiLoadingState.bind(this),
       isValueForPlaceholderFunc: this._IsValueForPlaceholder.bind(this),
       isShowValueInFilterFieldFunc: this._IsShowValueInFilterField.bind(this),
-      getFilterInputElemFunc: this._getFilterInputElem.bind(this)
+      getFilterInputElemFunc: this._getFilterInputElem.bind(this),
+      matchBy: this._matchBy
     });
     this._abstractLovBase = abstractLovBase;
 
@@ -4293,6 +4368,16 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
   },
 
   /**
+   * Called when the filter field is blurred.
+   * @memberof! oj.ojSelectBase
+   * @instance
+   * @protected
+   */
+  _HandleFilterFieldBlur: function () {
+    oj.Assert.failedInAbstractFunction();
+  },
+
+  /**
    * @memberof! oj.ojSelectBase
    * @instance
    * @protected
@@ -4525,6 +4610,11 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
           var focusInFilterField =
             document.activeElement && isAncestor(filterInputText, document.activeElement);
           if (!focusInDropdown && !this._mousedownOnDropdown && !focusInFilterField) {
+            // JET-65757 - Empty value rejected when not confirmed by Enter/Tab
+            // clear the value after deleting all the filter text and clicking outside the
+            // component
+            this._HandleFilterFieldBlur();
+
             this._showMainField();
           }
         }
@@ -4961,46 +5051,79 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       // grab the latest processSetOptions object and remove it from the array
       var processSetOptions = this._processSetOptions.pop();
 
-      // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
-      // if we need to refresh, do that before setting a new value
-      if (processSetOptions.forRefresh) {
-        processSetOptions.forRefresh();
-      }
+      const finishProcessingSetOptions = () => {
+        // JET-66038 - REGRESSION FOR EXPENSETYPEID FIELD 'GETINPUTELEM' ERROR
+        // When this function is executed in a microtask, it's possible that the element has been
+        // removed from the DOM and its resources released since the microtask was queued.  If so,
+        // simply return without doing anything; otherwise we may throw an NPE because we've
+        // already destroyed our internal structures.
+        if (this._bReleasedResources) {
+          return;
+        }
 
-      // turn off the flag now, after refreshing but before processing the new value,
-      // only if we set the flag during this call to _setOptions
-      if (resolveBusyState) {
-        this._deferSettingValue = false;
-      }
+        // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
+        // if we need to refresh, do that before setting a new value
+        if (processSetOptions.forRefresh) {
+          processSetOptions.forRefresh();
+        }
 
-      if (processSetOptions.value) {
-        processSetOptions.value();
-      } else if (needToUpdateValueItem) {
-        // JET-42413: set flag while we're processing a value change so that if an app makes
-        // changes to the component from within the change listener, we can defer processing the
-        // new change until after we're done processing the current change
-        var resolveValueChangeFunc = this._StartMakingInternalValueChange();
+        // turn off the flag now, after refreshing but before processing the new value,
+        // only if we set the flag during this call to _setOptions
+        if (resolveBusyState) {
+          this._deferSettingValue = false;
+        }
 
-        // JET-38441 - WHEN GENERATOR VARIABLE OF TYPE 'OJS/OJARRAYDATAPROVIDER' IS BOUND TO
-        // SELECT-SINGLE, IT FAILS TO SHOW THE SELECTED VALUE
-        // if setting new data and the current valueItem was set internally, then it needs to be
-        // updated for the new data, which will happen when we re-set the existing value
-        this._setOption('value', this.options.value);
+        if (processSetOptions.value) {
+          processSetOptions.value();
+        } else if (needToUpdateValueItem) {
+          // JET-42413: set flag while we're processing a value change so that if an app makes
+          // changes to the component from within the change listener, we can defer processing the
+          // new change until after we're done processing the current change
+          var resolveValueChangeFunc = this._StartMakingInternalValueChange();
 
-        resolveValueChangeFunc();
-      }
+          // JET-38441 - WHEN GENERATOR VARIABLE OF TYPE 'OJS/OJARRAYDATAPROVIDER' IS BOUND TO
+          // SELECT-SINGLE, IT FAILS TO SHOW THE SELECTED VALUE
+          // if setting new data and the current valueItem was set internally, then it needs to be
+          // updated for the new data, which will happen when we re-set the existing value
+          this._setOption('value', this.options.value);
 
-      // JET-42353 - SELECT SINGLE FOCUS LOST ON CHANGE OF THE DEPENDENT VALUE
-      // if the filter field was shown before processing the new options, but is no longer shown,
-      // show it again
-      if (showFilterField && this._filterInputText.style.visibility === 'hidden') {
-        // need to wait for the new filter oj-input-text to be upgraded
-        var busyContext = Context.getContext(this._filterInputText).getBusyContext();
-        busyContext.whenReady().then(
-          function () {
-            this._ShowFilterField();
-          }.bind(this)
-        );
+          resolveValueChangeFunc();
+        }
+
+        // JET-42353 - SELECT SINGLE FOCUS LOST ON CHANGE OF THE DEPENDENT VALUE
+        // if the filter field was shown before processing the new options, but is no longer shown,
+        // show it again
+        if (showFilterField && this._filterInputText.style.visibility === 'hidden') {
+          // need to wait for the new filter oj-input-text to be upgraded
+          var busyContext = Context.getContext(this._filterInputText).getBusyContext();
+          busyContext.whenReady().then(
+            function () {
+              this._ShowFilterField();
+            }.bind(this)
+          );
+        }
+      };
+
+      // JET-65611 - Form is in invalid state though the values are populated correctly
+      // This bug was related to the fact that the framework introduced changes in JET 16 so that
+      // the component gets batched property sets in VDOM, similar to knockout.js, whereas before
+      // each property was set individually.  For some property sets, like readonly, the code
+      // internally does a refresh.  For a valueItem change, in VDOM only, the code processes it
+      // in a microtask (to fix other issues encountered in VDOM).  With the previous, individual
+      // property setting behavior in VDOM, an internal refresh would happen before the new
+      // valueItem was even set on the component.  With the batching property setting behavior,
+      // the valueItem started to be processed before the internal refresh and then finished after
+      // the refresh, such that the changes were interfering with each other.  The fix defers
+      // finishing processing of the _setOptions call, including the refresh, to a microtask that
+      // is queued after the microtask to finish handling the valueItem change.  So when the
+      // refresh happens, it is after the valueItem change has finished.  This ordering is not the
+      // same as what happened before in VDOM, but it is the same as what happens outside of VDOM,
+      // like in the cookbook MVVM app.
+      const elemState = CustomElementUtils.getElementState(this.OuterWrapper);
+      if (elemState.getBindingProviderType() === 'preact') {
+        window.queueMicrotask(finishProcessingSetOptions);
+      } else {
+        finishProcessingSetOptions();
       }
     } finally {
       if (resolveBusyState) {
@@ -5026,7 +5149,15 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       }
     }
 
-    this._super(key, value, flags);
+    // JET-64632 - DataProvider refresh event can wipe out currently selected value
+    // If we get a DP refresh event we may re-set the currently selected value so that we fetch
+    // new data for it, in which case we don't want to fire a change event, so don't call the
+    // superclass.
+    var bSkipSuperclassCall = key === 'value' && this.options.value === value;
+
+    if (!bSkipSuperclassCall) {
+      this._super(key, value, flags);
+    }
 
     // In vdom architecture, there are multiple issues with value and valueItem property that we need to
     // handle.
@@ -5057,8 +5188,25 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
     // which properties are set by the preact. Then we can use the flags as well as the latest value to determine
     // how to process the value and valueItem correctly.
     const elemState = CustomElementUtils.getElementState(this.OuterWrapper);
-    if (elemState.getBindingProviderType() === 'preact') {
+    // JET-66502 - Dynamic UI Defect - oj-dyn form not working with JET 16 for select single LOVs
+    // We only need to enter this block if we're currently processing a value or valueItem
+    // being set.  Otherwise, if multiple properties are being set at the same time, properties
+    // handled here after the value or valueItem may not be processed correctly because we
+    // return early from this method.
+    if (
+      elemState.getBindingProviderType() === 'preact' &&
+      (key === 'value' || key === this._GetValueItemPropertyName())
+    ) {
       const processValueAndValueItem = () => {
+        // JET-66038 - REGRESSION FOR EXPENSETYPEID FIELD 'GETINPUTELEM' ERROR
+        // When this function is executed in a microtask, it's possible that the element has been
+        // removed from the DOM and its resources released since the microtask was queued.  If so,
+        // simply return without doing anything; otherwise we may throw an NPE because we've
+        // already destroyed our internal structures.
+        if (this._bReleasedResources) {
+          return;
+        }
+
         // Get the latest value and valueItem
         const _valueItem = this.options[this._GetValueItemPropertyName()];
         const _value = this.options.value;
@@ -5148,6 +5296,14 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
           this._processingSetOptionsMicroTask = true;
           window.queueMicrotask(processValueAndValueItem);
         }
+        // JET-66502 - Dynamic UI Defect - oj-dyn form not working with JET 16 for select
+        // single LOVs
+        // Because we return early here based on the instance flags for processing a value or
+        // valueItem, we will also return early from here when we try to process any other
+        // properties set at the same time as the value or valueItem and processed after one
+        // of them.  This is why we only conditionally enter this whole block of code when
+        // we're currently processing a value or valueItem.  We skip this block of code for
+        // any other property.
         return;
       }
     }
@@ -5211,6 +5367,14 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       // JET-45922 - timing issue with select-single: lov drop-down doesn't have element
       // do a granular update if item-text changes instead of a general refresh
       this._UpdateItemText();
+    } else if (key === 'matchBy') {
+      // JET-60725 - Add option to specify the matchBy behavior of the text filter
+      // Make a copy of the array to use internally so that the application can't mutate it;
+      // they have to set a new array if they want to change it.
+      this._matchBy = value && value.length > 0 ? [...value] : undefined;
+      if (this._abstractLovBase) {
+        this._abstractLovBase.setMatchBy(this._matchBy);
+      }
     }
   },
 

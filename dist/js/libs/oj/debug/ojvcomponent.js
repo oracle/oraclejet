@@ -1014,7 +1014,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             }
         }
         _handleSlotUnmount(node) {
-            if (this._state.isComplete()) {
+            if (this._state.isPostCreateCallbackOrComplete()) {
                 ParkingLot.parkNode(node);
                 window.queueMicrotask(() => {
                     if (ParkingLot.isParked(node)) {

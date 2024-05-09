@@ -2034,7 +2034,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         marker.setStyle().setClassName();
       }
 
-      if ((hideAndShow != 'none' && hideAndShow != 'off') || item['shortDesc'] != null) {
+      if (
+        (hideAndShow != 'none' && hideAndShow != 'off') ||
+        item['shortDesc'] != null ||
+        item['drilling'] == 'on'
+      ) {
         itemRect.setAriaRole('img');
         peer.updateAriaLabel();
       }

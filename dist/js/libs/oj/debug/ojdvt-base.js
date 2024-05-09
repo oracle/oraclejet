@@ -941,6 +941,13 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
                 _index = indices[i] - i; // "- i" accounts for previously processed operations
                 data.splice(_index, deleteCount);
                 keys.splice(_index, deleteCount);
+                // (For Diagram) handle the case where the current item is removed, to match ListView's behavior.
+                if (
+                  self._component._getCurrentItem &&
+                  detail.keys.has(self._component._getCurrentItem())
+                ) {
+                  self._component._handleRemoveCurrentItem();
+                }
               } else {
                 if (!isUpdate) {
                   // Add Operation
@@ -1854,45 +1861,42 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
        * @return {null}
        */
       _SetLocaleHelpers: function (NumberConverter, ConverterUtils) {
-        // If requireJS is not used, can't rely on internationalization modules.
-        if (dvt.requireJS !== false) {
-          var helpers = {};
-          // Number converter factory for use in formatting default strings
-          helpers.createNumberConverter = function (options) {
-            return new NumberConverter.IntlNumberConverter(options);
-          };
+        var helpers = {};
+        // Number converter factory for use in formatting default strings
+        helpers.createNumberConverter = function (options) {
+          return new NumberConverter.IntlNumberConverter(options);
+        };
 
-          // Iso to date converter to be called for JS that requires Dates
-          helpers.isoToDateConverter = function (input) {
-            if (typeof input === 'string') {
-              var dateWithTimeZone = ConverterUtils.IntlConverterUtils.isoToDate(input);
-              var localIsoTime = dateWithTimeZone.toJSON()
-                ? ConverterUtils.IntlConverterUtils.dateToLocalIso(dateWithTimeZone)
-                : input;
-              return ConverterUtils.IntlConverterUtils.isoToLocalDate(localIsoTime);
-            }
-            return input;
-          };
+        // Iso to date converter to be called for JS that requires Dates
+        helpers.isoToDateConverter = function (input) {
+          if (typeof input === 'string') {
+            var dateWithTimeZone = ConverterUtils.IntlConverterUtils.isoToDate(input);
+            var localIsoTime = dateWithTimeZone.toJSON()
+              ? ConverterUtils.IntlConverterUtils.dateToLocalIso(dateWithTimeZone)
+              : input;
+            return ConverterUtils.IntlConverterUtils.isoToLocalDate(localIsoTime);
+          }
+          return input;
+        };
 
-          // Date to iso converter to be called before passing to the date time converter
-          helpers.dateToIsoWithTimeZoneConverter = function (input) {
-            if (input instanceof Date) {
-              var timeZoneOffest = -1 * input.getTimezoneOffset();
-              var offsetSign = timeZoneOffest >= 0 ? '+' : '-';
-              var offsetHour = Math.floor(Math.abs(timeZoneOffest) / 60);
-              var offsetMinutes = Math.abs(timeZoneOffest) % 60;
-              var isoTimeZone =
-                offsetSign +
-                (offsetHour.toString().length !== 2 ? '0' + offsetHour : offsetHour) +
-                ':' +
-                (offsetMinutes.toString().length !== 2 ? offsetMinutes + '0' : offsetMinutes);
-              return ConverterUtils.IntlConverterUtils.dateToLocalIso(input) + isoTimeZone;
-            }
-            return input;
-          };
+        // Date to iso converter to be called before passing to the date time converter
+        helpers.dateToIsoWithTimeZoneConverter = function (input) {
+          if (input instanceof Date) {
+            var timeZoneOffest = -1 * input.getTimezoneOffset();
+            var offsetSign = timeZoneOffest >= 0 ? '+' : '-';
+            var offsetHour = Math.floor(Math.abs(timeZoneOffest) / 60);
+            var offsetMinutes = Math.abs(timeZoneOffest) % 60;
+            var isoTimeZone =
+              offsetSign +
+              (offsetHour.toString().length !== 2 ? '0' + offsetHour : offsetHour) +
+              ':' +
+              (offsetMinutes.toString().length !== 2 ? offsetMinutes + '0' : offsetMinutes);
+            return ConverterUtils.IntlConverterUtils.dateToLocalIso(input) + isoTimeZone;
+          }
+          return input;
+        };
 
-          this._context.setLocaleHelpers(helpers);
-        }
+        this._context.setLocaleHelpers(helpers);
       },
 
       refresh: function () {

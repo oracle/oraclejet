@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'ojs/ojcore-base', 'ojs/ojpopup', 'ojs/ojdrawerutils', 'hammerjs'], function (exports, jsxRuntime, ojvcomponent, preact, $, AnimationUtils, ojcoreBase, ojpopup, ojdrawerutils, Hammer) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'ojs/ojcore-base', 'ojs/ojpopup', 'ojs/ojdrawerutils', 'hammerjs', 'ojs/ojcustomelement-utils'], function (exports, jsxRuntime, ojvcomponent, preact, $, AnimationUtils, ojcoreBase, ojpopup, ojdrawerutils, Hammer, ojcustomelementUtils) { 'use strict';
 
     $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
     Hammer = Hammer && Object.prototype.hasOwnProperty.call(Hammer, 'default') ? Hammer['default'] : Hammer;
@@ -84,6 +84,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 const $drawerElement = $(this.rootRef.current);
                 const status = ZOrderUtils.getStatus($drawerElement);
                 if (status === ZOrderUtils.STATUS.OPEN) {
+                    ojcustomelementUtils.CustomElementUtils.cleanComponentBindings($drawerElement[0]);
+                    $drawerElement.remove();
                     const psOptions = {};
                     psOptions[PopupService.OPTION.POPUP] = $drawerElement;
                     this.ignoreUpdate = true;

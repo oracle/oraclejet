@@ -36,6 +36,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             this.bottomClosedWithEsc = false;
             this.overlayDrawerResizeHandler = null;
             this.reflowDrawerResizeHandler = null;
+            this.drawerLayoutResizeHandler = null;
             this.windowResizeHandler = null;
             this.handleResize = true;
             this.state = {
@@ -80,6 +81,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                 if ([ojdrawerutils.DrawerConstants.stringStart, ojdrawerutils.DrawerConstants.stringEnd].indexOf(edge) > -1) {
                     this.setBottomOverlayDrawerWidth();
                 }
+            };
+            this.drawerLayoutResizeCallback = () => {
+                this.setStartEndOverlayDrawersHeight();
+                this.setBottomOverlayDrawerWidth();
             };
             this.lockResizeListener = () => {
                 if (this.handleResize) {
@@ -430,6 +435,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         componentWillUnmount() {
             window.removeEventListener(ojdrawerutils.DrawerConstants.stringResize, this.windowResizeHandler);
             this.windowResizeHandler = null;
+            this.removeDrawerLayoutResizeListener();
+        }
+        removeDrawerLayoutResizeListener() {
+            if (this.drawerLayoutResizeHandler) {
+                DomUtils.removeResizeListener(this.rootRef.current, this.drawerLayoutResizeHandler);
+                this.drawerLayoutResizeHandler = null;
+            }
         }
         handleComponentUpdate(prevState) {
             let sides = [
@@ -469,7 +481,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
                     const drawerRef = this.getDrawerRef(edge).current;
                     if (drawerRef) {
                         DomUtils.removeResizeListener(drawerRef, this.reflowDrawerResizeHandler);
-                        this.reflowDrawerResizeHandler === null;
+                        this.reflowDrawerResizeHandler = null;
                     }
                     this.returnFocus(edge);
                     if (this.getStateToChangeTo(edge)) {
@@ -537,23 +549,32 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             }
         }
         animateOpen(edge) {
+            const busyContext = ojet.Context.getContext(this.rootRef.current).getBusyContext();
+            const resolveFunc = busyContext.addBusyState({ description: 'Animation in progress' });
             if (this.getDrawerResolvedDisplayMode(edge) === ojdrawerutils.DrawerConstants.stringReflow) {
-                return AnimationUtils.expand(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions('expand', edge));
+                return AnimationUtils.expand(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions('expand', edge)).then(resolveFunc);
             }
             else {
-                return AnimationUtils.slideIn(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideIn, edge)).then(() => {
+                return AnimationUtils.slideIn(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideIn, edge))
+                    .then(() => {
                     ojdrawerutils.DrawerUtils.unwrapDrawerClippingArea(this.getDrawerRef(edge).current);
-                });
+                })
+                    .then(resolveFunc);
             }
         }
         animateClose(edge) {
+            const busyContext = ojet.Context.getContext(this.rootRef.current).getBusyContext();
+            const resolveFunc = busyContext.addBusyState({ description: 'Animation in progress' });
             if (this.getDrawerResolvedDisplayMode(edge) === ojdrawerutils.DrawerConstants.stringReflow) {
-                return AnimationUtils.collapse(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions('collapse', edge));
+                return AnimationUtils.collapse(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions('collapse', edge)).then(resolveFunc);
             }
             else {
-                return AnimationUtils.slideOut(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideOut, edge)).then(() => {
-                    ojdrawerutils.DrawerUtils.unwrapDrawerClippingArea(this.getDrawerRef(edge).current);
-                });
+                const drawerEl = this.getDrawerRef(edge).current;
+                return AnimationUtils.slideOut(this.getRefToAnimate(edge).current, ojdrawerutils.DrawerUtils.getAnimationOptions(ojdrawerutils.DrawerConstants.stringSlideOut, edge))
+                    .then(() => {
+                    ojdrawerutils.DrawerUtils.unwrapDrawerClippingArea(drawerEl);
+                })
+                    .then(resolveFunc);
             }
         }
         edgeToStateOpenedName(edge) {
@@ -634,6 +655,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             $drawerElement.position(position);
             this.setStartEndOverlayDrawersHeight();
             ojdrawerutils.DrawerUtils.wrapDrawerWithClippingArea(drawerElement, position);
+            if (this.drawerLayoutResizeHandler === null) {
+                this.drawerLayoutResizeHandler = this.drawerLayoutResizeCallback.bind(this);
+            }
+            DomUtils.addResizeListener(this.rootRef.current, this.drawerLayoutResizeHandler, 50, true);
             return this.animateOpen(edge);
         }
         setBottomOverlayDrawerWidth() {
@@ -674,7 +699,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
             ojdrawerutils.DrawerUtils.disableBodyOverflow();
             this.elementWithFocusBeforeDrawerCloses = document.activeElement;
             DomUtils.removeResizeListener(this.getDrawerRef(edge).current, this.overlayDrawerResizeHandler);
-            this.overlayDrawerResizeHandler === null;
+            this.overlayDrawerResizeHandler = null;
+            this.removeDrawerLayoutResizeListener();
             ojdrawerutils.DrawerUtils.wrapDrawerWithClippingArea(this.getDrawerRef(edge).current, this.getDrawerPosition(edge));
             return this.animateClose(edge);
         }
@@ -717,11 +743,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
         setStartEndOverlayDrawersHeight() {
             const middleSectionHeight = ojdrawerutils.DrawerUtils.getElementHeight(this.middleSectionRef.current) + 'px';
             const startDrawerElement = this.startRef.current;
-            if (startDrawerElement) {
+            if (startDrawerElement &&
+                this.getDrawerResolvedDisplayMode(ojdrawerutils.DrawerConstants.stringStart) != ojdrawerutils.DrawerConstants.stringReflow) {
                 startDrawerElement.style.height = middleSectionHeight;
             }
             const endDrawerElement = this.endRef.current;
-            if (endDrawerElement) {
+            if (endDrawerElement &&
+                this.getDrawerResolvedDisplayMode(ojdrawerutils.DrawerConstants.stringEnd) != ojdrawerutils.DrawerConstants.stringReflow) {
                 endDrawerElement.style.height = middleSectionHeight;
             }
         }

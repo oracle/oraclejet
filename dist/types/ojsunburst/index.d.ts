@@ -84,6 +84,7 @@ export interface ojSunburst<K, D extends ojSunburst.Node<K> | any> extends dvtBa
     setProperty<T extends keyof ojSunburstSettableProperties<K, D>>(property: T, value: ojSunburstSettableProperties<K, D>[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojSunburstSettableProperties<K, D>>): void;
     setProperties(properties: ojSunburstSettablePropertiesLenient<K, D>): void;
+    getAutomation(): any;
     getContextByNode(node: Element): ojSunburst.NodeContext | null;
 }
 export namespace ojSunburst {

@@ -65,6 +65,7 @@ export declare class DrawerLayout extends Component<ExtendGlobalProps<Props>, St
     private bottomClosedWithEsc;
     private overlayDrawerResizeHandler;
     private reflowDrawerResizeHandler;
+    private drawerLayoutResizeHandler;
     private windowResizeHandler;
     private drawerOpener;
     private elementWithFocusBeforeDrawerCloses;
@@ -91,6 +92,7 @@ export declare class DrawerLayout extends Component<ExtendGlobalProps<Props>, St
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>): void;
     componentDidMount(): void;
     componentWillUnmount(): void;
+    private removeDrawerLayoutResizeListener;
     private handleComponentUpdate;
     private openOrCloseDrawer;
     private openOrCloseReflowDrawer;
@@ -115,6 +117,7 @@ export declare class DrawerLayout extends Component<ExtendGlobalProps<Props>, St
     private afterOpenHandler;
     private overlayDrawerResizeCallback;
     private reflowDrawerResizeCallback;
+    private drawerLayoutResizeCallback;
     private handleFocus;
     private beforeCloseHandler;
     private afterCloseHandler;

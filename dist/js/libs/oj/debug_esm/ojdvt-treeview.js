@@ -1313,14 +1313,14 @@ class DvtBreadcrumbsEventManager extends EventManager {
    */
   OnClick(event) {
     super.OnClick(event);
-    this._processBreadcrumbs(this.GetLogicalObject(event.target));
+    this.processBreadcrumbs(this.GetLogicalObject(event.target));
   }
 
   /**
    * @override
    */
   HandleTouchClickInternal(event) {
-    this._processBreadcrumbs(this.GetLogicalObject(event.target));
+    this.processBreadcrumbs(this.GetLogicalObject(event.target));
   }
 
   /**
@@ -1328,7 +1328,7 @@ class DvtBreadcrumbsEventManager extends EventManager {
    * @param {obj} The logical object which was clicked or tapped.
    * @private
    */
-  _processBreadcrumbs(obj) {
+  processBreadcrumbs(obj) {
     if (obj && obj instanceof DvtBreadcrumbsPeer && obj.isDrillable()) {
       // Create the event and fire to callbacks
       var event = EventFactory.newBreadcrumbsDrillEvent(obj.getId());
@@ -1355,7 +1355,7 @@ class DvtBreadcrumbsEventManager extends EventManager {
       }
     } else if (keyCode == KeyboardEvent.ENTER) {
       var crumb = this._breadcrumbs.getCrumb(this._breadcrumbs.getCurrentCrumbIndex());
-      this._processBreadcrumbs(this.GetLogicalObject(crumb));
+      this.processBreadcrumbs(this.GetLogicalObject(crumb));
     }
 
     // keystrokes are consumed by default, unless we tab out of the breadcrumbs
@@ -4689,11 +4689,18 @@ class DvtTreemapNode extends DvtTreeNode {
     var iconClass = resources[resourceKey];
     var iconStyle = ToolkitUtils.getIconStyle(context, iconClass);
     // Create button and hook up click listener
-    var button = new IconButton(context, 'borderless', {
-      style: iconStyle,
-      size: this._ISOLATE_ICON_SIZE
-    });
-    button.addEvtListener(MouseEvent.CLICK, callback, false, this);
+    var button = new IconButton(
+      context,
+      'borderless',
+      {
+        style: iconStyle,
+        size: this._ISOLATE_ICON_SIZE
+      },
+      null,
+      null,
+      callback,
+      this
+    );
     return button;
   }
 
@@ -5154,6 +5161,29 @@ class DvtTreeAutomation extends Automation {
   }
 
   /**
+   * Method to fire synthetic drill event. Used by sunburst webdriver.
+   * @param {string} id The series id of the data item.
+   * @param {boolean} shiftKey Whether the shiftkey is pressed on drill.
+   */
+  dispatchItemDrill(id) {
+    var rootNode = this._comp.getRootNode();
+    var obj = DvtTreeNode.getNodeById(rootNode, id);
+    // only if the node is visible
+    if (obj && obj.getDisplayable()) {
+      this._comp.getEventManager().processDrill(obj);
+    } else {
+      // See if it is a breadcrumb
+      var breadcrumb = this._comp.getBreadcrumbs();
+      obj = breadcrumb.getEventManager().GetLogicalObject(breadcrumb.getCrumb(id));
+      if (obj && obj.isDrillable) {
+        breadcrumb.getEventManager().processBreadcrumbs(obj);
+      } else {
+        throw new Error('Invalid id passed into method');
+      }
+    }
+  }
+
+  /**
    * Returns the node from the array with the specified index.
    * @param {array} nodes
    * @param {number} index
@@ -5335,7 +5365,7 @@ class DvtTreeEventManager extends EventManager {
     if (!obj) return;
 
     // Only double click to drill if selectable. Otherwise, drill with single click.
-    if (obj.isSelectable && obj.isSelectable()) this._processDrill(obj, event.shiftKey);
+    if (obj.isSelectable && obj.isSelectable()) this.processDrill(obj, event.shiftKey);
   }
 
   /**
@@ -5349,7 +5379,7 @@ class DvtTreeEventManager extends EventManager {
     this._processNodeLabel(obj);
 
     // Only drill if not selectable. If selectable, drill with double click.
-    if (obj && !(obj.isSelectable && obj.isSelectable())) this._processDrill(obj, event.shiftKey);
+    if (obj && !(obj.isSelectable && obj.isSelectable())) this.processDrill(obj, event.shiftKey);
   }
 
   /**
@@ -5436,7 +5466,7 @@ class DvtTreeEventManager extends EventManager {
     }
 
     // Only drill if not selectable. If selectable, drill with double click.
-    if (!(obj.isSelectable && obj.isSelectable())) this._processDrill(obj, event.shiftKey);
+    if (!(obj.isSelectable && obj.isSelectable())) this.processDrill(obj, event.shiftKey);
   }
 
   /**
@@ -5448,7 +5478,7 @@ class DvtTreeEventManager extends EventManager {
     if (!obj) return;
 
     // Only double click to drill if selectable. Otherwise, drill with single click.
-    if (obj.isSelectable && obj.isSelectable()) this._processDrill(obj, false);
+    if (obj.isSelectable && obj.isSelectable()) this.processDrill(obj, false);
   }
 
   /**
@@ -5469,7 +5499,7 @@ class DvtTreeEventManager extends EventManager {
    * @param {boolean} shiftKey True if the shift key was pressed.
    * @private
    */
-  _processDrill(obj, shiftKey) {
+  processDrill(obj, shiftKey) {
     // Fire a drill event if drilling is enabled
     if (obj.isDrillReplaceEnabled && obj.isDrillReplaceEnabled()) {
       // Delegate to the view to fire a drill event

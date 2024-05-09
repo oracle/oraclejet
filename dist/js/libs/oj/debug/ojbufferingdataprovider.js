@@ -5,10 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap', 'ojs/ojbufferingdataproviderevents', 'ojs/ojcomponentcore'], function (oj, ojdataprovider, ojeventtarget, ojMap, ojbufferingdataproviderevents, ojcomponentcore) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap', 'ojs/ojbufferingdataproviderevents', 'ojs/ojset', 'ojs/ojcomponentcore'], function (oj, ojdataprovider, ojeventtarget, ojMap, ojbufferingdataproviderevents, ojSet, ojcomponentcore) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     ojMap = ojMap && Object.prototype.hasOwnProperty.call(ojMap, 'default') ? ojMap['default'] : ojMap;
+    ojSet = ojSet && Object.prototype.hasOwnProperty.call(ojSet, 'default') ? ojSet['default'] : ojSet;
 
     /**
      * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -28,7 +29,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      * @classdesc
      * <p>BufferingDataProvider is a wrapping DataProvider that provides edit buffering for an underlying DataProvider, so that
      * the edits can be committed to the data source later on.
-     * The underlying DataProvider is responsible for fetchting data, and BufferingDataProvider will merge any buffered edits with
+     * The underlying DataProvider is responsible for fetching data, and BufferingDataProvider will merge any buffered edits with
      * the underlying data so that they appear as an unified set of data.
      * </p>
      * <p>Because all edits are tracked by keys, the underlying DataProvider must return unique keys in the metadata.  If new rows
@@ -314,7 +315,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      * Note: Starting in 12.0.1, addItem supports passing in an item which has null key. If the key is null then
      * a string typed v4 UUID key is generated for the key. It is expected that the application will later call
      * setItemStatus with the newKey parameter to pass in the real key once it becomes available after commit. The
-     * newKey will then be stored in an internal map with the generated key and then when the underyling DataProvider
+     * newKey will then be stored in an internal map with the generated key and then when the underlying DataProvider
      * subsequently dispatches an add mutation event which contains the new key then the BufferingDataProvider will
      * include a remove mutation which will remove the row with the generated key. If a non-string typed or
      * non-v4 UUID generated key is desired then please use the constructor option: keyGenerator.
@@ -528,47 +529,56 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         constructor() {
             this.unsubmittedItems = new ojMap();
             this.submittingItems = new ojMap();
-            this.unsubmittedChangedItems = new ojMap();
+            this.submittedAddItems = new ojMap();
+            this.addItemOrder = [];
             this.mapOpTransform = new ojMap();
             this.mapEditItemStatus = new ojMap();
         }
         addItem(item) {
-            const unsubmitted = this.unsubmittedItems.get(item.metadata.key);
-            const submitting = this.submittingItems.get(item.metadata.key);
-            const changed = this.unsubmittedChangedItems.get(item.metadata.key);
+            const key = item.metadata.key;
+            const unsubmitted = this.unsubmittedItems.get(key);
+            const submitting = this.submittingItems.get(key);
             if ((unsubmitted && (unsubmitted.operation === 'add' || unsubmitted.operation === 'update')) ||
                 (submitting && (submitting.operation === 'add' || submitting.operation === 'update'))) {
                 throw new Error('Cannot add item with same key as an item being added or updated');
             }
             else if (unsubmitted && unsubmitted.operation === 'remove') {
-                this.unsubmittedItems.delete(item.metadata.key);
+                this.unsubmittedItems.delete(key);
                 const editItem = { operation: 'update', item };
-                this.unsubmittedItems.set(item.metadata.key, editItem);
-                this.mapOpTransform.set(item.metadata.key, editItem);
+                this.unsubmittedItems.set(key, editItem);
+                this.mapOpTransform.set(key, editItem);
+                this.addItemOrder.unshift(key);
                 return;
             }
-            this.unsubmittedItems.set(item.metadata.key, { operation: 'add', item });
+            this.unsubmittedItems.set(key, { operation: 'add', item });
+            this.addItemOrder.unshift(key);
         }
         removeItem(item) {
-            const unsubmitted = this.unsubmittedItems.get(item.metadata.key);
-            const submitting = this.submittingItems.get(item.metadata.key);
+            const key = item.metadata.key;
+            const unsubmitted = this.unsubmittedItems.get(key);
+            const submitting = this.submittingItems.get(key);
             if ((unsubmitted && unsubmitted.operation === 'remove') ||
                 (submitting && submitting.operation === 'remove')) {
                 throw new Error('Cannot remove item with same key as an item being removed');
             }
             else if (unsubmitted && unsubmitted.operation === 'add') {
-                this.unsubmittedItems.delete(item.metadata.key);
+                this.unsubmittedItems.delete(key);
+                this._removeFromAddItemOrder(key);
                 return;
             }
             else if (unsubmitted && unsubmitted.operation === 'update') {
-                this.unsubmittedItems.set(item.metadata.key, {
+                this.unsubmittedItems.set(key, {
                     operation: 'remove',
                     item
                 });
-                this.mapOpTransform.delete(item.metadata.key);
+                this.mapOpTransform.delete(key);
+                this._removeFromAddItemOrder(key);
+                this.submittedAddItems.delete(key);
                 return;
             }
-            this.unsubmittedItems.set(item.metadata.key, { operation: 'remove', item });
+            this._removeFromAddItemOrder(key);
+            this.submittedAddItems.delete(key);
+            this.unsubmittedItems.set(key, { operation: 'remove', item });
         }
         updateItem(item) {
             const unsubmitted = this.unsubmittedItems.get(item.metadata.key);
@@ -583,10 +593,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     operation: unsubmitted.operation,
                     item
                 });
-                this.mapOpTransform.delete(item.metadata.key);
                 return;
             }
-            this.unsubmittedChangedItems.set(item.metadata.key, true);
             this.unsubmittedItems.set(item.metadata.key, { operation: 'update', item });
         }
         setItemMutated(editItem) {
@@ -596,6 +604,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 const status = this.mapEditItemStatus.get(key);
                 if (status === 'submitted') {
                     this.submittingItems.delete(key);
+                    if (this._isAddOrMoveAdd(item)) {
+                        this.submittedAddItems.set(key, item);
+                    }
                 }
                 else {
                     this.mapEditItemStatus.set(key, 'mutated');
@@ -614,12 +625,14 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     const status = this.mapEditItemStatus.get(key);
                     if (status === 'mutated') {
                         this.submittingItems.delete(key);
+                        if (this._isAddOrMoveAdd(editItem)) {
+                            this.submittedAddItems.set(key, editItem);
+                        }
                     }
                     else {
                         this.mapEditItemStatus.set(key, 'submitted');
                     }
                 }
-                this.unsubmittedChangedItems.delete(key);
             }
             else if (newStatus === 'unsubmitted') {
                 this.submittingItems.delete(key);
@@ -648,13 +661,21 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         getSubmittingItems() {
             return this.submittingItems;
         }
-        isEmpty() {
-            return this.unsubmittedItems.size === 0 && this.submittingItems.size === 0;
+        getSubmittedAddItems() {
+            return this.submittedAddItems;
         }
-        getItem(key) {
+        isEmpty(includeSubmitted) {
+            return (this.unsubmittedItems.size === 0 &&
+                this.submittingItems.size === 0 &&
+                (includeSubmitted ? this.submittedAddItems.size === 0 : true));
+        }
+        getItem(key, includeSubmitted) {
             let editItem = this.unsubmittedItems.get(key);
             if (!editItem) {
                 editItem = this.submittingItems.get(key);
+            }
+            if (includeSubmitted && !editItem) {
+                editItem = this.submittedAddItems.get(key);
             }
             return editItem;
         }
@@ -664,11 +685,43 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         getEditItemStatus(key) {
             return this.mapEditItemStatus.get(key);
         }
+        isSubmittingOrSubmitted(key) {
+            return this.submittingItems.has(key) || this.submittedAddItems.has(key);
+        }
         resetAllUnsubmittedItems() {
+            this._clearAddItemOrder();
             this.unsubmittedItems.clear();
             this.submittingItems.clear();
-            this.unsubmittedChangedItems.clear();
             this.mapOpTransform.clear();
+        }
+        _clearAddItemOrder() {
+            this.unsubmittedItems.forEach((editItem, key) => {
+                if (this._isAddOrMoveAdd(editItem)) {
+                    this._removeFromAddItemOrder(key);
+                }
+            });
+            this.submittingItems.forEach((editItem, key) => {
+                if (this._isAddOrMoveAdd(editItem)) {
+                    this._removeFromAddItemOrder(key);
+                }
+            });
+        }
+        _removeFromAddItemOrder(key) {
+            let index = this.addItemOrder.findIndex((k) => {
+                return oj.KeyUtils.equals(k, key);
+            });
+            if (index !== -1) {
+                this.addItemOrder.splice(index, 1);
+            }
+        }
+        _isAddOrMoveAdd(editItem) {
+            return editItem.operation === 'add' || this._isMoveAdd(editItem);
+        }
+        _isMoveAdd(editItem) {
+            return editItem.operation === 'update' && this.isUpdateTransformed(editItem.item.metadata.key);
+        }
+        getAddItemOrder() {
+            return this.addItemOrder;
         }
     }
 
@@ -707,8 +760,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     this._baseIterator = _baseIterator;
                     this._params = _params;
                     this.firstBaseKey = null;
-                    this.mergedAddKeySet = new Set();
-                    this.unFetchedAddItemSet = new Set();
+                    this.mergedAddKeySet = new ojSet();
                     this.mergedItemArray = [];
                     this.nextOffset = 0;
                     if (this._params == null) {
@@ -765,16 +817,11 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                             }
                             const newDataArray = [];
                             const newMetaArray = [];
-                            this.unFetchedAddItemSet.forEach((item) => {
-                                newDataArray.push(item.data);
-                                newMetaArray.push(item.metadata);
-                            });
-                            this.unFetchedAddItemSet.clear();
                             let idx;
                             for (idx = this.nextOffset; idx < this.mergedItemArray.length; idx++) {
-                                ++this.nextOffset;
                                 const item = this.mergedItemArray[idx];
                                 if (!this._parent._isItemRemoved(item.metadata.key)) {
+                                    this.nextOffset = idx + 1;
                                     newDataArray.push(item.data);
                                     newMetaArray.push(item.metadata);
                                     if (params.size && newDataArray.length === params.size) {
@@ -961,65 +1008,94 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             }
             this._mergeAddEdits(filterObj, sortCriteria, newItemArray, mergedAddKeySet, lastBlock);
         }
-        _fetchFromOffset(params, newItemArray) {
+        async _fetchFromOffset(params) {
             const signal = params?.signal;
-            if (signal && signal.aborted) {
+            if (signal) {
                 const reason = signal.reason;
-                return Promise.reject(new DOMException(reason, 'AbortError'));
-            }
-            return new Promise((resolve, reject) => {
-                if (signal) {
-                    const reason = signal.reason;
-                    signal.addEventListener('abort', (e) => {
-                        return reject(new DOMException(reason, 'AbortError'));
-                    });
+                if (signal.aborted) {
+                    throw new DOMException(reason, 'AbortError');
                 }
-                return resolve(this.dataProvider.fetchByOffset(params).then((baseResults) => {
-                    const editBuffer = this.editBuffer;
-                    if (!editBuffer.isEmpty()) {
-                        const baseItemArray = baseResults.results;
-                        let sortCriteria = null;
-                        if (baseResults.fetchParameters && baseResults.fetchParameters.sortCriteria) {
-                            sortCriteria = baseResults.fetchParameters.sortCriteria;
-                        }
-                        else {
-                            sortCriteria = params.sortCriteria;
-                        }
-                        this._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, new Set(), baseResults.done);
-                        let actualReturnSize = newItemArray.length;
-                        for (const newItem of newItemArray) {
-                            if (this._isItemRemoved(newItem.metadata.key)) {
-                                --actualReturnSize;
-                            }
-                        }
-                        if ((params.size && actualReturnSize < params.size) ||
-                            (params.size == null && actualReturnSize === 0)) {
-                            if (!baseResults.done) {
-                                const nextParams = {
-                                    attributes: params.attributes,
-                                    clientId: params.clientId,
-                                    filterCriterion: params.filterCriterion,
-                                    offset: params.offset + baseResults.results.length,
-                                    size: params.size,
-                                    sortCriteria: params.sortCriteria
-                                };
-                                return this._fetchFromOffset(nextParams, newItemArray);
-                            }
-                        }
-                        for (let i = 0; i < newItemArray.length; i++) {
-                            if (this._isItemRemoved(newItemArray[i].metadata.key)) {
-                                newItemArray.splice(i, 1);
-                                --i;
-                            }
-                        }
-                        if (params.size && params.size != -1 && newItemArray.length > params.size) {
-                            newItemArray.splice(params.size);
-                        }
-                        return { fetchParameters: params, results: newItemArray, done: baseResults.done };
-                    }
-                    return baseResults;
-                }));
-            });
+                signal.addEventListener('abort', () => {
+                    throw new DOMException(reason, 'AbortError');
+                });
+            }
+            const offset = params.offset;
+            const isFetchAll = params.size == null || params.size === -1;
+            const size = params.size;
+            const mergedItems = [];
+            const { submitting, submitted, unsubmitted } = this._getEditBufferCounts();
+            const numUnsubmittedAdds = unsubmitted.numAdds;
+            const numAdds = numUnsubmittedAdds + submitting.numAdds + submitted.numAdds;
+            let results;
+            let baseItemArray = [];
+            let done = false;
+            let unbufferedResultsToIgnore = 0;
+            if (isFetchAll) {
+                results = await this.dataProvider.fetchByOffset(params);
+                if (this.editBuffer.isEmpty(true)) {
+                    return results;
+                }
+            }
+            else if (offset + size > numAdds) {
+                const numRemoves = unsubmitted.numRemoves + submitting.numRemoves;
+                const numMoveAdds = unsubmitted.numMoveAdds + submitting.numMoveAdds;
+                const numSubmittedOrSubmittingAdds = submitting.numAdds + submitted.numAdds;
+                let overrideParams;
+                if (numRemoves > 0 || numMoveAdds > 0 || numSubmittedOrSubmittingAdds > 0) {
+                    overrideParams = {
+                        offset: 0,
+                        size: offset +
+                            size +
+                            numRemoves +
+                            numMoveAdds +
+                            numSubmittedOrSubmittingAdds -
+                            Math.max(numUnsubmittedAdds - offset, 0)
+                    };
+                    unbufferedResultsToIgnore = Math.max(offset - numAdds, 0);
+                }
+                else if (numUnsubmittedAdds > 0) {
+                    overrideParams = {
+                        offset: Math.max(offset - numUnsubmittedAdds, 0),
+                        size: size - Math.max(numUnsubmittedAdds - offset, 0)
+                    };
+                }
+                const underlyingFetchParams = { ...params, ...overrideParams };
+                results = await this.dataProvider.fetchByOffset(underlyingFetchParams);
+            }
+            if (results) {
+                baseItemArray = results.results;
+                done = results.done;
+            }
+            if (offset < numAdds) {
+                mergedItems.push(...this._getAllAdds().slice(offset, offset + size));
+            }
+            for (let index = 0; index < baseItemArray.length && (isFetchAll || mergedItems.length < size); index++) {
+                const item = baseItemArray[index];
+                const key = item.metadata.key;
+                if (this.editBuffer.isUpdateTransformed(key) ||
+                    this._isItemRemoved(key) ||
+                    this.editBuffer.isSubmittingOrSubmitted(key)) {
+                    continue;
+                }
+                else if (unbufferedResultsToIgnore > 0) {
+                    --unbufferedResultsToIgnore;
+                }
+                else {
+                    const updatedItem = this.editBuffer.getItem(key);
+                    mergedItems.push(updatedItem ? updatedItem.item : item);
+                }
+            }
+            if (!done && (isFetchAll || mergedItems.length < size)) {
+                const nextParams = {
+                    ...params,
+                    offset: params.offset + mergedItems.length,
+                    size: isFetchAll ? params.size : params.size - mergedItems.length
+                };
+                let extraResults = await this._fetchFromOffset(nextParams);
+                mergedItems.push(...extraResults.results);
+                done = extraResults.done;
+            }
+            return { fetchParameters: params, results: mergedItems, done: done };
         }
         containsKeys(params) {
             const bufferResult = this._fetchByKeysFromBuffer(params);
@@ -1081,7 +1157,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             });
         }
         fetchByOffset(params) {
-            return this._fetchFromOffset(params, []);
+            return this._fetchFromOffset(params);
         }
         fetchFirst(params) {
             this.lastSortCriteria = params ? params.sortCriteria : null;
@@ -1105,6 +1181,35 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 }
             });
             return sizeChange;
+        }
+        _getEditBufferCounts() {
+            const submitting = this._getCounts(this.editBuffer.getSubmittingItems());
+            const unsubmitted = this._getCounts(this.editBuffer.getUnsubmittedItems());
+            const submitted = { numAdds: this.editBuffer.getSubmittedAddItems().size };
+            return { submitting, unsubmitted, submitted };
+        }
+        _getCounts(editItems) {
+            let numAdds = 0;
+            let numRemoves = 0;
+            let numMoveAdds = 0;
+            editItems.forEach((value, key) => {
+                if (value.operation === 'add') {
+                    ++numAdds;
+                }
+                else if (value.operation === 'remove') {
+                    ++numRemoves;
+                }
+                else if (value.operation === 'update' && this.editBuffer.isUpdateTransformed(key)) {
+                    ++numMoveAdds;
+                }
+            });
+            return { numAdds, numRemoves, numMoveAdds };
+        }
+        _getAllAdds() {
+            let addOrder = this.editBuffer.getAddItemOrder();
+            return addOrder.map((key) => {
+                return this.editBuffer.getItem(key, true)?.item;
+            });
         }
         getTotalSize() {
             return this.dataProvider.getTotalSize().then((totalSize) => {
@@ -1148,9 +1253,13 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 }
                 else {
                     addBeforeKey = this.lastIterator.firstBaseKey;
+                    let shouldIncrementNextOffset = this.lastIterator.nextOffset !== 0;
                     if (this.editBuffer.isUpdateTransformed(item.metadata.key)) {
                         for (let i = 0; i < this.lastIterator.mergedItemArray.length; i++) {
-                            if (this.lastIterator.mergedItemArray[i].metadata.key === item.metadata.key) {
+                            if (oj.KeyUtils.equals(this.lastIterator.mergedItemArray[i].metadata.key, item.metadata.key)) {
+                                if (shouldIncrementNextOffset) {
+                                    shouldIncrementNextOffset = this.lastIterator.nextOffset <= i;
+                                }
                                 this.lastIterator.mergedItemArray.splice(i, 1);
                                 break;
                             }
@@ -1158,11 +1267,10 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     }
                     this.lastIterator.mergedItemArray.splice(0, 0, item);
                     this.lastIterator.mergedAddKeySet.add(item.metadata.key);
-                    if (addBeforeKey === null) {
-                        this.lastIterator.unFetchedAddItemSet.add(item);
-                    }
                     this.lastIterator.firstBaseKey = item.metadata.key;
-                    this.lastIterator.nextOffset++;
+                    if (shouldIncrementNextOffset) {
+                        this.lastIterator.nextOffset++;
+                    }
                 }
             }
             return addBeforeKey;
@@ -1217,14 +1325,13 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     if (fromBaseDP || mergedAddKeySet.has(key)) {
                         mergedItemArray.splice(keyIdx, 1);
                         mergedAddKeySet.delete(key);
-                        if (keyIdx < this.lastIterator.nextOffset) {
-                            --this.lastIterator.nextOffset;
-                        }
                     }
-                    else {
-                        if (keyIdx === this.lastIterator.nextOffset - 1) {
-                            --this.lastIterator.nextOffset;
+                    for (let i = this.lastIterator.nextOffset - 1; i >= 0; i--) {
+                        let itemKey = mergedItemArray[i]?.metadata.key;
+                        if (itemKey != null && !this._isItemRemoved(itemKey)) {
+                            break;
                         }
+                        this.lastIterator.nextOffset = i;
                     }
                     if (oj.KeyUtils.equals(this.lastIterator.firstBaseKey, key)) {
                         this.lastIterator.firstBaseKey = null;

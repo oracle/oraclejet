@@ -1177,11 +1177,11 @@ ZOrderUtils.STATUS = {
  * Key to store the current operation status of the popup.
  * @const
  * @private
- * @type {string}
+ * @type {Symbol}
  * @see ZOrderUtils.getStatus
  * @see ZOrderUtils.setStatus
  */
-ZOrderUtils._STATUS_DATA = 'oj-popup-status';
+ZOrderUtils._STATUS_DATA = Symbol('PopupStatus');
 
 /**
  * Returns the current operation status of the target popup element.
@@ -1196,9 +1196,12 @@ ZOrderUtils.getStatus = function (popup) {
   }
 
   /** @type {?} */
-  var status = popup.data(ZOrderUtils._STATUS_DATA);
-  if (isNaN(status)) {
-    return ZOrderUtils.STATUS.UNKNOWN;
+  var status = ZOrderUtils.STATUS.UNKNOWN;
+  if (popup.length) {
+    status = popup[0][ZOrderUtils._STATUS_DATA];
+    if (isNaN(status)) {
+      status = ZOrderUtils.STATUS.UNKNOWN;
+    }
   }
   return status;
 };
@@ -1214,9 +1217,10 @@ ZOrderUtils.setStatus = function (popup, status) {
     // eslint-disable-next-line no-param-reassign
     popup = $(popup);
   }
+  var popupDom = popup[0];
 
   if (status >= ZOrderUtils.STATUS.UNKNOWN && status <= ZOrderUtils.STATUS.CLOSE) {
-    popup.data(ZOrderUtils._STATUS_DATA, status);
+    popupDom[ZOrderUtils._STATUS_DATA] = status;
   }
 };
 
@@ -1324,7 +1328,7 @@ ZOrderUtils.addToAncestorLayer = function (
   popup.appendTo(layer); // @HTMLUpdateOK
 
   // link the popup to the layer @see ZOrderUtils.getOpenPopupLayer
-  popup.data(ZOrderUtils._LAYER_ID_DATA, layer.attr('id'));
+  popupDom[ZOrderUtils._LAYER_ID_DATA] = layer.attr('id');
 
   layer.appendTo(ancestorLayer); // @HTMLUpdateOK
   subtreeAttached(popupDom);
@@ -1487,11 +1491,13 @@ ZOrderUtils._removeSurrogate = function (layer) {
 ZOrderUtils.getOpenPopupLayer = function (popup) {
   /** @type {?} */
   var layer = popup.parent();
+  var popupDom = popup[0];
+
   if (!layer || layer.length === 0) {
     // the open popup has been detached from the layer before it was closed
     // use the backup pointer for better cleanup
     /** @type {?} */
-    var layerId = popup.data(ZOrderUtils._LAYER_ID_DATA);
+    var layerId = popupDom[ZOrderUtils._LAYER_ID_DATA];
     layer = $(document.getElementById(layerId));
   }
 
@@ -1517,9 +1523,10 @@ ZOrderUtils.removeFromAncestorLayer = function (popup) {
 
   layer.removeData(ZOrderUtils._EVENTS_DATA);
   layer.removeData(ZOrderUtils._MODALITY_DATA);
-  popup.removeData(ZOrderUtils._LAYER_ID_DATA);
 
   var popupDom = popup[0];
+  delete popupDom[ZOrderUtils._LAYER_ID_DATA];
+
   subtreeDetached(popupDom);
   var originatingSubtreeExists = ZOrderUtils._removeSurrogate(layer);
 
@@ -2289,10 +2296,10 @@ ZOrderUtils._SURROGATE_ATTR = 'data-oj-surrogate-id';
  *
  * @const
  * @private
- * @type {string}
+ * @type {Symbol}
  * @see ZOrderUtils.getOpenPopupLayer
  */
-ZOrderUtils._LAYER_ID_DATA = 'oj-popup-layer-id';
+ZOrderUtils._LAYER_ID_DATA = Symbol('PopupLayerId');
 
 /**
  * The attribute name assigned to the popup layer for open dialogs that have a
@@ -4044,7 +4051,7 @@ PopupSkipLink.prototype.Init = function () {
     link.on('keydown keyup keypress', PopupSkipLink._keyHandler);
   }
 
-  sibling.data(PopupSkipLink._SKIPLINK_ATTR, link);
+  sibling[0][PopupSkipLink._SKIPLINK_ATTR] = link;
 };
 
 /**
@@ -4080,8 +4087,8 @@ PopupSkipLink.prototype.destroy = function () {
   delete this._callback;
 
   if (sibling) {
-    var link = sibling.data(PopupSkipLink._SKIPLINK_ATTR);
-    sibling.removeData(PopupSkipLink._SKIPLINK_ATTR);
+    var link = sibling[0][PopupSkipLink._SKIPLINK_ATTR];
+    delete sibling[0][PopupSkipLink._SKIPLINK_ATTR];
     if (link) {
       link.off('click keydown keyup keypress');
       link.remove();
@@ -4101,7 +4108,7 @@ PopupSkipLink.prototype.getLink = function () {
   /** @type {jQuery} */
   var link;
   if (sibling) {
-    link = sibling.data(PopupSkipLink._SKIPLINK_ATTR);
+    link = sibling[0][PopupSkipLink._SKIPLINK_ATTR];
   }
   return link;
 };
@@ -4111,9 +4118,9 @@ PopupSkipLink.prototype.getLink = function () {
  * reference for the associated skip link.
  * @const
  * @private
- * @type {string}
+ * @type {Symbol}
  */
-PopupSkipLink._SKIPLINK_ATTR = 'oj-skiplink';
+PopupSkipLink._SKIPLINK_ATTR = Symbol('ojSkipLink');
 
 /**
  * Coordinate communications between an event being fulfilled and one or more promises
@@ -4416,13 +4423,9 @@ class VLayerUtils {
     static findOpenVPopups() {
         const rootLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
         const topLayerHost = document.getElementById(NEW_DEFAULT_TOP_LAYER_ID);
-        const result = [];
-        if (rootLayerHost) {
-            result.concat([].slice.call(rootLayerHost.children));
-        }
-        if (topLayerHost) {
-            result.concat([].slice.call(topLayerHost.children));
-        }
+        const resRoot = rootLayerHost ? [].slice.call(rootLayerHost.children) : [];
+        const resTop = topLayerHost ? [].slice.call(topLayerHost.children) : [];
+        const result = resRoot.concat(resTop);
         return result;
     }
 }

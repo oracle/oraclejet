@@ -70,7 +70,7 @@ define(['exports'], function (exports) { 'use strict';
         return nodes[0];
       }
       return {
-        type: 0, // 'Compound'
+        type: COMPOUND,
         body: nodes
       };
     };
@@ -108,7 +108,7 @@ define(['exports'], function (exports) { 'use strict';
             _throwError('Expected expression', context.index);
           }
           return {
-            type: 8, // ConditionalExpression,
+            type: CONDITIONAL_EXP,
             test: test,
             consequent: consequent,
             alternate: alternate
@@ -150,7 +150,7 @@ define(['exports'], function (exports) { 'use strict';
     // This function is responsible for gobbling an individual expression,
     // e.g. `1`, `1+2`, `a+(b*2)-Math.sqrt(2)`
     function _gobbleBinaryExpression(context) {
-      var node, biop, prec, stack, biop_info, left, right, i, cur_biop;
+      var node, biop, prec, stack, biop_info, left, right, i, cur_biop, cur_prec;
 
       // First, try to get the leftmost thing
       // Then, check to see if there's a binary operator operating on that leftmost thing
@@ -171,11 +171,21 @@ define(['exports'], function (exports) { 'use strict';
         _throwError('Expected expression after ' + biop, context.index);
       }
       stack = [left, biop_info, right];
+      // The cur_biop and cur_prec variables are used in _binaryPrecedence() calculation
+      // to cover the edge case with chain exponentiation that should be executed right-to-left,
+      // e.g. (4 ** 3 ** 2) should transform into a node
+      // where left side is { type: Literal, value: 4 } and right side is
+      // {type: BinaryExpression, operator: "**", left: {type: Literal, value:3}, right: {type: Literal: value:2}}.
+      // As the result we don't want to create BinaryExpressions until we find the end of the chain. The technique for
+      // right-to-left walk is to assign a slightly larger precedence value
+      // to the next '**' in the chain of '**'. See  _binaryPrecedence() for details.
+      cur_biop = biop;
+      cur_prec = biop_info.prec;
 
       // Properly deal with precedence using [recursive descent](http://www.engr.mun.ca/~theo/Misc/exp_parsing.htm)
       // eslint-disable-next-line no-cond-assign
       while ((biop = _gobbleBinaryOp(context))) {
-        prec = _binaryPrecedence(biop);
+        prec = _binaryPrecedence(biop, cur_biop, cur_prec);
 
         if (prec === 0) {
           break;
@@ -183,6 +193,7 @@ define(['exports'], function (exports) { 'use strict';
         biop_info = { value: biop, prec: prec };
 
         cur_biop = biop;
+        cur_prec = prec;
         // Reduce: make a binary expression from the three topmost entries.
         while (stack.length > 2 && prec <= stack[stack.length - 2].prec) {
           right = stack.pop();
@@ -240,7 +251,7 @@ define(['exports'], function (exports) { 'use strict';
         ) {
           context.index += tc_len;
           return {
-            type: 5, // 'UnaryExpression'
+            type: UNARY_EXP,
             operator: to_check,
             argument: _gobbleToken(context),
             prefix: true
@@ -321,7 +332,7 @@ define(['exports'], function (exports) { 'use strict';
       }
 
       return {
-        type: 3, // "Literal"
+        type: LITERAL,
         value: parseFloat(number),
         raw: number
       };
@@ -377,7 +388,7 @@ define(['exports'], function (exports) { 'use strict';
       }
 
       return {
-        type: 3, // "Literal"
+        type: LITERAL,
         value: str,
         raw: quote + str + quote
       };
@@ -414,8 +425,8 @@ define(['exports'], function (exports) { 'use strict';
         // process constructor expression,
         // e.g. new Date('Jan 1, 2016') or new (MyFoo())("outer")
         _gobbleSpaces(context);
-        var constructorNode = _gobbleVariable(context, 4); // stop at CallExpression type
-        if (constructorNode.type !== 4) {
+        var constructorNode = _gobbleVariable(context, CALL_EXP); // stop at CallExpression type
+        if (constructorNode.type !== CALL_EXP) {
           _throwError(
             'Expression of type: ' +
               constructorNode.type +
@@ -423,7 +434,7 @@ define(['exports'], function (exports) { 'use strict';
           );
         }
         return {
-          type: 12, // 'ConstructorExpression'
+          type: NEW_EXP,
           callee: constructorNode.callee,
           arguments: constructorNode.arguments
         };
@@ -431,13 +442,13 @@ define(['exports'], function (exports) { 'use strict';
 
       if (_literals.has(identifier)) {
         return {
-          type: 3, // 'Literal'
+          type: LITERAL,
           value: _literals.get(identifier),
           raw: identifier
         };
       }
       return {
-        type: 1, // 'Identifier'
+        type: IDENTIFIER,
         name: identifier
       };
     }
@@ -532,7 +543,7 @@ define(['exports'], function (exports) { 'use strict';
         if (ch_i === PERIOD_CODE) {
           _gobbleSpaces(context);
           node = {
-            type: 2, // 'MemberExpression'
+            type: MEMBER_EXP,
             computed: false,
             object: node,
             property: _gobbleIdentifier(context, true)
@@ -543,15 +554,15 @@ define(['exports'], function (exports) { 'use strict';
           context.index++;
           _gobbleSpaces(context);
           node = {
-            type: 2, // 'MemberExpression'
+            type: MEMBER_EXP,
             computed: false,
-            conditional: true,
+            optional: true,
             object: node,
             property: _gobbleIdentifier(context, true)
           };
         } else if (ch_i === OBRACK_CODE) {
           node = {
-            type: 2, // 'MemberExpression'
+            type: MEMBER_EXP,
             computed: true,
             object: node,
             property: _gobbleExpression(context)
@@ -565,7 +576,7 @@ define(['exports'], function (exports) { 'use strict';
         } else if (ch_i === OPAREN_CODE) {
           // A function call is being made; gobble all the arguments
           node = {
-            type: 4, // 'CallExpression'
+            type: CALL_EXP,
             arguments: _gobbleArguments(context, CPAREN_CODE),
             callee: node
           };
@@ -605,7 +616,7 @@ define(['exports'], function (exports) { 'use strict';
     function _gobbleArray(context) {
       context.index++;
       return {
-        type: 9, // 'ArrayExpression'
+        type: ARRAY_EXP,
         elements: _gobbleArguments(context, CBRACK_CODE)
       };
     }
@@ -653,7 +664,7 @@ define(['exports'], function (exports) { 'use strict';
       context.index++;
 
       return {
-        type: 11, // 'FunctionExpression'
+        type: FUNCTION_EXP,
         arguments: args,
         body: body,
         expr: expr.substring(startDef, context.index - 1),
@@ -684,30 +695,37 @@ define(['exports'], function (exports) { 'use strict';
             _throwError('Unexpected token ,', context.index);
           }
         } else {
-          var key;
-          if (ch_i === SQUOTE_CODE || ch_i === DQUOTE_CODE) {
-            // Single or double quotes
-            key = _gobbleStringLiteral(context).value;
-          } else {
-            key = _gobbleIdentifier(context).name;
-          }
+          var key =
+            ch_i === SQUOTE_CODE || ch_i === DQUOTE_CODE
+              ? _gobbleStringLiteral(context)
+              : _gobbleIdentifier(context);
+
           _gobbleSpaces(context);
           ch_i = expr.charCodeAt(context.index);
-          if (ch_i !== COLON_CODE) {
+          if (key.type === IDENTIFIER && (ch_i === COMMA_CODE || ch_i === CBRACE_CODE)) {
+            // process shorthand object notation
+            props.push({ type: PROPERTY, key: key, value: key, shorthand: true });
+          } else if (ch_i === COLON_CODE) {
+            context.index++;
+            // Set "writer" property on the context while we are evaluating the expression
+            // for property writers. We will only allow assignment operators if the flag is set
+            var writer = context.writer;
+            var keyValue = getKeyValue(key);
+            if (keyValue === '_ko_property_writers') {
+              context.writer = 1;
+            }
+            try {
+              props.push({
+                type: PROPERTY,
+                key: key,
+                value: _gobbleExpression(context),
+                shorthand: false
+              });
+            } finally {
+              context.writer = writer;
+            }
+          } else {
             _throwError("Expected ':'. Found " + String.fromCharCode(ch_i), context.index);
-          }
-          context.index++;
-
-          // Set "writer" property on the context while we are evaluating the expression
-          // for property writers. We will only allow assignment operators if the flag is set
-          var writer = context.writer;
-          if (key === '_ko_property_writers') {
-            context.writer = 1;
-          }
-          try {
-            props.push({ key: key, value: _gobbleExpression(context) });
-          } finally {
-            context.writer = writer;
           }
         }
       }
@@ -715,28 +733,10 @@ define(['exports'], function (exports) { 'use strict';
         _throwError('Expected ' + String.fromCharCode(CBRACE_CODE), context.index);
       }
       return {
-        type: 10, // 'ObjectExpression'
+        type: OBJECT_EXP,
         properties: props
       };
     }
-
-    /*
-    // This is the full set of types that any JSEP node can be.
-    // The literals are replaced with numbers in the code for faster comparison
-    var COMPOUND = 'Compound',            // 0
-      IDENTIFIER = 'Identifier',          // 1
-      MEMBER_EXP = 'MemberExpression',    // 2
-      LITERAL = 'Literal',                // 3
-      CALL_EXP = 'CallExpression',        // 4
-      UNARY_EXP = 'UnaryExpression',      // 5
-      BINARY_EXP = 'BinaryExpression',    // 6
-      LOGICAL_EXP = 'LogicalExpression',  // 7
-      CONDITIONAL_EXP = 'ConditionalExpression',// 8
-      ARRAY_EXP = 'ArrayExpression',      // 9
-      OBJECT_EXP = 'ObjectExpression',    // 10
-      FUNCTION_EXP = 'FunctionExpression',// 11
-      CONSTRUCTOR_EXP = 'ConstructorExpression',// 12
-    */
 
     var PERIOD_CODE = 46, // '.'
       COMMA_CODE = 44, // ','
@@ -764,13 +764,14 @@ define(['exports'], function (exports) { 'use strict';
     var t = true,
       // Use a quickly-accessible map to store all of the unary operators
       // Values are set to `true` (it really doesn't matter)
-      _unary_ops = { '-': t, '!': t, '~': t, '+': t },
+      _unary_ops = { '-': t, '!': t, '~': t, '+': t, typeof: t },
       // Also use a map for the binary operations but set their values to their
       // binary precedence for quick reference:
-      // see [Order of operations](http://en.wikipedia.org/wiki/Order_of_operations#Programming_language)
+      // see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_precedence#table
       _binary_ops = {
         '=': 1,
         '||': 2,
+        '??': 2,
         '&&': 3,
         '|': 4,
         '^': 5,
@@ -783,6 +784,7 @@ define(['exports'], function (exports) { 'use strict';
         '>': 8,
         '<=': 8,
         '>=': 8,
+        instanceof: 8,
         '<<': 9,
         '>>': 9,
         '>>>': 9,
@@ -790,7 +792,8 @@ define(['exports'], function (exports) { 'use strict';
         '-': 10,
         '*': 11,
         '/': 11,
-        '%': 11
+        '%': 11,
+        '**': 12
       },
       // Get return the longest key length of any object
       _max_unop_len = _getMaxKeyLen(_unary_ops),
@@ -806,8 +809,17 @@ define(['exports'], function (exports) { 'use strict';
     _literals.set('undefined', undefined);
 
     // Returns the precedence of a binary operator or `0` if it isn't a binary operator
-    function _binaryPrecedence(op_val) {
-      return _binary_ops[op_val] || 0;
+    function _binaryPrecedence(op_val, prev_op_val, prev_op_prec) {
+      const basePrec = _binary_ops[op_val] || 0;
+      // The following code is to cover the edge case with chain exponentiation.
+      // Since it should be executed right-to-left we increase precedence
+      // value for the next ** operation. This technique will delay the
+      // creation of BinaryExpression for exponentiation, until the end of the chain is reached.
+      if (basePrec !== 12 || prev_op_val === undefined || op_val !== prev_op_val) {
+        return basePrec;
+      }
+      // When both operations are '**', the precedence should be larger than prev_op_prec, but less than 13.
+      return (prev_op_prec + 13) * 0.5;
     }
 
     // Utility function (gets called from multiple places)
@@ -816,7 +828,8 @@ define(['exports'], function (exports) { 'use strict';
       if (operator === '=' && !context.writer) {
         _throwError("Unexpected operator '='", context.index);
       }
-      var type = operator === '||' || operator === '&&' ? 7 : 6; // ? 'LogicalExpression' : 'BinaryExpression'
+      var type =
+        operator === '||' || operator === '&&' || operator === '??' ? LOGICAL_EXP : BINARY_EXP;
       return {
         type: type,
         operator: operator,
@@ -874,7 +887,46 @@ define(['exports'], function (exports) { 'use strict';
     }
   };
 
+  /**
+   * @ignore
+   * Helper method to retrieve a string value of an object key.
+   */
+  const getKeyValue = function (keyObj) {
+    return keyObj.type === IDENTIFIER ? keyObj.name : keyObj.value;
+  };
+
+  // This is the full set of types that any JSEP node can be.
+  const COMPOUND = 'Compound';
+  const IDENTIFIER = 'Identifier';
+  const MEMBER_EXP = 'MemberExpression';
+  const LITERAL = 'Literal';
+  const CALL_EXP = 'CallExpression';
+  const UNARY_EXP = 'UnaryExpression';
+  const BINARY_EXP = 'BinaryExpression';
+  const LOGICAL_EXP = 'LogicalExpression';
+  const CONDITIONAL_EXP = 'ConditionalExpression';
+  const ARRAY_EXP = 'ArrayExpression';
+  const OBJECT_EXP = 'ObjectExpression';
+  const FUNCTION_EXP = 'FunctionExpression';
+  const NEW_EXP = 'NewExpression';
+  const PROPERTY = 'Property';
+
+  exports.ARRAY_EXP = ARRAY_EXP;
+  exports.BINARY_EXP = BINARY_EXP;
+  exports.CALL_EXP = CALL_EXP;
+  exports.COMPOUND = COMPOUND;
+  exports.CONDITIONAL_EXP = CONDITIONAL_EXP;
   exports.ExpParser = ExpParser;
+  exports.FUNCTION_EXP = FUNCTION_EXP;
+  exports.IDENTIFIER = IDENTIFIER;
+  exports.LITERAL = LITERAL;
+  exports.LOGICAL_EXP = LOGICAL_EXP;
+  exports.MEMBER_EXP = MEMBER_EXP;
+  exports.NEW_EXP = NEW_EXP;
+  exports.OBJECT_EXP = OBJECT_EXP;
+  exports.PROPERTY = PROPERTY;
+  exports.UNARY_EXP = UNARY_EXP;
+  exports.getKeyValue = getKeyValue;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

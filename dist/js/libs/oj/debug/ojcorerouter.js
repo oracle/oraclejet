@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (ojobservable, UrlPathAdapter, Logger) { 'use strict';
+define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (Logger, ojobservable, UrlPathAdapter) { 'use strict';
 
   UrlPathAdapter = UrlPathAdapter && Object.prototype.hasOwnProperty.call(UrlPathAdapter, 'default') ? UrlPathAdapter['default'] : UrlPathAdapter;
 
@@ -78,9 +78,6 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
   // noHistorySegments is used by non-tracking routers to store transitions,
   // similar to how history-tracking routers use URL segments
   let noHistorySegments = [];
-
-  // Pending transitions array to hold extra transitions passed to go()
-  let pendingTransitions = [];
 
   /**
    * Test if two routes are equivalent. Routes are equivalent if they have the
@@ -564,36 +561,16 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * @ojsignature {target: "Type", value: "Promise<CoreRouter.CoreRouterState<D, P>>", for: "returns"}
    */
   CoreRouter.prototype.sync = function () {
-    let route;
-    if (pendingTransitions.length) {
-      // Use the pending transition as the new state to sync
-      const transition = pendingTransitions.shift();
-      const newRoutes = this._getParentRoutes().concat(this._getPendingState(transition));
-      const newPath = urlAdapter.getUrlForRoutes(newRoutes);
-      window.history.replaceState(null, 'path', newPath);
-      route = transition;
-    } else {
-      route = this._getRouteSegment();
-    }
     // Transition to the new route, or a default one if no current one exists
-    return this._execute(route || { path: '', params: {} })
-      .then((state) => {
-        // Synchronize the next child router
-        var p = state;
-        var childRouter = this.childRouter;
-        if (childRouter) {
-          p = childRouter.sync();
-        } else if (!this._noHistory) {
-          // Cleanup noHistorySegments after navigating any history-tracking routers
-          noHistorySegments = [];
-        }
-        return p;
-      })
-      .catch((ex) => {
-        // Clear transitions if transition rejected
-        pendingTransitions = [];
-        throw ex;
-      });
+    return this._execute(this._getRouteSegment() || { path: '', params: {} }).then((state) => {
+      // Synchronize the next child router
+      var p = state;
+      var childRouter = this.childRouter;
+      if (childRouter) {
+        p = childRouter.sync();
+      }
+      return p;
+    });
   };
 
   /**
@@ -726,16 +703,9 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
       const path = transitions.map((t) => t.path).join('/');
       Logger.info(`Navigating router(${this._name}) to ${path}`);
 
-      // Use first transition and store remaining for next child router to read
-      const first = transitions[0];
-
       // Get the current routes for all active routers, and compare that to the
       // new routes for this transition.
       const currentPath = urlAdapter.getUrlForRoutes(getActiveRoutes());
-      // Insert the new transitions after the current router's route offset
-      const newRoutes = this._getParentRoutes().concat(this._getPendingState(first, true));
-      const newPath = urlAdapter.getUrlForRoutes(newRoutes);
-
       const prevNoHistorySegments = noHistorySegments;
       if (this._noHistory) {
         Logger.info(`Navigating non-history tracking router(${this._name}) to ${path}`);
@@ -743,12 +713,22 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
         // to store their transitions. Replace the segments after our index with
         // the new transitions
         noHistorySegments = noHistorySegments.slice(0, this._noHistoryOffset).concat(transitions);
-      } else if (currentPath !== newPath) {
-        window.history.pushState(null, 'path', newPath);
+      } else {
+        // Cleanup noHistorySegments when navigating any history-tracking routers
+        noHistorySegments = [];
+        // Insert the new transitions after the current router's route offset
+        const newRoutes = this._getParentRoutes().concat(
+          // only first transition is for this router
+          this._getPendingState(transitions[0]),
+          // remaining are for child routers
+          transitions.slice(1)
+        );
+        const newPath = urlAdapter.getUrlForRoutes(newRoutes);
+        if (currentPath !== newPath) {
+          window.history.pushState(null, 'path', newPath);
+        }
       }
       goP = this.sync().catch((ex) => {
-        // Clear transitions if transition rejected
-        pendingTransitions = [];
         if (this._noHistory) {
           noHistorySegments = prevNoHistorySegments;
         } else {
@@ -756,7 +736,6 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
         }
         throw ex;
       });
-      pendingTransitions = transitions.slice(1);
     }
     return goP;
   };
@@ -809,7 +788,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
       if (activeSync !== this._activeSync) {
         // If this isn't the latest sync, then reject the Promise because another
         // sync() is already underway
-        return Promise.reject();
+        return Promise.reject('sync overridden');
       }
       return s;
     });
@@ -844,10 +823,7 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    */
   CoreRouter.prototype._setupNavigationListener = function () {
     if (this === rootRouter) {
-      this._popstateHandler = () => {
-        pendingTransitions = [];
-        this.sync();
-      };
+      this._popstateHandler = () => this.sync();
       window.addEventListener('popstate', this._popstateHandler, false);
     }
   };
@@ -872,12 +848,10 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * configured states. This CoreRouterState object will similar to the matched configured
    * state, except will have its own path and params values.
    * @param {CoreRouter.Route} transition The transition for the CoreRouterState
-   * @param {boolean} createEmpty Create an empty state object for the transition,
-   * even if a matching route doesn't exist.
    * @return {CoreRouter.RouterState} The CoreRouterState associated for the transition
    * @private
    */
-  CoreRouter.prototype._getPendingState = function (transition, createEmpty) {
+  CoreRouter.prototype._getPendingState = function (transition) {
     var pending;
     var path = transition.path;
     var params = transition.params || {};
@@ -896,13 +870,6 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
         _match: match._match
       };
       Object.freeze(pending);
-    } else if (createEmpty) {
-      pending = {
-        path,
-        params: {},
-        detail: {},
-        pathParams: []
-      };
     }
     return pending;
   };
@@ -1026,6 +993,13 @@ define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (o
    * @export
    */
   CoreRouter.prototype.destroy = function () {
+    if (this.childRouter) {
+      this.childRouter.destroy();
+    }
+
+    this.beforeStateChange.observers.forEach((subscription) => subscription());
+    this.currentState.observers.forEach((subscription) => subscription());
+
     if (this === rootRouter) {
       window.removeEventListener('popstate', this._popstateHandler, false);
       rootRouter = null;

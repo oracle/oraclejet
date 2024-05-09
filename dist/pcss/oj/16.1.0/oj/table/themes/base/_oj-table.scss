@@ -1403,12 +1403,16 @@
   .oj-table-gutter-start-body-cell,
   .oj-table-gutter-start-footer-cell {
     width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
+    min-width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
+    max-width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
   }
 
   .oj-table-gutter-end-header-cell,
   .oj-table-gutter-end-body-cell,
   .oj-table-gutter-end-footer-cell {
     width: calc(var(--oj-core-gutter-end, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
+    min-width: calc(var(--oj-core-gutter-end, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
+    max-width: calc(var(--oj-core-gutter-end, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
   }
 
   .oj-table-custom-header {

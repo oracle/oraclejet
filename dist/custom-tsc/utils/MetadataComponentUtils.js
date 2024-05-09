@@ -437,10 +437,10 @@ function getRegisteredMetadataFromNode(node, checker) {
                 const optionName = prop.name.getText();
                 switch (optionName) {
                     case 'bindings':
-                        rtnRegMetadata.bindings = MetaUtils.getValueFromNode(prop.initializer);
+                        rtnRegMetadata.bindings = MetaUtils.getMDValueFromNode(prop.initializer, 'bindings');
                         break;
                     case 'methods':
-                        rtnRegMetadata.methods = MetaUtils.getValueFromNode(prop.initializer);
+                        rtnRegMetadata.methods = MetaUtils.getMDValueFromNode(prop.initializer, 'methods');
                         break;
                     case 'contexts':
                         rtnRegMetadata.contexts = prop.initializer;
