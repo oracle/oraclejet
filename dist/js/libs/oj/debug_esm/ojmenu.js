@@ -289,7 +289,6 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
    *
    * <p>JET Menus is scrollable when the menu is long. However, scrolling isn't supported on below scenarios: </p>
    * <ul>
-   * <li>Scrolling is not supported on Submenus.
    * <li>Scrolling is not supported on phone due to some themes supporting downward swipe dismissal on Sheet Menus.</li>
    * </ul>
    *
@@ -3403,14 +3402,28 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
     _updateMenuMaxHeight: function (menu) {
       var elem = menu ? menu[0] : this.element[0];
       var isDropdown = this._isDropDown(this.options.openOptions.display);
-      var hasSubmenu = elem.querySelectorAll('oj-menu').length;
+
+      const isSafari = oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI;
       // Max height will apply will only certain condition
-      if (hasSubmenu || !isDropdown || this.rootHeight < window.innerHeight) {
+      // In this case maxHeight is not updated if menu is not dropdown and if its height is smaller than viewport one.
+      // Not supported on safari for now. 
+      if (
+        !isDropdown ||
+        elem.offsetHeight < window.innerHeight ||
+        (isSafari && elem.querySelectorAll('oj-menu').length)
+      ) {
         return;
       }
       // Leave some space between menu and viewport edge
       var bottomPadding = 25;
-      var menuHeight = window.innerHeight - this.launcherHeight - bottomPadding;
+
+      const isSubmenu = elem.parentNode.nodeName === 'OJ-OPTION';
+
+      // If the menu is submenu we need to get position of the submenu item, if not position of the launcher
+      const launcherHeight = isSubmenu
+        ? elem.parentNode.getBoundingClientRect().bottom
+        : this.launcherHeight;
+      var menuHeight = window.innerHeight - launcherHeight - bottomPadding;
       // MaxHeight will be at least bottomPadding
       if (menuHeight < bottomPadding) {
         menuHeight = bottomPadding;
@@ -3610,6 +3623,10 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
 
       this._getSubmenuAnchor(submenu).attr(_ARIA_EXPANDED, 'true'); // @HTMLUpdateOK
 
+      this._updateMenuMaxHeight(submenu);
+      // Important to reposition submenu since if its taking all the height its position starting point will not be the correct
+      this._reposition();
+
       if (!this._isAnimationDisabled()) {
         var busyContext = Context.getContext(this.element[0]).getBusyContext();
         var resolveBusyState = busyContext.addBusyState({
@@ -3632,7 +3649,6 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
         animation = this._replaceAnimationOptions(animation, { '#myPosition': myPosition });
         startAnimation(submenu[0], 'open', animation, this).then(resolveBusyState);
       }
-      this._updateMenuMaxHeight(submenu);
     },
 
     /*

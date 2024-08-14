@@ -5,21 +5,23 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-
-import { ComponentChildren } from 'preact';
+import { ComponentChildren, ClassAttributes, JSX as JSXPreact } from 'preact';
 
 export type LoadIntrinsicElements = {};
 
-type TemplateProperties = Pick<preact.JSX.HTMLAttributes, 'slot' | 'key' | 'ref'> & {
-  render?: (context?: any) => ComponentChildren;
-};
-
-declare global {
-  // Extend the Preact types
-  namespace preact.JSX {
-    interface IntrinsicElements {
-      // Allow template elements in jsx
-      template: TemplateProperties;
+declare module 'preact/jsx-runtime' {
+  export namespace JSX {
+    export interface DOMAttributes<Target extends EventTarget> {
+      onfocusin?: JSXPreact.FocusEventHandler<Target> | undefined;
+      onfocusinCapture?: JSXPreact.FocusEventHandler<Target> | undefined;
+      onfocusout?: JSXPreact.FocusEventHandler<Target> | undefined;
+      onfocusoutCapture?: JSXPreact.FocusEventHandler<Target> | undefined;
+    }
+    export interface HTMLAttributes<RefType extends EventTarget = EventTarget>
+      extends ClassAttributes<RefType>,
+        DOMAttributes<RefType>,
+        JSXPreact.AriaAttributes {
+      render?: RefType extends HTMLTemplateElement ? (context?: any) => ComponentChildren : never;
     }
   }
 }

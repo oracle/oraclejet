@@ -102,7 +102,7 @@ export interface GridBodyItem<D> {
     rowIndex: number;
 }
 export interface GridBodyItemMetadata {
-    itemMetadata?: object;
+    validity?: 'valid' | 'invalidShown' | 'pending' | 'invalidHidden';
 }
 export interface GridHeaderItem<D> {
     data: D;
@@ -123,9 +123,12 @@ export interface GridHeaderMetadata {
 }
 export interface GridItem<D> {
     data: D;
-    metadata: {
+    metadata: GridItemMetadata & {
         [propName: string]: any;
     };
+}
+export interface GridItemMetadata {
+    sortDirection?: 'ascending' | 'descending' | 'unsorted';
 }
 export interface VersionCapability {
     implementation: 'none' | 'monotonicallyIncreasing';

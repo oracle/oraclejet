@@ -2000,10 +2000,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
            * shows all the time. See the user-assistance-density property for other ways the user
            * assistance text can render.
            * </p>
-           * <p>In the Alta theme the help-hint.definition shows up when
-           * the user hovers over the help icon on the label,
-           * or tabs into the help icon, or press and holds the help icon on a mobile device.
-           * </p>
            * <p>No formatted text is available for help definition attribute.</p>
            *
            * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
@@ -2024,9 +2020,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
            * <p>In the Redwood theme, the help-hints.source will show as a link inline to the field.
            * For input components, it shows when the field takes focus. For other components,
            * it shows all the time.
-           * </p>
-           * <p>In the Alta theme, the help-hints.source will show as a a help icon
-           *  next to the label. When clicked the page will navigate to the source url.
            * </p>
            * <p>
            * For security reasons we only support urls with protocol 'http:' or 'https:'.
@@ -2270,8 +2263,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
          * it shows all the time. See the user-assistance-density property for other ways
          * the user assistance text can render.
          * <p>
-         *  In Alta theme, help.instruction
-         * displays in a notewindow when the field takes focus. How is help.instruction better than the html 'title' attribute?
+         *  How is help.instruction better than the html 'title' attribute?
          * The html 'title' attribute only shows up as a tooltip on mouse over, not on keyboard and not in a mobile
          * device. So the html 'title' would only be for text that is not important enough to show all users, or
          * for text that you show the users in another way as well, like in the label.
@@ -2502,9 +2494,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
          * $messageComponentInlineOpenAnimation: (effect: "fadeIn", duration: "100ms", timingFunction: "linear") !default;
          * $messageComponentInlineCloseAnimation: (effect: "fadeOut", duration: "100ms", timingFunction: "linear") !default;
          *
-         * // default animations for Alta's "inline" display option
-         * $messageComponentInlineOpenAnimation: (effect: "expand", startMaxHeight: "#oldHeight") !default;
-         * $messageComponentInlineCloseAnimation: (effect: "collapse", endMaxHeight: "#newHeight") !default;
          * </code></pre>
          * @ojdeprecated {since: "12.1.0", description: "This web component no longer supports this event."}
          *
@@ -6987,11 +6976,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
    * <li>help-hints.source always shows along side the above.</li>
    * </ul>
-   * </p>
-   * <p>In the Alta theme all the user assistance text are displayed to the user. By default
-   * help.instruction and the validator/converter hints show in a notewindow that is displayed
-   * when the field takes focus. The help-hints render as a help icon on the label and when clicked
-   * show in a notewindow. Note: If there is no label, help-hints help icon will not show.
    * </p>
    * <p>Sometimes a validator or converter hints shows that you do not want. To not show it,
    *  set the display-options.validator-hint and/or display-options.converter-hint property to 'none'.

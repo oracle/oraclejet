@@ -9,6 +9,7 @@ export type BuildOptions = {
     dtDir: string;
     apiDocDir?: string;
     isolationMode?: boolean;
+    apiDocBuildEnabled?: boolean;
     coreJetBuildOptions?: {
         defaultCompType?: MetadataTypes.ComponentMetadata['type'];
         exclude?: Array<string>;

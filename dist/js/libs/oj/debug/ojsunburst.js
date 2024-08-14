@@ -301,7 +301,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    *      or the table below for a list of properties available on $current)
    *   </li>
    *   <li>
-   *      alias - if 'as' attribute was specified, the value will be used to provide an
+   *      alias - if data-oj-as attribute was specified, the value will be used to provide an
    *      application-named alias for $current.
    *   </li>
    * </ul>
@@ -941,6 +941,12 @@ var __oj_sunburst_metadata =
         "stateIsolated": {
           "type": "string"
         },
+        "stateLoaded": {
+          "type": "string"
+        },
+        "stateLoading": {
+          "type": "string"
+        },
         "stateMaximized": {
           "type": "string"
         },
@@ -1279,6 +1285,8 @@ var __oj_sunburst_node_metadata =
        * using this attribute, a template for the <a href="#nodeTemplate">nodeTemplate</a> slot should be provided.
        * The DataProvider can either have an arbitrary data shape, in which case an <oj-sunburst-node> element must be specified in the itemTemplate slot
        * or it can have [oj.ojSunburst.Node]{@link oj.ojSunburst.Node} as its data shape, in which case no template is required.
+       *
+       * A progressive loading indicator is shown by the component when the data provider fetch takes longer than a certain time.
        * @expose
        * @name data
        * @ojshortdesc Specifies the DataProvider for the sunburst. See the Help documentation for more information.
@@ -1929,6 +1937,14 @@ var __oj_sunburst_node_metadata =
         }
       });
       return configs;
+    },
+
+    _IsLoadingSkeletonSupported: function () {
+      return true;
+    },
+
+    _GetLoadingSkeletonMaskStyleClass: function () {
+      return 'oj-sunburst-skeleton-container';
     },
 
     _OptionChangeHandler: function (options) {

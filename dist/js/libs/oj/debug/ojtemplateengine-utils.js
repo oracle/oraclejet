@@ -136,9 +136,10 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojcore-base', 'ojs/ojcus
             }
             const props = {};
             const vprops = targetNode.props;
-            Object.keys(vprops).forEach((prop) => {
+            Object.keys(vprops).forEach((origProp) => {
+                const { prop, value } = ojcustomelementUtils.convertPrivatePropFromPreact(origProp, targetNode.props[origProp]);
                 if (propertySet.has(prop)) {
-                    props[prop] = ojcustomelementUtils.transformPreactValue(null, ojmetadatautils.getPropertyMetadata(prop, metadata), targetNode.props[prop]);
+                    props[prop] = ojcustomelementUtils.transformPreactValue(null, prop, ojmetadatautils.getPropertyMetadata(prop, metadata), value);
                 }
             });
             return props;

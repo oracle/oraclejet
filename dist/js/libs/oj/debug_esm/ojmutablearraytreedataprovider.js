@@ -616,6 +616,9 @@ class MutableArrayTreeDataProvider {
         this._mapKeyToParentNodePath = new Map();
         this._baseDPOptions = { keyAttributes: keyAttribute };
         if (options) {
+            if (options.textFilterAttributes) {
+                this._baseDPOptions.textFilterAttributes = options.textFilterAttributes;
+            }
             if (options.sortComparators) {
                 this._baseDPOptions.sortComparators = options.sortComparators;
             }

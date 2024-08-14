@@ -8,6 +8,7 @@
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import { customElement } from 'ojs/ojvcomponent';
 import { Component } from 'preact';
+import { useRef, useEffect } from 'preact/hooks';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -59,6 +60,14 @@ let ListItemLayout = class ListItemLayout extends Component {
         return null;
     }
     render(props) {
+        const layoutRef = useRef(null);
+        let primaryClass = useRef();
+        useEffect(() => {
+            if (layoutRef.current.parentElement) {
+                const hasPaddingOff = layoutRef.current.parentElement.classList.contains('oj-listitemlayout-padding-off');
+                primaryClass.current = hasPaddingOff ? 'oj-listitemlayout-primary' : '';
+            }
+        }, [props.children]);
         const hasExtra = this._hasContent(props.metadata) ||
             this._hasContent(props.action) ||
             this._hasContent(props.trailing);
@@ -76,7 +85,7 @@ let ListItemLayout = class ListItemLayout extends Component {
             textSlotClass = textSlotClass + ' oj-listitemlayout-start-padding';
             quaternaryClass = quaternaryClass + ' oj-listitemlayout-start-padding';
         }
-        return (jsxs("div", { class: "oj-listitemlayout-grid", children: [this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector', false), this._getWrappedSlotContent(props.leading, leadingClass, true), jsxs("div", { class: textSlotClass, children: [this._getWrappedSlotContent(props.overline, null, true), this._getWrappedSlotContent(props.children, null, true), this._getWrappedSlotContent(props.secondary, null, true), this._getWrappedSlotContent(props.tertiary, tertiaryClass, true)] }), hasExtra ? (jsxs("div", { class: "oj-listitemlayout-extra", children: [this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding', true), this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding', true), this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding', false)] })) : null, this._getWrappedSlotContent(props.quaternary, quaternaryClass, true), this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation', false)] }));
+        return (jsxs("div", { class: "oj-listitemlayout-grid", ref: layoutRef, children: [this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector', false), this._getWrappedSlotContent(props.leading, leadingClass, true), jsxs("div", { class: textSlotClass, children: [this._getWrappedSlotContent(props.overline, null, true), this._getWrappedSlotContent(props.children, primaryClass.current, true), this._getWrappedSlotContent(props.secondary, null, true), this._getWrappedSlotContent(props.tertiary, tertiaryClass, true)] }), hasExtra ? (jsxs("div", { class: "oj-listitemlayout-extra", children: [this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding', true), this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding', true), this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding', false)] })) : null, this._getWrappedSlotContent(props.quaternary, quaternaryClass, true), this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation', false)] }));
     }
 };
 ListItemLayout._metadata = { "slots": { "": {}, "overline": {}, "selector": {}, "leading": {}, "secondary": {}, "tertiary": {}, "metadata": {}, "trailing": {}, "action": {}, "quaternary": {}, "navigation": {} } };

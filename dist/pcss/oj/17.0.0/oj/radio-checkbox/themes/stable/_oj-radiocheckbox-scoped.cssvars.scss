@@ -1,0 +1,18 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/stable/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("stable.variables.radiocheckbox.scoped") {
+
+  
+  /* radioset & checkboxset    */
+  /* -------------------------- */
+.oj-color-invert {
+  --oj-radio-checkbox-input-color-unselected:    rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-radio-checkbox-input-color-selected:      rgb(var(--oj-palette-neutral-rgb-0));
+}
+
+.oj-density-compact{
+  --oj-radio-checkbox-row-height:                1.75rem;
+}
+
+}

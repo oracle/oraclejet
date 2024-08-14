@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojlogger'], function (Logger) { 'use strict';
+define(['ojs/ojlogger', 'ojs/ojwebdrivertest-proxy'], function (Logger, ojwebdrivertestProxy) { 'use strict';
 
   /**
    * Defines the oj namespace
@@ -37,12 +37,12 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
      * @global
      * @member {string} version JET version numberr
      */
-    version: '16.1.0',
+    version: '17.0.0',
     /**
      * @global
      * @member {string} revision JET source code revision number
      */
-    revision: '2024-05-03_10-41-36',
+    revision: '2024-08-09_16-58-07',
 
     // This function is only meant to be used outside the library, so quoting the name
     // to avoid renaming is appropriate

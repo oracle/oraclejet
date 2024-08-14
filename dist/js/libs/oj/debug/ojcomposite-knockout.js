@@ -136,11 +136,8 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
       assignableNodes.forEach(function (_node) {
         nodeStorage.appendChild(_node); // @HTMLUpdateOK
       });
-      // Notifies JET components inside nodeStorage that they have been hidden
-      // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-      if (oj.Components) {
-        oj.Components.subtreeHidden(nodeStorage);
-      }
+
+      ojcustomelementUtils.CustomElementUtils.subtreeHidden(nodeStorage);
     }
     return nodeStorage;
   };
@@ -272,9 +269,8 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
         if (node.__oj_slots != null) {
           nodeStorage.appendChild(node); // @HTMLUpdateOK
           // Notifies JET components in node that they have been hidden
-          // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-          if (oj.Components && node.nodeType === 1) {
-            oj.Components.subtreeHidden(node);
+          if (node.nodeType === 1) {
+            ojcustomelementUtils.CustomElementUtils.subtreeHidden(node);
           }
         }
         node = next;
@@ -332,13 +328,10 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
         }
 
         // Notifies JET components in node that they have been shown
-        // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-        if (oj.Components) {
-          for (i = 0; i < assignedNodes.length; i++) {
-            var assignedNode = assignedNodes[i];
-            if (assignedNode.nodeType === 1) {
-              oj.Components.subtreeShown(assignedNode);
-            }
+        for (i = 0; i < assignedNodes.length; i++) {
+          var assignedNode = assignedNodes[i];
+          if (assignedNode.nodeType === 1) {
+            ojcustomelementUtils.CustomElementUtils.subtreeShown(assignedNode);
           }
         }
         return { controlsDescendantBindings: true };

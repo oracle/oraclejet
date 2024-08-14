@@ -79,7 +79,8 @@
 
     // submenus but not top-level menu
     .oj-menu.oj-menu-submenu {
-        position: absolute;
+        // Needs to be fixed position so submenu is placed correctly including cases where parent menu has overflow-Y: auto (scrolls)
+        position: fixed;
 
         @include oj-box-shadow($menuSubmenuBoxShadow);
 

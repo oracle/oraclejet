@@ -104,23 +104,30 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', '
    * </p>
    * <p>
    * The oj-c-form-layout is not compatible with legacy form components, only core pack form components.  If you are using a mix of legacy and core pack components, you will need to use legacy oj-form-layout.
-   * 
+   *
    * <h5>ColspanWrap attribute</h5>
    * <p>
    * The colspan-wrap attribute was removed because oj-c-form-layout only supports wrap for components spanning more than one column.
    * </p>
-   * 
+   *
    * <h5>LabelWidth attribute</h5>
    * <p>
    * The LabelWidth attribute has been renamed to LabelStartWidth but has the same functionality.
    * </p>
-   * 
-   * <h5>ColumnSpan attribute</h5>
+   *
+   * <h5>oj-label-value not supported</h5>
    * <p>
-   * A nested oj-c-form-layout can use column-span to span multiple columns in the parent oj-c-form-layout.  This is a new attribute
-   * and replaces the column spanning functionality of the legacy oj-label-value component.  All Core Pack form components now have
-   * this attribute so oj-label-value is not needed for core pack form components to span columns.
-   * </p> 
+   * <ul>
+   * <li>
+   * non form controls - currently only Core Pack form controls are supported in oj-c-form-layout.
+   * If you are using oj-label-value to add other components you'll need to stick to legacy oj-form-layout for now
+   * </li>
+   * <li>
+   * column spanning - all Core Pack form components and oj-c-form-layout have a column-span attribute,
+   * so oj-label-value is not needed for column spanning
+   * </li>
+   * </ul>
+   * </p>
    */
 
   // --------------------------------------------------- oj.ojFormLayout Styling Start ------------------------------------------------------------
@@ -237,7 +244,10 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', '
    * The form components and the oj-form-layout are configured to consume the label-edge property if it is not explicitly set.
    * For example, if the oj-form-layout's label-edge attribute is set to "top" or "start", and a descendent form component does
    * not have its label-edge attribute set, the form component's label-edge will be the transformed value "provided".</p>
-   *
+   * <p>
+   * When using the oj-form-layout custom element inside of a VDOM application, this property will not propagate down to the child components.
+   * This is because binding propagation is Knockout-based, and VDOM applications are not Knockout-based.
+   * </p>
    * @ojshortdesc Specifies how the label is created and aligned with its form control. See the Help documentation for more information.
    *
    * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">label-edge</code> attribute specified:</caption>
@@ -265,7 +275,10 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', '
    * @default "33%"
    * @desc Specifies the label width.
    * <p>This specifies the width of the oj-label elements.  This can be any legal <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/width">CSS width</a>.</p>
-   *
+   * <p>
+   * When using the oj-form-layout custom element inside of a VDOM application, this property will not propagate down to the child components.
+   * This is because binding propagation is Knockout-based, and VDOM applications are not Knockout-based.
+   * </p>
    * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">label-width</code> attribute specified:</caption>
    * &lt;oj-form-layout label-width="50%">
    *   &lt;oj-input-text id="inputcontrol" required value="text" label-hint="input 1">&lt;/oj-input-text>
@@ -291,7 +304,10 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', '
    * @ojvalue {string} "truncate" Label will truncate if needed
    * @ojvalue {string} "wrap" Label will wrap if needed
    * @desc Specifies if the label text should wrap or truncate.
-   *
+   * <p>
+   * When using the oj-form-layout custom element inside of a VDOM application, this property will not propagate down to the child components.
+   * This is because binding propagation is Knockout-based, and VDOM applications are not Knockout-based.
+   * </p>
    * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">label-wrapping</code> attribute specified:</caption>
    * &lt;oj-form-layout label-wrapping="truncate">
    *   &lt;oj-input-text id="inputcontrol" required value="text" label-hint="input 1">&lt;/oj-input-text>
@@ -387,6 +403,10 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', '
    * and a descendent form component does
    * not have its readonly attribute set, the form component's readonly will be true.
    * </p>
+   * <p>
+   * When using the oj-form-layout custom element inside of a VDOM application, this property will not propagate down to the child components.
+   * This is because binding propagation is Knockout-based, and VDOM applications are not Knockout-based.
+   * </p>
    */
 
   /**
@@ -418,9 +438,12 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', '
    * The form components and the oj-form-layout are configured to consume the
    * user-assistance-density property if it is not explicitly set.
    * For example, oj-form-layout's user-assistance-density defaults to 'efficient', so all its
-   * oj-form-layout and form control descendents will have user-assistance-density='efficient' by default.
+   * oj-form-layout and form control descendants will have user-assistance-density='efficient' by default.
    * </p>
-   *
+   * <p>
+   * When using the oj-form-layout custom element inside of a VDOM application, this property will not propagate down to the child components.
+   * This is because binding propagation is Knockout-based, and VDOM applications are not Knockout-based.
+   * </p>
    */
 
   /**
@@ -724,7 +747,7 @@ var __oj_form_layout_metadata =
     function _registerResizeListener(domElem) {
       // register resize listener if needed
       if (_shouldRegisterResizeListener()) {
-        DomUtils.addResizeListener(domElem, self._resizeHandler, 25);
+        DomUtils.addResizeListener(domElem, self._resizeHandler, 25, true);
       }
     }
 

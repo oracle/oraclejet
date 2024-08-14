@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function (oj, ojeventtarget, ojcomponentcore) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function (oj, ojdataprovider, ojeventtarget, ojcomponentcore) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
@@ -182,17 +182,7 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
                     const params = this.params || {};
                     const size = params.size || -1;
                     const signal = params?.signal;
-                    if (signal && signal.aborted) {
-                        const reason = signal.reason;
-                        return Promise.reject(new DOMException(reason, 'AbortError'));
-                    }
-                    return new Promise((resolve, reject) => {
-                        if (signal) {
-                            const reason = signal.reason;
-                            signal.addEventListener('abort', (e) => {
-                                return reject(new DOMException(reason, 'AbortError'));
-                            });
-                        }
+                    const callback = (resolve) => {
                         if (this._needLocalRowCount && this._cachedOffset === 0) {
                             return resolve(this._checkCachedParamsAndIterate(params, -1).then((result) => {
                                 return this._getResult(params, size, this._parent.cache.getSize());
@@ -201,7 +191,8 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
                         else {
                             return resolve(this._getResult(params, size, this._needLocalRowCount ? this._parent.cache.getSize() : undefined));
                         }
-                    });
+                    };
+                    return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
                 }
                 _getResult(params, size, totalFilteredRowCount) {
                     let result;
@@ -376,17 +367,7 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
             const finalResults = new Map();
             const neededKeys = new Set();
             const signal = params?.signal;
-            if (signal && signal.aborted) {
-                const reason = signal.reason;
-                return Promise.reject(new DOMException(reason, 'AbortError'));
-            }
-            return new Promise((resolve, reject) => {
-                if (signal) {
-                    const reason = signal.reason;
-                    signal.addEventListener('abort', (e) => {
-                        return reject(new DOMException(reason, 'AbortError'));
-                    });
-                }
+            const callback = (resolve) => {
                 const cacheResults = this.cache.getDataByKeys(params);
                 params.keys.forEach((key) => {
                     const item = cacheResults.results.get(key);
@@ -413,22 +394,13 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
                         return { fetchParameters: params, results: finalResults };
                     }));
                 }
-            });
+            };
+            return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
         fetchByOffset(params) {
             const size = params.size ? params.size : CachedIteratorResultsDataProvider._DEFAULT_SIZE;
             const signal = params?.signal;
-            if (signal && signal.aborted) {
-                const reason = signal.reason;
-                return Promise.reject(new DOMException(reason, 'AbortError'));
-            }
-            return new Promise((resolve, reject) => {
-                if (signal) {
-                    const reason = signal.reason;
-                    signal.addEventListener('abort', (e) => {
-                        return reject(new DOMException(reason, 'AbortError'));
-                    });
-                }
+            const callback = (resolve) => {
                 if (CachedIteratorResultsDataProvider._compareCachedFetchParameters(params, this._lastFetchParams) &&
                     params.offset + size <= this.cache.getSize()) {
                     const updatedParams = JSON.parse(JSON.stringify(params, (key, value) => {
@@ -444,7 +416,8 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function
                     }
                 }
                 return resolve(this.dataProvider.fetchByOffset(params));
-            });
+            };
+            return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
         fetchFirst(params) {
             if (params?.signal?.aborted) {

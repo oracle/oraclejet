@@ -1451,7 +1451,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * <p>When the template is executed for each item, it will have access to the chart's binding context containing the following properties:</p>
    * <ul>
    *   <li>$current - an object that contains information for the current item. (See [oj.ojChart.ItemTemplateContext]{@link oj.ojChart.ItemTemplateContext} or the table below for a list of properties available on $current) </li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   *   <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
    * </ul>
    *
    * @ojslot itemTemplate
@@ -1479,7 +1479,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * <p>When the template is executed for each series, it will have access to the chart's binding context containing the following properties:</p>
    * <ul>
    *   <li>$current - an object that contains information for the current item. (See [oj.ojChart.SeriesTemplateContext]{@link oj.ojChart.SeriesTemplateContext} or the table below for a list of properties available on $current) </li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   *   <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
    * </ul>
    *
    *
@@ -1507,7 +1507,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * <p>When the template is executed for each group, it will have access to the chart's binding context containing the following properties:</p>
    * <ul>
    *   <li>$current - an object that contains information for the current item. (See [oj.ojChart.GroupTemplateContext]{@link oj.ojChart.GroupTemplateContext} or the table below for a list of properties available on $current) </li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   *   <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
    * </ul>
    *
    *
@@ -3589,7 +3589,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * <ul>
    *   <li>$current - an object that contains information for the current item. (See [oj.ojSparkChart.ItemTemplateContext]{@link oj.ojSparkChart.ItemTemplateContext} or the table below for a list of properties available on $current) </li>
    * </li>
-   * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+   * <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.
    * </li>
    * </ul>
    *
@@ -4931,6 +4931,12 @@ var __oj_chart_metadata =
           "type": "string"
         },
         "stateIsolated": {
+          "type": "string"
+        },
+        "stateLoaded": {
+          "type": "string"
+        },
+        "stateLoading": {
           "type": "string"
         },
         "stateMaximized": {
@@ -7376,6 +7382,8 @@ var __oj_spark_chart_item_metadata =
        * The DataProvider can either have an arbitrary data shape, in which case an <oj-chart-item>
        * element must be specified in the itemTemplate slot or it can have <a href="#DataItem">ojChart.DataItem</a>
        * as its data shape, in which case no template is required.
+       *
+       * A progressive loading indicator is shown by the component when the data provider fetch takes longer than a certain time.
        * @name data
        * @memberof oj.ojChart
        * @ojshortdesc An object defining the series and groups, when using a DataProvider to populate the chart data. Also accepts a Promise for deferred data rendering.
@@ -7691,6 +7699,30 @@ var __oj_spark_chart_item_metadata =
       // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
       // support for the old subId syntax in 1.2.0.
       return subId;
+    },
+
+    _IsLoadingSkeletonSupported: function () {
+      return true;
+    },
+
+    _GetLoadingSkeletonMaskStyleClass: function () {
+      const typeClassMap = {
+        bar: 'oj-chart-bar-skeleton-container',
+        boxPlot: 'oj-chart-boxplot-skeleton-container',
+        stock: 'oj-chart-boxplot-skeleton-container',
+        bubble: 'oj-chart-bubble-skeleton-container',
+        scatter: 'oj-chart-bubble-skeleton-container',
+        area: 'oj-chart-area-skeleton-container',
+        lineWithArea: 'oj-chart-area-skeleton-container',
+        line: 'oj-chart-line-skeleton-container',
+        combo: 'oj-chart-combo-skeleton-container',
+        pie: 'oj-chart-pie-skeleton-container',
+        polar: 'oj-chart-pie-skeleton-container',
+        funnel: 'oj-chart-funnel-skeleton-container',
+        pyramid: 'oj-chart-pyramid-skeleton-container'
+      };
+      const type = this.options.coordinateSystem !== 'polar' ? this.options.type || 'bar' : 'polar';
+      return typeClassMap[type];
     },
 
     _ProcessTemplates: function (

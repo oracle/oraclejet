@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/ojgantt-toolkit', 'ojs/ojkeyset', 'ojs/ojdvttimecomponentscale', 'ojs/ojlogger', 'ojs/ojconverter-datetime', 'ojs/ojconverter-number', 'ojs/ojthemeutils'], function (oj, $, ojcomponentcore, ojtimeBase, ojganttToolkit, ojkeyset, ojdvttimecomponentscale, Logger, ojconverterDatetime, ojconverterNumber, ThemeUtils) { 'use strict';
+define(['ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdomutils', 'ojs/ojtime-base', 'ojs/ojgantt-toolkit', 'ojs/ojkeyset', 'ojs/ojdvttimecomponentscale', 'ojs/ojlogger', 'ojs/ojconverter-datetime', 'ojs/ojconverter-number', 'ojs/ojthemeutils'], function (oj, $, ojcomponentcore, DomUtils, ojtimeBase, ojganttToolkit, ojkeyset, ojdvttimecomponentscale, Logger, ojconverterDatetime, ojconverterNumber, ThemeUtils) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -1899,7 +1899,7 @@ var __oj_gantt_reference_object_metadata =
    *   <li>$current - an object that contains information for the current task.
    *    (See [oj.ojGantt.TaskTemplateContext]{@link oj.ojGantt.TaskTemplateContext} or the table below for a list of properties available on $current)
    *   </li>
-   *   <li>alias - if <a href="#as">as</a> attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   *   <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
    * </ul>
    *
    * @ojslot taskTemplate
@@ -1965,7 +1965,7 @@ var __oj_gantt_reference_object_metadata =
    *   <li>$current - an object that contains information for the current dependency.
    *    (See [oj.ojGantt.DependencyTemplateContext]{@link oj.ojGantt.DependencyTemplateContext} or the table below for a list of properties available on $current)
    *   </li>
-   *   <li>alias - if <a href="#as">as</a> attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   *   <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
    * </ul>
    *
    * @ojslot dependencyTemplate
@@ -1996,7 +1996,7 @@ var __oj_gantt_reference_object_metadata =
    *   <li>$current - an object that contains information for the current row.
    *    (See [oj.ojGantt.RowTemplateContext]{@link oj.ojGantt.RowTemplateContext} or the table below for a list of properties available on $current)
    *   </li>
-   *   <li>alias - if <a href="#as">as</a> attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   *   <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
    * </ul>
    *
    * @ojslot rowTemplate
@@ -2118,7 +2118,7 @@ var __oj_gantt_reference_object_metadata =
    * @ojslot taskContentTemplate
    * @ojmaxitems 1
    * @ojshortdesc The taskContentTemplate slot is used to specify custom content to be placed inside the taskbar. See the Help documentation for more information.
-   * @ojtemplateslotprops oj.ojGantt.taskContentTemplate
+   * @ojtemplateslotprops oj.ojGantt.TaskContentTemplateContext
    * @memberof oj.ojGantt
    *
    * @example <caption>Initialize the Gantt with a task content template specified:</caption>
@@ -2149,7 +2149,7 @@ var __oj_gantt_reference_object_metadata =
    * @ojslot dependencyContentTemplate
    * @ojmaxitems 1
    * @ojshortdesc The dependencyContentTemplate slot is used to specify custom dependency lines. See the Help documentation for more information.
-   * @ojtemplateslotprops oj.ojGantt.dependencyContentTemplate
+   * @ojtemplateslotprops oj.ojGantt.DependencyContentTemplateContext
    * @memberof oj.ojGantt
    *
    * @example <caption>Initialize the Gantt with a dependency content template specified:</caption>
@@ -5513,9 +5513,7 @@ var __oj_gantt_reference_object_metadata =
 
     // @inheritdoc
     _IsDraggable: function () {
-      const agentInfo = oj.AgentUtils.getAgentInfo();
-      const isTouchDevice =
-        agentInfo.os === oj.AgentUtils.OS.IOS || agentInfo.os === oj.AgentUtils.OS.ANDROID;
+      const isTouchDevice = DomUtils.isTouchSupported();
       // On desktop, for performance reasons, normal mouse events are used for DnD.
       // On mobile, HTML5 DnD events are used because they're fast.
       if (isTouchDevice) {

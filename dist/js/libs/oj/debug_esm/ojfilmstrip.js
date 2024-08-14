@@ -592,11 +592,6 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
  *       <td><kbd>End</kbd></td>
  *       <td>Transition to the last logical page of child items.</td>
  *     </tr>
- *     <tr>
- *       <td>Navigation Arrow</td>
- *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
- *       <td>Transition to an adjacent logical page of child items.</td>
- *     </tr>
  *   </tbody>
  * </table>
  *

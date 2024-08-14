@@ -223,6 +223,9 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
     if (dragHandle != null && dragHandle.length > 0 && this.listview._isTouchSupport()) {
       dragHandle.attr('draggable', 'true');
     }
+    // needs to set tabindex='-1' due to the issue that causes reorder doesn't work during first click
+    // detail documented in JET-65969
+    dragHandle.attr('tabindex', '-1');
   };
   /** ****************************** Mouse down/up, touch start/end helpers ***********************************************/
   ListViewDndContext.prototype._unsetSelectionDraggable = function () {

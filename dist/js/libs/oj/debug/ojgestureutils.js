@@ -5,9 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) { 'use strict';
+define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exports, $, DomUtils, oj) { 'use strict';
 
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
+  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /* jslint browser: true*/
 
@@ -29,6 +30,42 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
    * @param {Element} rootNode the root element of the component
    */
   GestureUtils.stopDetectContextMenuGesture = function (rootNode) {
+    const isIOS = oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS;
+    const isAllowBrowserContextMenu = rootNode._allowBrowserContextMenu;
+
+    if (rootNode._touchStartListener) {
+      document.removeEventListener('touchstart', rootNode._touchStartListener, { passive: true });
+      // eslint-disable-next-line no-param-reassign
+      delete rootNode._touchStartListener;
+    }
+    if (rootNode._touchCancelListener) {
+      document.removeEventListener('touchcancel', rootNode._touchCancelListener, { passive: true });
+      // eslint-disable-next-line no-param-reassign
+      delete rootNode._touchCancelListener;
+    }
+    if (rootNode._touchEndListener) {
+      document.removeEventListener('touchend', rootNode._touchEndListener, { passive: false });
+      // eslint-disable-next-line no-param-reassign
+      delete rootNode._touchEndListener;
+    }
+    if (rootNode._browserSelectionChangeListener) {
+      document.removeEventListener('selectionchange', rootNode._browserSelectionChangeListener, {
+        passive: true
+      });
+      // eslint-disable-next-line no-param-reassign
+      delete rootNode._browserSelectionChangeListener;
+    }
+    if (rootNode._touchMoveListener) {
+      if (isAllowBrowserContextMenu && isIOS) {
+        document.removeEventListener('touchmove', rootNode._touchMoveListener, {
+          passive: true
+        });
+      } else {
+        rootNode.removeEventListener('touchmove', rootNode._touchMoveListener, { passive: true });
+      }
+      // eslint-disable-next-line no-param-reassign
+      delete rootNode._touchMoveListener;
+    }
     if (rootNode._clickListener) {
       $(rootNode)
         .off(GestureUtils._EVENT_NAMESPACE)
@@ -50,10 +87,16 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
       // eslint-disable-next-line no-param-reassign
       delete rootNode._touchStartAndMouseDownListener;
     }
-    if (rootNode._touchMoveListener) {
-      rootNode.removeEventListener('touchmove', rootNode._touchMoveListener, { passive: true });
+    if (rootNode._browserSelectStartListener) {
+      document.removeEventListener('selectstart', rootNode._browserSelectStartListener, {
+        passive: true
+      });
       // eslint-disable-next-line no-param-reassign
-      delete rootNode._touchMoveListener;
+      delete rootNode._browserSelectStartListener;
+      // eslint-disable-next-line no-param-reassign
+      delete rootNode._webKitUserSelectValue;
+      // eslint-disable-next-line no-param-reassign
+      delete rootNode._userSelectValue;
     }
   };
 
@@ -61,8 +104,9 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
    * Utility method to setup context menu gesture detection on a component
    * @param {Element} rootNode the root node of the component
    * @param {function(Event, string)} callback callback to invoke on the component when context menu gesture is detected
+   * @param {Object} contextMenuOptions options components can pass in to change default gestureUtils behavior.
    */
-  GestureUtils.startDetectContextMenuGesture = function (rootNode, callback) {
+  GestureUtils.startDetectContextMenuGesture = function (rootNode, callback, contextMenuOptions) {
     // Note: Whether or not we use Hammer to detect press-hold, this code would need to do the following things seen below:
     //
     // (1) Prevent the compatibility mousedown event from triggering Menu's clickAway logic.
@@ -79,11 +123,29 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
     // - We use the same listeners for parts of 1-4. If moved 4 off to Hammer (separate listener), just need to ensure that
     //   we don't introduce any race conditions, etc.  (May be easy or hard, just need to look.)
     // - Hammer only wants to have one instance per DOM node, else they fight to control some things like touch-action. So
-    //   a prereq for having this baseComponent logic put Hammer on components is to work out a protocol for super- and sub-
+    //   a pre-req for having this baseComponent logic put Hammer on components is to work out a protocol for super- and sub-
     //   classes to share the same instance and not step on each other.  Not insurmountable; just need to have the conversation.
     //   Tracked by ER 21357133, which links to detailed wiki.
-
     var pressHoldThreshold = DomUtils.PRESS_HOLD_THRESHOLD; // launch CM at 750ms per UX spec
+    var maxAllowedMovement = 5;
+    var touchPageX;
+    var touchPageY;
+    var _touchMoveListener;
+    var _isSelectionPending;
+    var _getIsSelectionPending;
+
+    // Does 2 things:
+    // 1) Prevents native context menu / callout from appearing in Mobile Safari.  E.g. for links, native CM has "Open in New Tab".
+    // 2) In Mobile Safari and Android Chrome, prevents pressHold from selecting the text and showing the selection handles and (in Safari) the Copy/Define callout.
+    // In UX discussion, we decided to prevent both of these things for all JET components for now.  If problems, can always, say, add protected method allowing
+    // subclass to opt out (e.g. if they need 1 and/or 2 to work).
+    // Per discussion with architects, do #2 only for touch devices, so that text selection isn't prevented on desktop.  Since #1
+    // is a no-op for non-touch, we can accomplish this by omitting the entire style class, which does 1 and 2, for non-touch.
+    // Per comments in scss file, the suppression of 1 and 2 has issues in old versions of Mobile Safari.
+    if (DomUtils.isTouchSupported()) {
+      $(rootNode).addClass('oj-menu-context-menu-launcher');
+    }
+
     var isPressHold = false; // to prevent pressHold from generating a click
     var contextMenuPressHoldTimer;
 
@@ -91,9 +153,6 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
 
     // 5px is Hammer default.  (Didn't check whether they apply that separately to x and y like us, or to the hypotenuse,
     // but it's within a couple px either way -- think 3-4-5 triangle.)
-    var maxAllowedMovement = 5;
-    var touchPageX;
-    var touchPageY;
 
     var doubleOpenTimer; // to prevent double open.  see usage below.
     var doubleOpenThreshold = 300; // made up this number.  TBD: Tweak as needed to make all platforms happy.
@@ -102,14 +161,13 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
     var namespace = GestureUtils._EVENT_NAMESPACE;
 
     var contextMenuPressHoldJustEnded = false;
-
-    function launch(event, eventType, pressHold) {
+    const launch = function (event, eventType, pressHold) {
       // ensure that pressHold doesn't result in a click.  Set this before the bailouts below.
       isPressHold = pressHold;
 
       // In Mobile Safari only, mousedown fires *after* the touchend, which causes at least 2 problems:
       // 1) CM launches after 750ms (good), then disappears when lift finger (bad), because touchend -->
-      // mousedown, which calls Menu's "clikAway" mousedown listener, which dismisses Menu.
+      // mousedown, which calls Menu's "clickAway" mousedown listener, which dismisses Menu.
       // 2) The isPressHold logic needs to reset the isPressHold ivar on any event that can start a click,
       // including mousedown.  This problem causes the mousedown listener to incorrectly clear the ivar
       // after a pressHold, which broke the whole mechanism.
@@ -175,6 +233,10 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
         event.originalEvent = event;
       }
 
+      if (contextMenuOptions?.allowBrowserContextMenu && _getIsSelectionPending()) {
+        return;
+      }
+
       callback(event, eventType);
 
       // if _NotifyContextMenuGesture() (or subclass override of it) actually opened the CM, and if that launch wasn't
@@ -188,8 +250,171 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
           }, doubleOpenThreshold);
         }
       }
-    }
+    };
 
+    $(rootNode).on('keydown' + namespace + ' contextmenu' + namespace, function (event) {
+      // right-click.  pressHold for Android but not iOS
+      if (
+        event.type === 'contextmenu' ||
+        ((event.key === 'F10' || event.keyCode === 121) && event.shiftKey)
+      ) {
+        // Shift-F10
+        var eventType;
+        if (touchInProgress) {
+          eventType = 'touch';
+        } else if (event.type === 'keydown') {
+          eventType = 'keyboard';
+        } else {
+          eventType = 'mouse';
+        }
+
+        launch(event, eventType, false);
+      }
+
+      return true;
+    });
+
+    const isIOS = oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS;
+    const isAllowBrowserContextMenu = contextMenuOptions?.allowBrowserContextMenu;
+
+    if (isAllowBrowserContextMenu) {
+      // eslint-disable-next-line no-param-reassign
+      rootNode._allowBrowserContextMenu = true;
+      rootNode.classList.add('oj-menu-allow-browser-context-menu');
+      _isSelectionPending = false;
+
+      _getIsSelectionPending = function () {
+        if (_isSelectionPending) {
+          return true;
+        }
+        const selection = document.getSelection();
+        return !(
+          selection.type === 'None' ||
+          (selection.anchorNode === selection.focusNode &&
+            selection.anchorOffset === selection.focusOffset)
+        );
+      };
+
+      const _browserSelectStartListener = function (event) {
+        if (event.target.nodeName === '#text') {
+          _isSelectionPending = true;
+          // we want to reset isSelectionPending if we don't get a contextmenu event. 10ms seems to be enough time tweak as needed.
+          setTimeout(() => {
+            _isSelectionPending = false;
+          }, 10);
+        } else {
+          _isSelectionPending = false;
+        }
+      };
+      // eslint-disable-next-line no-param-reassign
+      rootNode._browserSelectStartListener = _browserSelectStartListener;
+      document.addEventListener('selectstart', _browserSelectStartListener, { passive: true });
+
+      if (isIOS) {
+        let _iosOpenedContextMenu;
+        let _timeNeededForSelection;
+        let _iosStartTime;
+        let _touchStartEvent;
+        let _iosContextMenuTimeout;
+
+        const _iosLaunch = function (event) {
+          event.preventDefault();
+          _iosOpenedContextMenu = true;
+          // eslint-disable-next-line no-param-reassign
+          rootNode._webKitUserSelectValue = document.body.style[`-webkit-user-select`];
+          document.body.style[`-webkit-user-select`] = 'none';
+          // eslint-disable-next-line no-param-reassign
+          rootNode._userSelectValue = document.body.style.userSelect;
+          document.body.style.userSelect = 'none';
+          document.getSelection().empty();
+          callback(event, 'touch');
+        };
+
+        const _touchStartListener = function (event) {
+          const firstTouch = event.touches[0];
+          touchPageX = firstTouch.pageX;
+          touchPageY = firstTouch.pageY;
+          let timeDelay = pressHoldThreshold * 2;
+          if (_timeNeededForSelection == null) {
+            _iosStartTime = Date.now();
+            _touchStartEvent = event;
+          } else {
+            timeDelay = _timeNeededForSelection + pressHoldThreshold;
+          }
+          // prettier-ignore
+          _iosContextMenuTimeout = setTimeout( // @HTMLUpdateOK
+              _iosLaunch.bind(null, event),
+              timeDelay
+            );
+        };
+        // eslint-disable-next-line no-param-reassign
+        rootNode._touchStartListener = _touchStartListener;
+        document.addEventListener('touchstart', _touchStartListener, { passive: true });
+
+        const _touchEndListener = function (event) {
+          clearTimeout(_iosContextMenuTimeout);
+          if (_iosOpenedContextMenu) {
+            event.preventDefault();
+            // 500 comes from testing behavior on real devices, seems like enough time to allow user to lift finger. UX approved.
+            setTimeout(() => {
+              document.body.style[`-webkit-user-select`] = rootNode._webKitUserSelectValue;
+              document.body.style.userSelect = rootNode._userSelectValue;
+              _iosOpenedContextMenu = false;
+            }, 500);
+          }
+        };
+        // eslint-disable-next-line no-param-reassign
+        rootNode._touchEndListener = _touchEndListener;
+        document.addEventListener('touchend', _touchEndListener, { passive: false });
+
+        const _touchCancelListener = function () {
+          clearTimeout(_iosContextMenuTimeout);
+          if (_iosOpenedContextMenu) {
+            document.body.style[`-webkit-user-select`] = rootNode._webKitUserSelectValue;
+            document.body.style.userSelect = rootNode._userSelectValue;
+            _iosOpenedContextMenu = false;
+          }
+        };
+        // eslint-disable-next-line no-param-reassign
+        rootNode._touchCancelListener = _touchCancelListener;
+        document.addEventListener('touchcancel', _touchCancelListener, { passive: true });
+
+        _touchMoveListener = function (event) {
+          const firstTouch = event.touches[0];
+          if (
+            Math.abs(touchPageX - firstTouch.pageX) > maxAllowedMovement ||
+            Math.abs(touchPageY - firstTouch.pageY) > maxAllowedMovement
+          ) {
+            clearTimeout(_iosContextMenuTimeout);
+          }
+        };
+        // eslint-disable-next-line no-param-reassign
+        rootNode._touchMoveListener = _touchMoveListener;
+        document.addEventListener('touchmove', _touchMoveListener, { passive: true });
+
+        const _browserSelectionChangeListener = function () {
+          if (
+            _iosStartTime != null &&
+            _timeNeededForSelection == null &&
+            document.getSelection().type === 'Range'
+          ) {
+            clearTimeout(_iosContextMenuTimeout);
+            _timeNeededForSelection = Date.now() - _iosStartTime;
+            // prettier-ignore
+            _iosContextMenuTimeout = setTimeout( // @HTMLUpdateOK
+                _iosLaunch.bind(null, _touchStartEvent),
+                pressHoldThreshold
+              );
+          }
+        };
+        // eslint-disable-next-line no-param-reassign
+        rootNode._browserSelectionChangeListener = _browserSelectionChangeListener;
+        document.addEventListener('selectionchange', _browserSelectionChangeListener, {
+          passive: true
+        });
+        return;
+      }
+    }
     // At least some of the time, the pressHold gesture also fires a click event same as a short tap.  Prevent that here.
     var _clickListener = function (event) {
       if (isPressHold) {
@@ -226,9 +451,9 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
         touchInProgress = true;
         // prettier-ignore
         contextMenuPressHoldTimer = setTimeout( // @HTMLUpdateOK
-          launch.bind(undefined, event, 'touch', true),
-          pressHoldThreshold
-        );
+            launch.bind(undefined, event, 'touch', true),
+            pressHoldThreshold
+          );
         // eslint-disable-next-line no-param-reassign
         rootNode._contextMenuPressHoldTimer = contextMenuPressHoldTimer;
       }
@@ -238,10 +463,9 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
 
     // eslint-disable-next-line no-param-reassign
     rootNode._touchStartAndMouseDownListener = _touchStartAndMouseDownListener;
-
     rootNode.addEventListener('touchstart', _touchStartAndMouseDownListener, { passive: false });
 
-    var _touchMoveListener = function (event) {
+    _touchMoveListener = function (event) {
       var firstTouch = event.touches[0];
       if (
         Math.abs(touchPageX - firstTouch.pageX) > maxAllowedMovement ||
@@ -255,50 +479,17 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
 
     // eslint-disable-next-line no-param-reassign
     rootNode._touchMoveListener = _touchMoveListener;
-
     rootNode.addEventListener('touchmove', _touchMoveListener, { passive: true });
 
+    // if the touch moves too much, it's not a pressHold
+    // if the touch ends before the 750ms is up, it's not a long enough pressHold to show the CM
     $(rootNode)
-      .on('mousedown' + namespace, _touchStartAndMouseDownListener)
-      // if the touch moves too much, it's not a pressHold
-      // if the touch ends before the 750ms is up, it's not a long enough pressHold to show the CM
       .on('touchend' + namespace + ' touchcancel' + namespace, function () {
         touchInProgress = false;
         clearTimeout(contextMenuPressHoldTimer);
         return true;
       })
-      .on('keydown' + namespace + ' contextmenu' + namespace, function (event) {
-        if (
-          event.type === 'contextmenu' || // right-click.  pressHold for Android but not iOS
-          (event.keyCode === 121 && event.shiftKey)
-        ) {
-          // Shift-F10
-          var eventType;
-          if (touchInProgress) {
-            eventType = 'touch';
-          } else if (event.type === 'keydown') {
-            eventType = 'keyboard';
-          } else {
-            eventType = 'mouse';
-          }
-
-          launch(event, eventType, false);
-        }
-
-        return true;
-      });
-
-    // Does 2 things:
-    // 1) Prevents native context menu / callout from appearing in Mobile Safari.  E.g. for links, native CM has "Open in New Tab".
-    // 2) In Mobile Safari and Android Chrome, prevents pressHold from selecting the text and showing the selection handles and (in Safari) the Copy/Define callout.
-    // In UX discussion, we decided to prevent both of these things for all JET components for now.  If problems, can always, say, add protected method allowing
-    // subclass to opt out (e.g. if they need 1 and/or 2 to work).
-    // Per discussion with architects, do #2 only for touch devices, so that text selection isn't prevented on desktop.  Since #1
-    // is a no-op for non-touch, we can accomplish this by omitting the entire style class, which does 1 and 2, for non-touch.
-    // Per comments in scss file, the suppression of 1 and 2 has issues in old versions of Mobile Safari.
-    if (DomUtils.isTouchSupported()) {
-      $(rootNode).addClass('oj-menu-context-menu-launcher');
-    }
+      .on('mousedown' + namespace, _touchStartAndMouseDownListener);
   };
 
   const startDetectContextMenuGesture = GestureUtils.startDetectContextMenuGesture;

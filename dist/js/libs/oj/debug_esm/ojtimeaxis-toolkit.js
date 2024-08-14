@@ -1645,14 +1645,19 @@ class TimeAxis extends BaseComponent {
    * @return {string} The formatted date string
    */
   formatDate(date, converter, converterType, scale) {
-    var scaleVal = scale || this.getScale(); // default to current scale
-    if (this.isTimeComponentScale(scaleVal)) {
-      return scaleVal.formatter(
-        this._dateToIsoWithTimeZoneConverter ? this._dateToIsoWithTimeZoneConverter(date) : date
-      );
+    converterType = converterType || 'axis'; // default converterType 'axis'
+    var normalizedDate = this._dateToIsoWithTimeZoneConverter
+      ? this._dateToIsoWithTimeZoneConverter(date)
+      : date;
+
+    if (converterType === 'general' && converter) {
+      return converter['format'](normalizedDate);
     }
 
-    converterType = converterType || 'axis'; // default converterType 'axis'
+    var scaleVal = scale || this.getScale(); // default to current scale
+    if (this.isTimeComponentScale(scaleVal)) {
+      return scaleVal.formatter(normalizedDate);
+    }
 
     if (converterType === 'axis') {
       converter = converter || this._converter; // if no converter passed in, try to use axis converter from options
@@ -1682,9 +1687,7 @@ class TimeAxis extends BaseComponent {
       }
     }
 
-    return converter['format'](
-      this._dateToIsoWithTimeZoneConverter ? this._dateToIsoWithTimeZoneConverter(date) : date
-    );
+    return converter['format'](normalizedDate);
   }
 
   /**

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext'], function (oj, ko, Logger, Context) { 'use strict';
+define(['ojs/ojcore-base', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojcustomelement-utils'], function (oj, ko, Logger, Context, ojcustomelementUtils) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -455,10 +455,7 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext'], functio
 
                   if (saveInCache) {
                     // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-                    _invokeOnSubtree(
-                      cachedNodeArray,
-                      oj.Components ? oj.Components.subtreeHidden : null
-                    );
+                    _invokeOnSubtree(cachedNodeArray, ojcustomelementUtils.CustomElementUtils.subtreeHidden);
                     cache[currentCacheKey] = { model: currentViewModel, view: cachedNodeArray };
                   } else if (isCustomElement && currentCleanupMode === 'none') {
                     _invokeOnSubtree(

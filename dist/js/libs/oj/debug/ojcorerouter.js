@@ -772,6 +772,9 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * @private
    */
   CoreRouter.prototype._prepublish = function (state) {
+    if (!this.beforeStateChange) {
+      throw Error(`Router(${this._name}) has already been destroyed`);
+    }
     let allPre = [];
     this.beforeStateChange.next({
       state,
@@ -997,8 +1000,11 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
       this.childRouter.destroy();
     }
 
-    this.beforeStateChange.observers.forEach((subscription) => subscription());
-    this.currentState.observers.forEach((subscription) => subscription());
+    console.debug(`destroying Router(${this._name})`);
+
+    this.beforeStateChange = null;
+    this.currentState = null;
+    this._parentRouter.childRouter = null;
 
     if (this === rootRouter) {
       window.removeEventListener('popstate', this._popstateHandler, false);

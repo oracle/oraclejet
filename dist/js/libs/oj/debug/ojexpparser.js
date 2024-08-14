@@ -13,11 +13,10 @@ define(['exports'], function (exports) { 'use strict';
    * Licensed under The Universal Permissive License (UPL), Version 1.0
    * as shown at https://oss.oracle.com/licenses/upl/
    *
-   * Based on JSEP Parser
+   * Portions of this code are based on on JSEP Parser
    * @license
-   * JavaScript Expression Parser (JSEP) 0.3.4
-   * JSEP may be freely distributed under the MIT License
-   * http://jsep.from.so/
+   * JavaScript Expression Parser (JSEP) 1.3.8
+   * https://github.com/EricSmekens/jsep
    */
 
   /* eslint-disable no-use-before-define */
@@ -36,34 +35,14 @@ define(['exports'], function (exports) { 'use strict';
     // -------
     // `expr` is a string with the passed in expression
     this.parse = function (expr) {
-      // `index` stores the character number we are currently at while `length` is a constant
-      // All of the gobbles below will modify `index` as we move along
-      var length = expr.length;
+      // `index` stores the character number we are currently at.
+      // All of the gobbles below will modify `index` as we move along.
       var context = {
         index: 0,
         expr: expr
       };
 
-      var nodes = [];
-
-      while (context.index < length) {
-        var ch_i = expr.charCodeAt(context.index);
-
-        // Expressions can be separated by semicolons, commas, or just inferred without any
-        // separators
-        if (ch_i === SEMCOL_CODE || ch_i === COMMA_CODE) {
-          context.index++; // ignore separators
-        } else {
-          var node = _gobbleExpression(context);
-          if (node) {
-            nodes.push(node);
-            // If we weren't able to find a binary expression and are out of room, then
-            // the expression passed in probably has too much
-          } else if (context.index < length) {
-            _throwError('Unexpected "' + expr.charAt(context.index) + '"', context.index);
-          }
-        }
-      }
+      var nodes = _gobbleExpressions(context);
 
       // If there's only one expression just try returning the expression
       if (nodes.length === 1) {
@@ -74,6 +53,32 @@ define(['exports'], function (exports) { 'use strict';
         body: nodes
       };
     };
+
+    // Top-level parser, that can be reused within as well
+    // Takes context and optional untilICode character.
+    // Returns an array of AST nodes.
+    function _gobbleExpressions(context, untilICode) {
+      const expr = context.expr;
+      const length = expr.length;
+      const nodes = [];
+      while (context.index < length) {
+        _gobbleSpaces(context);
+        const ch_i = expr.charCodeAt(context.index);
+        if (ch_i === untilICode) {
+          break;
+        } else if (ch_i === SEMCOL_CODE || ch_i === COMMA_CODE) {
+          context.index++; // ignore separators
+        } else {
+          const node = _gobbleExpression(context);
+          if (node) {
+            nodes.push(node);
+          } else if (context.index < length) {
+            _throwError('Unexpected "' + expr.charAt(context.index) + '"', context.index);
+          }
+        }
+      }
+      return nodes;
+    }
 
     // Push `index` up to the next non-space character
     function _gobbleSpaces(context) {
@@ -236,6 +241,8 @@ define(['exports'], function (exports) { 'use strict';
         return _gobbleVariable(context);
       } else if (ch === OBRACE_CODE) {
         return _gobbleObjectLiteral(context);
+      } else if (ch === BTICK_CODE) {
+        return _gobbleTemplateLiteral(context);
       }
       to_check = expr.substr(context.index, _max_unop_len);
       tc_len = to_check.length;
@@ -738,6 +745,91 @@ define(['exports'], function (exports) { 'use strict';
       };
     }
 
+    // Parses a template literal, staring with backtick.
+    // e.g. `Hello, ${userName}!`
+    function _gobbleTemplateLiteral(context) {
+      const expr = context.expr;
+      let ch_i = expr.charCodeAt(context.index);
+      if (ch_i === BTICK_CODE) {
+        const node = {
+          type: TEMPLATE_LITERAL,
+          quasis: [],
+          expressions: []
+        };
+        let cooked = '';
+        let raw = '';
+        let closed = false;
+        const length = expr.length;
+        const pushQuasi = () =>
+          node.quasis.push({
+            type: TEMPLATE_ELEMENT,
+            value: {
+              raw,
+              cooked
+            },
+            tail: closed
+          });
+        while (context.index < length) {
+          let ch = expr.charAt(++context.index);
+
+          if (ch === '`') {
+            context.index += 1;
+            closed = true;
+            pushQuasi();
+            return node;
+          } else if (ch === '$' && expr.charAt(context.index + 1) === '{') {
+            context.index += 2;
+            pushQuasi();
+            raw = '';
+            cooked = '';
+            try {
+              node.expressions.push(..._gobbleExpressions(context, CBRACE_CODE));
+            } finally {
+              ch_i = expr.charCodeAt(context.index);
+              if (ch_i !== CBRACE_CODE) {
+                _throwError('Unclosed ${ in template literal', expr);
+              }
+            }
+          } else if (ch === '\\') {
+            // Check for all of the common escape codes
+            raw += ch;
+            ch = expr.charAt(++context.index);
+            raw += ch;
+
+            switch (ch) {
+              case 'n':
+                cooked += '\n';
+                break;
+              case 'r':
+                cooked += '\r';
+                break;
+              case 't':
+                cooked += '\t';
+                break;
+              case 'b':
+                cooked += '\b';
+                break;
+              case 'f':
+                cooked += '\f';
+                break;
+              case 'v':
+                cooked += '\x0B';
+                break;
+              default:
+                cooked += ch;
+            }
+          } else {
+            cooked += ch;
+            raw += ch;
+          }
+        }
+        if (context.index === length) {
+          _throwError('Unclosed backtick ` in template literal', expr);
+        }
+      }
+      return false;
+    }
+
     var PERIOD_CODE = 46, // '.'
       COMMA_CODE = 44, // ','
       SQUOTE_CODE = 39, // single quote
@@ -749,6 +841,7 @@ define(['exports'], function (exports) { 'use strict';
       QUMARK_CODE = 63, // ?
       SEMCOL_CODE = 59, // ;
       COLON_CODE = 58, // :
+      BTICK_CODE = 96, // `
       OBRACE_CODE = 123, // {
       CBRACE_CODE = 125; // }
 
@@ -887,10 +980,7 @@ define(['exports'], function (exports) { 'use strict';
     }
   };
 
-  /**
-   * @ignore
-   * Helper method to retrieve a string value of an object key.
-   */
+  // Helper method to retrieve a string value of an object key.
   const getKeyValue = function (keyObj) {
     return keyObj.type === IDENTIFIER ? keyObj.name : keyObj.value;
   };
@@ -910,6 +1000,8 @@ define(['exports'], function (exports) { 'use strict';
   const FUNCTION_EXP = 'FunctionExpression';
   const NEW_EXP = 'NewExpression';
   const PROPERTY = 'Property';
+  const TEMPLATE_LITERAL = 'TemplateLiteral';
+  const TEMPLATE_ELEMENT = 'TemplateElement';
 
   exports.ARRAY_EXP = ARRAY_EXP;
   exports.BINARY_EXP = BINARY_EXP;
@@ -925,6 +1017,8 @@ define(['exports'], function (exports) { 'use strict';
   exports.NEW_EXP = NEW_EXP;
   exports.OBJECT_EXP = OBJECT_EXP;
   exports.PROPERTY = PROPERTY;
+  exports.TEMPLATE_ELEMENT = TEMPLATE_ELEMENT;
+  exports.TEMPLATE_LITERAL = TEMPLATE_LITERAL;
   exports.UNARY_EXP = UNARY_EXP;
   exports.getKeyValue = getKeyValue;
 

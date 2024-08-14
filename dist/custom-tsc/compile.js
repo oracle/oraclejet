@@ -32,7 +32,9 @@ const decoratorTransformer_1 = __importDefault(require("./decoratorTransformer")
 const importTransformer_1 = __importDefault(require("./importTransformer"));
 const dtsTransformer_1 = __importDefault(require("./dtsTransformer"));
 const dtsTransformer_2 = require("./dtsTransformer");
-const __SUPPORTED_TS_VERSION = '5.3.2';
+const PrettyMsgEncoder_1 = require("./utils/PrettyMsgEncoder");
+const TransformerError_1 = require("./utils/TransformerError");
+const __SUPPORTED_TS_VERSION = '5.4.5';
 const [__SUPPORTED_TS_MAJOR, __SUPPORTED_TS_MINOR] = __SUPPORTED_TS_VERSION
     .split('.', 2)
     .map((str) => Number.parseInt(str));
@@ -56,6 +58,9 @@ Upgrade your JET project to TypeScript version ${__SUPPORTED_TS_VERSION}
     if (_buildOptions.followImports == undefined) {
         _buildOptions.followImports = true;
     }
+    if (_buildOptions.apiDocBuildEnabled == undefined) {
+        _buildOptions.apiDocBuildEnabled = true;
+    }
     _buildOptions.parentDirToPackInfo = {};
     if (parsedJsonConfig?.raw?.compilerOptions?.['_JET_disabledExceptionKeys']) {
         _buildOptions.disabledExceptionKeys = [
@@ -78,8 +83,8 @@ Upgrade your JET project to TypeScript version ${__SUPPORTED_TS_VERSION}
             try {
                 emitResult = program.emit(sf, undefined, undefined, undefined, EmitOptions);
             }
-            catch (error) {
-                errors.push(error);
+            catch (e) {
+                errors.push(processEmitError(e));
                 return;
             }
         });
@@ -88,8 +93,8 @@ Upgrade your JET project to TypeScript version ${__SUPPORTED_TS_VERSION}
         try {
             emitResult = program.emit(undefined, undefined, undefined, undefined, EmitOptions);
         }
-        catch (error) {
-            errors.push(error);
+        catch (e) {
+            errors.push(processEmitError(e));
             return { errors, parsedTsconfigJson };
         }
     }
@@ -103,25 +108,28 @@ Upgrade your JET project to TypeScript version ${__SUPPORTED_TS_VERSION}
     };
 }
 exports.default = compile;
-function parseDiagnostic(diagnostic) {
-    let result;
-    if (diagnostic.file) {
-        const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-        const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-        result = `${diagnostic.file.fileName}:${line + 1}:${character + 1} - ${message}`;
-    }
-    else {
-        result = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-    }
-    return result;
-}
 function handleDiagnosticMessages(program, emitResult, errors) {
     const diagnostics = [...ts.getPreEmitDiagnostics(program), ...emitResult.diagnostics];
-    diagnostics.forEach((diagnostic) => {
-        const errorMessage = parseDiagnostic(diagnostic);
-        if (errors.indexOf(errorMessage) === -1) {
-            errors.push(errorMessage);
-        }
-    });
+    if (diagnostics.length) {
+        const encoder = new PrettyMsgEncoder_1.PrettyMsgEncoder(program.getCompilerOptions().pretty);
+        diagnostics.forEach((diagnostic) => {
+            const errorMessage = parseDiagnostic(diagnostic, encoder);
+            if (errors.indexOf(errorMessage) === -1) {
+                errors.push(errorMessage);
+            }
+        });
+    }
+}
+function parseDiagnostic(diagnostic, encoder) {
+    let rtnString = '';
+    if (diagnostic.file) {
+        const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+        rtnString = `${encoder.encodeFileLineChar(diagnostic.file.fileName, line, character)} - `;
+    }
+    rtnString += `${encoder.ERROR}${diagnostic.code ? ` ${encoder.encode(PrettyMsgEncoder_1.PCC.ERRCODE, `TS${diagnostic.code}`)}` : ''}: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, ts.sys.newLine)}`;
+    return rtnString;
+}
+function processEmitError(error) {
+    return error instanceof TransformerError_1.TransformerError ? error.message : error;
 }
 //# sourceMappingURL=compile.js.map

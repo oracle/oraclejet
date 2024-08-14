@@ -569,7 +569,9 @@ define(['exports', 'ojs/ojconverter-number'], function (exports, ojconverterNumb
         } else {
           scaleFactor = 20;
         }
-        return scaleFactor * testVal;
+
+        // limiting the scale min value to MIN_VALUE. JET-57772
+        return Math.max(Number.MIN_VALUE, scaleFactor * testVal);
       }
 
       /**

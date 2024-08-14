@@ -617,6 +617,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
         if (
           numberSettings.style === 'currency' &&
           options.minimumFractionDigits === undefined &&
+          options.maximumFractionDigits === undefined &&
           (decFormatLength === undefined || decFormatLength === 'standard')
         ) {
           var currencyFractions = localeElements.supplemental.currencyData.fractions;
@@ -3159,7 +3160,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
 
         // _getHintValue is smart. It uses the converter's 'format' function
         //  to get the example format to show the end user.
-        detail = Translations.getTranslatedString('oj-converter.hint.detail', {
+        detail = Translations.getTranslatedString('oj-converter.number.parseError.detail', {
           exampleValue: this._getHintValue()
         });
 

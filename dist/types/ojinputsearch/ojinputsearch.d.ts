@@ -172,13 +172,14 @@ export interface InputSearchElement<K, D> extends JetElement<InputSearchElementS
     focus: InputSearch<K, D>['focus'];
 }
 export namespace InputSearchElement {
-    interface ojValueAction<Key, Data> extends CustomEvent<ValueDetail<Key, Data> & {}> {
+    interface ojValueAction<K, D> extends CustomEvent<ValueDetail<K, D> & {}> {
     }
     type placeholderChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['placeholder']>;
     type rawValueChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['rawValue']>;
     type suggestionItemTextChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['suggestionItemText']>;
     type suggestionsChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['suggestions']>;
     type valueChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['value']>;
+    type RenderSuggestionItemTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<SuggestionItemTemplateContext<K, D>>;
 }
 export interface InputSearchElementEventMap<K, D> extends HTMLElementEventMap {
     'ojValueAction': InputSearchElement.ojValueAction<K, D>;

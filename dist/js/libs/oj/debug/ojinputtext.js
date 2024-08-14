@@ -1299,7 +1299,6 @@ var __oj_text_area_metadata =
          * <p>
          * In the Redwood theme, by default, a Required text is rendered inline when the field is empty.
          * If user-assistance-density is 'compact', it will show on the label as an icon.
-         * In the Alta theme the input's label will render a required icon.
          * </p>
          * <p>The Required error text is based on Redwood UX designs, and it is not recommended that
          * it be changed.
@@ -2179,7 +2178,7 @@ var __oj_text_area_metadata =
         if (this._hasMaxLength()) {
           // on focus, we add the aria-live remaining chars message if needed.
           this._processLengthCounterAttr(this.options.length.counter);
-        }  
+        }
       },
 
       /**
@@ -2700,9 +2699,12 @@ var __oj_text_area_metadata =
             // Only update when the component has focus.  Otherwise, the aria-live can be announced at times that it's not appropriate.
             if (hasFocus) {
               // update aria live
-              newAriaLiveContent = this.getTranslatedString(this._TEXT_FIELD_MAX_LENGTH_REMAINING_KEY, {
-                chars: remainingChars
-              });
+              newAriaLiveContent = this.getTranslatedString(
+                this._TEXT_FIELD_MAX_LENGTH_REMAINING_KEY,
+                {
+                  chars: remainingChars
+                }
+              );
             }
           }
         }
@@ -3012,6 +3014,18 @@ var __oj_text_area_metadata =
    * and references to oj-c-input-password in your app. Please note the changes between the two components below.
    * </p>
    *
+   * <h5>Global attributes</h5>
+   * <p>
+   * The following global attributes are no longer supported:
+   * <ul>
+   * <li>accesskey - not considered accessible</li>
+   * <li>tabindex - not considered accessible</li>
+   * <li>
+   * aria-label - use label-hint instead. If you do not want a visible label set label-edge="none".
+   * </li>
+   * </ul>
+   * </p>
+   *
    * <h5>Converter attribute</h5>
    * <p>
    * The converter attribute is changed to support only a converter instance, null, or undefined. It does not support
@@ -3098,6 +3112,11 @@ var __oj_text_area_metadata =
    * <p>
    * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
    * This attribute is not carried forward to the core pack component.
+   * </p>
+   *
+   * <h5>Formatted messages</h5>
+   * <p>
+   * Formatting messages using html tags is not supported in the core pack component.
    * </p>
    *
    * <h5>Usage in Dynamic Form</h5>
@@ -3688,6 +3707,18 @@ var __oj_text_area_metadata =
    * and references to oj-c-input-text in your app. Please note the changes between the two components below.
    * </p>
    *
+   * <h5>Global attributes</h5>
+   * <p>
+   * The following global attributes are no longer supported:
+   * <ul>
+   * <li>accesskey - not considered accessible</li>
+   * <li>tabindex - not considered accessible</li>
+   * <li>
+   * aria-label - use label-hint instead. If you do not want a visible label set label-edge="none".
+   * </li>
+   * </ul>
+   * </p>
+   *
    * <h5>Converter attribute</h5>
    * <p>
    * The converter attribute is changed to support only a converter instance, null, or undefined. It does not support
@@ -3787,6 +3818,10 @@ var __oj_text_area_metadata =
    * This attribute is not carried forward to the core pack component.
    * </p>
    *
+   * <h5>Formatted messages</h5>
+   * <p>
+   * Formatting messages using html tags is not supported in the core pack component.
+   * </p>
    *
    * <h5>Usage in Dynamic Form</h5>
    * <p>
@@ -3975,8 +4010,7 @@ var __oj_text_area_metadata =
        */
       clearIcon: 'never',
       /**
-       * A converter instance or Promise to a converter instance
-       * or one that duck types {@link oj.Converter}.
+       * A converter instance or one that duck types {@link oj.Converter}.
        * {@ojinclude "name":"inputBaseConverterOptionDoc"}
        * <p>
        *  During validation, the converter takes the input value which is a string
@@ -4025,7 +4059,7 @@ var __oj_text_area_metadata =
        * @default null
        * @ojsignature [{
        *    target: "Type",
-       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+       *    value: "oj.Converter<V>|
        *            null",
        *    jsdocOverride: true},
        *    {target: "Type",
@@ -4038,6 +4072,8 @@ var __oj_text_area_metadata =
        *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
        *                  work again by importing the deprecated module you need, like ojvalidation-base or
        *                  ojvalidation-number module.'}
+       * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<V>>'],
+       *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the promise and then update the converter attribute with the resolved converter instance.'}
        * @type {Object|null}
        */
       converter: null,
@@ -4282,6 +4318,7 @@ var __oj_text_area_metadata =
             agentInfo.os === oj.AgentUtils.OS.WINDOWSPHONE
           ) {
             clearIconBtn.setAttribute('aria-label', 'Clear input');
+            clearIconBtn.setAttribute('role', 'button');
           } else {
             // clear icon is hidden from screen reader users for desktop.
             clearIconBtn.setAttribute('aria-hidden', 'true');
@@ -4708,6 +4745,18 @@ var __oj_text_area_metadata =
    * and references to oj-c-text-area in your app. Please note the changes between the two components below.
    * </p>
    *
+   * <h5>Global attributes</h5>
+   * <p>
+   * The following global attributes are no longer supported:
+   * <ul>
+   * <li>accesskey - not considered accessible</li>
+   * <li>tabindex - not considered accessible</li>
+   * <li>
+   * aria-label - use label-hint instead. If you do not want a visible label set label-edge="none".
+   * </li>
+   * </ul>
+   * </p>
+   *
    * <h5>Converter attribute</h5>
    * <p>
    * The converter attribute is changed to support only a converter instance, null, or undefined. It does not support
@@ -4733,6 +4782,12 @@ var __oj_text_area_metadata =
    * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
    * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
    * attribute to the corresponding value.
+   * </p>
+   *
+   * <h5>Length.Counter attribute</h5>
+   * <p>
+   * Note that the default for this attribute has changed in oj-c-text-area.  To get the legacy default behavior, you will
+   * need to specify length.counter = 'none'.
    * </p>
    *
    * <h5>MessagesCustom attribute</h5>
@@ -4800,6 +4855,11 @@ var __oj_text_area_metadata =
    * <p>
    * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
    * This attribute is not carried forward to the core pack component.
+   * </p>
+   *
+   * <h5>Formatted messages</h5>
+   * <p>
+   * Formatting messages using html tags is not supported in the core pack component.
    * </p>
    *
    * <h5>Usage in Dynamic Form</h5>
@@ -4953,8 +5013,7 @@ var __oj_text_area_metadata =
 
     options: {
       /**
-       * A converter instance or Promise to a converter instance
-       * or one that duck types {@link oj.Converter}.
+       * A converter instance or one that duck types {@link oj.Converter}.
        * {@ojinclude "name":"inputBaseConverterOptionDoc"}
        *
        * <p>
@@ -4995,7 +5054,7 @@ var __oj_text_area_metadata =
        * @ojshortdesc An object that converts the value. See the Help documentation for more information.
        * @ojsignature [{
        *    target: "Type",
-       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+       *    value: "oj.Converter<V>|
        *            null",
        *    jsdocOverride: true},
        *    {target: "Type",
@@ -5008,6 +5067,8 @@ var __oj_text_area_metadata =
        *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
        *                  work again by importing the deprecated module you need, like ojvalidation-base or
        *                  ojvalidation-number module.'}
+       * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<V>>'],
+       *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the promise and then update the converter attribute with the resolved converter instance.'}
        * @type {Object|null}
        */
       converter: null,

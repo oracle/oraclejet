@@ -6,7 +6,7 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import { Agent, Context, JsonUtils } from 'ojs/ojdvt-toolkit';
+import { JsonUtils, Agent, Context } from 'ojs/ojdvt-toolkit';
 import Context$1 from 'ojs/ojcontext';
 import { __getTemplateEngine, getLocale } from 'ojs/ojconfig';
 import ojMap from 'ojs/ojmap';
@@ -14,12 +14,13 @@ import * as LocaleData from 'ojs/ojlocaledata';
 import { subtreeAttached, __GetWidgetConstructor } from 'ojs/ojcomponentcore';
 import $ from 'jquery';
 import KeySetImpl from 'ojs/ojkeysetimpl';
-import { addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
+import { getCSSTimeUnitAsMillis, isTouchSupported, addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
 import { ColorAttributeGroupHandler, AttributeGroupHandler, ShapeAttributeGroupHandler } from 'ojs/ojattributegrouphandler';
 import { error } from 'ojs/ojlogger';
 import 'ojs/ojcustomelement';
 import { AttributeUtils, CustomElementUtils, JetElementError } from 'ojs/ojcustomelement-utils';
 import { checkEnumValues } from 'ojs/ojmetadatautils';
+import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
 import 'ojdnd';
 
 /**
@@ -55,6 +56,10 @@ import 'ojdnd';
  * and touch shortcuts can conflict with those of the application, it is the
  * application's responsibility to provide these shortcuts, possibly via a help
  * popup.</p>
+ *
+ * <p>The application is also responsible for including contextual information for
+ * screen readers using one or more the following methods as appropriate:
+ * aria-label, aria-labelledby, aria-describedby.</p>
  *
  * @ojfragment a11yKeyboard
  * @memberof oj.dvtBaseComponent
@@ -1710,6 +1715,273 @@ TemplateHandler.prototype._fireEvent = function (type, detail) {
 };
 
 /**
+ * Handler for loading indicator
+ * @constructor
+ * @ignore
+ */
+const LoadingIndicatorHandler = function (
+  componentElement,
+  getDvtComponent,
+  getSkeletonMaskStyleClass,
+  configureCompElemTabIndex,
+  getOptionsCopy,
+  translations
+) {
+  this._componentElement = componentElement;
+  this._getDvtComponent = getDvtComponent;
+  this._getSkeletonMaskStyleClass = getSkeletonMaskStyleClass;
+  this._configureCompElemTabIndex = configureCompElemTabIndex;
+  this._getOptionsCopy = getOptionsCopy;
+  this._isLoadingIndicatorEnabled = false;
+  this._translations = translations;
+  this._isBusy = false;
+  this._descRegionId = `_dvtLoadingDesc_${Math.floor(Math.random() * 1000000000)}`; // @RandomNumberOK
+
+  // During loading, prevent keyboard events from getting to the actual
+  // component behind the loading indicator, which may otherwise induce datatips, etc.
+  // NOTE: This is done through event.stopImmediatePropagation(), which means
+  // this class has be instantiated before the DVT component is created.
+  const keyboardConsumer = (event) => {
+    if (this._isBusy) event.stopImmediatePropagation();
+  };
+  componentElement.addEventListener('keydown', keyboardConsumer);
+  componentElement.addEventListener('keyup', keyboardConsumer);
+};
+
+oj.Object.createSubclass(LoadingIndicatorHandler, oj.Object, 'LoadingIndicatorHandler');
+
+LoadingIndicatorHandler._SHOW_DELAY_CSS_VAR =
+  '--oj-private-core-global-loading-indicator-delay-duration';
+LoadingIndicatorHandler._CONTAINER_CLASSNAME = 'oj-dvt-loading-container';
+LoadingIndicatorHandler._SKELETON_CONTAINER_CLASSNAME = 'oj-dvt-skeleton-container';
+LoadingIndicatorHandler._SKELETON_CLASSNAME = 'oj-dvt-skeleton oj-animation-skeleton';
+LoadingIndicatorHandler._HIDDEN_ACCESSIBLE_CLASSNAME = 'oj-helper-hidden-accessible';
+
+/**
+ * Gets the time in milliseconds to wait before loading indicator should be rendered.
+ * @private
+ * @returns {number}
+ */
+LoadingIndicatorHandler.prototype._getShowDelay = function () {
+  const varVal = getCachedCSSVarValues([LoadingIndicatorHandler._SHOW_DELAY_CSS_VAR])[0];
+  const delay = getCSSTimeUnitAsMillis(varVal);
+  return isNaN(delay) ? 0 : delay;
+};
+
+/**
+ * Hide the visualization component.
+ * @private
+ */
+LoadingIndicatorHandler.prototype._hideVis = function () {
+  const dvtComponent = this._getDvtComponent();
+  if (dvtComponent) {
+    dvtComponent.getCtx().getSvgDocument().style.visibility = 'hidden';
+  }
+};
+
+/**
+ * Show the visualization component.
+ * @private
+ */
+LoadingIndicatorHandler.prototype._showVis = function () {
+  const dvtComponent = this._getDvtComponent();
+  if (dvtComponent) {
+    dvtComponent.getCtx().getSvgDocument().style.removeProperty('visibility');
+  }
+};
+
+/**
+ * Render the loading indicator.
+ * @private
+ */
+LoadingIndicatorHandler.prototype._renderLoadingIndicator = function () {
+  this._hideVis();
+
+  // Remove previous loading indicator if there is one
+  if (this._container) {
+    this._container.remove();
+  }
+  this._container = document.createElement('div');
+  this._container.className = LoadingIndicatorHandler._CONTAINER_CLASSNAME;
+
+  const skeletonContainer = document.createElement('div');
+  skeletonContainer.className = `${
+    LoadingIndicatorHandler._SKELETON_CONTAINER_CLASSNAME
+  } ${this._getSkeletonMaskStyleClass()}`;
+
+  const skeleton = document.createElement('div');
+  skeleton.className = LoadingIndicatorHandler._SKELETON_CLASSNAME;
+
+  skeletonContainer.appendChild(skeleton);
+  this._container.appendChild(skeletonContainer);
+  this._componentElement.appendChild(this._container);
+};
+
+/**
+ * Remove the loading indicator.
+ * @private
+ */
+LoadingIndicatorHandler.prototype._removeLoadingIndicator = function () {
+  if (!this._container) return;
+  this._container.remove();
+  this._showVis();
+  this._container = null;
+};
+
+/**
+ * Render the live region.
+ * @private
+ */
+LoadingIndicatorHandler.prototype._renderLiveRegion = function () {
+  if (this._liveRegion) return;
+  this._liveRegion = document.createElement('div');
+  this._liveRegion.className = LoadingIndicatorHandler._HIDDEN_ACCESSIBLE_CLASSNAME;
+  this._liveRegion.setAttribute('aria-live', 'polite');
+  this._componentElement.appendChild(this._liveRegion);
+};
+
+/**
+ * Update the live region text.
+ * @param {string} text
+ * @private
+ */
+LoadingIndicatorHandler.prototype._updateLiveRegion = function (text) {
+  if (!this._liveRegion) return;
+  this._liveRegion.textContent = text;
+};
+
+/**
+ * Render the description region.
+ * @private
+ */
+LoadingIndicatorHandler.prototype._renderDescriptionRegion = function () {
+  if (this._descRegion) return;
+  this._descRegion = document.createElement('div');
+  this._descRegion.className = LoadingIndicatorHandler._HIDDEN_ACCESSIBLE_CLASSNAME;
+  this._descRegion.id = this._descRegionId;
+  this._descRegion.textContent = this._translations.stateLoading;
+  this._componentElement.appendChild(this._descRegion);
+};
+
+/**
+ * Remove the description region.
+ * @private
+ */
+LoadingIndicatorHandler.prototype._removeDescriptionRegion = function () {
+  if (this._descRegion) {
+    this._descRegion.remove();
+    this._descRegion = null;
+  }
+};
+
+/**
+ * Add given id to the component element's aria-describedby
+ * @private
+ */
+LoadingIndicatorHandler.prototype._addToDescribedBy = function (id) {
+  const describedBy = this._componentElement.getAttribute('aria-describedby');
+  this._componentElement.setAttribute(
+    'aria-describedby',
+    describedBy ? [...new Set(describedBy.split(/\s+/).concat(id))].join(' ') : id
+  );
+};
+
+/**
+ * Remove the given id from the component element's aria-describedby
+ * @private
+ */
+LoadingIndicatorHandler.prototype._removeFromDescribedBy = function (id) {
+  const describedBy = this._componentElement.getAttribute('aria-describedby');
+  if (describedBy) {
+    const newDescribedBy = describedBy.replace(id, '').split(/\s+/).join(' ');
+    if (newDescribedBy) {
+      this._componentElement.setAttribute('aria-describedby', newDescribedBy);
+    } else {
+      this._componentElement.removeAttribute('aria-describedby');
+    }
+  }
+};
+
+/**
+ * Apply accessibility properties to signify the component is busy loading.
+ * @param {boolean} isLoading
+ * @private
+ */
+LoadingIndicatorHandler.prototype._setBusy = function (isLoading) {
+  if (!isLoading && !this._isBusy) return;
+
+  this._isBusy = isLoading;
+  this._componentElement.setAttribute('aria-busy', isLoading);
+
+  if (isLoading) {
+    this._renderDescriptionRegion();
+
+    const dvtComponent = this._getDvtComponent();
+    const origOptions = dvtComponent?.Options;
+    if (dvtComponent && !origOptions) {
+      // On initial render, the component aria attributes such as role and aria-label
+      // are not populated yet. They're normally populated when the component render() is called,
+      // but at this point the component hasn't started rendering yet because the data
+      // is not available.
+      // Temporarily set the options on the component to apply the aria attributes.
+      dvtComponent.SetOptions(this._getOptionsCopy());
+      dvtComponent.UpdateAriaAttributes();
+      dvtComponent.Options = origOptions;
+    }
+    this._configureCompElemTabIndex();
+    this._addToDescribedBy(this._descRegionId);
+    this._updateLiveRegion(this._translations.stateLoading);
+  } else {
+    this._removeFromDescribedBy(this._descRegionId);
+    this._removeDescriptionRegion();
+    const compAriaLabel = this._componentElement.getAttribute('aria-label');
+    this._updateLiveRegion(
+      compAriaLabel
+        ? `${compAriaLabel}, ${this._translations.stateLoaded}`
+        : this._translations.stateLoaded
+    );
+  }
+};
+
+/**
+ * Sets whether loading indicator should show when fetching data.
+ * @param {boolean} isEnabled
+ */
+LoadingIndicatorHandler.prototype.setEnabled = function (isEnabled) {
+  this._isLoadingIndicatorEnabled = isEnabled;
+  if (isEnabled) {
+    this._renderLiveRegion();
+  } else {
+    this.hide();
+  }
+};
+
+/**
+ * Show the loading indicator.
+ */
+LoadingIndicatorHandler.prototype.show = function () {
+  if (!this._isLoadingIndicatorEnabled || this._showTimeout) return;
+
+  this._showTimeout = setTimeout(() => {
+    this._setBusy(true);
+    this._renderLoadingIndicator();
+    this._showTimeout = null;
+  }, this._getShowDelay());
+};
+
+/**
+ * Hide the loading indicator.
+ */
+LoadingIndicatorHandler.prototype.hide = function () {
+  if (this._showTimeout) {
+    clearTimeout(this._showTimeout);
+    this._showTimeout = null;
+  }
+  this._removeLoadingIndicator();
+  this._setBusy(false);
+};
+
+/**
  * @ojcomponent oj.dvtBaseComponent
  * @augments oj.baseComponent
  * @since 0.7.0
@@ -1772,6 +2044,16 @@ oj.__registerWidget(
       this._DataProviderHandler.addEventListener(this._GetDPEventHandler());
       this._TemplateHandler.addEventListener(this._GetDPEventHandler());
 
+      this._LoadingIndicatorHandler = new LoadingIndicatorHandler(
+        this.element[0],
+        () => this._component,
+        () => this._GetLoadingSkeletonMaskStyleClass(),
+        () => this._configureTabIndex(),
+        () => JsonUtils.clone(this.options, null, this._GetComponentNoClonePaths()),
+        this.options.translations
+      );
+      this._LoadingIndicatorHandler.setEnabled(this._IsLoadingSkeletonSupported());
+
       // Append the component style classes to the element
       var componentStyles = this._GetComponentStyleClasses();
       for (var i = 0; i < componentStyles.length; i++) {
@@ -1783,7 +2065,10 @@ oj.__registerWidget(
       this._referenceDiv.css('visibility', 'hidden');
       this.element.append(this._referenceDiv); // @HTMLUpdateOK
 
-      Agent.setAgentInfo(oj.AgentUtils.getAgentInfo());
+      Agent.setAgentInfo({
+        ...oj.AgentUtils.getAgentInfo(),
+        isTouchSupported: isTouchSupported()
+      });
 
       // Create the dvt.Context, which creates the svg element and adds it to the DOM.
       var parentElement = this.element[0].parentElement;
@@ -2052,6 +2337,8 @@ oj.__registerWidget(
       // Reset data provider state
       this._DataProviderHandler.release();
       this._TemplateHandler.release();
+      // Remove any ongoing progressive loading
+      this._LoadingIndicatorHandler.hide();
       this._dataValuePromise = {};
     },
 
@@ -2643,6 +2930,8 @@ oj.__registerWidget(
 
       this._resolveDocumentFonts();
 
+      this._LoadingIndicatorHandler.show();
+
       var self = this;
       var paths = this._GetComponentDeferredDataPaths();
       // Do an initial loop to determine if we need to copy the options object
@@ -2795,6 +3084,8 @@ oj.__registerWidget(
       this._DataProviderHandler.clear(dataProperty);
       this._TemplateHandler.release(dataProperty);
       this._dataValuePromise[dataProperty] = null;
+      // Enable progressive loading (if supported) for the next potential full data fetch
+      this._LoadingIndicatorHandler.setEnabled(this._IsLoadingSkeletonSupported());
     },
 
     /**
@@ -2816,6 +3107,28 @@ oj.__registerWidget(
           this._ClearDataProviderState(dataProperty);
         }
       }
+    },
+
+    /**
+     * Whether this component supports skeleton loading.
+     * @return {boolean}
+     * @protected
+     * @instance
+     * @memberof oj.dvtBaseComponent
+     */
+    _IsLoadingSkeletonSupported: function () {
+      return false;
+    },
+
+    /**
+     * Gets the mask style class for skeleton loading.
+     * @return {string}
+     * @protected
+     * @instance
+     * @memberof oj.dvtBaseComponent
+     */
+    _GetLoadingSkeletonMaskStyleClass: function () {
+      return '';
     },
 
     /**
@@ -3002,6 +3315,24 @@ oj.__registerWidget(
     },
 
     /**
+     * Configures the component element's tabindex
+     * @private
+     * @instance
+     * @memberof oj.dvtBaseComponent
+     * @ignore
+     */
+    _configureTabIndex: function () {
+      // Remove the tabindex from the element to disable keyboard handling if the component
+      // does not have a role on the parent element like for non-interactive legends.
+      // Make sure not to override any app set tabindex.
+      if (!this.element.attr('role')) {
+        this.element.attr('tabindex', null);
+      } else if (!this.element[0].hasAttribute('tabindex')) {
+        this.element.attr('tabindex', 0);
+      }
+    },
+
+    /**
      * Renders the component.
      * @param {Object} options The options to render the component with
      * @param {boolean} isResize True if we are rendering due to a resize event.
@@ -3039,14 +3370,11 @@ oj.__registerWidget(
           this._addResizeListener();
         }
 
-        // Remove the tabindex from the element to disable keyboard handling if the component
-        // does not have a role on the parent element like for non-interactive legends.
-        // Make sure not to override any app set tabindex.
-        if (!this.element.attr('role')) {
-          this.element.attr('tabindex', null);
-        } else if (!this.element[0].hasAttribute('tabindex')) {
-          this.element.attr('tabindex', 0);
-        }
+        this._LoadingIndicatorHandler.hide();
+        // Only support progressive loading on initial load.
+        this._LoadingIndicatorHandler.setEnabled(false);
+
+        this._configureTabIndex();
       }
     },
 

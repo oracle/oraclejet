@@ -320,6 +320,10 @@ export namespace ojNBox {
         row: string;
         secondaryLabel: string;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
 }
 export interface ojNBoxEventMap<K, D extends ojNBox.Node<K> | any> extends dvtBaseComponentEventMap<ojNBoxSettableProperties<K, D>> {
     'animationOnDataChangeChanged': JetElementCustomEvent<ojNBox<K, D>["animationOnDataChange"]>;
@@ -710,14 +714,35 @@ export namespace NBoxElement {
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type CellContext = {
+        column: string;
+        row: string;
+        subId: 'oj-nbox-cell';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Column = {
         id: string;
         label?: string;
         labelStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type CountLabelContext = {
+        column: string;
+        highlightedNodeCount: number;
+        nodeCount: number;
+        row: string;
+        totalNodeCount: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type DialogContext = {
         subId: 'oj-nbox-dialog';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type GroupNodeContext = {
+        column: string;
+        groupCategory: string;
+        row: string;
+        subId: 'oj-nbox-group-node';
     };
     // tslint:disable-next-line interface-over-type-literal
     type Node<K> = {
@@ -771,6 +796,11 @@ export namespace NBoxElement {
         yPercentage?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type NodeContext<K> = {
+        id: K;
+        subId: 'oj-nbox-node';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeShortDescContext<K> = {
         column: string;
         id: K;
@@ -779,11 +809,34 @@ export namespace NBoxElement {
         secondaryLabel: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type NodeTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Row = {
         id: string;
         label?: string;
         labelStyle?: Partial<CSSStyleDeclaration>;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K> = {
+        color: string;
+        column: string;
+        componentElement: Element;
+        id: K;
+        indicatorColor: string;
+        label: string;
+        parentElement: Element;
+        row: string;
+        secondaryLabel: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
 }
 export namespace NBoxNodeElement {
     // tslint:disable-next-line interface-over-type-literal

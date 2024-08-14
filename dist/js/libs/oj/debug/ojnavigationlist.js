@@ -806,12 +806,45 @@ var __oj_tab_bar_metadata =
       },
 
       /**
+       * Whether this is a horizontal tablist
+       * @private
+       */
+      _isHorizontalTablist: function () {
+        const root = this.ojContext.element.get(0);
+        if (
+          root.getAttribute('role') === 'tablist' &&
+          root.getAttribute('aria-orientation') !== 'vertical'
+        ) {
+          return true;
+        }
+        return false;
+      },
+
+      /**
+       * Place initial focus on selected tab, if any
+       * @private
+       */
+      _focusSelectedTab: function (event) {
+        if (!this.m_preActive && this.m_active == null) {
+          const elem = this.ojContext.element
+            .get(0)
+            .querySelector('.' + this.getItemElementStyleClass() + '.oj-selected');
+          if (elem) {
+            this._setActive($(elem), event, true);
+          }
+        }
+      },
+
+      /**
        * Handler for focus event
        * @param {Event} event the focus event
        * @protected
        * @override
        */
       HandleFocus: function (event) {
+        if (this._isHorizontalTablist()) {
+          this._focusSelectedTab(event);
+        }
         return this.m_listHandler.HandleFocus(event);
       },
 
@@ -914,6 +947,12 @@ var __oj_tab_bar_metadata =
           mouseover: function (event) {
             if ($(event.target).closest('a.' + self.getItemContentStyleClass()).length > 0) {
               var $itemLink = $(event.target).closest('a.' + self.getItemContentStyleClass());
+              // OverflowItem, which is icon only upon initial render has aria-label so skip
+              var isOverflowItem =
+                $itemLink.find('.' + self.getOverflowItemIconStyleClass()).length > 0;
+              if (isOverflowItem) {
+                return;
+              }
               var $label = $itemLink.find('.' + self.getItemLabelStyleClass());
               // Add title attribute only when the text is truncated.
               if ($label[0].offsetWidth < $label[0].scrollWidth && !$itemLink.attr('title')) {
@@ -1305,6 +1344,16 @@ var __oj_tab_bar_metadata =
       },
 
       /**
+       * @override
+       */
+      showLoadingIcon: function () {
+        var isRedWood = ThemeUtils.parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+        if (!isRedWood) {
+          _ojNavigationListView.superclass.showLoadingIcon.apply(this, arguments);
+        }
+      },
+
+      /**
        * Returns Navlist specific status message style class
        * @override
        * @return {string} status message style class
@@ -1607,18 +1656,19 @@ var __oj_tab_bar_metadata =
 
         if (
           jqElem.hasClass('oj-selected') ||
+          jqElem.hasClass('oj-focus') ||
           jqElem.hasClass('oj-hover') ||
           jqElem.hasClass('oj-active') ||
           jqElem.hasClass(_OJ_DISABLED)
         ) {
-          // show trailing icon on tabbar only when state is active, hover & selected
+          // show trailing icon on tabbar only when state is active, hover, selected or has focus
           if (jqElem.hasClass(this.getRemovableStyleClass()) && this.isTabBar()) {
             jqElem.find('.' + this.getNavListRemoveIcon()).css('visibility', 'visible');
           }
           jqElem.removeClass(_OJ_DEFAULT);
         } else {
-          // remove trailing icon on tabbar  when state is not active, hover & selected
-          if (this.isTabBar() && !DomUtils.isTouchSupported()) {
+          // remove trailing icon on tabbar  when state is not active, hover, selected or focused
+          if (this.isTabBar()) {
             jqElem.find('.' + this.getNavListRemoveIcon()).css('visibility', 'hidden');
           }
           jqElem.addClass(_OJ_DEFAULT);
@@ -2147,9 +2197,11 @@ var __oj_tab_bar_metadata =
             if (this.ojContext.options.display === 'icons') {
               this.ojContext.element.addClass(this.getIconOnlyStyleClass());
               var itemLabel = this.getItemLabel($item);
-              icon.attr(_ARIA_LABEL, itemLabel); // @HTMLUpdateOK
-              icon.attr('role', 'img');
-              this._setToolTipOnIcon(icon, itemLabel);
+              if (itemLabel !== null || itemLabel.length > 0) {
+                icon.attr(_ARIA_LABEL, itemLabel); // @HTMLUpdateOK
+                icon.attr('role', 'img');
+                this._setToolTipOnIcon(icon, itemLabel);
+              }
             }
 
             if (this.ojContext.options.display === 'stacked') {
@@ -2190,7 +2242,7 @@ var __oj_tab_bar_metadata =
               .attr('role', 'img'); // @HTMLUpdateOK
             removableLink[0].addEventListener('click', this.m_handleRemovableLink);
             // Touch devices, the trailing icon will be always visible
-            if (DomUtils.isTouchSupported() || $item.hasClass(_OJ_DISABLED)) {
+            if ($item.hasClass(_OJ_DISABLED)) {
               removableLink.css('visibility', 'visible');
             } else {
               removableLink.css('visibility', 'hidden');
@@ -2406,7 +2458,7 @@ var __oj_tab_bar_metadata =
      *              ]
      * @ojshortdesc A navigation list allows navigation between different content sections.
      *
-     * @ojpropertylayout {propertyGroup: "common", items: ["display", "edge", "drillMode", "overflow", "rootLabel"]}
+     * @ojpropertylayout {propertyGroup: "common", items: ["display", "drillMode", "rootLabel"]}
      * @ojpropertylayout {propertyGroup: "data", items: ["data", "selection"]}
      * @ojvbdefaultcolumns 2
      * @ojvbmincolumns 1
@@ -2545,8 +2597,6 @@ var __oj_tab_bar_metadata =
      *]
      *</code></pre>
      *</p></br>
-     * <p>Any list item can be disabled by adding the <code class="prettyprint">oj-disabled</code> class to that element.  As with any DOM change, doing so post-init
-     * requires a <code class="prettyprint">refresh()</code> of the element.
      *
      * <h3 id="key-section">
      *   Key
@@ -2585,7 +2635,6 @@ var __oj_tab_bar_metadata =
      * </h3>
      * {@ojinclude "name":"keyboardDoc"}
      *
-     * <p>Disabled items will not receive keyboard focus and do not allow any interaction.
      *
      *<h3 id="context-section">
      *   Item Context
@@ -2679,12 +2728,6 @@ var __oj_tab_bar_metadata =
      *   Accessibility
      *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
      * </h3>
-     * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
-     * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
-     * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
-     * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
-     * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
-     * required of enabled content, it cannot be used to convey meaningful information.<p>
      *
      *
      * <h3 id="rtl-section">
@@ -2837,11 +2880,6 @@ var __oj_tab_bar_metadata =
      *       <td>Open menu. Refer <a href="oj.ojButton.html#touch-section">menu button</a> touch documentation. Note: This is applicable only for Sliding Navigation List. </td>
      *     </tr>
      *     <tr>
-     *       <td>Overflow Menu button</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Open menu. Refer <a href="oj.ojButton.html#touch-section">menu button</a> touch documentation. Note: This is applicable only for Horizontal Navigation List when <code class="prettyprint">overflow</code> is set to <code class="prettyprint">popup</code>. </td>
-     *     </tr>
-     *     <tr>
      *       <td>Previous Icon or List Header</td>
      *       <td><kbd>Tap</kbd></td>
      *       <td>Collapses the sublist and slides to parent list. Note: This is applicable only for Sliding Navigation List. </td>
@@ -2931,11 +2969,6 @@ var __oj_tab_bar_metadata =
      *     <tr>
      *       <td><kbd>Shift + Tab</kbd></td>
      *       <td>Moves focus to Previous Icon. Note: This target is visible only for Sliding Navigation List.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Overflow Menu button</td>
-     *       <td><kbd>Enter or Space</kbd></td>
-     *       <td>Open menu. Refer <a href="oj.ojButton.html#touch-section">menu button</a> touch documentation. Note: This is applicable only for Horizontal Navigation List when <code class="prettyprint">overflow</code> is set to <code class="prettyprint">popup</code>. </td>
      *     </tr>
      *     <tr>
      *       <td rowspan="2">Previous Icon or List Header</td>
@@ -3037,7 +3070,7 @@ var __oj_tab_bar_metadata =
 
     // ---------------- oj-navigationlist-stack-icon-label --------------
     /**
-     * Use this class to display a horizontal Navigation List with icons and labels stacked. Applicable only when edge is top.
+     * Use this class to display a Navigation List with icons and labels stacked.
      * @ojstyleclass oj-navigationlist-stack-icon-label
      * @ojdisplayname Stack Icon
      * @memberof oj.ojNavigationList
@@ -3135,7 +3168,7 @@ var __oj_tab_bar_metadata =
      */
     // ---------------- oj-navigationlist-item-text-wrap --------------
     /**
-     * Use this class to wrap item label text. Note: On IE11, this is not supported when overflow attribute is set to 'popup'. This style class is not supported when edge is 'top' or 'bottom'.
+     * Use this class to wrap item label text.
      * @ojstyleclass oj-navigationlist-item-text-wrap
      * @ojdisplayname Text Wrap
      * @memberof oj.ojNavigationList
@@ -3154,7 +3187,7 @@ var __oj_tab_bar_metadata =
      */
     // ---------------- oj-navigationlist-item-dividers --------------
     /**
-     * Use this class to render a divider between list items. Note: On IE11, this is not supported when overflow attribute is set to 'popup'.
+     * Use this class to render a divider between list items.
      * @ojstyleclass oj-navigationlist-item-dividers
      * @ojdisplayname Item Dividers
      * @memberof oj.ojNavigationList
@@ -3261,6 +3294,7 @@ var __oj_tab_bar_metadata =
     // ---------------- oj-disabled --------------
     /**
      * Any list item can be disabled by adding the oj-disabled class to that element
+     * @ojdeprecated {since: "17.0.0", description: "Deprecated in oj-navigation-list as it is a Redwood anti-pattern. Instead items should be hidden in cases where the user doesn't have permission"}
      * @ojstyleclass oj-disabled
      * @ojdisplayname Disabled Item
      * @ojstyleselector "oj-navigation-list li"
@@ -3421,8 +3455,7 @@ var __oj_tab_bar_metadata =
         reorderable: 'disabled',
         truncation: 'none',
         /**
-         * The position of the Navigation List. Valid Values: top, bottom and start.
-         * <p> NOTE: when value is <code class="prettyprint">top</code>,<code class="prettyprint">"none"</code> is the only supported drillMode and it also does't support hierarchical items. That means TreeDataProvider/TreeDataSource are not supported as data source.
+         * The position of the Navigation List. Valid Values: start.
          * @ojshortdesc Specifies the edge position of the Navigation List.
          * @expose
          * @name edge
@@ -3433,14 +3466,15 @@ var __oj_tab_bar_metadata =
          * @ojvalue {string} "bottom" This renders list items horizontally. Generally used when navlist placed on bottom of content section.
          * @ojvalue {string} "start" This renders list items vertically. Generally used when navlist placed on left/start of content section.
          * @default start
+         * @ojdeprecated {since: '17.0.0', description: 'Horizontal layout in oj-navigation-list is deprecated. Use oj-tab-bar instead. Since <code class="prettyprint">start</code> is the only supported and default value, it need not be specified using <code class="prettyprint">edge</code> attribute.'}
          * @example <caption>Initialize the Navigation List with the <code class="prettyprint">edge</code> attribute specified:</caption>
-         *  &lt;oj-navigation-list edge='top'> ... &lt;/oj-navigation-list>
+         *  &lt;oj-navigation-list edge='start'> ... &lt;/oj-navigation-list>
          *
          * @example <caption>Get the edge:</caption>
          * var edge = myNavList.edge;
          *
          * @example <caption>Set the edge on the Navigation List:</caption>
-         * myNavList.edge = "top";
+         * myNavList.edge = "start";
          */
         edge: 'start',
         /**
@@ -3633,7 +3667,6 @@ var __oj_tab_bar_metadata =
         navigationLevel: 'page',
         /**
          * Specifies the overflow behaviour.
-         * NOTE: This is only applicable when <code class="prettyprint">edge</code> attribute set to <code class="prettyprint">top</code>
          *
          * @ojshortdesc Specifies overflow behaviour for the Navigation List.
          * @expose
@@ -3643,6 +3676,7 @@ var __oj_tab_bar_metadata =
          * @ojvalue {string} "popup" Popup menu will be shown with overflowed items.<p> Note that setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
          * @ojvalue {string} "hidden" Overflow is clipped, and the rest of the content will be invisible.
          * @default hidden
+         * @ojdeprecated {since: '17.0.0', description: 'Since horizontal layout in oj-navigation-list is deprecated this should not be used any more. Use oj-tab-bar instead.'}
          * @since 3.0.0
          * @example <caption>Initialize the Navigation List with the <code class="prettyprint">overflow</code> attribute specified:</caption>
          *  &lt;oj-navigation-list overflow='popup'> ... &lt;/oj-navigation-list>
@@ -4403,8 +4437,6 @@ var __oj_tab_bar_metadata =
    * </h3>
    * {@ojinclude "name":"keyboardDoc"}
    *
-   * <p>Disabled items will not receive keyboard focus and do not allow any interaction.
-   *
    *<h3 id="context-section">
    *   Item Context
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#context-section"></a>
@@ -4448,6 +4480,68 @@ var __oj_tab_bar_metadata =
    *   </tbody>
    * </table>
    *
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   *
+   * <p>oj-c-tab-bar will replace oj-tab-bar in core pack.
+   *
+   * <h5>Migration to oj-c-tab-bar</h5>
+   *
+   * <p>To migrate from oj-tab-bar to oj-c-tab-bar, you need to revise the import statement and references to oj-c-tab-bar in your app. Please note the changes between the two components below.</p>
+   *
+   * <p>These features are not yet available in oj-c-tab-bar, they will be available in a forthcoming version.</p>
+   * <ul>
+   *    <li>Progressive Truncation</li>
+   *    <li>Context Menu Support</li>
+   * </ul>
+   *
+   * <p>The first step is to determine if your tab bar requires any of the not yet released features (see above list).</p>
+   *
+   * <p>The next step is to determine compatibility with your DataSource.  Here are some changes.</p>
+   * <ul>
+   *  <li>DataProvider and array of type TabData<K> are the only currently supported data source</li>
+   *  <li>itemTemplate is no longer supported</li>
+   * </ul>
+   * <p>
+   *
+   * <p>Finally review the list below for specific API changes.</p>
+   *
+   * <h5>Reorder Behavior Change</h5>
+   * <p>Use Command + Shift + Arrow Keys to reorder.
+   * </p>
+   *
+   * <h5>itemTemplate slot</h5>
+   * <p>Support for itemTemplate has not been brought forward as oj-c-tab-bar does not support arbitary content.</p>
+   *
+   * <h5>current-item attribute</h5>
+   * <p>This property is not available as it is internal to the component./p>
+   *
+   * <h5>item.renderer attribute</h5>
+   * <p>This is not supported, everything this attribute did can be accomplished using items that will be rendered by the component</p>
+   *
+   * <h5>item.selectable attribute</h5>
+   * <p>This is not supported, everything this attribute did can be accomplished using selectiom attribute</p>
+   *
+   * <h5>ojBeforeCurrentItem event</h5>
+   * <p> this cancellable event is slated for deprecation.</p>
+   *
+   * <h5>ojBeforeDeselect event</h5>
+   * <p> this cancellable event is slated for deprecation.</p>
+   *
+   * <h5>ojBeforeRemove event</h5>
+   * <p> this cancellable event is slated for deprecation.</p>
+   *
+   * <h5>ojDeselect event</h5>
+   * <p> this cancellable event is slated for deprecation.</p>
+   *
+   * <h5>The following features are not yet supported</h5>
+   * <ul>
+   *   <li>Progressive Truncation</li>
+   *   <li>Custom contextMenu support</li>
+   * </ul>
+   *
    * <p></p>
    * <h3 id="perf-section">
    *   Performance
@@ -4462,17 +4556,6 @@ var __oj_tab_bar_metadata =
    * <p>Tab Bar allows developers to specify arbitrary content inside its item. In order to minimize any negative effect on
    * performance, you should avoid putting a large number of heavy-weight components inside because as you add more complexity
    * to the structure, the effect will be multiplied because there can be many items in the Tab Bar.</p>
-   *
-   * <h3 id="a11y-section">
-   *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
-   * </h3>
-   * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
-   * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
-   * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
-   * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
-   * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
-   * required of enabled content, it cannot be used to convey meaningful information.<p>
    *
    *
    * <h3 id="rtl-section">
@@ -6004,28 +6087,33 @@ var __oj_tab_bar_metadata =
   };
 
   HorizontalNavListHandler.prototype._getScrollableParent = function (node, includeHidden) {
-    var nodePosition =  window.getComputedStyle(node).position;
-    var excludeStaticParent = nodePosition === "absolute";
+    var nodePosition = window.getComputedStyle(node).position;
+    var excludeStaticParent = nodePosition === 'absolute';
     var overflowRegex = includeHidden ? /(auto|scroll|hidden)/ : /(auto|scroll)/;
     var found = false;
     var scrollParent;
     var parent = node.parentElement;
     while (parent && !found) {
       const { overflow, overflowY, overflowX, position } = window.getComputedStyle(parent);
-      if (!(excludeStaticParent && position === "static")
-        && (overflowRegex.test(overflow + overflowY + overflowX))) {
+      if (
+        !(excludeStaticParent && position === 'static') &&
+        overflowRegex.test(overflow + overflowY + overflowX)
+      ) {
         scrollParent = parent;
         found = true;
       }
       parent = parent.parentElement;
     }
 
-    return nodePosition === "fixed" || !scrollParent ?
-      node.ownerDocument.documentElement || document.documentElement  :
-      scrollParent;
+    return nodePosition === 'fixed' || !scrollParent
+      ? node.ownerDocument.documentElement || document.documentElement
+      : scrollParent;
   };
 
-  HorizontalNavListHandler.prototype._isElementInsideHorizontalScrollerBounds = function (elem, scroller) {
+  HorizontalNavListHandler.prototype._isElementInsideHorizontalScrollerBounds = function (
+    elem,
+    scroller
+  ) {
     var left;
     var right;
     if (scroller === document.documentElement) {
@@ -6038,8 +6126,7 @@ var __oj_tab_bar_metadata =
     }
     var bounds = elem.getBoundingClientRect();
     return (
-      bounds.left <= right && bounds.right <= right &&
-      bounds.left >= left && bounds.right >= left
+      bounds.left <= right && bounds.right <= right && bounds.left >= left && bounds.right >= left
     );
   };
 
@@ -6068,16 +6155,12 @@ var __oj_tab_bar_metadata =
     );
     var current = this.m_widget.m_active.elem;
 
-    if (!this._scrollableParent) {// caching
-     this._scrollableParent = this._getScrollableParent(this.m_root[0], true);
+    if (!this._scrollableParent) {
+      // caching
+      this._scrollableParent = this._getScrollableParent(this.m_root[0], true);
     }
-    if (
-      ! this._isElementInsideHorizontalScrollerBounds(
-        current[0],
-        this._scrollableParent
-      )
-    ) {
-      current[0].scrollIntoView({block:"nearest", inline:"nearest"});
+    if (!this._isElementInsideHorizontalScrollerBounds(current[0], this._scrollableParent)) {
+      current[0].scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
     return processed;
   };
@@ -6583,7 +6666,6 @@ var __oj_tab_bar_metadata =
     if (!this.m_overflowMenuItem) {
       var overflowMenuItem = $(document.createElement('li'));
       var anchorElement = $(document.createElement('a'));
-      var labelElement = $(document.createElement('span'));
       var iconElement = $(document.createElement('span'));
       var items = this._getItems();
       overflowMenuItem
@@ -6603,22 +6685,15 @@ var __oj_tab_bar_metadata =
         .attr(_ARIA_SELECTED, 'false') // @HTMLUpdateOK
         .attr('tabindex', '-1')
         .attr('href', '#')
-        .append(iconElement) // @HTMLUpdateOK constructed by component and not using string passed through any API
-        .append(labelElement); // @HTMLUpdateOK label text is read from resource bundle and it was properly escaped
+        .append(iconElement); // @HTMLUpdateOK constructed by component and not using string passed through any API
       DataCollectionUtils.disableElement(anchorElement[0]);
-
-      if (!this.m_root.find('ul:first').hasClass(this.m_widget.getHasIconsStyleClass())) {
-        anchorElement.addClass(this.m_widget.getHasNoIconStyleClass());
-      }
-
-      labelElement
-        .text(this.m_widget.ojContext.getTranslatedString('overflowItemLabel'))
-        .addClass(this.m_widget.getItemLabelStyleClass());
 
       iconElement
         .addClass(this.m_widget.getItemIconStyleClass())
         .addClass('oj-fwk-icon')
         .addClass(this.m_widget.getOverflowItemIconStyleClass());
+      var iconLabel = this.m_widget.ojContext.getTranslatedString('overflowItemLabel');
+      iconElement.attr('aria-label', iconLabel);
 
       overflowMenuItem[0].key = overflowMenuItem.attr('id');
       this.m_root.find('.' + this.m_widget.GetStyleClass()).append(overflowMenuItem); // @HTMLUpdateOK constructed by component and not using string passed through any API
@@ -6679,7 +6754,7 @@ var __oj_tab_bar_metadata =
     if (this._getOverflowMenu().is(':visible')) {
       return; // ignore if overflow menu already launched
     }
-    this._highlightUnhighlightMoreItem(true);
+
     this._getOverflowMenu().ojMenu('open', event, {
       launcher: self._getOverflowMenuButton(),
       initialFocus: 'firstItem',

@@ -1103,13 +1103,14 @@ LovDropdown.prototype.destroy = function () {
   // TODO: release resources in here, like cleaning elements create by template engine as part of
   // fixing  - CALL TEMPLATEENGINE.CLEAN() FOR HEADER/FOOTER TEMPLATES
 
-  // only load template engine if we actually have templates
-  if ((this._itemTemplate || this._collectionTemplate) && this._containerElem) {
-    this._getTemplateEngineFunc().then(
-      function (templateEngine) {
-        templateEngine.clean(this._containerElem[0], this._templateContextComponentElement);
-      }.bind(this)
-    );
+  // only clean nodes if we actually have templates and have loaded the template engine to
+  // execute them
+  if (
+    (this._itemTemplate || this._collectionTemplate) &&
+    this._containerElem &&
+    this._templateEngine
+  ) {
+    this._templateEngine.clean(this._containerElem[0], this._templateContextComponentElement);
   }
 
   this._removeDataProviderEventListeners();
@@ -1750,6 +1751,7 @@ LovDropdown.prototype._defaultCollectionRenderer = function (context) {
         if (this._itemTemplate) {
           this._getTemplateEngineFunc().then(
             function (templateEngine) {
+              this._templateEngine = templateEngine;
               listView.setProperty(
                 'item.renderer',
                 this._templateItemRenderer.bind(this, templateEngine)
@@ -1912,14 +1914,15 @@ LovDropdown.prototype.close = function () {
   // remove the first result as we do not need it anymore
   this._firstResultForKeyboardFocus = null;
 
+  // Add data-oj-suspend so that dropdown collections go into suspended mode when the dropdown is closed
+  this._containerElem.attr('data-oj-suspend', '');
+
   /** @type {!Object.<oj.PopupService.OPTION, ?>} */
   var psOptions = {};
   psOptions[oj.PopupService.OPTION.POPUP] = this._containerElem;
   oj.PopupService.getInstance().close(psOptions);
 
   // this._containerElem.removeAttr('id');
-
-  this._containerElem.detach();
 
   // JET-61331 - Select one choice LOV dropdown flowing out of the browser and adjusting when the
   // page is scrolled up or down
@@ -1936,13 +1939,12 @@ LovDropdown.prototype.open = function () {
   // remove the 'no results found' style class until we know it's needed
   this._containerElem.removeClass(this._NO_RESULTS_FOUND_CLASSNAME);
 
+  // Remove data-oj-suspend so that dropdown collections come back from suspended mode when dropdown is opened
+  this._containerElem.removeAttr('data-oj-suspend');
+
   // if (this._searchElem) {
   //   this._searchElem.val('');
   // }
-
-  if (containerElem[0] !== this._bodyElem.children().last()[0]) {
-    containerElem.appendTo(this._bodyElem); // @HTMLUpdateOK
-  }
 
   // TODO: we should use oj-popup instead of using the popup service directly, and then oj-popup
   // could handle some of the focus functionality, like trapping TABS
@@ -4315,7 +4317,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
   _createDropdownIcon: function (enabled, readonly) {
     var className = this._className;
 
-    var a = document.createElement('a');
+    var span = document.createElement('span');
     var styleClasses =
       className +
       '-arrow ' +
@@ -4326,10 +4328,10 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
     if (!readonly && !enabled) {
       styleClasses += ' oj-disabled';
     }
-    a.setAttribute('class', styleClasses);
-    a.setAttribute('role', 'presentation');
+    span.setAttribute('class', styleClasses);
+    span.setAttribute('aria-hidden', 'true');
 
-    return a;
+    return span;
   },
 
   /**
@@ -4550,6 +4552,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       backIcon.setAttribute('slot', 'start');
       backIcon.setAttribute('class', className + '-back-button');
       backIcon.setAttribute('aria-label', strCancel);
+      backIcon.setAttribute('role', 'button');
       backIcon.addEventListener(
         'click',
         function () {
@@ -4850,6 +4853,9 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
     this._bReleasedResources = true;
 
     this._ReleaseSelectResources();
+
+    this._superSetOptions = null;
+    this._setOptionsQueue = null;
   },
 
   /**
@@ -4945,6 +4951,126 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
   },
 
   /**
+   * Queue a microtask to finish processing a _setOptions call.
+   * @memberof! oj.ojSelectBase
+   * @instance
+   * @private
+   */
+  _queueSetOptionsMicrotask: function () {
+    // In vdom architecture, there are multiple issues with value and valueItem properties,
+    // as well as other properties, that we need to handle.
+    //
+    // JET-51307 - Wrapping select single with value item and value integrations going into loop
+    // with multiple instances of LOV in a page
+    // If we're wrapped by a VComponent and there are multiple instances on the page
+    // all bound to the same valueItem, then if the user selects a new value in one instance,
+    // the page can go into an infinite loop.
+    // If we synchronously update the value on our DOM element here, then when the next preact
+    // render compares the stale vcomp value property against the new value in the DOM, preact
+    // determines it must push the stale value property back down onto us, which then causes
+    // the valueItem to get sync'ed again, and the loop goes on.
+    //
+    // JET-55775 - oj-select-single initiates fetch even when valueItem is provided in preact
+    // wrapper
+    // In preact, when value & valueItem are set at the same time, we will receive them one after
+    // the other.  So, if we process the value when we get it, then we might initiate an
+    // unnecessary fetch as we will later get the data from valueItem.
+    //
+    // JET-64359 - select - single handling of mutation on both value and valueItem properties
+    // coming from preact
+    // Also, when either value or valueItem property is ignored when updating props in the wrapper
+    // vcomponent, we will get a setOption call with a null / default value for that property.
+    // In these cases, depending on the order we receive the call, we might incorrectly end up
+    // setting the null / default value.
+    //
+    // JET-66896 - Value is not displayed when provider and value are set together
+    // When value and data were set together, the valueItem ended up with null data and metadata,
+    // so the label for the selected value was not displayed.
+    //
+    // JET-65611 - Form is in invalid state though the values are populated correctly
+    // This bug was related to the fact that the framework introduced changes in JET 16 so that
+    // the component gets batched property sets in VDOM, similar to knockout.js, whereas before
+    // each property was set individually.  For some property sets, like readonly, the code
+    // internally does a refresh.  For a valueItem change, in VDOM only, the code processed it
+    // in a microtask (to fix other issues encountered in VDOM).  With the previous, individual
+    // property setting behavior in VDOM, an internal refresh would happen before the new
+    // valueItem was even set on the component.  With the batching property setting behavior,
+    // the valueItem started to be processed before the internal refresh and then finished after
+    // the refresh, such that the changes were interfering with each other.
+    //
+    // In order to address all these cases, if we know we are in VDOM, we will queue a
+    // microtask to process the options.  Since preact calls setOptions synchronously for each
+    // option, our microtask callback will have access to all the accumulated options at once,
+    // similar to what would happen in MVVM.
+
+    var microtaskFunc = () => {
+      // reset the queue first so that any new _setOptions calls made during processing of
+      // this microtask will start a new queue
+      var setOptionsQueue = this._setOptionsQueue;
+      this._setOptionsQueue = null;
+
+      // JET-66038 - REGRESSION FOR EXPENSETYPEID FIELD 'GETINPUTELEM' ERROR
+      // When this function is executed in a microtask, it's possible that the element has been
+      // removed from the DOM and its resources released since the microtask was queued.  If so,
+      // simply return without doing anything; otherwise we may throw an NPE because we've
+      // already destroyed our internal structures.
+      if (this._bReleasedResources) {
+        // Ideally we would let the set proceed and simply guard against NPE due to released
+        // internal structures so that if we're ever reconnected, we can re-establish the
+        // previous state.
+        return;
+      }
+
+      // Collapse the individual _setOptions calls into a single options object so we can process
+      // all the properties at once.
+      // Use the first flags object because we shouldn't need to accumulate different flags across
+      // the _setOptions calls.  Preact doesn't pass any flags, and any that we use internally
+      // would not be intermingled with other _setOptions calls in the same microtask.
+      var queuedOptions = setOptionsQueue.reduce((accum, curr, index) => {
+        return {
+          options: { ...accum.options, ...curr.options },
+          flags: index === 0 ? curr.flags : accum.flags
+        };
+      }, {});
+      var options = queuedOptions.options;
+      var flags = queuedOptions.flags;
+
+      // eslint-disable-next-line no-prototype-builtins
+      var hasValue = options.hasOwnProperty('value');
+      // eslint-disable-next-line no-prototype-builtins
+      var hasValueItem = options.hasOwnProperty(this._GetValueItemPropertyName());
+      // Get the latest value and valueItem
+      const _valueItem = options[this._GetValueItemPropertyName()];
+      const _value = options.value;
+      // Determine empty states
+      // Note that _Is*****ForPlaceholder simply checks whether the value/valueItem
+      // represents the empty/null state.
+      const isEmptyValue = this._IsValueForPlaceholder(_value);
+      const isEmptyValueItem = this._IsValueItemForPlaceholder(_valueItem);
+      // If both value and valueItem are provided, then compare them to decide what to do
+      if (hasValue && hasValueItem) {
+        // if valueItem and value are not null, and they are conflicting then throw an error
+        if (!isEmptyValue && !isEmptyValueItem && _valueItem.key !== _value) {
+          throw new Error('Select Single: conflicting value-item and value');
+        }
+
+        // At this point, either one of them is empty or they both have the same
+        // key. So, if valueItem is not empty, use it (and delete the value from the options).
+        // Otherwise, use the value (and delete the valueItem from the options).
+        if (!isEmptyValueItem) {
+          delete options.value;
+        } else {
+          delete options[this._GetValueItemPropertyName()];
+        }
+      }
+
+      this._setOptionsHelper(options, flags, this._superSetOptions);
+    };
+
+    window.queueMicrotask(microtaskFunc);
+  },
+
+  /**
    * Sets multiple options
    * @param {Object} options the options object
    * @param {Object} flags additional flags for option
@@ -4953,6 +5079,41 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
    * @memberof! oj.ojSelectBase
    */
   _setOptions: function (options, flags) {
+    const elemState = CustomElementUtils.getElementState(this.OuterWrapper);
+    if (elemState.getBindingProviderType() === 'preact') {
+      // If we're in preact and we haven't already queued a microtask to process the options,
+      // queue one now.  We will handle all the accumulated options at once in the microtask.
+      if (!this._setOptionsQueue) {
+        this._setOptionsQueue = [];
+        this._superSetOptions = this._super.bind(this);
+        this._queueSetOptionsMicrotask();
+      }
+      this._setOptionsQueue.push({ options: { ...options }, flags: { ...flags } });
+    } else {
+      this._setOptionsHelper(options, flags, this._super.bind(this));
+    }
+  },
+
+  /**
+   * Helper function to set options.
+   * @memberof! oj.ojSelectBase
+   * @instance
+   * @private
+   */
+  _setOptionsHelper: function (options, flags, superSetOptions) {
+    // JET-50116: Styles error in oj-select-single
+    // If the component is already destroyed, we would have released all the internal resources.
+    // If so, simply return without doing anything; otherwise we may throw an NPE because we've
+    // already destroyed our internal structures.
+    if (this._bReleasedResources) {
+      // Ideally we would let the set proceed and simply guard against NPE due to released
+      // internal structures so that if we're ever reconnected, we can re-establish the
+      // previous state.
+      // But, we are not sure how often this happens or if these options sets while detached are
+      // unintentional. So, if we ever get a bug filed for this, we can revisit this fix.
+      return;
+    }
+
     // JET-42413: set flag while we're processing a value change so that if an app makes
     // changes to the component from within the change listener, we can defer processing the
     // new change until after we're done processing the current change
@@ -5046,84 +5207,51 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
     }
 
     try {
-      this._super(options, flags);
+      superSetOptions(options, flags);
 
       // grab the latest processSetOptions object and remove it from the array
       var processSetOptions = this._processSetOptions.pop();
 
-      const finishProcessingSetOptions = () => {
-        // JET-66038 - REGRESSION FOR EXPENSETYPEID FIELD 'GETINPUTELEM' ERROR
-        // When this function is executed in a microtask, it's possible that the element has been
-        // removed from the DOM and its resources released since the microtask was queued.  If so,
-        // simply return without doing anything; otherwise we may throw an NPE because we've
-        // already destroyed our internal structures.
-        if (this._bReleasedResources) {
-          return;
-        }
+      // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
+      // if we need to refresh, do that before setting a new value
+      if (processSetOptions.forRefresh) {
+        processSetOptions.forRefresh();
+      }
 
-        // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
-        // if we need to refresh, do that before setting a new value
-        if (processSetOptions.forRefresh) {
-          processSetOptions.forRefresh();
-        }
+      // turn off the flag now, after refreshing but before processing the new value,
+      // only if we set the flag during this call to _setOptions
+      if (resolveBusyState) {
+        this._deferSettingValue = false;
+      }
 
-        // turn off the flag now, after refreshing but before processing the new value,
-        // only if we set the flag during this call to _setOptions
-        if (resolveBusyState) {
-          this._deferSettingValue = false;
-        }
+      if (processSetOptions.value) {
+        processSetOptions.value();
+      } else if (needToUpdateValueItem) {
+        // JET-42413: set flag while we're processing a value change so that if an app makes
+        // changes to the component from within the change listener, we can defer processing the
+        // new change until after we're done processing the current change
+        var resolveValueChangeFunc = this._StartMakingInternalValueChange();
 
-        if (processSetOptions.value) {
-          processSetOptions.value();
-        } else if (needToUpdateValueItem) {
-          // JET-42413: set flag while we're processing a value change so that if an app makes
-          // changes to the component from within the change listener, we can defer processing the
-          // new change until after we're done processing the current change
-          var resolveValueChangeFunc = this._StartMakingInternalValueChange();
+        // JET-38441 - WHEN GENERATOR VARIABLE OF TYPE 'OJS/OJARRAYDATAPROVIDER' IS BOUND TO
+        // SELECT-SINGLE, IT FAILS TO SHOW THE SELECTED VALUE
+        // if setting new data and the current valueItem was set internally, then it needs to be
+        // updated for the new data, which will happen when we re-set the existing value
+        this._setOption('value', this.options.value);
 
-          // JET-38441 - WHEN GENERATOR VARIABLE OF TYPE 'OJS/OJARRAYDATAPROVIDER' IS BOUND TO
-          // SELECT-SINGLE, IT FAILS TO SHOW THE SELECTED VALUE
-          // if setting new data and the current valueItem was set internally, then it needs to be
-          // updated for the new data, which will happen when we re-set the existing value
-          this._setOption('value', this.options.value);
+        resolveValueChangeFunc();
+      }
 
-          resolveValueChangeFunc();
-        }
-
-        // JET-42353 - SELECT SINGLE FOCUS LOST ON CHANGE OF THE DEPENDENT VALUE
-        // if the filter field was shown before processing the new options, but is no longer shown,
-        // show it again
-        if (showFilterField && this._filterInputText.style.visibility === 'hidden') {
-          // need to wait for the new filter oj-input-text to be upgraded
-          var busyContext = Context.getContext(this._filterInputText).getBusyContext();
-          busyContext.whenReady().then(
-            function () {
-              this._ShowFilterField();
-            }.bind(this)
-          );
-        }
-      };
-
-      // JET-65611 - Form is in invalid state though the values are populated correctly
-      // This bug was related to the fact that the framework introduced changes in JET 16 so that
-      // the component gets batched property sets in VDOM, similar to knockout.js, whereas before
-      // each property was set individually.  For some property sets, like readonly, the code
-      // internally does a refresh.  For a valueItem change, in VDOM only, the code processes it
-      // in a microtask (to fix other issues encountered in VDOM).  With the previous, individual
-      // property setting behavior in VDOM, an internal refresh would happen before the new
-      // valueItem was even set on the component.  With the batching property setting behavior,
-      // the valueItem started to be processed before the internal refresh and then finished after
-      // the refresh, such that the changes were interfering with each other.  The fix defers
-      // finishing processing of the _setOptions call, including the refresh, to a microtask that
-      // is queued after the microtask to finish handling the valueItem change.  So when the
-      // refresh happens, it is after the valueItem change has finished.  This ordering is not the
-      // same as what happened before in VDOM, but it is the same as what happens outside of VDOM,
-      // like in the cookbook MVVM app.
-      const elemState = CustomElementUtils.getElementState(this.OuterWrapper);
-      if (elemState.getBindingProviderType() === 'preact') {
-        window.queueMicrotask(finishProcessingSetOptions);
-      } else {
-        finishProcessingSetOptions();
+      // JET-42353 - SELECT SINGLE FOCUS LOST ON CHANGE OF THE DEPENDENT VALUE
+      // if the filter field was shown before processing the new options, but is no longer shown,
+      // show it again
+      if (showFilterField && this._filterInputText.style.visibility === 'hidden') {
+        // need to wait for the new filter oj-input-text to be upgraded
+        var busyContext = Context.getContext(this._filterInputText).getBusyContext();
+        busyContext.whenReady().then(
+          function () {
+            this._ShowFilterField();
+          }.bind(this)
+        );
       }
     } finally {
       if (resolveBusyState) {
@@ -5157,155 +5285,6 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
 
     if (!bSkipSuperclassCall) {
       this._super(key, value, flags);
-    }
-
-    // In vdom architecture, there are multiple issues with value and valueItem property that we need to
-    // handle.
-    //
-    // JET-51307 - Wrapping select single with value item and value integrations going into loop
-    // with multiple instances of LOV in a page
-    // If we're wrapped by a VComponent and there are multiple instances on the page
-    // all bound to the same valueItem, then if the user selects a new value in one instance,
-    // the page can go into an infinite loop.
-    // If we synchronously update the value on our DOM element here, then when the next preact
-    // render compares the stale vcomp value property against the new value in the DOM, preact
-    // determines it must push the stale value property back down onto us, which then causes
-    // the valueItem to get sync'ed again, and the loop goes on.
-    //
-    // JET-55775 - oj-select-single initiates fetch even when valueItem is provided in preact wrapper
-    // In preact, when value & valueItem are set at the same time, we will receive them one after the other.
-    // So, if we process the value when we get it, then we might initiate an unnecessary fetch as we will
-    // later get the data from valueItem.
-    //
-    // JET-64359 - select - single handling of mutation on both value and valueItem properties coming from preact
-    // Also, when either value or valueItem property is ignored when updating props in the wrapper vcomponent,
-    // we will get a setOption call with a null / default value for that property. In these cases, depending on the
-    // order we receive the call, we might incorrectly end up setting the null / default value.
-    //
-    // In order to address all these cases, if we know we are in the vdom land, we will queue a microtask to process
-    // the value and valueItem. Since, preact calls setOptions synchronously for each option, in our microtask callback
-    // we will have access to the latest value for all the properties. We will be setting some flags here to determine
-    // which properties are set by the preact. Then we can use the flags as well as the latest value to determine
-    // how to process the value and valueItem correctly.
-    const elemState = CustomElementUtils.getElementState(this.OuterWrapper);
-    // JET-66502 - Dynamic UI Defect - oj-dyn form not working with JET 16 for select single LOVs
-    // We only need to enter this block if we're currently processing a value or valueItem
-    // being set.  Otherwise, if multiple properties are being set at the same time, properties
-    // handled here after the value or valueItem may not be processed correctly because we
-    // return early from this method.
-    if (
-      elemState.getBindingProviderType() === 'preact' &&
-      (key === 'value' || key === this._GetValueItemPropertyName())
-    ) {
-      const processValueAndValueItem = () => {
-        // JET-66038 - REGRESSION FOR EXPENSETYPEID FIELD 'GETINPUTELEM' ERROR
-        // When this function is executed in a microtask, it's possible that the element has been
-        // removed from the DOM and its resources released since the microtask was queued.  If so,
-        // simply return without doing anything; otherwise we may throw an NPE because we've
-        // already destroyed our internal structures.
-        if (this._bReleasedResources) {
-          return;
-        }
-
-        // Get the latest value and valueItem
-        const _valueItem = this.options[this._GetValueItemPropertyName()];
-        const _value = this.options.value;
-        // Determine empty states
-        // Note that _Is*****ForPlaceholder simply checks whether the value/valueItem
-        // represents the empty/null state.
-        const isEmptyValue = this._IsValueForPlaceholder(_value);
-        const isEmptyValueItem = this._IsValueItemForPlaceholder(_valueItem);
-
-        // Cleanup function - things to do when exiting the microtask
-        const cleanup = () => {
-          // reset all the flags
-          this._processingSetOptionsMicroTask = false;
-          this._processingValue = false;
-          this._processingValueItem = false;
-        };
-
-        // This will use the value for updating the component
-        const updateUsingValue = () => {
-          abstractLovBase.setValue(_value);
-
-          //  - placeholder is not displayed after removing selections from select many
-          //  - resetting value when value-item and placeholder are set throws exception
-          if (isEmptyValue) {
-            // Note that _GetDefaultValueItemForPlaceholder is just a getter for the
-            // valueItem representing the empty state.
-            this._SetValueItem(this._GetDefaultValueItemForPlaceholder());
-          } else {
-            // update valueItem
-            this._UpdateValueItem(_value);
-          }
-
-          // need to update display value again after valueItem is set correctly
-          this._SetDisplayValue();
-        };
-        // This will use the valueItem for updating the component
-        const updateUsingValueItem = () => {
-          this._valueItemSetInternally = false;
-          this._SyncValueWithValueItem(_valueItem, _value);
-        };
-
-        // If both value and valueItem are provided, then compare them to decide
-        // what to do
-        if (this._processingValue && this._processingValueItem) {
-          // if valueItem and value are not null, and they are conflicting then
-          // throw an error
-          if (!isEmptyValue && !isEmptyValueItem && _valueItem.key !== _value) {
-            // make sure to clean up before throwing an error
-            cleanup();
-            throw new Error('Select Single: conflicting value-item and value');
-          }
-
-          // At this point, either one of them is empty or they both have the same
-          // key. So, if valueItem is not empty, use it. Otherwise, use the value.
-          if (!isEmptyValueItem) {
-            updateUsingValueItem();
-          } else {
-            updateUsingValue();
-          }
-        }
-        // If only value is provided, then use the value
-        else if (this._processingValue) {
-          updateUsingValue();
-        }
-        // If only valueItem is provided then use the valueItem for updating the value
-        else if (this._processingValueItem) {
-          updateUsingValueItem();
-        }
-
-        // Finally clean things up
-        cleanup();
-      };
-
-      // If we receive a value or valueItem setOption call, set the flag and
-      // defer processing them
-      if (key === 'value') {
-        this._processingValue = true;
-      } else if (key === this._GetValueItemPropertyName()) {
-        this._processingValueItem = true;
-      }
-
-      // if we are processing value or valueItem, then queue a microtask to
-      // process them together. Do this only if it is not already queued. Then
-      // return early without doing anything else.
-      if (this._processingValue || this._processingValueItem) {
-        if (!this._processingSetOptionsMicroTask) {
-          this._processingSetOptionsMicroTask = true;
-          window.queueMicrotask(processValueAndValueItem);
-        }
-        // JET-66502 - Dynamic UI Defect - oj-dyn form not working with JET 16 for select
-        // single LOVs
-        // Because we return early here based on the instance flags for processing a value or
-        // valueItem, we will also return early from here when we try to process any other
-        // properties set at the same time as the value or valueItem and processed after one
-        // of them.  This is why we only conditionally enter this whole block of code when
-        // we're currently processing a value or valueItem.  We skip this block of code for
-        // any other property.
-        return;
-      }
     }
 
     var processSetOptions;

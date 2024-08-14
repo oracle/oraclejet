@@ -69,7 +69,8 @@ bindingHandlers._ojDefer_ = {
  * @since 4.0.0
  * @ojcomponent oj.ojDefer
  * @ojshortdesc Defer is used to delay applying bindings to its children until it is activated. Child elements are disconnected from the DOM tree until the parent component activates its subtree.
- * @ojsignature {target: "Type", value:"class ojDefer extends JetElement<ojDeferSettableProperties>"}
+ * @ojsignature {target: "Type", value:"class ojDefer extends HTMLElement"}
+ * @ojhtmlelement
  * @ojoracleicon 'oj-ux-ico-defer'
  * @classdesc
  * The oj-defer custom element delays applying bindings to its children until it is activated.

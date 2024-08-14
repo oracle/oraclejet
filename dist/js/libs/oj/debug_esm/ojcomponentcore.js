@@ -17,7 +17,7 @@ import { getDefaultValue, getPropertyMetadata, getFlattenedAttributes } from 'oj
 import oj$1 from 'ojs/ojcore-base';
 import { fixResizeListeners, dispatchEvent, recentTouchEnd, isTouchSupported, makeFocusable, getReadingDirection } from 'ojs/ojdomutils';
 import 'ojs/ojcustomelement';
-import { CustomElementUtils, ElementUtils, transformPreactValue, ElementState, AttributeUtils, JetElementError } from 'ojs/ojcustomelement-utils';
+import { CustomElementUtils, ElementUtils, transformPreactValue, addPrivatePropGetterSetters, ElementState, AttributeUtils, JetElementError } from 'ojs/ojcustomelement-utils';
 import { isElementRegistered, getElementProperties, registerElement } from 'ojs/ojcustomelement-registry';
 import { info, error } from 'ojs/ojlogger';
 import { DefaultsUtils } from 'ojs/ojdefaultsutils';
@@ -742,12 +742,15 @@ ComponentMessaging.prototype._strategyToArtifacts = function () {
     strategyToArtifacts = this._getUserAssistanceStrategyToArtifactsObj();
   } else {
     let options = this._component.options;
-    let messagingPreferences = options.displayOptions || {};
+    let messagingPreferences = options.displayOptions ? { ...options.displayOptions } : {};
     if (resolvedUserAssistance === 'compact') {
       // for 'compact' set displayOptions.messages, validator-hint and converter hint to notewindow.
-      messagingPreferences.messages = 'notewindow';
-      messagingPreferences.validatorHint = 'notewindow';
-      messagingPreferences.converterHint = 'notewindow';
+      messagingPreferences.messages =
+        messagingPreferences.messages === 'none' ? 'none' : 'notewindow';
+      messagingPreferences.validatorHint =
+        messagingPreferences.validatorHint === 'none' ? 'none' : 'notewindow';
+      messagingPreferences.converterHint =
+        messagingPreferences.converterHint === 'none' ? 'none' : 'notewindow';
       strategyToArtifacts = this._getResolvedMessagingDisplayOptions(messagingPreferences);
     } else {
       strategyToArtifacts = this._getResolvedMessagingDisplayOptions(messagingPreferences);
@@ -1513,21 +1516,6 @@ const _OJ_WIDGET_NAMES_DATA = 'oj-component-names';
 const _OJ_COMPONENT_NODE_CLASS = 'oj-component-initnode';
 
 /**
- * Marks an element as being hidden.
- *
- * @private
- */
-var _OJ_SUBTREE_HIDDEN_CLASS = 'oj-subtree-hidden';
-
-/**
- * Marks an element as a container that will control hidden of its children
- * once it finishes initializing
- *
- * @private
- */
-var _OJ_PENDING_SUBTREE_HIDDEN_CLASS = 'oj-pending-subtree-hidden';
-
-/**
  * @private
  */
 const _NOT_COMP = 'node is not a component element';
@@ -1720,35 +1708,12 @@ Components.subtreeDetached = function (node) {
  * @alias Components.subtreeShown
  */
 Components.subtreeShown = function (node, options) {
-  var _node = $(node)[0]; // Strip possible jQuery wrapper
+  const _node = $(node)[0]; // Strip possible jQuery wrapper
   if (_node.nodeType !== Node.ELEMENT_NODE) {
     return;
   }
-
-  var _options = options || {};
-  var isInitialRender = _options.initialRender;
-  if (!isInitialRender) {
-    fixResizeListeners(_node);
-  }
-
-  unmarkSubtreeHidden(_node);
-
-  _applyHideShowToComponents(
-    _node,
-    function (instance) {
-      CustomElementUtils.allowSlotRelocation(true);
-      try {
-        if (isInitialRender) {
-          instance._NotifyInitShown();
-        } else {
-          instance._NotifyShown();
-        }
-      } finally {
-        CustomElementUtils.allowSlotRelocation(false);
-      }
-    },
-    true
-  );
+  const isInitialRender = !!options?.initialRender;
+  CustomElementUtils.subtreeShown(_node, isInitialRender);
 };
 
 /**
@@ -1763,44 +1728,13 @@ Components.subtreeShown = function (node, options) {
  * @alias Components.subtreeHidden
  */
 Components.subtreeHidden = function (node) {
-  var _node = $(node)[0]; // Strip possible jQuery wrapper
+  const _node = $(node)[0]; // Strip possible jQuery wrapper
   if (_node.nodeType !== Node.ELEMENT_NODE) {
     return;
   }
 
-  _applyHideShowToComponents(
-    _node,
-    function (instance) {
-      CustomElementUtils.allowSlotRelocation(true);
-      try {
-        instance._NotifyHidden();
-      } finally {
-        CustomElementUtils.allowSlotRelocation(false);
-      }
-    },
-    false
-  );
-
-  markSubtreeHidden(_node);
+  CustomElementUtils.subtreeHidden(_node);
 };
-
-/**
- * Add a marker class indicating that this subtree is hidden.
- *
- * @ignore
- */
-function markSubtreeHidden(element) {
-  element.classList.add(_OJ_SUBTREE_HIDDEN_CLASS);
-}
-
-/**
- * Remove the marker class indicating that this subtree is hidden.
- *
- * @ignore
- */
-function unmarkSubtreeHidden(element) {
-  element.classList.remove(_OJ_SUBTREE_HIDDEN_CLASS);
-}
 
 /**
  * Called by CCAs and certain custom elements when they are first connected
@@ -1810,7 +1744,7 @@ function unmarkSubtreeHidden(element) {
  * @ignore
  */
 Components.markPendingSubtreeHidden = function (element) {
-  element.classList.add(_OJ_PENDING_SUBTREE_HIDDEN_CLASS);
+  CustomElementUtils.markPendingSubtreeHidden(element);
 };
 
 /**
@@ -1820,7 +1754,7 @@ Components.markPendingSubtreeHidden = function (element) {
  * @ignore
  */
 Components.unmarkPendingSubtreeHidden = function (element) {
-  element.classList.remove(_OJ_PENDING_SUBTREE_HIDDEN_CLASS);
+  CustomElementUtils.unmarkPendingSubtreeHidden(element);
 };
 
 /**
@@ -2044,17 +1978,27 @@ Components.callComponentMethod = function (componentElement, method, methodArgum
 /**
  * @private
  */
+function _getJetWidgetInstance(jelem) {
+  var names = jelem.data(_OJ_WIDGET_NAMES_DATA);
+  if (names != null) {
+    for (var i = 0; i < names.length; i++) {
+      var instance = jelem.data('oj-' + names[i]);
+      if (instance != null) {
+        return instance;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * @private
+ */
 function _applyToComponents(subtreeRoot, jqCallback) {
   var processFunc = function () {
-    var jelem = $(this);
-    var names = jelem.data(_OJ_WIDGET_NAMES_DATA);
-    if (names != null) {
-      for (var i = 0; i < names.length; i++) {
-        var instance = jelem.data('oj-' + names[i]);
-        if (instance != null) {
-          jqCallback(instance);
-        }
-      }
+    const instance = _getJetWidgetInstance($(this));
+    if (instance) {
+      jqCallback(instance);
     }
   };
 
@@ -2066,114 +2010,6 @@ function _applyToComponents(subtreeRoot, jqCallback) {
   }
 
   locator.find('.' + _OJ_COMPONENT_NODE_CLASS).each(processFunc);
-}
-
-/**
- * @private
- */
-function _applyHideShowToComponents(subtreeRoot, jqCallback, activateDefer) {
-  // Detect hidden without forcing a layout.
-  function isHidden(_node) {
-    var node = _node;
-    while (node) {
-      if (node.nodeType === Node.DOCUMENT_NODE) {
-        return false; // Walked up to document.  Not hidden
-      }
-      if (
-        node.nodeType === Node.ELEMENT_NODE &&
-        node.classList.contains(_OJ_SUBTREE_HIDDEN_CLASS)
-      ) {
-        return true;
-      }
-      node = node.parentNode;
-    }
-    return true; // Didn't find document, so it must be detached and therefore hidden.
-  }
-
-  const deferTag = 'oj-defer';
-
-  /**
-   * Both node lists must be in document order.
-   * Return new array containing nodes in 'allNodes' that are not in 'hiddenNodes'
-   * @private
-   */
-  function filterHidden(allNodes, hiddenNodes) {
-    var shownNodes = [];
-    var j = 0;
-    for (var i = 0; i < hiddenNodes.length; i++) {
-      var hidden = hiddenNodes[i];
-      while (j < allNodes.length && allNodes[j] !== hidden) {
-        shownNodes.push(allNodes[j]);
-        j += 1;
-      }
-      j += 1;
-    }
-    while (j < allNodes.length) {
-      shownNodes.push(allNodes[j]);
-      j += 1;
-    }
-    return shownNodes;
-  }
-
-  function processFunc(element) {
-    if (jqCallback && element.classList.contains(_OJ_COMPONENT_NODE_CLASS)) {
-      var jelem = $(element);
-      var names = jelem.data(_OJ_WIDGET_NAMES_DATA);
-      if (names != null) {
-        for (var i = 0; i < names.length; i++) {
-          var instance = jelem.data('oj-' + names[i]);
-          if (instance != null) {
-            jqCallback(instance);
-          }
-        }
-      }
-    }
-
-    if (activateDefer && element.tagName.toLowerCase() === deferTag) {
-      if (element._activate) {
-        element._activate();
-      } else {
-        throw new Error('subtreeShown called before module ojs/ojdefer was loaded');
-      }
-    }
-  }
-
-  if (!isHidden(subtreeRoot)) {
-    processFunc(subtreeRoot);
-
-    // Create selectors for jquery components and oj-defer as needed.
-    var selectors = [`.${_OJ_COMPONENT_NODE_CLASS}`];
-
-    if (activateDefer) {
-      selectors.push(deferTag);
-    }
-
-    var hiddenSelectors = [];
-    selectors.forEach(function (s) {
-      hiddenSelectors.push(`.${_OJ_SUBTREE_HIDDEN_CLASS} ${s}`);
-      hiddenSelectors.push(`.${_OJ_PENDING_SUBTREE_HIDDEN_CLASS} ${s}`);
-    });
-
-    if (activateDefer) {
-      // treat oj-defer nodes with the _OJ_SUBTREE_HIDDEN_CLASS class on them
-      // the same way as the oj-defer nodes contained by an element with that class
-      hiddenSelectors.push(`${deferTag}.${_OJ_SUBTREE_HIDDEN_CLASS}`);
-    }
-
-    // Create assemble a selector that gets all matches and the subset that are hidden
-    var selector = selectors.join(',');
-    var hiddenSelector = hiddenSelectors.join(',');
-
-    // Fetch all matching elements and those that are hidden.
-    // Use the second list to filter out hidden elements.
-    var allNodes = subtreeRoot.querySelectorAll(selector);
-    var hiddenNodes = subtreeRoot.querySelectorAll(hiddenSelector);
-    var shownNodes = filterHidden(allNodes, hiddenNodes);
-
-    for (var i = 0; i < shownNodes.length; i++) {
-      processFunc(shownNodes[i]);
-    }
-  }
 }
 
 /**
@@ -2227,6 +2063,34 @@ function _isJQueryUI(node) {
 function _isComponentElement(node) {
   return _isCompositeOrCustom(node) || _isJQueryUI(node);
 }
+
+// Register legacy subtreeShown/Hidden traversal callbacks on CustomElementUtils
+// The execution code needs to 'live' in CustomElementUtils becasue it needs to activate
+// oj-defer tags even when JET legacy jQueryUI-based custom elements are not being used.
+CustomElementUtils.registerLegacySubtreeCallbacks(
+  (element, isInitialRender) => {
+    const instance = _getJetWidgetInstance($(element));
+    if (!instance) {
+      return;
+    }
+    if (isInitialRender) {
+      instance._NotifyInitShown();
+    } else {
+      instance._NotifyShown();
+    }
+  },
+  (element, isInitialRender) => {
+    if (!isInitialRender) {
+      fixResizeListeners(element);
+    }
+  },
+  (element) => {
+    const instance = _getJetWidgetInstance($(element));
+    if (instance) {
+      instance._NotifyHidden();
+    }
+  }
+);
 
 /**
  * A bridge for a custom element that renders using a constructor
@@ -2318,7 +2182,7 @@ oj.CollectionUtils.copyInto(DefinitionalElementBridge.proto, {
   },
 
   CreateComponent: function (element) {
-    Components.unmarkPendingSubtreeHidden(element);
+    CustomElementUtils.unmarkPendingSubtreeHidden(element);
 
     if (!this._INSTANCE && this._EXTENSION._CONSTRUCTOR) {
       // We expose a similar set of properties as composites except that props is
@@ -2369,7 +2233,7 @@ oj.CollectionUtils.copyInto(DefinitionalElementBridge.proto, {
       if (!this._BRIDGE.SaveEarlyPropertySet(this._ELEMENT, property, value)) {
         if (bOuterSet) {
           // eslint-disable-next-line no-param-reassign
-          value = transformPreactValue(this._ELEMENT, propertyMeta, value);
+          value = transformPreactValue(this._ELEMENT, property, propertyMeta, value);
         }
         var previousValue = this._BRIDGE._PROPS[property];
         if (!ElementUtils.comparePropertyValues(propertyMeta.writeback, value, previousValue)) {
@@ -2443,6 +2307,7 @@ oj.CollectionUtils.copyInto(DefinitionalElementBridge.proto, {
       );
     }
     oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
+    addPrivatePropGetterSetters(proto, property);
   },
 
   InitializeElement: function (element) {
@@ -2450,7 +2315,7 @@ oj.CollectionUtils.copyInto(DefinitionalElementBridge.proto, {
     oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
 
     if (this._EXTENSION._CONTROLS_SUBTREE_HIDDEN) {
-      Components.markPendingSubtreeHidden(element);
+      CustomElementUtils.markPendingSubtreeHidden(element);
     }
 
     oj.BaseCustomElementBridge.__InitProperties(element, element);
@@ -2675,6 +2540,9 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
     // the widget wasn't instantiated due to an error on creation or destroyed.
     var widgetConstructor = Components.__GetWidgetConstructor(this._WIDGET_ELEM);
     if (widgetConstructor) {
+      if (this._WIDGET_INSTANCE) {
+        processedMap = this._WIDGET_INSTANCE._MergeOptionsWithDefaults(processedMap);
+      }
       widgetConstructor('option', processedMap);
     } else {
       for (i = 0; i < keys.length; i++) {
@@ -2709,7 +2577,7 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
       this._copyProperties();
     }
 
-    Components.unmarkPendingSubtreeHidden(element);
+    CustomElementUtils.unmarkPendingSubtreeHidden(element);
 
     // Initialize jQuery object with options and pass element as wrapper if needed
     var locator = $(this._WIDGET_ELEM);
@@ -2763,7 +2631,7 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
         // sets are actually saved until after component creation and played back.
         if (!bridge.SaveEarlyPropertySet(this, property, value)) {
           // eslint-disable-next-line no-param-reassign
-          value = transformPreactValue(this, propertyMeta, value);
+          value = transformPreactValue(this, property, propertyMeta, value);
           const state = CustomElementUtils.getElementState(this);
           const bpType = state.getBindingProviderType();
           if (bpType === 'preact') {
@@ -2791,6 +2659,7 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
         }
       }
     });
+    addPrivatePropGetterSetters(proto, property);
   },
 
   GetAttributes: function (metadata) {
@@ -2822,7 +2691,7 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
     oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
 
     if (this._EXTENSION._CONTROLS_SUBTREE_HIDDEN) {
-      Components.markPendingSubtreeHidden(element);
+      CustomElementUtils.markPendingSubtreeHidden(element);
     }
 
     oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS);
@@ -3700,7 +3569,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
       this._SaveAttributes(this.element);
       this._InitOptions(this._originalDefaults, this._constructorOptions);
 
-      delete this._originalDefaults;
+      // We no longer need _constructorOptions, but retain _originalDefaults for _MergeOptionsWithDefaults
       delete this._constructorOptions;
 
       this._ComponentCreate();
@@ -4924,7 +4793,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      * @instance
      * @protected
      */
-    _SetupContextMenu: function () {
+    _SetupContextMenu: function (contextMenuOptions) {
       var contextMenu = this._GetContextMenu();
       if (!contextMenu) {
         contextMenu = this._GetDefaultContextMenu();
@@ -4934,9 +4803,13 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         this._contextMenuGestureInit = contextMenu;
 
         var self = this;
-        startDetectContextMenuGesture(this.widget()[0], function (event, eventType) {
-          self._handleContextMenuGesture(contextMenu, event, eventType);
-        });
+        startDetectContextMenuGesture(
+          this.widget()[0],
+          function (event, eventType) {
+            self._handleContextMenuGesture(contextMenu, event, eventType);
+          },
+          contextMenuOptions
+        );
       }
     },
 
@@ -5895,6 +5768,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
 
       // get properties applicable to this component
       var defaults = Components.__getDefaultOptions(widgetHierNames);
+      this._globalDefaults = defaults;
 
       if ($.isEmptyObject(defaults)) {
         return;
@@ -5933,6 +5807,43 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
           }
         }
       }
+    },
+
+    /**
+     * For Preact binding providers, sparse objects originating from VDOM trees should always be merged with default options.
+     * This method processes an object containing (top-level) property name-value pairs and returns a new object where the
+     * simple object values have been merged with defaults as appropriate
+     *
+     * @memberof oj.baseComponent
+     * @instance
+     * @protected
+     */
+    _MergeOptionsWithDefaults: function (options) {
+      let context;
+      return Object.keys(options).reduce((newOptions, property) => {
+        // Note that we are are not handling the case where property === 'translations' for now.
+        // This could presumably be dealt with here by wiring directly to _getTranslationSectionLoader,
+        // but punting for now on the assumption that it's not going to be common for people to try
+        // setting instance-level translation overrides within VDOM
+        const value = options[property];
+        const defaultValue = this._originalDefaults[property];
+        let globalDefaultValueList = this._globalDefaults[property]?.map((globalDefaultValue) => {
+          if (globalDefaultValue != null && globalDefaultValue instanceof __ojDynamicGetter) {
+            if (!context) {
+              context = this._getDynamicPropertyContext();
+            }
+            return globalDefaultValue.getCallback()(context);
+          }
+          return globalDefaultValue;
+        });
+        // eslint-disable-next-line no-param-reassign
+        newOptions[property] = _mergeOptionLayers(
+          [defaultValue, ...(globalDefaultValueList || []), value],
+          null,
+          true
+        );
+        return newOptions;
+      }, {});
     },
 
     /**
@@ -6103,6 +6014,19 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
     },
 
     /**
+     * Whether this component supports having its connected notifications (and disconnected suppressions) suspended if
+     * the connection occurs inside a DOM tree marked with the data-oj-suspend attribute.  This can be useful in narrow cases
+     * where we want to keep DOM connected so that we don't lose knockout subscriptions, but also don't want to perform any
+     * expensive operations (e.g. data fetches) until the component is reparented to an active, visible container
+     * @return {boolean} returns true if the component should treat connects to (and disconnected from) a data-oj-suspend container as NOPs
+     * @memberof oj.baseComponent
+     * @protected
+     */
+    _AllowConnectedSuspension: function () {
+      return false;
+    },
+
+    /**
      * Called by the CustomElementBridge when the custom element is attached
      * to the DOM.
      * @memberof oj.baseComponent
@@ -6110,6 +6034,13 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      * @private
      */
     __handleConnected: function () {
+      if (this._AllowConnectedSuspension()) {
+        const element = this._getRootElement();
+        if (element?.closest('[data-oj-suspend]')) {
+          this._suspendedConnect = true;
+          return;
+        }
+      }
       this._NotifyAttached();
       if (!this.__delayConnectDisconnect(_STATE_CONNECTED)) {
         this._SetupResources();
@@ -6124,6 +6055,10 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      * @private
      */
     __handleDisconnected: function () {
+      if (this._suspendedConnect) {
+        this._suspendedConnect = false;
+        return;
+      }
       // note that when it is delayed, then NotifyDetached would be called before ReleaseResources
       // this is fine for all the components that will use delayed disconnect, will need to re-visit if that is not the case.
       if (!this.__delayConnectDisconnect(_STATE_DISCONNECTED)) {
@@ -6449,22 +6384,30 @@ function _removeWidgetName(element, widgetName) {
  * @private
  * @param {Array} values - values to merge
  * @param {Object=} overriddenSubkeys subkeys where the merging should not occur, i.e.
+ * @param {boolean=} avoidClones indicates whether to avoid creating new objects when merge an object onto a non-object
  * the value from corresponsing subkey on the last element of values array should win
  */
-function _mergeOptionLayers(values, overriddenSubkeys) {
+function _mergeOptionLayers(values, overriddenSubkeys, avoidClones) {
   var result;
   for (var i = 0; i < values.length; i++) {
     var value = values[i];
     if (value !== undefined) {
       if ($.isPlainObject(value)) {
-        var input = $.isPlainObject(result) ? [result, value] : [value];
-        // The last object (overrides) is always fully merged in
-        result = _mergeObjectsWithExclusions(
-          {},
-          input,
-          i === values.length - 1 ? null : overriddenSubkeys,
-          null
-        );
+        const plainObjectResult = $.isPlainObject(result);
+        // If merging an object onto a non-object and avoidClones is set, just replace result with value
+        if (!plainObjectResult && avoidClones) {
+          result = value;
+        } else {
+          var input = plainObjectResult ? [result, value] : [value];
+          // The last object (overrides) is always fully merged in
+          result = _mergeObjectsWithExclusions(
+            {},
+            input,
+            i === values.length - 1 ? null : overriddenSubkeys,
+            null,
+            avoidClones
+          );
+        }
       } else {
         result = value;
       }
@@ -6476,7 +6419,7 @@ function _mergeOptionLayers(values, overriddenSubkeys) {
 /**
  * @private
  */
-function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath) {
+function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath, avoidClones) {
   var inputLength = input.length;
 
   for (var inputIndex = 0; inputIndex < inputLength; inputIndex++) {
@@ -6497,9 +6440,22 @@ function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath) {
         var value = source[key];
         if (value !== undefined) {
           if ($.isPlainObject(value)) {
-            var params = $.isPlainObject(target[key]) ? [target[key], value] : [value];
-            // eslint-disable-next-line no-param-reassign
-            target[key] = _mergeObjectsWithExclusions({}, params, ignoreSubkeys, path);
+            const plainObjectTarget = $.isPlainObject(target[key]);
+            // If merging an object onto a non-object and avoidClones is set, just replace target with value
+            if (!plainObjectTarget && avoidClones) {
+              // eslint-disable-next-line no-param-reassign
+              target[key] = value;
+            } else {
+              var params = plainObjectTarget ? [target[key], value] : [value];
+              // eslint-disable-next-line no-param-reassign
+              target[key] = _mergeObjectsWithExclusions(
+                {},
+                params,
+                ignoreSubkeys,
+                path,
+                avoidClones
+              );
+            }
           } else {
             // eslint-disable-next-line no-param-reassign
             target[key] = value;

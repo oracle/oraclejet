@@ -1357,9 +1357,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       // Create the event handler and add event listeners
       this.EventManager = new DvtTagCloudEventManager(this, context, this.processEvent, this);
       this.EventManager.addListeners(this);
-      // Set up keyboard handler on non-touch devices
-      if (!dvt.Agent.isTouchDevice())
-        this.EventManager.setKeyboardHandler(new DvtTagCloudKeyboardHandler(this.EventManager));
+      // Set up keyboard handler
+      this.EventManager.setKeyboardHandler(new DvtTagCloudKeyboardHandler(this.EventManager));
 
       // Create the defaults object
       this.Defaults = new DvtTagCloudDefaults(context);

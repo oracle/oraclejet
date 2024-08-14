@@ -6,7 +6,7 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import { SortUtils, FilterFactory, DataProviderMutationEvent, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
+import { wrapWithAbortHandling, SortUtils, FilterFactory, DataProviderMutationEvent, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 import ojMap from 'ojs/ojmap';
 import { BufferingDataProviderSubmittableChangeEvent } from 'ojs/ojbufferingdataproviderevents';
@@ -761,7 +761,6 @@ class BufferingDataProvider {
                 this._parent = _parent;
                 this._baseIterator = _baseIterator;
                 this._params = _params;
-                this.firstBaseKey = null;
                 this.mergedAddKeySet = new ojSet();
                 this.mergedItemArray = [];
                 this.nextOffset = 0;
@@ -771,21 +770,8 @@ class BufferingDataProvider {
             }
             _fetchNext() {
                 const signal = this._params?.signal;
-                if (signal && signal.aborted) {
-                    const reason = signal.reason;
-                    return Promise.reject(new DOMException(reason, 'AbortError'));
-                }
-                return new Promise((resolve, reject) => {
-                    if (signal) {
-                        const reason = signal.reason;
-                        signal.addEventListener('abort', (e) => {
-                            return reject(new DOMException(reason, 'AbortError'));
-                        });
-                    }
+                const callback = (resolve) => {
                     return resolve(this._baseIterator.next().then(async (result) => {
-                        if (!this.firstBaseKey && result.value.metadata.length) {
-                            this.firstBaseKey = result.value.metadata[0].key;
-                        }
                         if (result.value.fetchParameters && result.value.fetchParameters.sortCriteria) {
                             this._parent.lastSortCriteria = result.value.fetchParameters.sortCriteria;
                         }
@@ -794,15 +780,6 @@ class BufferingDataProvider {
                         });
                         this._parent.totalFilteredRowCount = result.value.totalFilteredRowCount;
                         await this._parent._mergeEdits(baseItemArray, this.mergedItemArray, this._params.filterCriterion, this._parent.lastSortCriteria, this.mergedAddKeySet, result.done);
-                        if (this.nextOffset === 0) {
-                            for (let i = 0; i < this.mergedItemArray.length; i++) {
-                                const key = this.mergedItemArray[i].metadata.key;
-                                if (!this._parent._isItemRemoved(key)) {
-                                    this.firstBaseKey = key;
-                                    break;
-                                }
-                            }
-                        }
                         let actualReturnSize = this.mergedItemArray.length - this.nextOffset;
                         for (let i = this.nextOffset; i < this.mergedItemArray.length; i++) {
                             const item = this.mergedItemArray[i];
@@ -844,7 +821,8 @@ class BufferingDataProvider {
                             }
                         };
                     }));
-                });
+                };
+                return wrapWithAbortHandling(signal, callback, false);
             }
             ['next']() {
                 return this._fetchNext();
@@ -855,7 +833,7 @@ class BufferingDataProvider {
         this.lastSortCriteria = null;
         this.lastIterator = null;
         this.customKeyGenerator = options?.keyGenerator;
-        this.generatedKeyMap = new Map();
+        this.generatedKeyMap = new ojMap();
         this.totalFilteredRowCount = 0;
         this.dataBeforeUpdated = new Map();
     }
@@ -990,7 +968,7 @@ class BufferingDataProvider {
             }
         }
         for (const baseItem of baseItemArray) {
-            const editItem = this.editBuffer.getItem(baseItem.metadata.key);
+            const editItem = this.editBuffer.getItem(baseItem.metadata.key, true);
             if (!editItem) {
                 newItemArray.push(baseItem);
             }
@@ -1012,92 +990,93 @@ class BufferingDataProvider {
     }
     async _fetchFromOffset(params) {
         const signal = params?.signal;
-        if (signal) {
-            const reason = signal.reason;
-            if (signal.aborted) {
-                throw new DOMException(reason, 'AbortError');
-            }
-            signal.addEventListener('abort', () => {
-                throw new DOMException(reason, 'AbortError');
-            });
-        }
-        const offset = params.offset;
-        const isFetchAll = params.size == null || params.size === -1;
-        const size = params.size;
-        const mergedItems = [];
-        const { submitting, submitted, unsubmitted } = this._getEditBufferCounts();
-        const numUnsubmittedAdds = unsubmitted.numAdds;
-        const numAdds = numUnsubmittedAdds + submitting.numAdds + submitted.numAdds;
-        let results;
-        let baseItemArray = [];
-        let done = false;
-        let unbufferedResultsToIgnore = 0;
-        if (isFetchAll) {
-            results = await this.dataProvider.fetchByOffset(params);
+        const callback = async (resolve) => {
+            const offset = params.offset;
+            const isFetchToEnd = params.size == null || params.size === -1;
+            const size = params.size;
+            const mergedItems = [];
+            const { submitting, submitted, unsubmitted } = this._getEditBufferCounts();
+            const numUnsubmittedAdds = unsubmitted.numAdds;
+            const numAdds = numUnsubmittedAdds + submitting.numAdds + submitted.numAdds;
+            let results;
+            let baseItemArray = [];
+            let done = false;
+            let unbufferedResultsToIgnore = 0;
             if (this.editBuffer.isEmpty(true)) {
-                return results;
+                const fetchByOffsetResults = await this.dataProvider.fetchByOffset(params);
+                return resolve(fetchByOffsetResults);
             }
-        }
-        else if (offset + size > numAdds) {
-            const numRemoves = unsubmitted.numRemoves + submitting.numRemoves;
-            const numMoveAdds = unsubmitted.numMoveAdds + submitting.numMoveAdds;
-            const numSubmittedOrSubmittingAdds = submitting.numAdds + submitted.numAdds;
-            let overrideParams;
-            if (numRemoves > 0 || numMoveAdds > 0 || numSubmittedOrSubmittingAdds > 0) {
-                overrideParams = {
-                    offset: 0,
-                    size: offset +
-                        size +
-                        numRemoves +
-                        numMoveAdds +
-                        numSubmittedOrSubmittingAdds -
-                        Math.max(numUnsubmittedAdds - offset, 0)
+            else if (isFetchToEnd || offset + size > numAdds) {
+                const numRemoves = unsubmitted.numRemoves + submitting.numRemoves;
+                const numMoveAdds = unsubmitted.numMoveAdds + submitting.numMoveAdds;
+                const numSubmittedOrSubmittingAdds = submitting.numAdds + submitted.numAdds;
+                let overrideOffset;
+                let overrideSize;
+                if (numRemoves > 0 || numMoveAdds > 0 || numSubmittedOrSubmittingAdds > 0) {
+                    overrideOffset = {
+                        offset: 0
+                    };
+                    if (!isFetchToEnd) {
+                        overrideSize = {
+                            size: offset +
+                                size +
+                                numRemoves +
+                                numMoveAdds +
+                                numSubmittedOrSubmittingAdds -
+                                Math.max(numUnsubmittedAdds - offset, 0)
+                        };
+                    }
+                    unbufferedResultsToIgnore = Math.max(offset - numAdds, 0);
+                }
+                else if (numUnsubmittedAdds > 0) {
+                    overrideOffset = {
+                        offset: Math.max(offset - numUnsubmittedAdds, 0)
+                    };
+                    if (!isFetchToEnd) {
+                        overrideSize = {
+                            size: size - Math.max(numUnsubmittedAdds - offset, 0)
+                        };
+                    }
+                }
+                const underlyingFetchParams = { ...params, ...overrideOffset, ...overrideSize };
+                results = await this.dataProvider.fetchByOffset(underlyingFetchParams);
+            }
+            if (results) {
+                baseItemArray = results.results;
+                done = results.done;
+            }
+            if (offset < numAdds) {
+                mergedItems.push(...this._getAllAdds().slice(offset, isFetchToEnd ? undefined : offset + size));
+            }
+            for (let index = 0; index < baseItemArray.length && (isFetchToEnd || mergedItems.length < size); index++) {
+                const item = baseItemArray[index];
+                const key = item.metadata.key;
+                if (this.editBuffer.isUpdateTransformed(key) ||
+                    this._isItemRemoved(key) ||
+                    this.editBuffer.isSubmittingOrSubmitted(key)) {
+                    continue;
+                }
+                else if (unbufferedResultsToIgnore > 0) {
+                    --unbufferedResultsToIgnore;
+                }
+                else {
+                    const updatedItem = this.editBuffer.getItem(key);
+                    mergedItems.push(updatedItem ? updatedItem.item : item);
+                }
+            }
+            if (!done && (isFetchToEnd || mergedItems.length < size)) {
+                const nextParams = {
+                    ...params,
+                    offset: params.offset + mergedItems.length,
+                    size: isFetchToEnd ? params.size : params.size - mergedItems.length
                 };
-                unbufferedResultsToIgnore = Math.max(offset - numAdds, 0);
+                let extraResults = await this._fetchFromOffset(nextParams);
+                mergedItems.push(...extraResults.results);
+                done = extraResults.done;
             }
-            else if (numUnsubmittedAdds > 0) {
-                overrideParams = {
-                    offset: Math.max(offset - numUnsubmittedAdds, 0),
-                    size: size - Math.max(numUnsubmittedAdds - offset, 0)
-                };
-            }
-            const underlyingFetchParams = { ...params, ...overrideParams };
-            results = await this.dataProvider.fetchByOffset(underlyingFetchParams);
-        }
-        if (results) {
-            baseItemArray = results.results;
-            done = results.done;
-        }
-        if (offset < numAdds) {
-            mergedItems.push(...this._getAllAdds().slice(offset, offset + size));
-        }
-        for (let index = 0; index < baseItemArray.length && (isFetchAll || mergedItems.length < size); index++) {
-            const item = baseItemArray[index];
-            const key = item.metadata.key;
-            if (this.editBuffer.isUpdateTransformed(key) ||
-                this._isItemRemoved(key) ||
-                this.editBuffer.isSubmittingOrSubmitted(key)) {
-                continue;
-            }
-            else if (unbufferedResultsToIgnore > 0) {
-                --unbufferedResultsToIgnore;
-            }
-            else {
-                const updatedItem = this.editBuffer.getItem(key);
-                mergedItems.push(updatedItem ? updatedItem.item : item);
-            }
-        }
-        if (!done && (isFetchAll || mergedItems.length < size)) {
-            const nextParams = {
-                ...params,
-                offset: params.offset + mergedItems.length,
-                size: isFetchAll ? params.size : params.size - mergedItems.length
-            };
-            let extraResults = await this._fetchFromOffset(nextParams);
-            mergedItems.push(...extraResults.results);
-            done = extraResults.done;
-        }
-        return { fetchParameters: params, results: mergedItems, done: done };
+            return resolve({ fetchParameters: params, results: mergedItems, done: done });
+        };
+        return wrapWithAbortHandling(signal, callback, true);
     }
     containsKeys(params) {
         const bufferResult = this._fetchByKeysFromBuffer(params);
@@ -1126,17 +1105,7 @@ class BufferingDataProvider {
         const unresolvedKeys = bufferResult.unresolvedKeys;
         const results = bufferResult.results;
         const signal = params?.signal;
-        if (signal && signal.aborted) {
-            const reason = signal.reason;
-            return Promise.reject(new DOMException(reason, 'AbortError'));
-        }
-        return new Promise((resolve, reject) => {
-            if (signal) {
-                const reason = signal.reason;
-                signal.addEventListener('abort', (e) => {
-                    return reject(new DOMException(reason, 'AbortError'));
-                });
-            }
+        const callback = (resolve) => {
             if (unresolvedKeys.size === 0) {
                 return resolve({ fetchParameters: params, results });
             }
@@ -1156,7 +1125,8 @@ class BufferingDataProvider {
                 }
                 return baseResults;
             }));
-        });
+        };
+        return wrapWithAbortHandling(signal, callback, false);
     }
     fetchByOffset(params) {
         return this._fetchFromOffset(params);
@@ -1254,7 +1224,13 @@ class BufferingDataProvider {
                 addBeforeKey = this._getNextKey(addBeforeKeyFromBase);
             }
             else {
-                addBeforeKey = this.lastIterator.firstBaseKey;
+                for (let i = 0; i < this.lastIterator.mergedItemArray.length; i++) {
+                    const key = this.lastIterator.mergedItemArray[i].metadata.key;
+                    if (!this._isItemRemoved(key)) {
+                        addBeforeKey = key;
+                        break;
+                    }
+                }
                 let shouldIncrementNextOffset = this.lastIterator.nextOffset !== 0;
                 if (this.editBuffer.isUpdateTransformed(item.metadata.key)) {
                     for (let i = 0; i < this.lastIterator.mergedItemArray.length; i++) {
@@ -1269,7 +1245,6 @@ class BufferingDataProvider {
                 }
                 this.lastIterator.mergedItemArray.splice(0, 0, item);
                 this.lastIterator.mergedAddKeySet.add(item.metadata.key);
-                this.lastIterator.firstBaseKey = item.metadata.key;
                 if (shouldIncrementNextOffset) {
                     this.lastIterator.nextOffset++;
                 }
@@ -1335,28 +1310,10 @@ class BufferingDataProvider {
                     }
                     this.lastIterator.nextOffset = i;
                 }
-                if (oj.KeyUtils.equals(this.lastIterator.firstBaseKey, key)) {
-                    this.lastIterator.firstBaseKey = null;
-                    if (mergedItemArray.length > keyIdx) {
-                        for (let i = keyIdx; i < mergedItemArray.length; i++) {
-                            const newKey = mergedItemArray[i].metadata.key;
-                            if (!this._isItemRemoved(newKey)) {
-                                this.lastIterator.firstBaseKey = newKey;
-                                break;
-                            }
-                        }
-                    }
-                }
             }
         }
     }
     removeItem(item) {
-        const removeKey = item.metadata.key;
-        if (this.lastIterator &&
-            this.lastIterator.firstBaseKey !== null &&
-            this.lastIterator.firstBaseKey === removeKey) {
-            this.lastIterator.firstBaseKey = this._getNextKey(item.metadata.key, true);
-        }
         this.editBuffer.removeItem(item);
         this._removeFromMergedArrays(item.metadata.key, false);
         const detail = {

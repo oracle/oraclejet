@@ -36,6 +36,7 @@ export declare enum ExceptionKey {
     COMPONENT_CHILDREN_NOT_DEFAULT_SLOT = "component_children_not_default_slot",
     INVALID_OBSERVEDGLOBALPROPS_INSTANCE = "invalid_observedglobalprops_instance",
     INVALID_SINCE = "invalid_since_value",
+    INVALID_DYNAMIC_TEMPLATE_SLOTS_TYPE_PARAM = "invalid_dynamic_template_slots_type_param",
     UNRECOGNIZED_FUNCTION_WRAPPER = "unrecognized_function_wrapper",
     STATIC_DEFAULTPROPS_ON_FUNCTION = "static_defaultprops_on_function",
     RESERVED_CUSTOM_EVENT_PREFIX = "reserved_custom_event_prefix",
@@ -75,7 +76,9 @@ export declare enum ExceptionKey {
 export declare class TransformerError extends Error {
     private constructor();
     private static _disabledList;
+    private static _encoder;
     private static getMsgHeader;
     static setDisabledList(list: Array<string> | null): void;
+    static initPrettyMsgEncoding(tsconfig_pretty: unknown): void;
     static reportException(key: ExceptionKey, type: ExceptionType, vcompName: string, message: string, errNode?: ts.Node): void;
 }

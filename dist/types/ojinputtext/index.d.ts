@@ -311,7 +311,7 @@ export interface ojInputPasswordSettablePropertiesLenient<V = string> extends Pa
 }
 export interface ojInputText<V = any> extends inputBase<V, ojInputTextSettableProperties<V>> {
     clearIcon: 'never' | 'always' | 'conditional';
-    converter: Promise<Converter<V>> | Converter<V> | null;
+    converter: Converter<V> | null;
     length: {
         countBy?: 'codePoint' | 'codeUnit';
         max: number | null;
@@ -442,7 +442,7 @@ export interface ojInputTextEventMap<V = any> extends inputBaseEventMap<V, ojInp
 }
 export interface ojInputTextSettableProperties<V = any> extends inputBaseSettableProperties<V> {
     clearIcon: 'never' | 'always' | 'conditional';
-    converter: Promise<Converter<V>> | Converter<V> | null;
+    converter: Converter<V> | null;
     length: {
         countBy?: 'codePoint' | 'codeUnit';
         max: number | null;
@@ -468,7 +468,7 @@ export interface ojInputTextSettablePropertiesLenient<V = any> extends Partial<o
     [key: string]: any;
 }
 export interface ojTextArea<V = any> extends inputBase<V, ojTextAreaSettableProperties<V>> {
-    converter: Promise<Converter<V>> | Converter<V> | null;
+    converter: Converter<V> | null;
     length: {
         countBy?: 'codePoint' | 'codeUnit';
         counter?: 'none' | 'remaining';
@@ -586,7 +586,7 @@ export interface ojTextAreaEventMap<V = any> extends inputBaseEventMap<V, ojText
     'valueChanged': JetElementCustomEvent<ojTextArea<V>["value"]>;
 }
 export interface ojTextAreaSettableProperties<V = any> extends inputBaseSettableProperties<V> {
-    converter: Promise<Converter<V>> | Converter<V> | null;
+    converter: Converter<V> | null;
     length: {
         countBy?: 'codePoint' | 'codeUnit';
         counter?: 'none' | 'remaining';

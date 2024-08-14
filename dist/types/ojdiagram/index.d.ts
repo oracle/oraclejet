@@ -390,7 +390,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
                 height?: number;
                 pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' |
                    'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
-                shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+                shape?: 'circle' | 'rectangle' | 'square' | string;
                 source?: string;
                 sourceHover?: string;
                 sourceHoverSelected?: string;
@@ -668,7 +668,7 @@ export namespace ojDiagram {
             opacity?: number;
             pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
                'smallDiamond' | 'smallTriangle' | string;
-            shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+            shape?: 'circle' | 'rectangle' | 'square';
             source?: string;
             sourceHover?: string;
             sourceHoverSelected?: string;
@@ -682,7 +682,7 @@ export namespace ojDiagram {
         labelStyle?: Partial<CSSStyleDeclaration> | null;
         overview?: {
             icon?: {
-                shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+                shape?: 'inherit' | 'circle' | 'rectangle' | 'square' | string;
                 svgClassName?: string;
                 svgStyle?: Partial<CSSStyleDeclaration>;
             };
@@ -817,6 +817,16 @@ export namespace ojDiagram {
         parentElement: Element;
         type: 'node' | 'link' | 'promotedLink';
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderLinkContentTemplate<K1, K2, D2> = import('ojs/ojvcomponent').TemplateSlot<LinkContentTemplateContext<K1, K2, D2>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderLinkTemplate = import('ojs/ojvcomponent').TemplateSlot<LinkTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNodeContentTemplate<K1, D1> = import('ojs/ojvcomponent').TemplateSlot<NodeContentTemplateContext<K1, D1>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K1, K2, D1, D2> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K1, K2, D1, D2>>;
 }
 export interface ojDiagramEventMap<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponentEventMap<ojDiagramSettableProperties<K1, K2, D1, D2>> {
     'ojBeforeCollapse': ojDiagram.ojBeforeCollapse<K1>;
@@ -1103,7 +1113,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
                 height?: number;
                 pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' |
                    'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
-                shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+                shape?: 'circle' | 'rectangle' | 'square' | string;
                 source?: string;
                 sourceHover?: string;
                 sourceHoverSelected?: string;
@@ -1280,7 +1290,7 @@ export interface ojDiagramNode<K1 = any, D1 = any> extends dvtBaseComponent<ojDi
         opacity?: number;
         pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
            'smallDiamond' | 'smallTriangle' | string;
-        shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+        shape?: 'circle' | 'rectangle' | 'square';
         source?: string;
         sourceHover?: string;
         sourceHoverSelected?: string;
@@ -1293,7 +1303,7 @@ export interface ojDiagramNode<K1 = any, D1 = any> extends dvtBaseComponent<ojDi
     labelStyle?: Partial<CSSStyleDeclaration> | null;
     overview?: {
         icon?: {
-            shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+            shape?: 'inherit' | 'circle' | 'rectangle' | 'square' | string;
             svgClassName?: string;
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
@@ -1353,7 +1363,7 @@ export interface ojDiagramNodeSettableProperties<K1 = any, D1 = any> extends dvt
         opacity?: number;
         pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
            'smallDiamond' | 'smallTriangle' | string;
-        shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+        shape?: 'circle' | 'rectangle' | 'square';
         source?: string;
         sourceHover?: string;
         sourceHoverSelected?: string;
@@ -1366,7 +1376,7 @@ export interface ojDiagramNodeSettableProperties<K1 = any, D1 = any> extends dvt
     labelStyle?: Partial<CSSStyleDeclaration> | null;
     overview?: {
         icon?: {
-            shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+            shape?: 'inherit' | 'circle' | 'rectangle' | 'square' | string;
             svgClassName?: string;
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
@@ -1496,6 +1506,23 @@ export namespace DiagramElement {
         type: 'node';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type Link<K1, K2, D2 = any> = {
+        categories?: string[];
+        color?: string;
+        endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
+        endNode: K2;
+        id?: K1;
+        label?: string;
+        labelStyle?: Partial<CSSStyleDeclaration> | null;
+        selectable?: 'auto' | 'off';
+        shortDesc?: (string | ((context: ojDiagram.LinkShortDescContext<K1, K2, D2>) => string));
+        startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
+        startNode: K2;
+        svgClassName?: string;
+        svgStyle?: Partial<CSSStyleDeclaration>;
+        width?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type LinkContentTemplateContext<K1, K2, D2> = {
         componentElement: Element;
         data: ojDiagram.Link<K2, K1>;
@@ -1517,6 +1544,15 @@ export namespace DiagramElement {
             selected: boolean;
         };
         type: 'link' | 'promotedLink';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LinkItemContext<K1, K2, D2> = {
+        componentElement: Element;
+        data: ojDiagram.Link<K2, K1>;
+        id: K2;
+        itemData: D2;
+        label: string;
+        type: 'link';
     };
     // tslint:disable-next-line interface-over-type-literal
     type LinkRendererContext<K1, K2, D2> = {
@@ -1542,11 +1578,54 @@ export namespace DiagramElement {
         type: 'link' | 'promotedLink';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type LinkShortDescContext<K1, K2, D2> = {
+        data: ojDiagram.Link<K2, K1> | ojDiagram.Link<K2, K1>[];
+        id: K2;
+        itemData: D2 | D2[];
+        label: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type LinkTemplateContext = {
         componentElement: Element;
         data: object;
         index: number;
         key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Node<K1, D1 = any> = {
+        categories?: string[];
+        descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
+        icon?: {
+            borderColor?: string;
+            borderRadius?: string;
+            borderWidth?: number;
+            color?: string;
+            height?: number;
+            opacity?: number;
+            pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
+               'smallDiamond' | 'smallTriangle' | string;
+            shape?: 'circle' | 'rectangle' | 'square';
+            source?: string;
+            sourceHover?: string;
+            sourceHoverSelected?: string;
+            sourceSelected?: string;
+            svgClassName?: string;
+            svgStyle?: Partial<CSSStyleDeclaration>;
+            width?: number;
+        };
+        id?: K1;
+        label?: string;
+        labelStyle?: Partial<CSSStyleDeclaration> | null;
+        overview?: {
+            icon?: {
+                shape?: 'inherit' | 'circle' | 'rectangle' | 'square' | string;
+                svgClassName?: string;
+                svgStyle?: Partial<CSSStyleDeclaration>;
+            };
+        };
+        selectable?: 'auto' | 'off';
+        shortDesc?: (string | ((context: ojDiagram.NodeShortDescContext<K1, D1>) => string));
+        showDisclosure?: 'on' | 'off';
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContentTemplateContext<K1, D1> = {
@@ -1583,6 +1662,11 @@ export namespace DiagramElement {
         type: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type NodeContext = {
+        index: number;
+        subId: 'oj-diagram-link' | 'oj-diagram-node';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeItemContext<K1, D1> = {
         componentElement: Element;
         data: ojDiagram.Node<K1>;
@@ -1592,12 +1676,28 @@ export namespace DiagramElement {
         type: 'node';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type NodeShortDescContext<K1, D1> = {
+        data: ojDiagram.Node<K1>;
+        id: K1;
+        itemData: D1;
+        label: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeTemplateContext = {
         data: object;
         index: number;
         key: any;
         parentData: any[];
         parentKey: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PromotedLinkItemContext<K1, K2, D2> = {
+        componentElement: Element;
+        data: ojDiagram.Link<K2, K1>[];
+        id: K2;
+        itemData: D2[];
+        label: string;
+        type: 'promotedLink';
     };
     // tslint:disable-next-line interface-over-type-literal
     type RendererContext<K1, D1> = {
@@ -1634,6 +1734,16 @@ export namespace DiagramElement {
         type: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K1, K2, D1, D2> = {
+        componentElement: Element;
+        data: ojDiagram.Node<K1> | ojDiagram.Link<K2, K1> | ojDiagram.Link<K2, K1>[];
+        id: K1 | K2;
+        itemData: D1 | D2 | D2[];
+        label: string;
+        parentElement: Element;
+        type: 'node' | 'link' | 'promotedLink';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type TooltipRendererContext<K1, K2, D1, D2> = {
         componentElement: Element;
         data: ojDiagram.Node<K1> | ojDiagram.Link<K2, K1> | ojDiagram.Link<K2, K1>[];
@@ -1643,6 +1753,16 @@ export namespace DiagramElement {
         parentElement: Element;
         type: 'node' | 'link' | 'promotedLink';
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderLinkContentTemplate<K1, K2, D2> = import('ojs/ojvcomponent').TemplateSlot<LinkContentTemplateContext<K1, K2, D2>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderLinkTemplate = import('ojs/ojvcomponent').TemplateSlot<LinkTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNodeContentTemplate<K1, D1> = import('ojs/ojvcomponent').TemplateSlot<NodeContentTemplateContext<K1, D1>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K1, K2, D1, D2> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K1, K2, D1, D2>>;
 }
 export namespace DiagramLinkElement {
     // tslint:disable-next-line interface-over-type-literal

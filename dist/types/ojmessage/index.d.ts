@@ -92,6 +92,18 @@ export namespace MessageElement {
     type DisplayOptions = {
         category?: 'header' | 'none' | 'auto';
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type Message = {
+        autoTimeout?: number;
+        category?: string;
+        closeAffordance?: 'none' | 'defaults';
+        detail?: string;
+        icon?: string;
+        severity?: 'error' | 'warning' | 'confirmation' | 'info' | 'none';
+        sound?: string;
+        summary?: string;
+        timestamp?: string;
+    };
 }
 export interface MessageIntrinsicProps extends Partial<Readonly<ojMessageSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojClose?: (value: ojMessageEventMap['ojClose']) => void;

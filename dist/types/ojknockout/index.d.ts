@@ -10,6 +10,8 @@ export namespace ojBindForEach {
         index: number;
         observableIndex: ko.Observable<number>;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNoDataTemplate = import('ojs/ojvcomponent').TemplateSlot<{}>;
 }
 export interface ojBindIf extends HTMLElement {
     test: boolean;
@@ -17,9 +19,13 @@ export interface ojBindIf extends HTMLElement {
 export interface ojBindText extends HTMLElement {
     value: string;
 }
+export interface ojIf extends HTMLElement {
+    test: boolean;
+}
 export type BindForEachElement<K, D> = ojBindForEach<K, D>;
 export type BindIfElement = ojBindIf;
 export type BindTextElement = ojBindText;
+export type IfElement = ojIf;
 export namespace BindForEachElement {
     // tslint:disable-next-line interface-over-type-literal
     type DefaultItemContext<D> = {
@@ -27,4 +33,6 @@ export namespace BindForEachElement {
         index: number;
         observableIndex: ko.Observable<number>;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNoDataTemplate = import('ojs/ojvcomponent').TemplateSlot<{}>;
 }

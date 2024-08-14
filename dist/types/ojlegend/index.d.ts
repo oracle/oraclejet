@@ -154,6 +154,19 @@ export namespace ojLegend {
         titleHalign?: 'center' | 'end' | 'start';
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type SectionTemplateContext<K = any, D = any> = {
+        componentElement: Element;
+        data: D;
+        index: number;
+        key: K;
+        parentData: D[];
+        parentKey: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderSectionTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<SectionTemplateContext<K, D>>;
 }
 export interface ojLegendEventMap<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> extends dvtBaseComponentEventMap<ojLegendSettableProperties<K, D>> {
     'ojDrill': ojLegend.ojDrill;
@@ -442,10 +455,24 @@ export namespace LegendElement {
         text: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext<K = any, D = any> = {
+        componentElement: Element;
+        data: D;
+        index: number;
+        key: K;
+        parentData: D[];
+        parentKey: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
         itemIndex: number;
         sectionIndexPath: number[];
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PreferredSize = {
+        height: number;
+        width: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Section<K> = {
@@ -458,6 +485,19 @@ export namespace LegendElement {
         titleHalign?: 'center' | 'end' | 'start';
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type SectionTemplateContext<K = any, D = any> = {
+        componentElement: Element;
+        data: D;
+        index: number;
+        key: K;
+        parentData: D[];
+        parentKey: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderSectionTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<SectionTemplateContext<K, D>>;
 }
 export namespace LegendItemElement {
     // tslint:disable-next-line interface-over-type-literal

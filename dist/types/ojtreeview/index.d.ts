@@ -155,6 +155,8 @@ export namespace ojTreeView {
         metadata: ItemMetadata<K>;
         parentkey: K;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
 }
 export interface ojTreeViewEventMap<K, D> extends baseComponentEventMap<ojTreeViewSettableProperties<K, D>> {
     'ojAnimateEnd': ojTreeView.ojAnimateEnd;
@@ -306,6 +308,11 @@ export namespace TreeViewElement {
         parentKey?: K;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemsDropOnDropContext = {
+        item: Element;
+        position: 'inside' | 'before' | 'after' | 'first';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<K = any, D = any> = {
         componentElement: Element;
         data: D;
@@ -316,6 +323,8 @@ export namespace TreeViewElement {
         metadata: ItemMetadata<K>;
         parentkey: K;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
 }
 export interface TreeViewIntrinsicProps extends Partial<Readonly<ojTreeViewSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojAnimateEnd?: (value: ojTreeViewEventMap<any, any>['ojAnimateEnd']) => void;

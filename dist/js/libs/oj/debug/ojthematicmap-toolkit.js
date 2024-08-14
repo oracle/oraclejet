@@ -7085,12 +7085,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // because selection modes can differ between layers.
       this.EventManager = new DvtThematicMapEventManager(this.getCtx(), this.dispatchEvent, this);
       this.EventManager.addListeners(this);
-      if (!dvt.Agent.isTouchDevice()) {
-        this._keyboardHandler = new DvtThematicMapKeyboardHandler(this, this.EventManager);
-        this.EventManager.setKeyboardHandler(this._keyboardHandler);
-      } else {
-        this._keyboardHandler = null;
-      }
+      this._keyboardHandler = new DvtThematicMapKeyboardHandler(this, this.EventManager);
+      this.EventManager.setKeyboardHandler(this._keyboardHandler);
     }
 
     /**

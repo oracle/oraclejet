@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['knockout', 'ojs/ojkoshared', 'ojs/ojcontext', 'ojs/ojtemplateengine-utils'], function (ko, BindingProviderImpl, Context, ojtemplateengineUtils) { 'use strict';
+define(['knockout', 'ojs/ojkoshared', 'ojs/ojcontext', 'ojs/ojtemplateengine-utils', 'ojs/ojlogger'], function (ko, BindingProviderImpl, Context, ojtemplateengineUtils, Logger) { 'use strict';
 
     BindingProviderImpl = BindingProviderImpl && Object.prototype.hasOwnProperty.call(BindingProviderImpl, 'default') ? BindingProviderImpl['default'] : BindingProviderImpl;
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -90,6 +90,9 @@ define(['knockout', 'ojs/ojkoshared', 'ojs/ojcontext', 'ojs/ojtemplateengine-uti
             computedVNode.subscribe((newVNode) => {
                 const currRow = templateElement._cachedRows.find((row) => row.computedVNode === computedVNode);
                 if (currRow) {
+                    if (!currRow.nodes[0].isConnected) {
+                        Logger.warn(`PreactTemplateEngineKo subscription is called to replace disconnected row for the template slot \'${templateElement.slot}\' on ${componentElement.tagName}`);
+                    }
                     ojtemplateengineUtils.PreactTemplate.renderNodes(componentElement, newVNode, currRow, provided);
                 }
             });

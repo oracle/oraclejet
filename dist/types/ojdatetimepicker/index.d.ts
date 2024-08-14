@@ -11,18 +11,43 @@ import Validator = require('../ojvalidator');
 import NumberRangeValidator = require('../ojvalidator-numberrange');
 import Converter = require('../ojconverter');
 import { Validation } from '../ojvalidationfactory-base';
+import Message = require('../ojmessaging');
 import { inputBase, inputBaseEventMap, inputBaseSettableProperties } from '../ojinputtext';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojDatePicker extends ojInputDate<ojDatePickerSettableProperties> {
+    converter: Converter<any>;
+    describedBy: string | null;
+    disabled: boolean;
+    displayOptions: {
+        converterHint?: 'display' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
+    };
+    help: {
+        instruction?: string;
+    };
+    helpHints: {
+        definition?: string;
+        source?: string;
+    };
     keyboardEdit: 'disabled';
+    labelEdge: 'inside' | 'none' | 'provided';
+    labelHint: string;
+    labelledBy: string | null;
     max: string | null;
+    messagesCustom: Message[];
     min: string | null;
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    placeholder: string;
     readonly rawValue: string;
-    renderMode: 'jet';
+    renderMode: 'jet' | 'native';
+    required: boolean;
+    userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
+    readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
+    validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     addEventListener<T extends keyof ojDatePickerEventMap>(type: T, listener: (this: HTMLElement, ev: ojDatePickerEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -31,6 +56,9 @@ export interface ojDatePicker extends ojInputDate<ojDatePickerSettableProperties
     setProperty<T extends keyof ojDatePickerSettableProperties>(property: T, value: ojDatePickerSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojDatePickerSettableProperties>): void;
     setProperties(properties: ojDatePickerSettablePropertiesLenient): void;
+    reset(): void;
+    showMessages(): void;
+    validate(): Promise<'valid' | 'invalid'>;
 }
 export namespace ojDatePicker {
     interface ojAnimateEnd extends CustomEvent<{
@@ -47,13 +75,43 @@ export namespace ojDatePicker {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type converterChanged = JetElementCustomEvent<ojDatePicker["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = JetElementCustomEvent<ojDatePicker["describedBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojDatePicker["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojDatePicker["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = JetElementCustomEvent<ojDatePicker["help"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = JetElementCustomEvent<ojDatePicker["helpHints"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = JetElementCustomEvent<ojDatePicker["labelEdge"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = JetElementCustomEvent<ojDatePicker["labelHint"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojDatePicker["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojDatePicker["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = JetElementCustomEvent<ojDatePicker["messagesCustom"]>;
     // tslint:disable-next-line interface-over-type-literal
     type minChanged = JetElementCustomEvent<ojDatePicker["min"]>;
     // tslint:disable-next-line interface-over-type-literal
     type pickerAttributesChanged = JetElementCustomEvent<ojDatePicker["pickerAttributes"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged = JetElementCustomEvent<ojDatePicker["placeholder"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type rawValueChanged = JetElementCustomEvent<ojDatePicker["rawValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged = JetElementCustomEvent<ojDatePicker["required"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = JetElementCustomEvent<ojDatePicker["userAssistanceDensity"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = JetElementCustomEvent<ojDatePicker["valid"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged = JetElementCustomEvent<ojDatePicker["validators"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojDatePicker["value"]>;
     //------------------------------------------------------------
@@ -64,41 +122,11 @@ export namespace ojDatePicker {
     // tslint:disable-next-line interface-over-type-literal
     type autofocusChanged = ojInputDate.autofocusChanged<ojDatePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type converterChanged = ojInputDate.converterChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type dayFormatterChanged = ojInputDate.dayFormatterChanged<ojDatePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type dayMetaDataChanged = ojInputDate.dayMetaDataChanged<ojDatePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type describedByChanged = ojInputDate.describedByChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type disabledChanged = ojInputDate.disabledChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type displayOptionsChanged = ojInputDate.displayOptionsChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type helpChanged = ojInputDate.helpChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type helpHintsChanged = ojInputDate.helpHintsChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelEdgeChanged = ojInputDate.labelEdgeChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelHintChanged = ojInputDate.labelHintChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelledByChanged = ojInputDate.labelledByChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type messagesCustomChanged = ojInputDate.messagesCustomChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type placeholderChanged = ojInputDate.placeholderChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = ojInputDate.readonlyChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type requiredChanged = ojInputDate.requiredChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type userAssistanceDensityChanged = ojInputDate.userAssistanceDensityChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type validChanged = ojInputDate.validChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type validatorsChanged = ojInputDate.validatorsChanged<ojDatePickerSettableProperties>;
     //------------------------------------------------------------
     // End: generated events for inherited properties
     //------------------------------------------------------------
@@ -106,16 +134,7 @@ export namespace ojDatePicker {
 export interface ojDatePickerEventMap extends ojInputDateEventMap<ojDatePickerSettableProperties> {
     'ojAnimateEnd': ojDatePicker.ojAnimateEnd;
     'ojAnimateStart': ojDatePicker.ojAnimateStart;
-    'maxChanged': JetElementCustomEvent<ojDatePicker["max"]>;
-    'minChanged': JetElementCustomEvent<ojDatePicker["min"]>;
-    'pickerAttributesChanged': JetElementCustomEvent<ojDatePicker["pickerAttributes"]>;
-    'rawValueChanged': JetElementCustomEvent<ojDatePicker["rawValue"]>;
-    'valueChanged': JetElementCustomEvent<ojDatePicker["value"]>;
-    'asyncValidatorsChanged': JetElementCustomEvent<ojDatePicker["asyncValidators"]>;
-    'autofocusChanged': JetElementCustomEvent<ojDatePicker["autofocus"]>;
     'converterChanged': JetElementCustomEvent<ojDatePicker["converter"]>;
-    'dayFormatterChanged': JetElementCustomEvent<ojDatePicker["dayFormatter"]>;
-    'dayMetaDataChanged': JetElementCustomEvent<ojDatePicker["dayMetaData"]>;
     'describedByChanged': JetElementCustomEvent<ojDatePicker["describedBy"]>;
     'disabledChanged': JetElementCustomEvent<ojDatePicker["disabled"]>;
     'displayOptionsChanged': JetElementCustomEvent<ojDatePicker["displayOptions"]>;
@@ -124,39 +143,90 @@ export interface ojDatePickerEventMap extends ojInputDateEventMap<ojDatePickerSe
     'labelEdgeChanged': JetElementCustomEvent<ojDatePicker["labelEdge"]>;
     'labelHintChanged': JetElementCustomEvent<ojDatePicker["labelHint"]>;
     'labelledByChanged': JetElementCustomEvent<ojDatePicker["labelledBy"]>;
+    'maxChanged': JetElementCustomEvent<ojDatePicker["max"]>;
     'messagesCustomChanged': JetElementCustomEvent<ojDatePicker["messagesCustom"]>;
+    'minChanged': JetElementCustomEvent<ojDatePicker["min"]>;
+    'pickerAttributesChanged': JetElementCustomEvent<ojDatePicker["pickerAttributes"]>;
     'placeholderChanged': JetElementCustomEvent<ojDatePicker["placeholder"]>;
-    'readonlyChanged': JetElementCustomEvent<ojDatePicker["readonly"]>;
+    'rawValueChanged': JetElementCustomEvent<ojDatePicker["rawValue"]>;
     'requiredChanged': JetElementCustomEvent<ojDatePicker["required"]>;
     'userAssistanceDensityChanged': JetElementCustomEvent<ojDatePicker["userAssistanceDensity"]>;
     'validChanged': JetElementCustomEvent<ojDatePicker["valid"]>;
     'validatorsChanged': JetElementCustomEvent<ojDatePicker["validators"]>;
+    'valueChanged': JetElementCustomEvent<ojDatePicker["value"]>;
+    'asyncValidatorsChanged': JetElementCustomEvent<ojDatePicker["asyncValidators"]>;
+    'autofocusChanged': JetElementCustomEvent<ojDatePicker["autofocus"]>;
+    'dayFormatterChanged': JetElementCustomEvent<ojDatePicker["dayFormatter"]>;
+    'dayMetaDataChanged': JetElementCustomEvent<ojDatePicker["dayMetaData"]>;
+    'readonlyChanged': JetElementCustomEvent<ojDatePicker["readonly"]>;
 }
 export interface ojDatePickerSettableProperties extends ojInputDateSettableProperties {
+    converter: Converter<any>;
+    describedBy: string | null;
+    disabled: boolean;
+    displayOptions: {
+        converterHint?: 'display' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
+    };
+    help: {
+        instruction?: string;
+    };
+    helpHints: {
+        definition?: string;
+        source?: string;
+    };
     keyboardEdit: 'disabled';
+    labelEdge: 'inside' | 'none' | 'provided';
+    labelHint: string;
+    labelledBy: string | null;
     max: string | null;
+    messagesCustom: Message[];
     min: string | null;
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    placeholder: string;
     readonly rawValue: string;
-    renderMode: 'jet';
+    renderMode: 'jet' | 'native';
+    required: boolean;
+    userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
+    readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
+    validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
 }
 export interface ojDatePickerSettablePropertiesLenient extends Partial<ojDatePickerSettableProperties> {
     [key: string]: any;
 }
 export interface ojDateTimePicker extends ojInputDateTime<ojDateTimePickerSettableProperties> {
+    converter: Converter<any>;
+    describedBy: string | null;
+    disabled: boolean;
+    help: {
+        instruction?: string;
+    };
+    helpHints: {
+        definition?: string;
+        source?: string;
+    };
     keyboardEdit: 'disabled';
+    labelEdge: 'inside' | 'none' | 'provided';
+    labelHint: string;
+    labelledBy: string | null;
     max: string | null;
+    messagesCustom: Message[];
     min: string | null;
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    placeholder: string;
     readonly rawValue: string;
-    renderMode: 'jet';
+    renderMode: 'jet' | 'native';
+    required: boolean;
+    userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
+    validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     addEventListener<T extends keyof ojDateTimePickerEventMap>(type: T, listener: (this: HTMLElement, ev: ojDateTimePickerEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -181,13 +251,39 @@ export namespace ojDateTimePicker {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type converterChanged = JetElementCustomEvent<ojDateTimePicker["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = JetElementCustomEvent<ojDateTimePicker["describedBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojDateTimePicker["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = JetElementCustomEvent<ojDateTimePicker["help"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = JetElementCustomEvent<ojDateTimePicker["helpHints"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = JetElementCustomEvent<ojDateTimePicker["labelEdge"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = JetElementCustomEvent<ojDateTimePicker["labelHint"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojDateTimePicker["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojDateTimePicker["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = JetElementCustomEvent<ojDateTimePicker["messagesCustom"]>;
     // tslint:disable-next-line interface-over-type-literal
     type minChanged = JetElementCustomEvent<ojDateTimePicker["min"]>;
     // tslint:disable-next-line interface-over-type-literal
     type pickerAttributesChanged = JetElementCustomEvent<ojDateTimePicker["pickerAttributes"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged = JetElementCustomEvent<ojDateTimePicker["placeholder"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type rawValueChanged = JetElementCustomEvent<ojDateTimePicker["rawValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged = JetElementCustomEvent<ojDateTimePicker["required"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = JetElementCustomEvent<ojDateTimePicker["userAssistanceDensity"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged = JetElementCustomEvent<ojDateTimePicker["validators"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojDateTimePicker["value"]>;
     //------------------------------------------------------------
@@ -198,43 +294,17 @@ export namespace ojDateTimePicker {
     // tslint:disable-next-line interface-over-type-literal
     type autofocusChanged = ojInputDateTime.autofocusChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type converterChanged = ojInputDateTime.converterChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type datePickerChanged = ojInputDateTime.datePickerChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type dayFormatterChanged = ojInputDateTime.dayFormatterChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type dayMetaDataChanged = ojInputDateTime.dayMetaDataChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type describedByChanged = ojInputDateTime.describedByChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type disabledChanged = ojInputDateTime.disabledChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type displayOptionsChanged = ojInputDateTime.displayOptionsChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type helpChanged = ojInputDateTime.helpChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type helpHintsChanged = ojInputDateTime.helpHintsChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelEdgeChanged = ojInputDateTime.labelEdgeChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelHintChanged = ojInputDateTime.labelHintChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelledByChanged = ojInputDateTime.labelledByChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type messagesCustomChanged = ojInputDateTime.messagesCustomChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type placeholderChanged = ojInputDateTime.placeholderChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = ojInputDateTime.readonlyChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type requiredChanged = ojInputDateTime.requiredChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type userAssistanceDensityChanged = ojInputDateTime.userAssistanceDensityChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type validChanged = ojInputDateTime.validChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type validatorsChanged = ojInputDateTime.validatorsChanged<ojDateTimePickerSettableProperties>;
     //------------------------------------------------------------
     // End: generated events for inherited properties
     //------------------------------------------------------------
@@ -242,50 +312,70 @@ export namespace ojDateTimePicker {
 export interface ojDateTimePickerEventMap extends ojInputDateTimeEventMap<ojDateTimePickerSettableProperties> {
     'ojAnimateEnd': ojDateTimePicker.ojAnimateEnd;
     'ojAnimateStart': ojDateTimePicker.ojAnimateStart;
-    'maxChanged': JetElementCustomEvent<ojDateTimePicker["max"]>;
-    'minChanged': JetElementCustomEvent<ojDateTimePicker["min"]>;
-    'pickerAttributesChanged': JetElementCustomEvent<ojDateTimePicker["pickerAttributes"]>;
-    'rawValueChanged': JetElementCustomEvent<ojDateTimePicker["rawValue"]>;
-    'valueChanged': JetElementCustomEvent<ojDateTimePicker["value"]>;
-    'asyncValidatorsChanged': JetElementCustomEvent<ojDateTimePicker["asyncValidators"]>;
-    'autofocusChanged': JetElementCustomEvent<ojDateTimePicker["autofocus"]>;
     'converterChanged': JetElementCustomEvent<ojDateTimePicker["converter"]>;
-    'datePickerChanged': JetElementCustomEvent<ojDateTimePicker["datePicker"]>;
-    'dayFormatterChanged': JetElementCustomEvent<ojDateTimePicker["dayFormatter"]>;
-    'dayMetaDataChanged': JetElementCustomEvent<ojDateTimePicker["dayMetaData"]>;
     'describedByChanged': JetElementCustomEvent<ojDateTimePicker["describedBy"]>;
     'disabledChanged': JetElementCustomEvent<ojDateTimePicker["disabled"]>;
-    'displayOptionsChanged': JetElementCustomEvent<ojDateTimePicker["displayOptions"]>;
     'helpChanged': JetElementCustomEvent<ojDateTimePicker["help"]>;
     'helpHintsChanged': JetElementCustomEvent<ojDateTimePicker["helpHints"]>;
     'labelEdgeChanged': JetElementCustomEvent<ojDateTimePicker["labelEdge"]>;
     'labelHintChanged': JetElementCustomEvent<ojDateTimePicker["labelHint"]>;
     'labelledByChanged': JetElementCustomEvent<ojDateTimePicker["labelledBy"]>;
+    'maxChanged': JetElementCustomEvent<ojDateTimePicker["max"]>;
     'messagesCustomChanged': JetElementCustomEvent<ojDateTimePicker["messagesCustom"]>;
+    'minChanged': JetElementCustomEvent<ojDateTimePicker["min"]>;
+    'pickerAttributesChanged': JetElementCustomEvent<ojDateTimePicker["pickerAttributes"]>;
     'placeholderChanged': JetElementCustomEvent<ojDateTimePicker["placeholder"]>;
-    'readonlyChanged': JetElementCustomEvent<ojDateTimePicker["readonly"]>;
+    'rawValueChanged': JetElementCustomEvent<ojDateTimePicker["rawValue"]>;
     'requiredChanged': JetElementCustomEvent<ojDateTimePicker["required"]>;
     'userAssistanceDensityChanged': JetElementCustomEvent<ojDateTimePicker["userAssistanceDensity"]>;
-    'validChanged': JetElementCustomEvent<ojDateTimePicker["valid"]>;
     'validatorsChanged': JetElementCustomEvent<ojDateTimePicker["validators"]>;
+    'valueChanged': JetElementCustomEvent<ojDateTimePicker["value"]>;
+    'asyncValidatorsChanged': JetElementCustomEvent<ojDateTimePicker["asyncValidators"]>;
+    'autofocusChanged': JetElementCustomEvent<ojDateTimePicker["autofocus"]>;
+    'datePickerChanged': JetElementCustomEvent<ojDateTimePicker["datePicker"]>;
+    'dayFormatterChanged': JetElementCustomEvent<ojDateTimePicker["dayFormatter"]>;
+    'dayMetaDataChanged': JetElementCustomEvent<ojDateTimePicker["dayMetaData"]>;
+    'displayOptionsChanged': JetElementCustomEvent<ojDateTimePicker["displayOptions"]>;
+    'readonlyChanged': JetElementCustomEvent<ojDateTimePicker["readonly"]>;
+    'validChanged': JetElementCustomEvent<ojDateTimePicker["valid"]>;
 }
 export interface ojDateTimePickerSettableProperties extends ojInputDateTimeSettableProperties {
+    converter: Converter<any>;
+    describedBy: string | null;
+    disabled: boolean;
+    help: {
+        instruction?: string;
+    };
+    helpHints: {
+        definition?: string;
+        source?: string;
+    };
     keyboardEdit: 'disabled';
+    labelEdge: 'inside' | 'none' | 'provided';
+    labelHint: string;
+    labelledBy: string | null;
     max: string | null;
+    messagesCustom: Message[];
     min: string | null;
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    placeholder: string;
     readonly rawValue: string;
-    renderMode: 'jet';
+    renderMode: 'jet' | 'native';
+    required: boolean;
+    userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
+    validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
 }
 export interface ojDateTimePickerSettablePropertiesLenient extends Partial<ojDateTimePickerSettableProperties> {
     [key: string]: any;
 }
 export interface ojInputDate<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> extends inputBase<string, SP> {
-    converter: Promise<Converter<any>> | Converter<any>;
+    autocomplete: 'on' | 'off' | string;
+    autofocus: boolean;
+    converter: Converter<any>;
     datePicker: {
         changeMonth?: string;
         changeYear?: string;
@@ -311,13 +401,21 @@ export interface ojInputDate<SP extends ojInputDateSettableProperties = ojInputD
             };
         };
     };
+    displayOptions?: {
+        converterHint?: 'display' | 'none';
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
+    };
     keyboardEdit: 'enabled' | 'disabled';
+    labelledBy: string | null;
     max: string | null;
     min: string | null;
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    placeholder: string;
     renderMode: 'jet' | 'native';
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
@@ -388,6 +486,10 @@ export namespace ojInputDate {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type autocompleteChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["autocomplete"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type autofocusChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["autofocus"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type converterChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["converter"]>;
     // tslint:disable-next-line interface-over-type-literal
     type datePickerChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["datePicker"]>;
@@ -396,13 +498,19 @@ export namespace ojInputDate {
     // tslint:disable-next-line interface-over-type-literal
     type dayMetaDataChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["dayMetaData"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type keyboardEditChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["keyboardEdit"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["max"]>;
     // tslint:disable-next-line interface-over-type-literal
     type minChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["min"]>;
     // tslint:disable-next-line interface-over-type-literal
     type pickerAttributesChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["pickerAttributes"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["placeholder"]>;
     // tslint:disable-next-line interface-over-type-literal
     type renderModeChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["renderMode"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -415,15 +523,9 @@ export namespace ojInputDate {
     // tslint:disable-next-line interface-over-type-literal
     type asyncValidatorsChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.asyncValidatorsChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
-    type autocompleteChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.autocompleteChanged<string, SP>;
-    // tslint:disable-next-line interface-over-type-literal
-    type autofocusChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.autofocusChanged<string, SP>;
-    // tslint:disable-next-line interface-over-type-literal
     type describedByChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.describedByChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
     type disabledChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.disabledChanged<string, SP>;
-    // tslint:disable-next-line interface-over-type-literal
-    type displayOptionsChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.displayOptionsChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
     type helpChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.helpChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
@@ -433,11 +535,7 @@ export namespace ojInputDate {
     // tslint:disable-next-line interface-over-type-literal
     type labelHintChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.labelHintChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelledByChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.labelledByChanged<string, SP>;
-    // tslint:disable-next-line interface-over-type-literal
     type messagesCustomChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.messagesCustomChanged<string, SP>;
-    // tslint:disable-next-line interface-over-type-literal
-    type placeholderChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.placeholderChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
     type rawValueChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.rawValueChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
@@ -464,30 +562,30 @@ export namespace ojInputDate {
 export interface ojInputDateEventMap<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> extends inputBaseEventMap<string, SP> {
     'ojAnimateEnd': ojInputDate.ojAnimateEnd;
     'ojAnimateStart': ojInputDate.ojAnimateStart;
+    'autocompleteChanged': JetElementCustomEvent<ojInputDate<SP>["autocomplete"]>;
+    'autofocusChanged': JetElementCustomEvent<ojInputDate<SP>["autofocus"]>;
     'converterChanged': JetElementCustomEvent<ojInputDate<SP>["converter"]>;
     'datePickerChanged': JetElementCustomEvent<ojInputDate<SP>["datePicker"]>;
     'dayFormatterChanged': JetElementCustomEvent<ojInputDate<SP>["dayFormatter"]>;
     'dayMetaDataChanged': JetElementCustomEvent<ojInputDate<SP>["dayMetaData"]>;
+    'displayOptionsChanged': JetElementCustomEvent<ojInputDate<SP>["displayOptions"]>;
     'keyboardEditChanged': JetElementCustomEvent<ojInputDate<SP>["keyboardEdit"]>;
+    'labelledByChanged': JetElementCustomEvent<ojInputDate<SP>["labelledBy"]>;
     'maxChanged': JetElementCustomEvent<ojInputDate<SP>["max"]>;
     'minChanged': JetElementCustomEvent<ojInputDate<SP>["min"]>;
     'pickerAttributesChanged': JetElementCustomEvent<ojInputDate<SP>["pickerAttributes"]>;
+    'placeholderChanged': JetElementCustomEvent<ojInputDate<SP>["placeholder"]>;
     'renderModeChanged': JetElementCustomEvent<ojInputDate<SP>["renderMode"]>;
     'validatorsChanged': JetElementCustomEvent<ojInputDate<SP>["validators"]>;
     'valueChanged': JetElementCustomEvent<ojInputDate<SP>["value"]>;
     'asyncValidatorsChanged': JetElementCustomEvent<ojInputDate<SP>["asyncValidators"]>;
-    'autocompleteChanged': JetElementCustomEvent<ojInputDate<SP>["autocomplete"]>;
-    'autofocusChanged': JetElementCustomEvent<ojInputDate<SP>["autofocus"]>;
     'describedByChanged': JetElementCustomEvent<ojInputDate<SP>["describedBy"]>;
     'disabledChanged': JetElementCustomEvent<ojInputDate<SP>["disabled"]>;
-    'displayOptionsChanged': JetElementCustomEvent<ojInputDate<SP>["displayOptions"]>;
     'helpChanged': JetElementCustomEvent<ojInputDate<SP>["help"]>;
     'helpHintsChanged': JetElementCustomEvent<ojInputDate<SP>["helpHints"]>;
     'labelEdgeChanged': JetElementCustomEvent<ojInputDate<SP>["labelEdge"]>;
     'labelHintChanged': JetElementCustomEvent<ojInputDate<SP>["labelHint"]>;
-    'labelledByChanged': JetElementCustomEvent<ojInputDate<SP>["labelledBy"]>;
     'messagesCustomChanged': JetElementCustomEvent<ojInputDate<SP>["messagesCustom"]>;
-    'placeholderChanged': JetElementCustomEvent<ojInputDate<SP>["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<ojInputDate<SP>["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<ojInputDate<SP>["readonly"]>;
     'requiredChanged': JetElementCustomEvent<ojInputDate<SP>["required"]>;
@@ -495,7 +593,9 @@ export interface ojInputDateEventMap<SP extends ojInputDateSettableProperties = 
     'validChanged': JetElementCustomEvent<ojInputDate<SP>["valid"]>;
 }
 export interface ojInputDateSettableProperties extends inputBaseSettableProperties<string> {
-    converter: Promise<Converter<any>> | Converter<any>;
+    autocomplete: 'on' | 'off' | string;
+    autofocus: boolean;
+    converter: Converter<any>;
     datePicker: {
         changeMonth?: string;
         changeYear?: string;
@@ -521,13 +621,21 @@ export interface ojInputDateSettableProperties extends inputBaseSettableProperti
             };
         };
     };
+    displayOptions?: {
+        converterHint?: 'display' | 'none';
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
+    };
     keyboardEdit: 'enabled' | 'disabled';
+    labelledBy: string | null;
     max: string | null;
     min: string | null;
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    placeholder: string;
     renderMode: 'jet' | 'native';
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
@@ -577,7 +685,7 @@ export interface ojInputDateSettablePropertiesLenient extends Partial<ojInputDat
     [key: string]: any;
 }
 export interface ojInputDateTime<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> extends ojInputDate<SP> {
-    converter: Promise<Converter<any>> | Converter<any>;
+    converter: Converter<any>;
     max: string | null;
     min: string | null;
     renderMode: 'jet' | 'native';
@@ -760,7 +868,7 @@ export interface ojInputDateTimeEventMap<SP extends ojInputDateTimeSettablePrope
     'validChanged': JetElementCustomEvent<ojInputDateTime<SP>["valid"]>;
 }
 export interface ojInputDateTimeSettableProperties extends ojInputDateSettableProperties {
-    converter: Promise<Converter<any>> | Converter<any>;
+    converter: Converter<any>;
     max: string | null;
     min: string | null;
     renderMode: 'jet' | 'native';
@@ -820,7 +928,7 @@ export interface ojInputDateTimeSettablePropertiesLenient extends Partial<ojInpu
     [key: string]: any;
 }
 export interface ojInputTime extends inputBase<string, ojInputTimeSettableProperties> {
-    converter: Promise<Converter<any>> | Converter<any>;
+    converter: Converter<any>;
     keyboardEdit: 'enabled' | 'disabled';
     max: string | null;
     min: string | null;
@@ -990,7 +1098,7 @@ export interface ojInputTimeEventMap extends inputBaseEventMap<string, ojInputTi
     'validChanged': JetElementCustomEvent<ojInputTime["valid"]>;
 }
 export interface ojInputTimeSettableProperties extends inputBaseSettableProperties<string> {
-    converter: Promise<Converter<any>> | Converter<any>;
+    converter: Converter<any>;
     keyboardEdit: 'enabled' | 'disabled';
     max: string | null;
     min: string | null;
@@ -1066,13 +1174,43 @@ export namespace DatePickerElement {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type converterChanged = JetElementCustomEvent<ojDatePicker["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = JetElementCustomEvent<ojDatePicker["describedBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojDatePicker["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojDatePicker["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = JetElementCustomEvent<ojDatePicker["help"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = JetElementCustomEvent<ojDatePicker["helpHints"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = JetElementCustomEvent<ojDatePicker["labelEdge"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = JetElementCustomEvent<ojDatePicker["labelHint"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojDatePicker["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojDatePicker["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = JetElementCustomEvent<ojDatePicker["messagesCustom"]>;
     // tslint:disable-next-line interface-over-type-literal
     type minChanged = JetElementCustomEvent<ojDatePicker["min"]>;
     // tslint:disable-next-line interface-over-type-literal
     type pickerAttributesChanged = JetElementCustomEvent<ojDatePicker["pickerAttributes"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged = JetElementCustomEvent<ojDatePicker["placeholder"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type rawValueChanged = JetElementCustomEvent<ojDatePicker["rawValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged = JetElementCustomEvent<ojDatePicker["required"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = JetElementCustomEvent<ojDatePicker["userAssistanceDensity"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = JetElementCustomEvent<ojDatePicker["valid"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged = JetElementCustomEvent<ojDatePicker["validators"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojDatePicker["value"]>;
     //------------------------------------------------------------
@@ -1083,41 +1221,11 @@ export namespace DatePickerElement {
     // tslint:disable-next-line interface-over-type-literal
     type autofocusChanged = ojInputDate.autofocusChanged<ojDatePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type converterChanged = ojInputDate.converterChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type dayFormatterChanged = ojInputDate.dayFormatterChanged<ojDatePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type dayMetaDataChanged = ojInputDate.dayMetaDataChanged<ojDatePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type describedByChanged = ojInputDate.describedByChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type disabledChanged = ojInputDate.disabledChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type displayOptionsChanged = ojInputDate.displayOptionsChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type helpChanged = ojInputDate.helpChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type helpHintsChanged = ojInputDate.helpHintsChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelEdgeChanged = ojInputDate.labelEdgeChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelHintChanged = ojInputDate.labelHintChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelledByChanged = ojInputDate.labelledByChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type messagesCustomChanged = ojInputDate.messagesCustomChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type placeholderChanged = ojInputDate.placeholderChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = ojInputDate.readonlyChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type requiredChanged = ojInputDate.requiredChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type userAssistanceDensityChanged = ojInputDate.userAssistanceDensityChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type validChanged = ojInputDate.validChanged<ojDatePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type validatorsChanged = ojInputDate.validatorsChanged<ojDatePickerSettableProperties>;
     //------------------------------------------------------------
     // End: generated events for inherited properties
     //------------------------------------------------------------
@@ -1137,13 +1245,39 @@ export namespace DateTimePickerElement {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type converterChanged = JetElementCustomEvent<ojDateTimePicker["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = JetElementCustomEvent<ojDateTimePicker["describedBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojDateTimePicker["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = JetElementCustomEvent<ojDateTimePicker["help"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = JetElementCustomEvent<ojDateTimePicker["helpHints"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = JetElementCustomEvent<ojDateTimePicker["labelEdge"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = JetElementCustomEvent<ojDateTimePicker["labelHint"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojDateTimePicker["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojDateTimePicker["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = JetElementCustomEvent<ojDateTimePicker["messagesCustom"]>;
     // tslint:disable-next-line interface-over-type-literal
     type minChanged = JetElementCustomEvent<ojDateTimePicker["min"]>;
     // tslint:disable-next-line interface-over-type-literal
     type pickerAttributesChanged = JetElementCustomEvent<ojDateTimePicker["pickerAttributes"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged = JetElementCustomEvent<ojDateTimePicker["placeholder"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type rawValueChanged = JetElementCustomEvent<ojDateTimePicker["rawValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged = JetElementCustomEvent<ojDateTimePicker["required"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = JetElementCustomEvent<ojDateTimePicker["userAssistanceDensity"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged = JetElementCustomEvent<ojDateTimePicker["validators"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojDateTimePicker["value"]>;
     //------------------------------------------------------------
@@ -1154,43 +1288,17 @@ export namespace DateTimePickerElement {
     // tslint:disable-next-line interface-over-type-literal
     type autofocusChanged = ojInputDateTime.autofocusChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type converterChanged = ojInputDateTime.converterChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type datePickerChanged = ojInputDateTime.datePickerChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type dayFormatterChanged = ojInputDateTime.dayFormatterChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type dayMetaDataChanged = ojInputDateTime.dayMetaDataChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type describedByChanged = ojInputDateTime.describedByChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type disabledChanged = ojInputDateTime.disabledChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type displayOptionsChanged = ojInputDateTime.displayOptionsChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type helpChanged = ojInputDateTime.helpChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type helpHintsChanged = ojInputDateTime.helpHintsChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelEdgeChanged = ojInputDateTime.labelEdgeChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelHintChanged = ojInputDateTime.labelHintChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelledByChanged = ojInputDateTime.labelledByChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type messagesCustomChanged = ojInputDateTime.messagesCustomChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type placeholderChanged = ojInputDateTime.placeholderChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = ojInputDateTime.readonlyChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type requiredChanged = ojInputDateTime.requiredChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type userAssistanceDensityChanged = ojInputDateTime.userAssistanceDensityChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type validChanged = ojInputDateTime.validChanged<ojDateTimePickerSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type validatorsChanged = ojInputDateTime.validatorsChanged<ojDateTimePickerSettableProperties>;
     //------------------------------------------------------------
     // End: generated events for inherited properties
     //------------------------------------------------------------
@@ -1210,6 +1318,10 @@ export namespace InputDateElement {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type autocompleteChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["autocomplete"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type autofocusChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["autofocus"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type converterChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["converter"]>;
     // tslint:disable-next-line interface-over-type-literal
     type datePickerChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["datePicker"]>;
@@ -1218,13 +1330,19 @@ export namespace InputDateElement {
     // tslint:disable-next-line interface-over-type-literal
     type dayMetaDataChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["dayMetaData"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type keyboardEditChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["keyboardEdit"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["max"]>;
     // tslint:disable-next-line interface-over-type-literal
     type minChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["min"]>;
     // tslint:disable-next-line interface-over-type-literal
     type pickerAttributesChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["pickerAttributes"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["placeholder"]>;
     // tslint:disable-next-line interface-over-type-literal
     type renderModeChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["renderMode"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1237,15 +1355,9 @@ export namespace InputDateElement {
     // tslint:disable-next-line interface-over-type-literal
     type asyncValidatorsChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.asyncValidatorsChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
-    type autocompleteChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.autocompleteChanged<string, SP>;
-    // tslint:disable-next-line interface-over-type-literal
-    type autofocusChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.autofocusChanged<string, SP>;
-    // tslint:disable-next-line interface-over-type-literal
     type describedByChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.describedByChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
     type disabledChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.disabledChanged<string, SP>;
-    // tslint:disable-next-line interface-over-type-literal
-    type displayOptionsChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.displayOptionsChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
     type helpChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.helpChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1255,11 +1367,7 @@ export namespace InputDateElement {
     // tslint:disable-next-line interface-over-type-literal
     type labelHintChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.labelHintChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelledByChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.labelledByChanged<string, SP>;
-    // tslint:disable-next-line interface-over-type-literal
     type messagesCustomChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.messagesCustomChanged<string, SP>;
-    // tslint:disable-next-line interface-over-type-literal
-    type placeholderChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.placeholderChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
     type rawValueChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.rawValueChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1275,6 +1383,12 @@ export namespace InputDateElement {
         date: number;
         fullYear: number;
         month: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DayFormatterOutput = {
+        className?: string;
+        disabled?: boolean;
+        tooltip?: string;
     };
 }
 export namespace InputDateTimeElement {
@@ -1436,16 +1550,7 @@ export namespace InputTimeElement {
 export interface DatePickerIntrinsicProps extends Partial<Readonly<ojDatePickerSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojAnimateEnd?: (value: ojDatePickerEventMap['ojAnimateEnd']) => void;
     onojAnimateStart?: (value: ojDatePickerEventMap['ojAnimateStart']) => void;
-    onmaxChanged?: (value: ojDatePickerEventMap['maxChanged']) => void;
-    onminChanged?: (value: ojDatePickerEventMap['minChanged']) => void;
-    onpickerAttributesChanged?: (value: ojDatePickerEventMap['pickerAttributesChanged']) => void;
-    onrawValueChanged?: (value: ojDatePickerEventMap['rawValueChanged']) => void;
-    onvalueChanged?: (value: ojDatePickerEventMap['valueChanged']) => void;
-    onasyncValidatorsChanged?: (value: ojDatePickerEventMap['asyncValidatorsChanged']) => void;
-    onautofocusChanged?: (value: ojDatePickerEventMap['autofocusChanged']) => void;
     onconverterChanged?: (value: ojDatePickerEventMap['converterChanged']) => void;
-    ondayFormatterChanged?: (value: ojDatePickerEventMap['dayFormatterChanged']) => void;
-    ondayMetaDataChanged?: (value: ojDatePickerEventMap['dayMetaDataChanged']) => void;
     ondescribedByChanged?: (value: ojDatePickerEventMap['describedByChanged']) => void;
     ondisabledChanged?: (value: ojDatePickerEventMap['disabledChanged']) => void;
     ondisplayOptionsChanged?: (value: ojDatePickerEventMap['displayOptionsChanged']) => void;
@@ -1454,73 +1559,82 @@ export interface DatePickerIntrinsicProps extends Partial<Readonly<ojDatePickerS
     onlabelEdgeChanged?: (value: ojDatePickerEventMap['labelEdgeChanged']) => void;
     onlabelHintChanged?: (value: ojDatePickerEventMap['labelHintChanged']) => void;
     onlabelledByChanged?: (value: ojDatePickerEventMap['labelledByChanged']) => void;
+    onmaxChanged?: (value: ojDatePickerEventMap['maxChanged']) => void;
     onmessagesCustomChanged?: (value: ojDatePickerEventMap['messagesCustomChanged']) => void;
+    onminChanged?: (value: ojDatePickerEventMap['minChanged']) => void;
+    onpickerAttributesChanged?: (value: ojDatePickerEventMap['pickerAttributesChanged']) => void;
     onplaceholderChanged?: (value: ojDatePickerEventMap['placeholderChanged']) => void;
-    onreadonlyChanged?: (value: ojDatePickerEventMap['readonlyChanged']) => void;
+    onrawValueChanged?: (value: ojDatePickerEventMap['rawValueChanged']) => void;
     onrequiredChanged?: (value: ojDatePickerEventMap['requiredChanged']) => void;
     onuserAssistanceDensityChanged?: (value: ojDatePickerEventMap['userAssistanceDensityChanged']) => void;
     onvalidChanged?: (value: ojDatePickerEventMap['validChanged']) => void;
     onvalidatorsChanged?: (value: ojDatePickerEventMap['validatorsChanged']) => void;
+    onvalueChanged?: (value: ojDatePickerEventMap['valueChanged']) => void;
+    onasyncValidatorsChanged?: (value: ojDatePickerEventMap['asyncValidatorsChanged']) => void;
+    onautofocusChanged?: (value: ojDatePickerEventMap['autofocusChanged']) => void;
+    ondayFormatterChanged?: (value: ojDatePickerEventMap['dayFormatterChanged']) => void;
+    ondayMetaDataChanged?: (value: ojDatePickerEventMap['dayMetaDataChanged']) => void;
+    onreadonlyChanged?: (value: ojDatePickerEventMap['readonlyChanged']) => void;
     children?: ComponentChildren;
 }
 export interface DateTimePickerIntrinsicProps extends Partial<Readonly<ojDateTimePickerSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojAnimateEnd?: (value: ojDateTimePickerEventMap['ojAnimateEnd']) => void;
     onojAnimateStart?: (value: ojDateTimePickerEventMap['ojAnimateStart']) => void;
-    onmaxChanged?: (value: ojDateTimePickerEventMap['maxChanged']) => void;
-    onminChanged?: (value: ojDateTimePickerEventMap['minChanged']) => void;
-    onpickerAttributesChanged?: (value: ojDateTimePickerEventMap['pickerAttributesChanged']) => void;
-    onrawValueChanged?: (value: ojDateTimePickerEventMap['rawValueChanged']) => void;
-    onvalueChanged?: (value: ojDateTimePickerEventMap['valueChanged']) => void;
-    onasyncValidatorsChanged?: (value: ojDateTimePickerEventMap['asyncValidatorsChanged']) => void;
-    onautofocusChanged?: (value: ojDateTimePickerEventMap['autofocusChanged']) => void;
     onconverterChanged?: (value: ojDateTimePickerEventMap['converterChanged']) => void;
-    ondatePickerChanged?: (value: ojDateTimePickerEventMap['datePickerChanged']) => void;
-    ondayFormatterChanged?: (value: ojDateTimePickerEventMap['dayFormatterChanged']) => void;
-    ondayMetaDataChanged?: (value: ojDateTimePickerEventMap['dayMetaDataChanged']) => void;
     ondescribedByChanged?: (value: ojDateTimePickerEventMap['describedByChanged']) => void;
     ondisabledChanged?: (value: ojDateTimePickerEventMap['disabledChanged']) => void;
-    ondisplayOptionsChanged?: (value: ojDateTimePickerEventMap['displayOptionsChanged']) => void;
     onhelpChanged?: (value: ojDateTimePickerEventMap['helpChanged']) => void;
     onhelpHintsChanged?: (value: ojDateTimePickerEventMap['helpHintsChanged']) => void;
     onlabelEdgeChanged?: (value: ojDateTimePickerEventMap['labelEdgeChanged']) => void;
     onlabelHintChanged?: (value: ojDateTimePickerEventMap['labelHintChanged']) => void;
     onlabelledByChanged?: (value: ojDateTimePickerEventMap['labelledByChanged']) => void;
+    onmaxChanged?: (value: ojDateTimePickerEventMap['maxChanged']) => void;
     onmessagesCustomChanged?: (value: ojDateTimePickerEventMap['messagesCustomChanged']) => void;
+    onminChanged?: (value: ojDateTimePickerEventMap['minChanged']) => void;
+    onpickerAttributesChanged?: (value: ojDateTimePickerEventMap['pickerAttributesChanged']) => void;
     onplaceholderChanged?: (value: ojDateTimePickerEventMap['placeholderChanged']) => void;
-    onreadonlyChanged?: (value: ojDateTimePickerEventMap['readonlyChanged']) => void;
+    onrawValueChanged?: (value: ojDateTimePickerEventMap['rawValueChanged']) => void;
     onrequiredChanged?: (value: ojDateTimePickerEventMap['requiredChanged']) => void;
     onuserAssistanceDensityChanged?: (value: ojDateTimePickerEventMap['userAssistanceDensityChanged']) => void;
-    onvalidChanged?: (value: ojDateTimePickerEventMap['validChanged']) => void;
     onvalidatorsChanged?: (value: ojDateTimePickerEventMap['validatorsChanged']) => void;
+    onvalueChanged?: (value: ojDateTimePickerEventMap['valueChanged']) => void;
+    onasyncValidatorsChanged?: (value: ojDateTimePickerEventMap['asyncValidatorsChanged']) => void;
+    onautofocusChanged?: (value: ojDateTimePickerEventMap['autofocusChanged']) => void;
+    ondatePickerChanged?: (value: ojDateTimePickerEventMap['datePickerChanged']) => void;
+    ondayFormatterChanged?: (value: ojDateTimePickerEventMap['dayFormatterChanged']) => void;
+    ondayMetaDataChanged?: (value: ojDateTimePickerEventMap['dayMetaDataChanged']) => void;
+    ondisplayOptionsChanged?: (value: ojDateTimePickerEventMap['displayOptionsChanged']) => void;
+    onreadonlyChanged?: (value: ojDateTimePickerEventMap['readonlyChanged']) => void;
+    onvalidChanged?: (value: ojDateTimePickerEventMap['validChanged']) => void;
     children?: ComponentChildren;
 }
 export interface InputDateIntrinsicProps extends Partial<Readonly<ojInputDateSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojAnimateEnd?: (value: ojInputDateEventMap<any>['ojAnimateEnd']) => void;
     onojAnimateStart?: (value: ojInputDateEventMap<any>['ojAnimateStart']) => void;
+    onautocompleteChanged?: (value: ojInputDateEventMap<any>['autocompleteChanged']) => void;
+    onautofocusChanged?: (value: ojInputDateEventMap<any>['autofocusChanged']) => void;
     onconverterChanged?: (value: ojInputDateEventMap<any>['converterChanged']) => void;
     ondatePickerChanged?: (value: ojInputDateEventMap<any>['datePickerChanged']) => void;
     ondayFormatterChanged?: (value: ojInputDateEventMap<any>['dayFormatterChanged']) => void;
     ondayMetaDataChanged?: (value: ojInputDateEventMap<any>['dayMetaDataChanged']) => void;
+    ondisplayOptionsChanged?: (value: ojInputDateEventMap<any>['displayOptionsChanged']) => void;
     onkeyboardEditChanged?: (value: ojInputDateEventMap<any>['keyboardEditChanged']) => void;
+    onlabelledByChanged?: (value: ojInputDateEventMap<any>['labelledByChanged']) => void;
     onmaxChanged?: (value: ojInputDateEventMap<any>['maxChanged']) => void;
     onminChanged?: (value: ojInputDateEventMap<any>['minChanged']) => void;
     onpickerAttributesChanged?: (value: ojInputDateEventMap<any>['pickerAttributesChanged']) => void;
+    onplaceholderChanged?: (value: ojInputDateEventMap<any>['placeholderChanged']) => void;
     onrenderModeChanged?: (value: ojInputDateEventMap<any>['renderModeChanged']) => void;
     onvalidatorsChanged?: (value: ojInputDateEventMap<any>['validatorsChanged']) => void;
     onvalueChanged?: (value: ojInputDateEventMap<any>['valueChanged']) => void;
     onasyncValidatorsChanged?: (value: ojInputDateEventMap<any>['asyncValidatorsChanged']) => void;
-    onautocompleteChanged?: (value: ojInputDateEventMap<any>['autocompleteChanged']) => void;
-    onautofocusChanged?: (value: ojInputDateEventMap<any>['autofocusChanged']) => void;
     ondescribedByChanged?: (value: ojInputDateEventMap<any>['describedByChanged']) => void;
     ondisabledChanged?: (value: ojInputDateEventMap<any>['disabledChanged']) => void;
-    ondisplayOptionsChanged?: (value: ojInputDateEventMap<any>['displayOptionsChanged']) => void;
     onhelpChanged?: (value: ojInputDateEventMap<any>['helpChanged']) => void;
     onhelpHintsChanged?: (value: ojInputDateEventMap<any>['helpHintsChanged']) => void;
     onlabelEdgeChanged?: (value: ojInputDateEventMap<any>['labelEdgeChanged']) => void;
     onlabelHintChanged?: (value: ojInputDateEventMap<any>['labelHintChanged']) => void;
-    onlabelledByChanged?: (value: ojInputDateEventMap<any>['labelledByChanged']) => void;
     onmessagesCustomChanged?: (value: ojInputDateEventMap<any>['messagesCustomChanged']) => void;
-    onplaceholderChanged?: (value: ojInputDateEventMap<any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojInputDateEventMap<any>['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojInputDateEventMap<any>['readonlyChanged']) => void;
     onrequiredChanged?: (value: ojInputDateEventMap<any>['requiredChanged']) => void;

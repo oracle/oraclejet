@@ -14,6 +14,16 @@ if(additional){
     //var propName = (name ? (name.indexOf('#') == 0 ? name.substring(1) : name) : name);
     var propName = data.alias? (data.alias.replace(/^(#)+/g, '')) : (name ? name.replace(/^(#)+/g, '') : '');
     var attrName = this.isCustomElement && !data.ojchild && !data.ojslot && !data.isSubpropOfArray && data.kind !== 'typedef' ? this.propertyNameToAttribute(propName) : propName;
+    
+    // for dynamic slots instead of displaying the name of the context type we will use the display name metadata (if exists)
+    if (data.dynamicSlot){
+      if (data.name.endsWith('DynamicSlot')){
+        attrName = 'Dynamic Slots';
+      }
+      else{
+        attrName = data.displayName ? `${data.displayName} (Dynamic)` : `${data.name} (Dynamic)`;
+      }
+    }
     // [jim] add bookmarkable link icon: ?>
     <h4 id="<?js= id ?>" class="name">
         <?js

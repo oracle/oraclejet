@@ -425,13 +425,42 @@ if (columnCount && !self.isStylingOrOverview) {
     <div class="quick-nav-section<?js= columnCount ?>">
         <?js if (hasChildren || hasSlots) { ?>
         <h3> <a href="#slots-section">Slots</a></h3>
-        <ul class="subList">
-            <?js for (var i=0; i<membersObj.children.length; i++){?>
+        <ul class="optionsSubList">
+            <?js for (var i=0; i < membersObj.children.length; i++){?>
                 <?js= self.getLiTag(membersObj.children[i]) ?><a href="#<?js= membersObj.children[i].id ?>"><?js= membersObj.children[i].id ?></a></li>
-            <?js } ?>
-            <?js for (var i=0; i<membersObj.slots.length; i++){ ?>
-                <?js= self.getLiTag(membersObj.slots[i]) ?><a href="#<?js= membersObj.slots[i].id ?>"><?js= membersObj.slots[i].id ?></a></li>
-            <?js } ?>
+            <?js } 
+                // render first the named and template slots
+                let dynamicSlots = [];
+                for (var i=0; i < membersObj.slots.length; i++) { 
+                    let slot = membersObj.slots[i];
+                    if (!slot.dynamicSlot){ ?>
+                        <?js= self.getLiTag(membersObj.slots[i]) ?><a href="#<?js= membersObj.slots[i].id ?>"><?js= membersObj.slots[i].id ?></a></li>
+                    <?js 
+                    } 
+                    else {
+                        dynamicSlots.push(membersObj.slots[i]);
+                    }
+                } 
+                // render any dynamic template slot under a generic parent
+                if (dynamicSlots.length > 0){ 
+                    if (!dynamicSlots[0].name.endsWith('DynamicSlot')) { ?>
+                    <li><div><a href="javascript:void(0)"><b>Dynamic Slots</b></a></div>
+                        <ul class="optionsInnerSubList">
+                        <?js
+                            dynamicSlots.forEach(slot => { ?>
+                                <?js= self.getLiTag(slot) ?><div><a href="#<?js= slot.id ?>"><?js= slot.displayName || slot.name ?></a></div></li>
+                            <?js
+                            }); //forEach
+                        ?>
+                        </ul>
+                <?js
+                    }
+                    else {
+                        let slot = dynamicSlots[0]; ?>
+                        <?js= self.getLiTag(slot) ?><div><a href="#<?js= slot.id ?>">Dynamic Slots</a></div></li>
+                   <?js
+                    }
+                } ?>
         </ul>
         <?js } ?>
     </div>
@@ -920,12 +949,28 @@ if (!self.isStylingOrOverview) { ?>
             <?js 
             }  
             self.docInProgress = null;
+            let dynamicSlots = [];
+            // render first the non-dynamic slots, then at the end the dynamic slots
             for (var i=0; i < membersObj.slots.length; i++) {
-                self.docInProgress = membersObj.slots[i];
-                memberNames = memberNames + ' ' +membersObj.slots[i].id; 
+                const slot = membersObj.slots[i];
+                if (slot.dynamicSlot){
+                    dynamicSlots.push(slot);
+                }
+                else{
+                    self.docInProgress = slot;
+                    memberNames = memberNames + ' ' +slot.id; 
+                    ?>
+                    <?js= self.partial('members.tmpl', slot) ?>
+                <?js
+                } 
+            }
+            for (var i=0; i < dynamicSlots.length; i++) {
+                const slot = dynamicSlots[i];
+                self.docInProgress = slot;
+                memberNames = memberNames + ' ' +slot.id; 
                 ?>
-                <?js= self.partial('members.tmpl', membersObj.slots[i]) ?>
-            <?js 
+                <?js= self.partial('members.tmpl', slot) ?>
+            <?js
             }
             self.docInProgress = null;
             ?>

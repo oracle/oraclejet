@@ -573,8 +573,16 @@ const DvtChartFormatUtils$1 = {
    */
   formatDateVal: (valueFormat, date) => {
     var converter = valueFormat['converter'];
-    if (!converter) return null;
-    if (converter['format']) return converter['format'](date);
+    if (!converter) {
+      return null;
+    }
+    if (converter['format']) {
+      let _date = date;
+      if (typeof date === 'number' && converter.resolvedOptions) {
+        _date = new Date(date).toISOString();
+      }
+      return converter['format'](_date);
+    }
     return null;
   }
 };
@@ -3692,19 +3700,18 @@ const DvtChartStyleUtils = {
     var labelStyleArray = [styleDefaults._dataLabelStyle, styleDefaults.dataLabelStyle];
     var contrastingColor;
     const seriesType = DvtChartDataUtils.getSeriesType(chart, seriesIndex);
+    const supportsOutline = DvtChartStyleUtils.supportsLabelOutline(chart, seriesIndex);
     if (
-      (dataColor &&
-        (seriesType == 'bar' || DvtChartTypeUtils.isBubble(chart)) &&
-        (position == 'center' ||
-          position == 'inBottom' ||
-          position == 'inTop' ||
-          position == 'inRight' ||
-          position == 'inLeft')) ||
-      (seriesType == 'area' &&
-        !DvtChartDataUtils.isRangeSeries(chart, seriesIndex) &&
-        position == 'bottom' &&
-        DvtChartTypeUtils.isVertical(chart)) // issue identified by JET-56558, JET-59519, JET-59520
+      !supportsOutline &&
+      dataColor &&
+      (seriesType == 'bar' || DvtChartTypeUtils.isBubble(chart)) &&
+      (position == 'center' ||
+        position == 'inBottom' ||
+        position == 'inTop' ||
+        position == 'inRight' ||
+        position == 'inLeft')
     ) {
+      // issue identified by JET-56558, JET-59519, JET-59520 will be solved by JET-65212
       contrastingColor =
         DvtChartStyleUtils.getPattern(chart, seriesIndex, groupIndex, itemIndex) != null
           ? '#000000'
@@ -4422,6 +4429,24 @@ const DvtChartStyleUtils = {
         var lineType = DvtChartStyleUtils.getLineType(chart, seriesIndex);
         if (lineType == 'segmented' || lineType == 'stepped') return true;
       }
+    }
+    return false;
+  },
+
+  /**
+   * Returns whether data label contrast outline is supported for the chart type.
+   * @param {Chart} chart
+   * @return {boolean}
+   */
+  supportsLabelOutline: (chart, seriesIndex) => {
+    var seriesType = DvtChartDataUtils.getSeriesType(chart, seriesIndex);
+    if (
+      seriesType === 'area' ||
+      seriesType === 'line' ||
+      seriesType === 'lineWithArea' ||
+      DvtChartTypeUtils.isScatterBubble(chart)
+    ) {
+      return true;
     }
     return false;
   }
@@ -5348,9 +5373,11 @@ const DvtChartTooltipUtils = {
       DvtChartTypeUtils.isPie(chart) ||
       DvtChartTypeUtils.isFunnel(chart) ||
       DvtChartTypeUtils.isPolar(chart) ||
-      DvtChartTypeUtils.isPyramid(chart)
-    )
+      DvtChartTypeUtils.isPyramid(chart) ||
+      DvtChartDataUtils.hasInvalidData(chart)
+    ) {
       return false;
+    }
 
     var options = chart.getOptions();
     if (options['dataCursor'] == 'on') return true;
@@ -9552,9 +9579,8 @@ class DvtAxis extends BaseComponent {
     this.EventManager = new DvtAxisEventManager(this);
     this.EventManager.addListeners(this);
 
-    // Set up keyboard handler on non-touch devices if the axis is interactive
-    if (!Agent.isTouchDevice())
-      this.EventManager.setKeyboardHandler(new DvtAxisKeyboardHandler(this.EventManager, this));
+    // Set up keyboard handler if the axis is interactive
+    this.EventManager.setKeyboardHandler(new DvtAxisKeyboardHandler(this.EventManager, this));
 
     this._bounds = null;
   }
@@ -17876,7 +17902,7 @@ class DvtChartEventManager extends EventManager {
    * @private
    */
   _onDragStart(event) {
-    if (Agent.isTouchDevice()) return this._onTouchDragStart(event);
+    if (EventManager.isTouchEvent(event)) return this._onTouchDragStart(event);
     else return this._onMouseDragStart(event);
   }
 
@@ -17887,7 +17913,7 @@ class DvtChartEventManager extends EventManager {
    * @private
    */
   _onDragMove(event) {
-    if (Agent.isTouchDevice()) return this._onTouchDragMove(event);
+    if (EventManager.isTouchEvent(event)) return this._onTouchDragMove(event);
     else return this._onMouseDragMove(event);
   }
 
@@ -17898,7 +17924,7 @@ class DvtChartEventManager extends EventManager {
    * @private
    */
   _onDragEnd(event) {
-    if (Agent.isTouchDevice()) return this._onTouchDragEnd(event);
+    if (EventManager.isTouchEvent(event)) return this._onTouchDragEnd(event);
     else return this._onMouseDragEnd(event);
   }
 
@@ -21588,12 +21614,11 @@ class DvtChartLineArea extends Container {
               : lastCoord.x + groupWidth * dir;
             this._pushCoord(points, finalXCoord, lastCoord.y);
           }
-          // Start a new list of points, except in ADF and MAF mixed freq where we want to connect points across nulls.
-          points = [];
-          pointsArrays.push(points);
-          lastCoord = null;
         }
-
+        // Start a new list of points, except in ADF and MAF mixed freq where we want to connect points across nulls.
+        points = [];
+        pointsArrays.push(points);
+        lastCoord = null;
         continue;
       }
 
@@ -25821,7 +25846,7 @@ const DvtChartPlotAreaRenderer = {
     if (DvtChartTypeUtils.isBLAC(chart)) {
       const seriesCount = options['series'].length;
       if (hasLayering) {
-       for(let index = seriesCount - 1; index >= 0; index--){
+        for (let index = seriesCount - 1; index >= 0; index--) {
           const seriesType = DvtChartDataUtils.getSeriesType(chart, index);
           if (seriesType !== 'area' && seriesType !== 'lineWithArea')
             clipGroup = DvtChartPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
@@ -25838,7 +25863,7 @@ const DvtChartPlotAreaRenderer = {
             DvtChartPlotAreaRenderer._renderBoxPlot(chart, clipGroup, availSpace, index);
           else if (seriesType === 'line')
             DvtChartPlotAreaRenderer._renderLines(chart, container, clipGroup, availSpace, index);
-       }
+        }
       } else {
         // Areas were drawn in the background. Draw lineWithAreas, bars, and lines
         if (DvtChartDataUtils.hasLineWithAreaSeries(chart))
@@ -25909,6 +25934,7 @@ const DvtChartPlotAreaRenderer = {
       return;
 
     var isBar = DvtChartDataUtils.getSeriesType(chart, seriesIndex) == 'bar';
+    const supportsOutline = DvtChartStyleUtils.supportsLabelOutline(chart, seriesIndex);
     var bHoriz = DvtChartTypeUtils.isHorizontal(chart);
     var barDataItemDims = {
       width: bHoriz ? dataItemBounds.w : originalBarSize,
@@ -25957,6 +25983,10 @@ const DvtChartPlotAreaRenderer = {
           type
         );
     label.setCSSStyle(style);
+
+    if (supportsOutline) {
+      label.addClassName('oj-chart-data-label-contrast');
+    }
 
     label.setY(dataItemBounds.y + dataItemBounds.h / 2);
     label.setX(dataItemBounds.x + dataItemBounds.w / 2);
@@ -26115,23 +26145,9 @@ const DvtChartPlotAreaRenderer = {
           return; //dropping text if doesn't fit.
       }
 
-      var isPatternBg = DvtChartStyleUtils.getPattern(chart, seriesIndex, groupIndex) != null;
-      if (isPatternBg) {
-        textDim = label.getDimensions();
-        var padding = textDim.h * 0.15;
-        var cmd = PathUtils.roundedRectangle(
-          textDim.x - padding,
-          textDim.y,
-          textDim.w + 2 * padding,
-          textDim.h,
-          2,
-          2,
-          2,
-          2
-        );
-        var bbox = new Path(chart.getCtx(), cmd);
-        bbox.setSolidFill('#FFFFFF', 0.9);
-        container.addChild(bbox);
+      const isPatternBg = DvtChartStyleUtils.getPattern(chart, seriesIndex, groupIndex) != null;
+      if (isPatternBg && !supportsOutline) {
+        DvtChartPlotAreaRenderer._addLabelContrastBackground(chart, container, label);
       }
     }
 
@@ -26333,6 +26349,24 @@ const DvtChartPlotAreaRenderer = {
       );
 
     DvtChartPlotAreaRenderer._addMarkersToContainer(chart, container, markers, defaultStroke);
+  },
+
+  _addLabelContrastBackground: (chart, container, label) => {
+    var textDim = label.getDimensions();
+    var padding = textDim.h * 0.15;
+    var cmd = PathUtils.roundedRectangle(
+      textDim.x - padding,
+      textDim.y,
+      textDim.w + 2 * padding,
+      textDim.h,
+      2,
+      2,
+      2,
+      2
+    );
+    var bbox = new Path(chart.getCtx(), cmd);
+    bbox.setSolidFill('#FFFFFF', 0.9);
+    container.addChild(bbox);
   },
 
   /**
@@ -32555,9 +32589,8 @@ class Chart extends BaseComponent {
       this.EventManager = new DvtChartEventManager(this);
       this.EventManager.addListeners(this);
 
-      // Set up keyboard handler on non-touch devices
-      if (!Agent.isTouchDevice())
-        this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
+      // Set up keyboard handler
+      this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
 
       // Make sure the object has an id for clipRect naming
       this.setId('chart' + 1000 + Math.floor(Math.random() * 1000000000)); //@RandomNumberOK
@@ -34432,11 +34465,8 @@ class SparkChart extends BaseComponent {
     this._chart = new Chart(context, this._onRenderEnd, this);
     this.addChild(this._chart);
 
-    // Set up keyboard handler on non-touch devices
-    if (!Agent.isTouchDevice()) {
-      // Add a keyboard handler to the spark chart itself so it can show tooltip on it
-      this.EventManager.setKeyboardHandler(new KeyboardHandler(this.EventManager, this));
-    }
+    // Add a keyboard handler to the spark chart itself so it can show tooltip on it
+    this.EventManager.setKeyboardHandler(new KeyboardHandler(this.EventManager, this));
 
     // Create the masking shape used for the tooltip
     this._tooltipMask = new Rect(context);

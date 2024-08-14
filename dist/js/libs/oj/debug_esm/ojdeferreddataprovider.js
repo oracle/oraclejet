@@ -6,6 +6,7 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
+import { wrapWithAbortHandling } from 'ojs/ojdataprovider';
 import { DataProviderFeatureChecker } from 'ojs/ojcomponentcore';
 
 /**
@@ -193,21 +194,12 @@ class DeferredDataProvider {
             }
             ['next']() {
                 const signal = this._params?.signal;
-                if (signal && signal.aborted) {
-                    const reason = signal.reason;
-                    return Promise.reject(new DOMException(reason, 'AbortError'));
-                }
-                return new Promise((resolve, reject) => {
-                    if (signal) {
-                        const reason = signal.reason;
-                        signal.addEventListener('abort', (e) => {
-                            return reject(new DOMException(reason, 'AbortError'));
-                        });
-                    }
+                const callback = (resolve) => {
                     return resolve(this._asyncIteratorPromise.then((asyncIterator) => {
                         return asyncIterator['next']();
                     }));
-                });
+                };
+                return wrapWithAbortHandling(signal, callback, false);
             }
         };
     }
@@ -219,39 +211,21 @@ class DeferredDataProvider {
     }
     fetchByKeys(params) {
         const signal = params?.signal;
-        if (signal && signal.aborted) {
-            const reason = signal.reason;
-            return Promise.reject(new DOMException(reason, 'AbortError'));
-        }
-        return new Promise((resolve, reject) => {
-            if (signal) {
-                const reason = signal.reason;
-                signal.addEventListener('abort', (e) => {
-                    return reject(new DOMException(reason, 'AbortError'));
-                });
-            }
+        const callback = (resolve) => {
             return resolve(this._getDataProvider().then((dataProvider) => {
                 return dataProvider.fetchByKeys(params);
             }));
-        });
+        };
+        return wrapWithAbortHandling(signal, callback, false);
     }
     containsKeys(params) {
         const signal = params?.signal;
-        if (signal && signal.aborted) {
-            const reason = signal.reason;
-            return Promise.reject(new DOMException(reason, 'AbortError'));
-        }
-        return new Promise((resolve, reject) => {
-            if (signal) {
-                const reason = signal.reason;
-                signal.addEventListener('abort', (e) => {
-                    return reject(new DOMException(reason, 'AbortError'));
-                });
-            }
+        const callback = (resolve) => {
             return resolve(this._getDataProvider().then((dataProvider) => {
                 return dataProvider.containsKeys(params);
             }));
-        });
+        };
+        return wrapWithAbortHandling(signal, callback, false);
     }
     fetchByOffset(params) {
         return this._getDataProvider().then((dataProvider) => {

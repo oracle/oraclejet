@@ -158,7 +158,8 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojthemeutils', 'ojs/ojla
                         if (_isVNode(child) && String(child['type']).toLowerCase().startsWith('oj-c-')) {
                             const corePackFormComp = child;
                             corePackFormComp.props['containerReadonly'] = props.containerReadonly;
-                            if (corePackFormComp.props['readonly'] === undefined) {
+                            if (corePackFormComp.props['readonly'] === undefined &&
+                                corePackFormComp.props['READONLY'] === undefined) {
                                 corePackFormComp.props['readonly'] = props.containerReadonly;
                             }
                         }

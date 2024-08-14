@@ -1675,7 +1675,7 @@ define('touchDragDriver',['./args'], function(Args) {
       event.preventDefault();
       event.stopPropagation();
 
-      if (!_dragStarted) {
+      if (!_dragStarted && _dragSource) {
         var status = controller.start(_dragSource,
                                       null,
                                       _getTouchEventProps(event));

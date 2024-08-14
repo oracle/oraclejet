@@ -148,6 +148,40 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      * content.textContent = "Hello Universe!";
      * </code></pre>
      *
+     * <h3 id="migration-section">
+     *   Migration
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+     * </h3>
+     *  <p>To migrate from oj-popup to oj-c-popup, you need to revise the import statement and references to oj-c-popup in your app.</p>
+     *  <p>In addition, please note the changes between the two components below.</p>
+     *  <h5>position</h5>
+     *  <p>The <code class="prettyprint">position</code> property and its subproperties are replaced with a collection of new top-level attributes.
+     *  </p>
+     *  <h5>position.at, position.my</h5>
+     *  <p>These properties are replaced with the <code class="prettyprint">placement</code> property. The placement value defines the relative position of the popup to its anchor. For example, the following position specification</p>
+     *  <pre class="prettyprint"><code>
+     *     position.at.horizontal="end"
+     *     position.at.vertical="top"
+     *     position.my.horizontal="start"
+     *     position.my.vertical="bottom"
+     *  </code></pre>
+     *  <p>can be specified as</p>
+     *  <pre class="prettyprint"><code>
+     *     placement="end-top-corner"
+     *  </code></pre>
+     *  <h5>position.of</h5>
+     *  <p>This property is replaced with the <code class="prettyprint">anchor</code> attribute in oj-c-popup.</p>
+     *  <h5>position.offset, position.collision</h5>
+     *  <p>These properties are moved to the top-level as the <code class="prettyprint">offset</code> and <code class="prettyprint">collision</code> attributes.</p>
+     *  <h5>open method</h5>
+     *  <p>The <code class="prettyprint">open</code> method is no longer supported. Visibility of the popup is controlled using the <code class="prettyprint">opened</code> property in oj-c-popup.
+     *     The <code class="prettyprint">launcher</code> parameter is replaced with the new <code class="prettyprint">launcher</code> attribute.
+     *  </p>
+     *  <h5>close method</h5>
+     *  <p>The <code class="prettyprint">close</code> method is no longer supported. Use <code class="prettyprint">opened="false"</code> to close the popup.</p>
+     *  <h5>isOpen method</h5>
+     *  <p>The <code class="prettyprint">isOpen</code> method is no longer supported. Use the <code class="prettyprint">opened</code> property to determine the state of the popup.</p>
+     *
      * <h3 id="touch-section">
      *   Touch End User Information
      *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -170,20 +204,37 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      * </h3>
      *
      * <p>For WAI-ARIA compliance, JET automatically adds
-     * <code class="prettyprint">role="tooltip"</code> to the root popup dom element if not
+     * <code class="prettyprint">role="tooltip"</code> to the non-modal popup root dom element, or
+     * <code class="prettyprint">role="dialog"</code> to the modal popup root dom element, if not
      * already specificed. This is not a component property but rather the standard html
      * <a href="https://www.w3.org/WAI/PF/aria/roles">role</a> attribute. Depending on how the
-     * popup is used in the page, the page developer should choose from the following:
+     * popup is used in the page, the page developer should choose from the following when overriding
+     * the default values:
      * <ul>
-     *   <li>"tooltip" defines contextual popup that displays a description for an element.</li>
+     *   <li>"tooltip" defines contextual popup that displays a description for an element.
+     *       Although this is the default role for non-modal popups, it should only be used
+     *       for popups that include simple textual content and no interactive elements.
+     *       The "tooltip" role should never be used with modal popups.</li>
      *   <li>"dialog" defines an application window that is designed to interrupt the current
      *       processing of an application in order to prompt the user to enter information or
-     *       require a response.</li>
-     *   <li>"alertdialog" defines type of dialog that contains an alert message, where initial focus
-     *       goes to an element within the dialog.</li>
+     *       require a response. It is the default role for modal popups, but can (and should) be used
+     *       for non-modal windows too, if the popup includes interactive content.</li>
+     *   <li>"alertdialog" defines type of popup that contains an alert message, where initial focus
+     *       goes to an element within the popup.</li>
      * </ul>
-     * The non-modal (modeless) popup also adds the <code class="prettyprint">aria-describedby="popup-id"</code>
-     * attribute to the assocaited launcher while the popup is open.
+     * </p>
+     * <p>
+     * The non-modal (modeless) popup with the "tooltip" role automatically adds the <code class="prettyprint">aria-describedby="popup-id"</code>
+     * attribute to the associated launcher while the popup is open.
+     * </p>
+     * <p>
+     * For popups with the "dialog" and "alertdialog" the page developer should consider adding the aria-haspopup="dialog" to the launcher element.
+     * </p>
+     * <p>
+     * Depending on the aria role and popup content, the page developer may also need to
+     * set the <code class="prettyprint">aria-labelledby</code> and (optionally)
+     * <code class="prettyprint">aria-describedby</code> attributes on the oj-popup
+     * element in order to make the popup and its content accessible.
      * </p>
      *
      * On platforms that support voice over mode (VO), the popup injects anchor tags "skip links"
@@ -429,6 +480,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
          * @expose
          * @memberof oj.ojPopup
          * @ojshortdesc Specifies whether to use the border, shadow, and background colors from the active theme.
+         * @ojdeprecated {since: "17.0.0", description: "This is not recommended in the Redwood design system."}
          * @instance
          * @type {string}
          * @default 'default'
@@ -918,12 +970,15 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         var content = $('<div>');
         content.addClass([rootStyle, 'content'].join('-'));
         content.attr('role', 'presentation');
+        content.attr('data-oj-context', '');
         content.append(element[0].childNodes); // @HTMLUpdateOK move app defined children to content wrapper
         content.appendTo(element); // @HTMLUpdateOK attach programmaticly generated node
         this._content = content;
 
         this._setChrome();
         this._setupFocus(element);
+
+        this._setDescribedByOnLauncher = false;
 
         // fixup the position option set via the widget constructor
         var options = this.options;
@@ -1043,12 +1098,14 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         this._setPosition(position);
 
         this._setAutoDismiss(options.autoDismiss);
-        if (options.modality !== 'modal') {
-          this._addDescribedBy();
-        }
 
         if (!this._IsCustomElement() || !element[0].hasAttribute('role')) {
-          element.attr('role', options.role);
+          const role = options.modality === 'modal' ? 'dialog' : options.role;
+          element.attr('role', role);
+        }
+
+        if (options.modality !== 'modal' && element.attr('role') === 'tooltip') {
+          this._addDescribedBy();
         }
 
         // convert to the jquery ui position format
@@ -1093,6 +1150,11 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         this.initialWidth = element.width();
         this.initialHeight = element.height();
 
+        this._initVoiceOverAssist();
+
+        // JET-58635: set initial focus as soon as possible
+        this._initialFocus(false);
+
         // TODO might want to add fadeIn for the modal overlay in the future.
         var animationOptions = this.options.animation;
         if (animationOptions && animationOptions.open) {
@@ -1131,11 +1193,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         // set up a listener for future size changes
         this._registerResizeListener(element[0]);
 
-        this._initVoiceOverAssist();
-
         this._trigger('open');
-
-        this._intialFocus();
 
         this._on(element, { keydown: this._keyHandler });
         if (launcher && launcher.length > 0) {
@@ -1865,13 +1923,19 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * @param {boolean=} waiAriaAssisted focus established via keyboard or voice over versus from
        *        open API
        */
-      _intialFocus: function (waiAriaAssisted) {
-        var initialFocus = this._deriveInitialFocus();
-        if (waiAriaAssisted || initialFocus !== 'none') {
-          var element = this.GetFocusElement();
-          element.focus();
-          this._trigger('focus');
-        }
+      _initialFocus: function (waiAriaAssisted) {
+        // postpone setting focus until the content has been upgraded
+        var busyContext = oj.Context.getContext(this._content[0]).getBusyContext();
+        busyContext.whenReady().then(
+          function () {
+            var initialFocus = this._deriveInitialFocus();
+            if (waiAriaAssisted || initialFocus !== 'none') {
+              var element = this.GetFocusElement();
+              element.focus();
+              this._trigger('focus');
+            }
+          }.bind(this)
+        );
       },
 
       /**
@@ -2057,7 +2121,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
             }
           } else if (this._isFocusInLauncher(target)) {
             event.preventDefault();
-            this._intialFocus(true);
+            this._initialFocus(true);
           }
         } else if (event.keyCode === $.ui.keyCode.TAB && this._isFocusInPopup(target)) {
           // TAB within popup
@@ -2206,6 +2270,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         tokens.push(popupId);
         describedby = $.trim(tokens.join(' '));
         launcher.attr('aria-describedby', describedby);
+        this._setDescribedByOnLauncher = true;
       },
       /**
        * @memberof oj.ojPopup
@@ -2213,6 +2278,10 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * @private
        */
       _removeDescribedBy: function () {
+        if (!this._setDescribedByOnLauncher) {
+          return;
+        }
+
         var launcher = this._launcher;
         var element = this.element;
 
@@ -2234,6 +2303,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         } else {
           launcher.removeAttr('aria-describedby');
         }
+        this._setDescribedByOnLauncher = false;
       },
       /**
        * @memberof oj.ojPopup
@@ -2277,7 +2347,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
           if (!isModal) {
             var focusSkipLinkId = this._getSubId('focusSkipLink');
             var launcher = this._launcher;
-            callback = this._intialFocus.bind(this, true);
+            callback = this._initialFocus.bind(this, true);
             message = this.getTranslatedString('ariaFocusSkipLink');
             this._focusSkipLink = new ojpopupcore.PopupSkipLink(launcher, message, callback, focusSkipLinkId);
           }

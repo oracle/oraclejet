@@ -339,7 +339,7 @@ const RelativeDateTimeFormatter = (function () {
     var day1 = d1.getDate();
     var day2 = d2.getDate();
     if (_isNextMonth(d1, d2)) {
-      day2 += OraI18nUtils._getDaysInMonth(d1.getFullYear, d1.getMonth());
+      day2 += OraI18nUtils._getDaysInMonth(d1.getFullYear(), d1.getMonth());
     }
     return day2 - day1;
   }

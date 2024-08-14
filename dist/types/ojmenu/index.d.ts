@@ -160,9 +160,22 @@ export namespace MenuElement {
         position?: ojMenu.Position;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type Position = {
+        at?: ojMenu.PositionAlign;
+        collision?: 'flip' | 'fit' | 'flipfit' | 'flipcenter' | 'none';
+        my?: ojMenu.PositionAlign;
+        of?: string | ojMenu.PositionPoint;
+        offset?: ojMenu.PositionPoint;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type PositionAlign = {
         horizontal?: 'start' | 'end' | 'left' | 'center' | 'bottom';
         vertical?: 'top' | 'bottom' | 'center';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PositionPoint = {
+        x?: number;
+        y?: number;
     };
 }
 export interface MenuIntrinsicProps extends Partial<Readonly<ojMenuSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {

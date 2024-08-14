@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransformerError = exports.ExceptionKey = exports.ExceptionType = void 0;
+const PrettyMsgEncoder_1 = require("./PrettyMsgEncoder");
 var ExceptionType;
 (function (ExceptionType) {
     ExceptionType["THROW_ERROR"] = "error";
@@ -40,6 +41,7 @@ var ExceptionKey;
     ExceptionKey["COMPONENT_CHILDREN_NOT_DEFAULT_SLOT"] = "component_children_not_default_slot";
     ExceptionKey["INVALID_OBSERVEDGLOBALPROPS_INSTANCE"] = "invalid_observedglobalprops_instance";
     ExceptionKey["INVALID_SINCE"] = "invalid_since_value";
+    ExceptionKey["INVALID_DYNAMIC_TEMPLATE_SLOTS_TYPE_PARAM"] = "invalid_dynamic_template_slots_type_param";
     ExceptionKey["UNRECOGNIZED_FUNCTION_WRAPPER"] = "unrecognized_function_wrapper";
     ExceptionKey["STATIC_DEFAULTPROPS_ON_FUNCTION"] = "static_defaultprops_on_function";
     ExceptionKey["RESERVED_CUSTOM_EVENT_PREFIX"] = "reserved_custom_event_prefix";
@@ -78,27 +80,29 @@ var ExceptionKey;
 })(ExceptionKey || (exports.ExceptionKey = ExceptionKey = {}));
 class TransformerError extends Error {
     constructor(vcompName, message, errNode) {
-        const header = TransformerError.getMsgHeader(vcompName, errNode);
+        const header = TransformerError.getMsgHeader(ExceptionType.THROW_ERROR, vcompName, errNode);
         super(`${header} ${message}`);
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, TransformerError);
         }
         this.name = 'TransformerError';
     }
-    static getMsgHeader(vcompName, errNode) {
-        let rtnString;
+    static getMsgHeader(type, vcompName, errNode) {
+        const encoder = this._encoder;
+        let rtnString = '';
         const sourceFile = errNode?.getSourceFile();
         if (sourceFile) {
             const { line, character } = sourceFile.getLineAndCharacterOfPosition(errNode.getStart());
-            rtnString = `${sourceFile.fileName}:${line + 1}:${character + 1} - ${vcompName}:`;
+            rtnString = `${encoder.encodeFileLineChar(sourceFile.fileName, line, character)} - `;
         }
-        else {
-            rtnString = `${vcompName}:`;
-        }
+        rtnString += `${type == ExceptionType.LOG_WARNING ? encoder.WARNING : encoder.ERROR} - ${encoder.encode(PrettyMsgEncoder_1.PCC.VCOMP, vcompName)}:`;
         return rtnString;
     }
     static setDisabledList(list) {
         this._disabledList = list;
+    }
+    static initPrettyMsgEncoding(tsconfig_pretty) {
+        this._encoder = new PrettyMsgEncoder_1.PrettyMsgEncoder(tsconfig_pretty);
     }
     static reportException(key, type, vcompName, message, errNode) {
         if (type === ExceptionType.THROW_ERROR ||
@@ -107,7 +111,7 @@ class TransformerError extends Error {
             throw new TransformerError(vcompName, message, errNode);
         }
         else {
-            const logHeader = TransformerError.getMsgHeader(vcompName, errNode);
+            const logHeader = TransformerError.getMsgHeader(ExceptionType.LOG_WARNING, vcompName, errNode);
             console.log(`${logHeader} ${message}`);
         }
     }

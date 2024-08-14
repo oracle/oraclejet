@@ -2027,11 +2027,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
           var busyContext = Context.getContext(outerWrapper.get(0)).getBusyContext();
           busyContext.whenReady().then(function () {
             // need the size to display the canvas when release
-            size = offcanvas.size;
-            if (size == null) {
-              size = drawer.outerWidth();
-              offcanvas.size = size;
+            if (drawer.length > 0 && !isNaN(parseInt(drawer[0].style.width, 10))) {
+              drawer[0].style.width = 'auto';
             }
+            size = drawer.outerWidth();
+            offcanvas.size = size;
 
             // proceed only when there's content
             if (size > 0) {

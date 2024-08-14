@@ -69,6 +69,8 @@ export interface ojSunburst<K, D extends ojSunburst.Node<K> | any> extends dvtBa
         stateExpanded?: string;
         stateHidden?: string;
         stateIsolated?: string;
+        stateLoaded?: string;
+        stateLoading?: string;
         stateMaximized?: string;
         stateMinimized?: string;
         stateSelected?: string;
@@ -278,6 +280,12 @@ export namespace ojSunburst {
         radius: number;
         value: number;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRootNodeContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<RootNodeContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
 }
 export interface ojSunburstEventMap<K, D extends ojSunburst.Node<K> | any> extends dvtBaseComponentEventMap<ojSunburstSettableProperties<K, D>> {
     'ojBeforeCollapse': ojSunburst.ojBeforeCollapse<K, D>;
@@ -381,6 +389,8 @@ export interface ojSunburstSettableProperties<K, D extends ojSunburst.Node<K> | 
         stateExpanded?: string;
         stateHidden?: string;
         stateIsolated?: string;
+        stateLoaded?: string;
+        stateLoading?: string;
         stateMaximized?: string;
         stateMinimized?: string;
         stateSelected?: string;
@@ -617,9 +627,40 @@ export namespace SunburstElement {
         tooltip: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type Node<K, D = any> = {
+        borderColor?: string;
+        borderWidth?: number;
+        categories?: string[];
+        color?: string;
+        drilling?: 'inherit' | 'off' | 'on';
+        id?: K;
+        label?: string;
+        labelDisplay?: 'auto' | 'horizontal' | 'off' | 'rotated';
+        labelHalign?: 'center' | 'inner' | 'outer';
+        labelStyle?: Partial<CSSStyleDeclaration>;
+        nodes?: Array<ojSunburst.Node<K>>;
+        pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
+           'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
+        radius?: number;
+        selectable?: 'auto' | 'off';
+        shortDesc?: (string | ((context: ojSunburst.NodeShortDescContext<K, D>) => string));
+        showDisclosure?: 'inherit' | 'off' | 'on';
+        svgClassName?: string;
+        svgStyle?: Partial<CSSStyleDeclaration>;
+        value: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
         indexPath: number[];
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeShortDescContext<K, D> = {
+        data: ojSunburst.Node<K>;
+        id: K;
+        itemData: D;
+        label: string;
+        value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeTemplateContext = {
@@ -629,6 +670,25 @@ export namespace SunburstElement {
         key: any;
         parentData: any[];
         parentKey: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RootNodeContext<K, D> = {
+        componentElement: Element;
+        data: ojSunburst.Node<K>;
+        id: K;
+        innerBounds: {
+            height: number;
+            width: number;
+            x: number;
+            y: number;
+        };
+        itemData: D;
+        outerBounds: {
+            height: number;
+            width: number;
+            x: number;
+            y: number;
+        };
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K, D> = {
@@ -642,6 +702,12 @@ export namespace SunburstElement {
         radius: number;
         value: number;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRootNodeContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<RootNodeContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
 }
 export namespace SunburstNodeElement {
     // tslint:disable-next-line interface-over-type-literal

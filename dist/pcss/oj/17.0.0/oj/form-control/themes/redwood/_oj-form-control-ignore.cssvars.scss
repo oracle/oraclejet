@@ -1,0 +1,20 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.formcontrol.ignored") {
+
+  :root {
+    --oj-private-text-field-button-height: var(--oj-button-sm-height);
+    --oj-private-text-field-button-icon-color: var(--oj-private-button-ghost-chrome-text-color);
+    --oj-private-text-field-button-icon-color-hover: var(--oj-private-button-ghost-chrome-text-color-hover);
+    --oj-private-text-field-button-icon-color-active: var(--oj-private-button-ghost-chrome-text-color-active);
+    --oj-private-text-field-button-icon-color-disabled: var(--oj-button-borderless-chrome-text-color-disabled);
+    --oj-private-text-field-button-border-color-hover: transparent;
+    --oj-private-text-field-button-border-color-active: transparent;
+    --oj-private-text-field-button-bg-color-hover: transparent;
+    --oj-private-text-field-button-bg-color-active: transparent;      
+    --oj-private-text-field-button-to-edge-padding: var(--oj-core-spacing-2x);
+    --oj-private-text-field-inside-button-to-edge-padding: var(--oj-core-spacing-2x); 
+    --oj-private-text-field-text-to-end-slot-padding: var(--oj-core-spacing-1x);
+    --oj-private-text-field-icon-size: var(--oj-button-sm-icon-size);
+  }
+}

@@ -60,6 +60,7 @@ export type ALL_TYPES = {
     enumValues?: string[];
     isArrayOfObject?: boolean;
     isEnumValuesForDTOnly?: boolean;
+    isApiDocSignature?: boolean;
 };
 export type MDValidationInfo = {
     baseType: 'string' | 'number' | 'boolean' | 'object' | 'string|number' | 'any';
@@ -93,19 +94,20 @@ export type RegisteredOptions = {
 export type CircularRefInfo = {
     circularType: string;
 };
+export declare enum GTExtras {
+    PARAMS_ANY = 1,
+    DECL_NODES = 2
+}
 export type GenericsTypes = {
     genericsDeclaration: string;
     genericsTypeParams: string;
     genericsTypeParamsArray: Array<string>;
+    jsdoc: Array<TypedefObj>;
     genericsTypeParamsAny?: string;
-    jsdoc?: Array<TypedefObj>;
+    genericsTypeParamsNodes?: Array<ts.TypeParameterDeclaration>;
 };
-export type GenericsTypesFromType = Omit<GenericsTypes, 'genericsTypeParamsArray' | 'genericsTypeParamsAny'> & {
-    genericsTypeParamData: Array<TypeParamInfo>;
-};
-export type TypeParamInfo = {
-    name: string;
-    isGeneric: boolean;
+export type GenericsTypesFromType = Pick<GenericsTypes, 'genericsDeclaration' | 'genericsTypeParams'> & {
+    resolvedGenericParams: string;
 };
 export type GenericTypeParametersInfo = {
     genericSignature: string;
@@ -220,6 +222,30 @@ export type SlotTypeInfo = {
     typeRefNode: ts.TypeReferenceNode;
     hasImplicitBusyContext?: boolean;
 };
+export type TemplateSlotInfo = {
+    slotPropName: string;
+    slotRenderType?: string;
+    slotDataTypeParamsDeclaration?: string;
+    slotDataNameTypeParams?: string;
+    slotDeprecation?: Metadata.Status;
+};
+export type DynamicSlotDefPropInfo = {
+    propName: string;
+    templateSlotRenderType: string;
+    preferredContent?: Array<string>;
+};
+export type DynamicSlotItem = {
+    key: string;
+    node: ts.Node;
+    deprecation?: Metadata.Status;
+    metadata?: AllMetadataTypes;
+    slotDataTypeParamsDeclaration?: string;
+    slotDataNameTypeParams?: string;
+};
+export type DynamicTemplateSlotsProcessedStatus = {
+    filteredStatus: Metadata.Status[];
+    filteredDeprecation: Metadata.Status | undefined;
+};
 export type MetaUtilObj = {
     componentName: string;
     componentInfo: VCompInfo;
@@ -228,14 +254,15 @@ export type MetaUtilObj = {
     fullMetadata: Metadata.ComponentMetadata;
     progImportMaps: VCompImportMaps;
     dynamicSlotsInUse: number;
-    dynamicSlotNameNodes: Array<NameNodePair>;
+    dynamicSlotsInfo: Array<DynamicSlotItem>;
     excludedTypes: Set<string>;
     propsName?: string;
     reservedGlobalProps?: Set<string>;
     defaultProps?: Record<string, ts.Node>;
+    templateSlotProps?: Array<TemplateSlotInfo>;
     propsTypeParamsArray?: Array<string>;
     propsClassTypeParamsArray?: Array<string>;
-    classPropsAliasTypeArgs?: readonly ts.Type[];
+    classTypeParamsNodes?: Array<ts.TypeParameterDeclaration>;
     classConsumedBindingsDecorator?: ts.Decorator;
     classProvidedBindingsDecorator?: ts.Decorator;
     functionPropBindings?: PropertyBindingMetadata;

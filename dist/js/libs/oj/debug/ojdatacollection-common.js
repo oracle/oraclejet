@@ -927,6 +927,18 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   };
 
   /**
+   * Returns abort reason aka DOMException with info for aborted fetches.
+   * @private
+   */
+  DataCollectionUtils.getAbortReason = function (element) {
+    const componentTagName = element ? `<${element.tagName.toLowerCase()}>: ` : '';
+    const message = `${componentTagName}Aborting stale fetch for performance – a newer request has been issued`;
+    const newDOMException = new DOMException(message, 'AbortError');
+    newDOMException.severity = 'info';
+    return newDOMException;
+  };
+
+  /**
    * Helper function which returns true if the browser is Chrome
    * @private
    */
@@ -1090,6 +1102,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   const isEscapeKeyEvent = DataCollectionUtils.isEscapeKeyEvent;
   const isEventClickthroughDisabled = DataCollectionUtils.isEventClickthroughDisabled;
   const isFetchAborted = DataCollectionUtils.isFetchAborted;
+  const getAbortReason = DataCollectionUtils.getAbortReason;
   const isFromDefaultSelector = DataCollectionUtils.isFromDefaultSelector;
   const isF2KeyEvent = DataCollectionUtils.isF2KeyEvent;
   const isHomeKeyEvent = DataCollectionUtils.isHomeKeyEvent;
@@ -1136,6 +1149,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   exports.disableElement = disableElement;
   exports.doesAttributeExistInFilterCriterion = doesAttributeExistInFilterCriterion;
   exports.enableAllFocusableElements = enableAllFocusableElements;
+  exports.getAbortReason = getAbortReason;
   exports.getActionableElementsInNode = getActionableElementsInNode;
   exports.getAddEventKeysResult = getAddEventKeysResult;
   exports.getBrowserVersion = getBrowserVersion;

@@ -1,0 +1,12 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/stable/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("stable.variables.collection.scoped") {
+  .oj-density-compact {
+    --oj-collection-list-row-height: 2rem;
+    --oj-collection-list-cell-padding-vertical: 0.25rem;
+    --oj-collection-grid-row-height: 1.75rem;
+    --oj-collection-grid-header-height: 1.75rem;
+    --oj-collection-grid-cell-padding-vertical: 0.1875rem;
+  }
+}

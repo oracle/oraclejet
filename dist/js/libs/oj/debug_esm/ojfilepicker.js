@@ -159,13 +159,6 @@ let FilePicker = class FilePicker extends Component {
             validity: 'NA'
         };
     }
-    _doSelectHelper(filelist) {
-        const promise = new Promise((resolve) => {
-            this.elementPromiseResolver = resolve;
-        });
-        this._fileSelectedHelper(filelist);
-        return promise;
-    }
     _fileSelectedHelper(files) {
         if (files.length > 0) {
             const rejected = this._validateTypes(files).rejected;
@@ -425,7 +418,7 @@ FilePicker.defaultProps = {
     selectOn: 'auto',
     selectionMode: 'multiple'
 };
-FilePicker._metadata = { "properties": { "accept": { "type": "Array<string>" }, "capture": { "type": "string", "enumValues": ["none", "environment", "user", "implementation"] }, "disabled": { "type": "boolean" }, "primaryText": { "type": "string|function" }, "secondaryText": { "type": "string|function" }, "selectOn": { "type": "string", "enumValues": ["auto", "click", "drop", "clickAndDrop"] }, "selectionMode": { "type": "string", "enumValues": ["multiple", "single"] } }, "slots": { "trigger": {} }, "events": { "ojBeforeSelect": { "cancelable": true }, "ojInvalidSelect": {}, "ojSelect": {} }, "extension": { "_OBSERVED_GLOBAL_PROPS": ["aria-label", "role"] }, "methods": { "_doSelectHelper": {}, "focus": {}, "blur": {} } };
+FilePicker._metadata = { "properties": { "accept": { "type": "Array<string>" }, "capture": { "type": "string", "enumValues": ["none", "environment", "user", "implementation"] }, "disabled": { "type": "boolean" }, "primaryText": { "type": "string|function" }, "secondaryText": { "type": "string|function" }, "selectOn": { "type": "string", "enumValues": ["auto", "click", "drop", "clickAndDrop"] }, "selectionMode": { "type": "string", "enumValues": ["multiple", "single"] } }, "slots": { "trigger": {} }, "events": { "ojBeforeSelect": { "cancelable": true }, "ojInvalidSelect": {}, "ojSelect": {} }, "extension": { "_OBSERVED_GLOBAL_PROPS": ["aria-label", "role"] }, "methods": { "focus": {}, "blur": {} } };
 FilePicker = __decorate([
     customElement('oj-file-picker')
 ], FilePicker);

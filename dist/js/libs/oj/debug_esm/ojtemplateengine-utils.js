@@ -8,7 +8,7 @@
 import { jsx } from 'preact/jsx-runtime';
 import { render } from 'preact';
 import oj from 'ojs/ojcore-base';
-import { CACHED_BINDING_PROVIDER, transformPreactValue } from 'ojs/ojcustomelement-utils';
+import { CACHED_BINDING_PROVIDER, convertPrivatePropFromPreact, transformPreactValue } from 'ojs/ojcustomelement-utils';
 import { getPropertiesForElementTag } from 'ojs/ojcustomelement-registry';
 import { getPropertyMetadata } from 'ojs/ojmetadatautils';
 import { info } from 'ojs/ojlogger';
@@ -140,9 +140,10 @@ class PreactTemplate {
         }
         const props = {};
         const vprops = targetNode.props;
-        Object.keys(vprops).forEach((prop) => {
+        Object.keys(vprops).forEach((origProp) => {
+            const { prop, value } = convertPrivatePropFromPreact(origProp, targetNode.props[origProp]);
             if (propertySet.has(prop)) {
-                props[prop] = transformPreactValue(null, getPropertyMetadata(prop, metadata), targetNode.props[prop]);
+                props[prop] = transformPreactValue(null, prop, getPropertyMetadata(prop, metadata), value);
             }
         });
         return props;

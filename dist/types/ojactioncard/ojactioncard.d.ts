@@ -17,7 +17,7 @@ type ActionDetail = {
 export declare class ActionCard extends Component<ExtendGlobalProps<Props>, State> {
     private readonly _rootRef;
     constructor(props: Readonly<Props>);
-    render(props: ExtendGlobalProps<Props>, state: Readonly<State>): import("preact").JSX.Element;
+    render(props: ExtendGlobalProps<Props>, state: Readonly<State>): import("preact/jsx-runtime").JSX.Element;
     componentDidMount(): void;
     private _isFromActiveSource;
     private _handleOjAction;

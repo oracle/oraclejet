@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcomponentcore'], function (oj, ojdataprovider, ojcomponentcore) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
@@ -194,21 +194,12 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore
                 }
                 ['next']() {
                     const signal = this._params?.signal;
-                    if (signal && signal.aborted) {
-                        const reason = signal.reason;
-                        return Promise.reject(new DOMException(reason, 'AbortError'));
-                    }
-                    return new Promise((resolve, reject) => {
-                        if (signal) {
-                            const reason = signal.reason;
-                            signal.addEventListener('abort', (e) => {
-                                return reject(new DOMException(reason, 'AbortError'));
-                            });
-                        }
+                    const callback = (resolve) => {
                         return resolve(this._asyncIteratorPromise.then((asyncIterator) => {
                             return asyncIterator['next']();
                         }));
-                    });
+                    };
+                    return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
                 }
             };
         }
@@ -220,39 +211,21 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore
         }
         fetchByKeys(params) {
             const signal = params?.signal;
-            if (signal && signal.aborted) {
-                const reason = signal.reason;
-                return Promise.reject(new DOMException(reason, 'AbortError'));
-            }
-            return new Promise((resolve, reject) => {
-                if (signal) {
-                    const reason = signal.reason;
-                    signal.addEventListener('abort', (e) => {
-                        return reject(new DOMException(reason, 'AbortError'));
-                    });
-                }
+            const callback = (resolve) => {
                 return resolve(this._getDataProvider().then((dataProvider) => {
                     return dataProvider.fetchByKeys(params);
                 }));
-            });
+            };
+            return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
         containsKeys(params) {
             const signal = params?.signal;
-            if (signal && signal.aborted) {
-                const reason = signal.reason;
-                return Promise.reject(new DOMException(reason, 'AbortError'));
-            }
-            return new Promise((resolve, reject) => {
-                if (signal) {
-                    const reason = signal.reason;
-                    signal.addEventListener('abort', (e) => {
-                        return reject(new DOMException(reason, 'AbortError'));
-                    });
-                }
+            const callback = (resolve) => {
                 return resolve(this._getDataProvider().then((dataProvider) => {
                     return dataProvider.containsKeys(params);
                 }));
-            });
+            };
+            return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
         fetchByOffset(params) {
             return this._getDataProvider().then((dataProvider) => {

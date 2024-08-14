@@ -6,7 +6,7 @@
  * @ignore
  */
 import oj from 'ojs/ojcore';
-import { warn } from 'ojs/ojlogger';
+import { info, warn } from 'ojs/ojlogger';
 import { CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, JetElementError } from 'ojs/ojcustomelement-utils';
 import { getElementProperties, getElementDescriptor } from 'ojs/ojcustomelement-registry';
 import { getPropertyMetadata, getFlattenedAttributes, checkEnumValues, getDefaultValue } from 'ojs/ojmetadatautils';
@@ -80,6 +80,18 @@ BaseCustomElementBridge.proto = {
     const origInsertBefore = proto.insertBefore;
     proto.insertBefore = function (newNode, refNode) {
       if (CustomElementUtils.canRelocateNode(this, newNode)) {
+        // In case of slot nodes the refNode might be moved by the parent component
+        // and it is not a direct child of that parent component anymore.
+        // Preact is not aware of this movement so it uses incorrect parent for inserting a node.
+        // Lets use the insertBefore parent of refNode to insert newNode before it.
+        if (refNode && refNode.parentNode !== this) {
+          info(
+            `Using insertBefore where ${this.tagName} is not a parent of ${refNode.tagName}`
+          );
+        }
+        if (refNode && refNode.parentNode) {
+          return origInsertBefore.call(refNode.parentNode, newNode, refNode);
+        }
         return origInsertBefore.call(this, newNode, refNode);
       }
       return newNode;
@@ -199,7 +211,7 @@ BaseCustomElementBridge.proto = {
           if (propMeta) {
             this.setProperty(
               prop,
-              BaseCustomElementBridge.__ParseAttrValue(this, attr, prop, newValue, propMeta)
+              CustomElementUtils.parseAttrValue(this, attr, prop, newValue, propMeta)
             );
           }
           // This allows subclasses to handle special cases like global transfer
@@ -333,6 +345,7 @@ BaseCustomElementBridge.proto = {
         const setObj = this._earlySets.shift();
         const updatedValue = transformPreactValue(
           element,
+          setObj.property,
           propertyMeta.properties[setObj.property],
           setObj.value
         );
@@ -749,7 +762,7 @@ BaseCustomElementBridge.__InitProperties = function (element, componentProps) {
 
         var info = AttributeUtils.getExpressionInfo(attr.value);
         if (!info.expr) {
-          var value = BaseCustomElementBridge.__ParseAttrValue(
+          var value = CustomElementUtils.parseAttrValue(
             element,
             attr.nodeName,
             property,
@@ -807,28 +820,6 @@ BaseCustomElementBridge.__SetProperty = function (propNameFun, componentProps, p
     // eslint-disable-next-line no-param-reassign
     componentProps[topProp] = branchedProps[topProp];
   }
-};
-
-/**
- * Returns the coerced attribute value using a custom parse function or the framework default.
- * @ignore
- */
-BaseCustomElementBridge.__ParseAttrValue = function (elem, attr, prop, val, metadata) {
-  if (val == null) {
-    return val;
-  }
-
-  function _coerceVal(value) {
-    return AttributeUtils.attributeToPropertyValue(elem, attr, value, metadata);
-  }
-
-  var parseFunction = getElementDescriptor(elem.tagName).parseFunction;
-  if (parseFunction) {
-    return parseFunction(val, prop, metadata, function (value) {
-      return _coerceVal(value);
-    });
-  }
-  return _coerceVal(val);
 };
 
 /**

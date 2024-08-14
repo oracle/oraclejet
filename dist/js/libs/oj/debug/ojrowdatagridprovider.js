@@ -367,26 +367,41 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
                         }
                         const metadata = { rowItem, expanded, treeDepth };
                         const item = new this.GridHeaderItem(index, 1, j, 1, metadata, value);
+                        if (this.itemMetadata?.rowHeader != null) {
+                            Object.assign(metadata, this.itemMetadata.rowHeader(item));
+                        }
                         headers.push(item);
                     }
                 }
                 return headers;
             }
         }
-        getSortState(index) {
-            let columnAttribute = this.columns.databody[index];
-            if (this.sortCriteria && this.sortCriteria.length > 0 && columnAttribute) {
+        getSortState(index, axis) {
+            let sortAttribute;
+            if (axis === 'column') {
+                sortAttribute = this.columns.databody[index];
+            }
+            else {
+                sortAttribute = this.headerLabels[axis][index];
+            }
+            if (this.sortCriteria && this.sortCriteria.length > 0 && sortAttribute) {
                 let criterion = this.sortCriteria[0];
-                if (criterion.attribute === columnAttribute) {
+                if (criterion.attribute === sortAttribute) {
                     return criterion.direction;
                 }
             }
             return 'unsorted';
         }
-        getFilterState(index) {
-            let columnAttribute = this.columns.databody[index];
-            if (this.filterCriteria && columnAttribute) {
-                if (DataCollectionUtils.doesAttributeExistInFilterCriterion(columnAttribute, this.filterCriteria)) {
+        getFilterState(index, axis) {
+            let filterAttribute;
+            if (axis === 'column') {
+                filterAttribute = this.columns.databody[index];
+            }
+            else {
+                filterAttribute = this.headerLabels[axis][index];
+            }
+            if (this.filterCriteria && filterAttribute) {
+                if (DataCollectionUtils.doesAttributeExistInFilterCriterion(filterAttribute, this.filterCriteria)) {
                     return 'filtered';
                 }
             }
@@ -412,12 +427,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
                         let metadata;
                         let sortState;
                         let filterState;
+                        const metadataCallback = this.itemMetadata?.columnHeader;
                         if (axis === 'column' && level + depth === levelCount) {
-                            if (this.sortable) {
-                                sortState = this.getSortState(startIndex);
+                            if (this.sortable || (metadataCallback != null && this.sortCriteria?.length)) {
+                                sortState = this.getSortState(startIndex, axis);
                             }
-                            if (this.filterable) {
-                                filterState = this.getFilterState(startIndex);
+                            if (this.filterable || this.filterCriteria) {
+                                filterState = this.getFilterState(startIndex, axis);
                             }
                             metadata = new this.GridHeaderMetadata(sortState, filterState);
                         }
@@ -425,6 +441,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
                             metadata = {};
                         }
                         const item = new this.GridHeaderItem(startIndex, extent, startLevel, depth, metadata, data);
+                        if (axis === 'column' && metadataCallback != null) {
+                            Object.assign(metadata, metadataCallback(item));
+                        }
                         headers.push(item);
                         for (let k = startIndex; k < startIndex + extent; k++) {
                             if (tempArray[k] == null) {
@@ -464,8 +483,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             }
             if (iterArray) {
                 let returnVal = [];
-                for (let i = iterArray.length - 1; i >= 0; i--) {
-                    returnVal.push(new this.GridItem({}, { data: iterArray[i] }));
+                for (let i = this.headerLabels['row'].length - 1; i >= 0; i--) {
+                    let sortDirection;
+                    if (this.sortable || this.sortCriteria?.length) {
+                        sortDirection = this.getSortState(i, 'row');
+                    }
+                    let metadata = { sortDirection };
+                    const item = new this.GridItem(metadata, {
+                        data: this.headerLabels['row'][i]
+                    });
+                    if (this.itemMetadata?.rowHeaderLabel != null) {
+                        Object.assign(item.metadata, this.itemMetadata.rowHeaderLabel(item));
+                    }
+                    returnVal.push(item);
                 }
                 return returnVal;
             }
@@ -480,8 +510,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             }
             if (iterArray) {
                 let returnVal = [];
-                for (let i = iterArray.length - 1; i >= 0; i--) {
-                    returnVal.push(new this.GridItem({}, { data: iterArray[i] }));
+                for (let i = this.headerLabels['rowEnd'].length - 1; i >= 0; i--) {
+                    let sortDirection;
+                    if (this.sortable || this.sortCriteria?.length) {
+                        sortDirection = this.getSortState(i, 'rowEnd');
+                    }
+                    let metadata = { sortDirection };
+                    const item = new this.GridItem(metadata, {
+                        data: this.headerLabels['rowEnd'][i]
+                    });
+                    if (this.itemMetadata?.rowEndHeaderLabel != null) {
+                        Object.assign(item.metadata, this.itemMetadata.rowEndHeaderLabel(item));
+                    }
+                    returnVal.push(item);
                 }
                 return returnVal;
             }
@@ -490,7 +531,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             if (this.headerLabels?.[axis]) {
                 let returnVal = [];
                 for (let i = this.headerLabels[axis].length - 1; i >= 0; i--) {
-                    returnVal.push(new this.GridItem({}, { data: this.headerLabels[axis][i] }));
+                    let sortDirection;
+                    if (this.sortable) {
+                        sortDirection = this.getSortState(i, 'row');
+                    }
+                    let metadata = { sortDirection };
+                    const item = new this.GridItem(metadata, { data: this.headerLabels[axis][i] });
+                    if (axis === 'column' && this.itemMetadata?.columnHeaderLabel != null) {
+                        Object.assign(item.metadata, this.itemMetadata.columnHeaderLabel(item));
+                    }
+                    else if (axis === 'columnEnd' && this.itemMetadata?.columnEndHeaderLabel != null) {
+                        Object.assign(item.metadata, this.itemMetadata.columnEndHeaderLabel(item));
+                    }
+                    returnVal.push(item);
                 }
                 return returnVal;
             }

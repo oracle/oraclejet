@@ -62,6 +62,8 @@ export namespace ojMessages {
         x?: number;
         y?: number;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderMessageTemplate = import('ojs/ojvcomponent').TemplateSlot<MessageTemplateContext>;
 }
 export interface ojMessagesEventMap extends HTMLElementEventMap {
     'displayChanged': JetElementCustomEvent<ojMessages["display"]>;
@@ -107,10 +109,25 @@ export namespace MessagesElement {
         data: ojMessage.Message;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type Position = {
+        at?: ojMessages.PositionAlign;
+        collision?: 'flip' | 'fit' | 'flipfit' | 'none';
+        my?: ojMessages.PositionAlign;
+        of?: string | ojMessages.PositionPoint;
+        offset?: ojMessages.PositionPoint;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type PositionAlign = {
         horizontal?: 'start' | 'end' | 'left' | 'center' | 'right';
         vertical?: 'top' | 'bottom' | 'center';
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type PositionPoint = {
+        x?: number;
+        y?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderMessageTemplate = import('ojs/ojvcomponent').TemplateSlot<MessageTemplateContext>;
 }
 export interface MessagesIntrinsicProps extends Partial<Readonly<ojMessagesSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     ondisplayChanged?: (value: ojMessagesEventMap['displayChanged']) => void;

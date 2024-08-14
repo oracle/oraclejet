@@ -1678,7 +1678,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       }
     }
     if (modality === PopupService.MODALITY.MODAL) {
-      popup.attr('aria-modal', 'true');
+      // JET-65003: only set aria-modal, if role is 'dialog' or 'alertdialog'
+      const role = popup.attr('role');
+      if (role === 'dialog' || role === 'alertdialog') {
+        popup.attr('aria-modal', 'true');
+      }
     } else {
       // saw a tech note that a "false" value doesn't convey the same information as
       // if the attribute wasn’t present at all screen readers.
@@ -4408,28 +4412,24 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
   };
 
   var _a;
-  const OLD_DEFAULT_LAYER_ID = '__oj_zorder_container';
-  const NEW_DEFAULT_LAYER_ID = '__root_layer_host';
-  const NEW_DEFAULT_TOP_LAYER_ID = '__top_layer_host';
   const getUniqueId = ojcustomelementUtils.ElementUtils.getUniqueId.bind(null, null);
   const V_LAYER_HOST_ID_REF = Symbol();
   class VLayerUtils {
-      static findOpenVPopups() {
-          const rootLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
-          const topLayerHost = document.getElementById(NEW_DEFAULT_TOP_LAYER_ID);
-          const resRoot = rootLayerHost ? [].slice.call(rootLayerHost.children) : [];
-          const resTop = topLayerHost ? [].slice.call(topLayerHost.children) : [];
-          const result = resRoot.concat(resTop);
-          return result;
-      }
   }
   _a = VLayerUtils;
-  VLayerUtils._getPopupServiceOptions = (element, launcherElement) => {
+  VLayerUtils._getPopupServiceOptions = (element, launcherElement, level, priority) => {
       const PSOptions = {};
       const PSoption = oj.PopupService.OPTION;
       PSOptions[PSoption.POPUP] = element;
       PSOptions[PSoption.LAUNCHER] = launcherElement;
-      PSOptions[PSoption.LAYER_SELECTORS] = 'oj-v-layer-host-layer';
+      PSOptions[PSoption.LAYER_SELECTORS] =
+          priority === 'dialog'
+              ? 'oj-dialog-layer'
+              : priority === 'messages'
+                  ? 'oj-messages-layer'
+                  : 'oj-popup-layer';
+      PSOptions[PSoption.LAYER_LEVEL] = level ?? oj.PopupService.LAYER_LEVEL.NEAREST_ANCESTOR;
+      PSOptions[PSoption.CUSTOM_ELEMENT] = false;
       const PSEvent = oj.PopupService.EVENT;
       PSOptions[PSoption.EVENTS] = {
           [PSEvent.POPUP_BEFORE_OPEN]: () => { },
@@ -4445,7 +4445,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       };
       return PSOptions;
   };
-  VLayerUtils.getLayerHost = (element, priority) => {
+  VLayerUtils.getLayerHost = (element, level, priority) => {
       const anchorRef = element['anchorRef'];
       let layerHost;
       if (!element[V_LAYER_HOST_ID_REF]) {
@@ -4457,7 +4457,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       if (layerHost) {
           return layerHost;
       }
-      let isComponentInOldDom = false;
       let launcherElement;
       if (anchorRef != undefined) {
           launcherElement = anchorRef.current;
@@ -4465,67 +4464,9 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       else {
           launcherElement = element;
       }
-      let zOrderContainer = element.closest(`#${OLD_DEFAULT_LAYER_ID}`);
-      if (zOrderContainer) {
-          isComponentInOldDom = true;
-      }
-      else {
-          if (anchorRef && anchorRef.current && !anchorRef.current.x) {
-              zOrderContainer = anchorRef.current.closest(`#${OLD_DEFAULT_LAYER_ID}`);
-              if (zOrderContainer) {
-                  isComponentInOldDom = true;
-              }
-          }
-      }
-      if (isComponentInOldDom) {
-          return _a._openLayerHost(element[V_LAYER_HOST_ID_REF], launcherElement);
-      }
-      return _a._getNewLayerHost(element, priority);
+      return _a._openLayerHost(element[V_LAYER_HOST_ID_REF], launcherElement, level, priority);
   };
-  VLayerUtils._getNewLayerHost = (element, priority) => {
-      const parentLayerHost = element.closest(`#${NEW_DEFAULT_TOP_LAYER_ID}`);
-      if (parentLayerHost) {
-          return parentLayerHost;
-      }
-      let rootLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
-      if (priority === 'top') {
-          let topLayerHost = document.getElementById(NEW_DEFAULT_TOP_LAYER_ID);
-          if (!topLayerHost) {
-              topLayerHost = document.createElement('div');
-              topLayerHost.setAttribute('id', NEW_DEFAULT_TOP_LAYER_ID);
-              topLayerHost.setAttribute('data-oj-binding-provider', 'preact');
-              topLayerHost.classList.add('oj-top-layer-host');
-              if (rootLayerHost) {
-                  rootLayerHost.after(topLayerHost);
-              }
-              else {
-                  let zOrderContainer = document.getElementById(OLD_DEFAULT_LAYER_ID);
-                  if (!zOrderContainer) {
-                      document.body.prepend(topLayerHost);
-                  }
-                  else {
-                      zOrderContainer.after(topLayerHost);
-                  }
-              }
-          }
-          return topLayerHost;
-      }
-      if (!rootLayerHost) {
-          rootLayerHost = document.createElement('div');
-          rootLayerHost.setAttribute('id', NEW_DEFAULT_LAYER_ID);
-          rootLayerHost.setAttribute('data-oj-binding-provider', 'preact');
-          rootLayerHost.classList.add('oj-root-layer-host');
-          let zOrderContainer = document.getElementById(OLD_DEFAULT_LAYER_ID);
-          if (!zOrderContainer) {
-              document.body.prepend(rootLayerHost);
-          }
-          else {
-              zOrderContainer.after(rootLayerHost);
-          }
-      }
-      return rootLayerHost;
-  };
-  VLayerUtils._openLayerHost = (elementId, launcherElement) => {
+  VLayerUtils._openLayerHost = (elementId, launcherElement, level, priority) => {
       if (!elementId)
           return;
       let vpopupCoreElement = document.getElementById(elementId);
@@ -4536,7 +4477,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
           document.body.appendChild(vpopupCoreElement);
       }
       const popupServiceInstance = oj.PopupService.getInstance();
-      const popupServiceOptions = _a._getPopupServiceOptions(vpopupCoreElement, launcherElement);
+      const popupServiceOptions = _a._getPopupServiceOptions(vpopupCoreElement, launcherElement, level, priority);
       popupServiceInstance.open(popupServiceOptions);
       return vpopupCoreElement;
   };
@@ -4547,6 +4488,20 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       const popupServiceOptions = _a._getPopupServiceOptions(element, launcherElement);
       popupServiceInstance.close(popupServiceOptions);
       element.remove();
+  };
+  VLayerUtils.onLayerUnmount = (element, layer) => {
+      if (!element)
+          return;
+      const layerHost = document.getElementById(element[V_LAYER_HOST_ID_REF]);
+      if (!layerHost)
+          return;
+      if (layerHost.children.length === 0) {
+          delete element[V_LAYER_HOST_ID_REF];
+          const popupServiceInstance = oj.PopupService.getInstance();
+          const popupServiceOptions = _a._getPopupServiceOptions(layerHost, null);
+          popupServiceInstance.close(popupServiceOptions);
+          layerHost.remove();
+      }
   };
   oj._registerLegacyNamespaceProp('VLayerUtils', VLayerUtils);
 

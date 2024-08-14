@@ -4956,15 +4956,32 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       var childNodePane = container.GetChildNodePane();
       var padding = container.getContainerPadding();
-      childNodePane.setTranslate(padding.left, padding.top);
       var childBounds = childNodePane.getDimensionsWithStroke();
-      var containerShape = new dvt.Rect(
-        diagram.getCtx(),
-        0,
-        0,
-        childBounds.w + padding.left + padding.right,
-        childBounds.h + padding.top + padding.bottom
-      );
+      var containerWidth = childBounds.w + padding.left + padding.right;
+      var containerHeight = childBounds.h + padding.top + padding.bottom;
+      var iconWidth = nodeData.icon.width;
+      var iconHeight = nodeData.icon.height;
+      var paddingTop = padding.top;
+      var paddingLeft = padding.left;
+      if (iconWidth > containerWidth || iconHeight > containerHeight) {
+        if (iconWidth > containerWidth) {
+          containerWidth = iconWidth;
+          paddingLeft += (containerWidth - childBounds.w) / 2 - paddingLeft;
+        }
+        if (iconHeight > containerHeight) {
+          containerHeight = iconHeight;
+          paddingTop += (containerHeight - childBounds.h) / 2 - paddingTop;
+        }
+        var containerPadding = {
+          left: paddingLeft,
+          right: paddingLeft,
+          top: paddingTop,
+          bottom: paddingTop
+        };
+        diagram.getNodeById(nodeData.id)._containerPadding = containerPadding;
+      }
+      childNodePane.setTranslate(paddingLeft, paddingTop);
+      var containerShape = new dvt.Rect(diagram.getCtx(), 0, 0, containerWidth, containerHeight);
       containerShape.setSolidFill(fillColor);
       if (borderRadius) {
         containerShape.setRx(borderRadius);
@@ -9991,9 +10008,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this.EventManager = new DvtDiagramEventManager(context, this.processEvent, this);
       this.EventManager.addListeners(this);
 
-      // Set up keyboard handler on non-touch devices
-      if (!dvt.Agent.isTouchDevice())
-        this.EventManager.setKeyboardHandler(new DvtDiagramKeyboardHandler(this, this.EventManager));
+      // Set up keyboard handler
+      this.EventManager.setKeyboardHandler(new DvtDiagramKeyboardHandler(this, this.EventManager));
 
       this._nodes = new context.ojMap();
       this._arNodeIds = [];
@@ -11804,8 +11820,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           this._arRootIds.push(nodeId);
         }
         this._arNodeIds.push(nodeId);
-        // if child nodes option is defined and the node is disclosed, process the data
-        if (nodeData['nodes'] && nodeData['nodes'].length > 0) {
+        // if child nodes option is defined, the node is disclosed and not hidden process the data
+        if (nodeData['nodes'] && nodeData['nodes'].length > 0 && !node.isHidden()) {
           if (this._isNodeDisclosed(nodeId)) {
             node.setDisclosed(true);
             this._prepareNodes(node, nodeData['nodes']);
@@ -12133,7 +12149,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * Shows the keyboard focus effect.  Function is called when diagram.focus() is called.
      */
     showFocusEffect() {
-      if (dvt.Agent.isTouchDevice()) return;
       var navigable = this.getEventManager().getFocus();
       if (!navigable) {
         // navigate to the default

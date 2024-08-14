@@ -105,6 +105,7 @@ export type ComponentMetadataProperties = {
     readOnly?: boolean;
     required?: boolean;
     status?: Status[];
+    templateSlotRenderType?: string;
     translatable?: boolean;
     type: string;
     units?: string;
@@ -126,6 +127,7 @@ export type ComponentMetadataSlots = {
     minItems?: number;
     preferredContent?: string[];
     status?: Status[];
+    templateSlotRenderType?: string;
     visible?: boolean;
 };
 // tslint:disable-next-line interface-over-type-literal

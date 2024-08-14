@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 import * as MetaTypes from './MetadataTypes';
 export declare function tagNameToElementInterfaceName(tagName: string): string;
-export declare function tagNameToElementName(tagName: string): string;
+export declare function tagNameToElementRoot(tagName: string): string;
 export declare function writebackCallbackToProperty(property: string): string;
 export declare function getGenericTypeParameters(propsTypeNode: ts.NodeWithTypeArguments): MetaTypes.GenericTypeParametersInfo;
 export declare function getTypeParametersFromType(type: ts.Type, checker: ts.TypeChecker): string;
@@ -11,6 +11,7 @@ export declare function updateFunctionalVCompNode(functionalCompNode: MetaTypes.
 export declare function getPropsInfo(compType: MetaTypes.VCompType, componentName: string, typeRef: ts.TypeReferenceNode, progImportMaps: MetaTypes.VCompImportMaps, checker: ts.TypeChecker): MetaTypes.PropsInfo | null;
 export declare function getIntersectionTypeNodeInfo(intersectionTypeNode: ts.IntersectionTypeNode, progImportMaps: MetaTypes.VCompImportMaps, isInline: boolean, checker: ts.TypeChecker): MetaTypes.IntersectionTypeNodeInfo;
 export declare function getMappedTypesInfo(outerType: ts.Type, checker: ts.TypeChecker, isPropsInfo: boolean, outerTypeNode?: ts.TypeNode): MetaTypes.MappedTypesInfo | null;
+export declare function isMappedTypeReference(typeRefNode: ts.TypeReferenceNode): boolean;
 export declare function isPropsMappedType(type: ts.Type, typeNode?: ts.TypeNode): boolean;
 export declare function isAliasToMappedType(type: ts.Type, typeNode: ts.TypeNode): boolean;
 export declare function getWrappedReadonlyType(type: ts.Type, typeNode: ts.TypeNode, componentName: string, checker: ts.TypeChecker): ts.Type | null;
@@ -34,6 +35,6 @@ export declare function getValueNodeFromReference(refNode: ts.Node, metaUtilObj:
 export declare function getValueNodeFromIdentifier(idNode: ts.Identifier, metaUtilObj: MetaTypes.MetaUtilObj): ts.Node | null;
 export declare function getValueNodeFromPropertyAccessExpression(propAccessNode: ts.PropertyAccessExpression, metaUtilObj: MetaTypes.MetaUtilObj): ts.Node | null;
 export declare function getMDValueFromNode(valueNode: ts.Node, prop: string, metaUtilObj?: MetaTypes.MetaUtilObj, topLvlProp?: string): any;
-export declare function generateStatementsFromText(text: string): ts.NodeArray<ts.Statement>;
+export declare function generateStatementsFromText(text: string, offset?: number): ts.Statement[];
 export declare function removeQuotes(str: any): any;
 export declare function createTypeDefinitionFromTypeRefs(typeRefs: ts.TypeReferenceNode[], metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.TypedefObj[];

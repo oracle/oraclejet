@@ -77,7 +77,7 @@ export declare class StreamList<K extends string | number, D> extends Component<
     private _handleToggleExpanded;
     private readonly _handleKeyDown;
     private _touchStartHandler;
-    render(): import("preact").JSX.Element;
+    render(): import("preact/jsx-runtime").JSX.Element;
     private _doBlur;
     private _isFocusBlurTriggeredByDescendent;
     private _renderInitialSkeletons;
@@ -165,6 +165,8 @@ export namespace StreamListElement {
     type scrollPolicyChanged<K extends string | number, D> = JetElementCustomEventStrict<StreamListElement<K, D>['scrollPolicy']>;
     type scrollPolicyOptionsChanged<K extends string | number, D> = JetElementCustomEventStrict<StreamListElement<K, D>['scrollPolicyOptions']>;
     type scrollPositionChanged<K extends string | number, D> = JetElementCustomEventStrict<StreamListElement<K, D>['scrollPosition']>;
+    type RenderGroupTemplate<K extends string | number, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
+    type RenderItemTemplate<K extends string | number, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
 }
 export interface StreamListElementEventMap<K extends string | number, D> extends HTMLElementEventMap {
     'dataChanged': JetElementCustomEventStrict<StreamListElement<K, D>['data']>;

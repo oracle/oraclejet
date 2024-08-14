@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojeventtarget'], function (exports, ojeventtarget) { 'use strict';
+define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function (exports, ojeventtarget, ojdataprovider) { 'use strict';
 
     /**
      * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -221,22 +221,13 @@ define(['exports', 'ojs/ojeventtarget'], function (exports, ojeventtarget) { 'us
                 }
                 ['next']() {
                     const signal = this._params?.signal;
-                    if (signal && signal.aborted) {
-                        const reason = signal.reason;
-                        return Promise.reject(new DOMException(reason, 'AbortError'));
-                    }
-                    return new Promise((resolve, reject) => {
-                        if (signal) {
-                            const reason = signal.reason;
-                            signal.addEventListener('abort', (e) => {
-                                return reject(new DOMException(reason, 'AbortError'));
-                            });
-                        }
+                    const callback = (resolve) => {
                         const promise = this._fetchNext();
                         return resolve(promise.then((result) => {
                             return this._parent._suppressNodeIfEmptyChildrenFirst(result);
                         }));
-                    });
+                    };
+                    return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
                 }
             };
             this.AsyncIteratorYieldResult = class {
@@ -302,37 +293,19 @@ define(['exports', 'ojs/ojeventtarget'], function (exports, ojeventtarget) { 'us
         }
         fetchByOffset(params) {
             const signal = params?.signal;
-            if (signal && signal.aborted) {
-                const reason = signal.reason;
-                return Promise.reject(new DOMException(reason, 'AbortError'));
-            }
-            return new Promise((resolve, reject) => {
-                if (signal) {
-                    const reason = signal.reason;
-                    signal.addEventListener('abort', (e) => {
-                        return reject(new DOMException(reason, 'AbortError'));
-                    });
-                }
+            const callback = (resolve) => {
                 return resolve(this.treeDataProvider.fetchByOffset(params).then((result) => {
                     return this._suppressNodeIfEmptyChildrenByOffset(result);
                 }));
-            });
+            };
+            return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
         fetchByKeys(params) {
             const signal = params?.signal;
-            if (signal && signal.aborted) {
-                const reason = signal.reason;
-                return Promise.reject(new DOMException(reason, 'AbortError'));
-            }
-            return new Promise((resolve, reject) => {
-                if (signal) {
-                    const reason = signal.reason;
-                    signal.addEventListener('abort', (e) => {
-                        return reject(new DOMException(reason, 'AbortError'));
-                    });
-                }
+            const callback = (resolve) => {
                 return resolve(this.treeDataProvider.fetchByKeys(params));
-            });
+            };
+            return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
         _suppressNodeIfEmptyChildrenByOffset(result) {
             if (result.results && this.options && this.options.suppressNode == 'ifEmptyChildren') {

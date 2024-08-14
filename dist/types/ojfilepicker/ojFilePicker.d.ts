@@ -52,7 +52,6 @@ export declare class FilePicker extends Component<ExtendGlobalProps<Props>, Stat
         selectionMode: string;
     };
     constructor(props: ExtendGlobalProps<Props>);
-    private _doSelectHelper;
     private readonly _handleSelectingFiles;
     private readonly _handleFileSelected;
     private _fileSelectedHelper;
@@ -66,7 +65,7 @@ export declare class FilePicker extends Component<ExtendGlobalProps<Props>, Stat
     blur(): void;
     private _handleFocus;
     private _handleBlur;
-    render(props: ExtendGlobalProps<Props>): import("preact").JSX.Element;
+    render(props: ExtendGlobalProps<Props>): import("preact/jsx-runtime").JSX.Element;
     private _renderDisabled;
     private _renderWithCustomTrigger;
     private _renderWithDefaultTrigger;
@@ -94,7 +93,6 @@ export interface FilePickerElement extends JetElement<FilePickerElementSettableP
     setProperty<T extends keyof FilePickerElementSettableProperties>(property: T, value: FilePickerElementSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, FilePickerElementSettableProperties>): void;
     setProperties(properties: FilePickerElementSettablePropertiesLenient): void;
-    _doSelectHelper: FilePicker['_doSelectHelper'];
     blur: FilePicker['blur'];
     focus: FilePicker['focus'];
 }

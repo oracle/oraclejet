@@ -1,0 +1,23 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.formLayout.scoped") {
+
+:root.oj-scale-sm {
+
+// forms
+// ------------------------------
+  --oj-form-layout-margin-bottom: 1rem;
+}    
+
+.oj-density-compact { 
+  --oj-form-layout-top-edge-label-to-value-padding: var(--oj-core-spacing-1x);
+  --oj-text-field-inside-edge-padding-top:          max(0.5625rem, 9.75px);
+  --oj-form-layout-margin-bottom: .5rem;
+}
+// Need to override the oj-scale-sm value for density compact.
+:root.oj-scale-sm.oj-density-compact {
+  --oj-form-layout-margin-bottom: .5rem; 
+}
+
+}

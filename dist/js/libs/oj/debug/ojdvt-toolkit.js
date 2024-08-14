@@ -551,7 +551,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   DragSource.prototype.initiateDrag = function () {
     // On touch devices, when a drag is initiated, immediately cancel any touch and hold
     var tm = this.getTouchManager();
-    if (Agent.isTouchDevice() && tm) tm.cancelTouchHold();
+    if (Agent.getAgentInfo().isTouchSupported && tm) tm.cancelTouchHold();
   };
 
   /**
@@ -10354,11 +10354,12 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     // Block mouse events if the tip is not interactive
     tooltip.style['pointer-events'] = noEvents ? 'none' : 'auto';
 
-    // Clear the width and height, and reset the position to 0,0. This allows positionTip to get the accurate tooltip size
+    // Clear the width, height and overflow, and reset the position to 0,0. This allows positionTip to get the accurate tooltip size
     tooltip.style.width = null;
     tooltip.style.height = null;
     tooltip.style.left = '0px';
     tooltip.style.top = '0px';
+    tooltip.style.overflow = null;
 
     // Add offsets to the tip position as needed
     if (useOffset) {
@@ -10385,7 +10386,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var tooltip = document.getElementById(this._domElementId);
     if (tooltip) {
       tooltip.style.visibility = 'hidden';
-      tooltip.style.overflow = null;
+      tooltip.style.overflow = 'scroll';
       tooltip.style.width = '0px';
       tooltip.style.height = '0px';
       if (!Agent.isRightToLeft(this._context)) tooltip.style.left = '0px';
@@ -13446,7 +13447,6 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     callbackObj,
     bPreventClick
   ) {
-    var isTouch = Agent.isTouchDevice();
     var context = displayable.getCtx();
     var bodyStyle = document.body.style;
 
@@ -13460,27 +13460,26 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       if (dragStartCallback.call(callbackObj, dvtEvent)) {
         // Add dragMove and dragEnd event listeners to the document so that the gestures that follow can be captured
         // outside the component.
-        if (isTouch) {
-          // Starting in Chrome 51, Firefox 49, and Safari 11.1, touch event listeners are passive by default
-          // for scrolling performance reasons.
-          // See also https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md.
-          // This means calling event.preventDefault() inside touchmove handlers won't prevent page scrolling.
-          // We use to call event.preventDefault() in various touchmove handlers to prevent page scrolls when dragging,
-          // (e.g. in dvt.SimpleScrollBar and component specific panning logic), but they stopped working.
-          // Solution is to set passive to false to allow event.preventDefault().
-          // This should be safe, because we always want to prevent page scrolling when dragging, so having passive true
-          // gives us no performance benefits.
-          document.addEventListener('touchmove', dragMoveStaticCallback, {
-            capture: true,
-            passive: false
-          });
-          document.addEventListener('touchend', dragEndStaticCallback, true);
-        } else {
-          document.addEventListener('mousemove', dragMoveStaticCallback, true);
-          document.addEventListener('mouseup', dragEndStaticCallback, true);
-          mouseMoved = false;
-          if (bPreventClick) document.addEventListener('click', clickStaticCallback, true);
-        }
+
+        // Starting in Chrome 51, Firefox 49, and Safari 11.1, touch event listeners are passive by default
+        // for scrolling performance reasons.
+        // See also https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md.
+        // This means calling event.preventDefault() inside touchmove handlers won't prevent page scrolling.
+        // We use to call event.preventDefault() in various touchmove handlers to prevent page scrolls when dragging,
+        // (e.g. in dvt.SimpleScrollBar and component specific panning logic), but they stopped working.
+        // Solution is to set passive to false to allow event.preventDefault().
+        // This should be safe, because we always want to prevent page scrolling when dragging, so having passive true
+        // gives us no performance benefits.
+        document.addEventListener('touchmove', dragMoveStaticCallback, {
+          capture: true,
+          passive: false
+        });
+        document.addEventListener('touchend', dragEndStaticCallback, true);
+
+        document.addEventListener('mousemove', dragMoveStaticCallback, true);
+        document.addEventListener('mouseup', dragEndStaticCallback, true);
+        mouseMoved = false;
+        if (bPreventClick) document.addEventListener('click', clickStaticCallback, true);
 
         // Save the original CSS values
         SvgDocumentUtils._webkitUserSelect = bodyStyle.webkitUserSelect;
@@ -13501,29 +13500,27 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
     var dragEndStaticCallback = function (event) {
       // Clean up the dragMove and dragEnd event listeners
-      if (isTouch) {
-        document.removeEventListener('touchmove', dragMoveStaticCallback, true);
-        document.removeEventListener('touchend', dragEndStaticCallback, true);
-      } else {
-        document.removeEventListener('mousemove', dragMoveStaticCallback, true);
-        document.removeEventListener('mouseup', dragEndStaticCallback, true);
+      document.removeEventListener('touchmove', dragMoveStaticCallback, true);
+      document.removeEventListener('touchend', dragEndStaticCallback, true);
 
-        if (Agent.browser === 'firefox' && mouseMoved && !bPreventClick) {
-          // FF fires a spurious click event here, need to stop it from propagating
-          document.addEventListener('click', clickStaticCallback, { capture: true, once: true });
-          // Just to be extra paranoid, remove the listener if it doesn't trigger
-          setTimeout(function () {
-            document.removeEventListener('click', clickStaticCallback, { capture: true, once: true });
-          }, 0);
-        }
-        mouseMoved = false;
-        // Use timeout because the click event is fired after mouseup. We can't remove the listener in the
-        // clickCallback because the click event may not be fired depending on where the mouseup happens.
-        if (bPreventClick) {
-          setTimeout(function () {
-            document.removeEventListener('click', clickStaticCallback, true);
-          }, 50);
-        }
+      document.removeEventListener('mousemove', dragMoveStaticCallback, true);
+      document.removeEventListener('mouseup', dragEndStaticCallback, true);
+
+      if (Agent.browser === 'firefox' && mouseMoved && !bPreventClick) {
+        // FF fires a spurious click event here, need to stop it from propagating
+        document.addEventListener('click', clickStaticCallback, { capture: true, once: true });
+        // Just to be extra paranoid, remove the listener if it doesn't trigger
+        setTimeout(function () {
+          document.removeEventListener('click', clickStaticCallback, { capture: true, once: true });
+        }, 0);
+      }
+      mouseMoved = false;
+      // Use timeout because the click event is fired after mouseup. We can't remove the listener in the
+      // clickCallback because the click event may not be fired depending on where the mouseup happens.
+      if (bPreventClick) {
+        setTimeout(function () {
+          document.removeEventListener('click', clickStaticCallback, true);
+        }, 50);
       }
 
       // Restore selection
@@ -13536,11 +13533,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     };
 
     // Add the dragStart listener to the object.
-    if (isTouch) {
-      displayable.addEvtListener(TouchEvent.TOUCHSTART, dragStartStaticCallback);
-    } else {
-      displayable.addEvtListener(MouseEvent.MOUSEDOWN, dragStartStaticCallback);
-    }
+    displayable.addEvtListener(TouchEvent.TOUCHSTART, dragStartStaticCallback);
+    displayable.addEvtListener(MouseEvent.MOUSEDOWN, dragStartStaticCallback);
   };
 
   /**
@@ -17711,9 +17705,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       this
     );
 
-    this.TouchManager = null;
-    if (Agent.isTouchDevice())
-      this.TouchManager = new TouchManager('touchmanager', this._context, this);
+    this.TouchManager = new TouchManager('touchmanager', this._context, this);
 
     // The DvtKeyboardNavigable item that currently has keyboard focus
     this._focusedObj = null;
@@ -17767,71 +17759,70 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   EventManager.prototype.addListeners = function (displayable) {
     if (!displayable) return;
 
-    if (Agent.isTouchDevice()) {
-      // Hide any tooltips previously shown
-      this.hideTooltip();
+    // Hide any tooltips previously shown
+    this.hideTooltip();
 
-      displayable.addEvtListener(TouchEvent.TOUCHSTART, this.OnTouchStartBubble, false, this);
-      displayable.addEvtListener(TouchEvent.TOUCHMOVE, this.OnTouchMoveBubble, false, this);
-      displayable.addEvtListener(TouchEvent.TOUCHEND, this.OnTouchEndBubble, false, this);
+    displayable.addEvtListener(TouchEvent.TOUCHSTART, this.OnTouchStartBubble, false, this);
+    displayable.addEvtListener(TouchEvent.TOUCHMOVE, this.OnTouchMoveBubble, false, this);
+    displayable.addEvtListener(TouchEvent.TOUCHEND, this.OnTouchEndBubble, false, this);
 
-      this.TouchManager.addTouchEventListener(
-        ComponentTouchEvent.TOUCH_HOVER_START_TYPE,
-        this.OnComponentTouchHoverStart,
-        this
-      );
-      this.TouchManager.addTouchEventListener(
-        ComponentTouchEvent.TOUCH_HOVER_MOVE_TYPE,
-        this.OnComponentTouchHoverMove,
-        this
-      );
-      this.TouchManager.addTouchEventListener(
-        ComponentTouchEvent.TOUCH_HOVER_END_TYPE,
-        this.OnComponentTouchHoverEnd,
-        this
-      );
-      this.TouchManager.addTouchEventListener(
-        ComponentTouchEvent.TOUCH_HOVER_OUT_TYPE,
-        this.OnComponentTouchHoverOut,
-        this
-      );
-      this.TouchManager.addTouchEventListener(
-        ComponentTouchEvent.TOUCH_HOVER_OVER_TYPE,
-        this.OnComponentTouchHoverOver,
-        this
-      );
+    this.TouchManager.addTouchEventListener(
+      ComponentTouchEvent.TOUCH_HOVER_START_TYPE,
+      this.OnComponentTouchHoverStart,
+      this
+    );
+    this.TouchManager.addTouchEventListener(
+      ComponentTouchEvent.TOUCH_HOVER_MOVE_TYPE,
+      this.OnComponentTouchHoverMove,
+      this
+    );
+    this.TouchManager.addTouchEventListener(
+      ComponentTouchEvent.TOUCH_HOVER_END_TYPE,
+      this.OnComponentTouchHoverEnd,
+      this
+    );
+    this.TouchManager.addTouchEventListener(
+      ComponentTouchEvent.TOUCH_HOVER_OUT_TYPE,
+      this.OnComponentTouchHoverOut,
+      this
+    );
+    this.TouchManager.addTouchEventListener(
+      ComponentTouchEvent.TOUCH_HOVER_OVER_TYPE,
+      this.OnComponentTouchHoverOver,
+      this
+    );
 
-      this.TouchManager.addTouchEventListener(
-        ComponentTouchEvent.TOUCH_CLICK_TYPE,
-        this.OnComponentTouchClick,
-        this
-      );
-      this.TouchManager.addTouchEventListener(
-        ComponentTouchEvent.TOUCH_DOUBLE_CLICK_TYPE,
-        this.OnComponentTouchDblClick,
-        this
-      );
-    } else {
-      displayable.addEvtListener(MouseEvent.CLICK, this._onClick, false, this);
-      displayable.addEvtListener(MouseEvent.DBLCLICK, this._onDblClick, false, this);
-      displayable.addEvtListener('contextmenu', this.OnContextMenu, false, this);
-      displayable.addEvtListener(MouseEvent.MOUSEMOVE, this.OnMouseMove, false, this);
-      displayable.addEvtListener(MouseEvent.MOUSEOVER, this.PreOnMouseOver, false, this);
-      displayable.addEvtListener(MouseEvent.MOUSEOUT, this.PreOnMouseOut, false, this);
-      displayable.addEvtListener(MouseEvent.MOUSEDOWN, this.PreOnMouseDown, false, this);
-      displayable.addEvtListener(MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
-      displayable.addEvtListener(KeyboardEvent.KEYDOWN, this.OnKeyDown, false, this);
-      displayable.addEvtListener(KeyboardEvent.KEYUP, this.OnKeyUp, false, this);
-      displayable.addEvtListener(DvtFocusEvent.FOCUS, this.OnFocus, false, this);
-      displayable.addEvtListener(DvtFocusEvent.BLUR, this.OnBlur, false, this);
+    this.TouchManager.addTouchEventListener(
+      ComponentTouchEvent.TOUCH_CLICK_TYPE,
+      this.OnComponentTouchClick,
+      this
+    );
+    this.TouchManager.addTouchEventListener(
+      ComponentTouchEvent.TOUCH_DOUBLE_CLICK_TYPE,
+      this.OnComponentTouchDblClick,
+      this
+    );
 
-      // Safari does not dispatch wheel events to svg when there is no svg content under the pointer.
-      // attaching the dummy event listener to parent element to trigger wheel event
-      // https://github.com/d3/d3/issues/3035
-      if (Agent.browser === 'safari') {
-        this.getCtx()._parentDiv.addEventListener('wheel', () => {});
-      }
+    displayable.addEvtListener(MouseEvent.CLICK, this._onClick, false, this);
+    displayable.addEvtListener(MouseEvent.DBLCLICK, this._onDblClick, false, this);
+    displayable.addEvtListener('contextmenu', this.OnContextMenu, false, this);
+    displayable.addEvtListener(MouseEvent.MOUSEMOVE, this.OnMouseMove, false, this);
+    displayable.addEvtListener(MouseEvent.MOUSEOVER, this.PreOnMouseOver, false, this);
+    displayable.addEvtListener(MouseEvent.MOUSEOUT, this.PreOnMouseOut, false, this);
+    displayable.addEvtListener(MouseEvent.MOUSEDOWN, this.PreOnMouseDown, false, this);
+    displayable.addEvtListener(MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
+
+    // Safari does not dispatch wheel events to svg when there is no svg content under the pointer.
+    // attaching the dummy event listener to parent element to trigger wheel event
+    // https://github.com/d3/d3/issues/3035
+    if (Agent.browser === 'safari') {
+      this.getCtx()._parentDiv.addEventListener('wheel', () => {});
     }
+
+    displayable.addEvtListener(KeyboardEvent.KEYDOWN, this.OnKeyDown, false, this);
+    displayable.addEvtListener(KeyboardEvent.KEYUP, this.OnKeyUp, false, this);
+    displayable.addEvtListener(DvtFocusEvent.FOCUS, this.OnFocus, false, this);
+    displayable.addEvtListener(DvtFocusEvent.BLUR, this.OnBlur, false, this);
 
     if (this.isDndSupported()) {
       var context = this.getCtx();
@@ -17889,61 +17880,59 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {Displayable} displayable The object on which to remove the listeners.
    */
   EventManager.prototype.RemoveListeners = function (displayable) {
-    if (Agent.isTouchDevice()) {
-      displayable.removeEvtListener(TouchEvent.TOUCHSTART, this.OnTouchStartBubble, false, this);
-      displayable.removeEvtListener(TouchEvent.TOUCHMOVE, this.OnTouchMoveBubble, false, this);
-      displayable.removeEvtListener(TouchEvent.TOUCHEND, this.OnTouchEndBubble, false, this);
+    displayable.removeEvtListener(TouchEvent.TOUCHSTART, this.OnTouchStartBubble, false, this);
+    displayable.removeEvtListener(TouchEvent.TOUCHMOVE, this.OnTouchMoveBubble, false, this);
+    displayable.removeEvtListener(TouchEvent.TOUCHEND, this.OnTouchEndBubble, false, this);
 
-      this.TouchManager.removeTouchEventListener(
-        ComponentTouchEvent.TOUCH_HOVER_START_TYPE,
-        this.OnComponentTouchHoverStart,
-        this
-      );
-      this.TouchManager.removeTouchEventListener(
-        ComponentTouchEvent.TOUCH_HOVER_MOVE_TYPE,
-        this.OnComponentTouchHoverMove,
-        this
-      );
-      this.TouchManager.removeTouchEventListener(
-        ComponentTouchEvent.TOUCH_HOVER_END_TYPE,
-        this.OnComponentTouchHoverEnd,
-        this
-      );
-      this.TouchManager.removeTouchEventListener(
-        ComponentTouchEvent.TOUCH_HOVER_OUT_TYPE,
-        this.OnComponentTouchHoverOut,
-        this
-      );
-      this.TouchManager.removeTouchEventListener(
-        ComponentTouchEvent.TOUCH_HOVER_OVER_TYPE,
-        this.OnComponentTouchHoverOver,
-        this
-      );
+    this.TouchManager.removeTouchEventListener(
+      ComponentTouchEvent.TOUCH_HOVER_START_TYPE,
+      this.OnComponentTouchHoverStart,
+      this
+    );
+    this.TouchManager.removeTouchEventListener(
+      ComponentTouchEvent.TOUCH_HOVER_MOVE_TYPE,
+      this.OnComponentTouchHoverMove,
+      this
+    );
+    this.TouchManager.removeTouchEventListener(
+      ComponentTouchEvent.TOUCH_HOVER_END_TYPE,
+      this.OnComponentTouchHoverEnd,
+      this
+    );
+    this.TouchManager.removeTouchEventListener(
+      ComponentTouchEvent.TOUCH_HOVER_OUT_TYPE,
+      this.OnComponentTouchHoverOut,
+      this
+    );
+    this.TouchManager.removeTouchEventListener(
+      ComponentTouchEvent.TOUCH_HOVER_OVER_TYPE,
+      this.OnComponentTouchHoverOver,
+      this
+    );
 
-      this.TouchManager.removeTouchEventListener(
-        ComponentTouchEvent.TOUCH_CLICK_TYPE,
-        this.OnComponentTouchClick,
-        this
-      );
-      this.TouchManager.removeTouchEventListener(
-        ComponentTouchEvent.TOUCH_DOUBLE_CLICK_TYPE,
-        this.OnComponentTouchDblClick,
-        this
-      );
-    } else {
-      displayable.removeEvtListener(MouseEvent.CLICK, this._onClick, false, this);
-      displayable.removeEvtListener(MouseEvent.DBLCLICK, this._onDblClick, false, this);
-      displayable.removeEvtListener('contextmenu', this.OnContextMenu, false, this);
-      displayable.removeEvtListener(MouseEvent.MOUSEMOVE, this.OnMouseMove, false, this);
-      displayable.removeEvtListener(MouseEvent.MOUSEOVER, this.PreOnMouseOver, false, this);
-      displayable.removeEvtListener(MouseEvent.MOUSEOUT, this.PreOnMouseOut, false, this);
-      displayable.removeEvtListener(MouseEvent.MOUSEDOWN, this.PreOnMouseDown, false, this);
-      displayable.removeEvtListener(MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
-      displayable.removeEvtListener(KeyboardEvent.KEYDOWN, this.OnKeyDown, false, this);
-      displayable.removeEvtListener(KeyboardEvent.KEYUP, this.OnKeyUp, false, this);
-      displayable.removeEvtListener(DvtFocusEvent.FOCUS, this.OnFocus, false, this);
-      displayable.removeEvtListener(DvtFocusEvent.BLUR, this.OnBlur, false, this);
-    }
+    this.TouchManager.removeTouchEventListener(
+      ComponentTouchEvent.TOUCH_CLICK_TYPE,
+      this.OnComponentTouchClick,
+      this
+    );
+    this.TouchManager.removeTouchEventListener(
+      ComponentTouchEvent.TOUCH_DOUBLE_CLICK_TYPE,
+      this.OnComponentTouchDblClick,
+      this
+    );
+
+    displayable.removeEvtListener(MouseEvent.CLICK, this._onClick, false, this);
+    displayable.removeEvtListener(MouseEvent.DBLCLICK, this._onDblClick, false, this);
+    displayable.removeEvtListener('contextmenu', this.OnContextMenu, false, this);
+    displayable.removeEvtListener(MouseEvent.MOUSEMOVE, this.OnMouseMove, false, this);
+    displayable.removeEvtListener(MouseEvent.MOUSEOVER, this.PreOnMouseOver, false, this);
+    displayable.removeEvtListener(MouseEvent.MOUSEOUT, this.PreOnMouseOut, false, this);
+    displayable.removeEvtListener(MouseEvent.MOUSEDOWN, this.PreOnMouseDown, false, this);
+    displayable.removeEvtListener(MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
+    displayable.removeEvtListener(KeyboardEvent.KEYDOWN, this.OnKeyDown, false, this);
+    displayable.removeEvtListener(KeyboardEvent.KEYUP, this.OnKeyUp, false, this);
+    displayable.removeEvtListener(DvtFocusEvent.FOCUS, this.OnFocus, false, this);
+    displayable.removeEvtListener(DvtFocusEvent.BLUR, this.OnBlur, false, this);
 
     if (this.isDndSupported()) {
       var outerDiv = this.getCtx().getContainer();
@@ -18021,16 +18010,15 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    */
   EventManager.prototype.setDragSource = function (dragSource) {
     this.DragSource = dragSource;
-    if (Agent.isTouchDevice()) this.DragSource.setTouchManager(this.TouchManager);
+    this.DragSource.setTouchManager(this.TouchManager);
   };
 
   /**
-   * Sets the keyboard handler to use with this event manager. This method is
-   * a no-op if we are rendering the component on a touch device.
+   * Sets the keyboard handler to use with this event manager.
    * @param {dvt.KeyboardHandler} handler The keyboard handler to use.
    */
   EventManager.prototype.setKeyboardHandler = function (handler) {
-    if (!Agent.isTouchDevice()) this.KeyboardHandler = handler;
+    this.KeyboardHandler = handler;
   };
 
   /**
@@ -18258,6 +18246,12 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @protected
    */
   EventManager.prototype.OnClick = function (event) {
+    if (this._preventClick) {
+      this._preventClick = false;
+      return;
+    }
+    this._preventClick = false;
+
     var obj = this.GetLogicalObject(event.target);
     this.OnClickInternal(event);
 
@@ -18777,6 +18771,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       this._touchResponseHandled = false;
       this._processTouchTooltip(event);
     }
+
+    // Prevent onClick handler from executing
+    // touch click is handled by OnComponentTouchClick
+    this._preventClick = true;
   };
 
   /**
@@ -19556,6 +19554,15 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    */
   EventManager.prototype.CreateCategoryRolloverHandler = function (callback, callbackObj) {
     return new CategoryRolloverHandler(callback, callbackObj);
+  };
+
+  /**
+   * Returns whether the given event is a touch event.
+   * @param {DvtBaseEvent|Event} event
+   * @return {boolean}
+   */
+  EventManager.isTouchEvent = function (event) {
+    return !!event.touches;
   };
 
   /**
@@ -28747,24 +28754,32 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   Button.prototype.setEnabled = function (bEnabled) {
     if (this._enabled != bEnabled) {
       this._enabled = bEnabled;
-      var isTouchDevice = Agent.isTouchDevice();
-      var clickEvent = isTouchDevice ? TouchEvent.TOUCHSTART : MouseEvent.CLICK;
-      // Set passive: false for touch start event, so that preventDefault can be called on the event.
-      var clickEventOptions = isTouchDevice ? { capture: false, passive: false } : { capture: false };
-
       if (bEnabled) {
         this.addEvtListener(MouseEvent.MOUSEOVER, this.OnMouseOver, false, this);
         this.addEvtListener(MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
         this.addEvtListener(MouseEvent.MOUSEDOWN, this.OnMouseDown, false, this);
         this.addEvtListener(MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
-        this.addEvtListener(clickEvent, this.OnClick, clickEventOptions, this);
+        this.addEvtListener(MouseEvent.CLICK, this.OnClick, { capture: false }, this);
+        // Set passive: false for touch start event, so that preventDefault can be called on the event.
+        this.addEvtListener(
+          TouchEvent.TOUCHSTART,
+          this.OnClick,
+          { capture: false, passive: false },
+          this
+        );
         this.setCursor(SelectionEffectUtils.getSelectingCursor());
       } else {
         this.removeEvtListener(MouseEvent.MOUSEOVER, this.OnMouseOver, false, this);
         this.removeEvtListener(MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
         this.removeEvtListener(MouseEvent.MOUSEDOWN, this.OnMouseDown, false, this);
         this.removeEvtListener(MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
-        this.removeEvtListener(clickEvent, this.OnClick, clickEventOptions, this);
+        this.removeEvtListener(MouseEvent.CLICK, this.OnClick, { capture: false }, this);
+        this.removeEvtListener(
+          TouchEvent.TOUCHSTART,
+          this.OnClick,
+          { capture: false, passive: false },
+          this
+        );
         this.setCursor(null);
       }
       // render disabled state
@@ -28814,9 +28829,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    */
   Button.prototype.OnMouseUp = function (event) {
     if (!this._bToggled) {
-      Agent.isTouchDevice() ? this.drawUpState() : this.drawOverState();
+      EventManager.isTouchEvent(event) ? this.drawUpState() : this.drawOverState();
     } else {
-      Agent.isTouchDevice() ? this.drawDownState() : this.drawOverDownState();
+      EventManager.isTouchEvent(event) ? this.drawDownState() : this.drawOverDownState();
     }
   };
 
@@ -28829,9 +28844,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     if (this._bToggleEnabled) {
       this._bToggled = !this._bToggled;
       if (!this._bToggled) {
-        Agent.isTouchDevice() ? this.drawUpState() : this.drawOverState();
+        EventManager.isTouchEvent(event) ? this.drawUpState() : this.drawOverState();
       } else {
-        Agent.isTouchDevice() ? this.drawDownState() : this.drawOverDownState();
+        EventManager.isTouchEvent(event) ? this.drawDownState() : this.drawOverDownState();
       }
     }
 
@@ -29235,24 +29250,32 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   IconButton.prototype.setEnabled = function (bEnabled) {
     if (this._enabled != bEnabled) {
       this._enabled = bEnabled;
-      var isTouchDevice = Agent.isTouchDevice();
-      var clickEvent = isTouchDevice ? TouchEvent.TOUCHSTART : MouseEvent.CLICK;
-      // Set passive: false for touch start event, so that preventDefault can be called on the event.
-      var clickEventOptions = isTouchDevice ? { capture: false, passive: false } : { capture: false };
-
       if (bEnabled) {
         this.addEvtListener(MouseEvent.MOUSEOVER, this.OnMouseOver, false, this);
         this.addEvtListener(MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
         this.addEvtListener(MouseEvent.MOUSEDOWN, this.OnMouseDown, false, this);
         this.addEvtListener(MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
-        this.addEvtListener(clickEvent, this.OnClick, clickEventOptions, this);
+        this.addEvtListener(MouseEvent.CLICK, this.OnClick, { capture: false }, this);
+        // Set passive: false for touch start event, so that preventDefault can be called on the event.
+        this.addEvtListener(
+          TouchEvent.TOUCHSTART,
+          this.OnClick,
+          { capture: false, passive: false },
+          this
+        );
         this.setCursor(SelectionEffectUtils.getSelectingCursor());
       } else {
         this.removeEvtListener(MouseEvent.MOUSEOVER, this.OnMouseOver, false, this);
         this.removeEvtListener(MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
         this.removeEvtListener(MouseEvent.MOUSEDOWN, this.OnMouseDown, false, this);
         this.removeEvtListener(MouseEvent.MOUSEUP, this.OnMouseUp, false, this);
-        this.removeEvtListener(clickEvent, this.OnClick, clickEventOptions, this);
+        this.removeEvtListener(MouseEvent.CLICK, this.OnClick, { capture: false }, this);
+        this.removeEvtListener(
+          TouchEvent.TOUCHSTART,
+          this.OnClick,
+          { capture: false, passive: false },
+          this
+        );
         this.setCursor(null);
         this._bMouseOver = false;
         this._bMouseDown = false;

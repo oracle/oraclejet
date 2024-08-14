@@ -1322,7 +1322,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      */
     _onDragStart(event) {
       if (this._comp.hasValidOptions()) {
-        if (dvt.Agent.isTouchDevice()) return this._onTouchDragStart(event);
+        if (dvt.EventManager.isTouchEvent(event)) return this._onTouchDragStart(event);
         else return this._onMouseDragStart(event);
       }
       return false;
@@ -1335,7 +1335,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @private
      */
     _onDragMove(event) {
-      if (dvt.Agent.isTouchDevice()) return this._onTouchDragMove(event);
+      if (dvt.EventManager.isTouchEvent(event)) return this._onTouchDragMove(event);
       return this._onMouseDragMove(event);
     }
 
@@ -1346,7 +1346,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @private
      */
     _onDragEnd(event) {
-      if (dvt.Agent.isTouchDevice()) return this._onTouchDragEnd(event);
+      if (dvt.EventManager.isTouchEvent(event)) return this._onTouchDragEnd(event);
       return this._onMouseDragEnd(event);
     }
 

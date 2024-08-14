@@ -121,7 +121,8 @@ var __oj_input_time_metadata =
       "enumValues": [
         "disabled",
         "enabled"
-      ]
+      ],
+      "value": "enabled"
     },
     "labelEdge": {
       "type": "string",
@@ -184,7 +185,8 @@ var __oj_input_time_metadata =
       "enumValues": [
         "jet",
         "native"
-      ]
+      ],
+      "value": "jet"
     },
     "required": {
       "type": "boolean",
@@ -387,7 +389,7 @@ var __oj_input_date_metadata =
     },
     "autocomplete": {
       "type": "string",
-      "value": "on",
+      "value": "off",
       "extension": {
         "_COPY_TO_INNER_ELEM": true
       }
@@ -453,7 +455,7 @@ var __oj_input_date_metadata =
             "image",
             "userFocus"
           ],
-          "value": "focus"
+          "value": "image"
         },
         "stepBigMonths": {
           "type": "number",
@@ -537,7 +539,8 @@ var __oj_input_date_metadata =
       "enumValues": [
         "disabled",
         "enabled"
-      ]
+      ],
+      "value": "enabled"
     },
     "labelEdge": {
       "type": "string",
@@ -600,7 +603,8 @@ var __oj_input_date_metadata =
       "enumValues": [
         "jet",
         "native"
-      ]
+      ],
+      "value": "jet"
     },
     "required": {
       "type": "boolean",
@@ -796,7 +800,7 @@ var __oj_input_date_time_metadata =
     },
     "autocomplete": {
       "type": "string",
-      "value": "on",
+      "value": "off",
       "extension": {
         "_COPY_TO_INNER_ELEM": true
       }
@@ -862,7 +866,7 @@ var __oj_input_date_time_metadata =
             "image",
             "userFocus"
           ],
-          "value": "focus"
+          "value": "image"
         },
         "stepBigMonths": {
           "type": "number",
@@ -946,7 +950,8 @@ var __oj_input_date_time_metadata =
       "enumValues": [
         "disabled",
         "enabled"
-      ]
+      ],
+      "value": "enabled"
     },
     "labelEdge": {
       "type": "string",
@@ -1009,7 +1014,8 @@ var __oj_input_date_time_metadata =
       "enumValues": [
         "jet",
         "native"
-      ]
+      ],
+      "value": "jet"
     },
     "required": {
       "type": "boolean",
@@ -1521,6 +1527,7 @@ function formatYear(year, month) {
  * @augments oj.ojInputDate
  * @since 4.0.0
  *
+ * @ojtsimport {module: "ojmessaging", type:"AMD", importName: "Message"}
  * @ojshortdesc A date picker is an inline element for picking a date value.
  * @ojdisplayname Inline Date Picker
  * @ojrole combobox
@@ -1557,20 +1564,57 @@ function formatYear(year, month) {
  *
  * {@ojinclude "name":"keyboardDoc"}
  *
- * <h3 id="a11y-section">
- *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ * <h3 id="migration-section">
+ *   Migration
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
  * </h3>
  * <p>
- * {@ojinclude "name":"accessibilityLabelEditableValue"}
+ * To migrate from oj-date-picker to oj-c-date-picker, you need to revise the import statement
+ * and references to oj-c-date-picker in your app. Please note the changes between the two components below.
  * </p>
- * <h3 id="label-section">
- *   Label and DatePicker
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
- * </h3>
+ * <h5>converter attribute</h5>
  * <p>
- * In the Alta theme, DatePicker will decorate its associated label with required and help
- * information, if the <code>required</code> and <code>help</code> attributes are set.
+ * The only reason an application would use a converter for a datepicker is if they want the highlighted today to be the today
+ * in a timezone different than the user's timezone. In that case, use oj-c-date-picker's today-time-zone attribute. You can
+ * do this by using your converter's resolvedOptions to get the timezone.
+ * </p>
+ * <h5>date-picker.change-month and date-picker.change-year attributes</h5>
+ * <p>
+ * The Redwood UX spec allows to either have both month and year navigation enabled or neither.
+ * You cannot change month and not change year, for example.
+ * Set month-and-year-picker to 'on' (the default) to enable changing the month and year, or 'off' to disable changing them.
+ * Setting the attribute to 'off' will render the month and year as text.
+ * </p>
+ * <h5>date-picker.days-outside-month attribute</h5>
+ * <p>
+ * date-picker.days-outside-month has changed to days-outside-month.
+ * </p>
+ * <h5>date-picker.week-display attribute</h5>
+ * <p>
+ * date-picker.week-display is not yet supported in oj-c-date-picker.
+ * </p>
+ * <h5>day-formatter attribute</h5>
+ * <p>
+ * The day-formatter function signature has changed in oj-c-date-picker.
+ * oj-c-date-picker's day-formatter's input type is {month: IsoMonth; day: IsoDay; year: number;}.
+ * To migrate, change 'fullYear' to 'year'. Change 'date' to 'day'.
+ * oj-c-date-picker's day-formatter's return type is {state: 'disabled' | 'restricted' | 'enabled';};
+ * If your function returned {disabled: true}, return {state: 'disabled'} instead.
+ * If your function returned null, return {state: 'enabled'} instead.
+ * </p>
+ *
+ * <h5>value attribute</h5>
+ * <h6>Date-only ISO string</h6>
+ * <p>
+ * In oj-date-picker the value should be a date-only ISO string but it was not enforced.
+ * For oj-c-date-picker the value must be a date-only ISO
+ * string or the component will not render. A date-only ISO string looks like "2023-04-26"; it has no time.
+ * </p>
+ *
+ * <p>
+ * If the value is not a date-only ISO string, then you will need to transform it to a date-only ISO string to use
+ * with oj-c-date-picker.
+ * For example, you can use the utility method: <code>IntlConverterUtils.dateToLocalIsoDateString(new Date(2023, 1, 1))</code>.
  * </p>
  */
 
@@ -1645,223 +1689,257 @@ function formatYear(year, month) {
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
-   * <h3 id="migration-section">
-   *   Migration
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
-   * </h3>
-   * <p>
-   * Currently there are two oj-c date components, oj-c-input-date-text and oj-c-input-date-mask. oj-c-input-date-text is similar to oj-input-date, but without the picker.
-   * With oj-c-input-date-mask a user can individually edit, step, or spin the values of the month, day, and year fields of a calendar date.
-   * You can migrate to either component depending upon which better fits your needs.
-   * To migrate from oj-input-date to oj-c-input-date-text or oj-c-input-date-mask, you need to revise the import statement
-   * and references to oj-c-input-date-text or oj-c-input-date-mask in your app. Please note the changes between the components below.
-   * </p>
-   * <strong>oj-c-input-date-text and oj-c-input-date-mask do not include a picker. The picker will be coming in a later release.
-   * Migrate only if you do not need a picker.</strong>
-   * <h5>Date Picker Specific Attributes and Methods</h5>
-   * <p>oj-c-input-date-text and oj-c-input-date-mask do not have a datepicker calendar, so oj-input-date's picker-specific attributes and methods do not exist in the oj-c-input-date-text
-   * or oj-c-input-date-mask component.
-   * The following date picker specific attributes and methods do not exist on oj-c-input-date-text or oj-input-date-mask.
-   * </p>
-   *
-   * <ul>
-   * <li>Methods:
-   * <ul>
-   * <li>hide</li>
-   * <li>show</li>
-   * </ul>
-   * </li>
-   * <li>Attributes:
-   * <ul>
-   * <li>date-picker</li>
-   * <li>change-month</li>
-   * <li>change-year</li>
-   * <li>current-month-pos</li>
-   * <li>days-outside-month</li>
-   * <li>number-of-months</li>
-   * <li>show-on</li>
-   * <li>step-big-months</li>
-   * <li>step-months</li>
-   * <li>week-display</li>
-   * <li>year-range</li>
-   * <li>keyboard-edit</li>
-   * <li>picker-attributes: Object property class</li>
-   * <li>translations</li>
-   * <ul>
-   * <li>tooltip-calendar</li>
-   * <li>tooltip-calendar-disabled</li>
-   * <li>tooltip-calendar-time</li>
-   * <li>tooltip-calendar-time-disabled</li>
-   * <li>week-header</li>
-   * <li>next-text</li>
-   * <li>prev-text</li>
-   * <li>current-text (Today)</li>
-   * </ul>
-   * </ul>
-   * </li>
-   * </ul>
-   * <h5>Date Restriction Attributes</h5>
-   * <p>The oj-c-input-date-text or oj-c-input-date-mask do not have a datepicker calendar, so oj-input-date's date restriction attributes do not exist in the oj-c-input-date-text
-   * or oj-c-input-date-mask component.
-   * You need to write your own validators to restrict the date and throw an error if the date the user types in is a restricted date.
-   * The following date restriction specific attributes do not exist on oj-c-input-date-text or oj-c-input-date-mask.
-   * </p>
-   * <ul>
-   * <li>date-restriction</li>
-   * <ul>
-   * <li>hint</li>
-   * <li>message-detail</li>
-   * <li>message-summary</li>
-   * </ul>
-   * <li>day-formatter</li>
-   * <li>day-metadata</li>
-   * </ul>
-   *
-   * <h5>Converter attribute</h5>
-   * <p>
-   * The converter attribute no longer supports a Promise that resolves to a converter instance.
-   * The application should resolve the promise and then update the
-   * converter attribute with the resolved converter instance.
-   * oj-c-input-date-mask does not have a converter.
-   * </p>
-   * <p>
-   * The converter is no longer applied when the value is <code>null</code>, <code>undefined</code>, or <code>''</code>.
-   * When the field is empty, the value gets normalized to <code>null</code>, so the converter does not run on an empty field.
-   * <p>
-   * <p>
-   * The converter attribute for oj-c-input-date-text takes an instance of LocalDateConverter,
-   * an object that has {format: (value: DateISOString) => string, parse: (value: string) => DateISOString}, null or undefined.
-   * oj-c-input-date-text's converter attribute does not take an IntlDateTimeConverter instance since its format/parse functions return string|null,
-   * not just string.
-   * </p>
-   * <p>
-   * oj-c-input-date-text uses <a href="LocalDateConverter.html" target="_blank">LocalDateConverter</a> with lenient parsing as its default converter,
-   * whereas oj-input-date uses IntlDateTimeConverter as its default converter.
-   * The LocalDateConverter does not have any options related to time or timezone.
-   * </p>
-   * <p>
-   * LocalDateConverter supports dateStyle: 'short'|'medium'|'long'|'full'. Currently you cannot customize day, year, month separately for
-   * LocalDateConverter, so you cannot format partial dates with the LocalDateConverter.
-   * </p>
-   *
-   * <h5>Validators</h5>
-   * <p>
-   * Only the required validator is run for an empty field, and only if required is true. The component's other validators
-   * are no longer run when the field is empty.
-   * If you created your own validator to check that the field was filled in, it will not run if the
-   * field is empty. Set the required attribute to true instead which conforms to the Redwood UX design.
-   * </p>
-   *
-   * <h5>LabelEdge attribute</h5>
-   * <p>
-   * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
-   * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
-   * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
-   * attribute to the corresponding value.
-   * </p>
-   *
-   * <h5>MessagesCustom attribute</h5>
-   * <p>
-   * The type of the <code class="prettyprint">severity</code> property of the messages in the
-   * array has changed from
-   * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
-   * essentially <code class="prettyprint">string | number</code>, to simply
-   * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
-   * values are the same as the previously supported string values.
-   * The application can no longer specify severity as a number, including hardcoded numbers,
-   * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
-   * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
-   * </p>
-   *
-   * <h5>TextAlign attribute</h5>
-   * <p>
-   * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start and oj-form-control-text-align-end is now
-   * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
-   * <ul>
-   * <li>
-   * .oj-form-control-text-align-right maps to 'right'
-   * </li>
-   * <li>
-   * .oj-form-control-text-align-start maps to 'start'
-   * </li>
-   * <li>
-   * .oj-form-control-text-align-end maps to 'end'
-   * </li>
-   * </ul>
-   * </p>
-   * <h5>Translations attribute</h5>
-   * <h6>Changes</h6>
-   * <ul>
-   * <li>The translations.required.message-detail attribute has changed to required-message-detail.</li>
-   * <li>The translations.date-time-range.message-detail.overflow attribute has changed to date-range-overflow-message-detail.</li>
-   * <li>The translations.date-time-range.message-detail.underflow attribute has changed to date-range-underflow-message-detail.</li>
-   * </ul>
-   * <h6>Removals</h6>
-   * <ul>
-   * <li>The translations.date-time-range.message-summary attribute is no longer supported. Redwood apps do not show a summary on the date component.</li>
-   * <li>The translations.date-time-range.hint attribute is no longer supported. Redwood apps do not show a hint on the date component.</li>
-   * <li>The translations.date-restriction attributes are no longer supported in oj-c-input-date-text or oj-c-input-date-mask because neither have the date restrictions apis.</li>
-   * <li>The translations.accessible-max-length attributes are no longer supported because they never did anything on oj-input-date.</li>
-   * <li>The translations.regexp.messageDetail attribute is no longer supported because it never did anything on oj-input-date</li>
-   * </ul>
-   * <h5>Value attribute</h5>
-   * <h6>Clearing the field</h6>
-   * <p>
-   * Clearing the field and committing the value will now set the value attribute to <code>null</code>
-   * instead of <code>''</code>.
-   * </p>
-   * <h6>Date-only ISO string</h6>
-   * <p>
-   * In oj-input-date the value should be a date-only iso string but it was not enforced.
-   * It was coerced to a date-only iso string once the user interacted with the component.
-   * For oj-c-input-date-text and oj-c-input-date-mask the value must be a date-only iso string or the component will not render. A date-only iso string looks like "2023-04-26"; it has no time.
-   * </p>
-   * <p>
-   * If the value is not a date-only iso string, then you will need to transform it to a date-only iso string to use with oj-c-input-date-text or oj-c-input-date-mask.
-   * For example, you can use the utility method:  IntlConverterUtils.dateToLocalIsoDateString(new Date(2023, 1, 1)).
-   * </p>
-   *
-   * <h5>Raw Value</h5>
-   * <p>
-   * oj-input-date and oj-c-input-date-text's rawValue properties are the same (both strings) and there are no steps needed to migrate.
-   * oj-input-date-mask's rawValue property is an Object of type CalendarDate, that is, {year?: number, month?: number, day?: number},
-   * so if you have code that handles onRawValueChanged, it will need to be updated.
-   * </p>
-   *
-   * <h5>Refresh method</h5>
-   * <p>
-   * The refresh method is no longer supported. The application should no longer need to use this method. If the application
-   * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
-   * </p>
-   *
-   * <h5>Animation Events</h5>
-   * <p>
-   * ojAnimateStart and ojAnimateEnd events are no longer supported.
-   * </p>
-   *
-   * <h5>Custom Label</h5>
-   * <p>
-   * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
-   * label-hint attribute to add a label for the form component.
-   * </p>
-   * <p>
-   * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
-   * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
-   * </p>
-   *
-   * <h5>DescribedBy attribute</h5>
-   * <p>
-   * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
-   * This attribute is not carried forward to the core pack component.
-   * </p>
-   *
-   * <h5>Usage in Dynamic Form</h5>
-   * <p>
-   * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
-   * </p>
-   *
-
-
+ * <h3 id="migration-section">
+ *   Migration
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+ * </h3>
+ * <p>
+ * To migrate from oj-input-date to oj-c-input-date-picker, you need to revise the import statement and references
+ * to oj-c-input-date-picker in your app. Please note the changes between the components below.
+ * </p>
+ *
+ * <h5>Text Field</h5>
+ * <p>
+ * The oj-c-input-date-picker has segments representing the month, day, and year fields of a calendar date instead of
+ * a text field. A user can individually edit, step, or spin the values of the month, day, and year fields of a calendar date
+ * using these segments.
+ * </p>
+ *
+ * <p>
+ * If the text field is preferred, you could look into oj-c-input-date-text and see if that fits your needs. But please note that
+ * the oj-c-input-date-text does not include the date picker.
+ * </p>
+ *
+ * <h5>Global attributes</h5>
+ * <p>
+ * The following global attributes are no longer supported:
+ * <ul>
+ * <li>accesskey - not considered accessible</li>
+ * <li>tabindex - not considered accessible</li>
+ * <li>
+ * aria-label - use label-hint instead. If you do not want a visible label set label-edge="none".
+ * </li>
+ * </ul>
+ * </p>
+ *
+ * <h5>Converter attribute</h5>
+ * <p>
+ * The converter is not supported by the oj-c-input-date-picker component as it shows the calendar date as month, day, and year fields.
+ * If you were using the converter to override the timezone for today's date, you should use the <code>today-time-zone</code> attribute
+ * of the oj-c-input-date-picker. The only reason an application would set the today-time-zone property is if they want today's date to
+ * be computed in a different timezone than the user's system's timezone, like if the user has a preferred timezone that is not
+ * where they are physically working.
+ * </p>
+ *
+ * <p>
+ * If you need to use a converter to format how the date is displayed, you could look into oj-c-input-date-text and see if that fits
+ * your needs. But please note that the oj-c-input-date-text does not include the date picker. There are also a few changes to the
+ * converter attribute of the oj-c-input-date-text that are listed below.
+ * </p>
+ *
+ * <p>
+ * The converter is no longer applied when the value is <code>null</code>, <code>undefined</code>, or <code>''</code>.
+ * When the field is empty, the value gets normalized to <code>null</code>, so the converter does not run on an empty field.
+ * <p>
+ *
+ * <p>
+ * The converter attribute for oj-c-input-date-text takes an instance of LocalDateConverter,
+ * an object that has {format: (value: DateISOString) => string, parse: (value: string) => DateISOString}, null or undefined.
+ * oj-c-input-date-text's converter attribute does not take an IntlDateTimeConverter instance since its format/parse functions return string|null,
+ * not just string.
+ * </p>
+ *
+ * <p>
+ * The oj-c-input-date-text uses <a href="LocalDateConverter.html" target="_blank">LocalDateConverter</a> with lenient parsing as its default converter,
+ * whereas oj-input-date uses IntlDateTimeConverter as its default converter.
+ * The LocalDateConverter does not have any options related to time or timezone.
+ * </p>
+ *
+ * <p>
+ * LocalDateConverter supports dateStyle: 'short'|'medium'|'long'|'full'. Currently, you cannot customize day, year, or month separately for
+ * LocalDateConverter, so you cannot format partial dates with the LocalDateConverter.
+ * </p>
+ *
+ * <h5>DatePicker attributes</h5>
+ * <h6>date-picker.change-month and date-picker.change-year</h6>
+ * <p>
+ * The Redwood UX spec allows to either have both month and year navigation enabled or neither.
+ * You cannot change month and not change year, for example.
+ * Set month-and-year-picker to 'on' (the default) to enable changing the month and year, or 'off' to disable changing them.
+ * Setting the attribute to 'off' will render the month and year as text.
+ * </p>
+ *
+ * <h6>date-picker.days-outside-month</h6>
+ * <p>
+ * The date-picker.days-outside-month attribute is changed to days-outside-month.
+ * </p>
+ *
+ * <h6>date-picker.week-display</h6>
+ * <p>
+ * The date-picker.week-display attribute is not yet supported in oj-c-input-date-picker.
+ * </p>
+ *
+ * <h5>DayFormatter attribute</h5>
+ * <p>
+ * The day-formatter function signature is changed in oj-c-input-date-picker. The oj-c-input-date-picker's day-formatter's input type
+ * is <code>{month: IsoMonth; day: IsoDay; year: number;}</code>. To migrate, change 'fullYear' to 'year' and change 'date' to 'day'.
+ * The oj-c-input-date-picker's day-formatter's return type is <code>{ state: 'disabled' | 'restricted' | 'enabled' }</code>.
+ * If your function returned <code>{ disabled: true }</code>, return <code>{ state: 'disabled' }</code> instead.
+ * If your function returned <code>null</code>, return <code>{ state: 'enabled' }</code> instead.
+ *
+ * <h5>LabelEdge attribute</h5>
+ * <p>
+ * The enum values for the label-edge attribute have been changed from 'inside', 'provided', and 'none' to 'start', 'inside', 'top', and 'none'.
+ * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+ * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+ * attribute to the corresponding value.
+ * </p>
+ *
+ * <h5>MessagesCustom attribute</h5>
+ * <p>
+ * The type of the <code class="prettyprint">severity</code> property of the messages in the
+ * array has changed from
+ * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+ * essentially <code class="prettyprint">string | number</code>, to simply
+ * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+ * values are the same as the previously supported string values.
+ * The application can no longer specify severity as a number, including hardcoded numbers,
+ * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+ * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+ * </p>
+ *
+ * <h5>Raw Value</h5>
+ * <p>
+ * The oj-c-input-date-picker's raw-value attribute is an Object of type <code>CalendarDate</code>, that is,
+ * <code>{ year?: number, month?: number, day?: number }</code>, so if you have code that handles raw-value or
+ * onRawValueChanged it will need to be updated.
+ * </p>
+ *
+ * <p>
+ * If you are migrating to oj-c-input-date-text instead, its raw-value is the same as the oj-input-date (both strings) and
+ * there are no steps needed to migrate.
+ * </p>
+ *
+ * <h5>TextAlign attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start, and oj-form-control-text-align-end is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-text-align-right maps to 'right'
+ * </li>
+ * <li>
+ * .oj-form-control-text-align-start maps to 'start'
+ * </li>
+ * <li>
+ * .oj-form-control-text-align-end maps to 'end'
+ * </li>
+ * </ul>
+ * </p>
+ *
+ * <h5>Translations attribute</h5>
+ * <h6>translations.date-restriction.message-detail</h6>
+ * <p>
+ * In oj-c-input-date-picker, this attribute is changed to date-restriction-message-detail. Also, the oj-c-input-date-picker's
+ * date-restriction-message-detail attribute takes a function that returns a string instead of a string. The function receives
+ * an object of type <code>{ state: 'disabled' | 'restricted', value: string }</code> for input. If you were using tokens in
+ * the translation string of the oj-input-date, you need to replace it with the values from the input object of this function.
+ * </p>
+ *
+ * <p>
+ * If you are migrating to oj-c-input-date-text instead, it does not support this attribute.
+ * </p>
+ *
+ * <h6>translations.date-time-range.message-detail.range-overflow</h6>
+ * <p>
+ * In oj-c-input-date-picker, this attribute is changed to date-range-overflow-message-detail. Also, the oj-c-input-date-picker's
+ * date-range-overflow-message-detail attribute takes a function that returns a string instead of a string. The function receives
+ * an object of type <code>{ max: string, value: string }</code> for input. If you were using tokens in the
+ * translation string of the oj-input-date, you need to replace it with the values from the input object of this function.
+ * </p>
+ *
+ * <p>
+ * If you are migrating to oj-c-input-date-text instead, its date-range-overflow-message-detail attribute takes a string similar to
+ * oj-input-date.
+ * </p>
+ *
+ * <h6>translations.date-time-range.message-detail.range-underflow</h6>
+ * <p>
+ * In oj-c-input-date-picker, this attribute is changed to date-range-underflow-message-detail. Also, the oj-c-input-date-picker's
+ * date-range-underflow-message-detail attribute takes a function that returns a string instead of a string. The function receives
+ * an object of type <code>{ min: string, value: string }</code> for input. If you were using tokens in the
+ * translation string of the oj-input-date, you need to replace it with the values from the input object of this function.
+ * </p>
+ *
+ * <p>
+ * If you are migrating to oj-c-input-date-text instead, its date-range-underflow-message-detail attribute takes a string similar to
+ * oj-input-date.
+ * </p>
+ *
+ * <h6>translations.required.message-detail</h6>
+ * <p>
+ * In oj-c-input-date-picker, this attribute is changed to required-message-detail.
+ * </p>
+ *
+ * <h5>Validators</h5>
+ * <p>
+ * Only the required validator is run for an empty field, and only if required is true. The component's other validators
+ * are no longer run when the field is empty.
+ * If you created your own validator to check that the field was filled in, it will not run if the
+ * field is empty. Set the required attribute to true instead which conforms to the Redwood UX design.
+ * </p>
+ *
+ * <h5>Value attribute</h5>
+ * <h6>Clearing the field</h6>
+ * <p>
+ * Clearing the field and committing the value will now set the value attribute to <code>null</code>
+ * instead of <code>''</code>.
+ * </p>
+ *
+ * <h6>Date-only ISO string</h6>
+ * <p>
+ * In oj-input-date the value should be a date-only ISO string but it was not enforced. It was coerced to a date-only
+ * ISO string once the user interacted with the component. For oj-c-input-date-picker the value must be a date-only ISO
+ * string or the component will not render. A date-only ISO string looks like "2023-04-26"; it has no time.
+ * </p>
+ *
+ * <p>
+ * If the value is not a date-only ISO string, then you will need to transform it to a date-only ISO string to use
+ * with oj-c-input-date-picker.
+ * For example, you can use the utility method: <code>IntlConverterUtils.dateToLocalIsoDateString(new Date(2023, 1, 1))</code>.
+ * </p>
+ *
+ * <h5>Refresh method</h5>
+ * <p>
+ * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+ * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+ * </p>
+ *
+ * <h5>Animation Events</h5>
+ * <p>
+ * ojAnimateStart and ojAnimateEnd events are no longer supported.
+ * </p>
+ *
+ * <h5>Custom Label</h5>
+ * <p>
+ * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+ * label-hint attribute to add a label for the form component.
+ * </p>
+ * <p>
+ * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
+ * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+ * </p>
+ *
+ * <h5>DescribedBy attribute</h5>
+ * <p>
+ * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+ * This attribute is not carried forward to the core pack component.
+ * </p>
+ *
+ * <h5>Formatted messages</h5>
+ * <p>
+ * Formatting messages using HTML tags is not supported in the core pack component.
+ * </p>
  */
 // --------------------------------------------------- oj.ojInputDate Styling Start ------------------------------------------------------------
 /**
@@ -2174,6 +2252,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @name datePicker.currentMonthPos
        * @ojshortdesc Specifies the position in multiple months at which to show the current month (starting at 0).
        * @memberof! oj.ojInputDate
+       * @ojdeprecated {since: '17.0.0', description: 'This is required when date-picker.number-of-months > 1, which is now deprecated, so this is no longer needed.'}
        * @instance
        * @type {number}
        * @default 0
@@ -2199,6 +2278,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @ojvalue {string} 'selectable' Days outside the current viewing month will be visible + selectable
        * @default "hidden"
        * @ojsignature { target: "Type", value: "?string"}
+       * @ojdeprecated {since: "17.0.0", target: "propertyValue", for: "visible",
+                        description: "The Redwood UX specification does not support visible."}
        */
       daysOutsideMonth: 'hidden',
 
@@ -2215,6 +2296,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @name datePicker.numberOfMonths
        * @ojshortdesc Specifies the number of months to show at once. See the Help documentation for more information.
        * @memberof! oj.ojInputDate
+       * @ojdeprecated {since: '17.0.0', description: 'This is not supported in the Redwood UX specification for Date Picker.  See the Range Picker UX specification.'}
        * @instance
        * @type {number}
        * @default 1
@@ -2240,11 +2322,11 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        *   or the calendar image is clicked.  Programmatic calls to .focus() do not show the picker.
        * @ojvalue {string} 'image' when the trigger calendar image is clicked.
        * Keyboard users must use the Up or Down Arrow key to open the datepicker when show-on is 'image'.
-       * @default "focus"
+       * @default "image"
        * @ojsignature { target: "Type", value: "?string"}
-       *
+       * @ojdeprecated {since: '17.0.0', description: 'This is not supported in the Redwood UX specification.'}
        */
-      showOn: 'focus',
+      showOn: 'image',
 
       /**
        * How the prev + next will step back/forward the months. The following are the valid values:
@@ -2268,6 +2350,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @type {string|number}
        * @default "numberOfMonths"
        * @ojsignature { target: "Type", value: "?'numberOfMonths'|number"}
+       * @ojdeprecated {since: '17.0.0', description: 'This is not in the Redwood UX specification.'}
        */
       stepMonths: 'numberOfMonths',
 
@@ -2284,6 +2367,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @type {number}
        * @default 12
        * @ojsignature { target: "Type", value: "?number"}
+       * @ojdeprecated {since: '17.0.0', description: 'This is not in the Redwood UX specification.'}
        */
       stepBigMonths: 12,
 
@@ -2323,6 +2407,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @type {string}
        * @default "c-10:c+10"
        * @ojsignature { target: "Type", value: "?string"}
+       * @ojdeprecated {since: '17.0.0', description: "This is not in the Redwood UX specification. The 'min' and 'max' properties should be used instead."}
        */
       yearRange: 'c-10:c+10' // Range of years to display in drop-down,
       // either relative to today's year (-nn:+nn), relative to currently displayed year
@@ -2330,8 +2415,35 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     },
 
     /**
-     * A datetime converter instance or a Promise to a datetime converter instance
-     * or one that duck types {@link oj.DateTimeConverter}.
+     * A datetime converter instance or one that duck types {@link oj.DateTimeConverter}.
+     *
+     * <p>If the timezone option is provided in the converter, the Today button will highlight the current day based on the timezone specified in the converter.
+     * Otherwise the Today button will highlight the current day in the user's system timezone.
+     * {@ojinclude "name":"inputBaseConverterOptionDoc"}
+     *
+     * @expose
+     * @instance
+     * @memberof! oj.ojDatePicker
+     * @name converter
+     * @type {Object}
+     * @ojshortdesc An object that converts the value. See the Help documentation for more information.
+     * @ojsignature  [{ target: "Type",
+     *    value: "oj.Converter<any>",
+     *    jsdocOverride: true},
+     *    {target: "Type",
+     *    value: "Promise<oj.Converter<any>>|oj.Converter<any>|
+     *            oj.Validation.RegisteredConverter",
+     *    consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
+     *                description: 'Defining a converter with an object literal with converter type and its options
+     *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
+     *                  work again by importing the deprecated ojvalidation-datetime module.'}
+     * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<any>>'],
+     *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the Promise and then update the converter attribute with the resolved converter instance.'}
+     * @default new DateTimeConverter({ formatType: 'date', dateFormat: 'short' })
+     */
+    /**
+     * A datetime converter instance or one that duck types {@link oj.DateTimeConverter}.
      *
      * <p>The default options for converter vary by theme. To use different options, create a custom converter and
      * set it in this property. For example:
@@ -2341,11 +2453,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * <p>
      * The hint exposed by the converter is shown inline by default in the Redwood theme when
      * the field has focus.
-     * In the Alta theme, converter hints are shown in a notewindow on focus,
-     * or as determined by the
-     * 'converterHint' property set on the <code class="prettyprint">display-options</code>
-     * attribute.
-     * In either theme, you can turn off showing converter hints by using the
+     * You can turn off showing converter hints by using the
      * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
      * attribute.
      * </p>
@@ -2362,7 +2470,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @type {Object}
      * @ojshortdesc An object that converts the value. See the Help documentation for more information.
      * @ojsignature  [{ target: "Type",
-     *    value: "Promise<oj.Converter<any>>|oj.Converter<any>",
+     *    value: "oj.Converter<any>",
      *    jsdocOverride: true},
      *    {target: "Type",
      *    value: "Promise<oj.Converter<any>>|oj.Converter<any>|
@@ -2372,9 +2480,611 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *                description: 'Defining a converter with an object literal with converter type and its options
      *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
      *                  work again by importing the deprecated ojvalidation-datetime module.'}
+     * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<any>>'],
+     *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the Promise and then update the converter attribute with the resolved converter instance.'}
      * @default new DateTimeConverter({ formatType: 'date', dateFormat: 'short' })
      */
     converter: undefined,
+    /**
+     * The oj-label sets the described-by attribute programmatically on the form component.
+     * This attribute is not meant to be set by an application developer directly.
+     * The described-by is copied to the aria-describedby
+     * attribute on the component's inner dom element, and it is needed
+     * for accessibility.
+     * @example <caption>Initialize component with the <code class="prettyprint">described-by</code> attribute specified:</caption>
+     * &lt;oj-some-element described-by="someId">&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
+     * // getter
+     * var descById = myComp.describedBy;
+     *
+     * // setter
+     * myComp.describedBy = "someId";
+     *
+     * @ojshortdesc The form component's oj-label automatically sets described-by
+     * to make it accessible. It is not meant to be set by application developer.
+     * @expose
+     * @type {?string}
+     * @public
+     * @instance
+     * @memberof oj.ojDatePicker
+     * @name describedBy
+     * @ojdeprecated {since: '17.0.0', description: 'The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component.'}
+     * @since 4.0.0
+     */
+    /**
+     * Whether the component is disabled. The default is false.
+     *
+     * @ojshortdesc Specifies whether the component is disabled. The default is false.
+     * @expose
+     * @type {boolean}
+     * @default false
+     * @public
+     * @instance
+     * @memberof oj.ojDatePicker
+     * @name disabled
+     * @ojdeprecated {since: '17.0.0', description: "Disabled is not supported by the Date Picker UX specification, use readonly property instead."}
+     * @since 0.7.0
+     */
+    /**
+     * Form component help information.
+     * @expose
+     * @memberof oj.ojDatePicker
+     * @name help
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @instance
+     * @public
+     * @type {Object}
+     * @since 0.7.0
+     */
+    /**
+     * <p>
+     * The helpHints object contains a definition property and a source property.
+     * </p>
+     * <ul>
+     * <li><code class="prettyprint">definition</code> - hint for help definition text.</li>
+     * <li><code class="prettyprint">source</code> - hint for help source URL.</li>
+     * </ul>
+     *
+     * @ojshortdesc Represents hints for an oj-form-layout element to render help information on the label of the editable component.
+     * @expose
+     * @access public
+     * @memberof oj.ojDatePicker
+     * @name helpHints
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @ojtranslatable
+     * @instance
+     * @type {Object}
+     * @since 4.1.0
+     */
+    /**
+     * A type of user assistance text. User assistance text is used to provide
+     * guidance to help the user understand what data to enter or select. help-hints could
+     * come from a help system.
+     * <p>In the Redwood theme for clarity only one user assistance text shows to the user.
+     * The precedence rules are:
+     * <ul>
+     * <li>help.instruction shows;</li>
+     * <li>if no help.instruction, then validator hint shows;</li>
+     * <li>if no help.instruction or validator hint, then help-hints.definition shows;</li>
+     * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
+     * <li>help-hints.source always shows along side the above.</li>
+     * </ul>
+     * </p>
+     * <p>
+     * In the Redwood theme, by default all user assistance text shows inline.
+     * For input components, it shows when the field takes focus. In other components it
+     * shows all the time. See the user-assistance-density property for other ways the user
+     * assistance text can render.
+     * </p>
+     * <p>No formatted text is available for help definition attribute.</p>
+     *
+     * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
+     *
+     * @ojshortdesc Hint for help definition text associated with the label.
+     * @expose
+     * @name helpHints.definition
+     * @memberof! oj.ojDatePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @instance
+     * @type {string}
+     * @ojsignature {target:"Type", value: "?"}
+     * @default ""
+     * @since 4.1.0
+     */
+    /**
+     * Help source URL associated with the component.
+     * <p>In the Redwood theme, the help-hints.source will show as a link inline to the field.
+     * For input components, it shows when the field takes focus. For other components,
+     * it shows all the time.
+     * </p>
+     * <p>
+     * For security reasons we only support urls with protocol 'http:' or 'https:'.
+     * If the url doesn't comply we ignore it and throw an error.
+     * Pass in an encoded URL since we do not encode the URL.</p>
+     *
+     * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
+     *
+     * @ojshortdesc Help source URL associated with the component.
+     * @expose
+     * @name helpHints.source
+     * @memberof! oj.ojDatePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @instance
+     * @type {string}
+     * @ojsignature {target:"Type", value: "?"}
+     * @default ""
+     * @since 4.1.0
+     */
+    /**
+     * A type of user assistance text. User assistance text is used to provide
+     * guidance to help the user understand what data to enter or select.
+     * <p> In the Redwood theme for clarity only one user assistance text shows to the user.
+     *  The precedence rules are:
+     * <ul>
+     * <li>help.instruction shows;</li>
+     * <li>if no help.instruction, then validator hint shows;</li>
+     * <li>if no help.instruction or validator hint, then help-hints.definition shows;</li>
+     * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
+     * <li>help-hints.source always shows along side the above.</li>
+     * </ul>
+     * </p>
+     * <p>In the Redwood theme, by default all user assistance text shows inline.
+     * For input components, it shows when the field takes focus. In other components
+     * it shows all the time. See the user-assistance-density property for other ways
+     * the user assistance text can render.
+     * <p>
+     *  How is help.instruction better than the html 'title' attribute?
+     * The html 'title' attribute only shows up as a tooltip on mouse over, not on keyboard and not in a mobile
+     * device. So the html 'title' would only be for text that is not important enough to show all users, or
+     * for text that you show the users in another way as well, like in the label.
+     * Also you cannot theme the native browser's title window like you can the JET
+     * notewindow, so low vision users may have a hard time seeing the 'title' window.
+     * For these reasons, the JET EditableValue components do not use the HTML's 'title'
+     * attribute and instead use the help.instruction attribute.
+     * </p>
+     *
+     * <p>
+     * To include formatted text in the help.instruction, format the string using html tags.
+     * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * For example the
+     * help.instruction might look like:
+     * <pre class="prettyprint"><code>&lt;oj-some-element help.instruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
+     * If you use formatted text, it should be accessible
+     * and make sense to the user if formatting wasn't there.
+     *
+     * @ojshortdesc Represents advisory information for the component, such as would be appropriate for a tooltip.
+     * @expose
+     * @access public
+     * @instance
+     * @name help.instruction
+     * @ojtranslatable
+     * @default ""
+     * @memberof! oj.ojDatePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @type {string=}
+     * @since 4.0.0
+     */
+    /**
+     * Represents a hint for rendering a label on the component.
+     * <p>This is used in combination with the <a href="#labelEdge">label-edge</a> attribute to control how the label should be rendered.</p>
+     *
+     * <p>
+     * When label-edge is "provided", it gives a hint to oj-form-layout parent element to create an oj-label element for the component.
+     * When the <code class="prettyprint">label-hint</code> attribute changes, oj-form-layout element refreshes to
+     * display the updated label information.
+     * </p>
+     * <p>
+     * When label-edge is "inside", it gives a hint to the component itself to render a label.
+     * </p>
+     * <p>
+     * When label-edge is "none", and if the component has no labelled-by, aria-label, or aria-labelledby attribute, the label-hint value will be used as the aria-label.
+     * </p>
+     *
+     * @ojshortdesc Represents a hint for oj-form-layout element to render a label on the editable component.
+     * @expose
+     * @access public
+     * @instance
+     * @name labelHint
+     * @ojtranslatable
+     * @default ""
+     * @memberof! oj.ojDatePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @type {string}
+     * @since 4.1.0
+     */
+    /**
+     * Specifies how the label of the component is created when the <code class="prettyprint">label-hint</code> attribute is set on the component.
+     * <p>The default value varies by theme, and it works well for the theme in most cases.
+     *  If the component is in an oj-form-layout, the label-edge attribute could come from the oj-form-layout's label-edge attribute.
+     * The oj-form-layout component uses the <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+     * <code class="prettyprint">provide</code> property to provide and uses the <a href="MetadataTypes.html#ProvideProperty">MetadataTypes.ProvideProperty</a>
+     * <code class="prettyprint">transform</code> property to transform its <code class="prettyprint">label-edge</code>
+     * attribute to any descendent components that are configured to consume it.
+     * For example, if the oj-form-layout's label-edge attribute is set to "top" or "start", and a descendent form component does
+     * not have its label-edge attribute set, the form component's label-edge will be the transformed value "provided".</p>
+     * @ojshortdesc Defines how the label of a component is created. See the Help documentation for more information.
+     * @access public
+     * @expose
+     * @name labelEdge
+     * @instance
+     * @type {string}
+     * @ojsignature {target: "Type", value: "'inside'|'none'|'provided'",  jsdocOverride: true}
+     * @memberof! oj.ojDatePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @ojvalue {string} "inside" The component creates the label using the <code class="prettyprint">label-hint</code> attribute.
+     * <p>For text input components (such as oj-input-text), the label floats over the input element but moves up on focus or when the component has a value.</p>
+     * <p>For non-text input components (such as oj-checkboxset), the label is created at the top of the component and doesn't move.</p>
+     * @ojvalue {string} "none" The component will not have a label, regardless of whether it's in an oj-form-layout or not.
+     * <p>If the component has a <code class="prettyprint">label-hint</code> attribute but no labelled-by, aria-label, or aria-labelledby attribute, the label-hint value will be used as the aria-label.</p>
+     * <p>Note that if the component already has an external label, "none" should not be specified and "provided" should be used instead.
+     * Otherwise it may end up with conflicting label information.</p>
+     * @ojvalue {string} "provided" Label is provided by the parent if the parent is an oj-form-layout.
+     * <p>oj-form-layout provides the label using the label-hint from the form control and the <a href="oj.ojFormLayout.html#labelEdge">label-edge</a> from oj-form-layout.</p>
+     * <p>If there is no oj-form-layout, use an oj-label.</p>
+     * @since 8.0.0
+     */
+    /**
+     * <p>
+     * Specifies the density of the form component's user assistance presentation.
+     * It can be shown inline with reserved rows to prevent reflow if
+     * a user assistance text shows up, inline without reserved rows that would reflow if
+     * a user assistance text shows up,
+     * or it can be shown compactly in a popup instead.</p>
+     * <p>
+     * The default value is 'reflow' when the form component is not a descendent of an oj-form-layout
+     * component. When the form component is a descendent of an oj-form-layout, the default value comes from the
+     * oj-form-layout's <code class="prettyprint">user-assistance-density</code> attribute value.
+     * </p>
+     * <p>
+     * The oj-form-layout component uses the
+     * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+     * <code class="prettyprint">provide</code> property to provide its
+     * <code class="prettyprint">user-assistance-density</code>
+     * attribute value to be consumed by descendent components.
+     * The form components are configured to consume the
+     * <code class="prettyprint">user-assistance-density</code> property if an
+     * ancestor provides it and it is not explicitly set on the form component.
+     * Example, oj-form-layout defaults user-assistance-density='efficient', so all its
+     * form components descendents will have user-assistance-density='efficient' by default.
+     * </p>
+     * @ojshortdesc Specifies the density of the form component's user assistance presentation.
+     * @access public
+     * @expose
+     * @name userAssistanceDensity
+     * @ojunsupportedthemes ["Alta"]
+     * @default "reflow"
+     * @instance
+     * @type {string}
+     * @ojsignature {target: "Type", value: "'reflow'|'efficient'|'compact'",  jsdocOverride: true}
+     * @memberof oj.ojDatePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @ojvalue {string} "reflow" Messages, help, hints, and required are all shown inline under the field with no reserved space.
+     * @ojvalue {string} "efficient" Messages, help, hints, and required are all shown inline under the field with reserved space.
+     * @ojvalue {string} "compact" Messages, help, hints, and required will not be shown inline; they will show in a mode that keeps the screen more compact, like
+     * a popup for the messages, and a required icon to indicate Required.
+     * @since 9.0.0
+     */
+    /**
+     * List of messages an app would add to the component when it has business/custom validation
+     * errors that it wants the component to show. This allows the app to perform further validation
+     * before sending data to the server. When this option is set the message shows to the
+     * user right away. To clear the custom message, set <code class="prettyprint">messagesCustom</code>
+     * back to an empty array.<br/>
+     * <p>Each message in the array is an object that duck types oj.Message.
+     * See {@link Message} for details.
+     * message detail text can include formatted HTML text, whereas
+     * hints and message summary text cannot. If you use formatted text, it should be accessible
+     * and make sense to the user if formatting wasn't there.
+     * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * To format the message detail, you could do this:
+     * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
+     * </p>
+     * <p>
+     * See the <a href="#validation-section">Validation and Messages</a> section
+     * for details on when the component clears <code class="prettyprint">messagesCustom</code>;
+     * for example, when full validation is run.
+     * </p>
+     * <p>In the Redwood theme, the Message summary is not displayed to the user, so make sure to have a Message detail
+     * set in your Message object.
+     * </p>
+     *
+     * @ojshortdesc A list of messages added by an application to the component. See the Help documentation for more information.
+     * @expose
+     * @name messagesCustom
+     * @access public
+     * @instance
+     * @memberof oj.ojDatePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @default []
+     * @type {Array.<Object>}
+     * @ojsignature {target: "Type", value: "Array<oj.Message>"}
+     * @since 0.7.0
+     * @ojwriteback
+     */
+    /**
+     * <p>
+     * The oj-label sets the labelledBy property programmatically on the form component
+     * to make it easy for the form component to find its oj-label component (a
+     * document.getElementById call.)
+     * </p>
+     * <p>
+     * The application developer should use the 'for'/'id api
+     * to link the oj-label with the form component;
+     * the 'for' on the oj-label to point to the 'id' on the input form component.
+     * This is the most performant way for the oj-label to find its form component.
+     * </p>
+     *
+     * @expose
+     * @ojshortdesc The oj-label sets the labelledBy property programmatically on the form component. See the Help documentation for more information.
+     * @type {string|null}
+     * @default null
+     * @public
+     * @instance
+     * @since 7.0.0
+     * @memberof oj.ojDatePicker
+     * @name labelledBy
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     */
+    /**
+     * <p>
+     * The oj-label sets the labelledBy property programmatically on the form component
+     * to make it easy for the form component to find its oj-label component (a
+     * document.getElementById call.)
+     * </p>
+     * <p>
+     * The application developer should use the 'for'/'id api
+     * to link the oj-label with the form component;
+     * the 'for' on the oj-label to point to the 'id' on the input form component.
+     * This is the most performant way for the oj-label to find its form component.
+     * </p>
+     *
+     * @example <caption>Initialize component with <code class="prettyprint">for</code> attribute:</caption>
+     * &lt;oj-label for="textId">Name:&lt;/oj-label>
+     * &lt;oj-input-text id="textId">
+     * &lt;/oj-input-text>
+     * // ojLabel then writes the labelled-by attribute on the oj-input-text.
+     * &lt;oj-label id="labelId" for="textId">Name:&lt;/oj-label>
+     * &lt;oj-input-text id="textId" labelled-by"labelId">
+     * &lt;/oj-input-text>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+     * // getter
+     * var labelledBy = myComp.labelledBy;
+     *
+     * // setter
+     * myComp.labelledBy = "labelId";
+     *
+     * @name labelledBy
+     * @expose
+     * @ojshortdesc The oj-label sets the labelledBy property programmatically on the form component. See the Help documentation for more information.
+     * @type {string|null}
+     * @default null
+     * @public
+     * @instance
+     * @since 7.0.0
+     * @memberof oj.ojInputDate
+     * @ojdeprecated {since: '17.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
+     */
+    /**
+     * The placeholder text to set on the element.
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">placeholder</code> attribute:</caption>
+     * &lt;oj-some-element placeholder="User Name">&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">placeholder</code> property after initialization:</caption>
+     * // getter
+     * var myPh = myComp.placeholder;
+     *
+     * // setter
+     * myComp.placeholder = myPlaceholder;
+     *
+     * If the attribute is not set and if a converter is set then the
+     * converter hint is used. See displayOptions for details.
+     *
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @memberof! oj.ojDatePicker
+     * @name placeholder
+     * @ojdeprecated {since: '17.0.0', description: "oj-date-picker doesn't have a text input, so this was never needed."}
+     * @type {string}
+     * @ojtranslatable
+     */
+    /**
+     * The placeholder text to set on the element.
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">placeholder</code> attribute:</caption>
+     * &lt;oj-some-element placeholder="User Name">&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">placeholder</code> property after initialization:</caption>
+     * // getter
+     * var myPh = myComp.placeholder;
+     *
+     * // setter
+     * myComp.placeholder = myPlaceholder;
+     *
+     * If the attribute is not set and if a converter is set then the
+     * converter hint is used. See displayOptions for details.
+     *
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @memberof! oj.ojInputDate
+     * @name placeholder
+     * @type {string}
+     * @ojtranslatable
+     * @ojdeprecated {since: '17.0.0', description: "The date field contains mask segments instead of a general input, so placeholder is not supported."}
+     */
+    /**
+     * <p>
+     * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
+     * This is the default.
+     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+     * </p>
+     * <p>
+     * In the Redwood theme, by default, a Required text is rendered inline when the field is empty.
+     * If user-assistance-density is 'compact', it will show on the label as an icon.
+     * </p>
+     * <p>The Required error text is based on Redwood UX designs, and it is not recommended that
+     * it be changed.
+     * To override the required error message,
+     * use the <code class="prettyprint">translations.required</code> attribute.
+     * The component's label text is passed in as a token {label} and can be used in the message detail.
+     * </p>
+     * <p>When required is set to true, an implicit
+     * required validator is created, i.e.,
+     * <code class="prettyprint">new RequiredValidator()</code>. The required validator is the only
+     * validator to run during initial render, and its error is not shown to the user at this time;
+     * this is called deferred validation. The required validator also runs during normal validation;
+     * this is when the errors are shown to the user.
+     * See the <a href="#validation-section">Validation and Messaging</a> section for details.
+     * </p>
+     * <p>
+     * When the <code class="prettyprint">required</code> property changes due to programmatic intervention,
+     * the component may clear component messages and run validation, based on the current state it's in. </br>
+     *
+     * <h4>Running Validation when required property changes</h4>
+     * <ul>
+     * <li>if component is valid when required is set to true, then it runs deferred validation on
+     * the value property. If the field is empty, the valid state is invalidHidden. No errors are
+     * shown to the user.
+     * </li>
+     * <li>if component is invalid and has deferred messages when required is set to false, then
+     * component messages are cleared (messages-custom messages are not cleared)
+     * but no deferred validation is run because required is false.
+     * </li>
+     * <li>if component is invalid and currently showing invalid messages when required is set, then
+     * component messages are cleared and normal validation is run using the current display value.
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+     *   property is not updated and the error is shown.
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+     *   event on the component to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     *
+     * <h4>Clearing Messages when required property changes</h4>
+     * <ul>
+     * <li>Only messages created by the component, like validation messages, are cleared when the required property changes.</li>
+     * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
+     * </ul>
+     *
+     * </p>
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @memberof oj.ojDatePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @name required
+     * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
+     * @type {boolean}
+     * @default false
+     * @since 0.7.0
+     * @see #translations
+     */
+    /**
+     * List of validators, synchronous or asynchronous,
+     * used by component along with asynchronous validators from the deprecated async-validators option
+     * and the implicit component validators when performing validation. Each item is either an
+     * instance that duck types {@link oj.Validator} or {@link oj.AsyncValidator}.
+     * <p>
+     * Implicit validators are created by the element when certain attributes are present.
+     * For example, if the <code class="prettyprint">required</code> attribute
+     * is set, an implicit {@link oj.RequiredValidator} is created.
+     * At runtime when the component runs validation, it
+     * combines all the implicit validators with all the validators
+     * specified through this <code class="prettyprint">validators</code> attribute
+     * and the <code class="prettyprint">async-validators</code> attribute, and
+     * runs all of them.
+     * </p>
+     * <p>
+     * Hints exposed by validators are shown inline by default in the Redwood theme when the
+     * field has focus.
+     * In the Alta theme, validator hints are shown in a notewindow on focus,
+     * or as determined by the
+     * 'validatorHint' property set on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * In either theme, you can turn off showing validator hints by using the
+     * 'validatorHint' property set to 'none' on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * </p>
+     * <p>
+     * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+     * help.instruction shows; if no help.instruction then validator hints show;
+     * if none, then help-hints.definition shows; if none, then converter hint shows.
+     * help-hints.source always shows along with the other help or hint.
+     * </p>
+     *
+     * <p>
+     * When <code class="prettyprint">validators</code> property changes due to programmatic
+     * intervention, the component may decide to clear messages and run validation, based on the
+     * current state it is in. </br>
+     *
+     * <h4>Steps Performed Always</h4>
+     * <ul>
+     * <li>The cached list of validator instances are cleared and new validator hints is pushed to
+     * messaging. E.g., notewindow displays the new hint(s).
+     * </li>
+     * </ul>
+     *
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when validators changes, component does nothing other than the
+     * steps it always performs.</li>
+     * <li>if component is invalid and is showing messages when
+     * <code class="prettyprint">validators</code> or
+     * <code class="prettyprint">async-validators</code> changes then all component messages
+     *  are cleared and full validation run using the display value on the component.
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+     *   property is not updated and the error is shown.
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+     *   event to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages when validators changes, it does
+     * nothing other than the steps it performs always.</li>
+     * </ul>
+     * </p>
+     *
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>Only messages created by the component are cleared.</li>
+     * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
+     * </ul>
+     * </p>
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @default []
+     * @memberof oj.ojDatePicker
+     * @name validators
+     * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
+     * @ojsignature  [{ target: "Type",
+     *       value: "Array<oj.Validator<string>|oj.AsyncValidator<string>>|null",
+     *       jsdocOverride: true},
+     * { target: "Type",
+     *       value: "Array<oj.Validator<string>|oj.AsyncValidator<string>|
+     *       oj.Validation.RegisteredValidator>|null",
+     *       consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredValidator'],
+     *                description: 'Defining a validator with an object literal with validator type and
+     *                  its options (aka JSON format) has been deprecated and does nothing. If needed, you can
+     *                  make the JSON format work again by importing the deprecated ojvalidation module you need,
+     *                  like ojvalidation-base.'}
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @type {Array.<Object>}
+     */
 
     /**
      * Determines if keyboard entry of the text is allowed.
@@ -2388,27 +3098,274 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @type {string}
      * @ojvalue {string} "disabled" Changing the date can only be done with the picker.
      * @default "disabled"
+     * @ojdeprecated {since: '17.0.0', description: "This was never intended for oj-date-picker."}
+     */
+    /**
+     * <p>
+     * The current valid state of the component. It is evaluated on initial render.
+     * It is re-evaluated
+     * <ul>
+     *   <li>after each validator (validators or async-validators) is run (full or deferred)</li>
+     *   <li>when messagesCustom is updated,
+     *   since messagesCustom can be added by the app developer any time.</li>
+     *   <li>when showMessages() is called. Since showMessages() moves the
+     *   hidden messages into messages shown,
+     *   if the valid state was "invalidHidden" then it would become "invalidShown".</li>
+     *   <li>when the required property has changed. If a component is empty and has required
+     *   set, the valid state may be "invalidHidden" (if no invalid messages are being shown as well).
+     *   If required property is removed, the valid state would change to "valid".</li>
+     * </ul>
+     * </p>
+     * <p>
+     *  Note: New valid states may be added to the list of valid values in future releases.
+     *  Any new values will start with "invalid"
+     *  if it is an invalid state, "pending" if it is pending state,
+     *  and "valid" if it is a valid state.
+     * </p>
+     * @ojshortdesc The validity state of the component
+     * @expose
+     * @access public
+     * @instance
+     * @type {string}
+     * @name valid
+     * @ojvalue {string} "valid" The component is valid
+     * @ojvalue {string} "pending" The component is waiting for the validation state to be determined.
+     * The "pending" state is set at the start of the convert/validate process.
+     * @ojvalue {string} "invalidHidden" The component has invalid messages hidden
+     *    and no invalid messages showing. An invalid message is one with severity "error" or higher.
+     * @ojvalue {string} "invalidShown" The component has invalid messages showing.
+     *  An invalid message is one with severity "error" or higher.
+     * @ojwriteback
+     * @readonly
+     * @memberof oj.ojDatePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @since 4.2.0
      *
-     * @example <caption>Initialize the InputDate with the <code class="prettyprint">keyboard-edit</code> attribute specified:</caption>
-     * &lt;oj-date-picker keyboard-edit='disabled'>&lt;/oj-date-picker>
+     */
+    /**
+     * Form component display options.
+     * @expose
+     * @memberof oj.ojDatePicker
+     * @name displayOptions
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @instance
+     * @public
+     * @type {Object}
+     * @since 0.7.0
+     */
+    /**
+     * Display options for auxiliary converter hint text. The supported attribute values are theme dependent.
+     * <p>
+     * In the Redwood theme, this attribute determines whether or not the converter hint should be displayed.
+     * The supported values are 'display' and 'none'.
+     * If you don't want to show the converter hint, set display-options.converter-hint to 'none'.
+     * It defaults to 'display'.
+     * To control where the hints display, e.g., inline or in a notewindow,
+     * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+     * attribute.
+     * </p>
      *
-     * @example <caption>Get or set the <code class="prettyprint">keyboardEdit</code> property after initialization:</caption>
-     * // getter
-     * var keyboardEdit = myInputDate.keyboardEdit;
+     * @access public
+     * @ojsharedmembers
+     * @expose
+     * @name displayOptions.converterHint
+     * @ojshortdesc Display options for auxiliary converter hint text that determines whether it should be displayed.
+     * @instance
+     * @type {(Array<string> | string)=}
+     * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+     *               {target: "Type", value: "Array<'placeholder'|'notewindow'|'none'>|'placeholder'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'placeholder'|'notewindow'|'none'>", "'placeholder'", "'notewindow'"],
+     *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @memberof! oj.ojDatePicker
+     * @since 0.7
+     */
+    /**
+     * Display options for auxiliary message text. The supported attribute values are theme dependent.
+     * <p>
+     * In the Redwood theme, this attribute determines whether or not the messages should be displayed.
+     * The supported values are 'display' and 'none'.
+     * If you don't want to show messages, set display-options.messages to 'none'.
+     * It defaults to 'display'.
+     * To control where the messages display, e.g., inline or in a notewindow,
+     * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+     * attribute.
+     * </p>
      *
-     * // setter
-     * myInputDate.keyboardEdit = 'disabled';
+     * @ojshortdesc Display options for auxiliary message text that determines whether it should be displayed.
+     * @access public
+     * @ojsharedmembers
+     * @expose
+     * @name displayOptions.messages
+     * @instance
+     * @type {(Array<string> | string)=}
+     * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+     *               {target: "Type", value: "Array<'inline'|'notewindow'|'none'>|'inline'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'inline'|'notewindow'|'none'>", "'inline'", "'notewindow'"],
+     *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @memberof! oj.ojDatePicker
+     * @since 0.7
+     */
+    /**
+     * Display options for auxiliary validator hint text. The supported attribute values are theme dependent.
+     * <p>
+     * In the Redwood theme, this attribute determines whether or not the validator hint should be displayed.
+     * The supported values are 'display' and 'none'.
+     * If you don't want to show the validator hint, set display-options.validator-hint to 'none'.
+     * It defaults to 'display'.
+     * To control where the hints display, e.g., inline or in a notewindow,
+     * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+     * attribute.
+     * </p>
      *
-     * @example <caption>Set the default in the theme (SCSS)</caption>
-     * $inputDateTimeKeyboardEditOptionDefault: disabled !default;
+     * @ojshortdesc Display options for auxiliary validator hint text that determines whether it should be displayed.
+     * @access public
+     * @ojsharedmembers
+     * @expose
+     * @name displayOptions.validatorHint
+     * @instance
+     * @type {(Array<string> | string)=}
+     * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+     *               {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'display'|'none'",  consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'notewindow'|'none'>", "'notewindow'"],
+     *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @memberof! oj.ojDatePicker
+     * @since 0.7
+     */
+    /**
+     * Display options for auxiliary content that determines whether or not it should be displayed.
+     *
+     * <p>
+     * In the Redwood theme, the sub-properties of the display-options configure whether or not the
+     * types of information is shown. The values of these sub-properties are either
+     * 'display' or 'none'.
+     * </p>
+     * <p>
+     * When display-options changes due to programmatic intervention, the component updates its
+     * display to reflect the updated choices. For example, if you don't want to show the converter
+     * hint, set the display-options.converter-hint to 'none'.
+     * </p>
+     * <p>
+     * A side note: help.instruction and message detail text can include formatted HTML text, whereas
+     * hints and message summary text cannot. If you use formatted text, it should be accessible
+     * and make sense to the user if formatting wasn't there.
+     * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * To format the help.instruction, you could do this:
+     * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
+     * </p>
+     * @ojshortdesc Display options for auxiliary content that determines whether or not it should be displayed.
+     * @expose
+     * @member
+     * @name displayOptions
+     * @ojsharedmembers
+     * @access public
+     * @instance
+     * @type {Object=}
+     * @memberof oj.ojInputDate
+     * @since 0.7
+     */
+    /**
+     * Display options for auxiliary converter hint text. The supported attribute values are theme dependent.
+     * <p>
+     * In the Redwood theme, this attribute determines whether or not the converter hint should be displayed.
+     * The supported values are 'display' and 'none'.
+     * If you don't want to show the converter hint, set display-options.converter-hint to 'none'.
+     * It defaults to 'display'.
+     * To control where the hints display, e.g., inline or in a notewindow,
+     * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+     * attribute.
+     * </p>
+     *
+     * @access public
+     * @ojsharedmembers
+     * @expose
+     * @name displayOptions.converterHint
+     * @ojshortdesc Display options for auxiliary converter hint text that determines whether it should be displayed.
+     * @instance
+     * @type {(Array<string> | string)=}
+     * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+     *               {target: "Type", value: "Array<'placeholder'|'notewindow'|'none'>|'placeholder'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'placeholder'|'notewindow'|'none'>", "'placeholder'", "'notewindow'"],
+     *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+     * @ojdeprecated {since: '17.0.0', description: "Please use help-hints instead."}
+     * @memberof! oj.ojInputDate
+     * @since 0.7
+     */
+    /**
+     * Display options for auxiliary help instruction text that determines where it should be displayed
+     * in relation to the component.
+     * @ojshortdesc Display options for auxiliary help instruction text that determines whether it should be displayed.
+     * @access public
+     * @ojsharedmembers
+     * @expose
+     * @name displayOptions.helpInstruction
+     * @instance
+     * @type {(Array<string> | string)=}
+     * @ojsignature {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'none'", jsdocOverride: true}
+     * @memberof! oj.ojInputDate
+     * @ojdeprecated [{since: '9.0.0', description: 'If you want none, remove help-instruction attribute.'}]
+     * @default ['notewindow']
+     * @since 0.7
+     */
+    /**
+     * Display options for auxiliary message text. The supported attribute values are theme dependent.
+     * <p>
+     * In the Redwood theme, this attribute determines whether or not the messages should be displayed.
+     * The supported values are 'display' and 'none'.
+     * If you don't want to show messages, set display-options.messages to 'none'.
+     * It defaults to 'display'.
+     * To control where the messages display, e.g., inline or in a notewindow,
+     * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+     * attribute.
+     * </p>
+     *
+     * @ojshortdesc Display options for auxiliary message text that determines whether it should be displayed.
+     * @access public
+     * @ojsharedmembers
+     * @expose
+     * @name displayOptions.messages
+     * @instance
+     * @type {(Array<string> | string)=}
+     * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+     *               {target: "Type", value: "Array<'inline'|'notewindow'|'none'>|'inline'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'inline'|'notewindow'|'none'>", "'inline'", "'notewindow'"],
+     *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+     * @memberof! oj.ojInputDate
+     * @since 0.7
+     */
+    /**
+     * Display options for auxiliary validator hint text. The supported attribute values are theme dependent.
+     * <p>
+     * In the Redwood theme, this attribute determines whether or not the validator hint should be displayed.
+     * The supported values are 'display' and 'none'.
+     * If you don't want to show the validator hint, set display-options.validator-hint to 'none'.
+     * It defaults to 'display'.
+     * To control where the hints display, e.g., inline or in a notewindow,
+     * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+     * attribute.
+     * </p>
+     *
+     * @ojshortdesc Display options for auxiliary validator hint text that determines whether it should be displayed.
+     * @access public
+     * @ojsharedmembers
+     * @expose
+     * @name displayOptions.validatorHint
+     * @instance
+     * @type {(Array<string> | string)=}
+     * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+     *               {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'display'|'none'",  consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'notewindow'|'none'>", "'notewindow'"],
+     *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+     * @memberof! oj.ojInputDate
+     * @since 0.7
      */
     /**
      * Determines if keyboard entry of the text is allowed.
      * When disabled the picker must be used to select a date.
      *
-     * Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
-     * default is <code class="prettyprint">"disabled"</code>
-     * and it's <code class="prettyprint">"enabled"</code> for alta web theme.
+     * Themes can override the default value.
      *
      * @expose
      * @instance
@@ -2417,6 +3374,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @type {string}
      * @ojvalue {string} "enabled"  Allow keyboard entry of the date.
      * @ojvalue {string} "disabled" Changing the date can only be done with the picker.
+     * @default "enabled"
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">keyboard-edit</code> attribute specified:</caption>
      * &lt;oj-input-date keyboard-edit='disabled'>&lt;/oj-input-date>
@@ -2430,6 +3388,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *
      * @example <caption>Set the default in the theme (SCSS)</caption>
      * $inputDateTimeKeyboardEditOptionDefault: disabled !default;
+     * @ojdeprecated {since: '17.0.0', description: 'This is not supported in the Redwood UX specification.'}
      */
     keyboardEdit: 'enabled',
     /**
@@ -2443,6 +3402,68 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @since 4.0.0
      * @memberof! oj.ojDatePicker
      * @ojextension {_COPY_TO_INNER_ELEM: true}
+     */
+    /**
+     * Dictates component's autocomplete state.
+     * This attribute indicates whether the value of the control can be automatically
+     * completed by the browser. The common values are "on" and "off".
+     * <p>Since this attribute passes through to the input element
+     * unchanged, you can look at the html specs for detailed information for how browsers behave
+     * and what values besides "on" and "off" you can set. The html spec says the default is "on",
+     * so when autocomplete is not explicitly set, the browsers treat it as "on".
+     * </p>
+     * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input}
+     * @see {@link https://caniuse.com/#feat=input-autocomplete-onoff}
+     * @see {@link https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls:-the-autocomplete-attribute}
+     *
+     * @example <caption>Initialize component with <code class="prettyprint">autocomplete</code> attribute:</caption>
+     * &lt;oj-some-element autocomplete="on">&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">autocomplete</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.autocomplete;
+     *
+     * // setter
+     * myComp.autocomplete = "on";
+     * @name autocomplete
+     * @ojshortdesc Specifies a component's autocomplete state. See the Help documentation for more information.
+     * @expose
+     * @type {"on"|"off"|string=}
+     * @default "off"
+     * @instance
+     * @since 4.0.0
+     * @memberof oj.ojInputDate
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     * @ojdeprecated {since: '17.0.0', description: 'The date field contains mask segments instead of a general input, so autocomplete is not supported.'}
+     */
+    autocomplete: 'off',
+    /**
+     * Autofocus is a Boolean that reflects the autofocus attribute, If it is set to true
+     * then the associated component  will get input focus when the page is loaded.
+     * Setting this property doesn't set the focus to the component:
+     * it tells the browser to focus to it when the element is inserted in the document.
+     *
+     * @example <caption>Initialize component with <code class="prettyprint">autofocus</code> attribute:</caption>
+     * &lt;oj-some-element autofocus>&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">autofocus</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.autofocus;
+     *
+     * // setter
+     * myComp.autofocus = false;
+     *
+     * @expose
+     * @type {boolean}
+     * @alias autofocus
+     * @default false
+     * @instance
+     * @since 4.0.0
+     * @memberof oj.ojInputDate
+     * @name autofocus
+     * @ojshortdesc Specifies whether the component will get input focus when the page is loaded. See the Help documentation for more information.
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     * @ojdeprecated {since: '17.0.0', description: 'This is not recommended for accessibility reasons.'}
      */
     /**
      * The maximum selectable date, in ISO string format.
@@ -2574,6 +3595,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @ojshortdesc Specifies attributes to be set on the picker DOM element when it is launched. See the Help documentation for more information.
      * @instance
      * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead. As of 11.0.0 this property is ignored and an error is logged."}
+     * @ojdeprecated {target: "property", for: "class", since: "17.0.0", description: "We are recommending not to change the Class property of pickerAttribute as it leads to an inconsistent UI."}
+     * @ojdeprecated {since: '17.0.0', description: "Changing the Class or Style property is not recommended, as it leads to an inconsistent UI."}
      * @type {?Object}
      * @default null
      */
@@ -2600,6 +3623,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @ojshortdesc Specifies attributes to be set on the picker DOM element when it is launched. See the Help documentation for more information.
      * @instance
      * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead. As of 11.0.0 this attribute is ignored and an error is logged."}
+     * @ojdeprecated {target: "property", for: "class", since: "17.0.0", description: "We are recommending not to change the Class property of pickerAttribute as it leads to an inconsistent UI."}
+     * @ojdeprecated {since: '17.0.0', description: "Changing the Class or Style property is not recommended, as it leads to an inconsistent UI."}
      * @type {?Object}
      * @default null
      */
@@ -2634,6 +3659,20 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * Allows applications to specify whether to render date picker in JET or
      * render as a native picker control. In inline mode, the only value supported is "jet"</br>
      *
+     * Note that the native renderMode will attempt to load a Cordova plugin that
+     * will launch the native picker. If the plugin is not found, the default JET
+     * picker will be used.</br>
+     *  With native renderMode, the functionality that is sacrificed compared to jet renderMode are:
+     *    <ul>
+     *      <li>Date picker cannot be themed</li>
+     *      <li>Accessibility is limited to what the native picker supports</li>
+     *      <li>pickerAttributes is not applied</li>
+     *      <li>Sub-IDs are not available</li>
+     *      <li>hide() function is no-op</li>
+     *      <li>translations sub properties pertaining to the picker is not available</li>
+     *      <li>All of the 'datepicker' sub-properties except 'showOn' are not available</li>
+     *    </ul>
+     *
      * @expose
      * @memberof! oj.ojDatePicker
      * @instance
@@ -2642,7 +3681,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @ojtsnarrowedtype
      * @type {string}
      * @ojvalue {string} 'jet' Applications get full JET functionality.
-     *
+     * @ojvalue {string} 'native' Applications get the functionality of the native picker. Native picker is
+     *  not available when the picker is inline, defaults to 'jet' instead.</br></br>
      * @default "jet"
      *
      * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated for the same reason.'}
@@ -2664,17 +3704,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * Allows applications to specify whether to render date picker in JET or
      * as a native picker control.</br>
      *
-     * Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
-     * default is "native" and it's "jet" for alta web theme.
-     *
-     * @expose
-     * @memberof! oj.ojInputDate
-     * @ojshortdesc Specifies whether to render the date picker in JET, or as a native picker control. See the Help documentation for more information.
-     * @instance
-     * @type {string}
-     * @ojvalue {string} 'jet' Applications get full JET functionality.
-     * @ojvalue {string} 'native' Applications get the functionality of the native picker. Native picker is
-     *  not available when the picker is inline, defaults to 'jet' instead.</br></br>
      * Note that the native renderMode will attempt to load a Cordova plugin that
      * will launch the native picker. If the plugin is not found, the default JET
      * picker will be used.</br>
@@ -2688,6 +3717,16 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *      <li>translations sub properties pertaining to the picker is not available</li>
      *      <li>All of the 'datepicker' sub-properties except 'showOn' are not available</li>
      *    </ul>
+     *
+     * @expose
+     * @memberof! oj.ojInputDate
+     * @ojshortdesc Specifies whether to render the date picker in JET, or as a native picker control. See the Help documentation for more information.
+     * @instance
+     * @type {string}
+     * @ojvalue {string} 'jet' Applications get full JET functionality.
+     * @ojvalue {string} 'native' Applications get the functionality of the native picker. Native picker is
+     *  not available when the picker is inline, defaults to 'jet' instead.</br></br>
+     * @default "jet"
      *
      * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated for the same reason.'}
      *
@@ -2711,8 +3750,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * This should be a JavaScript Function reference which accepts as its argument the following JSON format
      * {fullYear: Date.getFullYear(), month: Date.getMonth()+1, date: Date.getDate()}
      *
-     * and returns null or all or partial JSON data of
-     * {disabled: true|false, className: "additionalCSS", tooltip: 'Stuff to display'}
+     * and returns null or JSON data of
+     * {disabled: true|false}
+     * <br/><br/>
+     * <p><b>Deprecated in 17.0.0:</b> We no longer support className or tooltip in the JSON data
+     * return value, as this does not match the Redwood UX specification. 'all' as the function
+     * return has no effect, so it too is deprecated.</p>
      *
      * @expose
      * @instance
@@ -2744,6 +3787,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @ojsignature [{target: "Type",
      *                value: "{[key:string]: {[key:string]: {[key:string]: {disabled?: boolean, className?: string, tooltip?: string}}}}"}
      *              ]
+     * @ojdeprecated {since: '17.0.0', description: "Use dayFormatter instead, as it is more flexible."}
      * @example
      * {2013: {11: {25: {disabled: true, className: 'holiday', tooltip: 'Stuff to display'}, 5: {disabled: true}}}}}
      */
@@ -2771,13 +3815,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * <p>
      * Hints exposed by validators are shown inline by default in the Redwood theme when the
      * field has focus.
-     * In the Alta theme, validator hints are shown in a notewindow on focus,
-     * or as determined by the
-     * 'validatorHint' property set on the <code class="prettyprint">display-options</code>
-     * attribute.
-     * In either theme, you can turn off showing validator hints by using the
-     * 'validatorHint' property set to 'none' on the <code class="prettyprint">display-options</code>
-     * attribute.
+     * You can turn off showing validator hints by using the 'validatorHint' property set to 'none'
+     * on the <code class="prettyprint">display-options</code> attribute.
      * </p>
      *
      * <p>
@@ -2860,8 +3899,17 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
     /**
      * The value of the DatePicker element which must be an ISOString.
-     *
-     *
+     * <p>
+     * The value should be a local date (no time) ISOString
+     * like '2021-03-14'. If value is zulu to begin with, then the timezone specified
+     * on the converter, if there is one, or the local timezone of the browser is used to figure out the day.
+     * </p>
+     * <p>
+     * For clarity and simplicity, supply the local date for initial rendering.
+     * If needed, use IntlConverterUtils.dateToLocalIsoDateString to convert a Date to
+     * a local ISO string that contains only the date to set as the initial value.
+     * For example, IntlConverterUtils.dateToLocalIsoDateString(new Date(2014, 1, 1)));
+     * </p>
      * @example <caption>Initialize the element with the <code class="prettyprint">value</code> attribute:</caption>
      * &lt;oj-date-picker value='2014-09-10' /&gt;
      * @example <caption>Initialize the element with the <code class="prettyprint">value</code> property specified programmatically
@@ -2894,8 +3942,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * <p>
      * For clarity and simplicity, supply the local date for initial rendering.
      * If needed, use IntlConverterUtils.dateToLocalIsoDateString to convert a Date to
-     * a local iso string that contains only the date to set as the initial value.
-     * IntlConverterUtils.dateToLocalIsoDateString(new Date(2014, 1, 1)));
+     * a local ISO string that contains only the date to set as the initial value.
+     * For example, IntlConverterUtils.dateToLocalIsoDateString(new Date(2014, 1, 1)));
      * </p>
      *
      *
@@ -3018,12 +4066,14 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   _createDpDiv: function () {
     var dpDiv = document.createElement('div');
     dpDiv.className = 'oj-datepicker-popup';
+    dpDiv.setAttribute('data-oj-dropdownnofocuschange', '');
     dpDiv.style.display = 'none';
     var childDiv = document.createElement('div');
     childDiv.id = this._GetSubId(this._MAIN_DIV_ID);
     childDiv.setAttribute('role', 'region');
     childDiv.setAttribute('aria-describedby', this._GetSubId(this._DATEPICKER_DESCRIPTION_ID));
     childDiv.className = 'oj-datepicker-content';
+    childDiv.setAttribute('data-oj-dropdownnofocuschange', '');
     dpDiv.appendChild(childDiv);
     this._dpDiv = bindHover($(dpDiv));
     // Append the dpDiv to the CE wrapper and for widgets simply to the body
@@ -3063,6 +4113,26 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     if (pickerAttrs) {
       EditableValueUtils.setPickerAttributes(this._popUpDpDiv.ojPopup('widget'), pickerAttrs);
     }
+
+    // JET-64260 - focus dropped on mouse down in edges of calendar popup
+    // The elements rendering empty space in the dropdown are flagged with a special attribute.
+    // When one of those elements is clicked, prevent the browser from transferring focus.
+    var popupDiv = this._popUpDpDiv[0];
+    popupDiv.addEventListener(
+      'mousedown',
+      (event) => {
+        // Stop propagation of the event because it will bubble to the body from the reparented
+        // popup, not to the launcher component.  It's possible that there's a listener on the
+        // body for other purposes, like closing a modal popup, which would not be appropriate
+        // while the user is interacting with the dropdown.
+        event.stopPropagation();
+
+        if (event.target.hasAttribute('data-oj-dropdownnofocuschange')) {
+          event.preventDefault();
+        }
+      },
+      false
+    );
   },
 
   /**
@@ -4293,7 +5363,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     }
 
     generatedHtmlContent.html =
-      '<div' +
+      '<div data-oj-dropdownnofocuschange ' +
       (this._isDateTimeSwitcher() ? '' : " class='oj-datepicker-wrapper'") +
       '>' +
       generatedHtmlContent.html +
@@ -4941,7 +6011,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     var header =
       "<div class='oj-datepicker-header" +
       (this._IsDisabled() ? ' oj-disabled ' : ' oj-enabled oj-default ') +
-      "'>";
+      "' data-oj-dropdownnofocuschange >";
 
     if (/all|left/.test(monthControl)) {
       if (isRTL) {
@@ -6568,6 +7638,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @memberof oj.ojInputDate
    * @instance
    * @return {void}
+   * @ojdeprecated {since: '17.0.0', description: 'This is not supported in the Redwood UX specification.'}
    */
   hide: function () {
     return this._hide(this._ON_CLOSE_REASON_CLOSE);
@@ -6620,11 +7691,106 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   },
 
   /**
+   * Resets the component by clearing all messages and messages attributes -
+   * <code class="prettyprint">messagesCustom</code> -
+   * and updates the component's display value using the attribute value. User entered values will be
+   * erased when this method is called.
+   *
+   * @example <caption>Reset component</caption>
+   * myComp.reset(); <br/>
+   *
+   * @name reset
+   * @method
+   * @access public
+   * @instance
+   * @expose
+   * @return {void}
+   * @memberof oj.ojDatePicker
+   * @ojshortdesc Resets the component by clearing all messages and messages attributes, and updates the component's display value using the attribute value.
+   * @since 0.7.0
+   * @ojdeprecated {since: '17.0.0', description: 'This is not supported in the Redwood UX specification.'}
+   */
+
+  /**
+   * Takes all deferred messages and shows them.
+   * It then updates the valid property; e.g.,
+   * if the valid state was "invalidHidden"
+   * before showMessages(), the valid state will become "invalidShown" after showMessages().
+   * <p>
+   * If there were no deferred messages this method simply returns.
+   * </p>
+   *
+   * @example <caption>Display all messages including deferred ones.</caption>
+   * myComp.showMessages();
+   *
+   * @name showMessages
+   * @method
+   * @access public
+   * @instance
+   * @return {void}
+   * @expose
+   * @memberof oj.ojDatePicker
+   * @ojshortdesc Takes all deferred messages and shows them.
+   * @since 0.7.0
+   * @ojdeprecated {since: '17.0.0', description: 'This is not supported in the Redwood UX specification.'}
+   */
+
+  /**
+   * Validates the component's display value using the converter and all validators registered on
+   * the component and updates the <code class="prettyprint">value</code> option by performing the
+   * following steps.
+   *
+   * <p>
+   * <ol>
+   * <li>All messages are cleared, including custom messages added by the app. </li>
+   * <li>If no converter is present then processing continues to next step. If a converter is
+   * present, the UI value is first converted (i.e., parsed). If there is a parse error then
+   * the messages are shown.</li>
+   * <li>If there are no validators setup for the component the <code class="prettyprint">value</code>
+   * option is updated using the display value. Otherwise all
+   * validators are run in sequence using the parsed value from the previous step. The implicit
+   * required validator is run first if the component is marked required. When a validation error is
+   * encountered it is remembered and the next validator in the sequence is run. </li>
+   * <li>At the end of validation if there are errors, the messages are shown.
+   * If there were no errors, then the
+   * <code class="prettyprint">value</code> option is updated.</li>
+   * </ol>
+   *
+   * @example <caption>Validate component using its current value.</caption>
+   * // validate display value and shows messages if there are any to be shown.
+   * myComp.validate();
+   * @example <caption>Validate component and use the Promise's resolved state.</caption>
+   * myComp.validate().then(
+   *  function(result) {
+   *    if(result === "valid")
+   *    {
+   *      submitForm();
+   *    }
+   *  });
+   * @return {Promise.<string>} Promise resolves to "valid" if there were no converter parse errors and
+   * the component passed all validations.
+   * The Promise resolves to "invalid" if there were converter parse errors or
+   * if there were validation errors.
+   * @ojsignature {target: "Type", value: "Promise<'valid'|'invalid'>", for : "returns"}
+   *
+   * @name validate
+   * @method
+   * @access public
+   * @expose
+   * @memberof oj.ojDatePicker
+   * @ojshortdesc Validates the component's display value using all converters and validators registered on the component. If there are no validation errors. then the value is updated. See the Help documentation for more information.
+   * @instance
+   * @since 4.0.0
+   * @ojdeprecated {since: '17.0.0', description: 'This is not supported in the Redwood UX specification.'}
+   */
+
+  /**
    * Refreshes the element. Usually called after dom changes have been made.
    * @expose
    * @memberof oj.ojInputDate
    * @instance
    * @return {void}
+   * @ojdeprecated {since: '17.0.0', description: 'This is not supported in Core Pack components.'}
    */
   refresh: function () {
     if (this._triggerNode) {
@@ -6642,6 +7808,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @memberof oj.ojInputDate
    * @instance
    * @return {void}
+   * @ojdeprecated {since: '17.0.0', description: 'This is not supported in the Redwood UX specification.'}
    */
   show: function () {
     if (this._datepickerShowing() || this._IsDisabled() || this.options.readOnly) {
@@ -8472,7 +9639,7 @@ function createWheel(model, isNumber, classList) {
 
     $wheel
       .ojHammer(hammerOptions)
-      .on('tap', tapHander)
+      .on('tap', tapHandler)
       .on('swipeup', swipeUpHandler)
       .on('swipedown', swipeDownHandler)
       .on('panstart', panStartHandler)
@@ -8488,7 +9655,7 @@ function createWheel(model, isNumber, classList) {
   function destroy() {
     $wheel
       .ojHammer()
-      .off('tap', tapHander)
+      .off('tap', tapHandler)
       .off('swipeup', swipeUpHandler)
       .off('swipedown', swipeDownHandler)
       .off('panstart', panStartHandler)
@@ -8604,7 +9771,14 @@ function createWheel(model, isNumber, classList) {
     }
   }
 
-  function tapHander(event) {
+  function tapHandler(event) {
+    // fix for JET-67768 which is event.gesture is sometimes undefined.
+    // Some OCI  apps have the uikit package which also handles events by creating a new event that does not have the 'gesture' property.
+    // As a result, the tapHandler is called once from our code, and a second time from uikit.
+    // If the event does not have gesture, we ignore it.
+    if (event.gesture === undefined) {
+      return;
+    }
     _wheel.focus();
     var tapY = event.gesture.center.y;
     var wheelTop = _wheel.getBoundingClientRect().top;
@@ -8638,6 +9812,10 @@ function createWheel(model, isNumber, classList) {
   }
 
   function panStartHandler(event) {
+    // fix for JET-67768 which is event.gesture can be undefined if an outside package, i.e., uikit, creates their own events.
+    if (event.gesture === undefined) {
+      return;
+    }
     _wheel.focus();
     _panLastSpinY = event.gesture.center.y;
     _panStartY = _panLastSpinY;
@@ -8657,6 +9835,10 @@ function createWheel(model, isNumber, classList) {
   }
 
   function panHandler(event) {
+    // fix for JET-67768 which is event.gesture can be undefined if an outside package, i.e., uikit, creates their own events.
+    if (event.gesture === undefined) {
+      return;
+    }
     _wheel.focus();
     var panY = event.gesture.center.y;
     var newZone = Math.round(((_panStartY - panY) / $wheel.height()) * 5);
@@ -8720,6 +9902,7 @@ function createWheelGroup(timePickerModel) {
   function createDom() {
     _group = document.createElement('div');
     _group.classList.add('oj-timepicker-wheel-group');
+    _group.setAttribute('data-oj-dropdownnofocuschange', '');
   }
 
   /**
@@ -9160,19 +10343,13 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
 
   options: {
     /**
-     * A datetime converter instance or a Promise to a datetime converter instance
-     * or one that duck types {@link oj.DateTimeConverter}.
+     * A datetime converter instance or one that duck types {@link oj.DateTimeConverter}.
      * <p>If the timezone option is provided in the converter, the Now button will highlight the current time based on the timezone specified in the converter.
      * <p>
      * The hint exposed by the converter is shown inline by default in the Redwood theme when
      * the field has focus.
-     * In the Alta theme, converter hints are shown in a notewindow on focus,
-     * or as determined by the
-     * 'converterHint' property set on the <code class="prettyprint">display-options</code>
-     * attribute.
-     * In either theme, you can turn off showing converter hints by using the
-     * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
-     * attribute.
+     * You can turn off showing converter hints by using the 'converterHint' property set to 'none'
+     * on the <code class="prettyprint">display-options</code> attribute.
      * </p>
      * <p>
      * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
@@ -9187,7 +10364,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      * @type {Object}
      * @ojshortdesc An object that converts the time value. See the Help documentation for more information.
      * @ojsignature  [{ target: "Type",
-     *    value: "Promise<oj.Converter<any>>|oj.Converter<any>",
+     *    value: "oj.Converter<any>",
      *    jsdocOverride: true},
      *    {target: "Type",
      *    value: "Promise<oj.Converter<any>>|oj.Converter<any>|
@@ -9197,6 +10374,8 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      *                description: 'Defining a converter with an object literal with converter type and its options
      *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
      *                  work again by importing the deprecated ojvalidation-datetime module.'}
+     * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<any>>'],
+     *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the promise and then update the converter attribute with the resolved converter instance.'}
      * @default new DateTimeConverter({ formatType: 'time', timeFormat: 'short' })
      */
     converter: undefined,
@@ -9205,9 +10384,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      * Determines if keyboard entry of the text is allowed.
      * When disabled the picker must be used to select a time.
      *
-     * Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
-     * default is <code class="prettyprint">"disabled"</code> and
-     * it's <code class="prettyprint">"enabled"</code> for alta web theme.
+     * Themes can override the default value.
      *
      * @expose
      * @instance
@@ -9216,6 +10393,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      * @type {string}
      * @ojvalue {string} "enabled"  Allow keyboard entry of the time.
      * @ojvalue {string} "disabled" Changing the time can only be done with the picker.
+     * @default "enabled"
      *
      * @example <caption>Initialize the InputTime with the <code class="prettyprint">keyboard-edit</code> attribute specified:</caption>
      * &lt;oj-input-time keyboard-edit='disabled'>&lt;/oj-input-time>
@@ -9328,16 +10506,6 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      * Allows applications to specify whether to render time picker in JET or
      * as a native picker control.</br>
      *
-     * Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
-     * default is "native" and it's "jet" for alta web theme.
-     *
-     * @expose
-     * @memberof! oj.ojInputTime
-     * @ojshortdesc Specifies whether to render the time picker in JET, or as a native picker control. See the Help documentation for more information.
-     * @instance
-     * @type {string}
-     * @ojvalue {string} 'jet' Applications get full JET functionality.
-     * @ojvalue {string} 'native' Applications get the functionality of the native picker.</br></br>
      *  Note that the native renderMode will attempt to load a Cordova plugin that
      *  will launch the native picker. If the plugin is not found, the default JET
      *  picker will be used.</br>
@@ -9351,6 +10519,15 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      *      <li>translations sub properties pertaining to the picker is not available</li>
      *      <li>'timePicker.timeIncrement' property is limited to iOS and will only take a precision of minutes</li>
      *    </ul>
+     *
+     * @expose
+     * @memberof! oj.ojInputTime
+     * @ojshortdesc Specifies whether to render the time picker in JET, or as a native picker control. See the Help documentation for more information.
+     * @instance
+     * @type {string}
+     * @ojvalue {string} 'jet' Applications get full JET functionality.
+     * @ojvalue {string} 'native' Applications get the functionality of the native picker.</br></br>
+     * @default "jet"
      *
      * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated for the same reason.'}
      *
@@ -9483,13 +10660,8 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      * <p>
      * Hints exposed by validators are shown inline by default in the Redwood theme when the
      * field has focus.
-     * In the Alta theme, validator hints are shown in a notewindow on focus,
-     * or as determined by the
-     * 'validatorHint' property set on the <code class="prettyprint">display-options</code>
-     * attribute.
-     * In either theme, you can turn off showing validator hints by using the
-     * 'validatorHint' property set to 'none' on the <code class="prettyprint">display-options</code>
-     * attribute.
+     * You can turn off showing validator hints by using the 'validatorHint' property set to 'none'
+     * on the <code class="prettyprint">display-options</code> attribute.
      * </p>
      *
      * <p>
@@ -9681,6 +10853,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
 
     var wheelPicker = document.createElement('div');
     wheelPicker.className = 'oj-timepicker-popup';
+    wheelPicker.setAttribute('data-oj-dropdownnofocuschange', '');
     wheelPicker.style.display = 'none';
     var div = document.createElement('div');
     div.id = this._GetSubId(this._TIME_PICKER_ID);
@@ -9698,6 +10871,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
       cssClasses += mobileCSSStlyeClass;
     }
     div.className = cssClasses;
+    div.setAttribute('data-oj-dropdownnofocuschange', '');
     wheelPicker.appendChild(div);
     this._wheelPicker = $(wheelPicker);
     var prependNode = this._getPrependNode()[0];
@@ -11947,6 +13121,7 @@ function _getDateTimeDefaultConverter() {
  * The element will decorate its associated label with required and help
  * information, if the <code>required</code> and <code>help</code> attributes are set.
  * </p>
+ * @ojdeprecated {since: '17.0.0', description: 'The use of oj-date-time-picker is a Redwood anti-pattern. Please use oj-date-picker, oj-input-date, or oj-input-time instead.'}
  */
 /**
  * @ojcomponent oj.ojInputDateTime
@@ -12139,8 +13314,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
 
   options: {
     /**
-     * A datetime converter instance or a Promise to a datetime converter instance
-     * or one that duck types {@link oj.DateTimeConverter}.
+     * A datetime converter instance or one that duck types {@link oj.DateTimeConverter}.
 
      * <p>The default options for converter vary by theme. To use different value for options, create a custom converter and
      * set it in this property. For example:
@@ -12149,13 +13323,50 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     * <p>
     * The hint exposed by the converter is shown inline by default in the Redwood theme when
     * the field has focus.
-    * In the Alta theme, converter hints are shown in a notewindow on focus,
-    * or as determined by the
-    * 'converterHint' property set on the <code class="prettyprint">display-options</code>
-    * attribute.
-    * In either theme, you can turn off showing converter hints by using the
-    * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
-    * attribute.
+    * You can turn off showing converter hints by using the 'converterHint' property set to 'none'
+    * on the <code class="prettyprint">display-options</code> attribute.
+    * </p>
+    * <p>
+    * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+    * help.instruction shows; if no help.instruction then validator hints show;
+    * if none, then help-hints.definition shows; if none, then converter hint shows.
+    * help-hints.source always shows along with the other help or hint.
+    * </p>
+     * {@ojinclude "name":"inputBaseConverterOptionDoc"}
+     * @expose
+     * @instance
+     * @memberof! oj.ojDateTimePicker
+     * @name converter
+     * @type {Object}
+     * @ojshortdesc An object that converts the datetime value. See the Help documentation for more information.
+     * @ojsignature  [{ target: "Type",
+     *    value: "oj.Converter<any>",
+     *    jsdocOverride: true},
+     *    {target: "Type",
+     *    value: "Promise<oj.Converter<any>>|oj.Converter<any>|
+     *            oj.Validation.RegisteredConverter",
+     *    consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredConverter'],
+     *                description: 'Defining a converter with an object literal with converter type and its options
+     *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
+     *                  work again by importing the deprecated ojvalidation-datetime module.'}
+     * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<any>>'],
+     *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the Promise and then update the converter attribute with the resolved converter instance.'}
+     * @ojdeprecated {since: '17.0.0', description: 'This property has been deprecated.'}
+     * @default new DateTimeConverter({ formatType: 'datetime', dateFormat: 'short', timeFormat: 'short' })
+     */
+    /**
+     * A datetime converter instance or one that duck types {@link oj.DateTimeConverter}.
+
+     * <p>The default options for converter vary by theme. To use different value for options, create a custom converter and
+     * set it in this property. For example:
+     * <pre class="prettyprint"><code>inputDateTime.converter = new DateTimeConverter.IntlDateTimeConverter({formatType: 'datetime',dateFormat: 'short',timeFormat: 'short'});</code></pre>
+     * <p>If the timezone option is provided in the converter, the Today button will highlight the current day based on the timezone specified in the converter.
+    * <p>
+    * The hint exposed by the converter is shown inline by default in the Redwood theme when
+    * the field has focus.
+    * You can turn off showing converter hints by using the 'converterHint' property set to 'none'
+    * on the <code class="prettyprint">display-options</code> attribute.
     * </p>
     * <p>
     * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
@@ -12170,7 +13381,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * @type {Object}
      * @ojshortdesc An object that converts the datetime value. See the Help documentation for more information.
      * @ojsignature  [{ target: "Type",
-     *    value: "Promise<oj.Converter<any>>|oj.Converter<any>",
+     *    value: "oj.Converter<any>",
      *    jsdocOverride: true},
      *    {target: "Type",
      *    value: "Promise<oj.Converter<any>>|oj.Converter<any>|
@@ -12180,9 +13391,545 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      *                description: 'Defining a converter with an object literal with converter type and its options
      *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
      *                  work again by importing the deprecated ojvalidation-datetime module.'}
+     * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<any>>'],
+     *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the Promise and then update the converter attribute with the resolved converter instance.'}
      * @default new DateTimeConverter({ formatType: 'datetime', dateFormat: 'short', timeFormat: 'short' })
      */
     converter: undefined,
+    /**
+     * The oj-label sets the described-by attribute programmatically on the form component.
+     * This attribute is not meant to be set by an application developer directly.
+     * The described-by is copied to the aria-describedby
+     * attribute on the component's inner dom element, and it is needed
+     * for accessibility.
+     * @example <caption>Initialize component with the <code class="prettyprint">described-by</code> attribute specified:</caption>
+     * &lt;oj-some-element described-by="someId">&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
+     * // getter
+     * var descById = myComp.describedBy;
+     *
+     * // setter
+     * myComp.describedBy = "someId";
+     *
+     * @ojshortdesc The form component's oj-label automatically sets described-by
+     * to make it accessible. It is not meant to be set by application developer.
+     * @expose
+     * @type {?string}
+     * @public
+     * @instance
+     * @memberof oj.ojDateTimePicker
+     * @name describedBy
+     * @ojdeprecated {since: '17.0.0', description: 'The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component.'}
+     * @since 4.0.0
+     */
+    /**
+     * Whether the component is disabled. The default is false.
+     *
+     * @ojshortdesc Specifies whether the component is disabled. The default is false.
+     * @expose
+     * @type {boolean}
+     * @default false
+     * @public
+     * @instance
+     * @memberof oj.ojDateTimePicker
+     * @name disabled
+     * @ojdeprecated {since: '17.0.0', description: "Disabled is not supported by the Date Picker UX specification, use readonly property instead."}
+     * @since 0.7.0
+     */
+    /**
+     * Form component help information.
+     * @expose
+     * @memberof oj.ojDateTimePicker
+     * @name help
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     * @instance
+     * @public
+     * @type {Object}
+     * @since 0.7.0
+     */
+    /**
+     * <p>
+     * The helpHints object contains a definition property and a source property.
+     * </p>
+     * <ul>
+     * <li><code class="prettyprint">definition</code> - hint for help definition text.</li>
+     * <li><code class="prettyprint">source</code> - hint for help source URL.</li>
+     * </ul>
+     *
+     * @ojshortdesc Represents hints for an oj-form-layout element to render help information on the label of the editable component.
+     * @expose
+     * @access public
+     * @memberof oj.ojDateTimePicker
+     * @name helpHints
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     * @ojtranslatable
+     * @instance
+     * @type {Object}
+     * @since 4.1.0
+     */
+    /**
+     * A type of user assistance text. User assistance text is used to provide
+     * guidance to help the user understand what data to enter or select. help-hints could
+     * come from a help system.
+     * <p>In the Redwood theme for clarity only one user assistance text shows to the user.
+     * The precedence rules are:
+     * <ul>
+     * <li>help.instruction shows;</li>
+     * <li>if no help.instruction, then validator hint shows;</li>
+     * <li>if no help.instruction or validator hint, then help-hints.definition shows;</li>
+     * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
+     * <li>help-hints.source always shows along side the above.</li>
+     * </ul>
+     * </p>
+     * <p>
+     * In the Redwood theme, by default all user assistance text shows inline.
+     * For input components, it shows when the field takes focus. In other components it
+     * shows all the time. See the user-assistance-density property for other ways the user
+     * assistance text can render.
+     * </p>
+     * <p>No formatted text is available for help definition attribute.</p>
+     *
+     * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
+     *
+     * @ojshortdesc Hint for help definition text associated with the label.
+     * @expose
+     * @name helpHints.definition
+     * @memberof! oj.ojDateTimePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     * @instance
+     * @type {string}
+     * @ojsignature {target:"Type", value: "?"}
+     * @default ""
+     * @since 4.1.0
+     */
+    /**
+     * Help source URL associated with the component.
+     * <p>In the Redwood theme, the help-hints.source will show as a link inline to the field.
+     * For input components, it shows when the field takes focus. For other components,
+     * it shows all the time.
+     * </p>
+     * <p>
+     * For security reasons we only support urls with protocol 'http:' or 'https:'.
+     * If the url doesn't comply we ignore it and throw an error.
+     * Pass in an encoded URL since we do not encode the URL.</p>
+     *
+     * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
+     *
+     * @ojshortdesc Help source URL associated with the component.
+     * @expose
+     * @name helpHints.source
+     * @memberof! oj.ojDateTimePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     * @instance
+     * @type {string}
+     * @ojsignature {target:"Type", value: "?"}
+     * @default ""
+     * @since 4.1.0
+     */
+    /**
+     * A type of user assistance text. User assistance text is used to provide
+     * guidance to help the user understand what data to enter or select.
+     * <p> In the Redwood theme for clarity only one user assistance text shows to the user.
+     *  The precedence rules are:
+     * <ul>
+     * <li>help.instruction shows;</li>
+     * <li>if no help.instruction, then validator hint shows;</li>
+     * <li>if no help.instruction or validator hint, then help-hints.definition shows;</li>
+     * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
+     * <li>help-hints.source always shows along side the above.</li>
+     * </ul>
+     * </p>
+     * <p>In the Redwood theme, by default all user assistance text shows inline.
+     * For input components, it shows when the field takes focus. In other components
+     * it shows all the time. See the user-assistance-density property for other ways
+     * the user assistance text can render.
+     * <p>
+     *  How is help.instruction better than the html 'title' attribute?
+     * The html 'title' attribute only shows up as a tooltip on mouse over, not on keyboard and not in a mobile
+     * device. So the html 'title' would only be for text that is not important enough to show all users, or
+     * for text that you show the users in another way as well, like in the label.
+     * Also you cannot theme the native browser's title window like you can the JET
+     * notewindow, so low vision users may have a hard time seeing the 'title' window.
+     * For these reasons, the JET EditableValue components do not use the HTML's 'title'
+     * attribute and instead use the help.instruction attribute.
+     * </p>
+     *
+     * <p>
+     * To include formatted text in the help.instruction, format the string using html tags.
+     * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * For example the
+     * help.instruction might look like:
+     * <pre class="prettyprint"><code>&lt;oj-some-element help.instruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
+     * If you use formatted text, it should be accessible
+     * and make sense to the user if formatting wasn't there.
+     *
+     * @ojshortdesc Represents advisory information for the component, such as would be appropriate for a tooltip.
+     * @expose
+     * @access public
+     * @instance
+     * @name help.instruction
+     * @ojtranslatable
+     * @default ""
+     * @memberof! oj.ojDateTimePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     * @type {string=}
+     * @since 4.0.0
+     */
+    /**
+     * Represents a hint for rendering a label on the component.
+     * <p>This is used in combination with the <a href="#labelEdge">label-edge</a> attribute to control how the label should be rendered.</p>
+     *
+     * <p>
+     * When label-edge is "provided", it gives a hint to oj-form-layout parent element to create an oj-label element for the component.
+     * When the <code class="prettyprint">label-hint</code> attribute changes, oj-form-layout element refreshes to
+     * display the updated label information.
+     * </p>
+     * <p>
+     * When label-edge is "inside", it gives a hint to the component itself to render a label.
+     * </p>
+     * <p>
+     * When label-edge is "none", and if the component has no labelled-by, aria-label, or aria-labelledby attribute, the label-hint value will be used as the aria-label.
+     * </p>
+     *
+     * @ojshortdesc Represents a hint for oj-form-layout element to render a label on the editable component.
+     * @expose
+     * @access public
+     * @instance
+     * @name labelHint
+     * @ojtranslatable
+     * @default ""
+     * @memberof! oj.ojDateTimePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     * @type {string}
+     * @since 4.1.0
+     */
+    /**
+     * Specifies how the label of the component is created when the <code class="prettyprint">label-hint</code> attribute is set on the component.
+     * <p>The default value varies by theme, and it works well for the theme in most cases.
+     *  If the component is in an oj-form-layout, the label-edge attribute could come from the oj-form-layout's label-edge attribute.
+     * The oj-form-layout component uses the <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+     * <code class="prettyprint">provide</code> property to provide and uses the <a href="MetadataTypes.html#ProvideProperty">MetadataTypes.ProvideProperty</a>
+     * <code class="prettyprint">transform</code> property to transform its <code class="prettyprint">label-edge</code>
+     * attribute to any descendent components that are configured to consume it.
+     * For example, if the oj-form-layout's label-edge attribute is set to "top" or "start", and a descendent form component does
+     * not have its label-edge attribute set, the form component's label-edge will be the transformed value "provided".</p>
+     * @ojshortdesc Defines how the label of a component is created. See the Help documentation for more information.
+     * @access public
+     * @expose
+     * @name labelEdge
+     * @instance
+     * @type {string}
+     * @ojsignature {target: "Type", value: "'inside'|'none'|'provided'",  jsdocOverride: true}
+     * @memberof! oj.ojDateTimePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     * @ojvalue {string} "inside" The component creates the label using the <code class="prettyprint">label-hint</code> attribute.
+     * <p>For text input components (such as oj-input-text), the label floats over the input element but moves up on focus or when the component has a value.</p>
+     * <p>For non-text input components (such as oj-checkboxset), the label is created at the top of the component and doesn't move.</p>
+     * @ojvalue {string} "none" The component will not have a label, regardless of whether it's in an oj-form-layout or not.
+     * <p>If the component has a <code class="prettyprint">label-hint</code> attribute but no labelled-by, aria-label, or aria-labelledby attribute, the label-hint value will be used as the aria-label.</p>
+     * <p>Note that if the component already has an external label, "none" should not be specified and "provided" should be used instead.
+     * Otherwise it may end up with conflicting label information.</p>
+     * @ojvalue {string} "provided" Label is provided by the parent if the parent is an oj-form-layout.
+     * <p>oj-form-layout provides the label using the label-hint from the form control and the <a href="oj.ojFormLayout.html#labelEdge">label-edge</a> from oj-form-layout.</p>
+     * <p>If there is no oj-form-layout, use an oj-label.</p>
+     * @since 8.0.0
+     */
+    /**
+     * <p>
+     * Specifies the density of the form component's user assistance presentation.
+     * It can be shown inline with reserved rows to prevent reflow if
+     * a user assistance text shows up, inline without reserved rows that would reflow if
+     * a user assistance text shows up,
+     * or it can be shown compactly in a popup instead.</p>
+     * <p>
+     * The default value is 'reflow' when the form component is not a descendent of an oj-form-layout
+     * component. When the form component is a descendent of an oj-form-layout, the default value comes from the
+     * oj-form-layout's <code class="prettyprint">user-assistance-density</code> attribute value.
+     * </p>
+     * <p>
+     * The oj-form-layout component uses the
+     * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+     * <code class="prettyprint">provide</code> property to provide its
+     * <code class="prettyprint">user-assistance-density</code>
+     * attribute value to be consumed by descendent components.
+     * The form components are configured to consume the
+     * <code class="prettyprint">user-assistance-density</code> property if an
+     * ancestor provides it and it is not explicitly set on the form component.
+     * Example, oj-form-layout defaults user-assistance-density='efficient', so all its
+     * form components descendents will have user-assistance-density='efficient' by default.
+     * </p>
+     * @ojshortdesc Specifies the density of the form component's user assistance presentation.
+     * @access public
+     * @expose
+     * @name userAssistanceDensity
+     * @ojunsupportedthemes ["Alta"]
+     * @default "reflow"
+     * @instance
+     * @type {string}
+     * @ojsignature {target: "Type", value: "'reflow'|'efficient'|'compact'",  jsdocOverride: true}
+     * @memberof oj.ojDateTimePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     * @ojvalue {string} "reflow" Messages, help, hints, and required are all shown inline under the field with no reserved space.
+     * @ojvalue {string} "efficient" Messages, help, hints, and required are all shown inline under the field with reserved space.
+     * @ojvalue {string} "compact" Messages, help, hints, and required will not be shown inline; they will show in a mode that keeps the screen more compact, like
+     * a popup for the messages, and a required icon to indicate Required.
+     * @since 9.0.0
+     */
+    /**
+     * List of messages an app would add to the component when it has business/custom validation
+     * errors that it wants the component to show. This allows the app to perform further validation
+     * before sending data to the server. When this option is set the message shows to the
+     * user right away. To clear the custom message, set <code class="prettyprint">messagesCustom</code>
+     * back to an empty array.<br/>
+     * <p>Each message in the array is an object that duck types oj.Message.
+     * See {@link Message} for details.
+     * message detail text can include formatted HTML text, whereas
+     * hints and message summary text cannot. If you use formatted text, it should be accessible
+     * and make sense to the user if formatting wasn't there.
+     * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * To format the message detail, you could do this:
+     * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
+     * </p>
+     * <p>
+     * See the <a href="#validation-section">Validation and Messages</a> section
+     * for details on when the component clears <code class="prettyprint">messagesCustom</code>;
+     * for example, when full validation is run.
+     * </p>
+     * <p>In the Redwood theme, the Message summary is not displayed to the user, so make sure to have a Message detail
+     * set in your Message object.
+     * </p>
+     *
+     * @ojshortdesc A list of messages added by an application to the component. See the Help documentation for more information.
+     * @expose
+     * @name messagesCustom
+     * @access public
+     * @instance
+     * @memberof oj.ojDateTimePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     * @default []
+     * @type {Array.<Object>}
+     * @ojsignature {target: "Type", value: "Array<oj.Message>"}
+     * @since 0.7.0
+     * @ojwriteback
+     */
+    /**
+     * <p>
+     * The oj-label sets the labelledBy property programmatically on the form component
+     * to make it easy for the form component to find its oj-label component (a
+     * document.getElementById call.)
+     * </p>
+     * <p>
+     * The application developer should use the 'for'/'id api
+     * to link the oj-label with the form component;
+     * the 'for' on the oj-label to point to the 'id' on the input form component.
+     * This is the most performant way for the oj-label to find its form component.
+     * </p>
+     *
+     * @expose
+     * @ojshortdesc The oj-label sets the labelledBy property programmatically on the form component. See the Help documentation for more information.
+     * @type {string|null}
+     * @default null
+     * @public
+     * @instance
+     * @since 7.0.0
+     * @memberof oj.ojDateTimePicker
+     * @name labelledBy
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     */
+    /**
+     * The placeholder text to set on the element.
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">placeholder</code> attribute:</caption>
+     * &lt;oj-some-element placeholder="User Name">&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">placeholder</code> property after initialization:</caption>
+     * // getter
+     * var myPh = myComp.placeholder;
+     *
+     * // setter
+     * myComp.placeholder = myPlaceholder;
+     *
+     * If the attribute is not set and if a converter is set then the
+     * converter hint is used. See displayOptions for details.
+     *
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @memberof! oj.ojDateTimePicker
+     * @name placeholder
+     * @ojdeprecated {since: '17.0.0', description: "oj-date-time-picker doesn't have a text input, so this was never needed."}
+     * @type {string}
+     * @ojtranslatable
+     */
+    /**
+     * <p>
+     * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
+     * This is the default.
+     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+     * </p>
+     * <p>
+     * In the Redwood theme, by default, a Required text is rendered inline when the field is empty.
+     * If user-assistance-density is 'compact', it will show on the label as an icon.
+     * </p>
+     * <p>The Required error text is based on Redwood UX designs, and it is not recommended that
+     * it be changed.
+     * To override the required error message,
+     * use the <code class="prettyprint">translations.required</code> attribute.
+     * The component's label text is passed in as a token {label} and can be used in the message detail.
+     * </p>
+     * <p>When required is set to true, an implicit
+     * required validator is created, i.e.,
+     * <code class="prettyprint">new RequiredValidator()</code>. The required validator is the only
+     * validator to run during initial render, and its error is not shown to the user at this time;
+     * this is called deferred validation. The required validator also runs during normal validation;
+     * this is when the errors are shown to the user.
+     * See the <a href="#validation-section">Validation and Messaging</a> section for details.
+     * </p>
+     * <p>
+     * When the <code class="prettyprint">required</code> property changes due to programmatic intervention,
+     * the component may clear component messages and run validation, based on the current state it's in. </br>
+     *
+     * <h4>Running Validation when required property changes</h4>
+     * <ul>
+     * <li>if component is valid when required is set to true, then it runs deferred validation on
+     * the value property. If the field is empty, the valid state is invalidHidden. No errors are
+     * shown to the user.
+     * </li>
+     * <li>if component is invalid and has deferred messages when required is set to false, then
+     * component messages are cleared (messages-custom messages are not cleared)
+     * but no deferred validation is run because required is false.
+     * </li>
+     * <li>if component is invalid and currently showing invalid messages when required is set, then
+     * component messages are cleared and normal validation is run using the current display value.
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+     *   property is not updated and the error is shown.
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+     *   event on the component to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     *
+     * <h4>Clearing Messages when required property changes</h4>
+     * <ul>
+     * <li>Only messages created by the component, like validation messages, are cleared when the required property changes.</li>
+     * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
+     * </ul>
+     *
+     * </p>
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @memberof oj.ojDateTimePicker
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     * @name required
+     * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
+     * @type {boolean}
+     * @default false
+     * @since 0.7.0
+     * @see #translations
+     */
+    /**
+     * List of validators, synchronous or asynchronous,
+     * used by component along with asynchronous validators from the deprecated async-validators option
+     * and the implicit component validators when performing validation. Each item is either an
+     * instance that duck types {@link oj.Validator} or {@link oj.AsyncValidator}.
+     * <p>
+     * Implicit validators are created by the element when certain attributes are present.
+     * For example, if the <code class="prettyprint">required</code> attribute
+     * is set, an implicit {@link oj.RequiredValidator} is created.
+     * At runtime when the component runs validation, it
+     * combines all the implicit validators with all the validators
+     * specified through this <code class="prettyprint">validators</code> attribute
+     * and the <code class="prettyprint">async-validators</code> attribute, and
+     * runs all of them.
+     * </p>
+     * <p>
+     * Hints exposed by validators are shown inline by default in the Redwood theme when the
+     * field has focus.
+     * In the Alta theme, validator hints are shown in a notewindow on focus,
+     * or as determined by the
+     * 'validatorHint' property set on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * In either theme, you can turn off showing validator hints by using the
+     * 'validatorHint' property set to 'none' on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * </p>
+     * <p>
+     * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+     * help.instruction shows; if no help.instruction then validator hints show;
+     * if none, then help-hints.definition shows; if none, then converter hint shows.
+     * help-hints.source always shows along with the other help or hint.
+     * </p>
+     *
+     * <p>
+     * When <code class="prettyprint">validators</code> property changes due to programmatic
+     * intervention, the component may decide to clear messages and run validation, based on the
+     * current state it is in. </br>
+     *
+     * <h4>Steps Performed Always</h4>
+     * <ul>
+     * <li>The cached list of validator instances are cleared and new validator hints is pushed to
+     * messaging. E.g., notewindow displays the new hint(s).
+     * </li>
+     * </ul>
+     *
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when validators changes, component does nothing other than the
+     * steps it always performs.</li>
+     * <li>if component is invalid and is showing messages when
+     * <code class="prettyprint">validators</code> or
+     * <code class="prettyprint">async-validators</code> changes then all component messages
+     *  are cleared and full validation run using the display value on the component.
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+     *   property is not updated and the error is shown.
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+     *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+     *   event to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages when validators changes, it does
+     * nothing other than the steps it performs always.</li>
+     * </ul>
+     * </p>
+     *
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>Only messages created by the component are cleared.</li>
+     * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
+     * </ul>
+     * </p>
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @default []
+     * @memberof oj.ojDateTimePicker
+     * @name validators
+     * @ojshortdesc Specifies a list of synchronous validators for performing validation by the element. See the Help documentation for more information.
+     * @ojsignature  [{ target: "Type",
+     *       value: "Array<oj.Validator<string>|oj.AsyncValidator<string>>|null",
+     *       jsdocOverride: true},
+     * { target: "Type",
+     *       value: "Array<oj.Validator<string>|oj.AsyncValidator<string>|
+     *       oj.Validation.RegisteredValidator>|null",
+     *       consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: '8.0.0', target: 'memberType', value: ['oj.Validation.RegisteredValidator'],
+     *                description: 'Defining a validator with an object literal with validator type and
+     *                  its options (aka JSON format) has been deprecated and does nothing. If needed, you can
+     *                  make the JSON format work again by importing the deprecated ojvalidation module you need,
+     *                  like ojvalidation-base.'}
+     * @ojdeprecated {since: '17.0.0', description: "The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component."}
+     * @type {Array.<Object>}
+     */
 
     /**
      * @name autocomplete
@@ -12253,6 +14000,20 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * Allows applications to specify whether to render date picker in JET or
      * as a native picker control. In inline mode, the only value supported is "jet"</br>
      *
+     * Note that the native renderMode will attempt to load a Cordova plugin that
+     * will launch the native picker. If the plugin is not found, the default JET
+     * picker will be used.</br>
+     *  With native renderMode, the functionality that is sacrificed compared to jet renderMode are:
+     *    <ul>
+     *      <li>Date picker cannot be themed</li>
+     *      <li>Accessibility is limited to what the native picker supports</li>
+     *      <li>pickerAttributes is not applied</li>
+     *      <li>Sub-IDs are not available</li>
+     *      <li>hide() function is no-op</li>
+     *      <li>translations sub properties pertaining to the picker is not available</li>
+     *      <li>All of the 'datepicker' sub-properties except 'showOn' are not available</li>
+     *    </ul>
+     *
      * @expose
      * @memberof! oj.ojDateTimePicker
      * @instance
@@ -12261,6 +14022,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * @ojtsnarrowedtype
      * @type {string}
      * @ojvalue {string} 'jet' Applications get full JET functionality.
+     * @ojvalue {string} 'native' Applications get the functionality of the native picker. Native picker is
+     *  not available when the picker is inline, defaults to 'jet' instead.</br></br>
      * @default "jet"
      *
      * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated for the same reason.'}
@@ -12282,14 +14045,6 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * Allows applications to specify whether to render date and time pickers
      * in JET or as a native picker control.</br>
      *
-     * Valid values: jet, native
-     *
-     * Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
-     * default is "native" and it's "jet" for alta web theme.
-     *
-     * <ul>
-     *  <li> jet - Applications get full JET functionality.</li>
-     *  <li> native - Applications get the functionality of the native picker.</li></br>
      *  Note that the native renderMode will attempt to load a Cordova plugin that
      *  will launch the native picker. If the plugin is not found, the default JET
      *  picker will be used.</br>
@@ -12304,7 +14059,6 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      *      <li>All of the 'datepicker' sub-properties except 'showOn' are not available</li>
      *      <li>'timePicker.timeIncrement' property is limited to iOS and will only take a precision of minutes</li>
      *    </ul>
-     * </ul>
      *
      * @expose
      * @memberof! oj.ojInputDateTime
@@ -12314,20 +14068,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * @ojvalue {string} 'jet' Applications get full JET functionality.
      * @ojvalue {string} 'native' Applications get the functionality of the native picker. Native picker is
      *  not available when the picker is inline, defaults to 'jet' instead.</br></br>
-     *  Note that the native renderMode will attempt to load a Cordova plugin that
-     *  will launch the native picker. If the plugin is not found, the default JET
-     *  picker will be used.</br>
-     *  With native renderMode, the functionality that is sacrificed compared to jet renderMode are:
-     *    <ul>
-     *      <li>Date Time picker cannot be themed</li>
-     *      <li>Accessibility is limited to what the native picker supports</li>
-     *      <li>pickerAttributes is not applied</li>
-     *      <li>Sub-IDs are not available</li>
-     *      <li>hide() function is no-op</li>
-     *      <li>translations sub properties pertaining to the picker is not available</li>
-     *      <li>All of the 'datepicker' sub-properties except 'showOn' are not available</li>
-     *      <li>'timePicker.timeIncrement' property is limited to iOS and will only take a precision of minutes</li>
-     *    </ul>
+     * @default "jet"
      *
      * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated for the same reason.'}
      *
@@ -12570,13 +14311,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * <p>
      * Hints exposed by validators are shown inline by default in the Redwood theme when the
      * field has focus.
-     * In the Alta theme, validator hints are shown in a notewindow on focus,
-     * or as determined by the
-     * 'validatorHint' property set on the <code class="prettyprint">display-options</code>
-     * attribute.
-     * In either theme, you can turn off showing validator hints by using the
-     * 'validatorHint' property set to 'none' on the <code class="prettyprint">display-options</code>
-     * attribute.
+     * You can turn off showing validator hints by using the 'validatorHint' property set to 'none'
+     * on the <code class="prettyprint">display-options</code> attribute.
      * </p>
      *
      * <p>
@@ -12667,19 +14403,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * @type {string}
      * @ojvalue {string} "disabled" Changing the date can only be done with the picker.
      * @default "disabled"
-     *
-     * @example <caption>Initialize the InputDate with the <code class="prettyprint">keyboard-edit</code> attribute specified:</caption>
-     * &lt;oj-date-time-picker keyboard-edit='disabled'>&lt;/oj-date-time-picker>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">keyboardEdit</code> property after initialization:</caption>
-     * // getter
-     * var keyboardEdit = myInputDate.keyboardEdit;
-     *
-     * // setter
-     * myInputDate.keyboardEdit = 'disabled';
-     *
-     * @example <caption>Set the default in the theme (SCSS)</caption>
-     * $inputDateTimeKeyboardEditOptionDefault: disabled !default;
+     * @ojdeprecated {since: '17.0.0', description: "This was never intended for the oj-date-time-picker component."}
      */
     /**
      * The value of the DateTimePicker element which should be an ISOString
@@ -13285,6 +15009,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
   _generateSwitcher: function () {
     var switcher = document.createElement('div');
     switcher.className = 'oj-datetimepicker-switcher';
+    switcher.setAttribute('data-oj-dropdownnofocuschange', '');
 
     var childDiv = document.createElement('div');
     childDiv.setAttribute('data-handler', 'switchMe');
@@ -13308,6 +15033,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
 
     childDiv = document.createElement('div');
     childDiv.className = 'oj-datetimepicker-switcher-buttons';
+    childDiv.setAttribute('data-oj-dropdownnofocuschange', '');
 
     elem = document.createElement('a');
     elem.addEventListener('click', (e) => {
@@ -13594,6 +15320,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
    * @instance
    * @memberof oj.ojInputDateTime
    * @return {void}
+   * @ojdeprecated {since: '17.0.0', description: 'This is not supported in the Redwood UX specification.'}
    */
   show: function () {
     if (this._isShowingDatePickerSwitcher()) {

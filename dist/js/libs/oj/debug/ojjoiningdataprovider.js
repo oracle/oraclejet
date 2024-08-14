@@ -271,21 +271,12 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'oj
                 }
                 _fetchNext() {
                     const signal = this._params?.signal;
-                    if (signal && signal.aborted) {
-                        const reason = signal.reason;
-                        return Promise.reject(new DOMException(reason, 'AbortError'));
-                    }
-                    return new Promise((resolve, reject) => {
-                        if (signal) {
-                            const reason = signal.reason;
-                            signal.addEventListener('abort', (e) => {
-                                return reject(new DOMException(reason, 'AbortError'));
-                            });
-                        }
+                    const callback = (resolve) => {
                         return resolve(this._baseIterator.next().then((result) => {
                             return result;
                         }));
-                    });
+                    };
+                    return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
                 }
                 ['next']() {
                     const promise = this._fetchNext();
@@ -345,10 +336,10 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'oj
             this._getJoinSpec(options);
         }
         fetchFirst(params) {
-            const baseParams = params;
+            let baseParams = params;
             ojdataprovider.FilterUtils.validateFilterCapabilities(this.getCapability('filter'), params?.filterCriterion);
             if (params && params.attributes) {
-                baseParams.attributes = this._seperateBaseJoinAttributes(params);
+                baseParams = { ...params, attributes: this._separateBaseJoinAttributes(params) };
             }
             else {
                 this._mapJoinAttributes = null;
@@ -359,7 +350,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'oj
         fetchByKeys(params) {
             let baseParams = params;
             if (params && params.attributes) {
-                const baseAttributes = this._seperateBaseJoinAttributes(params);
+                const baseAttributes = this._separateBaseJoinAttributes(params);
                 baseParams = {
                     keys: params.keys,
                     attributes: baseAttributes,
@@ -370,17 +361,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'oj
                 this._mapJoinAttributes = null;
             }
             const signal = params?.signal;
-            if (signal && signal.aborted) {
-                const reason = signal.reason;
-                return Promise.reject(new DOMException(reason, 'AbortError'));
-            }
-            return new Promise((resolve, reject) => {
-                if (signal) {
-                    const reason = signal.reason;
-                    signal.addEventListener('abort', (e) => {
-                        return reject(new DOMException(reason, 'AbortError'));
-                    });
-                }
+            const callback = (resolve) => {
                 return resolve(this.baseDataProvider.fetchByKeys(baseParams).then((baseResults) => {
                     const results = new ojMap();
                     if (baseResults != undefined && baseResults.results != undefined) {
@@ -405,13 +386,14 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'oj
                         });
                     }
                 }));
-            });
+            };
+            return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
         fetchByOffset(params) {
             let baseParams = params;
             ojdataprovider.FilterUtils.validateFilterCapabilities(this.getCapability('filter'), params?.filterCriterion);
             if (params && params.attributes) {
-                const baseAttributes = this._seperateBaseJoinAttributes(params);
+                const baseAttributes = this._separateBaseJoinAttributes(params);
                 baseParams = {
                     attributes: baseAttributes,
                     clientId: params.clientId,
@@ -425,17 +407,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'oj
                 this._mapJoinAttributes = null;
             }
             const signal = params?.signal;
-            if (signal && signal.aborted) {
-                const reason = signal.reason;
-                return Promise.reject(new DOMException(reason, 'AbortError'));
-            }
-            return new Promise((resolve, reject) => {
-                if (signal) {
-                    const reason = signal.reason;
-                    signal.addEventListener('abort', (e) => {
-                        return reject(new DOMException(reason, 'AbortError'));
-                    });
-                }
+            const callback = (resolve) => {
                 return resolve(this.baseDataProvider
                     .fetchByOffset(baseParams)
                     .then((baseResult) => {
@@ -455,7 +427,8 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'oj
                         });
                     }
                 }));
-            });
+            };
+            return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
         containsKeys(params) {
             return this.baseDataProvider.containsKeys(params).then((baseResults) => {
@@ -521,7 +494,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'oj
                 }
             }
         }
-        _seperateBaseJoinAttributes(params) {
+        _separateBaseJoinAttributes(params) {
             this._mapJoinAttributes = new Map();
             const origAttr = params.attributes;
             let iBase = 0;

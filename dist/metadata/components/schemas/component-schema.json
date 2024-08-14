@@ -593,6 +593,9 @@
             "status": {
               "$ref": "#/definitions/statusDef"
             },
+            "templateSlotRenderType": {
+              "type": "string"
+            },
             "translatable": {
               "type": "boolean"
             },
@@ -812,6 +815,9 @@
             "status": {
               "$ref": "#/definitions/statusDef"
             },
+            "templateSlotRenderType": {
+              "type": "string"
+            },
             "visible": {
               "type": "boolean"
             }
@@ -901,7 +907,7 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["antiPattern", "deprecated", "maintenance", "supersedes"]
+            "enum": ["antiPattern", "candidate", "deprecated", "maintenance", "production", "supersedes"]
           },
           "since": {
             "$ref": "#/definitions/semverExactDef"
@@ -952,13 +958,31 @@
                 "$comment": "otherwise if the Status 'type' is explicitly set to 'antiPattern', then 'themes' is required",
                 "properties": {
                   "type": {
-                      "const": "antiPattern"
+                    "const": "antiPattern"
                   }
                 },
                 "required": ["type"]
               },
               "then": {
                 "required": ["themes"]
+              }
+            }
+          },
+          {
+            "if": {
+              "$comment": "if the Status 'type' is explicitly set to 'candidate', 'maintenance', 'production', or 'supersedes', then 'target' is invalid",
+              "properties": {
+                "type": {
+                  "enum": ["candidate", "maintenance", "production", "supersedes"]
+                }
+              },
+              "required": ["type"]
+            },
+            "then": {
+              "propertyNames": {
+                "not": {
+                  "const": "target"
+                }
               }
             }
           }
@@ -1378,7 +1402,7 @@
     },
 
     "commonContentsPropsDef": {
-      "enum": ["name", "type", "description", "displayName", "main", "since", "status",
+      "enum": ["name", "type", "description", "displayName", "defaultExport", "export", "main", "since", "status",
                 "version", "jetVersion", "pack", "license", "extension", "help", "icon"]
     },
 
@@ -1441,6 +1465,9 @@
     "contents": {
       "$ref": "#/definitions/contentsDef"
     },
+    "defaultExport": {
+      "type": "boolean"
+    },
     "demoFor": {
       "type": "array",
       "items": {
@@ -1468,6 +1495,9 @@
       "type": "string"
     },
     "displayName": {
+      "type": "string"
+    },
+    "export": {
       "type": "string"
     },
     "properties": {
@@ -1890,7 +1920,7 @@
                     "type": "object",
                     "$comment": "only support a subset of metadata properties for vdom (Preact) Props",
                     "propertyNames": {
-                      "enum": ["type", "description", "status", "value"]
+                      "enum": ["type", "description", "required", "status", "value"]
                     }
                   }
                 }
@@ -1924,6 +1954,32 @@
         "propertyNames": {
           "not": {
             "enum": ["params", "return"]
+          }
+        }
+      }
+    },
+
+    {
+      "$comment": "if the component type is explicitly neither 'vdom' nor 'hook', then the 'defaultExport' and 'export' properties are invalid",
+      "if": {
+        "oneOf": [
+          {"not": { "required": ["type"] }},
+          {
+            "properties": {
+              "type": {
+                "not": {
+                  "enum": ["vdom", "hook"]
+                }
+              }
+            },
+            "required": ["type"]
+          }
+        ]
+      },
+      "then": {
+        "propertyNames": {
+          "not": {
+            "enum": ["defaultExport", "export"]
           }
         }
       }

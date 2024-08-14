@@ -130,7 +130,7 @@ export interface ojComboboxSettablePropertiesLenient<V, SV = V, RV = V> extends 
 }
 export interface ojComboboxMany<K, D, V = any> extends ojCombobox<V[], ojComboboxManySettableProperties<K, D, V>, V[], string[]> {
     asyncValidators: Array<AsyncValidator<V[]>>;
-    converter: Promise<Converter<V>> | Converter<V> | null;
+    converter: Converter<V> | null;
     labelledBy: string | null;
     maximumResultCount: number;
     minLength: number;
@@ -277,7 +277,7 @@ export interface ojComboboxManyEventMap<K, D, V = any> extends ojComboboxEventMa
 }
 export interface ojComboboxManySettableProperties<K, D, V = any> extends ojComboboxSettableProperties<V[]> {
     asyncValidators: Array<AsyncValidator<V[]>>;
-    converter: Promise<Converter<V>> | Converter<V> | null;
+    converter: Converter<V> | null;
     labelledBy: string | null;
     maximumResultCount: number;
     minLength: number;
@@ -316,7 +316,7 @@ export interface ojComboboxManySettablePropertiesLenient<K, D, V = any> extends 
 }
 export interface ojComboboxOne<K, D, V = any> extends ojCombobox<V, ojComboboxOneSettableProperties<K, D, V>, V, string> {
     asyncValidators: Array<AsyncValidator<V>>;
-    converter: Promise<Converter<V>> | Converter<V> | null;
+    converter: Converter<V> | null;
     filterOnOpen: 'none' | 'rawValue';
     labelledBy: string | null;
     maximumResultCount: number;
@@ -473,7 +473,7 @@ export interface ojComboboxOneEventMap<K, D, V = any> extends ojComboboxEventMap
 }
 export interface ojComboboxOneSettableProperties<K, D, V = any> extends ojComboboxSettableProperties<V> {
     asyncValidators: Array<AsyncValidator<V>>;
-    converter: Promise<Converter<V>> | Converter<V> | null;
+    converter: Converter<V> | null;
     filterOnOpen: 'none' | 'rawValue';
     labelledBy: string | null;
     maximumResultCount: number;
@@ -1034,6 +1034,12 @@ export namespace ComboboxElement {
         label: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type Option = {
+        disabled?: boolean;
+        label?: string;
+        value: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type OptionContext<D = any> = {
         componentElement: Element;
         data: D;
@@ -1042,6 +1048,13 @@ export namespace ComboboxElement {
         leaf: boolean;
         parent: Element;
         parentElement: Element;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type OptionsKeys = {
+        childKeys?: ojCombobox.OptionsKeys;
+        children?: string;
+        label?: string;
+        value?: string;
     };
 }
 export namespace ComboboxManyElement {
@@ -1246,6 +1259,12 @@ export namespace SelectElement {
         label: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type Option = {
+        disabled?: boolean;
+        label?: string;
+        value: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type OptionContext<D = any> = {
         componentElement: Element;
         data: D;
@@ -1254,6 +1273,13 @@ export namespace SelectElement {
         leaf: boolean;
         parent: Element;
         parentElement: Element;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type OptionsKeys = {
+        childKeys?: (ojSelect.OptionsKeys);
+        children?: string;
+        label?: string;
+        value?: string;
     };
 }
 export namespace SelectManyElement {

@@ -9,7 +9,7 @@ declare namespace RequiredValidator {
     type ValidatorOptions = {
         hint?: string;
         label?: string;
-        messageDetail?: string;
+        messageDetail?: (string | (({ label: string }) => string));
         messageSummary?: string;
     };
 }

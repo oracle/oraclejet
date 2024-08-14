@@ -52,6 +52,7 @@ function transformer(program, buildOptions) {
         TransformerError_1.TransformerError.setDisabledList(!(_BUILD_OPTIONS.disabledExceptionKeys?.length > 0)
             ? null
             : _BUILD_OPTIONS.disabledExceptionKeys);
+        TransformerError_1.TransformerError.initPrettyMsgEncoding(_COMPILER_OPTIONS.pretty);
         _BUILD_OPTIONS.componentToMetadata = null;
         _BUILD_OPTIONS.importMaps = null;
         if (_BUILD_OPTIONS['debug'])
@@ -121,6 +122,7 @@ function generateClassElementMetadata(classNode, progImportMaps) {
         PropertyUtils.checkReservedProps(propsInfo, metaUtilObj);
         let { readOnlyPropNameNodes, writebackPropNameNodes } = PropertyUtils.generatePropertiesMetadata(propsInfo, metaUtilObj);
         PropertyUtils.generatePropertiesRtExtensionMetadata(writebackPropNameNodes, readOnlyPropNameNodes, propsInfo.propsRtObservedGlobalPropsSet, metaUtilObj);
+        SlotUtils.validateDynamicSlots(metaUtilObj);
         MetaUtils.updateCompilerPropsMetadata(readOnlyPropNameNodes, metaUtilObj);
     }
     storeImportsInBuildOptions(classNode, progImportMaps);
@@ -128,7 +130,6 @@ function generateClassElementMetadata(classNode, progImportMaps) {
     walkClassElements(classNode, WALK_CLASS.ALL, metaUtilObj);
     MethodUtils.updateJetElementMethods(metaUtilObj);
     storeMetadataInBuildOptions(metaUtilObj);
-    SlotUtils.validateDynamicSlots(metaUtilObj);
     generateApiDocMetadata(metaUtilObj);
     writeMetaFiles(metaUtilObj);
     return MetaUtils.addMetadataToClassNode(vcompClassInfo, metaUtilObj.rtMetadata);
@@ -160,6 +161,7 @@ function generateFunctionalElementMetadata(functionalCompNode, progImportMaps) {
             PropertyUtils.checkReservedProps(propsInfo, metaUtilObj);
             let { readOnlyPropNameNodes, writebackPropNameNodes } = PropertyUtils.generatePropertiesMetadata(propsInfo, metaUtilObj);
             PropertyUtils.generatePropertiesRtExtensionMetadata(writebackPropNameNodes, readOnlyPropNameNodes, propsInfo.propsRtObservedGlobalPropsSet, metaUtilObj);
+            SlotUtils.validateDynamicSlots(metaUtilObj);
             MetaUtils.updateCompilerPropsMetadata(readOnlyPropNameNodes, metaUtilObj);
         }
         storeImportsInBuildOptions(functionalCompNode, progImportMaps);
@@ -172,7 +174,6 @@ function generateFunctionalElementMetadata(functionalCompNode, progImportMaps) {
             PropertyUtils.updateDefaultsFromDefaultProps(vcompFunctionInfo.defaultProps, metaUtilObj);
         }
         storeMetadataInBuildOptions(metaUtilObj);
-        SlotUtils.validateDynamicSlots(metaUtilObj);
         generateApiDocMetadata(metaUtilObj);
         writeMetaFiles(metaUtilObj);
         return MetaUtils.updateFunctionalVCompNode(functionalCompNode, vcompFunctionInfo, metaUtilObj);
@@ -271,7 +272,7 @@ function getNewMetaUtilObj(typeChecker, buildOptions, componentInfo, progImportM
             type: buildOptions['coreJetBuildOptions']?.defaultCompType ?? 'composite'
         },
         dynamicSlotsInUse: 0b0000,
-        dynamicSlotNameNodes: [],
+        dynamicSlotsInfo: [],
         followImports: buildOptions['followImports'],
         coreJetModuleMapping: _CORE_JET_MODULE_MAPPING,
         excludedTypes: new Set(_EXCLUDED_NAMED_EXPORT_TYPES)
@@ -399,8 +400,9 @@ function isCoreJetModule(module) {
     return module.startsWith('ojs/oj');
 }
 function generateApiDocMetadata(metaUtilObj) {
-    if (_BUILD_OPTIONS.apiDocDir) {
+    if (_BUILD_OPTIONS.apiDocDir && _BUILD_OPTIONS.apiDocBuildEnabled) {
         try {
+            console.log('building API Doc metadata...');
             const apidoc = ApiDocUtils.generateDoclets(metaUtilObj);
             writeApiDocFiles(apidoc, metaUtilObj.componentName);
         }

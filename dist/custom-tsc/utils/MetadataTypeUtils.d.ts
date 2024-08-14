@@ -1,8 +1,8 @@
 import * as ts from 'typescript';
 import * as MetaTypes from './MetadataTypes';
 import * as Metadata from 'ojs/ojmetadata';
-export declare function getGenericsAndTypeParameters(node: MetaTypes.HasTypeParameters, metaUtilObj: MetaTypes.MetaUtilObj, isPropsClass?: boolean): MetaTypes.GenericsTypes | undefined;
-export declare function getGenericsAndTypeParametersFromType(typeObj: ts.Type, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.GenericsTypesFromType | undefined;
+export declare function getGenericsAndTypeParameters(node: MetaTypes.HasTypeParameters, metaUtilObj: MetaTypes.MetaUtilObj, extras?: MetaTypes.GTExtras): MetaTypes.GenericsTypes | undefined;
+export declare function getGenericsAndTypeParametersFromType(typeObj: ts.Type, typeNode: ts.NodeWithTypeArguments, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.GenericsTypesFromType | undefined;
 export declare function getSignatureFromType(type: ts.Type, context: MetaTypes.MDContext, isPropSignatureType: boolean, seenUnionTypeAliases: Set<string> | null, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ALL_TYPES;
 export declare function getTypeNameFromTypeReference(node: ts.TypeReferenceType): string | undefined;
 export declare function getTypeNameFromType(type: ts.Type): string;

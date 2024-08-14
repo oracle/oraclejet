@@ -7,7 +7,7 @@
  */
 import ojMap from 'ojs/ojmap';
 import ojSet from 'ojs/ojset';
-import { FilterUtils } from 'ojs/ojdataprovider';
+import { wrapWithAbortHandling, FilterUtils } from 'ojs/ojdataprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 import { warn } from 'ojs/ojlogger';
 
@@ -272,21 +272,12 @@ class JoiningDataProvider {
             }
             _fetchNext() {
                 const signal = this._params?.signal;
-                if (signal && signal.aborted) {
-                    const reason = signal.reason;
-                    return Promise.reject(new DOMException(reason, 'AbortError'));
-                }
-                return new Promise((resolve, reject) => {
-                    if (signal) {
-                        const reason = signal.reason;
-                        signal.addEventListener('abort', (e) => {
-                            return reject(new DOMException(reason, 'AbortError'));
-                        });
-                    }
+                const callback = (resolve) => {
                     return resolve(this._baseIterator.next().then((result) => {
                         return result;
                     }));
-                });
+                };
+                return wrapWithAbortHandling(signal, callback, false);
             }
             ['next']() {
                 const promise = this._fetchNext();
@@ -346,10 +337,10 @@ class JoiningDataProvider {
         this._getJoinSpec(options);
     }
     fetchFirst(params) {
-        const baseParams = params;
+        let baseParams = params;
         FilterUtils.validateFilterCapabilities(this.getCapability('filter'), params?.filterCriterion);
         if (params && params.attributes) {
-            baseParams.attributes = this._seperateBaseJoinAttributes(params);
+            baseParams = { ...params, attributes: this._separateBaseJoinAttributes(params) };
         }
         else {
             this._mapJoinAttributes = null;
@@ -360,7 +351,7 @@ class JoiningDataProvider {
     fetchByKeys(params) {
         let baseParams = params;
         if (params && params.attributes) {
-            const baseAttributes = this._seperateBaseJoinAttributes(params);
+            const baseAttributes = this._separateBaseJoinAttributes(params);
             baseParams = {
                 keys: params.keys,
                 attributes: baseAttributes,
@@ -371,17 +362,7 @@ class JoiningDataProvider {
             this._mapJoinAttributes = null;
         }
         const signal = params?.signal;
-        if (signal && signal.aborted) {
-            const reason = signal.reason;
-            return Promise.reject(new DOMException(reason, 'AbortError'));
-        }
-        return new Promise((resolve, reject) => {
-            if (signal) {
-                const reason = signal.reason;
-                signal.addEventListener('abort', (e) => {
-                    return reject(new DOMException(reason, 'AbortError'));
-                });
-            }
+        const callback = (resolve) => {
             return resolve(this.baseDataProvider.fetchByKeys(baseParams).then((baseResults) => {
                 const results = new ojMap();
                 if (baseResults != undefined && baseResults.results != undefined) {
@@ -406,13 +387,14 @@ class JoiningDataProvider {
                     });
                 }
             }));
-        });
+        };
+        return wrapWithAbortHandling(signal, callback, false);
     }
     fetchByOffset(params) {
         let baseParams = params;
         FilterUtils.validateFilterCapabilities(this.getCapability('filter'), params?.filterCriterion);
         if (params && params.attributes) {
-            const baseAttributes = this._seperateBaseJoinAttributes(params);
+            const baseAttributes = this._separateBaseJoinAttributes(params);
             baseParams = {
                 attributes: baseAttributes,
                 clientId: params.clientId,
@@ -426,17 +408,7 @@ class JoiningDataProvider {
             this._mapJoinAttributes = null;
         }
         const signal = params?.signal;
-        if (signal && signal.aborted) {
-            const reason = signal.reason;
-            return Promise.reject(new DOMException(reason, 'AbortError'));
-        }
-        return new Promise((resolve, reject) => {
-            if (signal) {
-                const reason = signal.reason;
-                signal.addEventListener('abort', (e) => {
-                    return reject(new DOMException(reason, 'AbortError'));
-                });
-            }
+        const callback = (resolve) => {
             return resolve(this.baseDataProvider
                 .fetchByOffset(baseParams)
                 .then((baseResult) => {
@@ -456,7 +428,8 @@ class JoiningDataProvider {
                     });
                 }
             }));
-        });
+        };
+        return wrapWithAbortHandling(signal, callback, false);
     }
     containsKeys(params) {
         return this.baseDataProvider.containsKeys(params).then((baseResults) => {
@@ -522,7 +495,7 @@ class JoiningDataProvider {
             }
         }
     }
-    _seperateBaseJoinAttributes(params) {
+    _separateBaseJoinAttributes(params) {
         this._mapJoinAttributes = new Map();
         const origAttr = params.attributes;
         let iBase = 0;

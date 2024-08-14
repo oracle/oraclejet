@@ -9835,9 +9835,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
       // this._dragSource = new dvt.DragSource(context);
       // this.EventManager.setDragSource(this._dragSource);
 
-      // Set up keyboard handler on non-touch devices
-      if (!dvt.Agent.isTouchDevice())
-        this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
+      // Set up keyboard handler
+      this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
 
       // Make sure the object has an id for clipRect naming
       this.setId('nbox' + 1000 + Math.floor(Math.random() * 1000000000)); //@RandomNumberOK

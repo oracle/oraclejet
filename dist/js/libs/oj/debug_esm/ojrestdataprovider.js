@@ -6,7 +6,7 @@
  * @ignore
  */
 import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { DataProviderRefreshEvent, DataProviderMutationEvent, FilterFactory, FilterUtils } from 'ojs/ojdataprovider';
+import { DataProviderRefreshEvent, DataProviderMutationEvent, FilterFactory, FilterUtils, wrapWithAbortHandling } from 'ojs/ojdataprovider';
 import ojSet from 'ojs/ojset';
 import ojMap from 'ojs/ojmap';
 import { deepFreeze } from 'ojs/ojmetadatautils';
@@ -743,68 +743,69 @@ class RESTDataProvider {
         this.dispatchEvent(new DataProviderMutationEvent(detail));
     }
     async _fetchFrom(fetchType, fetchParameters, offset, hasMore) {
-        if (fetchParameters.signal?.aborted) {
-            throw new DOMException('Signal was previously aborted.', 'AbortError');
-        }
-        if (hasMore) {
-            const convertedFetchParameters = this._convertFetchListToFetchByOffsetParameters(fetchParameters, offset);
-            const fetchSize = this._getFetchSize(convertedFetchParameters);
-            const fullFetchParameters = {
-                ...convertedFetchParameters,
-                size: fetchSize,
-                filterCriterion: FilterFactory.getFilter({
-                    filterDef: convertedFetchParameters.filterCriterion,
-                    filterOptions: this.options
-                })
-            };
-            FilterUtils.validateFilterCapabilities(this.getCapability('filter'), fullFetchParameters.filterCriterion);
-            const restHelper = new RESTHelper({
-                fetchType,
-                fetchParameters: fullFetchParameters,
-                url: this.options.url,
-                transforms: this.options.transforms,
-                fetchOptions: {
-                    textFilterAttributes: this.options.textFilterAttributes
-                },
-                errorHandler: this.options.error,
-                options: this.options
-            });
-            const fetchResult = await restHelper.fetch();
-            const { data, totalSize, hasMore } = fetchResult;
-            let metadata;
-            if (fetchResult.metadata) {
-                metadata = fetchResult.metadata.map((entry) => ({ ...entry }));
-            }
-            else {
-                const keys = fetchResult.keys || this._generateKeysFromData(data);
-                metadata = this._generateMetadataFromKeys(keys);
-            }
-            const mergedSortCriteria = this._mergeSortCriteria(fetchParameters.sortCriteria);
-            if (mergedSortCriteria) {
-                fetchParameters.sortCriteria = mergedSortCriteria;
-            }
-            const result = { fetchParameters, data, metadata };
-            if (Number.isInteger(totalSize) && this._totalSize !== totalSize) {
-                this._totalSize = totalSize;
-            }
-            if (typeof hasMore === 'boolean' && (hasMore || data.length > 0)) {
-                return {
-                    result: new this.AsyncIteratorYieldResult(result),
+        const { signal } = fetchParameters;
+        const callback = async (resolve, reject) => {
+            if (hasMore) {
+                const convertedFetchParameters = this._convertFetchListToFetchByOffsetParameters(fetchParameters, offset);
+                const fetchSize = this._getFetchSize(convertedFetchParameters);
+                const fullFetchParameters = {
+                    ...convertedFetchParameters,
+                    size: fetchSize,
+                    filterCriterion: FilterFactory.getFilter({
+                        filterDef: convertedFetchParameters.filterCriterion,
+                        filterOptions: this.options
+                    })
+                };
+                FilterUtils.validateFilterCapabilities(this.getCapability('filter'), fullFetchParameters.filterCriterion);
+                const restHelper = new RESTHelper({
+                    fetchType,
+                    fetchParameters: fullFetchParameters,
+                    url: this.options.url,
+                    transforms: this.options.transforms,
+                    fetchOptions: {
+                        textFilterAttributes: this.options.textFilterAttributes
+                    },
+                    errorHandler: this.options.error,
+                    options: this.options
+                });
+                const fetchResult = await restHelper.fetch();
+                const { data, totalSize, hasMore } = fetchResult;
+                let metadata;
+                if (fetchResult.metadata) {
+                    metadata = fetchResult.metadata.map((entry) => ({ ...entry }));
+                }
+                else {
+                    const keys = fetchResult.keys || this._generateKeysFromData(data);
+                    metadata = this._generateMetadataFromKeys(keys);
+                }
+                const mergedSortCriteria = this._mergeSortCriteria(fetchParameters.sortCriteria);
+                if (mergedSortCriteria) {
+                    fetchParameters = { ...fetchParameters, sortCriteria: mergedSortCriteria };
+                }
+                const result = { fetchParameters, data, metadata };
+                if (Number.isInteger(totalSize) && this._totalSize !== totalSize) {
+                    this._totalSize = totalSize;
+                }
+                if (typeof hasMore === 'boolean' && (hasMore || data.length > 0)) {
+                    return resolve({
+                        result: new this.AsyncIteratorYieldResult(result),
+                        offset: offset + data.length,
+                        hasNoMore: !hasMore
+                    });
+                }
+                return resolve({
+                    result: new this.AsyncIteratorReturnResult(result),
                     offset: offset + data.length,
                     hasNoMore: !hasMore
-                };
+                });
             }
-            return {
-                result: new this.AsyncIteratorReturnResult(result),
-                offset: offset + data.length,
-                hasNoMore: !hasMore
-            };
-        }
-        return {
-            result: new this.AsyncIteratorReturnResult({ fetchParameters: fetchParameters, data: [], metadata: [] }),
-            offset: offset,
-            hasNoMore: true
+            return resolve({
+                result: new this.AsyncIteratorReturnResult({ fetchParameters: fetchParameters, data: [], metadata: [] }),
+                offset: offset,
+                hasNoMore: true
+            });
         };
+        return wrapWithAbortHandling(signal, callback, true);
     }
     async _fetchByKeysIteration(fetchParameters) {
         const fetchListParameters = this._convertFetchByKeysToFetchListParameters(fetchParameters);
@@ -831,54 +832,56 @@ class RESTDataProvider {
         return this._createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataMetadata);
     }
     async _fetchByKeysLookup(fetchParameters) {
-        if (fetchParameters.signal?.aborted) {
-            throw new DOMException('Signal was previously aborted.', 'AbortError');
-        }
-        const fetchPromises = [];
-        const fetchedData = [];
-        const fetchedDataMetadata = [];
-        for (let key of fetchParameters.keys) {
+        const { signal } = fetchParameters;
+        const callback = async (resolve, reject) => {
+            const fetchPromises = [];
+            const fetchedData = [];
+            const fetchedDataMetadata = [];
+            for (let key of fetchParameters.keys) {
+                const restHelper = new RESTHelper({
+                    fetchType: _FETCHBYKEYS,
+                    fetchParameters: {
+                        ...fetchParameters,
+                        keys: new Set([key])
+                    },
+                    url: this.options.url,
+                    transforms: this.options.transforms,
+                    errorHandler: this.options.error,
+                    options: this.options
+                });
+                fetchPromises.push(restHelper.fetch());
+            }
+            (await Promise.all(fetchPromises)).forEach((fetchResult) => {
+                fetchResult.data.forEach((item) => {
+                    fetchedData.push(item);
+                });
+                const keys = fetchResult.keys || this._generateKeysFromData(fetchResult.data);
+                const metadata = fetchResult.metadata || this._generateMetadataFromKeys(keys);
+                metadata.forEach((entry) => {
+                    fetchedDataMetadata.push(entry);
+                });
+            });
+            return resolve(this._createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataMetadata));
+        };
+        return wrapWithAbortHandling(signal, callback, true);
+    }
+    async _fetchByKeysBatchLookup(fetchParameters) {
+        const { signal } = fetchParameters;
+        const callback = async (resolve, reject) => {
             const restHelper = new RESTHelper({
                 fetchType: _FETCHBYKEYS,
-                fetchParameters: {
-                    ...fetchParameters,
-                    keys: new Set([key])
-                },
+                fetchParameters,
                 url: this.options.url,
                 transforms: this.options.transforms,
                 errorHandler: this.options.error,
                 options: this.options
             });
-            fetchPromises.push(restHelper.fetch());
-        }
-        (await Promise.all(fetchPromises)).forEach((fetchResult) => {
-            fetchResult.data.forEach((item) => {
-                fetchedData.push(item);
-            });
+            const fetchResult = await restHelper.fetch();
             const keys = fetchResult.keys || this._generateKeysFromData(fetchResult.data);
             const metadata = fetchResult.metadata || this._generateMetadataFromKeys(keys);
-            metadata.forEach((entry) => {
-                fetchedDataMetadata.push(entry);
-            });
-        });
-        return this._createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataMetadata);
-    }
-    async _fetchByKeysBatchLookup(fetchParameters) {
-        if (fetchParameters.signal?.aborted) {
-            throw new DOMException('Signal was previously aborted.', 'AbortError');
-        }
-        const restHelper = new RESTHelper({
-            fetchType: _FETCHBYKEYS,
-            fetchParameters,
-            url: this.options.url,
-            transforms: this.options.transforms,
-            errorHandler: this.options.error,
-            options: this.options
-        });
-        const fetchResult = await restHelper.fetch();
-        const keys = fetchResult.keys || this._generateKeysFromData(fetchResult.data);
-        const metadata = fetchResult.metadata || this._generateMetadataFromKeys(keys);
-        return this._createFetchByKeysResults(fetchParameters, fetchResult.data, metadata);
+            return resolve(this._createFetchByKeysResults(fetchParameters, fetchResult.data, metadata));
+        };
+        return wrapWithAbortHandling(signal, callback, true);
     }
     async _fetchByOffsetRandomAccess(fetchParameters, offset) {
         const fetchResult = await this._fetchFrom(_FETCHBYOFFSET, this._convertFetchByOffsetToFetchListParameters(fetchParameters), offset, true);

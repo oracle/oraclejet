@@ -78,7 +78,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @private
      */
     _onDragStart(event) {
-      if (dvt.Agent.isTouchDevice()) return this._onTouchDragStart(event);
+      if (dvt.EventManager.isTouchEvent(event)) return this._onTouchDragStart(event);
       else return this._onMouseDragStart(event);
     }
 
@@ -89,7 +89,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @private
      */
     _onDragMove(event) {
-      if (dvt.Agent.isTouchDevice()) return this._onTouchDragMove(event);
+      if (dvt.EventManager.isTouchEvent(event)) return this._onTouchDragMove(event);
       else return this._onMouseDragMove(event);
     }
 
@@ -100,7 +100,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      * @private
      */
     _onDragEnd(event) {
-      if (dvt.Agent.isTouchDevice()) return this._onTouchDragEnd(event);
+      if (dvt.EventManager.isTouchEvent(event)) return this._onTouchDragEnd(event);
       else return this._onMouseDragEnd(event);
     }
 
@@ -1787,16 +1787,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         this.EventManager = new DvtOverviewEventManager(this, context, callback, callbackObj);
         this.EventManager.addListeners(this);
         // register listeners
-        if (OverviewUtils.supportsTouch()) {
-          this.addEvtListener(dvt.TouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
-          this.addEvtListener(dvt.TouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
-          this.addEvtListener(dvt.TouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
-          this.addEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
-        } else {
-          this.addEvtListener(dvt.MouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
-          this.addEvtListener(dvt.MouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
-          this.addEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
-        }
+        this.addEvtListener(dvt.TouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
+        this.addEvtListener(dvt.TouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
+        this.addEvtListener(dvt.TouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
+        this.addEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
+
+        this.addEvtListener(dvt.MouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
+        this.addEvtListener(dvt.MouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
+        this.addEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
       }
     }
 
@@ -2270,14 +2268,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     }
 
     getPageX(event) {
-      if (OverviewUtils.supportsTouch() && event.targetTouches != null) {
+      if (event.targetTouches != null) {
         if (event.targetTouches.length > 0) return event.targetTouches[0].pageX;
         else return null;
       } else return event.pageX;
     }
 
     getPageY(event) {
-      if (OverviewUtils.supportsTouch() && event.targetTouches != null) {
+      if (event.targetTouches != null) {
         if (event.targetTouches.length > 0) return event.targetTouches[0].pageY;
         else return null;
       } else return event.pageY;
@@ -3494,18 +3492,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         this.EventManager = null;
       }
 
-      if (OverviewUtils.supportsTouch()) {
-        this.removeEvtListener(dvt.TouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
-        this.removeEvtListener(dvt.TouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
-        this.removeEvtListener(dvt.TouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
-        this.removeEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
-      } else {
-        this.removeEvtListener(dvt.MouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
-        this.removeEvtListener(dvt.MouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
-        this.removeEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
-        this.removeEvtListener(dvt.KeyboardEvent.KEYDOWN, this.HandleKeyDown, false, this);
-        this.removeEvtListener(dvt.KeyboardEvent.KEYUP, this.HandleKeyUp, false, this);
-      }
+      this.removeEvtListener(dvt.TouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
+      this.removeEvtListener(dvt.TouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
+      this.removeEvtListener(dvt.TouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
+      this.removeEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
+
+      this.removeEvtListener(dvt.MouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
+      this.removeEvtListener(dvt.MouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
+      this.removeEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
+      this.removeEvtListener(dvt.KeyboardEvent.KEYDOWN, this.HandleKeyDown, false, this);
+      this.removeEvtListener(dvt.KeyboardEvent.KEYUP, this.HandleKeyUp, false, this);
 
       // Call super last during destroy
       super.destroy();

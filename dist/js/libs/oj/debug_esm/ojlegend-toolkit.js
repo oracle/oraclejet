@@ -2471,9 +2471,8 @@ class Legend extends BaseComponent {
     this._bounds = null;
     this._titles = [];
 
-    // Set up keyboard handler on non-touch devices if the legend is interactive
-    if (!Agent.isTouchDevice())
-      this.EventManager.setKeyboardHandler(new DvtLegendKeyboardHandler(this.EventManager, this));
+    // Set up keyboard handler if the legend is interactive
+    this.EventManager.setKeyboardHandler(new DvtLegendKeyboardHandler(this.EventManager, this));
 
     this.UpdateAriaAttributes();
 

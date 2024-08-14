@@ -18,7 +18,7 @@ type State = {
 export declare class Selector<K> extends Component<ExtendGlobalProps<Props<K>>, State> {
     constructor(props: ExtendGlobalProps<Props<K>>);
     static defaultProps: Props<any>;
-    render(props: ExtendGlobalProps<Props<K>>, state: Readonly<State>): import("preact").JSX.Element;
+    render(props: ExtendGlobalProps<Props<K>>, state: Readonly<State>): import("preact/jsx-runtime").JSX.Element;
     private readonly _handleFocusin;
     private readonly _handleFocusout;
     private readonly _checkboxListener;

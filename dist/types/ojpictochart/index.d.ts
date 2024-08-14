@@ -176,6 +176,10 @@ export namespace ojPictoChart {
         name: string;
         parentElement: Element;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
 }
 export interface ojPictoChartEventMap<K, D extends ojPictoChart.Item<K> | any> extends dvtBaseComponentEventMap<ojPictoChartSettableProperties<K, D>> {
     'ojDrill': ojPictoChart.ojDrill;
@@ -431,15 +435,40 @@ export namespace PictoChartElement {
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemContext<K> = {
+        color: string;
+        count: number;
+        id: K;
+        name: string;
+        selected: boolean;
+        tooltip: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ItemShortDescContext<K> = {
         count: number;
         id: K;
         name: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
         index: number;
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K> = {
+        color: string;
+        componentElement: Element;
+        count: number;
+        id: K;
+        name: string;
+        parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipRendererContext<K> = {
@@ -450,6 +479,10 @@ export namespace PictoChartElement {
         name: string;
         parentElement: Element;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
 }
 export namespace PictoChartItemElement {
     // tslint:disable-next-line interface-over-type-literal

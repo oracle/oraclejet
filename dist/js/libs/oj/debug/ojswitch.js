@@ -956,7 +956,7 @@ var __oj_switch_metadata =
           this._AddActiveable(this._element2);
         }
         this._focusable({
-          element: this.switchThumb,
+          element: this.switchTrack,
           applyHighlight: true
         });
       },

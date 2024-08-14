@@ -878,6 +878,7 @@ Validation.__registerDefaultConverterFactory(
  * var requiredValidator = rvf.createValidator(options);
  *
  * @name oj.RequiredValidatorFactory
+ * @ojdeprecated {since: '17.0.0', description: 'Directly create new instances of RequiredValidator instead.'}
  * @hideconstructor
  * @ojtsnoexport
  * @ojtsexportastype
@@ -931,6 +932,7 @@ Validation.__registerDefaultValidatorFactory(
  *  });
  *
  * @name oj.RegExpValidatorFactory
+ * @ojdeprecated {since: '17.0.0', description: 'Directly create new instances of RegExpValidator instead.'}
  * @ojtsnoexport
  * @ojtsexportastype
  * @ojtsimport {module: "ojvalidator-regexp", type: "AMD", importName: "RegExpValidator"}
@@ -982,6 +984,7 @@ Validation.__registerDefaultValidatorFactory(
  * var lValidator = lvf.createValidator(options);
  *
  * @name oj.LengthValidatorFactory
+ * @ojdeprecated {since: '17.0.0', description: 'Directly create new instances of LengthValidator instead.'}
  * @hideconstructor
  * @ojtsnoexport
  * @ojtsexportastype

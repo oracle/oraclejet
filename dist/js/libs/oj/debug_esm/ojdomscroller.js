@@ -315,21 +315,24 @@ DomScroller.prototype._fetchMoreRows = function () {
           self._fetchPromise = null;
 
           if (result != null && result.value != null) {
-            var dataLength = result.value.data.length;
+            let value = result.value;
+            var dataLength = value.data.length;
             if (dataLength > 0) {
               self._rowCount += dataLength;
-
               if (remainingCount <= dataLength) {
-                result.maxCount = self._maxCount;
-                result.maxCountLimit = true;
-
                 if (dataLength > remainingCount) {
-                  result.value.data = result.value.data.slice(0, remainingCount);
-                  result.value.metadata = result.value.metadata.slice(0, remainingCount);
-                  if (result.value.fetchParameters != null) {
-                    result.value.fetchParameters.size = remainingCount;
+                  let fetchParameters = value.fetchParameters;
+                  if (fetchParameters != null) {
+                    fetchParameters = { ...fetchParameters, size: remainingCount };
                   }
+                  value = {
+                    ...value,
+                    data: value.data.slice(0, remainingCount),
+                    metadata: value.metadata.slice(0, remainingCount),
+                    fetchParameters
+                  };
                 }
+                result = { ...result, maxCount: self._maxCount, maxCountLimit: true, value };
               }
             }
 

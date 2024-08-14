@@ -92,6 +92,8 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
         stateExpanded?: string;
         stateHidden?: string;
         stateIsolated?: string;
+        stateLoaded?: string;
+        stateLoading?: string;
         stateMaximized?: string;
         stateMinimized?: string;
         stateSelected?: string;
@@ -1195,6 +1197,16 @@ export namespace ojChart {
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
         style?: Partial<CSSStyleDeclaration>;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderGroupTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<GroupTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderPieCenterTemplate = import('ojs/ojvcomponent').TemplateSlot<PieCenterContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderSeriesTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K, D, I extends Array<Item<any, null>> | number[] | null> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D, I>>;
 }
 export interface ojChartEventMap<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
    null> extends dvtBaseComponentEventMap<ojChartSettableProperties<K, D, I, C>> {
@@ -1344,6 +1356,8 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
         stateExpanded?: string;
         stateHidden?: string;
         stateIsolated?: string;
+        stateLoaded?: string;
+        stateLoading?: string;
         stateMaximized?: string;
         stateMinimized?: string;
         stateSelected?: string;
@@ -1979,6 +1993,10 @@ export namespace ojSparkChart {
         componentElement: Element;
         parentElement: Element;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate = import('ojs/ojvcomponent').TemplateSlot<TooltipContext>;
 }
 export interface ojSparkChartEventMap<K, D extends ojSparkChart.Item | any> extends dvtBaseComponentEventMap<ojSparkChartSettableProperties<K, D>> {
     'animationDurationChanged': JetElementCustomEvent<ojSparkChart<K, D>["animationDuration"]>;
@@ -2385,9 +2403,30 @@ export namespace ChartElement {
         rendered?: 'off' | 'on' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type AxisTitleContext = {
+        axis: 'xAxis' | 'yAxis' | 'y2Axis';
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type BoxPlotDefaults = {
         medianSvgClassName?: string;
         medianSvgStyle?: Partial<CSSStyleDeclaration>;
+        whiskerEndLength?: string;
+        whiskerEndSvgClassName?: string;
+        whiskerEndSvgStyle?: Partial<CSSStyleDeclaration>;
+        whiskerSvgClassName?: string;
+        whiskerSvgStyle?: Partial<CSSStyleDeclaration>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type BoxPlotStyle = {
+        medianSvgClassName?: string;
+        medianSvgStyle?: Partial<CSSStyleDeclaration>;
+        q2Color?: string;
+        q2SvgClassName?: string;
+        q2SvgStyle?: Partial<CSSStyleDeclaration>;
+        q3Color?: string;
+        q3SvgClassName?: string;
+        q3SvgStyle?: Partial<CSSStyleDeclaration>;
         whiskerEndLength?: string;
         whiskerEndSvgClassName?: string;
         whiskerEndSvgStyle?: Partial<CSSStyleDeclaration>;
@@ -2402,6 +2441,8 @@ export namespace ChartElement {
         tooltipLabel?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ChartType = 'line' | 'area' | 'lineWithArea' | 'bar' | 'stock' | 'boxPlot' | 'combo' | 'pie' | 'scatter' | 'bubble' | 'funnel' | 'pyramid';
+    // tslint:disable-next-line interface-over-type-literal
     type DataCursorDefaults = {
         lineColor?: string;
         lineStyle?: ojChart.LineStyle;
@@ -2409,6 +2450,12 @@ export namespace ChartElement {
         markerColor?: string;
         markerDisplayed?: 'off' | 'on';
         markerSize?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DataCursorPosition<T extends number | string = number | string> = {
+        x?: T;
+        y?: number;
+        y2?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type DataItem<I extends Array<ojChart.Item<any, null>> | number[] | null, K = any, D = any> = {
@@ -2450,6 +2497,36 @@ export namespace ChartElement {
         z?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type DataLabelContext<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
+        close: number;
+        componentElement: Element;
+        data: ojChart.Item<K, Array<ojChart.Item<any, null>> | number[] | null> | number | null;
+        dimensions: {
+            height: number;
+            width: number;
+        };
+        group: string | string[];
+        groupData: ojChart.Group[] | null;
+        high: number;
+        id: any;
+        itemData: D;
+        label: string;
+        low: number;
+        open: number;
+        q1: number;
+        q2: number;
+        q3: number;
+        series: string;
+        seriesData: ojChart.Series<K, I> | null;
+        targetValue: number;
+        totalValue: number;
+        value: number;
+        volume: number;
+        x: number | string;
+        y: number;
+        z: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type DndDragConfig<T> = {
         dataTypes?: string | string[];
         drag?: ((param0: Event) => void);
@@ -2457,10 +2534,24 @@ export namespace ChartElement {
         dragStart?: ((event: Event, context: T) => void);
     };
     // tslint:disable-next-line interface-over-type-literal
+    type DndDragConfigs<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
+        groups?: ojChart.DndDragConfig<ojChart.DndGroup>;
+        items?: ojChart.DndDragConfig<ojChart.DndItem<K, D, I>>;
+        series?: ojChart.DndDragConfig<ojChart.DndSeries<K, I>>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type DndDrop = {
         x: number | null;
         y: number | null;
         y2: number | null;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDropConfig = {
+        dataTypes?: string | string[];
+        dragEnter?: ((event: Event, context: ojChart.DndDrop) => void);
+        dragLeave?: ((event: Event, context: ojChart.DndDrop) => void);
+        dragOver?: ((event: Event, context: ojChart.DndDrop) => void);
+        drop?: ((event: Event, context: ojChart.DndDrop) => void);
     };
     // tslint:disable-next-line interface-over-type-literal
     type DndDropConfigs = {
@@ -2471,8 +2562,22 @@ export namespace ChartElement {
         yAxis?: ojChart.DndDropConfig;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type DndGroup = {
+        group: string | number | Array<(string | number)>;
+        id: string | number | Array<(string | number)>;
+        label: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type DndItem<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
         item: Array<ojChart.DataLabelContext<K, D, I>>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndSeries<K, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
+        color: string;
+        componentElement: any;
+        id: string | number;
+        series: string | number;
+        seriesData: ojChart.Series<K, I>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type DrillItem<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
@@ -2483,9 +2588,23 @@ export namespace ChartElement {
         series: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type Group = {
+        drilling?: 'on' | 'off' | 'inherit';
+        groups?: ojChart.Group[];
+        id?: string | number;
+        labelStyle?: Partial<CSSStyleDeclaration>;
+        name?: string;
+        shortDesc?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type GroupContext = {
         indexPath: any[];
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type GroupSeparatorDefaults = {
+        color?: string;
+        rendered?: 'off' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
     type GroupTemplateContext<D> = {
@@ -2499,6 +2618,11 @@ export namespace ChartElement {
             key: any;
         }>;
         leaf: boolean;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type GroupValueFormat = {
+        tooltipDisplay?: 'off' | 'auto';
+        tooltipLabel?: string | string[];
     };
     // tslint:disable-next-line interface-over-type-literal
     type Item<K, I extends Array<ojChart.Item<any, null>> | number[] | null, D = any> = {
@@ -2540,6 +2664,12 @@ export namespace ChartElement {
         z?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemContext = {
+        itemIndex: number;
+        seriesIndex: number;
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ItemShortDescContext<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
         close: number;
         data: ojChart.Item<K, Array<ojChart.Item<any, null>> | number[] | null> | number | null;
@@ -2565,9 +2695,37 @@ export namespace ChartElement {
         z: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext<K = any, D = any> = {
+        componentElement: Element;
+        data: D;
+        index: number;
+        key: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type LabelValueFormat = {
         converter?: (Converter<string>);
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Legend = {
+        backgroundColor?: string;
+        borderColor?: string;
+        maxSize?: string;
+        position?: 'start' | 'end' | 'bottom' | 'top' | 'auto';
+        referenceObjectSection?: ojChart.LegendReferenceObjectSection;
+        rendered?: 'on' | 'off' | 'auto';
+        scrolling?: 'off' | 'asNeeded';
+        sectionTitleHalign?: 'center' | 'end' | 'start';
+        sectionTitleStyle?: Partial<CSSStyleDeclaration>;
+        sections?: ojChart.LegendSection[];
+        seriesSection?: ojChart.LegendSeriesSection;
+        size?: string;
+        symbolHeight?: number;
+        symbolWidth?: number;
+        textStyle?: Partial<CSSStyleDeclaration>;
+        title?: string;
+        titleHalign?: 'center' | 'end' | 'start';
+        titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendItem = {
@@ -2588,7 +2746,21 @@ export namespace ChartElement {
         text: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type LegendItemContext = {
+        itemIndex: number;
+        sectionIndexPath: any[];
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type LegendReferenceObjectSection = {
+        title?: string;
+        titleHalign?: 'center' | 'end' | 'start';
+        titleStyle?: Partial<CSSStyleDeclaration>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LegendSection = {
+        items?: ojChart.LegendItem[];
+        sections?: ojChart.LegendSection[];
         title?: string;
         titleHalign?: 'center' | 'end' | 'start';
         titleStyle?: Partial<CSSStyleDeclaration>;
@@ -2600,7 +2772,19 @@ export namespace ChartElement {
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type LineStyle = 'dotted' | 'dashed' | 'solid';
+    // tslint:disable-next-line interface-over-type-literal
     type LineType = 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight';
+    // tslint:disable-next-line interface-over-type-literal
+    type MajorTick = {
+        baselineColor?: 'inherit' | 'auto' | string;
+        baselineStyle?: ojChart.LineStyle;
+        baselineWidth?: number;
+        lineColor?: string;
+        lineStyle?: ojChart.LineStyle;
+        lineWidth?: number;
+        rendered?: 'off' | 'on' | 'auto';
+    };
     // tslint:disable-next-line interface-over-type-literal
     type MinorTick = {
         lineColor?: string;
@@ -2609,10 +2793,25 @@ export namespace ChartElement {
         rendered?: 'off' | 'on' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type NumericValueFormat = {
+        converter?: (Converter<number>);
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+        tooltipDisplay?: 'off' | 'auto';
+        tooltipLabel?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Overview<C> = {
         content?: C;
         height?: string;
         rendered?: 'on' | 'off';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PieCenter = {
+        converter?: (Converter<number>);
+        label?: number | string;
+        labelStyle?: Partial<CSSStyleDeclaration>;
+        renderer?: dvtBaseComponent.PreventableDOMRendererFunction<ojChart.PieCenterRendererContext>;
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
     type PieCenterContext = {
@@ -2634,6 +2833,10 @@ export namespace ChartElement {
         totalValue: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type PieCenterLabelContext = {
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type PieCenterRendererContext = {
         componentElement: Element;
         innerBounds: {
@@ -2653,10 +2856,24 @@ export namespace ChartElement {
         totalValue: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type PlotArea = {
+        backgroundColor?: string;
+        borderColor?: string;
+        borderWidth?: number;
+        rendered?: 'off' | 'on';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ReferenceObject = {
         axis: 'xAxis' | 'yAxis' | 'y2Axis';
         index: number;
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ReferenceObjectItem<T extends number | string = number | string> = {
+        high?: number;
+        low?: number;
+        value?: number;
+        x?: T;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Series<K, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
@@ -2697,6 +2914,11 @@ export namespace ChartElement {
         type?: 'line' | 'area' | 'lineWithArea' | 'bar' | 'candlestick' | 'boxPlot' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type SeriesContext = {
+        itemIndex: number;
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type SeriesTemplateContext<D> = {
         componentElement: Element;
         id: string;
@@ -2708,6 +2930,11 @@ export namespace ChartElement {
         }>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type SeriesValueFormat = {
+        tooltipDisplay?: 'off' | 'auto';
+        tooltipLabel?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type StackLabelContext<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
         data: Array<ojChart.Item<K, Array<ojChart.Item<any, null>> | number[] | null> | number | null>;
         groupData: ojChart.Group[] | null;
@@ -2716,7 +2943,80 @@ export namespace ChartElement {
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type StyleDefaults = {
+        animationDownColor?: string;
+        animationDuration?: number;
+        animationIndicators?: 'none' | 'all';
+        animationUpColor?: string;
+        barGapRatio?: number;
+        borderColor?: string;
+        borderWidth?: number;
+        boxPlot?: ojChart.BoxPlotDefaults;
+        colors?: string[];
+        dataCursor?: ojChart.DataCursorDefaults;
+        dataItemGaps?: string;
+        dataLabelCollision?: 'fitInBounds' | 'none';
+        dataLabelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
+        dataLabelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
+        funnelBackgroundColor?: string;
+        groupSeparators?: ojChart.GroupSeparatorDefaults;
+        hoverBehaviorDelay?: number;
+        lineStyle?: ojChart.LineStyle;
+        lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
+        lineWidth?: number;
+        markerColor?: string;
+        markerDisplayed?: 'on' | 'off' | 'auto';
+        markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
+        markerSize?: number;
+        marqueeBorderColor?: string;
+        marqueeColor?: string;
+        maxBarWidth?: number;
+        otherColor?: string;
+        patterns?: string[];
+        pieFeelerColor?: string;
+        pieInnerRadius?: number;
+        selectionEffect?: 'explode' | 'highlightAndExplode' | 'highlight';
+        seriesEffect?: 'color' | 'pattern' | 'gradient';
+        shapes?: string[];
+        stackLabelStyle?: Partial<CSSStyleDeclaration>;
+        stockFallingColor?: string;
+        stockRangeColor?: string;
+        stockRisingColor?: string;
+        stockVolumeColor?: string;
+        threeDEffect?: 'on' | 'off';
+        tooltipLabelStyle?: Partial<CSSStyleDeclaration>;
+        tooltipValueStyle?: Partial<CSSStyleDeclaration>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
+        close: number;
+        color: string;
+        componentElement: Element;
+        data: ojChart.Item<K, Array<ojChart.Item<any, null>> | number[] | null> | number | null;
+        group: string | string[];
+        groupData: ojChart.Group[] | null;
+        high: number;
+        id: any;
+        itemData: D;
+        label: string;
+        low: number;
+        open: number;
+        parentElement: Element;
+        q1: number;
+        q2: number;
+        q3: number;
+        series: string;
+        seriesData: ojChart.Series<K, I> | null;
+        targetValue: number;
+        totalValue: number;
+        value: number;
+        volume: number;
+        x: number | string;
+        y: number;
+        z: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipRendererContext<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
         close: number;
         color: string;
         componentElement: Element;
@@ -2764,6 +3064,32 @@ export namespace ChartElement {
         z?: ojChart.NumericValueFormat;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type XAxis<T extends number | string = number | string> = {
+        axisLine?: ojChart.AxisLine;
+        baselineScaling?: 'min' | 'zero';
+        dataMax?: number;
+        dataMin?: number;
+        majorTick?: ojChart.MajorTick;
+        max?: T;
+        maxSize?: string;
+        min?: T;
+        minStep?: number;
+        minorStep?: number;
+        minorTick?: ojChart.MinorTick;
+        referenceObjects?: Array<ojChart.XReferenceObject<T>>;
+        rendered?: 'off' | 'on';
+        scale?: 'log' | 'linear';
+        size?: string;
+        step?: number;
+        tickLabel?: ojChart.XTickLabel<T>;
+        title?: string;
+        titleStyle?: Partial<CSSStyleDeclaration>;
+        viewportEndGroup?: T;
+        viewportMax?: T;
+        viewportMin?: T;
+        viewportStartGroup?: T;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type XReferenceObject<T extends number | string = number | string> = {
         categories?: string[];
         color?: string;
@@ -2780,6 +3106,14 @@ export namespace ChartElement {
         text?: string;
         type?: 'area' | 'line';
         value?: T;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type XTickLabel<T extends number | string = number | string> = {
+        converter?: (Array<Converter<T>> | Converter<T>);
+        rendered?: 'off' | 'on';
+        rotation?: 'none' | 'auto';
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+        style?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Y2Axis = {
@@ -2806,6 +3140,31 @@ export namespace ChartElement {
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type YAxis = {
+        axisLine?: ojChart.AxisLine;
+        baselineScaling?: 'min' | 'zero';
+        dataMax?: number;
+        dataMin?: number;
+        majorTick?: ojChart.MajorTick;
+        max?: number;
+        maxSize?: string;
+        min?: number;
+        minStep?: number;
+        minorStep?: number;
+        minorTick?: ojChart.MinorTick;
+        position?: 'start' | 'end' | 'top' | 'bottom' | 'auto';
+        referenceObjects?: ojChart.YReferenceObject[];
+        rendered?: 'off' | 'on';
+        scale?: 'log' | 'linear';
+        size?: string;
+        step?: number;
+        tickLabel?: ojChart.YTickLabel;
+        title?: string;
+        titleStyle?: Partial<CSSStyleDeclaration>;
+        viewportMax?: number;
+        viewportMin?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type YReferenceObject = {
         categories?: string[];
         color?: string;
@@ -2825,6 +3184,24 @@ export namespace ChartElement {
         type?: 'area' | 'line';
         value?: number;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type YTickLabel = {
+        converter?: (Converter<number>);
+        position?: 'inside' | 'outside';
+        rendered?: 'off' | 'on';
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+        style?: Partial<CSSStyleDeclaration>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderGroupTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<GroupTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderPieCenterTemplate = import('ojs/ojvcomponent').TemplateSlot<PieCenterContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderSeriesTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D, I>>;
 }
 export namespace ChartGroupElement {
     // tslint:disable-next-line interface-over-type-literal
@@ -3079,6 +3456,15 @@ export namespace SparkChartElement {
         value?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemContext = {
+        borderColor: string;
+        color: string;
+        date: Date;
+        high: number;
+        low: number;
+        value: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<K = any, D = any> = {
         componentElement: Element;
         data: D;
@@ -3086,11 +3472,28 @@ export namespace SparkChartElement {
         key: K;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ReferenceObject = {
+        color?: string;
+        high?: number;
+        lineStyle?: 'dotted' | 'dashed' | 'solid';
+        lineWidth?: number;
+        location?: 'front' | 'back';
+        low?: number;
+        svgClassName?: string;
+        svgStyle?: Partial<CSSStyleDeclaration>;
+        type?: 'area' | 'line';
+        value?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type TooltipContext = {
         color: string;
         componentElement: Element;
         parentElement: Element;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate = import('ojs/ojvcomponent').TemplateSlot<TooltipContext>;
 }
 export namespace SparkChartItemElement {
     // tslint:disable-next-line interface-over-type-literal

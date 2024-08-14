@@ -917,6 +917,9 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
           return;
         }
 
+        // disable tab stops for newly inserted item
+        self.m_widget.disableAllTabbableElements(item);
+
         self.signalTaskStart('kick off animation for insert item'); // signal add animation start. Ends in _handleAddTransitionEnd().
 
         var currentClassName = item.className;
@@ -1737,6 +1740,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
     IteratingDataProviderContentHandler.superclass.Init.call(this);
 
     this.m_currentEvents = [];
+    this.MAX_SKELETON_COLUMN = 10;
   };
 
   IteratingDataProviderContentHandler.prototype.IsHierarchical = function () {
@@ -2483,10 +2487,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
    * @private
    */
   IteratingDataProviderContentHandler.prototype._setFetching = function (fetching) {
-    if (this.shouldUseGridRole()) {
-      var root = this.m_superRoot == null ? this.m_root : this.m_superRoot;
-      root.setAttribute('aria-busy', fetching);
-    }
     this.m_fetching = fetching;
   };
 
@@ -3402,7 +3402,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
 
     // if listview is busy, abort the current request so that we can start a new one
     if (!this.IsReady() && this.m_controller) {
-      this.m_controller.abort();
+      const wrapper = this.m_widget.OuterWrapper ?? this.m_widget.ojContext.element[0];
+      this.m_controller.abort(DataCollectionUtils.getAbortReason(wrapper));
       this._setFetching(false);
     }
 

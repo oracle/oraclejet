@@ -2122,6 +2122,13 @@ var __oj_select_single_metadata =
      * and references to oj-c-select-single in your app. Please note the changes between the two
      * components below.
      * </p>
+     * <h5>Global attributes</h5>
+     * <p>
+     * The following global attributes are no longer supported:
+     * <ul>
+     * <li>tabindex - not considered accessible</li>
+     * </ul>
+     * </p>
      *
      * <h5>ItemText attribute</h5>
      * <p>
@@ -2219,6 +2226,11 @@ var __oj_select_single_metadata =
      * <p>
      * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
      * This attribute is not carried forward to the core pack component.
+     * </p>
+     *
+     * <h5>Formatted messages</h5>
+     * <p>
+     * Formatting messages using html tags is not supported in the core pack component.
      * </p>
      *
      * <h5>Usage in Dynamic Form</h5>

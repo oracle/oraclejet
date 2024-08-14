@@ -66,18 +66,18 @@ class LocalDateRangeValidator {
         const generateValidationError = (valStr) => {
             if (max !== null && LocalDateRangeValidator._compareDateOnlyIsoString(value, max) > 0) {
                 params = { value: valStr, max: maxStr };
-                summary = translations.getTranslatedString('oj-validator.range.datetime.messageSummary.rangeOverflow');
+                summary = translations.getTranslatedString('oj-validator.range.date.messageSummary.rangeOverflow');
                 detail = messageDetailRangeOverflow
                     ? translations.applyParameters(messageDetailRangeOverflow, params)
-                    : translations.getTranslatedString('oj-validator.range.datetime.messageDetail.rangeOverflow', params);
+                    : translations.getTranslatedString('oj-validator.range.date.messageDetail.rangeOverflow', params);
             }
             else if (min !== null &&
                 LocalDateRangeValidator._compareDateOnlyIsoString(value, min) < 0) {
                 params = { value: valStr, min: minStr };
-                summary = translations.getTranslatedString('oj-validator.range.datetime.messageSummary.rangeUnderflow');
+                summary = translations.getTranslatedString('oj-validator.range.date.messageSummary.rangeUnderflow');
                 detail = messageDetailRangeUnderflow
                     ? translations.applyParameters(messageDetailRangeUnderflow, params)
-                    : translations.getTranslatedString('oj-validator.range.datetime.messageDetail.rangeUnderflow', params);
+                    : translations.getTranslatedString('oj-validator.range.date.messageDetail.rangeUnderflow', params);
             }
             return [summary, detail];
         };
@@ -100,15 +100,15 @@ class LocalDateRangeValidator {
         const translations = Translations;
         if (min !== null && max !== null) {
             params = { min: minStr, max: maxStr };
-            hint = translations.getTranslatedString('oj-validator.range.datetime.hint.inRange', params);
+            hint = translations.getTranslatedString('oj-validator.range.date.hint.inRange', params);
         }
         else if (min !== null) {
             params = { min: minStr };
-            hint = translations.getTranslatedString('oj-validator.range.datetime.hint.min', params);
+            hint = translations.getTranslatedString('oj-validator.range.date.hint.min', params);
         }
         else if (max !== null) {
             params = { max: maxStr };
-            hint = translations.getTranslatedString('oj-validator.range.datetime.hint.max', params);
+            hint = translations.getTranslatedString('oj-validator.range.date.hint.max', params);
         }
         return hint;
     }

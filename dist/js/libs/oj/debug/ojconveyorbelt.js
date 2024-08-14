@@ -151,6 +151,8 @@ var __oj_conveyor_belt_metadata =
     this._firstVisibleItemIndex = 0;
     this._atStart = true;
     this._atEnd = false;
+
+    this._hasResources = false;
   }
 
   /**
@@ -160,8 +162,6 @@ var __oj_conveyor_belt_metadata =
    * @instance
    */
   ConveyorBeltCommon.prototype.setup = function () {
-    var self = this;
-    var cbcClass = ConveyorBeltCommon;
     // create the content and overflow containers
     this._createInnerContainers();
 
@@ -181,6 +181,37 @@ var __oj_conveyor_belt_metadata =
     // hide the buttons until we know we need them
     this._hidePrevButton();
     this._hideNextButton();
+
+    // set up listeners
+    this.setupResources();
+
+    // initial value from the scrollPosition option
+    this._origScroll = this._scrollPosition;
+
+    // clear any old sizes so that new sizes will be calculated
+    this._clearCachedSizes();
+    // adjust overflow size
+    this._adjustOverflowSize(true);
+    // handle an initial resize
+    this._handleResize(true);
+
+    // notify the child that it's being re-attached to the DOM AFTER attaching it
+    // (the detached notification happened in _reparentChildrenToContentContainer())
+    this._subtreeAttachedFunc(this._contentContainer);
+  };
+
+  /**
+   * Setup the conveyor belt resources (mostly listeners).
+   * @return {void}
+   * @memberof ConveyorBeltCommon
+   * @instance
+   */
+  ConveyorBeltCommon.prototype.setupResources = function () {
+    if (this._hasResources) {
+      return;
+    }
+    var self = this;
+    var cbcClass = ConveyorBeltCommon;
 
     // handle the mouse wheel on the whole conveyor
     this._mouseWheelListener = function (event) {
@@ -227,15 +258,6 @@ var __oj_conveyor_belt_metadata =
       passive: false,
       capture: true
     });
-    // initial value from the scrollPosition option
-    this._origScroll = this._scrollPosition;
-
-    // clear any old sizes so that new sizes will be calculated
-    this._clearCachedSizes();
-    // adjust overflow size
-    this._adjustOverflowSize(true);
-    // handle an initial resize
-    this._handleResize(true);
 
     // eslint-disable-next-line no-unused-vars
     this._handleResizeFunc = function (width, height) {
@@ -245,9 +267,62 @@ var __oj_conveyor_belt_metadata =
     this._addResizeListenerFunc(this._elem, this._handleResizeFunc);
     this._addResizeListenerFunc(this._contentContainer, this._handleResizeFunc);
 
-    // notify the child that it's being re-attached to the DOM AFTER attaching it
-    // (the detached notification happened in _reparentChildrenToContentContainer())
-    this._subtreeAttachedFunc(this._contentContainer);
+    this._hasResources = true;
+  };
+
+  /**
+   * Release the conveyor belt resouces (listeners).
+   * @return {void}
+   * @memberof ConveyorBeltCommon
+   * @instance
+   */
+  ConveyorBeltCommon.prototype.releaseResources = function () {
+    if (!this._hasResources) {
+      return;
+    }
+    var elem = this._elem;
+    var cbcClass = ConveyorBeltCommon;
+
+    cbcClass._removeBubbleEventListener(elem, 'mousewheel', this._mouseWheelListener, false);
+    cbcClass._removeBubbleEventListener(elem, 'wheel', this._mouseWheelListener, false);
+    cbcClass._removeBubbleEventListener(
+      this._overflowContainer,
+      'touchstart',
+      this._touchStartListener,
+      true
+    );
+    cbcClass._removeBubbleEventListener(
+      this._overflowContainer,
+      'touchmove',
+      this._touchMoveListener,
+      false
+    );
+    cbcClass._removeBubbleEventListener(this._overflowContainer, 'touchend', this._touchEndListener);
+    cbcClass._removeBubbleEventListener(
+      this._overflowContainer,
+      'touchcancel',
+      this._touchEndListener
+    );
+    cbcClass._removeBubbleEventListener(this._overflowContainer, 'scroll', this._scrollListener);
+    cbcClass._removeBubbleEventListener(this._elem, 'keydown', this._handleKeyDownFunc);
+    this._elem.removeEventListener('focus', this._handleFocusListener, {
+      passive: false,
+      capture: true
+    });
+    this._mouseWheelListener = null;
+    this._touchStartListener = null;
+    this._touchMoveListener = null;
+    this._touchEndListener = null;
+    this._scrollListener = null;
+    this._handleFocusListener = null;
+
+    // remove listeners before reparenting original children and clearing member
+    // variables
+    this._removeResizeListenerFunc(elem, this._handleResizeFunc);
+    this._removeResizeListenerFunc(this._contentContainer, this._handleResizeFunc);
+    this._handleResizeFunc = null;
+
+    this._hasResources = false;
   };
 
   /**
@@ -333,45 +408,8 @@ var __oj_conveyor_belt_metadata =
     this._resolveBusyState();
 
     var elem = this._elem;
-    var cbcClass = ConveyorBeltCommon;
-    cbcClass._removeBubbleEventListener(elem, 'mousewheel', this._mouseWheelListener, false);
-    cbcClass._removeBubbleEventListener(elem, 'wheel', this._mouseWheelListener, false);
-    cbcClass._removeBubbleEventListener(
-      this._overflowContainer,
-      'touchstart',
-      this._touchStartListener,
-      true
-    );
-    cbcClass._removeBubbleEventListener(
-      this._overflowContainer,
-      'touchmove',
-      this._touchMoveListener,
-      false
-    );
-    cbcClass._removeBubbleEventListener(this._overflowContainer, 'touchend', this._touchEndListener);
-    cbcClass._removeBubbleEventListener(
-      this._overflowContainer,
-      'touchcancel',
-      this._touchEndListener
-    );
-    cbcClass._removeBubbleEventListener(this._overflowContainer, 'scroll', this._scrollListener);
-    cbcClass._removeBubbleEventListener(this._elem, 'keydown', this._handleKeyDownFunc);
-    this._elem.removeEventListener('focus', this._handleFocusListener, {
-      passive: false,
-      capture: true
-    });
-    this._mouseWheelListener = null;
-    this._touchStartListener = null;
-    this._touchMoveListener = null;
-    this._touchEndListener = null;
-    this._scrollListener = null;
-    this._handleFocusListener = null;
 
-    // remove listeners before reparenting original children and clearing member
-    // variables
-    this._removeResizeListenerFunc(elem, this._handleResizeFunc);
-    this._removeResizeListenerFunc(this._contentContainer, this._handleResizeFunc);
-    this._handleResizeFunc = null;
+    this.releaseResources();
 
     // move the original content children from the _contentContainer back to the
     // original DOM element
@@ -1716,6 +1754,13 @@ var __oj_conveyor_belt_metadata =
    * @ojcomponent oj.ojConveyorBelt
    * @augments oj.baseComponent
    * @since 0.6.0
+   * @ojdeprecated [
+   *  {
+   *    type: "maintenance",
+   *    since: "17.0.0",
+   *    value: ["oj-c-conveyor-belt"]
+   *  }
+   * ]
    *
    * @ojshortdesc A conveyor belt manages overflow for its child elements and allows scrolling among them.
    * @class oj.ojConveyorBelt
@@ -1826,7 +1871,50 @@ var __oj_conveyor_belt_metadata =
    * ConveyorBelt will be aware of tab based or programmatic scrolling and will
    * honor it, updating itself to toggle visibility of the overflow indicators as
    * needed.
-   *
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * To migrate from oj-conveyor-belt to oj-c-conveyor-belt, you need to revise the import statement and references to oj-c-conveyor-belt in your app.
+   * Please note the changes between the two components below.
+   * <ul> The new oj-c-conveyor-belt component could be in two modes:
+   * <li>
+   * A ConveyorBelt component with completely opaque content.
+   * The navigation by arrows always scroll by fixed size, i.e. width of the scroll view port.
+   * The snapping position is not applied and the scrolling could be stopped so that child element is visible partially.
+   * </li>
+   * <li>
+   * Items aware ConveyorBelt component. A ConveyorBelt component that contains information about its children/items.
+   * The navigation by keyboard right/left arrows scrolls and snaps the child elements to the best fit.
+   * To make conveyor belt aware of its content please use <code class="prettyprint">items</code> attribute and <code class="prettyprint">template</code> element with <code class="prettyprint">itemTemplate</code> slot.
+   * </li>
+   * </ul>
+   * <h5>content-parent attribute</h5>
+   * <p>
+   *  The content-parent attribute is no longer supported.
+   * </p>
+   * <h5>items attribute</h5>
+   * <p>
+   *  The <code class="prettyprint">items</code> attribute is the new way to provide data to make the new oj-c-conveyor-belt component to be aware of its items.
+   *  Besides maintaining its support for DataProvider, the <code class="prettyprint">items</code> attribute also accepts an Array of data items.
+   *  The <code class="prettyprint">items</code> attribute only works in connection with <code class="prettyprint">itemTemplate</code> slot.
+   *  The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the Conveyor Belt.
+   *  The slot content must be a &lt;template&gt; element.
+   * </p>
+   * <h5>itemTemplate slot</h5>
+   * <p>
+   * The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the Conveyor Belt.
+   * The slot content must be a &lt;template&gt; element. Please specify items attribute if conveyor belt items need data.
+   * The itemTemplate and items makes conveyor belt component to be aware of its items and respect individual items borders during pagination.
+   * </p>
+   * <h5>refresh method</h5>
+   * <p>
+   * The <code class="prettyprint">refresh()</code> method is no longer supported. The application should no longer need to use this method.
+   * </p>
+   * <h5>oj-bind-for-each operator</h5>
+   * <p>
+   *  It is recommended that the <code class="prettyprint">items</code> attribute is used instead of <code class="prettyprint">oj-bind-for-each</code> operator
+   * </p>
    *
    * <h3 id="rtl-section">
    *   Reading direction
@@ -2460,6 +2548,36 @@ var __oj_conveyor_belt_metadata =
         for (var i = 0; i < children.length; i++) {
           this._setupButtonMouseStyles($(children[i]));
         }
+      },
+
+      /**
+       * Setup conveyor resources
+       * @return {void}
+       * @memberof oj.ojConveyorBelt
+       * @instance
+       * @override
+       * @protected
+       */
+      _SetupResources: function () {
+        if (this._cbCommon) {
+          this._cbCommon.setupResources();
+        }
+        this._super();
+      },
+
+      /**
+       * Release conveyor resources
+       * @return {void}
+       * @memberof oj.ojConveyorBelt
+       * @instance
+       * @override
+       * @protected
+       */
+      _ReleaseResources: function () {
+        if (this._cbCommon) {
+          this._cbCommon.releaseResources();
+        }
+        this._super();
       },
 
       /**

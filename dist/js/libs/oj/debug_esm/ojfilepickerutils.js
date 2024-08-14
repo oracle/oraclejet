@@ -62,7 +62,8 @@ const setupInput = (fileOptions) => {
 function pickFiles(callback, fileOptions) {
     setupInput(fileOptions);
     input.onchange = function () {
-        callback(input.files);
+        const files = input._pickerTestData ? input._pickerTestData : input.files;
+        callback(files);
         teardownInput();
     };
     input.click();

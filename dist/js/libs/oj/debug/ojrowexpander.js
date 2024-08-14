@@ -34,6 +34,9 @@ var __oj_row_expander_metadata =
         "accessibleRowDescription": {
           "type": "string"
         },
+        "accessibleRowDescriptionAtLeast": {
+          "type": "string"
+        },
         "accessibleRowExpanded": {
           "type": "string"
         },
@@ -2770,19 +2773,46 @@ var __oj_row_expander_metadata =
     /**
      * @private
      */
-    _getChildCount: function (parentKey) {
+    _getAccContext: function () {
       if (this._isDataProvider()) {
-        var dataprovider;
-        if (parentKey != null) {
-          dataprovider = this._getFlattenedDataProvider().dataProvider.getChildDataProvider(
-            this.parentKey
+        if (this.component._getAccessibleRowExpanderContext) {
+          // depth is incremented by 1 for rowexpander
+          return this.component._getAccessibleRowExpanderContext(
+            this.rowKey,
+            this.parentKey,
+            this.depth - 1
           );
-        } else {
-          dataprovider = this._getFlattenedDataProvider().dataProvider;
         }
-        return dataprovider.getTotalSize();
+        return { index: this.index, count: -1, precision: 'unknown' };
       }
-      return this.datasource.getWrappedDataSource().getChildCount(this.parentKey);
+      return {
+        index: this.index,
+        count: this.datasource.getWrappedDataSource().getChildCount(this.parentKey),
+        precision: 'exact'
+      };
+    },
+
+    /**
+     * @private
+     */
+    _setAccContext: function (state, ancestors) {
+      let { index, count, precision } = this._getAccContext();
+      let context;
+      if (precision === 'atLeast') {
+        context = this.getTranslatedString('accessibleRowDescriptionAtLeast', {
+          level: this.depth,
+          num: index + 1,
+          total: count
+        });
+      } else {
+        context = this.getTranslatedString('accessibleRowDescription', {
+          level: this.depth,
+          num: index + 1,
+          total: count
+        });
+      }
+
+      this.component._setAccessibleContext({ context, state, ancestors });
     },
     /**
      * Redraw the RowExpander element.
@@ -3183,11 +3213,7 @@ var __oj_row_expander_metadata =
         if (this.component._setAccessibleContext) {
           // row context of row expander for screen reader
           // todo: get index from TreeDataSource as well since that could change
-          var context = this.getTranslatedString('accessibleRowDescription', {
-            level: this.depth,
-            num: this.index + 1,
-            total: this._getChildCount(this.parentKey)
-          });
+
           // state of row expander for screen reader
           var state;
           if (this.iconState === 'collapsed') {
@@ -3199,7 +3225,7 @@ var __oj_row_expander_metadata =
             state = '';
           }
 
-          this.component._setAccessibleContext({ context: context, state: state });
+          this._setAccContext(state);
         }
       }
     },
@@ -3258,16 +3284,7 @@ var __oj_row_expander_metadata =
                 }
               }
 
-              var context = this.getTranslatedString('accessibleRowDescription', {
-                level: this.depth,
-                num: this.index + 1,
-                total: this._getChildCount(this.parentKey)
-              });
-              this.component._setAccessibleContext({
-                context: context,
-                state: '',
-                ancestors: ancestorInfo
-              });
+              this._setAccContext('', ancestorInfo);
             }
           }
         }

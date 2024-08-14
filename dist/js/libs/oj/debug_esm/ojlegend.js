@@ -451,10 +451,6 @@ var __oj_legend_section_metadata =
  * <p>
  * For the inital versions of oj-c-legend and oj-c-legend-item, patterns are not supported. We plan on supporting it in future releases.
  * </p>
- * <h5>drilling attribute</h5>
- * <p>
- * Drilling on oj-legend-item will not be supported in this release. We plan on supporting it in future releases.
- * </p>
  * <h5>sectionTemplate</h5>
  * <p>
  * For the initial version of oj-c-legend, nested section is not supported. $current of sectionTemplate context will not contain parentKey and parentData properties.
@@ -618,7 +614,7 @@ var __oj_legend_section_metadata =
  *      $current - an object that contains information for the current node. (See [oj.ojLegend.ItemTemplateContext]{@link oj.ojLegend.ItemTemplateContext} or the table below for a list of properties available on $current)
  *   </li>
  *   <li>
- *      alias - if 'as' attribute was specified, the value will be used to provide an
+ *      alias - if data-oj-as attribute was specified, the value will be used to provide an
  *      application-named alias for $current.
  *   </li>
  * </ul>
@@ -656,6 +652,22 @@ var __oj_legend_section_metadata =
  */
 
 /**
+ * @typedef {Object} oj.ojLegend.SectionTemplateContext
+ * @property {Element} componentElement The &lt;oj-legend> custom element
+ * @property {Object} data The data object of the section node
+ * @property {number} index The zero-based index of the current section node
+ * @property {any} key The key of the current section node
+ * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the section node
+ * @property {any} parentKey  The key of the parent section node
+ * @ojsignature [{target:"Type", value:"<K = any, D = any>", for:"genericTypeParameters"},
+ * {target:"Type", value:"D", for:"data", jsdocOverride: true},
+ * {target:"Type", value:"K", for:"key", jsdocOverride: true},
+ * {target:"Type", value:"K", for:"parentKey", jsdocOverride: true},
+ * {target:"Type", value:"Array<D>", for:"parentData", jsdocOverride: true}]
+ * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
+ */
+
+/**
  * <p>
  *  The <code class="prettyprint">sectionTemplate</code> slot is used to specify the template for
  *  creating sections of the legend. The slot content must be wrapped in a &lt;template>
@@ -672,7 +684,7 @@ var __oj_legend_section_metadata =
  *      (See the table below for a list of properties available on $current)
  *   </li>
  *   <li>
- *      alias - if 'as' attribute was specified, the value will be used to provide an
+ *      alias - if data-oj-as attribute was specified, the value will be used to provide an
  *      application-named alias for $current.
  *   </li>
  * </ul>
@@ -681,15 +693,8 @@ var __oj_legend_section_metadata =
  * @ojmaxitems 1
  * @memberof oj.ojLegend
  * @ojshortdesc The sectionTemplate slot is used to specify the template for creating each legend section. See the Help documentation for more information.
+ * @ojtemplateslotprops oj.ojLegend.SectionTemplateContext
  * @ojpreferredcontent ["LegendSectionElement"]
- *
- * @property {Element} componentElement The &lt;oj-legend> custom element
- * @property {Object} data The data object of the node
- * @property {number} index The zero-based index of the current node
- * @property {any} key The key of the current node
- * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
- * @property {any} parentKey  The key of the parent node
- * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the template with access to this context is unique to a component." }
  *
  * @example <caption>Initialize the legend with an inline item template specified:</caption>
  * &lt;oj-legend data='[[dataProvider]]'>
@@ -788,6 +793,28 @@ var __oj_legend_section_metadata =
  * &lt;/oj-legend>
  * </code>
  * </pre>
+ *
+ * <h3 id="a11y-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ * </h3>
+ * To make your component accessible, the application is required to include contextual information for screender readers using one or more the following methods as appropriate:
+ *  <ul>
+ *   <li>aria-describedby</li>
+ *   <li>aria-labelledby</li>
+ *   <li>aria-label</li>
+ *   <li>short-desc property of your items</li>
+ *  </ul>
+ * <p>
+ *  When setting color, applications are responsible for making sure that the color meets the
+ * <a href="https://www.w3.org/TR/WCAG21/#non-text-contrast">minimum contrast ratio</a>.
+ * </p>
+ * <p>
+ *  If your application has custom keyboard and touch shortcuts implemented for the component, these shortcuts can conflict with those of the component. It is the application's responsibility to disclose these custom shortcuts, possibly via a datatip or help popup.
+ * </p>
+ * <p>
+ *  In the case of the text truncating, applications should provide the untruncated string or contextual text to the datatip to make the component accessible.
+ * </p>
  *
  * {@ojinclude "name":"migrationDoc"}
  * To migrate from oj-legend-item to oj-c-legend-item, you need to revise the import statement and references to oj-legend-item in your app. Please note the changes between the two components below.

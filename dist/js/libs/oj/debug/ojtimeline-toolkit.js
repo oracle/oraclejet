@@ -2194,15 +2194,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._isSelected = isSelected;
       this._displayable.setSelected(isSelected);
       this._updateAriaLabel();
-      if (this._timeline._hasOverview && this._timeline._overview) {
-        if (isSelected) {
-          this.changeState('selected', true, true);
-          this._timeline._overview.selSelectItem(this.getId());
-        } else {
-          this.changeState('selected', false, true);
-          this._timeline._overview.selUnselectItem(this.getId());
-        }
-      }
     }
 
     /**
@@ -2233,8 +2224,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._displayable.showHoverEffect(isFocused);
       this.changeState('hovered', true);
 
-      if (!ignoreOverview && this._timeline._hasOverview)
-        this._timeline._overview.highlightItem(this.getId());
       if (this._timeline._isVertical || this._series._isRandomItemLayout) {
         if (!this._index) this._index = this._series._blocks[0].getChildIndex(this.getBubble());
         this._series._blocks[0].addChild(this.getBubble());
@@ -2252,8 +2241,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._displayable.hideHoverEffect(isFocused);
       this.changeState('hovered', false);
 
-      if (!ignoreOverview && this._timeline._hasOverview)
-        this._timeline._overview.unhighlightItem(this.getId());
       if (
         (this._timeline._isVertical || this._series._isRandomItemLayout) &&
         this._index &&
@@ -10392,10 +10379,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       // Create the event handler and add event listeners
       this.EventManager = new DvtTimelineEventManager(this);
       this.EventManager.addListeners(this);
-      if (!dvt.Agent.isTouchDevice()) {
-        this._keyboardHandler = new DvtTimelineKeyboardHandler(this.EventManager);
-        this.EventManager.setKeyboardHandler(this._keyboardHandler);
-      } else this._keyboardHandler = null;
+      this._keyboardHandler = new DvtTimelineKeyboardHandler(this.EventManager);
+      this.EventManager.setKeyboardHandler(this._keyboardHandler);
     }
 
     Parse(options) {
@@ -10769,7 +10754,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       // Set the timeline as the only keyboard listener
       // Prevents overview from receiving keyboard events
-      if (!ojtimeaxisToolkit.TimeAxisUtils.supportsTouch()) this.getCtx().setKeyboardFocusArray([this]);
+      this.getCtx().setKeyboardFocusArray([this]);
 
       if (!this.Animation)
         // If not animating, that means we're done rendering, so fire the ready event.
@@ -11085,7 +11070,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     _getOverviewObject() {
       var overviewOptions = new Object();
       overviewOptions['width'] = this._contentLength;
-      overviewOptions['selmode'] = this._selectionMode;
+      //JET-62276, overview should not be interactable
+      overviewOptions['selmode'] = 'none';
       overviewOptions['rtl'] = this.isRTL();
       overviewOptions['sid'] = 'ts1';
 
@@ -11416,16 +11402,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         }
         if (this._hasOverview) {
           DvtTimelineRenderer._renderOverview(this);
-
-          // Reapply selections to overview region
-          if (this.SelectionHandler) {
-            var selection = this.SelectionHandler.getSelectedIds();
-            if (selection && selection.length !== 0) {
-              for (var i = 0; i < selection.length; i++) {
-                this._overview.selSelectItem(selection[i]);
-              }
-            }
-          }
         }
 
         if (this.isTimeDirScrollbarOn() || this.isContentDirScrollbarOn())
@@ -12188,15 +12164,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (this._hasOverview) {
         DvtTimelineRenderer._renderOverview(this);
-        // Reapply selections to overview region
-        if (this.SelectionHandler) {
-          var selection = this.SelectionHandler.getSelectedIds();
-          if (selection && selection.length !== 0) {
-            for (var i = 0; i < selection.length; i++) {
-              this._overview.selSelectItem(selection[i]);
-            }
-          }
-        }
       }
       if (this.isTimeDirScrollbarOn() || this.isContentDirScrollbarOn()) {
         DvtTimelineRenderer._renderScrollbars(this);

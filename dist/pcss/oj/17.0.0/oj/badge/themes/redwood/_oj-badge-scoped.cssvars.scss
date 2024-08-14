@@ -1,0 +1,28 @@
+@import '../../../utilities/_oj.utilities.modules.scss';
+
+@include module-include-once('redwood.variables.badge.scoped') {
+  /* badge                      */
+  /* -------------------------- */
+  .oj-color-invert {
+    --oj-badge-bg-color: var(--oj-core-neutral-1);
+    --oj-badge-text-color: var(--oj-core-neutral-contrast);
+  }
+
+  .oj-badge-sm {
+    --oj-badge-padding: 0 var(--oj-core-spacing-2x);
+    --oj-badge-height: 1.25rem;
+    --oj-badge-font-size: var(--oj-typography-body-2xs-font-size);
+    --oj-badge-border-radius: 0.625rem;
+  }
+
+  .oj-tabbar .oj-badge-sm {
+    --oj-badge-font-size: 0.625rem;
+    --oj-badge-height: 1rem;
+    --oj-badge-padding: 0 var(--oj-core-spacing-1x);
+  }
+
+  .oj-navigationlist .oj-badge-sm {
+    --oj-badge-font-size: 0.565rem;
+    --oj-badge-padding: 0 var(--oj-core-spacing-1x);
+  }
+}

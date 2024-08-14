@@ -8,6 +8,7 @@
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
 import { setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
+import { isTouchSupported } from 'ojs/ojdomutils';
 import 'ojs/ojtime-base';
 import { Gantt } from 'ojs/ojgantt-toolkit';
 import 'ojs/ojkeyset';
@@ -1906,7 +1907,7 @@ var __oj_gantt_reference_object_metadata =
  *   <li>$current - an object that contains information for the current task.
  *    (See [oj.ojGantt.TaskTemplateContext]{@link oj.ojGantt.TaskTemplateContext} or the table below for a list of properties available on $current)
  *   </li>
- *   <li>alias - if <a href="#as">as</a> attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+ *   <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
  * </ul>
  *
  * @ojslot taskTemplate
@@ -1972,7 +1973,7 @@ var __oj_gantt_reference_object_metadata =
  *   <li>$current - an object that contains information for the current dependency.
  *    (See [oj.ojGantt.DependencyTemplateContext]{@link oj.ojGantt.DependencyTemplateContext} or the table below for a list of properties available on $current)
  *   </li>
- *   <li>alias - if <a href="#as">as</a> attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+ *   <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
  * </ul>
  *
  * @ojslot dependencyTemplate
@@ -2003,7 +2004,7 @@ var __oj_gantt_reference_object_metadata =
  *   <li>$current - an object that contains information for the current row.
  *    (See [oj.ojGantt.RowTemplateContext]{@link oj.ojGantt.RowTemplateContext} or the table below for a list of properties available on $current)
  *   </li>
- *   <li>alias - if <a href="#as">as</a> attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+ *   <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
  * </ul>
  *
  * @ojslot rowTemplate
@@ -2125,7 +2126,7 @@ var __oj_gantt_reference_object_metadata =
  * @ojslot taskContentTemplate
  * @ojmaxitems 1
  * @ojshortdesc The taskContentTemplate slot is used to specify custom content to be placed inside the taskbar. See the Help documentation for more information.
- * @ojtemplateslotprops oj.ojGantt.taskContentTemplate
+ * @ojtemplateslotprops oj.ojGantt.TaskContentTemplateContext
  * @memberof oj.ojGantt
  *
  * @example <caption>Initialize the Gantt with a task content template specified:</caption>
@@ -2156,7 +2157,7 @@ var __oj_gantt_reference_object_metadata =
  * @ojslot dependencyContentTemplate
  * @ojmaxitems 1
  * @ojshortdesc The dependencyContentTemplate slot is used to specify custom dependency lines. See the Help documentation for more information.
- * @ojtemplateslotprops oj.ojGantt.dependencyContentTemplate
+ * @ojtemplateslotprops oj.ojGantt.DependencyContentTemplateContext
  * @memberof oj.ojGantt
  *
  * @example <caption>Initialize the Gantt with a dependency content template specified:</caption>
@@ -5520,9 +5521,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
 
   // @inheritdoc
   _IsDraggable: function () {
-    const agentInfo = oj.AgentUtils.getAgentInfo();
-    const isTouchDevice =
-      agentInfo.os === oj.AgentUtils.OS.IOS || agentInfo.os === oj.AgentUtils.OS.ANDROID;
+    const isTouchDevice = isTouchSupported();
     // On desktop, for performance reasons, normal mouse events are used for DnD.
     // On mobile, HTML5 DnD events are used because they're fast.
     if (isTouchDevice) {

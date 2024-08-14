@@ -928,6 +928,18 @@ DataCollectionUtils.isFetchAborted = function (fetchResult) {
 };
 
 /**
+ * Returns abort reason aka DOMException with info for aborted fetches.
+ * @private
+ */
+DataCollectionUtils.getAbortReason = function (element) {
+  const componentTagName = element ? `<${element.tagName.toLowerCase()}>: ` : '';
+  const message = `${componentTagName}Aborting stale fetch for performance – a newer request has been issued`;
+  const newDOMException = new DOMException(message, 'AbortError');
+  newDOMException.severity = 'info';
+  return newDOMException;
+};
+
+/**
  * Helper function which returns true if the browser is Chrome
  * @private
  */
@@ -1091,6 +1103,7 @@ const isEnterKeyEvent = DataCollectionUtils.isEnterKeyEvent;
 const isEscapeKeyEvent = DataCollectionUtils.isEscapeKeyEvent;
 const isEventClickthroughDisabled = DataCollectionUtils.isEventClickthroughDisabled;
 const isFetchAborted = DataCollectionUtils.isFetchAborted;
+const getAbortReason = DataCollectionUtils.getAbortReason;
 const isFromDefaultSelector = DataCollectionUtils.isFromDefaultSelector;
 const isF2KeyEvent = DataCollectionUtils.isF2KeyEvent;
 const isHomeKeyEvent = DataCollectionUtils.isHomeKeyEvent;
@@ -1122,4 +1135,4 @@ const isBlink = DataCollectionUtils.isBlink;
 const getBrowserVersion = DataCollectionUtils.getBrowserVersion;
 const doesAttributeExistInFilterCriterion = DataCollectionUtils.doesAttributeExistInFilterCriterion;
 
-export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, WARN_DUPLICATE_KEYS_DETAIL, applyMergedInlineStyles, applyRendererContent, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, doesAttributeExistInFilterCriterion, enableAllFocusableElements, getActionableElementsInNode, getAddEventKeysResult, getBrowserVersion, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getLogicalChildPopup, getNoJQFocusHandlers, getScrollEventElement, handleActionablePrevTab, handleActionableTab, isAndroid, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isBlink, isChrome, isClickthroughDisabled, isEdge, isElementIntersectingScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFetchAborted, isFirefox, isFromDefaultSelector, isHomeKeyEvent, isIE, isIos, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMac, isMetaKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSafari, isSpaceBarKeyEvent, isTabKeyEvent, isWebkit, isWindows };
+export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, WARN_DUPLICATE_KEYS_DETAIL, applyMergedInlineStyles, applyRendererContent, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, doesAttributeExistInFilterCriterion, enableAllFocusableElements, getAbortReason, getActionableElementsInNode, getAddEventKeysResult, getBrowserVersion, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getLogicalChildPopup, getNoJQFocusHandlers, getScrollEventElement, handleActionablePrevTab, handleActionableTab, isAndroid, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isBlink, isChrome, isClickthroughDisabled, isEdge, isElementIntersectingScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFetchAborted, isFirefox, isFromDefaultSelector, isHomeKeyEvent, isIE, isIos, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMac, isMetaKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSafari, isSpaceBarKeyEvent, isTabKeyEvent, isWebkit, isWindows };

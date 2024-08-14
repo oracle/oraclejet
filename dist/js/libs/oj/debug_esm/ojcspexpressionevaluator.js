@@ -65,6 +65,7 @@ import 'ojs/ojkoshared';
  *  <li>Functions are limited to a single statement, e.g. <code>[[function(){return 'abc'}]]</code>.</li>
  *  <li>'new' operator such as <code>'new Object()'</code></li>
  *  <li>Regular expressions in the form of explicit RegExp objects such as <code>[[testString.match(new RegExp('abc', 'i'))]]</code></li>
+ *  <li>Template literals except tagged templates, e.g. <code>[[`Hello, ${user}!`]]</code></li>
  *</ul>
  * <h2 id="invalidExpressions">Expression limitations:
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#invalidExpressions"></a>
@@ -79,6 +80,8 @@ import 'ojs/ojkoshared';
  *  <li>Increment/decrement operators such as <code>'x++'</code> or <code>'x--'</code></li>
  *  <li>Inline regular expressions such as <code>'testString.match(/abc/i)'</code></li>
  *  <li>Spread operator (...) such as <code>'sum(...arrayValue)'</code></li>
+ *  <li>Tagged templates such as <code>'myTag`Hello, ${user}!`'</code></li>
+ *  <li>await/async keywords such as <code>'await myAsyncTask()'</code></li>
  * <ul>
  * </h2>
  *

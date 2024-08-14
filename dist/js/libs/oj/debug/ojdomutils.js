@@ -808,6 +808,8 @@ define(['exports', 'ojs/ojthemeutils', 'ojs/ojcore-base', 'jquery'], function (e
    */
   DomUtils._LOGICAL_PARENT_DATA = 'oj-logical-parent';
 
+  const LOGICAL_PARENT = Symbol.for('oj-logical-parent');
+
   /**
    * This method returns the launcher of a popup when it's open.
    * Returns undefined otherwise.
@@ -835,11 +837,17 @@ define(['exports', 'ojs/ojthemeutils', 'ojs/ojcore-base', 'jquery'], function (e
     if (!element) {
       return;
     }
+    var domElem = element[0];
+    if (!domElem) {
+      return;
+    }
 
     if (parent === null) {
       element.removeData(DomUtils._LOGICAL_PARENT_DATA);
+      delete domElem[LOGICAL_PARENT];
     } else {
       element.data(DomUtils._LOGICAL_PARENT_DATA, parent);
+      domElem[LOGICAL_PARENT] = parent[0];
     }
   };
 

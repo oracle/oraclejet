@@ -2631,6 +2631,101 @@ oj$1._registerLegacyNamespaceProp('ResponsiveKnockoutUtils', ResponsiveKnockoutU
 oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils);
 
 /**
+ * @ignore
+ */
+(function () {
+  BindingProviderImpl.addPostprocessor({
+    nodeHasBindings: function (node, nodeHasBindings) {
+      return nodeHasBindings || (node.nodeType === 1 && node.nodeName.toLowerCase() === 'oj-if');
+    },
+    getBindingAccessors: function (node, bindingContext, _wrappedReturn) {
+      let wrappedReturn = _wrappedReturn;
+      if (node.nodeType === 1 && node.localName === 'oj-if') {
+        const evaluator = _getEvaluator(node, bindingContext);
+        wrappedReturn = wrappedReturn || {};
+        wrappedReturn.if = () => {
+          return unwrap(evaluator(bindingContext));
+        };
+        wrappedReturn.style = () => {
+          return { display: 'contents' };
+        };
+      }
+      return wrappedReturn;
+    }
+  });
+
+  function _getEvaluator(node, bindingContext) {
+    if (!node.hasAttribute('test')) {
+      throw new Error("Missing the required 'test' attribute on <oj-if>");
+    }
+    const attrValue = node.getAttribute('test');
+    const exprInfo = AttributeUtils.getExpressionInfo(attrValue);
+    return BindingProviderImpl.createEvaluator(
+      exprInfo.expr ? exprInfo.expr : attrValue,
+      bindingContext
+    );
+  }
+})();
+
+/**
+ * @ojmodule ojknockout
+ * @ojcomponent oj.ojIf
+ * @ojshortdesc An oj-if renders its contents only if a provided test returns true.
+ * @ojsignature {target: "Type", value: "class ojIf extends HTMLElement"}
+ * @ojhtmlelement
+ * @since 17.0.0
+ *
+ * @ojpropertylayout {propertyGroup: "common", items: ["test"]}
+ * @ojvbdefaultcolumns 12
+ * @ojvbmincolumns 1
+ *
+ * @ojoracleicon 'oj-ux-ico-if'
+ *
+ * @classdesc
+ * <h3 id="overview-section">
+ *   JET If Element
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview-section"></a>
+ * </h3>
+ * <p>Use &lt;oj-if&gt; to conditionally render its contents only if a provided test
+ * returns true. Unlike &lt;[oj-bind-if]{@link oj.ojBindIf}&gt; this element will not be removed from
+ * the DOM after bindings are applied. The element stays in the DOM and can therefore directly be used
+ * as the slot content of a custom element. The element has display:contents style
+ * applied on it to make it transparent for any css styles that a parent container wants to
+ * pass to its descendants.
+ * </p>
+ *
+ * @example <caption>Initialize the oj-if:</caption>
+ * &lt;oj-if test='[[myTest]]'>
+ *   &lt;div>Conditional content: &lt;oj-bind-text value="[[myValue]]">&lt;/oj-bind-text>&lt;/div>
+ * &lt;/oj-if>
+ */
+
+/**
+ * The test condition for the if clause. The children of the element will
+ * only be rendered if the test is true.
+ * @expose
+ * @name test
+ * @memberof oj.ojIf
+ * @instance
+ * @type {boolean}
+ * @example <caption>Initialize the oj-if:</caption>
+ * &lt;oj-if test='[[myTest]]'>
+ *   &lt;div>Conditional content: &lt;oj-bind-text value="[[myValue]]">&lt;/oj-bind-text>&lt;/div>
+ * &lt;/oj-if>
+ */
+
+/**
+ * <p>The <code class="prettyprint">oj-if</code> default slot is used to
+ * specify content that will be rendered when the test condition evaluates to
+ * true.
+ *
+ * @ojchild Default
+ * @memberof oj.ojIf
+ * @instance
+ * @expose
+ */
+
+/**
  * @ojmodule ojknockout
  * @ojcomponent oj.ojBindForEach
  * @ojshortdesc An oj-bind-for-each binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.
@@ -2741,6 +2836,7 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
  * @ojmaxitems 1
  * @memberof oj.ojBindForEach
  * @ojtemplateslotprops {}
+ * @ojtemplateslotrendertype "RenderNoDataTemplate"
  *
  * @ojtsexample <caption>Initialize the oj-bind-for-each with a noData slot specified:</caption>
  * &lt;oj-bind-for-each>
@@ -2784,9 +2880,12 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
  * </h3>
  * <p>Use &lt;oj-bind-if&gt; to conditionally render its contents only if a provided test
  * returns true. Note that the &lt;oj-bind-if&gt; element will be removed from the DOM
- * after binding is applied. For slotting, applications need to wrap the oj-bind-if element
+ * after binding is applied.For slotting, applications need to wrap the oj-bind-if element
  * inside another HTML element (e.g. &lt;span&gt;) with the slot attribute. The oj-bind-if element does not support
- * the slot attribute.</p>
+ * the slot attribute. </p>
+ *
+ * <p>Consider using &lt;oj-if&gt; element if you want conditionally render
+ * content of a slot or if you want the element to stay in the DOM. See &lt;[oj-if]{@link oj.ojIf}&gt; for more details.</p>
  *
  * @example <caption>Initialize the oj-bind-if:</caption>
  * &lt;oj-bind-if test='[[myTest]]'>

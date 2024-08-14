@@ -20,7 +20,7 @@ export declare class ListItemLayout extends Component<ExtendGlobalProps<ListItem
     private readonly _hasContent;
     private _getWrappedSlotContent;
     private _getWrappedSlotContentWithClickThroughDisabled;
-    render(props: ExtendGlobalProps<ListItemLayoutProps>): import("preact").JSX.Element;
+    render(props: ExtendGlobalProps<ListItemLayoutProps>): import("preact/jsx-runtime").JSX.Element;
 }
 export {};
 export interface ListItemLayoutElement extends JetElement<ListItemLayoutElementSettableProperties>, ListItemLayoutElementSettableProperties {

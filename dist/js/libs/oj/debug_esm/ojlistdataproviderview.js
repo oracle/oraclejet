@@ -6,7 +6,7 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import { DataProviderRefreshEvent, FilterFactory } from 'ojs/ojdataprovider';
+import { wrapWithAbortHandling, DataProviderRefreshEvent, FilterFactory } from 'ojs/ojdataprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 
 /**
@@ -314,20 +314,11 @@ class ListDataProviderView {
             }
             ['next']() {
                 const signal = this._params?.signal;
-                if (signal && signal.aborted) {
-                    const reason = signal.reason;
-                    return Promise.reject(new DOMException(reason, 'AbortError'));
-                }
-                return new Promise((resolve, reject) => {
-                    if (signal) {
-                        const reason = signal.reason;
-                        signal.addEventListener('abort', (e) => {
-                            return reject(new DOMException(reason, 'AbortError'));
-                        });
-                    }
+                const callback = (resolve) => {
                     const result = this._nextFunc(this._params);
                     return resolve(result);
-                });
+                };
+                return wrapWithAbortHandling(signal, callback, false);
             }
         };
         this.AsyncIteratorYieldResult = class {
@@ -357,7 +348,7 @@ class ListDataProviderView {
                 this[ListDataProviderView._DATA] = data;
                 this[ListDataProviderView._METADATA] = metadata;
                 if (fetchParameters && fetchParameters.includeFilteredRowCount === 'enabled') {
-                    this[ListDataProviderView._TOTALFILTEREDROWCOUNR] = totalFilteredRowCount;
+                    this[ListDataProviderView._TOTALFILTEREDROWCOUNT] = totalFilteredRowCount;
                 }
             }
         };
@@ -489,7 +480,7 @@ class ListDataProviderView {
                 this[ListDataProviderView._RESULTS] = results;
                 this[ListDataProviderView._DONE] = done;
                 if (fetchParameters && fetchParameters.includeFilteredRowCount === 'enabled') {
-                    this[ListDataProviderView._TOTALFILTEREDROWCOUNR] = totalFilteredRowCount;
+                    this[ListDataProviderView._TOTALFILTEREDROWCOUNT] = totalFilteredRowCount;
                 }
             }
         };
@@ -597,17 +588,7 @@ class ListDataProviderView {
             fetchAttributes = this[ListDataProviderView._INTERNAL_FETCHATTRIBUTES];
         }
         const signal = params?.signal;
-        if (signal && signal.aborted) {
-            const reason = signal.reason;
-            return Promise.reject(new DOMException(reason, 'AbortError'));
-        }
-        return new Promise((resolve, reject) => {
-            if (signal) {
-                const reason = signal.reason;
-                signal.addEventListener('abort', (e) => {
-                    return reject(new DOMException(reason, 'AbortError'));
-                });
-            }
+        const callback = (resolve) => {
             const updatedParams = new this.FetchByKeysParameters(this, keys, params, fetchAttributes);
             if (this.dataProvider[ListDataProviderView._FETCHBYKEYS]) {
                 return resolve(this.dataProvider[ListDataProviderView._FETCHBYKEYS](updatedParams).then((value) => {
@@ -633,7 +614,8 @@ class ListDataProviderView {
                     return new this.FetchByKeysResults(this, updatedParams, mappedResultMap);
                 }));
             }
-        });
+        };
+        return wrapWithAbortHandling(signal, callback, false);
     }
     fetchByOffset(params) {
         const offset = params != null ? params[ListDataProviderView._OFFSET] : null;
@@ -649,31 +631,31 @@ class ListDataProviderView {
         const mappedSortCriteria = this._getMappedSortCriteria(sortCriteria);
         const filterCriterion = this._combineFilters(params);
         const signal = params?.signal;
-        if (signal && signal.aborted) {
-            const reason = signal.reason;
-            return Promise.reject(new DOMException(reason, 'AbortError'));
-        }
-        return new Promise((resolve, reject) => {
-            if (signal) {
-                const reason = signal.reason;
-                signal.addEventListener('abort', (e) => {
-                    return reject(new DOMException(reason, 'AbortError'));
-                });
-            }
+        const callback = (resolve) => {
             const mappedFilterCriterion = this._getMappedFilterCriterion(filterCriterion);
             const updatedParams = new this.FetchByOffsetParameters(this, offset, params, size, mappedSortCriteria, mappedFilterCriterion, fetchAttributes);
             return resolve(this.dataProvider[ListDataProviderView._FETCHBYOFFSET](updatedParams).then((value) => {
                 const resultArray = value[ListDataProviderView._RESULTS];
                 const done = value[ListDataProviderView._DONE];
-                const totalFilteredRowCount = value[ListDataProviderView._TOTALFILTEREDROWCOUNR];
+                const totalFilteredRowCount = value[ListDataProviderView._TOTALFILTEREDROWCOUNT];
                 const mappedResultArray = new Array();
                 resultArray.forEach((value) => {
                     const mappedItem = this._getMappedItems([value]);
                     mappedResultArray.push(mappedItem[0]);
                 });
-                return new this.FetchByOffsetResults(this, updatedParams, mappedResultArray, done, totalFilteredRowCount);
+                const resultFetchParams = value[ListDataProviderView._FETCHPARAMETERS];
+                const resultSortCriteria = resultFetchParams?.[ListDataProviderView._SORTCRITERIA];
+                const resultFilterCriterion = resultFetchParams?.[ListDataProviderView._FILTERCRITERION];
+                const unmappedResultSortCriteria = this._getUnmappedSortCriteria(resultSortCriteria);
+                const unmappedResultFilterCriterion = this._getUnmappedFilterCriterion(resultFilterCriterion);
+                return new this.FetchByOffsetResults(this, {
+                    ...updatedParams,
+                    sortCriteria: unmappedResultSortCriteria,
+                    filterCriterion: unmappedResultFilterCriterion
+                }, mappedResultArray, done, totalFilteredRowCount);
             }));
-        });
+        };
+        return wrapWithAbortHandling(signal, callback, false);
     }
     fetchFirst(params) {
         const cachedData = {};
@@ -1051,7 +1033,7 @@ ListDataProviderView._FETCHFIRST = 'fetchFirst';
 ListDataProviderView._ADDEVENTLISTENER = 'addEventListener';
 ListDataProviderView._INTERNAL_FETCHATTRIBUTES = '_attributes';
 ListDataProviderView._FETCHATTRIBUTES = 'attributes';
-ListDataProviderView._TOTALFILTEREDROWCOUNR = 'totalFilteredRowCount';
+ListDataProviderView._TOTALFILTEREDROWCOUNT = 'totalFilteredRowCount';
 ListDataProviderView._SIGNAL = 'signal';
 EventTargetMixin.applyMixin(ListDataProviderView);
 oj._registerLegacyNamespaceProp('ListDataProviderView', ListDataProviderView);

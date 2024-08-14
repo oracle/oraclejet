@@ -27,6 +27,12 @@ const ojMessage = {};
 /**
  * @ojcomponent oj.ojMessage
  * @since 5.0.0
+ * @ojdeprecated [
+ *   {
+ *     type: "maintenance",
+ *     since: "17.0.0"
+ *   }
+ * ]
  * @ojdisplayname Message
  * @ojshortdesc A message conveys categorized information to the user, often regarding errors.
  *

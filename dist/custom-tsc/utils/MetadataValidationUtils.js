@@ -119,7 +119,15 @@ const _DT_METADATA_VALIDATION_MAP = new Map([
     ['data', { baseType: 'object', isArray: false, context: MetaTypes.MDContext.SLOT }],
     ['maxItems', { baseType: 'number', isArray: false, context: MetaTypes.MDContext.SLOT }],
     ['minItems', { baseType: 'number', isArray: false, context: MetaTypes.MDContext.SLOT }],
-    ['preferredContent', { baseType: 'string', isArray: true, context: MetaTypes.MDContext.SLOT }]
+    ['preferredContent', { baseType: 'string', isArray: true, context: MetaTypes.MDContext.SLOT }],
+    [
+        'templateSlotRenderType',
+        {
+            baseType: 'string',
+            isArray: false,
+            context: MetaTypes.MDContext.PROP | MetaTypes.MDContext.SLOT
+        }
+    ]
 ]);
 function getValidationInfo(key) {
     const vInfo = _DT_METADATA_VALIDATION_MAP.get(key);

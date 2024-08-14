@@ -4091,7 +4091,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
               dropLineOffset += 8; // line up with children even though dropline is still on parent
             }
             this._removeDropClass(targetItem);
-            var width = this._getTreeviewWidth() - parseInt(dropLineOffset, 10) + 'px';
+            var width = targetItem.offsetWidth - parseInt(dropLineOffset, 10) + 'px';
             var left = isRTL ? '0px' : dropLineOffset + 'px';
             this._dropLine.style.width = width;
             this._dropLine.style.left = left;

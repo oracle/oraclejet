@@ -570,8 +570,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      */
     formatDateVal: (valueFormat, date) => {
       var converter = valueFormat['converter'];
-      if (!converter) return null;
-      if (converter['format']) return converter['format'](date);
+      if (!converter) {
+        return null;
+      }
+      if (converter['format']) {
+        let _date = date;
+        if (typeof date === 'number' && converter.resolvedOptions) {
+          _date = new Date(date).toISOString();
+        }
+        return converter['format'](_date);
+      }
       return null;
     }
   };
@@ -3689,19 +3697,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       var labelStyleArray = [styleDefaults._dataLabelStyle, styleDefaults.dataLabelStyle];
       var contrastingColor;
       const seriesType = DvtChartDataUtils.getSeriesType(chart, seriesIndex);
+      const supportsOutline = DvtChartStyleUtils.supportsLabelOutline(chart, seriesIndex);
       if (
-        (dataColor &&
-          (seriesType == 'bar' || DvtChartTypeUtils.isBubble(chart)) &&
-          (position == 'center' ||
-            position == 'inBottom' ||
-            position == 'inTop' ||
-            position == 'inRight' ||
-            position == 'inLeft')) ||
-        (seriesType == 'area' &&
-          !DvtChartDataUtils.isRangeSeries(chart, seriesIndex) &&
-          position == 'bottom' &&
-          DvtChartTypeUtils.isVertical(chart)) // issue identified by JET-56558, JET-59519, JET-59520
+        !supportsOutline &&
+        dataColor &&
+        (seriesType == 'bar' || DvtChartTypeUtils.isBubble(chart)) &&
+        (position == 'center' ||
+          position == 'inBottom' ||
+          position == 'inTop' ||
+          position == 'inRight' ||
+          position == 'inLeft')
       ) {
+        // issue identified by JET-56558, JET-59519, JET-59520 will be solved by JET-65212
         contrastingColor =
           DvtChartStyleUtils.getPattern(chart, seriesIndex, groupIndex, itemIndex) != null
             ? '#000000'
@@ -4419,6 +4426,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
           var lineType = DvtChartStyleUtils.getLineType(chart, seriesIndex);
           if (lineType == 'segmented' || lineType == 'stepped') return true;
         }
+      }
+      return false;
+    },
+
+    /**
+     * Returns whether data label contrast outline is supported for the chart type.
+     * @param {Chart} chart
+     * @return {boolean}
+     */
+    supportsLabelOutline: (chart, seriesIndex) => {
+      var seriesType = DvtChartDataUtils.getSeriesType(chart, seriesIndex);
+      if (
+        seriesType === 'area' ||
+        seriesType === 'line' ||
+        seriesType === 'lineWithArea' ||
+        DvtChartTypeUtils.isScatterBubble(chart)
+      ) {
+        return true;
       }
       return false;
     }
@@ -5345,9 +5370,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         DvtChartTypeUtils.isPie(chart) ||
         DvtChartTypeUtils.isFunnel(chart) ||
         DvtChartTypeUtils.isPolar(chart) ||
-        DvtChartTypeUtils.isPyramid(chart)
-      )
+        DvtChartTypeUtils.isPyramid(chart) ||
+        DvtChartDataUtils.hasInvalidData(chart)
+      ) {
         return false;
+      }
 
       var options = chart.getOptions();
       if (options['dataCursor'] == 'on') return true;
@@ -9549,9 +9576,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       this.EventManager = new DvtAxisEventManager(this);
       this.EventManager.addListeners(this);
 
-      // Set up keyboard handler on non-touch devices if the axis is interactive
-      if (!dvt.Agent.isTouchDevice())
-        this.EventManager.setKeyboardHandler(new DvtAxisKeyboardHandler(this.EventManager, this));
+      // Set up keyboard handler if the axis is interactive
+      this.EventManager.setKeyboardHandler(new DvtAxisKeyboardHandler(this.EventManager, this));
 
       this._bounds = null;
     }
@@ -17873,7 +17899,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @private
      */
     _onDragStart(event) {
-      if (dvt.Agent.isTouchDevice()) return this._onTouchDragStart(event);
+      if (dvt.EventManager.isTouchEvent(event)) return this._onTouchDragStart(event);
       else return this._onMouseDragStart(event);
     }
 
@@ -17884,7 +17910,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @private
      */
     _onDragMove(event) {
-      if (dvt.Agent.isTouchDevice()) return this._onTouchDragMove(event);
+      if (dvt.EventManager.isTouchEvent(event)) return this._onTouchDragMove(event);
       else return this._onMouseDragMove(event);
     }
 
@@ -17895,7 +17921,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @private
      */
     _onDragEnd(event) {
-      if (dvt.Agent.isTouchDevice()) return this._onTouchDragEnd(event);
+      if (dvt.EventManager.isTouchEvent(event)) return this._onTouchDragEnd(event);
       else return this._onMouseDragEnd(event);
     }
 
@@ -21585,12 +21611,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
                 : lastCoord.x + groupWidth * dir;
               this._pushCoord(points, finalXCoord, lastCoord.y);
             }
-            // Start a new list of points, except in ADF and MAF mixed freq where we want to connect points across nulls.
-            points = [];
-            pointsArrays.push(points);
-            lastCoord = null;
           }
-
+          // Start a new list of points, except in ADF and MAF mixed freq where we want to connect points across nulls.
+          points = [];
+          pointsArrays.push(points);
+          lastCoord = null;
           continue;
         }
 
@@ -25818,7 +25843,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       if (DvtChartTypeUtils.isBLAC(chart)) {
         const seriesCount = options['series'].length;
         if (hasLayering) {
-         for(let index = seriesCount - 1; index >= 0; index--){
+          for (let index = seriesCount - 1; index >= 0; index--) {
             const seriesType = DvtChartDataUtils.getSeriesType(chart, index);
             if (seriesType !== 'area' && seriesType !== 'lineWithArea')
               clipGroup = DvtChartPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
@@ -25835,7 +25860,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
               DvtChartPlotAreaRenderer._renderBoxPlot(chart, clipGroup, availSpace, index);
             else if (seriesType === 'line')
               DvtChartPlotAreaRenderer._renderLines(chart, container, clipGroup, availSpace, index);
-         }
+          }
         } else {
           // Areas were drawn in the background. Draw lineWithAreas, bars, and lines
           if (DvtChartDataUtils.hasLineWithAreaSeries(chart))
@@ -25906,6 +25931,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         return;
 
       var isBar = DvtChartDataUtils.getSeriesType(chart, seriesIndex) == 'bar';
+      const supportsOutline = DvtChartStyleUtils.supportsLabelOutline(chart, seriesIndex);
       var bHoriz = DvtChartTypeUtils.isHorizontal(chart);
       var barDataItemDims = {
         width: bHoriz ? dataItemBounds.w : originalBarSize,
@@ -25954,6 +25980,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
             type
           );
       label.setCSSStyle(style);
+
+      if (supportsOutline) {
+        label.addClassName('oj-chart-data-label-contrast');
+      }
 
       label.setY(dataItemBounds.y + dataItemBounds.h / 2);
       label.setX(dataItemBounds.x + dataItemBounds.w / 2);
@@ -26112,23 +26142,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
             return; //dropping text if doesn't fit.
         }
 
-        var isPatternBg = DvtChartStyleUtils.getPattern(chart, seriesIndex, groupIndex) != null;
-        if (isPatternBg) {
-          textDim = label.getDimensions();
-          var padding = textDim.h * 0.15;
-          var cmd = dvt.PathUtils.roundedRectangle(
-            textDim.x - padding,
-            textDim.y,
-            textDim.w + 2 * padding,
-            textDim.h,
-            2,
-            2,
-            2,
-            2
-          );
-          var bbox = new dvt.Path(chart.getCtx(), cmd);
-          bbox.setSolidFill('#FFFFFF', 0.9);
-          container.addChild(bbox);
+        const isPatternBg = DvtChartStyleUtils.getPattern(chart, seriesIndex, groupIndex) != null;
+        if (isPatternBg && !supportsOutline) {
+          DvtChartPlotAreaRenderer._addLabelContrastBackground(chart, container, label);
         }
       }
 
@@ -26330,6 +26346,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         );
 
       DvtChartPlotAreaRenderer._addMarkersToContainer(chart, container, markers, defaultStroke);
+    },
+
+    _addLabelContrastBackground: (chart, container, label) => {
+      var textDim = label.getDimensions();
+      var padding = textDim.h * 0.15;
+      var cmd = dvt.PathUtils.roundedRectangle(
+        textDim.x - padding,
+        textDim.y,
+        textDim.w + 2 * padding,
+        textDim.h,
+        2,
+        2,
+        2,
+        2
+      );
+      var bbox = new dvt.Path(chart.getCtx(), cmd);
+      bbox.setSolidFill('#FFFFFF', 0.9);
+      container.addChild(bbox);
     },
 
     /**
@@ -32552,9 +32586,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         this.EventManager = new DvtChartEventManager(this);
         this.EventManager.addListeners(this);
 
-        // Set up keyboard handler on non-touch devices
-        if (!dvt.Agent.isTouchDevice())
-          this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
+        // Set up keyboard handler
+        this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
 
         // Make sure the object has an id for clipRect naming
         this.setId('chart' + 1000 + Math.floor(Math.random() * 1000000000)); //@RandomNumberOK
@@ -34429,11 +34462,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       this._chart = new Chart(context, this._onRenderEnd, this);
       this.addChild(this._chart);
 
-      // Set up keyboard handler on non-touch devices
-      if (!dvt.Agent.isTouchDevice()) {
-        // Add a keyboard handler to the spark chart itself so it can show tooltip on it
-        this.EventManager.setKeyboardHandler(new dvt.KeyboardHandler(this.EventManager, this));
-      }
+      // Add a keyboard handler to the spark chart itself so it can show tooltip on it
+      this.EventManager.setKeyboardHandler(new dvt.KeyboardHandler(this.EventManager, this));
 
       // Create the masking shape used for the tooltip
       this._tooltipMask = new dvt.Rect(context);

@@ -77,6 +77,18 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
       const origInsertBefore = proto.insertBefore;
       proto.insertBefore = function (newNode, refNode) {
         if (ojcustomelementUtils.CustomElementUtils.canRelocateNode(this, newNode)) {
+          // In case of slot nodes the refNode might be moved by the parent component
+          // and it is not a direct child of that parent component anymore.
+          // Preact is not aware of this movement so it uses incorrect parent for inserting a node.
+          // Lets use the insertBefore parent of refNode to insert newNode before it.
+          if (refNode && refNode.parentNode !== this) {
+            Logger.info(
+              `Using insertBefore where ${this.tagName} is not a parent of ${refNode.tagName}`
+            );
+          }
+          if (refNode && refNode.parentNode) {
+            return origInsertBefore.call(refNode.parentNode, newNode, refNode);
+          }
           return origInsertBefore.call(this, newNode, refNode);
         }
         return newNode;
@@ -196,7 +208,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
             if (propMeta) {
               this.setProperty(
                 prop,
-                BaseCustomElementBridge.__ParseAttrValue(this, attr, prop, newValue, propMeta)
+                ojcustomelementUtils.CustomElementUtils.parseAttrValue(this, attr, prop, newValue, propMeta)
               );
             }
             // This allows subclasses to handle special cases like global transfer
@@ -330,6 +342,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
           const setObj = this._earlySets.shift();
           const updatedValue = ojcustomelementUtils.transformPreactValue(
             element,
+            setObj.property,
             propertyMeta.properties[setObj.property],
             setObj.value
           );
@@ -746,7 +759,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
 
           var info = ojcustomelementUtils.AttributeUtils.getExpressionInfo(attr.value);
           if (!info.expr) {
-            var value = BaseCustomElementBridge.__ParseAttrValue(
+            var value = ojcustomelementUtils.CustomElementUtils.parseAttrValue(
               element,
               attr.nodeName,
               property,
@@ -804,28 +817,6 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
       // eslint-disable-next-line no-param-reassign
       componentProps[topProp] = branchedProps[topProp];
     }
-  };
-
-  /**
-   * Returns the coerced attribute value using a custom parse function or the framework default.
-   * @ignore
-   */
-  BaseCustomElementBridge.__ParseAttrValue = function (elem, attr, prop, val, metadata) {
-    if (val == null) {
-      return val;
-    }
-
-    function _coerceVal(value) {
-      return ojcustomelementUtils.AttributeUtils.attributeToPropertyValue(elem, attr, value, metadata);
-    }
-
-    var parseFunction = ojcustomelementRegistry.getElementDescriptor(elem.tagName).parseFunction;
-    if (parseFunction) {
-      return parseFunction(val, prop, metadata, function (value) {
-        return _coerceVal(value);
-      });
-    }
-    return _coerceVal(val);
   };
 
   /**

@@ -829,7 +829,12 @@ var __oj_diagram_node_metadata =
           "type": "string"
         },
         "shape": {
-          "type": "string"
+          "type": "string",
+          "enumValues": [
+            "circle",
+            "rectangle",
+            "square"
+          ]
         },
         "source": {
           "type": "string"
@@ -2870,12 +2875,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
      *      <li>borderWidth {number}: The border width in pixels.</li>
      *      <li>color {string}: The fill color of the icon.</li>
      *      <li>pattern {string}: The fill pattern of the icon.<br/>Supported values are "smallChecker", "smallCrosshatch", "smallDiagonalLeft", "smallDiagonalRight", "smallDiamond", "smallTriangle", "largeChecker", "largeCrosshatch", "largeDiagonalLeft", "largeDiagonalRight", "largeDiamond", "largeTriangle", "none".<br/>Default value is <code class="prettyprint">"none"</code>.</li>
-     *      <li>opacity {number}: The opacity of the icon.</li>
-     *      <li>shape {string}: The shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.<br/>Supported built-in shapes:"ellipse", "square", "plus", "diamond", "triangleUp", "triangleDown", "human", "rectangle", "star", "circle".<br/>Default value is <code class="prettyprint">"circle"</code>.</li>
-     *      <li>source {string}: The URI of the node image.</li>
-     *      <li>sourceHover {string}: The optional URI of the node hover image. If not defined, the source image will be used.</li>
-     *      <li>sourceHoverSelected {string}: The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.</li>
-     *      <li>sourceSelected {string}: The optional URI of the selected image. If not defined, the source image will be used.</li>
+     *      <li>shape {string}: The shape of the icon. Can take the name of a built-in shape.<br/>Supported built-in shapes:"square", "rectangle", "circle". Diamond, ellipse, human, plus, star, triangleDown, and triangleUp were deprecated in 17.0.0.  For all other shapes please use the custom renderer.<br/>Default value is <code class="prettyprint">"circle"</code>.</li>
      *      <li>width {number}: The width of the icon.</li>
      *      <li>height {number}: The height of the icon.</li>
      *      <li>svgStyle {Object}: The CSS style object defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.</li>
@@ -3212,13 +3212,14 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
            */
           pattern: 'none',
           /**
-           * Default shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.
+           * Default shape of the icon. Supported shapes are circle, square, and rectangle.  For all other shapes please use the custom renderer.
+           * Diamond, ellipse, human, plus, star, triangleDown, and triangleUp were deprecated in 17.0.0.
            * @ojshortdesc Specifies default shape of the icon.
            * @expose
            * @name styleDefaults.nodeDefaults.icon.shape
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {("circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string)=}
+           * @type {("circle"|"rectangle"|"square"|string)=}
            * @default "circle"
            */
           shape: 'circle',
@@ -3226,6 +3227,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
            * The URI of the node image
            * @expose
            * @name styleDefaults.nodeDefaults.icon.source
+           * @ojdeprecated {since: '17.0.0', description: 'Node source property has been deprecated.  Please use custom renderer instead.'}
            * @memberof! oj.ojDiagram
            * @instance
            * @type {string=}
@@ -3235,6 +3237,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
            * @ojshortdesc The optional URI of the node hover image.
            * @expose
            * @name styleDefaults.nodeDefaults.icon.sourceHover
+           * @ojdeprecated {since: '17.0.0', description: 'Node sourceHover property has been deprecated.  Please use custom renderer instead.'}
            * @memberof! oj.ojDiagram
            * @instance
            * @type {string=}
@@ -3244,6 +3247,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
            * @ojshortdesc The optional URI of the selected image on hover.
            * @expose
            * @name styleDefaults.nodeDefaults.icon.sourceHoverSelected
+           * @ojdeprecated {since: '17.0.0', description: 'Node sourceHoverSelected property has been deprecated.  Please use custom renderer instead.'}
            * @memberof! oj.ojDiagram
            * @instance
            * @type {string=}
@@ -3253,6 +3257,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
            * @ojshortdesc The optional URI of the selected image.
            * @expose
            * @name styleDefaults.nodeDefaults.icon.sourceSelected
+           * @ojdeprecated {since: '17.0.0', description: 'Node sourceSelected property has been deprecated.  Please use custom renderer instead.'}
            * @memberof! oj.ojDiagram
            * @instance
            * @type {string=}
@@ -3373,6 +3378,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
          * @expose
          * @name styleDefaults.linkDefaults.startConnectorType
          * @memberof! oj.ojDiagram
+         * @ojdeprecated [{target:'propertyValue', for:"arrowConcave", since: "17.0.0", description: "This value will be removed in the future. Please use the custom renderer instead."},
+         *                {target:'propertyValue', for:"rectangle", since: "17.0.0", description: "This value will be removed in the future. Please use the custom renderer instead."},
+         *                {target:'propertyValue', for:"rectangleRounded", since: "17.0.0", description: "This value will be removed in the future. Please use the custom renderer instead."},
+         *                {target:'propertyValue', for:"circle", since: "17.0.0", description: "This value will be removed in the future. Please use the custom renderer instead."}]
          * @instance
          * @type {string=}
          * @ojvalue {string} "arrowOpen"
@@ -3392,6 +3401,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string=}
+         * @ojdeprecated [{target:'propertyValue', for:"arrowConcave", since: "17.0.0", description: "This value will be removed in the future. Please use the custom renderer instead."},
+         *                {target:'propertyValue', for:"rectangle", since: "17.0.0", description: "This value will be removed in the future. Please use the custom renderer instead."},
+         *                {target:'propertyValue', for:"rectangleRounded", since: "17.0.0", description: "This value will be removed in the future. Please use the custom renderer instead."},
+         *                {target:'propertyValue', for:"circle", since: "17.0.0", description: "This value will be removed in the future. Please use the custom renderer instead."}]
          * @ojvalue {string} "arrowOpen"
          * @ojvalue {string} "arrow"
          * @ojvalue {string} "arrowConcave"
@@ -4817,6 +4830,9 @@ setDefaultOptions({
  *            {target: "Type", value: "oj.ojDiagram.Node<K1>", for: "data"},
  *            {target: "Type", value: "D1", for: "itemData"},
  *            {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
+ * @ojdeprecated [{target:"property", for: "renderDefaultFocus", since: "17.0.0", description: "The renderDefaultFocus property is deprecated. This behavior can be implemented in the custom renderer." },
+ *                {target:"property", for: "renderDefaultHover", since: "17.0.0", description: "The renderDefaultHover property is deprecated. This behavior can be implemented in the custom renderer." },
+ *                {target:"property", for: "renderDefaultSelection", since: "17.0.0", description: "The renderDefaultSelection property is deprecated. This behavior can be implemented in the custom renderer." }]
  */
 
 /**
@@ -4853,8 +4869,10 @@ setDefaultOptions({
  *            {target: "Type", value: "oj.ojDiagram.Node<K1>", for: "data"},
  *            {target: "Type", value: "D1", for: "itemData"},
  *            {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
- * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
- */
+ * @ojdeprecated [{target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." },
+ *                {target:"property", for: "renderDefaultFocus", since: "17.0.0", description: "The renderDefaultFocus property is deprecated. This behavior can be implemented in the custom template." },
+ *                {target:"property", for: "renderDefaultHover", since: "17.0.0", description: "The renderDefaultHover property is deprecated. This behavior can be implemented in the custom template." },
+ *                {target:"property", for: "renderDefaultSelection", since: "17.0.0", description: "The renderDefaultSelection property is deprecated. This behavior can be implemented in the custom template." }] */
 
 /**
  * @typedef {Object} oj.ojDiagram.LinkRendererContext
@@ -4934,7 +4952,6 @@ setDefaultOptions({
  * @property {any} key The key of the current node.
  * @property {array} parentData  An array of data for the leaf and its parents. Eg: parentData[0] is the outermost parent and parentData[1] is the second outermost parent of the leaf.
  * @property {any} parentKey The key of the parent item. The parent key is null for root nodes.
- * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
  */
 
 // KEEP FOR WIDGET SYNTAX
@@ -5595,7 +5612,7 @@ setDefaultOptions({
  * <ul>
  *   <li>$current - an object that contains information for the current node. (See [oj.ojDiagram.NodeTemplateContext]{@link oj.ojDiagram.NodeTemplateContext} or the table below for a list of properties available on $current) </li>
  * </li>
- * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+ * <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.
  * </li>
  * </ul>
  *
@@ -5629,8 +5646,7 @@ setDefaultOptions({
  * </ul>
  * <p>The template for a container node must include an [oj-diagram-child-content]{@link oj.ojDiagramChildContent} element.
  * Diagram will replace this element with the node child contents.</p>
- * <p>Add data-oj-default-focus, data-oj-default-hover and/or data-oj-default-selection attributes to the template to also render the default focus, hover and/or selection effect for the data item.</p>
- * <p>Similarly, add data-oj-zoom-thresholds attribute to the template to set thresholds that will trigger a rerender when crossed. This should be a JSON array containing values between the <i><b>min-zoom</b></i> and <i><b>max-zoom</b></i></p>
+ * <p>Add data-oj-zoom-thresholds attribute to the template to set thresholds that will trigger a rerender when crossed. This should be a JSON array containing values between the <i><b>min-zoom</b></i> and <i><b>max-zoom</b></i></p>
  *
  * <p><b>Note</b> that SVG nodes for the diagram node content should be wrapped into an <code>svg</code> element in order to have the SVG namespace.
  * The component will insert the entire SVG structure into DOM including the outer <code>svg</code> element.</p>
@@ -5638,7 +5654,7 @@ setDefaultOptions({
  * <pre class="prettyprint"><code>
  * // Initialize the Diagram with a node content template specified
  * &lt;oj-diagram>
- *  &lt;template slot="nodeContentTemplate" data-oj-default-focus data-oj-default-hover data-oj-default-selection data-oj-zoom-thresholds="[0.25, 0.5, 0.75]">
+ *  &lt;template slot="nodeContentTemplate" data-oj-zoom-thresholds="[0.25, 0.5, 0.75]">
  *   &lt;svg width="100" height="100">
  *    &lt;text>&lt;oj-bind-text value="[[$current.id]]">&lt;/oj-bind-text>&lt;/text>
  *   &lt;/svg>
@@ -5661,7 +5677,7 @@ setDefaultOptions({
  * <ul>
  *   <li>$current - an object that contains information for the current link. (See [oj.ojDiagram.LinkTemplateContext]{@link oj.ojDiagram.LinkTemplateContext} or the table below for a list of properties available on $current) </li>
  * </li>
- * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+ * <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.
  * </li>
  * </ul>
  *

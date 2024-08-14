@@ -307,7 +307,7 @@
 
 	}
 
-	.oj-switch-thumb:not(.oj-focus-highlight):focus {
+	.oj-switch-track:not(.oj-focus-highlight) .oj-switch-thumb:focus {
 		outline:none;
 	}
 			 

@@ -11,7 +11,7 @@ import { info, warn } from 'ojs/ojlogger';
 import { getDefaultValue } from 'ojs/ojmetadatautils';
 import 'ojs/ojcomposite-knockout';
 import 'ojs/ojcustomelement';
-import { LifecycleElementState, CustomElementUtils, ElementUtils, transformPreactValue, JetElementError, CHILD_BINDING_PROVIDER } from 'ojs/ojcustomelement-utils';
+import { LifecycleElementState, CustomElementUtils, ElementUtils, transformPreactValue, addPrivatePropGetterSetters, JetElementError, CHILD_BINDING_PROVIDER } from 'ojs/ojcustomelement-utils';
 import { getElementDescriptor, getElementRegistration, registerElement, isElementRegistered, isComposite } from 'ojs/ojcustomelement-registry';
 
 const CompositeInternal = {};
@@ -235,7 +235,7 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
       if (!this._BRIDGE.SaveEarlyPropertySet(this._ELEMENT, property, value)) {
         if (bOuterSet) {
           // eslint-disable-next-line no-param-reassign
-          value = transformPreactValue(this._ELEMENT, propertyMeta, value);
+          value = transformPreactValue(this._ELEMENT, property, propertyMeta, value);
         }
         // Property trackers are observables are referenced when the property is set or retrieved,
         // which allows us to automatically update the View when the property is mutated.
@@ -320,6 +320,7 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
       );
     }
     oj.BaseCustomElementBridge.__DefineDynamicObjectProperty(proto, property, outerGet, outerSet);
+    addPrivatePropGetterSetters(proto, property);
   },
 
   GetMetadata: function (descriptor) {
@@ -368,10 +369,7 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
     // Invoke callback on the superclass
     oj.BaseCustomElementBridge.proto.InitializeElement.call(this, element);
 
-    // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-    if (oj.Components) {
-      oj.Components.markPendingSubtreeHidden(element);
-    }
+    CustomElementUtils.markPendingSubtreeHidden(element);
 
     var descriptor;
 
@@ -625,10 +623,8 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto, {
     // up the binding provider used by the composite (currently only KO).
     // eslint-disable-next-line no-param-reassign
     element[CHILD_BINDING_PROVIDER] = 'knockout';
-    // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-    if (oj.Components) {
-      oj.Components.unmarkPendingSubtreeHidden(element);
-    }
+
+    CustomElementUtils.unmarkPendingSubtreeHidden(element);
 
     const cache = getElementRegistration(element.tagName).cache;
     // Need to clone nodes first

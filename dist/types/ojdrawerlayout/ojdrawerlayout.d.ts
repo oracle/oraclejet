@@ -1,7 +1,7 @@
 import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
-import { CancelableAction, ExtendGlobalProps, PropertyChanged, Slot } from 'ojs/ojvcomponent';
+import { Action, CancelableAction, ExtendGlobalProps, PropertyChanged, Slot } from 'ojs/ojvcomponent';
 import { Component, ComponentChild, ComponentChildren } from 'preact';
 import 'ojs/ojcore-base';
 import 'ojs/ojpopup';
@@ -39,6 +39,7 @@ type Props = {
     startOpened?: boolean;
     onStartOpenedChanged?: PropertyChanged<boolean>;
     onOjBeforeClose?: CancelableAction<ToggleDetail>;
+    onOjClose?: Action<ToggleDetail>;
     endOpened?: boolean;
     onEndOpenedChanged?: PropertyChanged<boolean>;
     bottomOpened?: boolean;
@@ -63,8 +64,11 @@ export declare class DrawerLayout extends Component<ExtendGlobalProps<Props>, St
     private startClosedWithEsc;
     private endClosedWithEsc;
     private bottomClosedWithEsc;
-    private overlayDrawerResizeHandler;
-    private reflowDrawerResizeHandler;
+    private startOverlayDrawerResizeHandler;
+    private endOverlayDrawerResizeHandler;
+    private bottomOverlayDrawerResizeHandler;
+    private startReflowDrawerResizeHandler;
+    private endReflowDrawerResizeHandler;
     private drawerLayoutResizeHandler;
     private windowResizeHandler;
     private drawerOpener;
@@ -143,6 +147,8 @@ export namespace DrawerLayoutElement {
         accept: (param: Promise<void>) => void;
     }> {
     }
+    interface ojClose extends CustomEvent<ToggleDetail & {}> {
+    }
     type bottomDisplayChanged = JetElementCustomEventStrict<DrawerLayoutElement['bottomDisplay']>;
     type bottomOpenedChanged = JetElementCustomEventStrict<DrawerLayoutElement['bottomOpened']>;
     type endDisplayChanged = JetElementCustomEventStrict<DrawerLayoutElement['endDisplay']>;
@@ -152,6 +158,7 @@ export namespace DrawerLayoutElement {
 }
 export interface DrawerLayoutElementEventMap extends HTMLElementEventMap {
     'ojBeforeClose': DrawerLayoutElement.ojBeforeClose;
+    'ojClose': DrawerLayoutElement.ojClose;
     'bottomDisplayChanged': JetElementCustomEventStrict<DrawerLayoutElement['bottomDisplay']>;
     'bottomOpenedChanged': JetElementCustomEventStrict<DrawerLayoutElement['bottomOpened']>;
     'endDisplayChanged': JetElementCustomEventStrict<DrawerLayoutElement['endDisplay']>;
@@ -173,6 +180,7 @@ export interface DrawerLayoutElementSettablePropertiesLenient extends Partial<Dr
 export interface DrawerLayoutIntrinsicProps extends Partial<Readonly<DrawerLayoutElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     children?: import('preact').ComponentChildren;
     onojBeforeClose?: (value: DrawerLayoutElementEventMap['ojBeforeClose']) => void;
+    onojClose?: (value: DrawerLayoutElementEventMap['ojClose']) => void;
     onbottomDisplayChanged?: (value: DrawerLayoutElementEventMap['bottomDisplayChanged']) => void;
     onbottomOpenedChanged?: (value: DrawerLayoutElementEventMap['bottomOpenedChanged']) => void;
     onendDisplayChanged?: (value: DrawerLayoutElementEventMap['endDisplayChanged']) => void;

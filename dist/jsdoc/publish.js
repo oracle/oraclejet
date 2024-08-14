@@ -32,7 +32,7 @@
  var resolveAuthorLinks = helper.resolveAuthorLinks;
  var hasOwnProp = Object.prototype.hasOwnProperty;
 
- var dominterfaces = ["DocumentFragment", "Element", "Event", "EventTarget", "Node"];
+ var dominterfaces = ["DocumentFragment", "Element", "Event", "EventTarget", "Node","CSSStyleDeclaration"];
  var dominterface_baseurl = "https://developer.mozilla.org/en-US/docs/Web/API";
 
  var data;

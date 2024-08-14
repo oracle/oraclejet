@@ -1,0 +1,109 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example treemap/themes/redwood/oj-treemap.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss"; 
+
+  @include module-include-once("common.treemap") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+      oj-treemap:not(.oj-complete) {
+        visibility: hidden;
+      }
+
+    oj-treemap {
+      display: block;
+    }
+
+    .oj-treemap {
+      width:100%;
+      height:560px;
+      color: var(--oj-core-text-color-primary);
+      font-size: var(--oj-dvt-label-font-size-sm);
+      user-select: none;
+
+    }
+
+    .oj-treemap-attribute-type-text {
+      color: var(--oj-core-text-color-primary);
+      font-size: var(--oj-dvt-label-font-size-sm);
+    }
+
+    .oj-treemap-attribute-value-text {
+      font-size: var(--oj-dvt-label-font-size-sm);
+    }
+
+    .oj-treemap-current-drill-text {
+      color: var(--oj-core-text-color-primary);
+      font-size: var(--oj-typography-body-md-font-size);
+      line-height: var(--oj-typography-body-md-line-height);
+    }
+    
+    .oj-treemap-drill-text {
+      color: var(--oj-link-text-color);
+      font-size: var(--oj-typography-body-md-font-size);
+      line-height: var(--oj-typography-body-md-line-height);
+      text-decoration: var(--oj-link-embedded-text-decoration);
+    }
+    
+    .oj-treemap-drill-text.oj-hover {
+      text-decoration: var(--oj-link-embedded-text-decoration-hover);
+    }
+
+    .oj-treemap-node {
+      font-size: var(--oj-dvt-label-font-size-sm);
+    }
+
+    .oj-treemap-node.oj-hover {
+      border-color: var(--oj-dvt-node-border-color-hover);
+    }
+
+    .oj-treemap-node.oj-selected {
+      border-top-color: var(--oj-dvt-item-border-color-selected);
+      border-bottom-color: var(--oj-dvt-item-contrast-color);
+    }
+
+    .oj-treemap-node-header {
+      font-size: var(--oj-dvt-label-font-size-sm);
+      color: var(--oj-heading-text-color);
+      background-color: var(--oj-treemap-node-header-bg-color);
+      border-color: var(--oj-treemap-node-header-border-color);
+    }
+
+    .oj-treemap-node-header.oj-hover {
+      background-color: var(--oj-dvt-node-border-color-hover);
+      border-color: var(--oj-treemap-node-header-border-color);
+      border-top-color : var(--oj-dvt-node-border-color-hover);
+      border-bottom-color: var(--oj-treemap-node-header-border-color-hover);
+    }
+
+    .oj-treemap-node-header.oj-selected {
+      background-color: var(--oj-treemap-node-header-bg-color-selected);
+      border-color: var(--oj-treemap-node-header-border-color);
+      border-top-color: var(--oj-dvt-item-border-color-selected);
+      border-bottom-color: var(--oj-dvt-item-contrast-color);
+    }
+
+    .oj-treemap-skeleton-container {
+      mask-position: center;
+    }
+
+    @container (max-aspect-ratio: 2/1) {
+      .oj-treemap-skeleton-container {
+        mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><path d="M0 6a6 6 0 0 1 6-6h168a6 6 0 0 1 6 6v288a6 6 0 0 1-6 6H6a6 6 0 0 1-6-6V6Zm192 0a6 6 0 0 1 6-6h96a6 6 0 0 1 6 6v60a6 6 0 0 1-6 6h-96a6 6 0 0 1-6-6V6Zm0 84a6 6 0 0 1 6-6h96a6 6 0 0 1 6 6v90a6 6 0 0 1-6 6h-96a6 6 0 0 1-6-6V90Zm0 114a6 6 0 0 1 6-6h96a6 6 0 0 1 6 6v90a6 6 0 0 1-6 6h-96a6 6 0 0 1-6-6v-90Z"/></svg>');
+      }
+    }
+  
+    @container (min-aspect-ratio: 2/1) and (max-aspect-ratio: 3/1) {
+      .oj-treemap-skeleton-container {
+        mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 652 326"><path d="M0 6.52C0 2.92 2.92 0 6.52 0h260.8a6.52 6.52 0 0 1 6.52 6.52v312.96a6.52 6.52 0 0 1-6.52 6.52H6.52A6.52 6.52 0 0 1 0 319.48V6.52Zm286.88 0A6.52 6.52 0 0 1 293.4 0h163a6.52 6.52 0 0 1 6.52 6.52v143.44a6.52 6.52 0 0 1-6.52 6.52h-163a6.52 6.52 0 0 1-6.52-6.52V6.52Zm0 169.52a6.52 6.52 0 0 1 6.52-6.52h163a6.52 6.52 0 0 1 6.52 6.52v143.44a6.52 6.52 0 0 1-6.52 6.52h-163a6.52 6.52 0 0 1-6.52-6.52V176.04ZM475.96 6.52A6.52 6.52 0 0 1 482.48 0h163A6.52 6.52 0 0 1 652 6.52v65.2a6.52 6.52 0 0 1-6.52 6.52h-163a6.52 6.52 0 0 1-6.52-6.52V6.52Zm0 91.28a6.52 6.52 0 0 1 6.52-6.52h163A6.52 6.52 0 0 1 652 97.8v97.8a6.52 6.52 0 0 1-6.52 6.52h-163a6.52 6.52 0 0 1-6.52-6.52V97.8Zm0 123.88a6.52 6.52 0 0 1 6.52-6.52h163a6.52 6.52 0 0 1 6.52 6.52v97.8a6.52 6.52 0 0 1-6.52 6.52h-163a6.52 6.52 0 0 1-6.52-6.52v-97.8Z"/></svg>');
+      }
+    }
+  
+    @container (min-aspect-ratio: 3/1) {
+      .oj-treemap-skeleton-container {
+        mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 360"><path d="M0 7.2A7.2 7.2 0 0 1 7.2 0h446.4a7.2 7.2 0 0 1 7.2 7.2v345.6a7.2 7.2 0 0 1-7.2 7.2H7.2a7.2 7.2 0 0 1-7.2-7.2V7.2Zm475.2 0a7.2 7.2 0 0 1 7.2-7.2h280.8a7.2 7.2 0 0 1 7.2 7.2v158.4a7.2 7.2 0 0 1-7.2 7.2H482.4a7.2 7.2 0 0 1-7.2-7.2V7.2Zm0 187.2a7.2 7.2 0 0 1 7.2-7.2h280.8a7.2 7.2 0 0 1 7.2 7.2v158.4a7.2 7.2 0 0 1-7.2 7.2H482.4a7.2 7.2 0 0 1-7.2-7.2V194.4ZM784.8 7.2A7.2 7.2 0 0 1 792 0h280.8c3.98 0 7.2 3.224 7.2 7.2v72c0 3.976-3.22 7.2-7.2 7.2H792a7.2 7.2 0 0 1-7.2-7.2v-72Zm0 100.8a7.2 7.2 0 0 1 7.2-7.2h280.8c3.98 0 7.2 3.224 7.2 7.2v108c0 3.976-3.22 7.2-7.2 7.2H792a7.2 7.2 0 0 1-7.2-7.2V108Zm0 136.8a7.2 7.2 0 0 1 7.2-7.2h79.2a7.2 7.2 0 0 1 7.2 7.2v108a7.2 7.2 0 0 1-7.2 7.2H792a7.2 7.2 0 0 1-7.2-7.2v-108Zm108 0a7.2 7.2 0 0 1 7.2-7.2h172.8c3.98 0 7.2 3.224 7.2 7.2v108c0 3.976-3.22 7.2-7.2 7.2H900a7.2 7.2 0 0 1-7.2-7.2v-108Z"/></svg>');
+      }
+    }
+  }

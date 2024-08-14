@@ -66,6 +66,7 @@ export namespace MessageBannerElement {
     type dataChanged<K extends string | number = string | number, D extends MessageBannerItem = MessageBannerItem> = JetElementCustomEventStrict<MessageBannerElement<K, D>['data']>;
     type detailTemplateValueChanged<K extends string | number = string | number, D extends MessageBannerItem = MessageBannerItem> = JetElementCustomEventStrict<MessageBannerElement<K, D>['detailTemplateValue']>;
     type typeChanged<K extends string | number = string | number, D extends MessageBannerItem = MessageBannerItem> = JetElementCustomEventStrict<MessageBannerElement<K, D>['type']>;
+    type RenderDetailTemplate<K extends string | number = string | number, D extends MessageBannerItem = MessageBannerItem> = import('ojs/ojvcomponent').TemplateSlot<MessageBannerTemplateContext<K, D>>;
 }
 export interface MessageBannerElementEventMap<K extends string | number = string | number, D extends MessageBannerItem = MessageBannerItem> extends HTMLElementEventMap {
     'ojClose': MessageBannerElement.ojClose<K, D>;

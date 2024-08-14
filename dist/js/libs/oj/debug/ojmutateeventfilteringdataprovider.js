@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojdedupdataprovider', 'ojs/ojcomponentcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function (oj, CachedIteratorResultsDataProvider, DedupDataProvider, ojcomponentcore, ojeventtarget, ojdataprovider) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojdedupdataprovider', 'ojs/ojcomponentcore', 'ojs/ojeventtarget'], function (oj, ojdataprovider, CachedIteratorResultsDataProvider, DedupDataProvider, ojcomponentcore, ojeventtarget) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     CachedIteratorResultsDataProvider = CachedIteratorResultsDataProvider && Object.prototype.hasOwnProperty.call(CachedIteratorResultsDataProvider, 'default') ? CachedIteratorResultsDataProvider['default'] : CachedIteratorResultsDataProvider;
@@ -171,17 +171,7 @@ define(['ojs/ojcore-base', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojded
                 ['next']() {
                     let self = this;
                     const signal = this.params?.signal;
-                    if (signal && signal.aborted) {
-                        const reason = signal.reason;
-                        return Promise.reject(new DOMException(reason, 'AbortError'));
-                    }
-                    return new Promise((resolve, reject) => {
-                        if (signal) {
-                            const reason = signal.reason;
-                            signal.addEventListener('abort', (e) => {
-                                return reject(new DOMException(reason, 'AbortError'));
-                            });
-                        }
+                    const callback = (resolve) => {
                         return resolve(this.asyncIterator.next().then((result) => {
                             if (!(self._parent.dataProvider instanceof CachedIteratorResultsDataProvider) &&
                                 !(self._parent.dataProvider instanceof DedupDataProvider)) {
@@ -189,7 +179,8 @@ define(['ojs/ojcore-base', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojded
                             }
                             return result;
                         }));
-                    });
+                    };
+                    return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
                 }
             };
             this.DataProviderMutationEventDetail = class {
@@ -249,35 +240,17 @@ define(['ojs/ojcore-base', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojded
         }
         fetchByKeys(params) {
             const signal = params?.signal;
-            if (signal && signal.aborted) {
-                const reason = signal.reason;
-                return Promise.reject(new DOMException(reason, 'AbortError'));
-            }
-            return new Promise((resolve, reject) => {
-                if (signal) {
-                    const reason = signal.reason;
-                    signal.addEventListener('abort', (e) => {
-                        return reject(new DOMException(reason, 'AbortError'));
-                    });
-                }
+            const callback = (resolve) => {
                 return resolve(this.dataProvider.fetchByKeys(params));
-            });
+            };
+            return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
         fetchByOffset(params) {
             const signal = params?.signal;
-            if (signal && signal.aborted) {
-                const reason = signal.reason;
-                return Promise.reject(new DOMException(reason, 'AbortError'));
-            }
-            return new Promise((resolve, reject) => {
-                if (signal) {
-                    const reason = signal.reason;
-                    signal.addEventListener('abort', (e) => {
-                        return reject(new DOMException(reason, 'AbortError'));
-                    });
-                }
+            const callback = (resolve) => {
                 return resolve(this.dataProvider.fetchByOffset(params));
-            });
+            };
+            return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
         fetchFirst(params) {
             const asyncIterable = this.dataProvider.fetchFirst(params);

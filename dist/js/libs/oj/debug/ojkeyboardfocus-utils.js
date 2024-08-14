@@ -34,10 +34,6 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * @private
    */
   const _ACTIONABLE_ELEMENTS_QUERY = '[' + _DATA_OJ_TABMOD + '], ' + _FOCUSABLE_ELEMENTS_QUERY;
-  /**
-   * @private
-   */
-  const _LOGICAL_PARENT = '__oj_logical_parent';
 
   /** ******************* focusable/editable element related methods *****************/
 
@@ -229,18 +225,65 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
         }
       }
     }
-    // also search VDOM popups
-    var newPopups = ojpopupcore.VLayerUtils.findOpenVPopups();
-    for (var j = 0; j < newPopups.length; j++) {
-      var layerElem = newPopups[j];
-      var launcherElem = layerElem[_LOGICAL_PARENT];
-      // Check if the component contains the launcher
-      if (launcherElem && $(componentElement).has(launcherElem).length > 0) {
-        // the actual popup elem is a child of the layer div
-        return layerElem.firstElementChild;
-      }
-    }
     return null;
+  };
+
+  /**
+   * Components that open popups (such as ojSelect, ojCombobox, ojInputDate, etc.) will trigger
+   * focusout, but components don't want to exit actionable/edit mode in those cases.
+   * This method should be used inside the component's focusout handler.
+   * @param elem the component element
+   * @return an array of logical popup elements if any have been launched from within the component
+   * or from within any of those popups launched from within the component.
+   * @ignore
+   */
+  const getAllLogicalChildPopups = function (componentElement) {
+    var allPopups = {
+      popups: oj.ZOrderUtils.findOpenPopups()
+    };
+
+    var _getLogicalChildPopups = function (parentElement) {
+      var i;
+      var childPopups = [];
+      for (i = 0; i < allPopups.popups.length; i++) {
+        // Get the launcher of the popup.
+        // popups[i] is just a wrapper with the real popup as its child.
+        var popupElem = allPopups.popups[i].firstElementChild;
+        var launcher = DomUtils.getLogicalParent($(popupElem));
+
+        // Check if the parent contains the launcher
+        if (launcher != null && $(parentElement).has(launcher.get(0)).length > 0) {
+          // only return the popup if the child popup is currently open
+          if (oj.ZOrderUtils.getStatus(popupElem) === oj.ZOrderUtils.STATUS.OPEN) {
+            childPopups.push(popupElem);
+          }
+        }
+      }
+      return { popups: childPopups };
+    };
+
+    var allLogicalChildPopups = _getLogicalChildPopups(componentElement);
+
+    var _addChildPopups = function (popupElement) {
+      var popupsObj = _getLogicalChildPopups(popupElement);
+      for (let j = 0; j < popupsObj.popups.length; j++) {
+        if (allLogicalChildPopups.popups.indexOf(popupsObj.popups[j]) === -1) {
+          allLogicalChildPopups.popups.push(popupsObj.popups[j]);
+        }
+      }
+    };
+
+    var i;
+    var popupCheckIndex = 0;
+    while (popupCheckIndex < allLogicalChildPopups.popups.length) {
+      for (i = popupCheckIndex; i < allLogicalChildPopups.popups.length; i++) {
+        _addChildPopups(allLogicalChildPopups.popups[i]);
+      }
+      popupCheckIndex = i;
+    }
+
+    // return total array of all logical child popups (vDom included)
+    return allLogicalChildPopups.popups;
   };
 
   exports.checkVisibility = checkVisibility;
@@ -248,6 +291,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
   exports.disableElement = disableElement;
   exports.enableAllFocusableElements = enableAllFocusableElements;
   exports.getActionableElementsInNode = getActionableElementsInNode;
+  exports.getAllLogicalChildPopups = getAllLogicalChildPopups;
   exports.getFocusableElementsInNode = getFocusableElementsInNode;
   exports.getLogicalChildPopup = getLogicalChildPopup;
   exports.isActionableElement = isActionableElement;

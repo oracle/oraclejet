@@ -1253,12 +1253,15 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
      *
      *<p>Upon opening a dialog, focus is automatically moved to the first item that matches the following:</p>
      *<ol>
-     *  <li>The first element within the dialog with the <code>autofocus</code> attribute</li>
      *  <li>The first <code>:tabbable</code> element within the dialog body</li>
      *  <li>The first <code>:tabbable</code> element within the dialog footer</li>
      *  <li>The dialog's close button</li>
      *  <li>The dialog itself</li>
      *</ol>
+     *<p>The use of the HTML <code>autofocus</code> global attribute is discouraged.
+     * If specified, the dialog will try to honor it but it may have undesirable implications for accessibility.
+     * For more details, see the <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/autofocus#accessibility_concerns">Accessibility concerns section</a>.</p>
+     *
      *<p>While open, the dialog widget ensures that tabbing cycles focus between elements within the dialog itself, not elements outside of it. Modal dialogs additionally prevent mouse users from clicking on elements outside of the dialog.</p>
      *
      *<p>Upon closing a dialog, focus is automatically returned to the element that had focus when the dialog was opened.</p>
@@ -2561,6 +2564,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       _createContainer: function () {
         this._dialogContainer = document.createElement('div');
         this._dialogContainer.classList.add(OJD_CONTAINER);
+        this._dialogContainer.setAttribute('data-oj-context', '');
       },
 
       _createHeaderSlot: function () {
@@ -3119,6 +3123,9 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         this._registerResizeListener(this.element[0]);
 
+        // JET-58635: move focus to the dialog as soon as possible
+        this._focusTabbable();
+
         // We add .oj-animate-open when the dialog is animating on open.
         // This supports maintaing the visibility of a nested dialog during animation open.
         rootElement.parent().addClass('oj-animate-open');
@@ -3171,7 +3178,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         this._restoreBodyOverflow();
         this._makeResizable();
         this._trigger('open');
-        this._focusTabbable();
+        // this._focusTabbable();
       },
       /**
        * Refresh the dialog.
@@ -3236,9 +3243,15 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @private
        */
       _focusTabbable: function () {
-        var hasFocus = this.GetFocusElement();
-        hasFocus.focus();
-        this._trigger('focus');
+        // postpone setting focus until the content has been upgraded
+        var busyContext = oj.Context.getContext(this._dialogContainer).getBusyContext();
+        busyContext.whenReady().then(
+          function () {
+            var hasFocus = this.GetFocusElement();
+            hasFocus.focus();
+            this._trigger('focus');
+          }.bind(this)
+        );
       },
 
       /**

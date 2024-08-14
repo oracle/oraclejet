@@ -15,6 +15,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
             vertical?: ((context: ojDataGrid.HeaderContext<K, D>) => ojDataGrid.VerticalAlignment) | ojDataGrid.VerticalAlignment;
         };
         className?: ((context: ojDataGrid.CellContext<K, D>) => string | void | null) | string | null;
+        editable?: ((context: ojDataGrid.CellContext<K, D>) => string | void | null) | string;
         renderer?: ((context: ojDataGrid.CellContext<K, D>) => {
             insert: HTMLElement | string;
         } | void | null) | null;
@@ -141,7 +142,12 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
+                    insertContent?: never;
+                } | {
+                    insert?: never;
+                    insertContent: HTMLElement | string;
                 } | void | null) | null;
+                sortable?: ((context: ojDataGrid.LabelContext<K, D>) => string) | string | null;
                 style?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
             };
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
@@ -173,6 +179,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
                 } | void | null) | null;
+                sortable?: ((context: ojDataGrid.LabelContext<K, D>) => string) | string | null;
                 style?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
             };
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
@@ -200,7 +207,12 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
+                    insertContent?: never;
+                } | {
+                    insert?: never;
+                    insertContent: HTMLElement | string;
                 } | void | null) | null;
+                sortable?: ((context: ojDataGrid.LabelContext<K, D>) => string) | string | null;
                 style?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
             };
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
@@ -232,6 +244,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
                 } | void | null) | null;
+                sortable?: ((context: ojDataGrid.LabelContext<K, D>) => string) | string | null;
                 style?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
             };
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
@@ -354,6 +367,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         labelUnhideRow?: string;
         msgFetchingData?: string;
         msgNoData?: string;
+        msgReadOnly?: string;
         resizeColumnDialog?: string;
         resizeRowDialog?: string;
         rowHeight?: string;
@@ -473,6 +487,14 @@ export namespace ojDataGrid {
     interface ojSort extends CustomEvent<{
         direction: 'ascending' | 'descending';
         header: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojSortLabelRequest<D> extends CustomEvent<{
+        axis: 'row' | 'column' | 'rowEnd' | 'columnEnd';
+        direction: 'ascending' | 'descending';
+        item: GridItem<D>;
+        level: number;
         [propName: string]: any;
     }> {
     }
@@ -621,6 +643,7 @@ export namespace ojDataGrid {
     type LabelContext<K, D> = {
         axis: 'column' | 'columnEnd' | 'row' | 'rowEnd';
         componentElement: Element;
+        contentElement: Element;
         datasource: DataProvider<K, D> | null;
         key: K;
         level: number;
@@ -664,6 +687,32 @@ export namespace ojDataGrid {
     };
     // tslint:disable-next-line interface-over-type-literal
     type VerticalAlignment = 'auto' | 'top' | 'center' | 'bottom';
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderCellTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<CellTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnEndHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnEndHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnHeaderContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnHeaderLabelContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowEndHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowEndHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowHeaderContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowHeaderLabelContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
 }
 export interface ojDataGridEventMap<K, D> extends baseComponentEventMap<ojDataGridSettableProperties<K, D>> {
     'ojBeforeCurrentCell': ojDataGrid.ojBeforeCurrentCell<K>;
@@ -681,6 +730,7 @@ export interface ojDataGridEventMap<K, D> extends baseComponentEventMap<ojDataGr
     'ojResize': ojDataGrid.ojResize;
     'ojScroll': ojDataGrid.ojScroll;
     'ojSort': ojDataGrid.ojSort;
+    'ojSortLabelRequest': ojDataGrid.ojSortLabelRequest<D>;
     'ojSortRequest': ojDataGrid.ojSortRequest<D>;
     'bandingIntervalChanged': JetElementCustomEvent<ojDataGrid<K, D>["bandingInterval"]>;
     'cellChanged': JetElementCustomEvent<ojDataGrid<K, D>["cell"]>;
@@ -713,6 +763,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
             vertical?: ((context: ojDataGrid.HeaderContext<K, D>) => ojDataGrid.VerticalAlignment) | ojDataGrid.VerticalAlignment;
         };
         className?: ((context: ojDataGrid.CellContext<K, D>) => string | void | null) | string | null;
+        editable?: ((context: ojDataGrid.CellContext<K, D>) => string | void | null) | string;
         renderer?: ((context: ojDataGrid.CellContext<K, D>) => {
             insert: HTMLElement | string;
         } | void | null) | null;
@@ -839,7 +890,12 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
+                    insertContent?: never;
+                } | {
+                    insert?: never;
+                    insertContent: HTMLElement | string;
                 } | void | null) | null;
+                sortable?: ((context: ojDataGrid.LabelContext<K, D>) => string) | string | null;
                 style?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
             };
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
@@ -871,6 +927,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
                 } | void | null) | null;
+                sortable?: ((context: ojDataGrid.LabelContext<K, D>) => string) | string | null;
                 style?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
             };
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
@@ -898,7 +955,12 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
                 className?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
+                    insertContent?: never;
+                } | {
+                    insert?: never;
+                    insertContent: HTMLElement | string;
                 } | void | null) | null;
+                sortable?: ((context: ojDataGrid.LabelContext<K, D>) => string) | string | null;
                 style?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
             };
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
@@ -930,6 +992,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
                 renderer?: ((context: ojDataGrid.LabelContext<K, D>) => {
                     insert: HTMLElement | string;
                 } | void | null) | null;
+                sortable?: ((context: ojDataGrid.LabelContext<K, D>) => string) | string | null;
                 style?: ((context: ojDataGrid.LabelContext<K, D>) => string | void | null) | string | null;
             };
             renderer?: ((context: ojDataGrid.HeaderContext<K, D>) => {
@@ -1052,6 +1115,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         labelUnhideRow?: string;
         msgFetchingData?: string;
         msgNoData?: string;
+        msgReadOnly?: string;
         resizeColumnDialog?: string;
         resizeRowDialog?: string;
         rowHeight?: string;
@@ -1163,6 +1227,14 @@ export namespace DataGridElement {
         [propName: string]: any;
     }> {
     }
+    interface ojSortLabelRequest<D> extends CustomEvent<{
+        axis: 'row' | 'column' | 'rowEnd' | 'columnEnd';
+        direction: 'ascending' | 'descending';
+        item: GridItem<D>;
+        level: number;
+        [propName: string]: any;
+    }> {
+    }
     interface ojSortRequest<D> extends CustomEvent<{
         axis: 'row' | 'column';
         direction: 'ascending' | 'descending';
@@ -1235,6 +1307,12 @@ export namespace DataGridElement {
         treeDepth: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type CellTemplateContext<D> = {
+        datasource: DataGridProvider<D>;
+        item: GridBodyItem<D>;
+        mode: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type CurrentCell<K> = {
         axis?: 'column' | 'columnEnd' | 'row' | 'rowEnd';
         index?: number;
@@ -1251,9 +1329,20 @@ export namespace DataGridElement {
         type: 'cell' | 'header' | 'label';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type DragHeaderContext = {
+        axis: string;
+        range: ojDataGrid.Range[];
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type DragHeaderLabelContext = {
         axis: string;
         level: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DropHeaderContext = {
+        axis: string;
+        index: number;
+        position: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type DropHeaderLabelContext = {
@@ -1262,19 +1351,46 @@ export namespace DataGridElement {
         position: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type HeaderContext<K, D> = {
+        axis: 'column' | 'columnEnd' | 'row' | 'rowEnd';
+        componentElement: Element;
+        contentElement: Element;
+        data: D;
+        datasource: DataProvider<K, D> | null;
+        depth: number;
+        extent: number;
+        index: number;
+        indexFromParent: number;
+        isLeaf: boolean;
+        key: K;
+        level: number;
+        metadata: any;
+        parentElement: Element;
+        parentKey: K;
+        treeDepth: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type HeaderTemplateContext<D> = {
         datasource: DataGridProvider<D>;
         item: GridHeaderItem<D>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type HorizontalAlignment = 'auto' | 'start' | 'center' | 'end' | 'left' | 'right';
+    // tslint:disable-next-line interface-over-type-literal
     type LabelContext<K, D> = {
         axis: 'column' | 'columnEnd' | 'row' | 'rowEnd';
         componentElement: Element;
+        contentElement: Element;
         datasource: DataProvider<K, D> | null;
         key: K;
         level: number;
         metadata: any;
         parentElement: Element;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LabelTemplateContext<D> = {
+        datasource: DataGridProvider<D>;
+        item: GridItem<D>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Range = {
@@ -1288,7 +1404,52 @@ export namespace DataGridElement {
         };
     };
     // tslint:disable-next-line interface-over-type-literal
+    type Selection<K> = {
+        startIndex?: {
+            row: number;
+            column?: number;
+        };
+        startKey?: {
+            row: K;
+            column?: K;
+        };
+        endIndex?: {
+            row: number;
+            column?: number;
+        };
+        endKey?: {
+            row: K;
+            column?: K;
+        };
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type VerticalAlignment = 'auto' | 'top' | 'center' | 'bottom';
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderCellTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<CellTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnEndHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnEndHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnHeaderContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnHeaderLabelContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderColumnHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowEndHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowEndHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowHeaderContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowHeaderLabelContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
 }
 export interface DataGridIntrinsicProps extends Partial<Readonly<ojDataGridSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojBeforeCurrentCell?: (value: ojDataGridEventMap<any, any>['ojBeforeCurrentCell']) => void;
@@ -1306,6 +1467,7 @@ export interface DataGridIntrinsicProps extends Partial<Readonly<ojDataGridSetta
     onojResize?: (value: ojDataGridEventMap<any, any>['ojResize']) => void;
     onojScroll?: (value: ojDataGridEventMap<any, any>['ojScroll']) => void;
     onojSort?: (value: ojDataGridEventMap<any, any>['ojSort']) => void;
+    onojSortLabelRequest?: (value: ojDataGridEventMap<any, any>['ojSortLabelRequest']) => void;
     onojSortRequest?: (value: ojDataGridEventMap<any, any>['ojSortRequest']) => void;
     onbandingIntervalChanged?: (value: ojDataGridEventMap<any, any>['bandingIntervalChanged']) => void;
     oncellChanged?: (value: ojDataGridEventMap<any, any>['cellChanged']) => void;

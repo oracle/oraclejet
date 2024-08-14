@@ -26,7 +26,7 @@ let Selector = class Selector extends Component {
             this.setState({ focus: false });
         };
         this._checkboxListener = (event) => {
-            const { selectedKeys, rowKey, selectionMode } = this.props;
+            const { selectedKeys, rowKey, selectionMode, indeterminate } = this.props;
             let newSelectedKeys;
             if (selectedKeys != null) {
                 if (event.target.checked) {
@@ -42,7 +42,12 @@ let Selector = class Selector extends Component {
                 }
                 else {
                     if (selectionMode === 'all') {
-                        newSelectedKeys = selectedKeys.clear();
+                        if (indeterminate) {
+                            newSelectedKeys = selectedKeys.addAll();
+                        }
+                        else {
+                            newSelectedKeys = selectedKeys.clear();
+                        }
                     }
                     else {
                         newSelectedKeys = selectedKeys.delete([rowKey]);

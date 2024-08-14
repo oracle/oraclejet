@@ -1,15 +1,43 @@
 <?js
 const { data, props, componentName } = obj;
-if (data.events || props){?>
+if (data.events || data.templateSlotProps.length > 0 || props) {?>
 export namespace <?js= componentName ?> {
   <?js= this.partial('events.tmpl', data.events) ?>
   <?js
-  if (props){
+  if (props) {
   for (let prop of props) {?>
   // tslint:disable-next-line interface-over-type-literal
   type <?js= prop ?>Changed<?js= this.classTypeParamsDeclaration ?> = JetElementCustomEventStrict<<?js= componentName ?><?js= data.classTypeParams ?>["<?js= prop ?>"]>;
   <?js}
   }?>
+  <?js
+  for (let templateSlot of data.templateSlotProps) {
+    let renderFuncName = templateSlot.slotRenderType;
+    if (templateSlot.slotDataNameTypeParams) {
+      if (
+        templateSlot.slotDataNameTypeParams.indexOf('<') > -1 &&
+        templateSlot.slotDataNameTypeParams.indexOf('>') > -1 &&
+        templateSlot.slotDataTypeParamsDeclaration
+      ) {
+        renderFuncName = `${renderFuncName}${templateSlot.slotDataTypeParamsDeclaration}`;
+      }?>
+  type <?js= renderFuncName ?> = import('ojs/ojvcomponent').TemplateSlot<<?js= templateSlot.slotDataNameTypeParams ?>>;
+  <?js
+    } else {  // TemplateSlot data specified as type literal ?>
+  type <?js= renderFuncName ?> = import('ojs/ojvcomponent').TemplateSlot<{
+  <?js
+    const slotProp = data.slots[templateSlot.slotPropName];
+    const slotData = slotProp?.['data'];
+    if (slotProp && slotData) {
+      for (let item in slotData) {?>
+    <?js= item ?>: <?js= slotData[item]['reftype'] || slotData[item]['type'] ?>;
+  <?js 
+      }
+    }?>
+  }
+  <?js
+  }
+}?>
 }
 <?js}
 ?>

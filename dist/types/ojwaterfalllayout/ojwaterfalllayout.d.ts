@@ -59,12 +59,13 @@ export declare class WaterfallLayout<K extends string | number, D> extends Compo
     private static readonly minResizeWidthThreshold;
     private static readonly debounceThreshold;
     private static readonly _CSS_Vars;
+    private readonly _findFocusItem;
     private readonly _handleFocusIn;
     private readonly _handleFocusOut;
     private readonly _handleClick;
     private readonly _handleKeyDown;
     private readonly _touchStartHandler;
-    render(): import("preact").JSX.Element;
+    render(): import("preact/jsx-runtime").JSX.Element;
     private _getScrollPolicyOptions;
     private _debounce;
     componentDidMount(): void;
@@ -137,6 +138,7 @@ export namespace WaterfallLayoutElement {
     type scrollPolicyChanged<K extends string | number, D> = JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['scrollPolicy']>;
     type scrollPolicyOptionsChanged<K extends string | number, D> = JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['scrollPolicyOptions']>;
     type scrollPositionChanged<K extends string | number, D> = JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['scrollPosition']>;
+    type RenderItemTemplate<K extends string | number, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
 }
 export interface WaterfallLayoutElementEventMap<K extends string | number, D> extends HTMLElementEventMap {
     'dataChanged': JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['data']>;

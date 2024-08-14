@@ -1170,7 +1170,7 @@ var __oj_timeline_series_metadata =
    * @property {any} key The key of the current item
    */
   /**
-   * @typedef {Object} oj.ojTimeline.itemBubbleTemplateContext
+   * @typedef {Object} oj.ojTimeline.ItemBubbleTemplateContext
    * @property {oj.ojTimeline.SeriesItem} data The data object of the item.
    * @property {oj.ojTimeline.Series} seriesData The data for the series the item belongs to.
    * @property {Object|null} itemData The data provider row data object for the item. This will only be set if an DataProvider for <a href="#data">data</a> is being used.
@@ -1295,14 +1295,14 @@ var __oj_timeline_series_metadata =
    * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
    * <ul>
    *   <li>$current - an object that contains information for the current item.
-   *   (See [oj.ojTimeline.itemBubbleTemplateContext]{@link oj.ojTimeline.itemBubbleTemplateContext} or the table below for a list of properties available on $current) </li>
+   *   (See [oj.ojTimeline.ItemBubbleTemplateContext]{@link oj.ojTimeline.ItemBubbleTemplateContext} or the table below for a list of properties available on $current) </li>
    * </ul>
    *
    *
    * @ojslot itemBubbleContentTemplate
    * @ojmaxitems 1
    * @ojshortdesc The itemBubbleContentTemplate slot is used to specify custom item bubble content. See the Help documentation for more information.
-   * @ojtemplateslotprops oj.ojTimeline.itemBubbleContentTemplate
+   * @ojtemplateslotprops oj.ojTimeline.ItemBubbleTemplateContext
    * @memberof oj.ojTimeline
    *
    * @example <caption>Initialize the Timeline with a item bubble template specified:</caption>

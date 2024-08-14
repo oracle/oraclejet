@@ -10,6 +10,7 @@ export interface ojRowExpander<K, D> extends baseComponent<ojRowExpanderSettable
         accessibleLevelDescription?: string;
         accessibleRowCollapsed?: string;
         accessibleRowDescription?: string;
+        accessibleRowDescriptionAtLeast?: string;
         accessibleRowExpanded?: string;
         accessibleStateCollapsed?: string;
         accessibleStateExpanded?: string;
@@ -61,6 +62,7 @@ export interface ojRowExpanderSettableProperties<K, D> extends baseComponentSett
         accessibleLevelDescription?: string;
         accessibleRowCollapsed?: string;
         accessibleRowDescription?: string;
+        accessibleRowDescriptionAtLeast?: string;
         accessibleRowExpanded?: string;
         accessibleStateCollapsed?: string;
         accessibleStateExpanded?: string;

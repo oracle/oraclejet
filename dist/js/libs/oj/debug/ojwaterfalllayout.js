@@ -241,6 +241,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
             this.recalculatePositions();
         }
         recalculatePositions() {
+            this.bottom = 0;
             this._populatePositions(this.keys, 0, (key) => {
                 return key;
             }, (index, key, colIndex, cachedPos) => {
@@ -320,6 +321,9 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
                 return { key: this.getKey(elem), element: elem };
             });
             if (adjusted) {
+                if (this.scrollPolicyOptions.scroller !== this.root) {
+                    this.callback.setContentHeight(this.getLayout().getLastItemPosition());
+                }
                 return { done: true, items };
             }
             const startIndex = this.callback.getData().startIndex;
@@ -372,16 +376,28 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
         }
         renderItem(key, index, data) {
             const renderer = this.callback.getItemRenderer();
-            const vnodes = renderer({ data, index, key });
+            const content = renderer({ data, index, key });
+            const contentVnode = this.findItemVNode(content);
+            let vnodes;
+            if (contentVnode != null) {
+                this.decorateItemContent(contentVnode);
+                vnodes = [preact.h('div', {}, content)];
+            }
+            else {
+                vnodes = contentVnode;
+            }
             this.vnodesCache.set(key, { index, vnodes });
             return vnodes;
+        }
+        decorateItemContent(vnode) {
+            vnode.props.tabIndex = -1;
+            this.setStyleClass(vnode, ['oj-waterfalllayout-item-element']);
         }
         decorateItem(vnodes, key, x, y, initialFetch, visible) {
             let vnode = this.findItemVNode(vnodes);
             if (vnode != null) {
                 vnode.key = key;
                 vnode.props.role = 'gridcell';
-                vnode.props.tabIndex = -1;
                 vnode.props['data-oj-positioned'] = x != -1 && y != -1 ? 'true' : 'false';
                 vnode.props['data-oj-key'] = key;
                 if (typeof key === 'number') {
@@ -475,14 +491,22 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
             this.renderCompleted = false;
             this.ticking = false;
             this.gutterWidth = 16;
+            this._findFocusItem = (item) => {
+                if (item != null) {
+                    return item.firstElementChild;
+                }
+                return item;
+            };
             this._handleFocusIn = (event) => {
-                if (this.currentItem) {
-                    this.focusInHandler(this.currentItem);
+                const item = this._findFocusItem(this.currentItem);
+                if (item) {
+                    this.focusInHandler(item);
                 }
             };
             this._handleFocusOut = (event) => {
-                if (this.currentItem) {
-                    this.focusOutHandler(this.currentItem);
+                const item = this._findFocusItem(this.currentItem);
+                if (item) {
+                    this.focusOutHandler(item);
                 }
             };
             this._handleClick = (event) => {
@@ -583,6 +607,9 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
                         }
                         else {
                             content = this.contentHandler.render(data);
+                            if (content?.[0]?.length === 0) {
+                                content[0].push(jsxRuntime.jsx("div", { role: "gridcell" }));
+                            }
                         }
                     }
                 }
@@ -868,7 +895,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
             this.setState({ positions });
         }
         setContentHeight(height) {
-            if (this.props.scrollPolicyOptions.scroller != null) {
+            if (this.props.scrollPolicyOptions.scroller != null && this.state.contentHeight !== height) {
                 this.setState({ contentHeight: height });
             }
         }
@@ -1016,14 +1043,16 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
             this._updateCurrentItem(item);
         }
         _resetFocus(elem) {
-            this.focusOutHandler(elem);
-            elem.tabIndex = -1;
+            const item = this._findFocusItem(elem);
+            this.focusOutHandler(item);
+            item.tabIndex = -1;
         }
         _setFocus(elem, focus) {
-            elem.tabIndex = 0;
+            const item = this._findFocusItem(elem);
+            item.tabIndex = 0;
             if (focus) {
-                this.focusInHandler(elem);
-                elem.focus();
+                this.focusInHandler(item);
+                item.focus();
             }
         }
         _updateCurrentItem(item) {

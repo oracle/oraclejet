@@ -5,21 +5,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateDoclets = void 0;
 const path_1 = __importDefault(require("path"));
-let result;
-let classDoclet;
 function generateDoclets(metaUtilObj) {
-    result = [];
-    classDoclet = getClassDoclet(metaUtilObj);
-    createTypeDefsFromSignature(metaUtilObj);
-    return [
+    const classDoclet = getClassDoclet(metaUtilObj);
+    const typeDefs = [];
+    const properties = [];
+    const methods = [];
+    const events = [];
+    const slots = [];
+    let context = {
         classDoclet,
-        ...getPropertyDoclets(metaUtilObj.fullMetadata.properties, classDoclet, metaUtilObj),
-        ...getMethodDoclets(metaUtilObj, classDoclet),
-        ...getEventDoclets(metaUtilObj, classDoclet),
-        ...getSlotDoclets(metaUtilObj, classDoclet),
+        typeDefs,
+        properties,
+        methods,
+        events,
+        slots
+    };
+    metaUtilObj['context'] = context;
+    createTypeDefsFromSignature(metaUtilObj);
+    context.properties = getPropertyDoclets(metaUtilObj.fullMetadata.properties, classDoclet, metaUtilObj);
+    context.methods = getMethodDoclets(metaUtilObj, classDoclet);
+    context.events = getEventDoclets(metaUtilObj, classDoclet);
+    context.slots = getSlotDoclets(metaUtilObj, classDoclet);
+    return [
+        context.classDoclet,
+        ...context.properties,
+        ...context.methods,
+        ...context.events,
+        ...context.slots,
         ...getGestureFragments(classDoclet),
         ...getObservedGlobalProps(metaUtilObj, classDoclet),
-        ...result
+        ...context.typeDefs
     ];
 }
 exports.generateDoclets = generateDoclets;
@@ -90,6 +105,7 @@ function getClassDoclet(metaUtilObj) {
 function createTypeDefsFromSignature(metaUtilObj) {
     if (metaUtilObj.fullMetadata['jsdoc']['typedefs']) {
         const typeDefMD = metaUtilObj.fullMetadata['jsdoc']['typedefs'];
+        const classDoclet = metaUtilObj['context'].classDoclet;
         let signArr = classDoclet['ojsignature'];
         if (signArr && signArr.length) {
             let signature = signArr[0].value;
@@ -149,6 +165,7 @@ function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased 
     for (const key in properties) {
         let typeIsTypedef = false;
         let doclet = {};
+        const classDoclet = metaUtilObj['context'].classDoclet;
         doclet['memberof'] = classDoclet.longname;
         const prop = properties[key];
         const propName = parentDoclet.kind === 'class'
@@ -176,9 +193,14 @@ function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased 
                 doclet['ojhidden'] = true;
             }
         }
+        if (prop.dynamicSlotDef) {
+            doclet['dynamicSlotDef'] = prop.dynamicSlotDef;
+        }
         doclet['meta'] = metaUtilObj.fullMetadata['jsdoc']['meta'];
-        if (prop.status) {
-            doclet['tsdeprecated'] = prop.status.filter((stat) => stat.type === 'deprecated');
+        let status;
+        if (Array.isArray(prop.status)) {
+            status = prop.status.filter((stat) => stat.type === 'deprecated');
+            doclet['tsdeprecated'] = status;
         }
         if (prop.propertyEditorValues) {
             doclet['ojvalues'] = [];
@@ -189,6 +211,9 @@ function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased 
                     displayName: prop.propertyEditorValues[enumKey].displayName,
                     type: { names: ['string'] }
                 });
+            }
+            if (status && status.some((stat) => stat.target === 'propertyValue')) {
+                setStatusOnPropertyValues(doclet, status);
             }
         }
         if (prop.value !== undefined) {
@@ -276,26 +301,67 @@ function getMethodDoclets(metaUtilObj, parentDoclet) {
 }
 function getSlotDoclets(metaUtilObj, parentDoclet) {
     const slots = metaUtilObj.fullMetadata.slots;
+    const dynamicTemplateSlots = metaUtilObj.fullMetadata.dynamicSlots;
+    let dynamicSlot;
+    if (hasDynamicSlot(metaUtilObj)) {
+        dynamicSlot = {
+            '': {}
+        };
+    }
+    return [
+        ...processSlots(slots, parentDoclet, metaUtilObj),
+        ...processSlots(dynamicTemplateSlots, parentDoclet, metaUtilObj, true),
+        ...processSlots(dynamicSlot, parentDoclet, metaUtilObj, true)
+    ];
+}
+function processSlots(slots, parentDoclet, metaUtilObj, isDynamic = false) {
     let doclets = [];
     for (const key in slots) {
         let doclet = {};
         let isDefault = false;
         doclet['memberof'] = parentDoclet.longname;
         const slot = slots[key];
-        if (key == '') {
+        if (key == '' && !isDynamic) {
             isDefault = true;
         }
-        const name = isDefault ? 'Default' : key;
-        const longName = `${parentDoclet.longname}#${name}`;
+        let name = isDefault ? 'Default' : key;
+        if (name == '') {
+            name = 'DynamicSlot';
+        }
+        if (isDynamic) {
+            doclet['dynamicSlot'] = true;
+            name = `DynamicSlots.${name}`;
+        }
+        let longName = `${parentDoclet.longname}#${name}`;
         doclet['id'] = longName;
         doclet['name'] = name;
         doclet['kind'] = 'member';
         doclet['longname'] = longName;
-        doclet['description'] = slot.description || '';
-        if (slot['jsdoc']) {
-            doclet['description'] = slot['jsdoc']['description'] || doclet['description'];
-            if (slot['jsdoc']['ignore']) {
-                doclet['ojhidden'] = true;
+        if (isDynamic) {
+            const contextItem = metaUtilObj.dynamicSlotsInfo.find((item) => item.key === key);
+            const metadata = contextItem?.metadata;
+            if (metadata) {
+                doclet['description'] = metadata['jsdoc']['description'] || metadata['description'] || '';
+                if (metadata['jsdoc']['ignore']) {
+                    doclet['ojhidden'] = true;
+                }
+                if (metadata['displayName']) {
+                    doclet['displayName'] = metadata['displayName'];
+                }
+                const slotDefProps = getSlotDefProperties(key, metaUtilObj);
+                if (slotDefProps) {
+                    injectLinkToSlotDef(doclet, slotDefProps);
+                    injectLinkToSlotContextType(doclet, slotDefProps, metaUtilObj);
+                }
+            }
+        }
+        else {
+            doclet['description'] = slot.description || '';
+            if (slot['jsdoc']) {
+                doclet['description'] = slot['jsdoc']['description'] || doclet['description'];
+                if (slot['jsdoc']['ignore']) {
+                    doclet['ojhidden'] = true;
+                }
             }
         }
         doclet['meta'] = metaUtilObj.fullMetadata['jsdoc']['meta'];
@@ -306,6 +372,9 @@ function getSlotDoclets(metaUtilObj, parentDoclet) {
         }
         doclet['ojchild'] = isDefault;
         doclet['ojslot'] = !isDefault;
+        if (isDynamic && name !== 'DynamicSlot') {
+            doclet['ojtemplateslotprops'] = key;
+        }
         if (slot.data) {
             doclet['properties'] = processComplexProperties(slot.data, metaUtilObj);
         }
@@ -413,12 +482,13 @@ function processComplexProperties(properties, metaUtilObj) {
 }
 function createTypedefFromProp(prop, metaUtilObj) {
     let doclet = {};
+    const classDoclet = metaUtilObj['context'].classDoclet;
     doclet['memberof'] = classDoclet.longname;
     const typeDefMD = prop['jsdoc']['typedef'];
     const typeDefName = typeDefMD['name'];
     const typeDefLongName = `${doclet['memberof']}.${typeDefName}`;
     doclet['id'] = typeDefLongName;
-    const existingDoclet = getExistingDefinition(typeDefLongName);
+    const existingDoclet = getTypeDefDefinition(typeDefLongName, metaUtilObj);
     if (existingDoclet) {
         return existingDoclet;
     }
@@ -444,7 +514,7 @@ function createTypedefFromProp(prop, metaUtilObj) {
         const subprops = prop.properties ? prop.properties : prop.extension['vbdt'].itemProperties;
         doclet['properties'] = processComplexProperties(subprops, metaUtilObj);
     }
-    result.push(doclet);
+    metaUtilObj['context'].typeDefs.push(doclet);
     return doclet;
 }
 function createTypedef(typeDefMD, metaUtilObj, parent) {
@@ -453,7 +523,7 @@ function createTypedef(typeDefMD, metaUtilObj, parent) {
     const typeDefName = typeDefMD['name'];
     const typeDefLongName = `${doclet['memberof']}.${typeDefName}`;
     doclet['id'] = typeDefLongName;
-    const existingDoclet = getExistingDefinition(typeDefLongName);
+    const existingDoclet = getTypeDefDefinition(typeDefLongName, metaUtilObj);
     if (existingDoclet) {
         return existingDoclet;
     }
@@ -479,7 +549,7 @@ function createTypedef(typeDefMD, metaUtilObj, parent) {
         const props = typeDefMD.properties;
         doclet['properties'] = processComplexProperties(props, metaUtilObj);
     }
-    result.push(doclet);
+    metaUtilObj['context'].typeDefs.push(doclet);
     return doclet;
 }
 function isArrayOfObjects(prop) {
@@ -491,8 +561,8 @@ function isArrayOfObjects(prop) {
 function isPotentialTypeDef(prop) {
     return prop?.jsdoc?.typedef?.name && (isArrayOfObjects(prop) || prop.properties);
 }
-function getExistingDefinition(id) {
-    return result.find((doclet) => doclet['id'] === id);
+function getTypeDefDefinition(id, metaUtilObj) {
+    return metaUtilObj['context'].typeDefs.find((doclet) => doclet['id'] === id);
 }
 function getGestureFragments(parentDoclet) {
     let fragments = [];
@@ -612,7 +682,7 @@ function handlePropertyType(prop, doclet, metaUtilObj, propName) {
             }
         }
         else {
-            if (prop['type'] !== 'string' && prop['type'] !== 'number' && prop['type'] !== 'boolean') {
+            if (prop['isApiDocSignature']) {
                 if (propName) {
                     doclet['tstype'] = [
                         { target: 'Type', value: prop['reftype'], for: propName, jsdocOverride: true }
@@ -642,6 +712,98 @@ function handleEnumValues(prop, doclet) {
     if (prop.enumValues) {
         doclet['type'] = { names: prop.enumValues.map((x) => `"${x}"`) };
         delete doclet['tstype'];
+    }
+}
+function getSlotDefProperties(slotContextType, metaUtilObj) {
+    const properties = metaUtilObj.fullMetadata.properties;
+    const slotDefProps = [];
+    for (const key in properties) {
+        if (properties[key].dynamicSlotDef === slotContextType) {
+            slotDefProps.push(key);
+        }
+    }
+    return slotDefProps;
+}
+function injectLinkToSlotDef(doclet, slotDefProps) {
+    if (doclet && doclet['description']) {
+        doclet['description'] = `${doclet['description']} 
+    <p><span style="font-weight: bold">Note:</span> For additional information see ${getLinks(slotDefProps)}.</p>`;
+    }
+}
+function injectLinkToSlotContextType(dynamicSlot, slotDefProps, metaUtilObj) {
+    let properties = metaUtilObj['context'].properties;
+    properties.forEach((doclet) => {
+        if (slotDefProps.indexOf(doclet.name) >= 0) {
+            if (doclet['description']) {
+                doclet['description'] =
+                    doclet['description'] +
+                        `<p><span style="font-weight: bold">Note:</span> For additional information see <a href="#${dynamicSlot.name}">${dynamicSlot.name.endsWith('.DynamicSlot')
+                            ? 'Dynamic Slots'
+                            : dynamicSlot['displayName'] || dynamicSlot.name}</a>.</p>`;
+            }
+        }
+    });
+}
+function camelCaseToAttributeName(name) {
+    return name.replace(/([A-Z])/g, function (match) {
+        return '-' + match.toLowerCase();
+    });
+}
+function getLinks(props) {
+    let link = '';
+    props.forEach((slotDefProp) => {
+        link = `${link}, <a href="#${slotDefProp}">${camelCaseToAttributeName(slotDefProp)}</a>`;
+    });
+    link = link.substring(2);
+    return link;
+}
+function hasDynamicSlot(metaUtilObj) {
+    return (metaUtilObj.fullMetadata.dynamicSlots &&
+        Array.isArray(Object.keys(metaUtilObj.fullMetadata.dynamicSlots)) &&
+        Object.keys(metaUtilObj.fullMetadata.dynamicSlots).length == 0 &&
+        metaUtilObj.dynamicSlotsInUse == 1);
+}
+function setStatusOnPropertyValues(propDoclet, statusArr) {
+    if (statusArr && statusArr.length) {
+        let isPropValueStatus = false;
+        statusArr.forEach((status) => {
+            if (status.target === 'propertyValue') {
+                isPropValueStatus = true;
+                let values = status.value;
+                if (values && values.length) {
+                    values.forEach((value) => {
+                        propDoclet.ojvalues.forEach((ojvalue) => {
+                            if (ojvalue.name && ojvalue.name === value) {
+                                const statObj = {
+                                    target: 'propertyValue',
+                                    for: value,
+                                    since: status.since,
+                                    description: status.description || ''
+                                };
+                                if (!status.type || status.type !== 'antiPattern') {
+                                    ojvalue.tsdeprecated = [statObj];
+                                }
+                                else {
+                                    ojvalue.ojdeprecated = [statObj];
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+        });
+        if (!isPropValueStatus) {
+            statusArr.forEach((status) => {
+                if (!status.type || status.type !== 'antiPattern') {
+                    propDoclet.tsdeprecated = propDoclet.tsdeprecated ?? [];
+                    propDoclet.tsdeprecated.push(status);
+                }
+                else {
+                    propDoclet.ojdeprecated = propDoclet.ojdeprecated ?? [];
+                    propDoclet.ojdeprecated.push(status);
+                }
+            });
+        }
     }
 }
 //# sourceMappingURL=ApiDocUtils.js.map

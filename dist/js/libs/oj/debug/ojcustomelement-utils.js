@@ -247,7 +247,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
     const CHILD_BINDING_PROVIDER = Symbol('childBindingProvider');
     const CACHED_BINDING_PROVIDER = Symbol('cachedBindingProvider');
     const EMPTY_SET = new Set();
+    const _OJ_SUBTREE_HIDDEN_CLASS = 'oj-subtree-hidden';
+    const _OJ_PENDING_SUBTREE_HIDDEN_CLASS = 'oj-pending-subtree-hidden';
+    const _OJ_SLOT_WHITESPACE = Symbol('ojSlotWhitespace');
     class CustomElementUtils {
+        static subtreeShown(elem, initialRender, skipDeferActivation) {
+            CustomElementUtils._legacySubtreeShownOnceCB?.(elem, initialRender);
+            _unmarkSubtreeHidden(elem);
+            const legacyShowCB = CustomElementUtils._legacySubtreeShownInstanceCB;
+            const instanceCB = legacyShowCB
+                ? _executeWithSlotRelocationOn((elem) => legacyShowCB(elem, initialRender))
+                : null;
+            _applyHideShowToComponents(elem, instanceCB, skipDeferActivation ? null : _ojDeferCallback);
+        }
         static getElementInfo(element) {
             if (element) {
                 return `${element.tagName.toLowerCase()} with id '${element.id}'`;
@@ -304,7 +316,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
             return slot;
         }
         static isSlotable(node) {
-            return node.nodeType === 1 || (node.nodeType === 3 && !!node.nodeValue.trim());
+            const isSlotable = node.nodeType === 1 || (node.nodeType === 3 && !!node.nodeValue.trim());
+            if (!isSlotable) {
+                node[_OJ_SLOT_WHITESPACE] = true;
+            }
+            return isSlotable;
         }
         static getElementProperty(element, property) {
             if (ojcustomelementRegistry.isElementRegistered(element.tagName)) {
@@ -337,7 +353,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
                 return true;
             }
             const slotSet = state.getSlotSet();
-            if (state.isPostCreateCallbackOrComplete() && slotSet.has(node)) {
+            if (state.isPostCreateCallbackOrComplete() &&
+                (slotSet.has(node) || node[_OJ_SLOT_WHITESPACE])) {
                 if (element.hasAttribute('data-oj-preact')) {
                     throw new JetElementError(element, `${node.localName} cannot be relocated as a child of this element.`);
                 }
@@ -371,11 +388,133 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
                 (child.nodeType === 1 && child.getAttribute('data-oj-binding-provider')) ||
                 CustomElementUtils.getElementState(element)?.getBindingProviderType());
         }
+        static markPendingSubtreeHidden(element) {
+            element.classList.add(_OJ_PENDING_SUBTREE_HIDDEN_CLASS);
+        }
+        static unmarkPendingSubtreeHidden(element) {
+            element.classList.remove(_OJ_PENDING_SUBTREE_HIDDEN_CLASS);
+        }
+        static registerLegacySubtreeCallbacks(instanceShown, shownOnce, instanceHidden) {
+            CustomElementUtils._legacySubtreeShownInstanceCB = instanceShown;
+            CustomElementUtils._legacySubtreeShownOnceCB = shownOnce;
+            CustomElementUtils._legacySubtreeHiddenInstanceCB = instanceHidden;
+        }
+        static parseAttrValue(elem, attr, prop, val, metadata) {
+            if (val == null) {
+                return val;
+            }
+            function _coerceVal(value) {
+                return AttributeUtils.attributeToPropertyValue(elem, attr, value, metadata);
+            }
+            var parseFunction = ojcustomelementRegistry.getElementDescriptor(elem.tagName)['parseFunction'];
+            if (parseFunction) {
+                return parseFunction(val, prop, metadata, function (value) {
+                    return _coerceVal(value);
+                });
+            }
+            return _coerceVal(val);
+        }
     }
     CustomElementUtils._ELEMENT_STATE_KEY = '_ojElementState';
     CustomElementUtils._ELEMENT_BRIDGE_KEY = '_ojBridge';
     CustomElementUtils._ALLOW_RELOCATION_COUNT = 0;
     CustomElementUtils.VCOMP_INSTANCE = Symbol('vcompInstance');
+    CustomElementUtils.subtreeHidden = function (elem) {
+        const legacyHideCB = CustomElementUtils._legacySubtreeHiddenInstanceCB;
+        const instanceCB = legacyHideCB ? _executeWithSlotRelocationOn(legacyHideCB) : null;
+        _applyHideShowToComponents(elem, instanceCB, null);
+        _markSubtreeHidden(elem);
+    };
+    const _deferTag = 'oj-defer';
+    function _markSubtreeHidden(element) {
+        element.classList.add(_OJ_SUBTREE_HIDDEN_CLASS);
+    }
+    function _unmarkSubtreeHidden(element) {
+        element.classList.remove(_OJ_SUBTREE_HIDDEN_CLASS);
+    }
+    function _ojDeferCallback(elem) {
+        if (elem.localName !== _deferTag) {
+            return;
+        }
+        if (elem._activate) {
+            elem._activate();
+        }
+        else {
+            throw new Error('subtreeShown called before module ojs/ojdefer was loaded');
+        }
+    }
+    function _executeWithSlotRelocationOn(callback) {
+        return (elem) => {
+            CustomElementUtils.allowSlotRelocation(true);
+            try {
+                callback(elem);
+            }
+            finally {
+                CustomElementUtils.allowSlotRelocation(false);
+            }
+        };
+    }
+    function _applyHideShowToComponents(rootElem, instanceCB, activateDeferCB) {
+        if (!instanceCB && !activateDeferCB) {
+            return;
+        }
+        function isHidden(elem) {
+            let curr = elem;
+            while (curr) {
+                if (curr.nodeType === Node.DOCUMENT_NODE) {
+                    return false;
+                }
+                if (curr.nodeType === Node.ELEMENT_NODE &&
+                    curr.classList.contains(_OJ_SUBTREE_HIDDEN_CLASS)) {
+                    return true;
+                }
+                curr = curr.parentNode;
+            }
+            return true;
+        }
+        function filterHidden(allNodes, hiddenNodes) {
+            const shownNodes = [];
+            let j = 0;
+            for (var i = 0; i < hiddenNodes.length; i++) {
+                var hidden = hiddenNodes[i];
+                while (j < allNodes.length && allNodes[j] !== hidden) {
+                    shownNodes.push(allNodes[j]);
+                    j += 1;
+                }
+                j += 1;
+            }
+            while (j < allNodes.length) {
+                shownNodes.push(allNodes[j]);
+                j += 1;
+            }
+            return shownNodes;
+        }
+        function processFunc(element) {
+            instanceCB?.(element);
+            activateDeferCB?.(element);
+        }
+        if (!isHidden(rootElem)) {
+            processFunc(rootElem);
+            const selectors = ['.oj-component-initnode'];
+            if (activateDeferCB) {
+                selectors.push(_deferTag);
+            }
+            const hiddenSelectors = [];
+            selectors.forEach(function (s) {
+                hiddenSelectors.push(`.${_OJ_SUBTREE_HIDDEN_CLASS} ${s}`);
+                hiddenSelectors.push(`.${_OJ_PENDING_SUBTREE_HIDDEN_CLASS} ${s}`);
+            });
+            if (activateDeferCB) {
+                hiddenSelectors.push(`${_deferTag}.${_OJ_SUBTREE_HIDDEN_CLASS}`);
+            }
+            const selector = selectors.join(',');
+            const hiddenSelector = hiddenSelectors.join(',');
+            const allNodes = rootElem.querySelectorAll(selector);
+            const hiddenNodes = rootElem.querySelectorAll(hiddenSelector);
+            var shownNodes = filterHidden(allNodes, hiddenNodes);
+            shownNodes.forEach((el) => processFunc(el));
+        }
+    }
 
     class ElementState {
         constructor(element) {
@@ -792,12 +931,22 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
 
     const NULL_SYMBOL = Symbol('custom element null');
     const EMPTY_STRING_SYMBOL = Symbol('custom element empty string');
+    const UNDEFINED_SYMBOL = Symbol('custom element undefined');
+    const PRIVATE_VALUE_KEY = '__oj_private_do_not_use_value';
+    const PRIVATE_CHECKED_KEY = '__oj_private_do_not_use_checked';
+    const publicToPrivateName = new Map([
+        ['value', PRIVATE_VALUE_KEY],
+        ['checked', PRIVATE_CHECKED_KEY]
+    ]);
     const toSymbolizedValue = (value) => {
         if (value === null) {
             return NULL_SYMBOL;
         }
         if (value === '') {
             return EMPTY_STRING_SYMBOL;
+        }
+        if (value === undefined) {
+            return UNDEFINED_SYMBOL;
         }
         return value;
     };
@@ -807,6 +956,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
         }
         if (value === EMPTY_STRING_SYMBOL) {
             return '';
+        }
+        if (value === UNDEFINED_SYMBOL || value === '') {
+            return undefined;
         }
         return value;
     };
@@ -820,12 +972,35 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
         }
         return value;
     };
-    const transformPreactValue = (element, propertyMeta, originalValue) => {
-        let value = fromSymbolizedValue(originalValue);
-        if (value === '' && originalValue !== EMPTY_STRING_SYMBOL) {
-            value = convertEmptyStringToUndefined(element, propertyMeta, value);
+    const transformPreactValue = (element, propertyName, propertyMeta, originalValue) => {
+        let value = originalValue;
+        if (propertyName !== 'value' && propertyName !== 'checked') {
+            if (value === '') {
+                value = convertEmptyStringToUndefined(element, propertyMeta, value);
+            }
         }
         return value;
+    };
+    const convertPrivatePropFromPreact = (prop, value) => {
+        if (prop === PRIVATE_VALUE_KEY) {
+            return { prop: 'value', value: fromSymbolizedValue(value) };
+        }
+        if (prop === PRIVATE_CHECKED_KEY) {
+            return { prop: 'checked', value: fromSymbolizedValue(value) };
+        }
+        return { prop, value };
+    };
+    const addPrivatePropGetterSetters = (proto, property) => {
+        if (property === 'value' || property === 'checked') {
+            Object.defineProperty(proto, publicToPrivateName.get(property), {
+                get() {
+                    return this[property];
+                },
+                set(newValue) {
+                    this[property] = fromSymbolizedValue(newValue);
+                }
+            });
+        }
     };
 
     const OJ_BIND_CONVERTED_NODE = Symbol('ojBindConvertedNode');
@@ -839,6 +1014,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-registry', 'ojs/ojcon
     exports.JetElementError = JetElementError;
     exports.LifecycleElementState = LifecycleElementState;
     exports.OJ_BIND_CONVERTED_NODE = OJ_BIND_CONVERTED_NODE;
+    exports.addPrivatePropGetterSetters = addPrivatePropGetterSetters;
+    exports.convertPrivatePropFromPreact = convertPrivatePropFromPreact;
+    exports.publicToPrivateName = publicToPrivateName;
     exports.toSymbolizedValue = toSymbolizedValue;
     exports.transformPreactValue = transformPreactValue;
 

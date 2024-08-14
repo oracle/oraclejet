@@ -1,7 +1,7 @@
 import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
 import { GlobalProps } from 'ojs/ojvcomponent';
 import 'ojs/oj-jsx-interfaces';
-import { CancelableAction, ExtendGlobalProps, ObservedGlobalProps, PropertyChanged } from 'ojs/ojvcomponent';
+import { Action, CancelableAction, ExtendGlobalProps, ObservedGlobalProps, PropertyChanged } from 'ojs/ojvcomponent';
 import { Component, ComponentChildren } from 'preact';
 import 'ojs/ojcore-base';
 import 'ojs/ojpopup';
@@ -20,6 +20,7 @@ type Props = ObservedGlobalProps<'role'> & {
     opened?: boolean;
     onOpenedChanged?: PropertyChanged<boolean>;
     onOjBeforeClose?: CancelableAction<{}>;
+    onOjClose?: Action<{}>;
     edge?: EdgePopup;
     modality?: Modality;
     autoDismiss?: AutoDismiss;
@@ -87,6 +88,8 @@ export namespace DrawerPopupElement {
         accept: (param: Promise<void>) => void;
     }> {
     }
+    interface ojClose extends CustomEvent<{}> {
+    }
     type autoDismissChanged = JetElementCustomEventStrict<DrawerPopupElement['autoDismiss']>;
     type closeGestureChanged = JetElementCustomEventStrict<DrawerPopupElement['closeGesture']>;
     type edgeChanged = JetElementCustomEventStrict<DrawerPopupElement['edge']>;
@@ -95,6 +98,7 @@ export namespace DrawerPopupElement {
 }
 export interface DrawerPopupElementEventMap extends HTMLElementEventMap {
     'ojBeforeClose': DrawerPopupElement.ojBeforeClose;
+    'ojClose': DrawerPopupElement.ojClose;
     'autoDismissChanged': JetElementCustomEventStrict<DrawerPopupElement['autoDismiss']>;
     'closeGestureChanged': JetElementCustomEventStrict<DrawerPopupElement['closeGesture']>;
     'edgeChanged': JetElementCustomEventStrict<DrawerPopupElement['edge']>;
@@ -114,6 +118,7 @@ export interface DrawerPopupElementSettablePropertiesLenient extends Partial<Dra
 export interface DrawerPopupIntrinsicProps extends Partial<Readonly<DrawerPopupElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     children?: import('preact').ComponentChildren;
     onojBeforeClose?: (value: DrawerPopupElementEventMap['ojBeforeClose']) => void;
+    onojClose?: (value: DrawerPopupElementEventMap['ojClose']) => void;
     onautoDismissChanged?: (value: DrawerPopupElementEventMap['autoDismissChanged']) => void;
     oncloseGestureChanged?: (value: DrawerPopupElementEventMap['closeGestureChanged']) => void;
     onedgeChanged?: (value: DrawerPopupElementEventMap['edgeChanged']) => void;

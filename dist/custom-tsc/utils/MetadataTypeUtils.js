@@ -22,6 +22,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _ParameterizedTypeDeclIterator_paramSource;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isLocalExport = exports.getTypeDefMetadata = exports.getPossibleTypeDef = exports.getEnumStringsFromUnion = exports.isClassDeclaration = exports.possibleComplexProperty = exports.getAllMetadataForDeclaration = exports.getSubstituteTypeForCircularReference = exports.getComplexPropertyMetadata = exports.getPropertyTypes = exports.getPropertyType = exports.isGenericTypeParameter = exports.isTypeLiteralType = exports.getTypeDeclaration = exports.getNodeDeclaration = exports.getTypeNameFromIntersectionTypes = exports.getTypeNameFromType = exports.getTypeNameFromTypeReference = exports.getSignatureFromType = exports.getGenericsAndTypeParametersFromType = exports.getGenericsAndTypeParameters = void 0;
 const ts = __importStar(require("typescript"));
@@ -32,7 +44,9 @@ const _REGEX_LINE_AND_BLOCK_COMMENTS = new RegExp(/(\/\*(.|[\r\n])*?\*\/)|(\/\/.
 const _REGEX_EXTRA_WHITESPACE = new RegExp(/\s\s*/g);
 const _OR_NULL = '|null';
 const _OR_UNDEFINED = '|undefined';
-function getGenericsAndTypeParameters(node, metaUtilObj, isPropsClass) {
+const JS_DOM_TYPE = 'lib.dom.d.ts';
+const JS_COLLECTION_TYPE = 'lib.es2015.collection.d.ts';
+function getGenericsAndTypeParameters(node, metaUtilObj, extras) {
     let retVal;
     let typeParams = [];
     let typeParamsExpression = [];
@@ -41,7 +55,7 @@ function getGenericsAndTypeParameters(node, metaUtilObj, isPropsClass) {
     node.typeParameters?.forEach((tpn) => {
         typeParams.push(tpn.name.getText());
         typeParamsExpression.push(tpn.getText());
-        if (isPropsClass) {
+        if (extras & MetaTypes.GTExtras.PARAMS_ANY) {
             jsxTypeParam.push('any');
         }
         if (tpn.constraint) {
@@ -68,73 +82,57 @@ function getGenericsAndTypeParameters(node, metaUtilObj, isPropsClass) {
             genericsTypeParamsArray: typeParams,
             jsdoc: apiDocTypeDefs
         };
-        if (isPropsClass) {
+        if (extras & MetaTypes.GTExtras.PARAMS_ANY) {
             retVal.genericsTypeParamsAny = `<${jsxTypeParam.join()}>`;
+        }
+        if (extras & MetaTypes.GTExtras.DECL_NODES) {
+            retVal.genericsTypeParamsNodes = [...node?.typeParameters];
         }
     }
     return retVal;
 }
 exports.getGenericsAndTypeParameters = getGenericsAndTypeParameters;
-function getGenericsAndTypeParametersFromType(typeObj, metaUtilObj) {
+function getGenericsAndTypeParametersFromType(typeObj, typeNode, metaUtilObj) {
     let retVal;
-    const genericParams = [];
+    const genericsDeclSignature = [];
     const typeParamsSignature = [];
-    const typeParams = [];
-    const typeDecl = (typeObj.aliasSymbol?.getDeclarations()[0] ||
-        typeObj.symbol?.getDeclarations()[0]);
-    const typeDeclParams = typeDecl.typeParameters;
-    if (typeObj.aliasTypeArguments) {
-        const classPropsAliasTypeArgs = metaUtilObj.classPropsAliasTypeArgs;
-        for (let i = 0; i < typeObj.aliasTypeArguments.length; i++) {
-            const propsAta = typeObj.aliasTypeArguments[i];
-            const classPropsAta = classPropsAliasTypeArgs?.[i];
-            if (propsAta.symbol && isGenericTypeParameter(propsAta.symbol)) {
-                const declParam = typeDeclParams?.[i];
-                const declPropsAta = propsAta.symbol.declarations?.[0];
-                const declClassPropsAta = classPropsAta?.symbol && isGenericTypeParameter(classPropsAta.symbol)
-                    ? classPropsAta.symbol.declarations?.[0]
-                    : null;
-                let resolvedDecl;
-                if (declClassPropsAta && (declClassPropsAta.constraint || declClassPropsAta.default)) {
-                    resolvedDecl = declClassPropsAta;
+    const resolvedGenericsSignature = [];
+    let currentGenericIdx = 0;
+    const typeParamDecls = new ParameterizedTypeDeclIterator(typeObj, typeNode, metaUtilObj.typeChecker);
+    for (const decl of typeParamDecls) {
+        if (ts.isTypeParameterDeclaration(decl)) {
+            let resolvedGeneric;
+            if (metaUtilObj.classTypeParamsNodes) {
+                let idx = metaUtilObj.propsClassTypeParamsArray?.indexOf(ts.idText(decl.name));
+                if (idx < 0 || idx >= metaUtilObj.classTypeParamsNodes.length) {
+                    idx = currentGenericIdx;
                 }
-                else if (declPropsAta && (declPropsAta.constraint || declPropsAta.default)) {
-                    resolvedDecl = declPropsAta;
-                }
-                else {
-                    resolvedDecl = declParam;
-                }
-                if (resolvedDecl) {
-                    genericParams.push(resolvedDecl.getText());
-                    typeParamsSignature.push(resolvedDecl.name.getText());
-                    typeParams.push({
-                        name: declPropsAta.name.getText(),
-                        isGeneric: true
-                    });
-                }
-                else {
-                    genericParams.push(propsAta.symbol.name);
-                    typeParamsSignature.push(propsAta.symbol.name);
-                    typeParams.push({
-                        name: propsAta.symbol.name,
-                        isGeneric: true
-                    });
-                }
+                const remappedDecl = metaUtilObj.classTypeParamsNodes[idx];
+                genericsDeclSignature.push(remappedDecl.getText());
+                typeParamsSignature.push(ts.idText(remappedDecl.name));
+                resolvedGeneric = metaUtilObj.propsTypeParamsArray?.[idx];
             }
-            else if (propsAta.aliasSymbol) {
-                typeParamsSignature.push(propsAta.aliasSymbol.name);
-                typeParams.push({
-                    name: propsAta.aliasSymbol.name,
-                    isGeneric: false
-                });
+            else {
+                genericsDeclSignature.push(decl.getText());
+                typeParamsSignature.push(ts.idText(decl.name));
+                resolvedGeneric = metaUtilObj.propsTypeParamsArray?.[currentGenericIdx];
             }
+            if (resolvedGeneric) {
+                resolvedGenericsSignature.push(resolvedGeneric);
+            }
+            currentGenericIdx += 1;
+        }
+        else if (ts.isTypeAliasDeclaration(decl) ||
+            ts.isInterfaceDeclaration(decl) ||
+            ts.isClassDeclaration(decl)) {
+            typeParamsSignature.push(ts.idText(decl.name));
         }
     }
-    if (genericParams.length > 0 && typeParams.length > 0) {
+    if (genericsDeclSignature.length > 0 && typeParamsSignature.length > 0) {
         retVal = {
-            genericsDeclaration: `<${genericParams.join()}>`,
+            genericsDeclaration: `<${genericsDeclSignature.join()}>`,
             genericsTypeParams: `<${typeParamsSignature.join()}>`,
-            genericsTypeParamData: typeParams
+            resolvedGenericParams: `<${resolvedGenericsSignature.join()}>`
         };
     }
     return retVal;
@@ -185,31 +183,31 @@ function getSignatureFromType(type, context, isPropSignatureType, seenUnionTypeA
             typeObj = getSignatureFromUnionTypes(unionTypes, context, seenUnionTypeAliases, metaUtilObj);
         }
         else if (type.isIntersection()) {
-            typeObj = { type: 'object', reftype: getTypeNameFromType(type) };
+            typeObj = { type: 'object', reftype: getTypeNameFromType(type), isApiDocSignature: true };
         }
         else if (type.isStringLiteral()) {
             typeObj = { type: 'string', enumValues: [type.value] };
         }
         else if (type.isNumberLiteral()) {
-            typeObj = { type: 'number', reftype: 'number' };
+            typeObj = { type: 'number', reftype: 'number', isApiDocSignature: false };
         }
         else if (type.flags & ts.TypeFlags.BigIntLiteral) {
-            typeObj = { type: 'bigint', reftype: 'bigint' };
+            typeObj = { type: 'bigint', reftype: 'bigint', isApiDocSignature: false };
         }
         else if (type.flags & ts.TypeFlags.BooleanLiteral) {
-            typeObj = { type: 'boolean', reftype: 'boolean' };
+            typeObj = { type: 'boolean', reftype: 'boolean', isApiDocSignature: false };
         }
         else if (type.flags & ts.TypeFlags.Null) {
-            typeObj = { type: 'null', reftype: 'null' };
+            typeObj = { type: 'null', reftype: 'null', isApiDocSignature: false };
         }
         else if (type.flags & ts.TypeFlags.TemplateLiteral) {
-            typeObj = { type: 'string', reftype: 'string' };
+            typeObj = { type: 'string', reftype: 'string', isApiDocSignature: false };
         }
         else if (type.flags & ts.TypeFlags.Index) {
-            typeObj = { type: 'string|number', reftype: strType };
+            typeObj = { type: 'string|number', reftype: strType, isApiDocSignature: false };
         }
         else if (type.isTypeParameter()) {
-            typeObj = { type: 'any', reftype: strType };
+            typeObj = { type: 'any', reftype: strType, isApiDocSignature: true };
             if (unionWithNull) {
                 typeObj.reftype += _OR_NULL;
                 unionWithNull = false;
@@ -224,7 +222,7 @@ function getSignatureFromType(type, context, isPropSignatureType, seenUnionTypeA
             unionWithNull = false;
         }
         else if (MetaUtils.isObjectType(type)) {
-            typeObj = { type: getTypeNameFromType(type) };
+            typeObj = { type: getTypeNameFromType(type), isApiDocSignature: true };
             let typeObjTypeParams = MetaUtils.getTypeParametersFromType(type, checker);
             typeObj.reftype = typeObjTypeParams ? typeObj.type + typeObjTypeParams : typeObj.type;
             if (typeObj.type === 'Array') {
@@ -234,19 +232,19 @@ function getSignatureFromType(type, context, isPropSignatureType, seenUnionTypeA
                 }
             }
             else if (typeObj.type === 'Number') {
-                typeObj = { type: 'number', reftype: 'Number' };
+                typeObj = { type: 'number', reftype: 'Number', isApiDocSignature: false };
             }
             else if (typeObj.type === 'String') {
-                typeObj = { type: 'string', reftype: 'String' };
+                typeObj = { type: 'string', reftype: 'String', isApiDocSignature: false };
             }
             else if (typeObj.type === 'Boolean') {
-                typeObj = { type: 'boolean', reftype: 'Boolean' };
+                typeObj = { type: 'boolean', reftype: 'Boolean', isApiDocSignature: false };
             }
             else if (typeObj.type === 'BigInt') {
-                typeObj = { type: 'bigint', reftype: 'BigInt' };
+                typeObj = { type: 'bigint', reftype: 'BigInt', isApiDocSignature: false };
             }
             else if (typeObj.type === 'Function') {
-                typeObj = { type: 'function', reftype: 'Function' };
+                typeObj = { type: 'function', reftype: 'Function', isApiDocSignature: false };
             }
             else if (typeObj.type === 'Promise') {
                 typeObj = { type: 'Promise', reftype: 'Promise<void>' };
@@ -274,26 +272,34 @@ function getSignatureFromType(type, context, isPropSignatureType, seenUnionTypeA
                         case ts.SyntaxKind.FunctionType:
                             typeObj.type = 'function';
                             typeObj.reftype = strType;
+                            if (!typeDecl.parameters || typeDecl.parameters.length == 0) {
+                                typeObj.isApiDocSignature = false;
+                            }
                             break;
                         case ts.SyntaxKind.NumberKeyword:
                             typeObj.type = 'number';
                             typeObj.reftype = 'number';
+                            typeObj.isApiDocSignature = false;
                             break;
                         case ts.SyntaxKind.StringKeyword:
                             typeObj.type = 'string';
                             typeObj.reftype = 'string';
+                            typeObj.isApiDocSignature = false;
                             break;
                         case ts.SyntaxKind.BooleanKeyword:
                             typeObj.type = 'boolean';
                             typeObj.reftype = 'boolean';
+                            typeObj.isApiDocSignature = false;
                             break;
                         case ts.SyntaxKind.BigIntKeyword:
                             typeObj.type = 'bigint';
                             typeObj.reftype = 'bigint';
+                            typeObj.isApiDocSignature = false;
                             break;
                         case ts.SyntaxKind.ObjectKeyword:
                             typeObj.type = 'object';
                             typeObj.reftype = 'object';
+                            typeObj.isApiDocSignature = true;
                             break;
                         case ts.SyntaxKind.FunctionKeyword:
                             typeObj.type = 'function';
@@ -308,15 +314,21 @@ function getSignatureFromType(type, context, isPropSignatureType, seenUnionTypeA
                                 break;
                             }
                             else if (typeSymbol.name === 'Promise') {
-                                typeObj = { type: 'Promise', reftype: 'Promise<void>' };
+                                typeObj = { type: 'Promise', reftype: 'Promise<void>', isApiDocSignature: true };
                                 break;
                             }
                         default:
                             let keepObjectTypeName = (isPropSignatureType && symbolHasPropertySignatureMembers(typeSymbol)) ||
-                                isDomType(type) ||
+                                isJsLibraryType(type, JS_DOM_TYPE) ||
                                 isJetCollectionType(typeObj.type, type);
                             if (!keepObjectTypeName) {
                                 typeObj.type = 'object';
+                                if (isJsLibraryType(type, JS_COLLECTION_TYPE)) {
+                                    typeObj.isApiDocSignature = true;
+                                }
+                                else {
+                                    typeObj.isApiDocSignature = false;
+                                }
                             }
                             break;
                     }
@@ -353,7 +365,8 @@ function getSignatureFromArrayType(type, context, fallbackType, seenUnionTypeAli
         const arrayItemTypeObj = getSignatureFromType(arrayItemType, context, false, seenUnionTypeAliases, metaUtilObj);
         typeObj = {
             type: `Array<${arrayItemTypeObj.type}>`,
-            reftype: `Array<${arrayItemTypeObj.reftype ?? arrayItemTypeObj.type}>`
+            reftype: `Array<${arrayItemTypeObj.reftype ?? arrayItemTypeObj.type}>`,
+            isApiDocSignature: arrayItemTypeObj.isApiDocSignature
         };
         if (arrayItemTypeObj.reftype &&
             (arrayItemTypeObj.type === 'object' || arrayItemTypeObj.type === 'object|null')) {
@@ -378,11 +391,13 @@ function getSignatureFromUnionTypes(unionTypes, context, seenUnionTypeAliases, m
     let isEnumValuesForDTOnly = false;
     let subEnumValues = [];
     const checker = metaUtilObj.typeChecker;
+    let useRefType = false;
     for (let type of unionTypes) {
         if (MetaUtils.isConditionalType(type)) {
             type = checker.getApparentType(type);
             if (type.isUnion()) {
                 const unionTypeObj = getSignatureFromUnionTypes(type.types, context, seenUnionTypeAliases !== null ? new Set(seenUnionTypeAliases) : null, metaUtilObj);
+                useRefType = unionTypeObj.isApiDocSignature;
                 const unionTypeArray = unionTypeObj.type.split(MetaUtils._UNION_SPLITTER);
                 unionTypeArray.forEach((typeName) => types.add(typeName));
                 if (unionTypeObj.reftype) {
@@ -402,6 +417,7 @@ function getSignatureFromUnionTypes(unionTypes, context, seenUnionTypeAliases, m
             types.clear();
             reftypes.clear();
             types.add('any');
+            useRefType = true;
             break;
         }
         const tFlags = type.getFlags();
@@ -447,6 +463,7 @@ function getSignatureFromUnionTypes(unionTypes, context, seenUnionTypeAliases, m
                 }
                 types.add(objtypeObj.type);
                 reftypes.add(objtypeObj.reftype);
+                useRefType = objtypeObj.isApiDocSignature;
             }
             else if (type.isIntersection()) {
                 const primitiveType = getPrimitiveTypeNameFromIntersectionPattern(type);
@@ -458,6 +475,7 @@ function getSignatureFromUnionTypes(unionTypes, context, seenUnionTypeAliases, m
                     const objtypeObj = getSignatureFromType(type, context, false, seenUnionTypeAliases !== null ? new Set(seenUnionTypeAliases) : null, metaUtilObj);
                     types.add(objtypeObj.type);
                     reftypes.add(objtypeObj.reftype);
+                    useRefType = objtypeObj.isApiDocSignature;
                 }
             }
             else {
@@ -511,6 +529,7 @@ function getSignatureFromUnionTypes(unionTypes, context, seenUnionTypeAliases, m
             delete typeObj.reftype;
         }
     }
+    typeObj.isApiDocSignature = useRefType;
     return typeObj;
 }
 function getPrimitiveTypeNameFromIntersectionPattern(intersectionType) {
@@ -726,6 +745,7 @@ function getAllMetadataForDeclaration(declarationWithType, scope, context, prope
     }
     if (scope !== MetaTypes.MDScope.DT) {
         if (scope === MetaTypes.MDScope.RT) {
+            delete typeObj.isApiDocSignature;
             delete typeObj.reftype;
         }
         delete typeObj.optional;
@@ -735,9 +755,6 @@ function getAllMetadataForDeclaration(declarationWithType, scope, context, prope
         delete typeObj.isEnumValuesForDTOnly;
     }
     else {
-        if (context & MetaTypes.MDContext.PROP_RO_WRITEBACK) {
-            delete typeObj.reftype;
-        }
         if (typeObj.isEnumValuesForDTOnly) {
             if (metadata['propertyEditorValues'] === undefined && metadata['format'] === undefined) {
                 const peValuesObj = {};
@@ -756,7 +773,7 @@ function possibleComplexProperty(symbolType, type, scope) {
     let iscomplex = true;
     if (!(symbolType.isIntersection() || MetaUtils.isMappedType(symbolType))) {
         if (_NON_OBJECT_TYPES.has(type) ||
-            isDomType(symbolType) ||
+            isJsLibraryType(symbolType, JS_DOM_TYPE) ||
             isJetCollectionType(type, symbolType) ||
             isClassDeclaration(symbolType) ||
             type.indexOf('|') > -1) {
@@ -776,8 +793,9 @@ function isClassDeclaration(symbolType) {
     return false;
 }
 exports.isClassDeclaration = isClassDeclaration;
-function nullTypeNodeFilter(type) {
-    return (type.kind !== ts.SyntaxKind.NullKeyword &&
+function nullOrUndefinedTypeNodeFilter(type) {
+    return (type.kind !== ts.SyntaxKind.UndefinedKeyword &&
+        type.kind !== ts.SyntaxKind.NullKeyword &&
         (!ts.isLiteralTypeNode(type) ||
             (ts.isLiteralTypeNode(type) && type.literal.kind !== ts.SyntaxKind.NullKeyword)));
 }
@@ -983,21 +1001,24 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, context, prop
                 }
             }
         }
-        delete metadata[prop]['isArrayOfObject'];
-        delete metadata[prop]['reftype'];
+        if (scope != MetaTypes.MDScope.DT) {
+            delete metadata[prop]['isArrayOfObject'];
+            delete metadata[prop]['reftype'];
+            delete metadata[prop]['isApiDocSignature'];
+        }
     });
     return { metadata: processedMembers > 0 ? metadata : null };
 }
-function isDomType(symbolType) {
-    let isDomType = false;
+function isJsLibraryType(symbolType, libraryName) {
+    let isLibType = false;
     const declaration = symbolType?.symbol?.declarations[0];
     if (declaration && declaration.parent && ts.isSourceFile(declaration?.parent)) {
         const sourceFile = declaration.parent;
-        isDomType =
+        isLibType =
             sourceFile.isDeclarationFile &&
-                sourceFile.fileName.indexOf('typescript/lib/lib.dom.d.ts') > -1;
+                sourceFile.fileName.indexOf(`typescript/lib/${libraryName}`) > -1;
     }
-    return isDomType;
+    return isLibType;
 }
 function isJetCollectionType(typeName, symbolType) {
     let isJetCollectionType = false;
@@ -1017,15 +1038,21 @@ function isJetCollectionType(typeName, symbolType) {
     }
     return isJetCollectionType;
 }
+function getNonParenthesizedTypeNode(tNode) {
+    while (ts.isParenthesizedTypeNode(tNode)) {
+        tNode = tNode.type;
+    }
+    return tNode;
+}
 function getTypeRefNodeForPropDeclaration(declaration, metaUtilObj) {
-    const declTypeNode = declaration.type;
+    const declTypeNode = getNonParenthesizedTypeNode(declaration.type);
     let typeRefNode;
-    if (declTypeNode.kind == ts.SyntaxKind.UnionType) {
-        const unionTypes = declTypeNode.types;
-        let result = unionTypes.filter(nullTypeNodeFilter);
-        if (result.length == 1) {
-            if (result[0].kind == ts.SyntaxKind.TypeReference) {
-                const typeRef = result[0];
+    if (ts.isUnionTypeNode(declTypeNode)) {
+        const filteredUnion = declTypeNode.types.filter(nullOrUndefinedTypeNodeFilter);
+        if (filteredUnion.length == 1) {
+            const result = getNonParenthesizedTypeNode(filteredUnion[0]);
+            if (ts.isTypeReferenceNode(result)) {
+                const typeRef = result;
                 if (typeRef.typeArguments && typeRef.typeName?.getText() === 'Array') {
                     typeRefNode = typeRef.typeArguments[0];
                 }
@@ -1033,44 +1060,41 @@ function getTypeRefNodeForPropDeclaration(declaration, metaUtilObj) {
                     typeRefNode = typeRef;
                 }
             }
-            else if (result[0].kind == ts.SyntaxKind.ArrayType) {
-                const arrTypeNode = result[0];
-                typeRefNode = arrTypeNode.elementType;
+            else if (ts.isArrayTypeNode(result)) {
+                typeRefNode = result.elementType;
             }
             else {
-                typeRefNode = result[0];
+                typeRefNode = result;
             }
+            typeRefNode = getNonParenthesizedTypeNode(typeRefNode);
         }
     }
-    else if (declTypeNode.kind == ts.SyntaxKind.ArrayType) {
-        const arrTypeNode = declTypeNode;
-        typeRefNode = arrTypeNode.elementType;
+    else if (ts.isArrayTypeNode(declTypeNode)) {
+        typeRefNode = getNonParenthesizedTypeNode(declTypeNode.elementType);
     }
-    else if (declTypeNode.kind == ts.SyntaxKind.TypeReference ||
-        declTypeNode.kind == ts.SyntaxKind.TypeLiteral) {
+    else if (ts.isIndexedAccessTypeNode(declTypeNode)) {
+        typeRefNode = declTypeNode;
+    }
+    else if (ts.isTypeReferenceNode(declTypeNode) || ts.isTypeLiteralNode(declTypeNode)) {
         const exportToAlias = metaUtilObj.progImportMaps.getMap(MetaTypes.IMAP.exportToAlias, declTypeNode);
         const typeRef = declTypeNode;
         const typeRefName = typeRef.typeName?.getText();
         if (typeRef.typeArguments &&
             (typeRefName === 'Array' || typeRefName === `${exportToAlias.ReadOnlyPropertyChanged}`)) {
-            typeRefNode = typeRef.typeArguments[0];
+            typeRefNode = getNonParenthesizedTypeNode(typeRef.typeArguments[0]);
         }
         else {
             typeRefNode = typeRef;
         }
-        if (typeRefNode && typeRefNode.kind === ts.SyntaxKind.UnionType) {
-            const unionTypes = typeRefNode.types;
-            let result = unionTypes.filter(nullTypeNodeFilter);
-            if (result.length == 1) {
-                if (result[0].kind == ts.SyntaxKind.TypeReference ||
-                    result[0].kind == ts.SyntaxKind.TypeLiteral) {
-                    typeRefNode = result[0];
-                }
+    }
+    if (typeRefNode && ts.isUnionTypeNode(typeRefNode)) {
+        const filteredUnion = typeRefNode.types.filter(nullOrUndefinedTypeNodeFilter);
+        if (filteredUnion.length == 1) {
+            const result = getNonParenthesizedTypeNode(filteredUnion[0]);
+            if (ts.isTypeReferenceNode(result) || ts.isTypeLiteralNode(result)) {
+                typeRefNode = result;
             }
         }
-    }
-    else if (declTypeNode.kind == ts.SyntaxKind.IndexedAccessType) {
-        typeRefNode = declTypeNode;
     }
     return typeRefNode;
 }
@@ -1094,7 +1118,9 @@ function getSymbolTypeFromIndexedAccessTypeNode(indexedAccessNode, metaUtilObj) 
                 const arrayItemType = elementTypes?.[0];
                 if (arrayItemType) {
                     if (arrayItemType.isUnion()) {
-                        let arrayItemUnionTypes = arrayItemType.types.filter(nullTypeFilter);
+                        let arrayItemUnionTypes = arrayItemType.types
+                            .filter(undefinedTypeFilter)
+                            .filter(nullTypeFilter);
                         if (arrayItemUnionTypes.length == 1) {
                             rtnType = arrayItemUnionTypes[0];
                         }
@@ -1304,5 +1330,51 @@ function addUniqueTypeRefs(target, source) {
         });
     }
     return target;
+}
+class ParameterizedTypeDeclIterator {
+    constructor(type, typeNode, checker) {
+        _ParameterizedTypeDeclIterator_paramSource.set(this, void 0);
+        __classPrivateFieldSet(this, _ParameterizedTypeDeclIterator_paramSource, [], "f");
+        if (type.aliasSymbol) {
+            if (type.aliasTypeArguments) {
+                for (const ata of type.aliasTypeArguments) {
+                    const paramDecl = ata.aliasSymbol?.getDeclarations()?.[0] ?? ata.symbol?.getDeclarations()?.[0];
+                    if (paramDecl) {
+                        __classPrivateFieldGet(this, _ParameterizedTypeDeclIterator_paramSource, "f").push(paramDecl);
+                    }
+                    else {
+                        __classPrivateFieldSet(this, _ParameterizedTypeDeclIterator_paramSource, [], "f");
+                        break;
+                    }
+                }
+            }
+        }
+        else if (typeNode.typeArguments) {
+            for (const tNode of typeNode.typeArguments) {
+                const tArgType = checker.getTypeAtLocation(tNode);
+                const tArgDecl = tArgType.aliasSymbol?.getDeclarations()?.[0] ?? tArgType.symbol?.getDeclarations()?.[0];
+                if (tArgDecl) {
+                    __classPrivateFieldGet(this, _ParameterizedTypeDeclIterator_paramSource, "f").push(tArgDecl);
+                }
+                else {
+                    __classPrivateFieldSet(this, _ParameterizedTypeDeclIterator_paramSource, [], "f");
+                    break;
+                }
+            }
+        }
+    }
+    [(_ParameterizedTypeDeclIterator_paramSource = new WeakMap(), Symbol.iterator)]() {
+        let index = 0;
+        return {
+            next: () => {
+                if (__classPrivateFieldGet(this, _ParameterizedTypeDeclIterator_paramSource, "f") && index < __classPrivateFieldGet(this, _ParameterizedTypeDeclIterator_paramSource, "f").length) {
+                    return { value: __classPrivateFieldGet(this, _ParameterizedTypeDeclIterator_paramSource, "f")[index++], done: false };
+                }
+                else {
+                    return { done: true };
+                }
+            }
+        };
+    }
 }
 //# sourceMappingURL=MetadataTypeUtils.js.map

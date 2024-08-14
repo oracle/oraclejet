@@ -278,7 +278,7 @@ export namespace ojTimeline {
         title?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type itemBubbleTemplateContext<K, D> = {
+    type ItemBubbleTemplateContext<K, D> = {
         contentWidth: number | null;
         data: SeriesItem<K>;
         durationWidth: number | null;
@@ -363,6 +363,14 @@ export namespace ojTimeline {
         parentElement: Element;
         seriesData: Series<K>;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemBubbleContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemBubbleTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderSeriesTemplate = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
 }
 export interface ojTimelineEventMap<K, D extends ojTimeline.DataItem | any> extends dvtTimeComponentEventMap<ojTimelineSettableProperties<K, D>> {
     'ojMove': ojTimeline.ojMove<K, D>;
@@ -772,16 +780,47 @@ export namespace TimelineElement {
         title?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemBubbleTemplateContext<K, D> = {
+        contentWidth: number | null;
+        data: ojTimeline.SeriesItem<K>;
+        durationWidth: number | null;
+        itemData: D;
+        maxAvailableWidth: number;
+        previousState: {
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+        };
+        seriesData: ojTimeline.Series<K>;
+        state: {
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+        };
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ItemShortDescContext<K, D> = {
         data: ojTimeline.SeriesItem<K>;
         itemData: D;
         seriesData: ojTimeline.Series<K>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
         itemIndex: number;
         seriesIndex: number;
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ReferenceObject = {
+        label?: string;
+        value?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Series<K> = {
@@ -791,6 +830,20 @@ export namespace TimelineElement {
         items?: Array<ojTimeline.SeriesItem<K>>;
         label?: string;
         svgStyle?: Partial<CSSStyleDeclaration>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type SeriesItem<K, D = any> = {
+        background?: 'blue' | 'orange' | 'purple' | 'red' | 'teal' | 'green';
+        description?: string;
+        durationFillColor?: string;
+        end?: string;
+        id: K;
+        itemType?: 'event' | 'duration-bar' | 'duration-event' | 'auto';
+        shortDesc?: (string | ((context: ojTimeline.ItemShortDescContext<K, D>) => string));
+        start: string;
+        svgStyle?: Partial<CSSStyleDeclaration>;
+        thumbnail?: string;
+        title?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type SeriesTemplateContext = {
@@ -803,6 +856,23 @@ export namespace TimelineElement {
             key: any;
         }>;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K, D> = {
+        color: string;
+        componentElement: Element;
+        data: ojTimeline.SeriesItem<K>;
+        itemData: D;
+        parentElement: Element;
+        seriesData: ojTimeline.Series<K>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemBubbleContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemBubbleTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderSeriesTemplate = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
 }
 export namespace TimelineItemElement {
     // tslint:disable-next-line interface-over-type-literal

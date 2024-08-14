@@ -595,9 +595,9 @@ class BigDecimalStringConverter {
             const fractionPart = this._getFractionPart(decimal, minimumFractionDigits);
             const decOpts = {
                 useGrouping: false,
-                minimumIntegerDigits: decimal.length
+                minimumIntegerDigits: this._getMinimumIntegerDigitsForFraction(decimal.length)
             };
-            const fraction = new Intl.NumberFormat(this.locale, decOpts).format(BigInt(fractionPart));
+            const fraction = this._formatDecimalPart(decOpts, fractionPart, decimal.length);
             let formatted = '';
             for (let part of parts) {
                 if (part.type === 'fraction') {
@@ -630,9 +630,9 @@ class BigDecimalStringConverter {
             const fractionPart = this._getFractionPart(decimal, minimumFractionDigits);
             const decPartOpts = {
                 useGrouping: false,
-                minimumIntegerDigits: decLength > 0 ? decLength : undefined
+                minimumIntegerDigits: this._getMinimumIntegerDigitsForFraction(decLength)
             };
-            formattedFraction = new Intl.NumberFormat(this.locale, decPartOpts).format(BigInt(fractionPart));
+            formattedFraction = this._formatDecimalPart(decPartOpts, fractionPart, decLength);
         }
         let formatted = '';
         for (let part of pattern) {
@@ -692,6 +692,18 @@ class BigDecimalStringConverter {
     _getFractionPart(decimal, minimumFractionDigits) {
         const exp = minimumFractionDigits - decimal.length;
         return exp > 0 && decimal.length > 0 ? decimal + '0'.repeat(exp) : decimal;
+    }
+    _getMinimumIntegerDigitsForFraction(decimalLength) {
+        return Math.min(decimalLength, 20);
+    }
+    _formatDecimalPart(decOpts, fractionPart, decimalLength) {
+        let fraction = new Intl.NumberFormat(this.locale, decOpts).format(BigInt(fractionPart));
+        const missingLeadingZeroCount = decimalLength - fraction.length;
+        if (missingLeadingZeroCount > 0) {
+            const formattedZero = new Intl.NumberFormat(this.locale).format(0);
+            fraction = formattedZero.repeat(missingLeadingZeroCount) + fraction;
+        }
+        return fraction;
     }
     _getResolvedAndNativeOptions() {
         if (!this.cachedResolvedAndNativeOptions) {

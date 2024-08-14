@@ -621,7 +621,8 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
         }, []);
         hooks.useImperativeHandle(focusHandleRef, () => ({
             focus: () => {
-                if (data.length) {
+                const isVisible = containerDivRef.current?.checkVisibility() ?? false;
+                if (data.length && isVisible) {
                     const firstItemKey = data[0].key;
                     messagesRef.current.get(firstItemKey)?.focus();
                     return true;

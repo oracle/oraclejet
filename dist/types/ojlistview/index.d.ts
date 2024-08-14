@@ -259,8 +259,12 @@ export namespace ojListView {
         item: Item<K, D>;
         key: K;
         leaf: boolean;
-        parentkey: K;
+        parentKey: K;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNoDataTemplate = import('ojs/ojvcomponent').TemplateSlot<{}>;
 }
 export interface ojListViewEventMap<K, D> extends baseComponentEventMap<ojListViewSettableProperties<K, D>> {
     'ojAnimateEnd': ojListView.ojAnimateEnd;
@@ -511,11 +515,38 @@ export namespace ListViewElement {
         subId: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemContext<K, D> = {
+        data: D;
+        datasource: DataProvider<K, D>;
+        depth?: number;
+        index: number;
+        key: K;
+        leaf?: boolean;
+        metadata: ItemMetadata<K>;
+        parentElement: Element;
+        parentKey?: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ItemsDropContext = {
         item: Element;
         position: 'before' | 'after' | 'inside';
         reorder: boolean;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext<K = any, D = any> = {
+        componentElement: Element;
+        data: D;
+        depth: number;
+        index: number;
+        item: Item<K, D>;
+        key: K;
+        leaf: boolean;
+        parentKey: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNoDataTemplate = import('ojs/ojvcomponent').TemplateSlot<{}>;
 }
 export interface ListViewIntrinsicProps extends Partial<Readonly<ojListViewSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojAnimateEnd?: (value: ojListViewEventMap<any, any>['ojAnimateEnd']) => void;

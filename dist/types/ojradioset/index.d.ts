@@ -213,6 +213,12 @@ export namespace RadiosetElement {
         value: any;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type OptionContext<D> = {
+        component: Element;
+        data: D;
+        index: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type OptionsKeys = {
         label?: string;
         value?: string;

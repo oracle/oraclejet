@@ -1,0 +1,2053 @@
+:root {
+
+/* General information about variables is available at                               */
+/* www.oracle.com/webfolder/technetwork/jet/jsdocs/CssVariablesOverview.html */
+
+
+/* neutral palette            */
+/* -------------------------- */
+/* --oj-palette-neutral-rgb-0:    254, 254, 254; */
+/* --oj-palette-neutral-rgb-10:   249, 249, 249; */
+/* --oj-palette-neutral-rgb-20:   244, 244, 244; */
+/* --oj-palette-neutral-rgb-30:   239, 239, 239; */
+/* --oj-palette-neutral-rgb-40:   226, 226, 226; */
+/* --oj-palette-neutral-rgb-50:   207, 207, 207; */
+/* --oj-palette-neutral-rgb-60:   184, 184, 184; */
+/* --oj-palette-neutral-rgb-70:   169, 169, 169; */
+/* --oj-palette-neutral-rgb-80:   153, 153, 153; */
+/* --oj-palette-neutral-rgb-90:   134, 134, 134; */
+/* --oj-palette-neutral-rgb-100:  117, 117, 117; */
+/* --oj-palette-neutral-rgb-110:  105, 105, 105; */
+/* --oj-palette-neutral-rgb-120:  97, 97, 97; */
+/* --oj-palette-neutral-rgb-130:  87, 87, 87; */
+/* --oj-palette-neutral-rgb-140:  76, 76, 76; */
+/* --oj-palette-neutral-rgb-150:  67, 67, 67; */
+/* --oj-palette-neutral-rgb-160:  54, 54, 54; */
+/* --oj-palette-neutral-rgb-170:  45, 45, 45; */
+/* --oj-palette-neutral-rgb-180:  31, 31, 31; */
+/* --oj-palette-neutral-rgb-190:  22, 22, 22; */
+/* --oj-palette-neutral-rgb-200:  00, 00, 00; */
+
+/* brand palette              */
+/* -------------------------- */
+/* --oj-palette-brand-rgb-10:     246, 250, 253; */
+/* --oj-palette-brand-rgb-20:     236, 245, 251; */
+/* --oj-palette-brand-rgb-30:     228, 241, 249; */
+/* --oj-palette-brand-rgb-40:     206, 229, 244; */
+/* --oj-palette-brand-rgb-50:     175, 213, 237; */
+/* --oj-palette-brand-rgb-60:     131, 190, 228; */
+/* --oj-palette-brand-rgb-70:     105, 177, 222; */
+/* --oj-palette-brand-rgb-80:     75, 161, 215; */
+/* --oj-palette-brand-rgb-90:     36, 141, 206; */
+/* --oj-palette-brand-rgb-100:    2, 120, 195; */
+/* --oj-palette-brand-rgb-110:    2, 110, 177; */
+/* --oj-palette-brand-rgb-120:    2, 101, 163; */
+/* --oj-palette-brand-rgb-130:    1, 91, 146; */
+/* --oj-palette-brand-rgb-140:    1, 80, 130; */
+/* --oj-palette-brand-rgb-150:    1, 70, 113; */
+/* --oj-palette-brand-rgb-160:    1, 58, 93; */
+/* --oj-palette-brand-rgb-170:    1, 48, 78; */
+
+/* alert palettes             */
+/* -------------------------- */
+/* --oj-palette-danger-rgb-10:    255, 248, 247; */
+/* --oj-palette-danger-rgb-20:    255, 241, 239; */
+/* --oj-palette-danger-rgb-30:    255, 235, 232; */
+/* --oj-palette-danger-rgb-40:    255, 217, 211; */
+/* --oj-palette-danger-rgb-50:    255, 193, 184; */
+/* --oj-palette-danger-rgb-60:    255, 157, 144; */
+/* --oj-palette-danger-rgb-70:    255, 134, 117; */
+/* --oj-palette-danger-rgb-80:    254, 104, 84; */
+/* --oj-palette-danger-rgb-90:    236, 79, 58; */
+/* --oj-palette-danger-rgb-100:   214, 59, 37; */
+/* --oj-palette-danger-rgb-110:   195, 53, 34; */
+/* --oj-palette-danger-rgb-120:   179, 49, 31; */
+/* --oj-palette-danger-rgb-130:   170, 34, 34; */
+/* --oj-palette-danger-rgb-140:   143, 39, 25; */
+/* --oj-palette-danger-rgb-150:   124, 34, 22; */
+/* --oj-palette-danger-rgb-160:   102, 28, 18; */
+/* --oj-palette-danger-rgb-170:   86, 24, 15; */
+/* 
+--oj-palette-warning-rgb-10:   254, 249, 242; */
+/* --oj-palette-warning-rgb-20:   253, 242, 229; */
+/* --oj-palette-warning-rgb-30:   252, 237, 220; */
+/* --oj-palette-warning-rgb-40:   249, 221, 188; */
+/* --oj-palette-warning-rgb-50:   246, 199, 146; */
+/* --oj-palette-warning-rgb-60:   240, 169, 87; */
+/* --oj-palette-warning-rgb-70:   235, 150, 50; */
+/* --oj-palette-warning-rgb-80:   225, 128, 18; */
+/* --oj-palette-warning-rgb-90:   198, 113, 14; */
+/* --oj-palette-warning-rgb-100:  172, 99, 12; */
+/* --oj-palette-warning-rgb-110:  156, 89, 11; */
+/* --oj-palette-warning-rgb-120:  143, 82, 10; */
+/* --oj-palette-warning-rgb-130:  129, 73, 9; */
+/* --oj-palette-warning-rgb-140:  114, 65, 8; */
+/* --oj-palette-warning-rgb-150:  99, 56, 7; */
+/* --oj-palette-warning-rgb-160:  81, 47, 6; */
+/* --oj-palette-warning-rgb-170:  69, 39, 5; */
+/* 
+--oj-palette-success-rgb-10:   244, 252, 235; */
+/* --oj-palette-success-rgb-20:   235, 248, 222; */
+/* --oj-palette-success-rgb-30:   228, 245, 211; */
+/* --oj-palette-success-rgb-40:   207, 235, 179; */
+/* --oj-palette-success-rgb-50:   177, 221, 136; */
+/* --oj-palette-success-rgb-60:   138, 201, 79; */
+/* --oj-palette-success-rgb-70:   125, 186, 69; */
+/* --oj-palette-success-rgb-80:   111, 169, 57; */
+/* --oj-palette-success-rgb-90:   94, 148, 43; */
+/* --oj-palette-success-rgb-100:  80, 130, 35; */
+/* --oj-palette-success-rgb-110:  73, 118, 32; */
+/* --oj-palette-success-rgb-120:  67, 107, 29; */
+/* --oj-palette-success-rgb-130:  60, 96, 26; */
+/* --oj-palette-success-rgb-140:  53, 86, 23; */
+/* --oj-palette-success-rgb-150:  46, 73, 20; */
+/* --oj-palette-success-rgb-160:  38, 61, 16; */
+/* --oj-palette-success-rgb-170:  31, 51, 14; */
+/* 
+--oj-palette-info-rgb-10:      246, 250, 252; */
+/* --oj-palette-info-rgb-20:      237, 246, 249; */
+/* --oj-palette-info-rgb-30:      228, 241, 247; */
+/* --oj-palette-info-rgb-40:      208, 229, 238; */
+/* --oj-palette-info-rgb-50:      180, 213, 225; */
+/* --oj-palette-info-rgb-60:      143, 191, 208; */
+/* --oj-palette-info-rgb-70:      121, 177, 198; */
+/* --oj-palette-info-rgb-80:      95, 162, 186; */
+/* --oj-palette-info-rgb-90:      65, 144, 172; */
+/* --oj-palette-info-rgb-100:     34, 126, 158; */
+/* --oj-palette-info-rgb-110:     14, 114, 151; */
+/* --oj-palette-info-rgb-120:     0, 104, 140; */
+/* --oj-palette-info-rgb-130:     2, 94, 126; */
+/* --oj-palette-info-rgb-140:     4, 83, 111; */
+/* --oj-palette-info-rgb-150:     6, 72, 95; */
+/* --oj-palette-info-rgb-160:     6, 60, 78; */
+/* --oj-palette-info-rgb-170:     5, 50, 66; */
+
+
+/* data visualization palette   */
+/* ---------------------------- */
+/* --oj-palette-dvt-rgb-1:      36, 93, 99; */
+/* --oj-palette-dvt-rgb-2:      222, 127, 17; */
+/* --oj-palette-dvt-rgb-3:      95, 185, 181; */
+/* --oj-palette-dvt-rgb-4:      78, 65, 55; */
+/* --oj-palette-dvt-rgb-5:      160, 201, 139; */
+/* --oj-palette-dvt-rgb-6:      180, 114, 130; */
+/* --oj-palette-dvt-rgb-7:      131, 64, 30; */
+/* --oj-palette-dvt-rgb-8:      158, 127, 204; */
+/* --oj-palette-dvt-rgb-9:      251, 194, 106; */
+/* --oj-palette-dvt-rgb-10:     88, 49, 110; */
+/* --oj-palette-dvt-rgb-11:     95, 162, 186; */
+/* --oj-palette-dvt-rgb-12:     49, 122, 69; */
+
+
+/* typography                 */
+/* -------------------------- */
+/* --oj-typography-heading-2xl-font-size:                     2.5rem; */
+/* --oj-typography-heading-2xl-font-weight:                   900; */
+/* --oj-typography-heading-2xl-line-height:                   1.25; */
+/* 
+--oj-typography-heading-xl-font-size:                      2.25rem; */
+/* --oj-typography-heading-xl-font-weight:                    900; */
+/* --oj-typography-heading-xl-line-height:                    1.25; */
+/* 
+--oj-typography-heading-lg-font-size:                      2rem; */
+/* --oj-typography-heading-lg-font-weight:                    900; */
+/* --oj-typography-heading-lg-line-height:                    1.25; */
+/* 
+--oj-typography-heading-md-font-size:                      1.75rem; */
+/* --oj-typography-heading-md-font-weight:                    900; */
+/* --oj-typography-heading-md-line-height:                    1.25; */
+/* 
+--oj-typography-heading-sm-font-size:                      1.5rem; */
+/* --oj-typography-heading-sm-font-weight:                    900; */
+/* --oj-typography-heading-sm-line-height:                    1.25; */
+/* 
+--oj-typography-heading-xs-font-size:                      1.25rem; */
+/* --oj-typography-heading-xs-font-weight:                    900; */
+/* --oj-typography-heading-xs-line-height:                    1.25; */
+/* 
+
+--oj-typography-subheading-2xl-font-size:                  2.25rem; */
+/* --oj-typography-subheading-2xl-font-weight:                bold; */
+/* --oj-typography-subheading-2xl-line-height:                1.25; */
+/* 
+--oj-typography-subheading-xl-font-size:                   2rem; */
+/* --oj-typography-subheading-xl-font-weight:                 bold; */
+/* --oj-typography-subheading-xl-line-height:                 1.25; */
+/* 
+--oj-typography-subheading-lg-font-size:                   1.75rem; */
+/* --oj-typography-subheading-lg-font-weight:                 bold; */
+/* --oj-typography-subheading-lg-line-height:                 1.25; */
+/* 
+--oj-typography-subheading-md-font-size:                   1.5rem; */
+/* --oj-typography-subheading-md-font-weight:                 bold; */
+/* --oj-typography-subheading-md-line-height:                 1.25; */
+/* 
+--oj-typography-subheading-sm-font-size:                   1.25rem; */
+/* --oj-typography-subheading-sm-font-weight:                 bold; */
+/* --oj-typography-subheading-sm-line-height:                 1.25; */
+/* 
+--oj-typography-subheading-xs-font-size:                   1rem; */
+/* --oj-typography-subheading-xs-font-weight:                 bold; */
+/* --oj-typography-subheading-xs-line-height:                 1.25; */
+/* 
+
+--oj-typography-body-xl-font-size:                         1.25rem; */
+/* --oj-typography-body-xl-line-height:                       1.25; */
+/* 
+--oj-typography-body-lg-font-size:                         1.125rem; */
+/* --oj-typography-body-lg-line-height:                       1.25; */
+/* 
+--oj-typography-body-md-font-size:                         1rem; */
+/* --oj-typography-body-md-line-height:                       1.25; */
+/* 
+--oj-typography-body-sm-font-size:                         0.875rem; */
+/* --oj-typography-body-sm-line-height:                       1.25; */
+/* 
+--oj-typography-body-xs-font-size:                         0.75rem; */
+/* --oj-typography-body-xs-line-height:                       1.25; */
+/* 
+--oj-typography-body-2xs-font-size:                        0.625rem; */
+/* --oj-typography-body-2xs-line-height:                      1.25; */
+
+
+/* text colors                */
+/* -------------------------- */
+/* --oj-core-text-color-primary:      rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-core-text-color-secondary:    rgba(var(--oj-palette-neutral-rgb-190), .65); */
+/* --oj-core-text-color-disabled:     rgba(var(--oj-palette-neutral-rgb-190), .4); */
+/* --oj-core-text-color-brand:        rgb(var(--oj-palette-brand-rgb-110)); */
+/* --oj-core-text-color-danger:       rgb(var(--oj-palette-danger-rgb-120)); */
+/* --oj-core-text-color-warning:      rgb(var(--oj-palette-warning-rgb-120)); */
+/* --oj-core-text-color-success:      rgb(var(--oj-palette-success-rgb-120)); */
+
+/* state colors               */
+/* -------------------------- */
+/* --oj-core-bg-color-content:       rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-core-bg-color-hover:         rgba(var(--oj-palette-neutral-rgb-190), .08); */
+/* --oj-core-bg-color-active:        rgba(var(--oj-palette-neutral-rgb-190), .16); */
+/* --oj-core-bg-color-selected:      rgb(var(--oj-palette-brand-rgb-30)); */
+/* --oj-core-border-color-selected:  rgb(var(--oj-palette-brand-rgb-110)); */
+/* --oj-core-border-color-enabled:  rgba(var(--oj-palette-neutral-rgb-190), 0.5); */
+/* --oj-core-color-disabled-1:      rgba(var(--oj-palette-neutral-rgb-190), 0.05); */
+/* --oj-core-color-disabled-2:  rgba(var(--oj-palette-neutral-rgb-190),.1); */
+
+/* dividers                   */
+/* -------------------------- */
+/* --oj-core-divider-color:             rgba(var(--oj-palette-neutral-rgb-190),.1); */
+/* --oj-core-divider-margin:            0.5rem; */
+
+/* Focus Border color         */
+/* -------------------------- */
+/* --oj-core-focus-border-color:     rgb(var(--oj-palette-neutral-rgb-190)); */
+
+/* color neutral              */
+/* -------------------------- */
+/* --oj-core-neutral-1:                      rgb(var(--oj-palette-neutral-rgb-100)); */
+/* --oj-core-neutral-2:                      rgb(var(--oj-palette-neutral-rgb-110)); */
+/* --oj-core-neutral-3:                      rgb(var(--oj-palette-neutral-rgb-120)); */
+/* --oj-core-neutral-contrast:               rgb(var(--oj-palette-neutral-rgb-0)); */
+
+/* color neutral secondary    */
+/* -------------------------- */
+/* --oj-core-neutral-secondary-1:            rgb(var(--oj-palette-neutral-rgb-30)); */
+/* --oj-core-neutral-secondary-2:            rgb(var(--oj-palette-neutral-rgb-20)); */
+/* --oj-core-neutral-secondary-3:            rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-core-neutral-secondary-contrast:     rgb(var(--oj-palette-neutral-rgb-120)); */
+
+/* color brand                */
+/* -------------------------- */
+/* --oj-core-brand-1:                      rgb(var(--oj-palette-brand-rgb-100)); */
+/* --oj-core-brand-2:                      rgb(var(--oj-palette-brand-rgb-110)); */
+/* --oj-core-brand-3:                      rgb(var(--oj-palette-brand-rgb-120)); */
+/* --oj-core-brand-contrast:               rgb(var(--oj-palette-neutral-rgb-0)); */
+
+
+/* color danger               */
+/* -------------------------- */
+/* --oj-core-danger-1:                      rgb(var(--oj-palette-danger-rgb-100)); */
+/* --oj-core-danger-2:                      rgb(var(--oj-palette-danger-rgb-110)); */
+/* --oj-core-danger-3:                      rgb(var(--oj-palette-danger-rgb-120)); */
+/* --oj-core-danger-contrast:               rgb(var(--oj-palette-neutral-rgb-0)); */
+
+
+/* color danger  secondary    */
+/* -------------------------- */
+/* --oj-core-danger-secondary-1:            rgb(var(--oj-palette-danger-rgb-30)); */
+/* --oj-core-danger-secondary-2:            rgb(var(--oj-palette-danger-rgb-20)); */
+/* --oj-core-danger-secondary-3:            rgb(var(--oj-palette-danger-rgb-10)); */
+/* --oj-core-danger-secondary-contrast:     rgb(var(--oj-palette-danger-rgb-120)); */
+
+
+/* color warning              */
+/* -------------------------- */
+/* --oj-core-warning-1:                    rgb(var(--oj-palette-warning-rgb-100)); */
+/* --oj-core-warning-2:                    rgb(var(--oj-palette-warning-rgb-110)); */
+/* --oj-core-warning-3:                    rgb(var(--oj-palette-warning-rgb-120)); */
+/* --oj-core-warning-contrast:             rgb(var(--oj-palette-neutral-rgb-0)); */
+
+/* color warning  secondary   */
+/* -------------------------- */
+/* --oj-core-warning-secondary-1:          rgb(var(--oj-palette-warning-rgb-30)); */
+/* --oj-core-warning-secondary-2:          rgb(var(--oj-palette-warning-rgb-20)); */
+/* --oj-core-warning-secondary-3:          rgb(var(--oj-palette-warning-rgb-10)); */
+/* --oj-core-warning-secondary-contrast:   rgb(var(--oj-palette-warning-rgb-120)); */
+
+
+/* color success              */
+/* -------------------------- */
+/* --oj-core-success-1:                    rgb(var(--oj-palette-success-rgb-100)); */
+/* --oj-core-success-2:                    rgb(var(--oj-palette-success-rgb-110)); */
+/* --oj-core-success-3:                    rgb(var(--oj-palette-success-rgb-120)); */
+/* --oj-core-success-contrast:             rgb(var(--oj-palette-neutral-rgb-0)); */
+
+
+/* color success secondary    */
+/* -------------------------- */
+/* --oj-core-success-secondary-1:          rgb(var(--oj-palette-success-rgb-30)); */
+/* --oj-core-success-secondary-2:          rgb(var(--oj-palette-success-rgb-20)); */
+/* --oj-core-success-secondary-3:          rgb(var(--oj-palette-success-rgb-10)); */
+/* --oj-core-success-secondary-contrast:   rgb(var(--oj-palette-success-rgb-120)); */
+
+
+/* color info                 */
+/* -------------------------- */
+/* --oj-core-info-1:                    rgb(var(--oj-palette-info-rgb-100)); */
+/* --oj-core-info-2:                    rgb(var(--oj-palette-info-rgb-110)); */
+/* --oj-core-info-3:                    rgb(var(--oj-palette-info-rgb-120)); */
+/* --oj-core-info-contrast:             rgb(var(--oj-palette-neutral-rgb-0)); */
+
+
+/* color info secondary       */
+/* -------------------------- */
+/* --oj-core-info-secondary-1:          rgb(var(--oj-palette-info-rgb-30)); */
+/* --oj-core-info-secondary-2:          rgb(var(--oj-palette-info-rgb-20)); */
+/* --oj-core-info-secondary-3:          rgb(var(--oj-palette-info-rgb-10)); */
+/* --oj-core-info-secondary-contrast:   rgb(var(--oj-palette-info-rgb-120)); */
+
+
+/* drag and drop              */
+/* -------------------------- */
+/* --oj-core-drag-drop-color-1:       rgb(var(--oj-palette-brand-rgb-40)); */
+/* --oj-core-drag-drop-color-2:       rgb(var(--oj-palette-brand-rgb-100)); */
+/* --oj-core-drag-drop-line-color:    rgb(var(--oj-palette-brand-rgb-100)); */
+
+/* icon                       */
+/* -------------------------- */
+/* --oj-core-icon-size-lg:              1.5rem; */
+/* --oj-core-icon-size-sm:              1rem; */
+
+/* touch target               */
+/* -------------------------- */
+/* --oj-core-touch-target-min-size:    2.25rem; */
+
+/* Cursor                     */
+/* -------------------------- */
+/* --oj-core-cursor-clickable:      pointer; */
+
+/* border-radius              */
+/* -------------------------- */
+/* --oj-core-border-radius-sm:                2px; */
+/* --oj-core-border-radius-md:               .25rem; */
+/* --oj-core-border-radius-lg:               .375rem; */
+/* --oj-core-border-radius-xl:               .5rem; */
+
+/* box shadow                 */
+/* -------------------------- */
+/* --oj-core-box-shadow-rgb:     var(--oj-palette-neutral-rgb-200); */
+/* --oj-core-box-shadow-xs:      0px 1px 4px 0px    rgba(var(--oj-core-box-shadow-rgb),.12); */
+/* --oj-core-box-shadow-sm:      0px 4px 8px 0px    rgba(var(--oj-core-box-shadow-rgb),.16); */
+/* --oj-core-box-shadow-md:      0px 6px 12px 0px   rgba(var(--oj-core-box-shadow-rgb),.2); */
+/* --oj-core-box-shadow-lg:      0px 8px 16px 0px   rgba(var(--oj-core-box-shadow-rgb),0.24); */
+/* --oj-core-box-shadow-xl:      0px 12px 20px 0px  rgba(var(--oj-core-box-shadow-rgb),0.28); */
+
+/* a dropdown is a popup that drops down from a component, for example a menu or select popup */
+/* --oj-core-dropdown-box-shadow:  var(--oj-core-box-shadow-sm); */
+
+/* overlay scrim              */
+/* -------------------------- */
+
+/* this is used for something like a modal dialog to overlay the
+/* rest of the screen, indicating it's not reachable */
+/* --oj-core-scrim-color:   rgba(var(--oj-palette-neutral-rgb-190), .4); */
+
+/* spacing                    */
+/* -------------------------- */
+/* --oj-core-spacing-1x:                  .25rem; */
+/* --oj-core-spacing-2x:                  .5rem; */
+/* --oj-core-spacing-3x:                  .75rem; */
+/* --oj-core-spacing-4x:                  1rem; */
+/* --oj-core-spacing-5x:                  1.25rem; */
+/* --oj-core-spacing-6x:                  1.5rem; */
+/* --oj-core-spacing-7x:                  1.75rem; */
+/* --oj-core-spacing-8x:                  2rem; */
+/* --oj-core-spacing-9x:                  2.25rem; */
+/* --oj-core-spacing-10x:                 2.5rem; */
+/* --oj-core-spacing-11x:                 2.75rem; */
+/* --oj-core-spacing-12x:                 3rem; */
+
+
+
+/* z-index                    */
+/* -------------------------- */
+/* --oj-core-z-index-popup:                   1000; */
+/* --oj-core-z-index-dialog:                  1050; */
+/* --oj-core-z-index-messages:                2000; */
+
+/* scrollbar                  */
+/* -------------------------- */
+/* --oj-scrollbar-thumb-color-hover:rgba(var(--oj-palette-neutral-rgb-170), .15); */
+/* --oj-scrollbar-track-color-force:   rgba(var(--oj-palette-neutral-rgb-170), .05); */
+
+
+
+/* animation                  */
+/* -------------------------- */
+/* --oj-animation-duration-xshort:      0.1s; */
+/* --oj-animation-duration-short:       0.15s; */
+/* --oj-animation-duration-medium:      0.2s; */
+/* --oj-animation-duration-long:        0.3s; */
+/* --oj-animation-duration-xlong:       0.5s; */
+/* 
+--oj-animation-ease-in-out:          cubic-bezier(0.4, 0, 0.2, 1); */
+/* --oj-animation-ease-out:             cubic-bezier(0, 0, 0.2, 1); */
+/* --oj-animation-ease-in:              cubic-bezier(0.4, 0, 1, 1); */
+/* 
+--oj-animation-effect-ripple-bg-color: rgb(var(--oj-palette-neutral-rgb-160)); */
+/* 
+--oj-animation-skeleton-bg-start-color:  rgba(var(--oj-palette-neutral-rgb-170), 0.05); */
+/* --oj-animation-skeleton-bg-end-color: rgba(var(--oj-palette-neutral-rgb-170), 0.15); */
+
+
+/* html tag                   */
+/* -------------------------- */
+
+/*-----------------------------------------------------------------------------*/
+/* To target popular system fonts consider using the following for --oj-html-font-family
+/*    system, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif
+/*
+/* Details:
+/*   * -apple-system targets San Francisco on Mac and ios systems that support it.
+/*   * BlinkMacSystemFont targets San Francisco for Chrome on Mac OS X.
+/*   * Segoe UI targets Windows and Windows Phone.
+/*   * Helvetica Neue targets iOS pre-iOS9 and Mac OS X pre-El Capitan.
+/*   * Arial targets Roboto on Android
+/*   * sans-serif is the default sans-serif fallback font.
+/*-----------------------------------------------------------------------------*/
+/* --oj-html-font-family:  -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; */
+
+
+/*-----------------------------------------------------------------------------*/
+/* font size set on the html element. It's recommended that you use em units,
+/* this allows the user's browser font size adjustments to be reflected on the page.
+/* The browser default font size is 16px, so for example for 16px use 1em,
+/* for 14px use .875em.
+/*
+/* JET generally uses rem instead of px which means that when you change
+/* the html element font size components adjust proportionately.
+/*-----------------------------------------------------------------------------*/
+/* --oj-html-font-size:   1em; */
+
+
+/* body tag                   */
+/* -------------------------- */
+/* --oj-body-bg-color:                   rgb(var(--oj-palette-neutral-rgb-10)); */
+
+/* used for background color in a similar way as the CSS keyword currentColor is used for color. */
+/* --oj-current-bg-color: ; */
+
+
+/* headings                   */
+/* -------------------------- */
+/* --oj-heading-text-color:                       var(--oj-core-text-color-primary); */
+/* --oj-heading-margin-bottom:                   1rem; */
+/* --oj-heading-margin-top:                      1rem; */
+/* --oj-subheading-margin-top:                   0; */
+/* --oj-subheading-margin-bottom:                0.75rem; */
+
+/* paragraph                  */
+/* -------------------------- */
+/* --oj-paragraph-margin-bottom:                1rem; */
+
+
+/* list                       */
+/* -------------------------- */
+/* --oj-list-margin-top:                   0.5rem; */
+/* --oj-list-nested-padding-start:         2.5rem; */
+/* --oj-list-item-line-height:             1.5; */
+/* --oj-list-unordered-style-type:         square; */
+
+/* link                       */
+/* -------------------------- */
+
+/* default*/
+/* --oj-link-text-decoration:              none; */
+/* --oj-link-text-decoration-hover:        underline; */
+/* 
+--oj-link-text-color:                 rgb(var(--oj-palette-info-rgb-120)); */
+
+
+/* active */
+/* --oj-link-text-color-active:          rgb(var(--oj-palette-info-rgb-120)); */
+
+/* visited */
+/* --oj-link-text-color-visited:         rgb(var(--oj-palette-info-rgb-120)); */
+
+
+/*-----------------------------------------------------------------------------*/
+/* there are 2 classes you can add to links
+/*    1. oj-link-embedded - these are links embedded in paragraph text.
+/*          For embedded links use the text-decoration vars if you want
+/*          the line close to the text, or use border-bottom-width vars
+/*          if you want the line further from the text
+/*
+/*    2. oj-link-standalone - links that are on their own, stand alone links use
+/*          borders which are only shown on hover.
+/*-----------------------------------------------------------------------------*/
+/* --oj-link-embedded-text-decoration:              none; */
+/* --oj-link-embedded-text-decoration-hover:        none; */
+/* 
+--oj-link-embedded-border-bottom-width:          1px; */
+/* --oj-link-embedded-border-bottom-width-hover:    0px; */
+
+
+
+
+/* button                     */
+/* -------------------------- */
+
+/* default buttons */
+/* --oj-button-height:                2.5rem; */
+/* --oj-button-border-radius:        var(--oj-core-border-radius-md); */
+/* --oj-button-font-size:              var(--oj-typography-body-sm-font-size); */
+/* --oj-button-font-weight:          600; */
+/* --oj-button-icon-size:         var(--oj-core-icon-size-lg); */
+/* --oj-button-text-to-edge-padding:      1rem; */
+/* --oj-button-icon-to-text-padding:       .625rem; */
+/* --oj-button-icon-to-edge-padding:       .625rem; */
+
+
+/* small buttons */
+/* --oj-button-sm-height:             2.125rem; */
+/* --oj-button-sm-font-size:           var(--oj-typography-body-sm-font-size); */
+/* --oj-button-sm-icon-size:      1.25rem; */
+/* --oj-button-sm-text-to-edge-padding:   1rem; */
+/* --oj-button-sm-icon-to-text-padding:    .5rem; */
+/* --oj-button-sm-icon-to-edge-padding:    .5rem; */
+
+
+/* large buttons */
+/* --oj-button-lg-height:             3rem; */
+/* --oj-button-lg-font-size:           var(--oj-typography-body-sm-font-size); */
+/* --oj-button-lg-icon-size:      var(--oj-core-icon-size-lg); */
+/* --oj-button-lg-text-to-edge-padding:   1.5rem; */
+/* --oj-button-lg-icon-to-text-padding:    1rem; */
+/* --oj-button-lg-icon-to-edge-padding:    1rem; */
+
+
+
+/* solid */
+
+/* solid enabled */
+/* --oj-button-solid-chrome-bg-color:                      rgba(var(--oj-palette-neutral-rgb-190),.08); */
+/* --oj-button-solid-chrome-border-color:                  transparent; */
+/* --oj-button-solid-chrome-text-color:                    var(--oj-core-text-color-primary); */
+
+/* solid hover */
+/* --oj-button-solid-chrome-bg-color-hover:                rgba(var(--oj-palette-neutral-rgb-190),.12); */
+/* --oj-button-solid-chrome-border-color-hover:            transparent; */
+/* --oj-button-solid-chrome-text-color-hover:              var(--oj-core-text-color-primary); */
+
+/* solid active */
+/* --oj-button-solid-chrome-bg-color-active:               rgba(var(--oj-palette-neutral-rgb-190),.16); */
+/* --oj-button-solid-chrome-border-color-active:           transparent; */
+/* --oj-button-solid-chrome-text-color-active:             var(--oj-core-text-color-primary); */
+
+
+/* solid selected */
+/* --oj-button-solid-chrome-bg-color-selected:             rgba(var(--oj-palette-neutral-rgb-190),.08); */
+/* --oj-button-solid-chrome-border-color-selected:         transparent; */
+/* --oj-button-solid-chrome-text-color-selected:           var(--oj-core-text-color-primary); */
+
+/* solid selected hover */
+/* --oj-button-solid-chrome-text-color-selected-hover:     var(--oj-core-text-color-primary); */
+/* --oj-button-solid-chrome-bg-color-selected-hover:       rgba(var(--oj-palette-neutral-rgb-190),.16); */
+/* --oj-button-solid-chrome-border-color-selected-hover:   transparent; */
+
+/* solid disabled */
+/* --oj-button-solid-chrome-bg-color-disabled:             var(--oj-core-color-disabled-1); */
+/* --oj-button-solid-chrome-border-color-disabled:         transparent; */
+/* --oj-button-solid-chrome-text-color-disabled:           var(--oj-core-text-color-disabled); */
+
+
+/* solid selected disabled */
+/* --oj-button-solid-chrome-bg-color-selected-disabled:     rgba(var(--oj-palette-neutral-rgb-100), .3); */
+/* --oj-button-solid-chrome-border-color-selected-disabled: transparent; */
+/* --oj-button-solid-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+
+
+
+
+/* borderless chrome enabled */
+/* --oj-button-borderless-chrome-text-color:        var(--oj-core-text-color-primary); */
+
+/* borderless chrome hover */
+/* --oj-button-borderless-chrome-bg-color-hover:        var(--oj-core-bg-color-hover); */
+/* --oj-button-borderless-chrome-border-color-hover:    transparent; */
+/* --oj-button-borderless-chrome-text-color-hover:      var(--oj-core-text-color-primary); */
+
+/* borderless chrome active */
+/* --oj-button-borderless-chrome-bg-color-active:       var(--oj-core-bg-color-active); */
+/* --oj-button-borderless-chrome-border-color-active:   transparent; */
+/* --oj-button-borderless-chrome-text-color-active:     var(--oj-core-text-color-primary); */
+
+
+/* borderless chrome selected */
+/* --oj-button-borderless-chrome-bg-color-selected:     transparent; */
+/* --oj-button-borderless-chrome-border-color-selected: var(--oj-core-border-color-enabled); */
+/* --oj-button-borderless-chrome-text-color-selected:   var(--oj-core-text-color-primary); */
+
+/* borderless chrome selected hover */
+/* --oj-button-borderless-chrome-bg-color-selected-hover:     var(--oj-core-bg-color-hover); */
+/* --oj-button-borderless-chrome-border-color-selected-hover: var(--oj-core-border-color-enabled); */
+/* --oj-button-borderless-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary); */
+
+/* borderless chrome disabled */
+/* --oj-button-borderless-chrome-text-color-disabled:   var(--oj-core-text-color-disabled); */
+
+
+/* borderless chrome selected disabled */
+/* --oj-button-borderless-chrome-bg-color-selected-disabled:     transparent; */
+/* --oj-button-borderless-chrome-border-color-selected-disabled: var(--oj-core-color-disabled-2); */
+/* --oj-button-borderless-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+
+
+
+/* outlined enabled */
+/* --oj-button-outlined-chrome-border-color:          var(--oj-core-border-color-enabled); */
+/* --oj-button-outlined-chrome-text-color:            var(--oj-core-text-color-primary); */
+/* --oj-button-outlined-chrome-bg-color:              transparent; */
+
+/* outlined hover */
+/* --oj-button-outlined-chrome-bg-color-hover:        var(--oj-core-bg-color-hover); */
+/* --oj-button-outlined-chrome-border-color-hover:    var(--oj-core-border-color-enabled); */
+/* --oj-button-outlined-chrome-text-color-hover:      var(--oj-core-text-color-primary); */
+
+/* outlined active */
+/* --oj-button-outlined-chrome-bg-color-active:       var(--oj-core-bg-color-active); */
+/* --oj-button-outlined-chrome-border-color-active:   var(--oj-core-border-color-enabled); */
+/* --oj-button-outlined-chrome-text-color-active:     var(--oj-core-text-color-primary); */
+
+
+/* outlined selected */
+/* --oj-button-outlined-chrome-bg-color-selected:     transparent; */
+/* --oj-button-outlined-chrome-border-color-selected: var(--oj-core-border-color-enabled); */
+/* --oj-button-outlined-chrome-text-color-selected:   var(--oj-core-text-color-primary); */
+
+/* outlined selected hover */
+/* --oj-button-outlined-chrome-bg-color-selected-hover:    var(--oj-core-bg-color-hover); */
+/* --oj-button-outlined-chrome-border-color-selected-hover: var(--oj-core-border-color-enabled); */
+/* --oj-button-outlined-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary); */
+
+/* outlined disabled */
+/* --oj-button-outlined-chrome-border-color-disabled: var(--oj-core-text-color-disabled); */
+/* --oj-button-outlined-chrome-text-color-disabled:   var(--oj-core-text-color-disabled); */
+/* --oj-button-outlined-chrome-bg-color-disabled:     transparent; */
+
+
+/* outlined selected disabled */
+/* --oj-button-outlined-chrome-bg-color-selected-disabled:     transparent; */
+/* --oj-button-outlined-chrome-border-color-selected-disabled: var(--oj-core-text-color-disabled); */
+/* --oj-button-outlined-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+
+/* cta enabled */
+/* --oj-button-call-to-action-chrome-bg-color:                      rgb(var(--oj-palette-brand-rgb-100)); */
+/* --oj-button-call-to-action-chrome-border-color:                  transparent; */
+/* --oj-button-call-to-action-chrome-text-color:                    var(--oj-core-neutral-contrast); */
+
+/* cta hover */
+/* --oj-button-call-to-action-chrome-bg-color-hover:                rgb(var(--oj-palette-brand-rgb-110)); */
+/* --oj-button-call-to-action-chrome-border-color-hover:            transparent; */
+/* --oj-button-call-to-action-chrome-text-color-hover:              var(--oj-core-neutral-contrast); */
+
+/* cta active */
+/* --oj-button-call-to-action-chrome-bg-color-active:               rgb(var(--oj-palette-brand-rgb-120)); */
+/* --oj-button-call-to-action-chrome-border-color-active:           transparent; */
+/* --oj-button-call-to-action-chrome-text-color-active:             var(--oj-core-neutral-contrast); */
+
+
+
+
+/* buttonset                     */
+/* ----------------------------- */
+/* --oj-buttonset-outlined-chrome-internal-border-color:                   var(--oj-button-outlined-chrome-border-color); */
+/* --oj-buttonset-outlined-chrome-internal-border-color-active:            var(--oj-button-outlined-chrome-border-color); */
+/* --oj-buttonset-outlined-chrome-internal-border-color-selected:          var(--oj-button-outlined-chrome-border-color); */
+/* --oj-buttonset-outlined-chrome-internal-border-color-selected-disabled: var(--oj-core-color-disabled-2); */
+
+
+/* drawer                     */
+/* ----------------------------- */
+/* --oj-drawer-overlay-bg-color: var(--oj-core-bg-color-content); */
+/* --oj-drawer-reflow-bg-color: var(--oj-core-bg-color-content); */
+/* --oj-drawer-reflow-divider-color: rgb(var(--oj-palette-neutral-rgb-40)); */
+
+/* toolbar                    */
+/* -------------------------- */
+/* --oj-toolbar-button-margin:.5rem; */
+/* --oj-toolbar-borderless-button-margin:.125rem; */
+/* --oj-toolbar-separator-margin:.5rem; */
+
+
+
+
+/* menu */
+/* -------------------------- */
+/* --oj-menu-icon-size:                      var(--oj-core-icon-size-lg); */
+/* --oj-menu-icon-to-edge-padding:           1rem; */
+/* --oj-menu-text-to-start-icon-padding:     1rem; */
+/* --oj-menu-text-to-end-icon-padding:       2rem; */
+/* --oj-menu-text-to-edge-padding:           1rem; */
+/* --oj-menu-divider-margin:                 var(--oj-core-spacing-2x) 0; */
+
+/* menu item */
+/* --oj-menu-item-text-color:                var(--oj-core-text-color-primary); */
+/* --oj-menu-icon-color:                     var(--oj-core-text-color-primary); */
+
+/* menu sheet */
+
+/* on a phone the menu displays as a sheet, aka 'action sheet',
+/* see the doc for open-options.display in the menu doc */
+/* --oj-menu-sheet-margin-horizontal:        0px; */
+
+
+/* label                      */
+/* -------------------------- */
+/* --oj-label-font-size:     var(--oj-typography-body-sm-font-size); */
+/* --oj-label-font-weight:   600; */
+/* --oj-label-line-height:   var(--oj-typography-body-sm-line-height); */
+/* 
+--oj-label-color:         var(--oj-core-text-color-primary); */
+/* --oj-label-color-disabled:              var(--oj-core-text-color-disabled); */
+/* --oj-label-required-char-font-size:  0.9375rem; */
+/* --oj-label-required-icon-color: rgb(var(--oj-palette-brand-rgb-110)); */
+/* 
+--oj-label-inside-edge-font-size:       var(--oj-typography-body-xs-font-size); */
+/* --oj-label-inside-edge-font-weight:     600; */
+/* --oj-label-inside-edge-line-height:     var(--oj-typography-body-xs-line-height); */
+/* --oj-label-inside-edge-position-top:    0.375rem; */
+/* --oj-label-inside-edge-color: var(--oj-core-text-color-secondary); */
+
+
+/* form Controls              */
+/* -------------------------- */
+/* --oj-form-control-font-weight-read-only:  normal; */
+
+
+/* text fields                */
+/* -------------------------- */
+/*   Text fields allow users to input, edit,
+/*   and select text. These variables are used by
+/*   oj-input-date
+/*   oj-input-date-time
+/*   oj-input-number
+/*   oj-input-password
+/*   oj-input-search
+/*   oj-input-text
+/*   oj-input-time
+/*   oj-combobox-many
+/*   oj-combobox-one
+/*   oj-select-single
+/*   oj-select-many
+/*   oj-select-one          */
+/* 
+--oj-text-field-border-radius:       var(--oj-core-border-radius-md); */
+/* --oj-text-field-border-width:    1px; */
+/* 
+
+--oj-text-field-icon-to-text-padding: var(--oj-core-spacing-3x); */
+/* --oj-text-field-icon-to-edge-padding: var(--oj-core-spacing-3x); */
+/* --oj-text-field-text-to-edge-padding: var(--oj-core-spacing-3x); */
+/* 
+--oj-text-field-text-align: start; */
+/* 
+--oj-text-field-height:              2.5rem; */
+/* --oj-text-field-font-size:        var(--oj-typography-body-md-font-size); */
+
+/* enabled */
+/* --oj-text-field-bg-color:               rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-text-field-border-color:           var(--oj-core-border-color-enabled); */
+/* --oj-text-field-placeholder-color:      var(--oj-core-text-color-secondary); */
+/* --oj-text-field-placeholder-font-style: normal; */
+/* --oj-text-field-text-color:      var(--oj-core-text-color-primary); */
+
+/* focus */
+/* --oj-text-field-border-color-focus:        rgb(var(--oj-palette-brand-rgb-110)); */
+/* --oj-text-field-box-shadow-focus:          none; */
+
+/* disabled */
+/* --oj-text-field-bg-color-disabled:      rgba(var(--oj-palette-neutral-rgb-0),.3); */
+/* --oj-text-field-border-color-disabled:  var(--oj-core-color-disabled-2); */
+/* --oj-text-field-text-color-disabled:   var(--oj-core-text-color-disabled); */
+
+/* inside edge */
+/* --oj-text-field-inside-edge-height:                  3rem; */
+
+/* padding between the border and the actual input element,
+/* the inside edge label sits over this padding */
+/* --oj-text-field-inside-edge-padding-top:             0.8125rem; */
+/* 
+--oj-text-field-inside-edge-label-color-error:       rgb(var(--oj-palette-danger-rgb-100)); */
+/* --oj-text-field-inside-edge-label-color-warning:     rgb(var(--oj-palette-warning-rgb-100)); */
+/* --oj-text-field-inside-edge-label-color-focus:       rgb(var(--oj-palette-brand-rgb-110)); */
+
+/* by default the text field width and max width is 100%,
+/* these variables are used in the classes
+/* .oj-form-control-max-width-sm, .oj-form-control-max-width-md,
+/* .oj-form-control-width-sm, .oj-form-control-width-md */
+/* --oj-text-field-sm-width: calc(var(--oj-form-layout-column-max-width)/2); */
+/* --oj-text-field-md-width: var(--oj-form-layout-column-max-width); */
+
+
+/* user assistance           */
+/*-------------------------- */
+/* user Assistance */
+/* --oj-user-assistance-inline-text-color: var(--oj-core-text-color-secondary); */
+/* --oj-user-assistance-inline-font-size: var(--oj-typography-body-xs-font-size); */
+
+
+
+/* listbox                   */
+/*-------------------------- */
+
+/* a listbox is a dropdown used in select and combobox */
+/* --oj-listbox-item-padding-horizontal:  var(--oj-text-field-text-to-edge-padding); */
+
+
+/* date picker     */
+/*-----------------*/
+/* --oj-date-picker-cell-font-size:               var(--oj-typography-body-sm-font-size); */
+/* --oj-date-picker-cell-border-color-today:      rgb(var(--oj-palette-neutral-rgb-160)); */
+
+
+/* radioset/checkboxset      */
+/*-------------------------- */
+/* --oj-radio-checkbox-width:                     auto; */
+/* --oj-radio-checkbox-row-height:                2.25rem; */
+/* 
+--oj-radio-checkbox-input-size:                1rem; */
+/* --oj-radio-checkbox-input-color-unselected:    rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-radio-checkbox-input-color-selected:      rgb(var(--oj-palette-neutral-rgb-190)); */
+/* 
+--oj-radio-checkbox-label-to-edge-padding:     0; */
+/* --oj-radio-checkbox-input-to-label-padding:    0.5rem; */
+/* --oj-radio-checkbox-input-to-edge-padding:     0; */
+/* 
+--oj-radio-checkbox-item-divider-color:        transparent; */
+/* 
+--oj-radio-checkbox-input-transform-active:    scale(0.75); */
+/* --oj-radio-checkbox-item-bg-color-active:      transparent; */
+
+
+
+/* slider                     */
+/* -------------------------- */
+/* 
+--oj-slider-thumb-width:                 1.25rem; */
+/* --oj-slider-thumb-height:                1.25rem; */
+/* --oj-slider-thumb-border-radius:         50%; */
+/* --oj-slider-thumb-border-width:          0.125rem; */
+/* 
+--oj-slider-track-thickness:             2px; */
+
+/* enabled */
+/* --oj-slider-thumb-bg-color:              rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-slider-thumb-border-color:          rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-slider-thumb-box-shadow:            none; */
+/* 
+--oj-slider-track-bg-color:              rgba(var(--oj-palette-neutral-rgb-170), 0.15); */
+/* --oj-slider-value-bg-color:              rgb(var(--oj-palette-neutral-rgb-180)); */
+
+/* hover */
+/* --oj-slider-thumb-bg-color-hover:        rgb(var(--oj-palette-neutral-rgb-30)); */
+/* --oj-slider-thumb-box-shadow-hover:      none; */
+
+/* active */
+/* --oj-slider-thumb-bg-color-active:       rgb(var(--oj-palette-neutral-rgb-40)); */
+/* --oj-slider-thumb-border-color-active:   rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-slider-thumb-box-shadow-active:     none; */
+/* --oj-slider-thumb-scale-active:          1; */
+
+/* disabled */
+/* --oj-slider-thumb-bg-color-disabled:     rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-slider-thumb-border-color-disabled: var(--oj-core-text-color-disabled); */
+/* 
+--oj-slider-track-bg-color-disabled:     var(--oj-core-color-disabled-2); */
+/* --oj-slider-value-bg-color-disabled:     var(--oj-core-text-color-disabled); */
+
+
+
+/* switch                   */
+/*------------------------- */
+/* 
+--oj-switch-track-height:                         1.25rem; */
+/* --oj-switch-track-width:                          2.25rem; */
+/* --oj-switch-track-border-radius:                  1.25rem; */
+/* 
+--oj-switch-thumb-to-track-horizontal-margin:     0.0625rem; */
+
+
+/* enabled off */
+/* --oj-switch-track-bg-color:                       rgb(var(--oj-palette-neutral-rgb-90)); */
+/* --oj-switch-track-border-color:                   transparent; */
+/* 
+--oj-switch-thumb-bg-color:                       rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-switch-thumb-border-color:                   rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-switch-thumb-height:                         1rem; */
+/* --oj-switch-thumb-width:                          1rem; */
+/* --oj-switch-thumb-border-radius:                  50%; */
+/* --oj-switch-thumb-box-shadow:                     0px 0.125rem 0.25rem 0px rgba(var(--oj-core-box-shadow-rgb),.1); */
+
+/* selected (on) */
+/* --oj-switch-track-bg-color-selected:              rgb(var(--oj-palette-brand-rgb-100)); */
+/* --oj-switch-track-border-color-selected:          rgb(var(--oj-palette-brand-rgb-100)); */
+/* 
+--oj-switch-thumb-bg-color-selected:              rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-switch-thumb-border-color-selected:          rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-switch-thumb-box-shadow-selected:            var(--oj-switch-thumb-box-shadow); */
+
+/* hover (off) */
+/* --oj-switch-track-bg-color-hover:                 rgba(var(--oj-palette-neutral-rgb-170),.6); */
+/* --oj-switch-track-border-color-hover:             transparent; */
+/* 
+--oj-switch-thumb-bg-color-hover:                 rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-switch-thumb-border-color-hover:             rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-switch-thumb-box-shadow-hover:               none; */
+
+/* selected hover (on) */
+/* --oj-switch-track-bg-color-selected-hover:        rgb(var(--oj-palette-brand-rgb-110)); */
+/* --oj-switch-track-border-color-selected-hover:    rgb(var(--oj-palette-brand-rgb-110)); */
+/* 
+--oj-switch-thumb-bg-color-selected-hover:        rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-switch-thumb-border-color-selected-hover:    rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-switch-thumb-box-shadow-selected-hover:      none; */
+
+
+/* active (off) */
+/* --oj-switch-track-bg-color-active:                rgba(var(--oj-palette-neutral-rgb-170), 0.68); */
+/* --oj-switch-track-border-color-active:            transparent; */
+/* 
+--oj-switch-thumb-bg-color-active:                rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-switch-thumb-border-color-active:            rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-switch-thumb-box-shadow-active:              none; */
+/* --oj-switch-thumb-width-active:                   var(--oj-switch-thumb-width); */
+
+/* selected active (on) */
+/* --oj-switch-track-bg-color-selected-active:       rgb(var(--oj-palette-brand-rgb-120)); */
+/* --oj-switch-track-border-color-selected-active:   rgb(var(--oj-palette-brand-rgb-120)); */
+/* 
+--oj-switch-thumb-bg-color-selected-active:       rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-switch-thumb-border-color-selected-active:   rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-switch-thumb-box-shadow-selected-active:     none; */
+
+/* disabled (off) */
+/* --oj-switch-track-bg-color-disabled:              var(--oj-core-color-disabled-1); */
+/* --oj-switch-track-border-color-disabled:          transparent; */
+/* 
+--oj-switch-thumb-bg-color-disabled:              var(--oj-core-color-disabled-2); */
+/* --oj-switch-thumb-border-color-disabled:          transparent; */
+
+
+/* selected disabled (on) */
+/* --oj-switch-track-bg-color-selected-disabled:     var(--oj-core-color-disabled-1); */
+/* --oj-switch-track-border-color-selected-disabled: transparent; */
+/* 
+--oj-switch-thumb-bg-color-selected-disabled:     var(--oj-core-color-disabled-2); */
+/* --oj-switch-thumb-border-color-selected-disabled: transparent; */
+
+
+
+
+/* color palette                */
+/* ---------------------------- */
+/* --oj-color-palette-swatch-inner-border-color:          rgb(var(--oj-palette-neutral-rgb-170)); */
+/* --oj-color-palette-swatch-outer-border-color-selected: rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-color-palette-border-radius:                      50%; */
+/* --oj-color-palette-swatch-margin:                      1px; */
+/* --oj-color-palette-grid-font-size:                     var(--oj-typography-body-xs-font-size); */
+
+
+
+/* color spectrum */
+/* ---------------------------- */
+/* --oj-color-spectrum-border-color:                rgb(var(--oj-palette-neutral-rgb-50)); */
+
+
+/* form Layout                */
+/* -------------------------- */
+/* --oj-form-layout-horizontal-margin:                     0px; */
+/* --oj-form-layout-margin-bottom:                         .875rem; */
+/* 
+--oj-form-layout-divider-width:                         0; */
+/* --oj-form-layout-divider-margin:                        0; */
+/* 
+--oj-form-layout-start-edge-column-min-width:          22rem; */
+/* --oj-form-layout-start-edge-column-max-width:          37.5rem; */
+/* --oj-form-layout-column-min-width:                      18rem; */
+/* --oj-form-layout-column-max-width:                      28rem; */
+/* 
+--oj-form-layout-column-gutter:                         1.5rem; */
+/* 
+--oj-form-layout-top-edge-label-to-value-padding: 0.5rem; */
+/* 
+--oj-form-layout-start-edge-label-text-align: end; */
+/* --oj-form-layout-start-edge-value-text-align: start; */
+/* --oj-form-layout-start-edge-label-to-value-padding: 1.5rem; */
+
+
+/* collections
+/*   These variables are used by
+/*    oj-table
+/*    oj-data-grid
+/*    oj-list-view
+/* ---------------------------- */
+
+/*  --oj-collection-list* variables are for list view and table when display=list */
+/* --oj-collection-list-row-height:                         2.5rem; */
+/* --oj-collection-list-cell-padding-vertical:              0.5rem; */
+
+
+/*  --oj-collection-grid* variables are for data grid and table when display=grid */
+/* --oj-collection-grid-row-height:                         2.375rem; */
+/* --oj-collection-grid-header-height:                      2.25rem; */
+/* --oj-collection-grid-cell-padding:                       .5rem; */
+/* --oj-collection-grid-cell-padding-vertical:              var(--oj-collection-grid-cell-padding); */
+/* --oj-collection-grid-cell-padding-horizontal:            var(--oj-collection-grid-cell-padding); */
+/* 
+
+--oj-collection-bg-color:                                rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-collection-border-color:                            rgba(var(--oj-palette-neutral-rgb-190), .1); */
+/* --oj-collection-free-space-bg-color:                     rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-collection-default-sort-icon-display:               block; */
+/* --oj-collection-cell-banded-bg-color:                    rgb(var(--oj-palette-neutral-rgb-10)); */
+
+/* headers */
+/* --oj-collection-header-font-size:                        var(--oj-typography-body-xs-font-size); */
+/* --oj-collection-header-font-weight:                      normal; */
+
+/* a header is partially selected when some but not all respective cells are selected */
+/* --oj-collection-header-bg-color-partial-selected:        rgba(var(--oj-palette-neutral-rgb-190), 0.03); */
+
+/* enabled */
+/* --oj-collection-header-bg-color:                         rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-collection-header-text-color:                       var(--oj-core-text-color-secondary); */
+
+/* hover */
+/* --oj-collection-header-bg-color-hover:                   var(--oj-core-bg-color-hover); */
+
+/* selected */
+/* --oj-collection-header-bg-color-selected:                rgba(var(--oj-palette-neutral-rgb-190), 0.08); */
+
+/* editable */
+/* --oj-collection-editable-cell-border-color-focus:        rgb(var(--oj-palette-brand-rgb-110)); */
+/* --oj-collection-editable-cell-bg-color-read-only:        var(--oj-core-color-disabled-1); */
+
+/* data grid                  */
+/* -------------------------- */
+/* --oj-data-grid-column-width:                             6.25rem; */
+
+/* list view                  */
+/* -------------------------- */
+/* 
+--oj-list-view-item-padding-horizontal: 1rem; */
+/* 
+--oj-list-view-group-header-bg-color:          transparent; */
+/* --oj-list-view-group-header-bg-color-sticky:   rgb(var(--oj-palette-neutral-rgb-30)); */
+/* --oj-list-view-group-header-font-weight:  var(--oj-typography-subheading-xs-font-weight); */
+/* --oj-list-view-group-header-font-size:    var(--oj-typography-subheading-xs-font-size); */
+/* --oj-list-view-group-header-line-height:  var(--oj-typography-subheading-xs-line-height); */
+
+
+
+/* table                        */
+/* ---------------------------- */
+/* --oj-table-header-row-height:                   3.3125rem; */
+/* --oj-table-header-cell-padding-vertical:    0.375rem; */
+/* --oj-table-cell-padding-horizontal:             1rem; */
+
+/* tree view                    */
+/* ---------------------------- */
+/* --oj-tree-view-row-height:                      2.5rem; */
+/* --oj-tree-view-text-color:                      var(--oj-core-text-color-primary); */
+/* --oj-tree-view-indent-width:                    1.5rem; */
+
+
+/* indexer                    */
+/* -------------------------- */
+/* --oj-indexer-text-color:            var(--oj-core-text-color-primary); */
+/* --oj-indexer-font-size:             var(--oj-typography-body-sm-font-size); */
+
+
+/* refresher                  */
+/* -------------------------- */
+/* --oj-refresher-bg-color:           rgb(var(--oj-palette-neutral-rgb-40)); */
+
+
+
+/* panel                     */
+/*-------------------------- */
+/* --oj-panel-padding:                   var(--oj-core-spacing-2x); */
+/* --oj-panel-border-radius:             var(--oj-core-border-radius-lg); */
+/* --oj-panel-bg-color:                  var(--oj-core-bg-color-content); */
+/* --oj-panel-border-color:              var(--oj-core-divider-color); */
+/* --oj-panel-gutter:                    var(--oj-core-spacing-4x); */
+
+
+/* action card               */
+/*-------------------------- */
+/* --oj-action-card-scale-hover: 1; */
+
+
+/* badge                      */
+/* -------------------------- */
+/* --oj-badge-height: 1.5rem; */
+/* --oj-badge-border-radius: var(--oj-core-border-radius-lg); */
+/* 
+--oj-badge-bg-color: var(--oj-core-neutral-1); */
+/* --oj-badge-text-color: var(--oj-core-neutral-contrast); */
+/* 
+--oj-badge-font-size: 0.75rem; */
+/* --oj-badge-font-weight: 700; */
+/* --oj-badge-font-stretch: condensed; */
+/* 
+--oj-badge-padding: 0 var(--oj-core-spacing-2x); */
+
+/* avatar                     */
+/* -------------------------- */
+/* --oj-avatar-bg-color:                       rgb(var(--oj-palette-neutral-rgb-130)); */
+/* --oj-avatar-text-color:                     var(--oj-core-neutral-contrast); */
+/* --oj-avatar-pattern-display:                none; */
+/* 
+--oj-avatar-size:                        4.5rem; */
+/* --oj-avatar-border-radius:               var(--oj-core-border-radius-md); */
+/* --oj-avatar-initials-font-size:          var(--oj-typography-heading-lg-font-size); */
+/* --oj-avatar-initials-font-weight:        lighter; */
+/* --oj-avatar-icon-font-size:              2rem; */
+
+/* conveyor belt               */
+/* -------------------------- */
+/* --oj-conveyor-belt-box-shadow-width: 0.25rem; */
+
+/* popup                      */
+/* -------------------------- */
+/* 
+--oj-popup-bg-color:                 rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-popup-border-color:             var(--oj-core-divider-color); */
+/* --oj-popup-border-radius:            var(--oj-core-border-radius-sm); */
+/* --oj-popup-box-shadow:               var(--oj-core-box-shadow-xs); */
+/* --oj-popup-padding:          0.5rem; */
+/* 
+--oj-popup-tail-height:             5px; */
+/* --oj-popup-tail-width:              10px; */
+
+/* dialog                     */
+/* -------------------------- */
+/* --oj-dialog-border-radius:            var(--oj-core-border-radius-lg); */
+/* --oj-dialog-bg-color:                 rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-dialog-border-color:             rgba(var(--oj-palette-neutral-rgb-190),.1); */
+/* --oj-dialog-box-shadow:               var(--oj-core-box-shadow-xl); */
+/* 
+--oj-dialog-header-padding:           2rem 2rem 0.75rem; */
+/* --oj-dialog-body-padding:             0 2rem 1rem 2rem; */
+/* --oj-dialog-footer-padding:           1rem 2rem 2rem 2rem; */
+/* 
+--oj-dialog-header-bg-color:          transparent; */
+/* --oj-dialog-header-border-color:      transparent; */
+/* 
+--oj-dialog-title-text-color:        var(--oj-core-text-color-primary); */
+/* --oj-dialog-title-font-size:         var(--oj-typography-heading-xs-font-size); */
+/* --oj-dialog-title-line-height:       var(--oj-typography-heading-xs-line-height); */
+/* --oj-dialog-title-font-weight:       var(--oj-typography-heading-xs-font-weight); */
+/* 
+--oj-dialog-cancel-icon-margin-top: -1.5rem; */
+/* --oj-dialog-cancel-icon-margin-end: -1.5rem; */
+
+
+/* file picker                */
+/* -------------------------- */
+/* 
+--oj-file-picker-border-color:              rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-file-picker-border-width:              1px; */
+/* --oj-file-picker-border-radius:             var(--oj-core-border-radius-xl); */
+
+
+
+/* masonry layout             */
+/* -------------------------- */
+/* --oj-masonry-layout-tile-width:    10rem; */
+/* --oj-masonry-layout-tile-height:   10rem; */
+
+
+/* navigation list            */
+/* -------------------------- */
+/* 
+--oj-navigation-list-font-size:                          var(--oj-typography-body-md-font-size); */
+/* --oj-navigation-list-font-weight:                        600; */
+/* 
+--oj-navigation-list-icon-margin:                        0; */
+/* --oj-navigation-list-icon-size:                          var(--oj-core-icon-size-lg); */
+/* --oj-navigation-list-icon-to-text-padding:               0.5rem; */
+/* 
+
+--oj-navigation-list-item-min-height:                    3rem; */
+/* --oj-navigation-list-item-margin:                        2rem; */
+/* --oj-navigation-list-item-padding:                       0; */
+
+
+/* default */
+/* --oj-navigation-list-item-label-color:               var(--oj-core-text-color-secondary); */
+
+/* hover */
+/* --oj-navigation-list-item-label-color-hover:                 var(--oj-core-text-color-primary); */
+/* --oj-navigation-list-item-bg-color-hover:                    transparent; */
+
+/* selected */
+/* --oj-navigation-list-item-bg-color-selected:                 transparent; */
+/* --oj-navigation-list-item-border-color-selected:             rgb(var(--oj-palette-brand-rgb-110)); */
+/* --oj-navigation-list-item-label-color-selected:              var(--oj-core-text-color-primary); */
+
+
+/* sliding */
+/* --oj-navigation-list-sliding-heading-font-size:          var(--oj-typography-subheading-xs-font-size); */
+/* --oj-navigation-list-sliding-heading-font-weight:        var(--oj-typography-subheading-xs-font-weight); */
+/* --oj-navigation-list-sliding-heading-line-height:        var(--oj-typography-subheading-xs-line-height); */
+
+
+/* tab bar                    */
+/* -------------------------- */
+/* 
+--oj-tab-bar-icon-to-text-padding:                0.5rem; */
+/* --oj-tab-bar-icon-size:                           var(--oj-core-icon-size-lg); */
+/* --oj-tab-bar-icon-margin:                         0; */
+/* 
+--oj-tab-bar-item-margin:                         0 2rem 0 0; */
+/* --oj-tab-bar-item-min-height:                     3rem; */
+/* --oj-tab-bar-item-line-height:                    var(--oj-typography-body-md-line-height); */
+/* --oj-tab-bar-item-font-size:                      var(--oj-typography-body-md-font-size); */
+/* 
+--oj-tab-bar-item-padding:                         0; */
+
+/* default */
+/* --oj-tab-bar-item-font-weight:                    600; */
+/* --oj-tab-bar-item-label-color:                    var(--oj-core-text-color-secondary); */
+
+
+/* hover */
+/* --oj-tab-bar-item-label-color-hover:              var(--oj-core-text-color-primary); */
+/* --oj-tab-bar-item-bg-color-hover:                 transparent; */
+
+/* active */
+/* --oj-tab-bar-item-bg-color-active:                transparent; */
+/* --oj-tab-bar-item-border-color-active:    rgb(var(--oj-palette-brand-rgb-70)); */
+
+/* selected */
+/* --oj-tab-bar-item-font-weight-selected:           600; */
+/* --oj-tab-bar-item-label-color-selected:           var(--oj-core-text-color-primary); */
+/* --oj-tab-bar-item-bg-color-selected:              transparent; */
+/* --oj-tab-bar-item-border-color-selected:          rgb(var(--oj-palette-brand-rgb-110)); */
+
+
+/* progress Bar               */
+/* -------------------------- */
+/* 
+--oj-progress-bar-height:                        6px; */
+/* --oj-progress-bar-border-radius:                 3px; */
+/* --oj-progress-bar-track-bg-color:                rgba(var(--oj-palette-neutral-rgb-170), .15); */
+/* --oj-progress-bar-value-bg-color:                rgb(var(--oj-palette-neutral-rgb-190)); */
+
+
+/* progress circle            */
+/* -------------------------- */
+/* 
+--oj-progress-circle-value-bg-color:             rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-progress-circle-sm-size:                    1.5rem; */
+/* --oj-progress-circle-md-size:                    3rem; */
+/* --oj-progress-circle-lg-size:                    6rem; */
+/* --oj-progress-circle-sm-track-width:             2px; */
+/* --oj-progress-circle-md-track-width:             0.25rem; */
+/* --oj-progress-circle-lg-track-width:             0.375rem; */
+/* --oj-progress-circle-determinate-track-bg-color: rgba(var(--oj-palette-neutral-rgb-170), .15); */
+
+
+
+/* train                      */
+/* -------------------------- */
+/* --oj-train-step-width:                       7rem; */
+/* --oj-train-padding:                          0.75rem 0 0.75rem 0; */
+/* --oj-train-label-font-size:                  var(--oj-typography-body-sm-font-size); */
+/* --oj-train-label-font-weight:                bold; */
+/* --oj-train-label-padding-top:                0.75rem; */
+/* --oj-train-button-diameter:                  1.5rem; */
+/* --oj-train-button-font-size:                 var(--oj-typography-body-xs-font-size); */
+/* --oj-train-connector-height:                 2px; */
+/* --oj-train-connector-padding:                0.625rem; */
+
+/* default */
+/* --oj-train-button-bg-color:                  rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-train-button-border-color:              rgba(var(--oj-palette-neutral-rgb-190),.6); */
+/* --oj-train-button-text-color:                var(--oj-core-text-color-secondary); */
+/* --oj-train-label-color:                      var(--oj-core-text-color-secondary); */
+/* --oj-train-connector-color:                  rgba(var(--oj-palette-neutral-rgb-190),.3); */
+
+/* visited */
+/* --oj-train-button-bg-color-visited:          rgb(var(--oj-palette-success-rgb-110)); */
+/* --oj-train-button-border-color-visited:      transparent; */
+/* --oj-train-button-text-color-visited:        var(--oj-core-neutral-contrast); */
+/* --oj-train-label-color-visited:              var(--oj-core-text-color-primary); */
+
+/* hover */
+/* --oj-train-button-bg-color-hover:            rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-train-button-border-color-hover:        rgba(var(--oj-palette-brand-rgb-160),.6); */
+/* --oj-train-button-text-color-hover:          rgba(var(--oj-palette-brand-rgb-160),.6); */
+/* --oj-train-step-bg-color-hover:              var(--oj-core-bg-color-hover); */
+/* --oj-train-step-border-radius:               var(--oj-core-border-radius-xl); */
+
+
+/* active */
+/* --oj-train-button-bg-color-active:           rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-train-button-border-color-active:       transparent; */
+/* --oj-train-button-text-color-active:         rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-train-label-font-weight-active:         bold; */
+/* --oj-train-step-bg-color-active:             var(--oj-core-bg-color-active); */
+
+/* selected */
+/* --oj-train-button-bg-color-selected:         rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-train-button-border-color-selected:     transparent; */
+/* --oj-train-button-text-color-selected:       rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-train-label-font-weight-selected:       bold; */
+/* --oj-train-label-color-selected:             var(--oj-core-text-color-primary); */
+/* --oj-train-connector-color-selected:         rgba(var(--oj-palette-neutral-rgb-190),.3); */
+/* --oj-train-connector-padding-selected:       0px; */
+
+/* disabled */
+/* --oj-train-button-bg-color-disabled:         rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-train-button-border-color-disabled:     var(--oj-core-text-color-disabled); */
+/* --oj-train-button-text-color-disabled:       var(--oj-core-text-color-disabled); */
+/* --oj-train-button-opacity-disabled:          1; */
+/* --oj-train-label-color-disabled:             var(--oj-core-text-color-disabled); */
+
+
+
+
+/* tooltip                    */
+/* -------------------------- */
+/* --oj-tooltip-border-radius: var(--oj-core-border-radius-md); */
+/* --oj-tooltip-bg-color:      rgb(var(--oj-palette-neutral-rgb-170)); */
+/* --oj-tooltip-border-color:  rgb(var(--oj-palette-neutral-rgb-170)); */
+/* --oj-tooltip-text-color:    rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-tooltip-font-size:     var(--oj-typography-body-xs-font-size); */
+/* --oj-tooltip-line-height:   var(--oj-typography-body-xs-line-height); */
+/* --oj-tooltip-padding:       var(--oj-core-spacing-2x); */
+
+
+
+
+
+/* dvt                        */
+/* -------------------------- */
+
+/* used for gauge thresholds and stock chart rising and falling colors */
+/* --oj-dvt-danger-color:              rgb(214, 59, 37); */
+/* --oj-dvt-warning-color:             rgb(207, 124, 0); */
+/* --oj-dvt-success-color:             rgb(80, 130, 35); */
+
+/* marquee */
+/* --oj-dvt-marquee-color:                    rgba(var(--oj-palette-neutral-rgb-20),.1); */
+/* --oj-dvt-marquee-border-color:             rgba(var(--oj-palette-neutral-rgb-190), 0.8); */
+
+/* selected nodes in sunburst, diagram, treemap, timeline, thematic map, nbox, gantt*/
+/* --oj-dvt-item-border-color-selected:   rgb(var(--oj-palette-neutral-rgb-190)); */
+
+/* hover/selected inner contrast color in sunburst, diagram, treemap, nbox , thematic map nodes */
+/* --oj-dvt-item-contrast-color:           rgb(var(--oj-palette-neutral-rgb-20)); */
+
+/* hover nodes in sunburst, treemap */
+/* --oj-dvt-node-border-color-hover:         rgb(var(--oj-palette-neutral-rgb-20)); */
+
+/* reference line contrast line, data cursor contrast line in chart, marquee inner stroke */
+/* --oj-dvt-contrast-line-color:              rgba(var(--oj-palette-neutral-rgb-20), 0.7); */
+
+/* reference area color in chart, gantt */
+/* --oj-dvt-reference-object-area-color:      rgba(var(--oj-palette-neutral-rgb-170), 0.08); */
+
+/* reference line primary line, data cursor contrast line in chart, gantt */
+/* --oj-dvt-reference-object-line-color:      rgba(var(--oj-palette-neutral-rgb-190), 0.8); */
+
+/* overview window for dvt components, currently timeline and diagram */
+/* --oj-dvt-overview-bg-color:                rgb(var(--oj-palette-neutral-rgb-50)); */
+/* --oj-dvt-overview-window-bg-color:         rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-dvt-overview-window-border-color:     rgb(var(--oj-palette-neutral-rgb-170)); */
+
+
+/* chart axis, datalabel and legend text */
+/* --oj-dvt-label-font-size-sm:              var(--oj-typography-body-2xs-font-size); */
+
+/* sunburst, diagram, nbox node data labels */
+/* --oj-dvt-label-font-size-md:              var(--oj-typography-body-xs-font-size); */
+
+/* timeline, gantt labels */
+/* --oj-dvt-label-font-size-lg:              var(--oj-typography-body-md-font-size); */
+
+
+
+/* chart                      */
+/* -------------------------- */
+/* --oj-chart-axis-title-text-color:         var(--oj-core-text-color-secondary); */
+/* --oj-chart-axis-tick-label-text-color:    var(--oj-core-text-color-secondary); */
+/* --oj-chart-animation-rising-icon-color:   rgb(var(--oj-palette-info-rgb-90)); */
+/* --oj-chart-animation-falling-icon-color:  rgb(var(--oj-palette-danger-rgb-90)); */
+/* --oj-chart-animation-marker-color:        rgb(var(--oj-palette-neutral-rgb-20)); */
+/* --oj-chart-polar-axis-tick-label-inside-bg-color: rgba(var(--oj-palette-neutral-rgb-0), .6); */
+/* --oj-chart-polar-axis-tick-label-outside-bg-color:    rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-chart-data-cursor-line-color: rgba(var(--oj-palette-neutral-rgb-190), 0.8); */
+
+/* stock charts */
+/* --oj-chart-stock-falling-bg-color:        var(--oj-dvt-danger-color); */
+/* --oj-chart-stock-range-bg-color:          rgb(var(--oj-palette-neutral-rgb-100)); */
+/* --oj-chart-stock-rising-bg-color:         var(--oj-dvt-success-color); */
+
+/* spark chart */
+/* --oj-spark-chart-item-color:         #267db3; */
+
+/* diagram                    */
+/* -------------------------- */
+/* --oj-diagram-link-color:                           rgb(var(--oj-palette-neutral-rgb-120)); */
+/* --oj-diagram-node-border-color-hover:              rgb(var(--oj-palette-neutral-rgb-120)); */
+/* --oj-diagram-node-bg-color:               rgb(var(--oj-palette-neutral-rgb-170)); */
+
+/* variables for base gauge. used by all gauges */
+/* -------------------------- */
+/* --oj-gauge-metric-label-font-weight: bold; */
+
+/* rating gauge               */
+/* -------------------------- */
+/* 
+--oj-rating-gauge-sm-size:                           1rem; */
+/* --oj-rating-gauge-md-size:                           1.25rem; */
+/* --oj-rating-gauge-lg-size:                           2.25rem; */
+/* 
+--oj-rating-gauge-border-color-hover:          rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-rating-gauge-color-hover:                 rgb(var(--oj-palette-neutral-rgb-190)); */
+/* 
+--oj-rating-gauge-border-color-unselected:     rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-rating-gauge-color-unselected:            transparent; */
+/* 
+--oj-rating-gauge-border-color-selected:       rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-rating-gauge-color-selected:              rgb(var(--oj-palette-neutral-rgb-190)); */
+/* 
+--oj-rating-gauge-border-color-changed:        rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-rating-gauge-color-changed:               rgb(var(--oj-palette-neutral-rgb-190)); */
+/* 
+--oj-rating-gauge-color-selected-disabled:              var(--oj-core-text-color-disabled); */
+/* --oj-rating-gauge-color-unselected-disabled:            var(--oj-core-color-disabled-2); */
+/* 
+--oj-rating-gauge-color-selected-readonly:              rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-rating-gauge-color-unselected-readonly:            transparent; */
+/* 
+--oj-rating-gauge-border-color-selected-readonly:       rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-rating-gauge-border-color-unselected-readonly:     rgb(var(--oj-palette-neutral-rgb-190)); */
+
+/* status meter gauge               */
+/* -------------------------- */
+/* 
+--oj-statusmeter-gauge-bar-sm-size: 0.375rem; */
+/* --oj-statusmeter-gauge-bar-md-size: 0.625rem; */
+/* --oj-statusmeter-gauge-bar-lg-size: 0.875rem; */
+/* --oj-statusmeter-gauge-bar-plotarea-border-color: rgb(var(--oj-palette-neutral-rgb-40)); */
+/* --oj-statusmeter-gauge-bar-plotarea-color: rgb(var(--oj-palette-neutral-rgb-40)); */
+/* 
+--oj-statusmeter-gauge-circular-sm-size:       3.5rem; */
+/* --oj-statusmeter-gauge-circular-md-size:       6rem; */
+/* --oj-statusmeter-gauge-circular-lg-size:       12.25rem; */
+
+/* led gauge               */
+/* -------------------------- */
+/* --oj-led-gauge-sm-size:  1.5rem; */
+/* --oj-led-gauge-md-size:  1.75rem; */
+/* --oj-led-gauge-lg-size:  2rem; */
+
+/* n-box               */
+/* -------------------------- */
+/* --oj-n-box-cell-bg-color:            rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-n-box-cell-bg-color-maximized:  rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-n-box-node-bg-color:            rgb(var(--oj-palette-neutral-rgb-30)); */
+
+
+
+/* picto chart                */
+/* -------------------------- */
+/* --oj-picto-chart-item-bg-color: rgba(var(--oj-palette-neutral-rgb-170),.15); */
+
+
+/* thematic map               */
+/* -------------------------- */
+/* --oj-thematic-map-bg-color:            rgb(var(--oj-palette-neutral-rgb-30)); */
+/* --oj-thematic-map-border-color:        rgb(var(--oj-palette-neutral-rgb-50)); */
+/* --oj-thematic-map-marker-bg-color:     rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-thematic-map-marker-border-color: rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-thematic-map-link-color:          rgb(var(--oj-palette-neutral-rgb-190)); */
+
+
+
+/* treemap                    */
+/* -------------------------- */
+/* --oj-treemap-node-header-bg-color:                   rgb(var(--oj-palette-neutral-rgb-20)); */
+/* --oj-treemap-node-header-bg-color-selected:          rgb(var(--oj-palette-brand-rgb-40)); */
+/* --oj-treemap-node-header-border-color:               rgb(var(--oj-palette-neutral-rgb-40)); */
+/* --oj-treemap-node-header-border-color-hover:         rgb(var(--oj-palette-neutral-rgb-40)); */
+}
+
+
+.oj-avatar-bg-purple {
+/*   --oj-avatar-bg-color:                       #846a92; */
+}
+.oj-avatar-bg-orange {
+/*   --oj-avatar-bg-color:                       #9b5734; */
+}
+.oj-avatar-bg-teal {
+/*   --oj-avatar-bg-color:                       #4f7d7b; */
+}
+.oj-avatar-bg-green {
+/*   --oj-avatar-bg-color:                       #4c825c; */
+}
+.oj-avatar-bg-pink {
+/*   --oj-avatar-bg-color:                       #925865; */
+}
+.oj-avatar-bg-slate {
+/*   --oj-avatar-bg-color:                       #798b8a; */
+}
+.oj-avatar-bg-blue {
+/*   --oj-avatar-bg-color:                       #437c94; */
+}
+.oj-avatar-bg-lilac {
+/*   --oj-avatar-bg-color:                       #6b7494; */
+}
+.oj-avatar-bg-gray {
+/*   --oj-avatar-bg-color:                       #6f757e; */
+}
+.oj-avatar-xxs,
+.oj-avatar-2xs {
+/*   --oj-avatar-size:                       1.75rem; */
+/*   --oj-avatar-border-radius:             var(--oj-core-border-radius-md); */
+/*   --oj-avatar-initials-font-size:         var(--oj-typography-body-xs-font-size); */ 
+/*   --oj-avatar-initials-font-weight:       600; */ 
+/*   --oj-avatar-icon-font-size:             0.75rem; */
+}
+.oj-avatar-xs {
+/*   --oj-avatar-size:                        2.75rem; */
+/*   --oj-avatar-border-radius:               var(--oj-core-border-radius-md); */
+/*   --oj-avatar-initials-font-size:          var(--oj-typography-body-md-font-size); */
+/*   --oj-avatar-initials-font-weight:        400; */
+/*   --oj-avatar-icon-font-size:              1rem; */
+}
+.oj-avatar-sm {
+/*   --oj-avatar-size:                        3.5rem; */
+/*   --oj-avatar-border-radius:               var(--oj-core-border-radius-md); */
+/*   --oj-avatar-initials-font-size:          var(--oj-typography-heading-xs-font-size); */
+/*   --oj-avatar-initials-font-weight:        normal; */
+/*   --oj-avatar-icon-font-size:              1.5rem; */
+}
+.oj-avatar-lg {
+/*   --oj-avatar-size:                        6rem; */
+/*   --oj-avatar-border-radius:               var(--oj-core-border-radius-lg); */
+/*   --oj-avatar-initials-font-size:          2.5rem; */
+/*   --oj-avatar-icon-font-size:              2.25rem; */
+}
+.oj-avatar-xl {
+/*   --oj-avatar-size:                        9rem; */
+/*   --oj-avatar-border-radius:               var(--oj-core-border-radius-xl); */
+/*   --oj-avatar-initials-font-size:          3rem; */
+/*   --oj-avatar-icon-font-size:              3.3125rem; */
+}
+.oj-avatar-xxl,
+.oj-avatar-2xl {
+/*   --oj-avatar-size:                       12.25rem; */
+/*   --oj-avatar-border-radius:              var(--oj-core-border-radius-xl); */
+/*   --oj-avatar-initials-font-size:         4.5rem; */
+/*   --oj-avatar-icon-font-size:             4.5rem; */
+}
+.oj-badge-sm {
+/*     --oj-badge-padding: 0 var(--oj-core-spacing-1x); */
+/*     --oj-badge-height: 1rem; */
+/*     --oj-badge-font-size: 0.5625rem; */
+/*     --oj-badge-font-weight: 700; */
+/*     --oj-badge-border-radius: var(--oj-core-border-radius-md); */
+  }
+.oj-color-invert {
+/*     --oj-badge-text-color: var(--oj-core-neutral-contrast); */
+/*     --oj-badge-bg-color: var(--oj-core-neutral-1); */
+  }
+.oj-color-invert {
+
+  /*  solid enabled */
+/*   --oj-button-solid-chrome-bg-color:                      rgba(var(--oj-palette-neutral-rgb-10), 0.08); */
+/*   --oj-button-solid-chrome-border-color:                  transparent; */
+/*   --oj-button-solid-chrome-text-color:                    var(--oj-core-neutral-contrast); */ 
+
+
+  /*  solid hover */
+/*   --oj-button-solid-chrome-bg-color-hover:                rgba(var(--oj-palette-neutral-rgb-10), 0.12); */
+/*   --oj-button-solid-chrome-border-color-hover:            transparent; */
+/*   --oj-button-solid-chrome-text-color-hover:              var(--oj-core-neutral-contrast); */
+
+
+  /*  solid active */
+/*   --oj-button-solid-chrome-bg-color-active:               rgba(var(--oj-palette-neutral-rgb-10), 0.16); */
+/*   --oj-button-solid-chrome-border-color-active:           transparent; */
+/*   --oj-button-solid-chrome-text-color-active:             var(--oj-core-neutral-contrast); */
+
+
+  /*  solid disabled */
+/*   --oj-button-solid-chrome-bg-color-disabled:             rgba(var(--oj-palette-neutral-rgb-0), 0.16); */
+/*   --oj-button-solid-chrome-border-color-disabled:         transparent; */
+/*   --oj-button-solid-chrome-text-color-disabled:           var(--oj-core-text-color-disabled); */
+
+
+  /*  solid selected */
+/*   --oj-button-solid-chrome-bg-color-selected:             rgba(var(--oj-palette-neutral-rgb-10), 0.08); */
+/*   --oj-button-solid-chrome-border-color-selected:         transparent; */
+/*   --oj-button-solid-chrome-text-color-selected:           var(--oj-core-neutral-contrast); */
+
+
+  /*  solid selected hover */
+/*   --oj-button-solid-chrome-bg-color-selected-hover:       rgba(var(--oj-palette-neutral-rgb-10), 0.12); */
+/*   --oj-button-solid-chrome-border-color-selected-hover:   transparent; */
+/*   --oj-button-solid-chrome-text-color-selected-hover:     var(--oj-core-neutral-contrast); */
+
+
+  /*  solid selected disabled TODO */
+/*   --oj-button-solid-chrome-bg-color-selected-disabled:     rgba(var(--oj-palette-neutral-rgb-0), 0.16); */
+/*   --oj-button-solid-chrome-border-color-selected-disabled: transparent; */
+/*   --oj-button-solid-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+
+
+  /*  borderless-chrome enabled */
+/*   --oj-button-borderless-chrome-text-color:        var(--oj-core-text-color-primary); */
+
+
+  /*  borderless chrome hover */
+/*   --oj-button-borderless-chrome-bg-color-hover:        var(--oj-core-bg-color-hover); */
+/*   --oj-button-borderless-chrome-border-color-hover:    transparent; */
+/*   --oj-button-borderless-chrome-text-color-hover:      var(--oj-core-text-color-primary); */
+
+
+  /*  borderless chrome-active */
+/*   --oj-button-borderless-chrome-bg-color-active:       var(--oj-core-bg-color-active); */
+/*   --oj-button-borderless-chrome-border-color-active:   transparent; */
+/*   --oj-button-borderless-chrome-text-color-active:     var(--oj-core-text-color-primary); */
+
+
+  /*  borderless chrome disabled */
+/*   --oj-button-borderless-chrome-text-color-disabled:   var(--oj-core-text-color-disabled); */
+
+
+  /*  borderless-chrome-selected */
+/*   --oj-button-borderless-chrome-bg-color-selected:     transparent; */
+/*   --oj-button-borderless-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-0), .3); */
+/*   --oj-button-borderless-chrome-text-color-selected:   var(--oj-core-text-color-primary); */
+
+
+  /*  borderless chrome selected hover */
+/*   --oj-button-borderless-chrome-bg-color-selected-hover:     var(--oj-core-bg-color-hover); */
+/*   --oj-button-borderless-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-0), .3); */
+/*   --oj-button-borderless-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary); */
+
+
+  /*  borderless chrome selected disabled */
+/*   --oj-button-borderless-chrome-bg-color-selected-disabled:     transparent; */
+/*   --oj-button-borderless-chrome-border-color-selected-disabled: rgba(rgb(var(--oj-palette-neutral-rgb-0)), .6); */
+/*   --oj-button-borderless-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+
+
+  /* outlined enabled */
+/*   --oj-button-outlined-chrome-border-color:          rgba(var(--oj-palette-neutral-rgb-0), .3); */
+/*   --oj-button-outlined-chrome-text-color:            var(--oj-core-text-color-primary); */
+
+
+  /*  outlined hover */
+/*   --oj-button-outlined-chrome-bg-color-hover:        var(--oj-core-bg-color-hover); */
+/*   --oj-button-outlined-chrome-border-color-hover:    rgba(var(--oj-palette-neutral-rgb-0), .3); */
+/*   --oj-button-outlined-chrome-text-color-hover:      var(--oj-core-text-color-primary); */
+
+
+  /*  outlined active */
+/*   --oj-button-outlined-chrome-bg-color-active:       var(--oj-core-bg-color-active); */
+/*   --oj-button-outlined-chrome-border-color-active:   rgba(var(--oj-palette-neutral-rgb-0), .3); */
+/*   --oj-button-outlined-chrome-text-color-active:     var(--oj-core-text-color-primary); */
+
+
+  /*  outlined disabled */
+/*   --oj-button-outlined-chrome-border-color-disabled: rgba(var(--oj-palette-neutral-rgb-0), .1); */
+/*   --oj-button-outlined-chrome-text-color-disabled:   var(--oj-core-text-color-disabled); */
+
+
+  /*  outlined selected */
+/*   --oj-button-outlined-chrome-bg-color-selected:     transparent; */
+/*   --oj-button-outlined-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-0), .3); */
+/*   --oj-button-outlined-chrome-text-color-selected:   var(--oj-core-text-color-primary); */
+
+
+  /*  outlined selected hover */
+/*   --oj-button-outlined-chrome-bg-color-selected-hover:    var(--oj-core-bg-color-hover); */
+/*   --oj-button-outlined-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-0), .3); */
+/*   --oj-button-outlined-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary); */
+
+
+  /*  outlined selected disabled */
+/*   --oj-button-outlined-chrome-bg-color-selected-disabled:     transparent; */
+/*   --oj-button-outlined-chrome-border-color-selected-disabled: var(--oj-button-outlined-chrome-border-color-disabled); */
+/*   --oj-button-outlined-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+
+
+   /*  cta enabled */
+/*    --oj-button-call-to-action-chrome-bg-color:                      rgb(var(--oj-palette-neutral-rgb-0)); */
+/*    --oj-button-call-to-action-chrome-border-color:                  transparent; */
+/*    --oj-button-call-to-action-chrome-text-color:                    rgb(var(--oj-palette-neutral-rgb-190)); */
+
+ 
+   /*  cta hover */
+/*    --oj-button-call-to-action-chrome-bg-color-hover:                rgb(var(--oj-palette-neutral-rgb-10)); */
+/*    --oj-button-call-to-action-chrome-border-color-hover:            transparent; */
+/*    --oj-button-call-to-action-chrome-text-color-hover:              rgb(var(--oj-palette-neutral-rgb-190)); */
+
+ 
+   /*  cta active */
+/*    --oj-button-call-to-action-chrome-bg-color-active:               rgb(var(--oj-palette-neutral-rgb-20)); */
+/*    --oj-button-call-to-action-chrome-border-color-active:           transparent; */
+/*    --oj-button-call-to-action-chrome-text-color-active:             rgb(var(--oj-palette-neutral-rgb-190)); */
+   
+}
+.oj-density-compact {
+/*   --oj-button-height:                2.0rem; */
+/*   --oj-button-sm-height:             max(1.375rem,24px); */
+/*   --oj-button-lg-height:             2.5rem; */
+}
+.oj-color-invert,
+  oj-buttonset-many.oj-color-invert,
+  .oj-color-invert oj-buttonset-one,
+  .oj-color-invert oj-buttonset-many {
+/*     --oj-button-outlined-chrome-bg-color:                          var(--oj-core-bg-color-active); */
+/*     --oj-button-outlined-chrome-text-color:                        var(--oj-core-text-color-secondary); */
+/*     --oj-button-outlined-chrome-bg-color-disabled:                 var(--oj-button-solid-chrome-bg-color-disabled); */
+/*     --oj-buttonset-outlined-chrome-internal-border-color:          var(--oj-button-outlined-chrome-border-color); */
+/*     --oj-buttonset-outlined-chrome-internal-border-color-selected: var(--oj-button-outlined-chrome-border-color); */
+  }
+.oj-density-compact {
+/*     --oj-collection-list-row-height: 2rem; */
+/*     --oj-collection-list-cell-padding-vertical: 0.25rem; */
+/*     --oj-collection-grid-row-height: 1.75rem; */
+/*     --oj-collection-grid-header-height: 1.75rem; */
+/*     --oj-collection-grid-cell-padding-vertical: 0.1875rem; */
+  }
+.oj-color-invert {
+  color: var(--oj-core-text-color-primary); 
+/*   --oj-core-text-color-primary:   rgb(var(--oj-palette-neutral-rgb-0)); */
+/*   --oj-core-text-color-secondary: rgba(var(--oj-palette-neutral-rgb-0), .6); */
+/*   --oj-core-text-color-disabled:  rgba(var(--oj-palette-neutral-rgb-0), .3); */
+/* 
+  --oj-core-bg-color-content:     rgb(var(--oj-palette-neutral-rgb-170)); */ 
+/*   --oj-core-bg-color-hover:       rgba(var(--oj-palette-neutral-rgb-0), .08); */
+/*   --oj-core-bg-color-active:      rgba(var(--oj-palette-neutral-rgb-0), .12); */
+/*   --oj-core-border-color-enabled:  rgba(var(--oj-palette-neutral-rgb-0), 0.5); */
+/*   --oj-core-divider-color:        rgba(var(--oj-palette-neutral-rgb-0), .3); */
+  
+  /*  core text colors */
+  /*  -------------------------- */
+/*   
+  --oj-core-text-color-danger:    rgb(var(--oj-palette-danger-rgb-70)); */
+/*   --oj-core-text-color-warning:   rgb(var(--oj-palette-warning-rgb-70)); */
+/*   --oj-core-text-color-success:   rgb(var(--oj-palette-success-rgb-70)); */
+ 
+  
+  /*  brand */
+  /*  -------------------------- */
+/*   --oj-core-brand-1:                      rgb(var(--oj-palette-brand-rgb-50)); */
+/*   --oj-core-brand-2:                      rgb(var(--oj-palette-brand-rgb-60)); */
+/*   --oj-core-brand-3:                      rgb(var(--oj-palette-brand-rgb-70)); */
+/*   --oj-core-brand-contrast:               rgb(var(--oj-palette-neutral-rgb-190)); */
+  
+  /*  neutral */
+  /*  -------------------------- */
+/*   --oj-core-neutral-1:                      rgb(var(--oj-palette-neutral-rgb-100)); */
+/*   --oj-core-neutral-2:                      rgb(var(--oj-palette-neutral-rgb-90)); */
+/*   --oj-core-neutral-3:                      rgb(var(--oj-palette-neutral-rgb-70)); */
+/*   --oj-core-neutral-contrast:               rgb(var(--oj-palette-neutral-rgb-0)); */
+/*   --oj-core-neutral-secondary-1:            rgb(var(--oj-palette-neutral-rgb-140)); */
+/*   --oj-core-neutral-secondary-2:            rgb(var(--oj-palette-neutral-rgb-150)); */
+/*   --oj-core-neutral-secondary-3:            rgb(var(--oj-palette-neutral-rgb-160)); */
+/*   --oj-core-neutral-secondary-contrast:     rgb(var(--oj-palette-neutral-rgb-40)); */
+  
+  /*  success */
+  /*  -------------------------- */
+/*   --oj-core-success-1:                    rgb(var(--oj-palette-success-rgb-100)); */
+/*   --oj-core-success-2:                    rgb(var(--oj-palette-success-rgb-90)); */
+/*   --oj-core-success-3:                    rgb(var(--oj-palette-success-rgb-70)); */
+/*   --oj-core-success-contrast:             rgb(var(--oj-palette-neutral-rgb-0)); */
+
+  /*  success secondary */
+  /*  -------------------------- */
+/*   --oj-core-success-secondary-1:          rgb(var(--oj-palette-success-rgb-140)); */
+/*   --oj-core-success-secondary-2:          rgb(var(--oj-palette-success-rgb-150)); */
+/*   --oj-core-success-secondary-3:          rgb(var(--oj-palette-success-rgb-160)); */
+/*   --oj-core-success-secondary-contrast:   rgb(var(--oj-palette-success-rgb-40)); */
+
+  /*  warning */
+  /*  -------------------------- */
+/*   --oj-core-warning-1:                    rgb(var(--oj-palette-warning-rgb-100)); */
+/*   --oj-core-warning-2:                    rgb(var(--oj-palette-warning-rgb-90)); */
+/*   --oj-core-warning-3:                    rgb(var(--oj-palette-warning-rgb-70)); */
+/*   --oj-core-warning-contrast:             rgb(var(--oj-palette-neutral-rgb-0)); */
+
+  /*  warning secondary */
+  /*  -------------------------- */
+/*   --oj-core-warning-secondary-1:          rgb(var(--oj-palette-warning-rgb-140)); */
+/*   --oj-core-warning-secondary-2:          rgb(var(--oj-palette-warning-rgb-150)); */
+/*   --oj-core-warning-secondary-3:          rgb(var(--oj-palette-warning-rgb-160)); */
+/*   --oj-core-warning-secondary-contrast:   rgb(var(--oj-palette-warning-rgb-40)); */
+  
+  /*  danger */
+  /*  -------------------------- */
+/*   --oj-core-danger-1:                      rgb(var(--oj-palette-danger-rgb-100)); */
+/*   --oj-core-danger-2:                      rgb(var(--oj-palette-danger-rgb-90)); */
+/*   --oj-core-danger-3:                      rgb(var(--oj-palette-danger-rgb-70)); */
+/*   --oj-core-danger-contrast:               rgb(var(--oj-palette-neutral-rgb-0)); */
+  
+  /*  danger secondary */
+  /*  -------------------------- */
+/*   --oj-core-danger-secondary-1:            rgb(var(--oj-palette-danger-rgb-140)); */
+/*   --oj-core-danger-secondary-2:            rgb(var(--oj-palette-danger-rgb-150)); */
+/*   --oj-core-danger-secondary-3:            rgb(var(--oj-palette-danger-rgb-160)); */
+/*   --oj-core-danger-secondary-contrast:     rgb(var(--oj-palette-danger-rgb-40)); */
+  
+  /*  info */
+  /*  -------------------------- */
+/*   --oj-core-info-1:                    rgb(var(--oj-palette-info-rgb-100)); */
+/*   --oj-core-info-2:                    rgb(var(--oj-palette-info-rgb-90)); */
+/*   --oj-core-info-3:                    rgb(var(--oj-palette-info-rgb-70)); */
+/*   --oj-core-info-contrast:             rgb(var(--oj-palette-neutral-rgb-0)); */
+
+  /*  info secondary */
+  /*  -------------------------- */
+/*   --oj-core-info-secondary-1:          rgb(var(--oj-palette-info-rgb-140)); */
+/*   --oj-core-info-secondary-2:          rgb(var(--oj-palette-info-rgb-150)); */
+/*   --oj-core-info-secondary-3:          rgb(var(--oj-palette-info-rgb-160)); */
+/*   --oj-core-info-secondary-contrast:   rgb(var(--oj-palette-info-rgb-40)); */
+  
+  /*  Box-shadows */
+/*   --oj-core-box-shadow-rgb:     var(--oj-palette-neutral-rgb-200); */
+/*   --oj-core-box-shadow-xs:      0px 1px 4px 0px    rgba(var(--oj-core-box-shadow-rgb),.12); */
+/*   --oj-core-box-shadow-sm:      0px 4px 8px 0px    rgba(var(--oj-core-box-shadow-rgb),.16); */ 
+/*   --oj-core-box-shadow-md:      0px 6px 12px 0px   rgba(var(--oj-core-box-shadow-rgb),.2); */
+/*   --oj-core-box-shadow-lg:      0px 8px 16px 0px   rgba(var(--oj-core-box-shadow-rgb),0.24); */
+/*   --oj-core-box-shadow-xl:      0px 12px 20px 0px  rgba(var(--oj-core-box-shadow-rgb),0.28); */
+
+  /* Focus Border color */
+/*   --oj-core-focus-border-color: rgb(var(--oj-palette-neutral-rgb-0)); */
+}
+.oj-datagrid {
+/*     --oj-c-PRIVATE-DO-NOT-USE-text-field-embedded-padding:    var(--oj-collection-grid-cell-padding); */
+  }
+.oj-density-compact {
+/*   --oj-form-layout-top-edge-label-to-value-padding: var(--oj-core-spacing-1x); */
+/*   --oj-text-field-inside-edge-padding-top:          max(0.5625rem, 9.75px); */
+/*   --oj-form-layout-margin-bottom: .5rem; */
+}
+.oj-input-search-hero {
+/*       --oj-text-field-font-size: 1.5rem; */
+/*       --oj-button-sm-icon-size: 1.5rem; */
+/*       --oj-text-field-height: 4.5rem; */
+/*       --oj-text-field-text-to-edge-padding: 2.5rem; */
+/*       --oj-text-field-icon-to-text-padding: 1rem; */
+/*       --oj-text-field-icon-to-edge-padding: 1rem; */
+    }
+.oj-color-invert {
+/*     --oj-label-color:         var(--oj-core-text-color-primary); */ 
+/*     --oj-label-color-disabled:var(--oj-core-text-color-disabled); */
+/*     --oj-label-inside-edge-color: var(--oj-core-text-color-secondary); */
+}
+.oj-density-compact {
+/*   --oj-label-inside-edge-position-top: 0.125rem; */ 
+}
+.oj-messagebanner-error {
+  }
+.oj-messagebanner-warning {
+  }
+.oj-messagebanner-confirmation {
+  }
+.oj-messagebanner-info {
+  }
+.oj-navigationlist-vertical {
+/*     --oj-navigation-list-item-padding:                           1.5rem; */
+/*     --oj-navigation-list-item-bg-color-hover:                    var(--oj-core-bg-color-hover); */
+/*     --oj-navigation-list-item-bg-color-selected:                 var(--oj-core-bg-color-active); */ 
+/*     --oj-navigation-list-icon-margin:                            0; */
+/*     --oj-navigation-list-icon-to-text-padding:                   0.5rem; */
+/*     --oj-navigation-list-item-min-height:                        3rem; */
+/*     --oj-navigation-list-item-margin:                            0; */
+  }
+.oj-navigationlist-vertical.oj-navigationlist-icon-only {
+/*     --oj-navigation-list-item-margin:                            0; */
+/*     --oj-navigation-list-item-padding:                           1.6875rem; */
+/*     --oj-navigation-list-item-bg-color-selected:                 var(--oj-core-bg-color-active); */ 
+/*     --oj-navigation-list-icon-margin:                            0; */
+/*     --oj-navigation-list-item-min-height:                        3rem; */
+  }
+.oj-navigationlist-horizontal.oj-navigationlist-icon-only {
+/*     --oj-navigation-list-item-margin:                            2rem; */
+/*     --oj-navigation-list-item-bg-color-selected:                 transparent; */
+/*     --oj-navigation-list-icon-margin:                            0; */
+/*     --oj-navigation-list-item-min-height:                        3rem; */
+/*     --oj-navigation-list-item-padding:                           0; */
+  }
+.oj-navigationlist-stack-icon-label {
+/*     --oj-navigation-list-item-min-height:                        2.75rem; */
+/*     --oj-navigation-list-icon-margin:                            0; */
+/*     --oj-navigation-list-icon-to-text-padding:                   0; */
+/*     --oj-navigation-list-item-margin:                            2rem; */
+/*     --oj-navigation-list-item-padding:                           0; */
+  }
+.oj-color-invert {
+
+  /*  default */
+/*   --oj-navigation-list-item-label-color:                       var(--oj-core-text-color-secondary); */
+
+  /*  hover */
+/*   --oj-navigation-list-item-label-color-hover:                 var(--oj-core-text-color-primary); */
+/*   --oj-navigation-list-item-bg-color-hover:                    var(--oj-core-bg-color-hover); */
+
+    /*  selected */
+/*     --oj-navigation-list-item-border-color-selected:             rgb(var(--oj-palette-brand-rgb-50)); */
+/*     --oj-navigation-list-item-label-color-selected:              var(--oj-core-text-color-primary); */
+  }
+.oj-color-invert .oj-navigationlist-vertical,
+  .oj-color-invert.oj-navigationlist-vertical {
+/*     --oj-navigation-list-item-bg-color-selected:                 var(--oj-core-bg-color-active); */
+  }
+.oj-color-invert .oj-navigationlist-icon-only,
+  .oj-color-invert.oj-navigationlist-icon-only {
+/*     --oj-navigation-list-item-bg-color-hover:                   var(--oj-core-bg-color-hover); */
+  }
+.oj-color-invert {
+/*   --oj-panel-bg-color:                  var(--oj-core-bg-color-content); */ 
+/*   --oj-panel-border-color:              var(--oj-core-divider-color); */
+}
+.oj-density-compact {
+/*   --oj-panel-gutter:                    var(--oj-core-spacing-3x); */
+}
+.oj-color-invert {
+/*   --oj-progress-bar-track-bg-color:   rgba(var(--oj-palette-neutral-rgb-10), .15); */
+/*   --oj-progress-bar-value-bg-color:   rgb(var(--oj-palette-neutral-rgb-0)); */
+}
+.oj-color-invert {
+/*   --oj-progress-circle-determinate-track-bg-color:   rgba(var(--oj-palette-neutral-rgb-10), .15); */
+/*   --oj-progress-circle-value-bg-color:   rgb(var(--oj-palette-neutral-rgb-0)); */
+}
+.oj-color-invert {
+/*   --oj-radio-checkbox-input-color-unselected:    rgb(var(--oj-palette-neutral-rgb-0)); */
+/*   --oj-radio-checkbox-input-color-selected:      rgb(var(--oj-palette-neutral-rgb-0)); */
+}
+.oj-density-compact{
+/*   --oj-radio-checkbox-row-height:                1.75rem; */
+}
+.oj-color-invert {
+    /*  hover *//* 
+    --oj-scrollbar-thumb-color-hover:   rgba(var(--oj-palette-neutral-rgb-0), .3); */
+
+    /*  colors when you need to force a scrollbar *//* 
+    --oj-scrollbar-track-color-force:   rgba(var(--oj-palette-neutral-rgb-0), .3); */
+  }
+.oj-tabbar-vertical {
+/*     --oj-tab-bar-item-padding:                           0 1.3125rem; */
+/*     --oj-tab-bar-item-margin:                            0; */
+  }
+.oj-tabbar-vertical.oj-tabbar-icon-only {
+/*     --oj-tab-bar-item-padding:                           0; */
+/*     --oj-tab-bar-item-margin:                            0; */
+/*     --oj-tab-bar-icon-margin:                            0 1.5rem; */   
+  }
+.oj-tabbar-stack-icon-label {
+/*     --oj-tab-bar-icon-to-text-padding:                   0.5rem; */
+/*     --oj-tab-bar-item-min-height:                        5rem; */
+/*     --oj-tab-bar-item-padding:                           1rem 1rem 0; */
+  }
+.oj-density-compact.oj-tabbar-stack-icon-label,
+  .oj-density-compact .oj-tabbar-stack-icon-label {
+/*     --oj-tab-bar-item-min-height:                        4.5rem; */
+/*     --oj-tab-bar-item-padding:                           0 1rem; */
+  }
+.oj-color-invert {
+    /*  selected */
+/*     --oj-tab-bar-item-label-color-selected:             var(--oj-core-text-color-primary); */
+/*     --oj-tab-bar-item-border-color-selected:            rgb(var(--oj-palette-brand-rgb-50)); */
+    
+    /*  default */
+/*     --oj-tab-bar-item-label-color:                      var(--oj-core-text-color-secondary); */
+    
+    /*  hover */
+/*     --oj-tab-bar-item-label-color-hover:                var(--oj-core-text-color-primary); */
+    
+    /*  active */
+/*     --oj-tab-bar-item-border-color-active:              rgb(var(--oj-palette-brand-rgb-50)); */
+  }
+.oj-density-compact {
+    --oj-tab-bar-item-min-height:                        2.5rem
+  }
+.oj-table {
+/*     --oj-c-PRIVATE-DO-NOT-USE-text-field-embedded-padding:    var(--oj-table-cell-padding-horizontal); */
+  }
+.oj-table.oj-table-grid-display {
+/*     --oj-c-PRIVATE-DO-NOT-USE-text-field-embedded-padding:    var(--oj-collection-grid-cell-padding); */
+  }
+.oj-density-compact {
+/*     --oj-table-header-row-height: 2.8125rem; */
+/*     --oj-table-header-cell-padding-vertical: 0.125rem; */
+  }
+.oj-color-invert {
+/*   --oj-link-text-color:                 rgb(var(--oj-palette-brand-rgb-50)); */
+/*   --oj-link-text-color-active:          var(--oj-link-text-color); */
+/*   --oj-link-text-color-visited:         var(--oj-link-text-color); */
+/*   --oj-heading-text-color:               var(--oj-core-text-color-primary); */
+}
+.oj-color-invert {
+/*   --oj-text-field-text-highlight-color: rgb(var(--oj-palette-brand-rgb-50)); */ 
+
+
+  /*  enabled */
+/*   --oj-text-field-bg-color:               rgb(var(--oj-palette-neutral-rgb-180)); */
+/*   --oj-text-field-border-color:           rgba(var(--oj-palette-neutral-rgb-0),.3); */
+/*   --oj-text-field-placeholder-color:      var(--oj-core-text-color-secondary); */
+/*   --oj-text-field-text-color:      var(--oj-core-text-color-primary); */
+
+  /*  disabled */
+/*   --oj-text-field-bg-color-disabled:      rgba(var(--oj-palette-neutral-rgb-0), 0.16); */ /*  need to double check with design team as there is no specification */
+/* 
+  --oj-text-field-border-color-disabled:  rgba(var(--oj-palette-neutral-rgb-0),.1); */
+/*   --oj-text-field-text-color-disabled:   var(--oj-core-text-color-disabled); */
+
+  /*  readonly */
+
+  /*  focus */
+/*   --oj-text-field-border-color-focus: rgb(var(--oj-palette-brand-rgb-50)); */
+
+  /*  variables that apply when the label-edge is inside */
+  /*  todo: disabled color should apply regardless of location, error and focus only apply when label is inside */
+/*   --oj-text-field-inside-edge-label-color-error:       var(--oj-core-danger-3); */
+/*   --oj-text-field-inside-edge-label-color-focus:       var(--oj-core-brand-1); */
+/*   --oj-text-field-inside-edge-label-color-warning:     var(--oj-core-warning-3); */
+
+  /*  User Assistance */
+/*   --oj-user-assistance-inline-text-color: var(--oj-core-text-color-secondary); */
+}
+.oj-density-compact {
+/*   --oj-text-field-height:             2rem; */ 
+/*   --oj-text-field-inside-edge-height: 2.5rem; */
+}

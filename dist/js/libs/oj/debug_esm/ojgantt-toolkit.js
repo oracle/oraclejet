@@ -9304,11 +9304,25 @@ class DvtGanttTaskLabel {
             case 'progress':
             case 'oProgress':
               const fillColor = self._associatedShape.getFillColor();
-              if (fillColor && !fillColor.fromShapeCache && (!labelStyle || !labelStyle.color)) {
+              if (
+                fillColor &&
+                // task fill color changed from previous render, or no contrast text color set
+                (!fillColor.fromShapeCache || !self._labelOutputText.getFill()) &&
+                // no custom text color styling set
+                (!labelStyle || !labelStyle.color)
+              ) {
                 const labelColor = ColorUtils.getContrastingTextColor(fillColor.computedFill);
                 self._labelOutputText.setFill(new SolidFill(labelColor));
               }
               break;
+            default:
+              // Label outside the task bar. If contrast color was set in a previous render, unset it.
+              if (self._labelOutputText.getFill()) {
+                self._labelOutputText.setFill();
+                // setFill() with undefined fill sets element's fill attribute to "none".
+                // Need to manually unset the fill attribute.
+                ToolkitUtils.setAttrNullNS(self._labelOutputText.getElem(), 'fill', undefined);
+              }
           }
         };
 
@@ -11574,7 +11588,7 @@ class DvtGanttRowNode extends Container {
     // If there are no selected tasks in the row, remove any row selection effects
     if (!this.getTaskObjs().some((taskObj) => taskObj.node && taskObj.node.isSelected())) {
       this.removeEffect('selected');
-    };
+    }
   }
 
   /**
@@ -17979,10 +17993,8 @@ class Gantt extends TimeComponent {
     // Create the event handler and add event listeners
     this.EventManager = new DvtGanttEventManager(this, context, callback, callbackObj);
     this.EventManager.addListeners(this);
-    if (!Agent.isTouchDevice()) {
-      this._keyboardHandler = new DvtGanttKeyboardHandler(this, this.EventManager);
-      this.EventManager.setKeyboardHandler(this._keyboardHandler);
-    } else this._keyboardHandler = null;
+    this._keyboardHandler = new DvtGanttKeyboardHandler(this, this.EventManager);
+    this.EventManager.setKeyboardHandler(this._keyboardHandler);
   }
 
   /**
@@ -18011,7 +18023,7 @@ class Gantt extends TimeComponent {
     // On mobile, HTML5 DnD is fast; set the equivalent low level DnD configuration to leverage it.
     var dndMoveEnabled = this.isTaskMoveEnabled();
     var taskResizeEnabled = this.isTaskResizeEnabled();
-    if ((dndMoveEnabled || taskResizeEnabled) && Agent.isTouchDevice()) {
+    if ((dndMoveEnabled || taskResizeEnabled) && Agent.getAgentInfo().isTouchSupported) {
       var lowLevelDnD = {
         drag: {
           tasks: { dataTypes: [] },

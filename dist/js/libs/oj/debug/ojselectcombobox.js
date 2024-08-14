@@ -4060,11 +4060,15 @@ var __oj_select_many_metadata =
             this.ojContext._createOrUpdateReadonlyDiv($content[0]);
           }
         } else if (this._classNm === 'oj-select') {
-          $content.attr('aria-readonly', 'true');
+          // This is not valid when the role is removed (aka default role)
+          // so we need to remove it.
+          $content.removeAttr('aria-readonly');
         }
         if ($content) {
           $content.removeAttr('role');
           $content.removeAttr('aria-expanded');
+          $content.removeAttr('aria-controls');
+          $content.removeAttr('aria-autocomplete');
         }
       } else {
         this.container.removeClass('oj-read-only');
@@ -8509,6 +8513,21 @@ var __oj_select_many_metadata =
       // solution here would be to prevent the focus transfer when one clicks in the results area.
       // This way the table would stay in edit mode.
       this.dropdown.on('mousedown', _ComboUtils.killEvent);
+
+      // JET-64259 - combobox-many drops focus on click if multiple lines of values are selected
+      // When the user clicks anywhere in the field, focus the input
+      this.container.on(
+        'mousedown',
+        function (evt) {
+          if (!_ComboUtils.isReadonly(this.ojContext) && this._enabled) {
+            var input = this.search[0];
+            if (input) {
+              evt.preventDefault();
+              input.focus();
+            }
+          }
+        }.bind(this)
+      );
     },
 
     _opening: function (event, dontUpdateResults) {
@@ -9766,8 +9785,8 @@ var __oj_select_many_metadata =
         "   <abbr class='oj-combobox-clear-entry' role='presentation'></abbr>",
         "   <span class='oj-combobox-divider' role='presentation'></span>",
         "   <span class='oj-text-field-end'>",
-        "     <a class='oj-combobox-arrow oj-combobox-icon oj-component-icon oj-clickable-icon-nocontext oj-combobox-open-icon'",
-        "       role='presentation'></a>",
+        "     <span class='oj-combobox-arrow oj-combobox-icon oj-component-icon oj-clickable-icon-nocontext oj-combobox-open-icon'",
+        "       aria-hidden='true'></span>",
         '   </span>',
         '  </div>',
         '</div>',
@@ -11023,7 +11042,7 @@ var __oj_select_many_metadata =
        * @memberof oj.ojComboboxOne
        * @ojsignature [{
        *    target: "Type",
-       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+       *    value: "oj.Converter<V>|
        *            null",
        *    jsdocOverride: true},
        * {
@@ -11036,6 +11055,8 @@ var __oj_select_many_metadata =
        *                description:'Defining a converter with an object literal with converter type and its options
        *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
        *                  work again by importing the deprecated module you need, like ojvalidation-base.'}
+       * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<V>>'],
+       *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the promise and then update the converter attribute with the resolved converter instance.'}
        * @type {Object|null}
        * @default null
        */
@@ -11066,7 +11087,7 @@ var __oj_select_many_metadata =
        * @memberof oj.ojComboboxMany
        * @ojsignature [{
        *    target: "Type",
-       *    value: "Promise<oj.Converter<V>>|oj.Converter<V>|
+       *    value: "oj.Converter<V>|
        *            null",
        *    jsdocOverride: true},
        * {
@@ -11079,12 +11100,13 @@ var __oj_select_many_metadata =
        *                description:'Defining a converter with an object literal with converter type and its options
        *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
        *                  work again by importing the deprecated module you need, like ojvalidation-base.'}
+       * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<V>>'],
+       *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the promise and then update the converter attribute with the resolved converter instance.'}
        * @type {Object|null}
        * @default null
        */
       /**
-       * <p>A converter instance or Promise to a converter instance
-       * or one that duck types {@link oj.Converter}.</p>
+       * <p>A converter instance or one that duck types {@link oj.Converter}.</p>
        * <p>
        * In combobox, the converter is used to parse/format the values entered by the user in the text field
        * while the dropdown items will be unaffected.
@@ -15791,7 +15813,12 @@ var __oj_select_many_metadata =
 
       _OjMultiSelect.superclass.close.apply(this, arguments);
 
-      this.selection.attr('aria-expanded', false).removeAttr('aria-haspopup').removeAttr('aria-owns');
+      // For readonly, we don't need to set aria-expanded to false as the attribute has
+      // already been removed in applyReadonlyState() to avoid an OATB structure error.
+      if (!_ComboUtils.isReadonly(this.ojContext)) {
+        this.selection.attr('aria-expanded', false);
+      }
+      this.selection.removeAttr('aria-haspopup').removeAttr('aria-owns');
 
       this.search.attr('aria-expanded', false).removeAttr('aria-controls');
 
@@ -16879,6 +16906,21 @@ var __oj_select_many_metadata =
    * components below.
    * </p>
    *
+   * <h5>Global attributes</h5>
+   * <p>
+   * The following global attributes are no longer supported:
+   * <ul>
+   * <li>tabindex - not considered accessible</li>
+   * <li>
+   * aria-label - use label-hint instead. If you do not want a visible label set label-edge="none".
+   * </li>
+   * <li>
+   * aria-controls - this attribute is no longer needed. oj-c-select-multiple handles the
+   * accessibility of its internal DOM elements.
+   * </li>
+   * </ul>
+   * </p>
+   *
    * <h5>ItemText attribute</h5>
    * <p>
    * This attribute is required to specify how to get the text string to render for a data item.
@@ -16999,6 +17041,11 @@ var __oj_select_many_metadata =
    * <p>
    * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
    * This attribute is not carried forward to the core pack component.
+   * </p>
+   *
+   * <h5>Formatted messages</h5>
+   * <p>
+   * Formatting messages using html tags is not supported in the core pack component.
    * </p>
    *
    * <h5>Usage in Dynamic Form</h5>
@@ -17314,6 +17361,11 @@ var __oj_select_many_metadata =
    * <p>
    * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
    * This attribute is not carried forward to the core pack component.
+   * </p>
+   *
+   * <h5>Formatted messages</h5>
+   * <p>
+   * Formatting messages using html tags is not supported in the core pack component.
    * </p>
    *
    * @ojfragment selectCommon

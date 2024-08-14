@@ -1472,9 +1472,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this.EventManager = new DvtPictoChartEventManager(this);
       this.EventManager.addListeners(this);
 
-      // Set up keyboard handler on non-touch devices
-      if (!dvt.Agent.isTouchDevice())
-        this.EventManager.setKeyboardHandler(new DvtPictoChartKeyboardHandler(this.EventManager));
+      // Set up keyboard handler
+      this.EventManager.setKeyboardHandler(new DvtPictoChartKeyboardHandler(this.EventManager));
 
       // Create the defaults object
       this.Defaults = new DvtPictoChartDefaults(context);

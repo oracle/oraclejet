@@ -1323,7 +1323,7 @@ class TimeComponentEventManager extends EventManager {
    */
   _onDragStart(event) {
     if (this._comp.hasValidOptions()) {
-      if (Agent.isTouchDevice()) return this._onTouchDragStart(event);
+      if (EventManager.isTouchEvent(event)) return this._onTouchDragStart(event);
       else return this._onMouseDragStart(event);
     }
     return false;
@@ -1336,7 +1336,7 @@ class TimeComponentEventManager extends EventManager {
    * @private
    */
   _onDragMove(event) {
-    if (Agent.isTouchDevice()) return this._onTouchDragMove(event);
+    if (EventManager.isTouchEvent(event)) return this._onTouchDragMove(event);
     return this._onMouseDragMove(event);
   }
 
@@ -1347,7 +1347,7 @@ class TimeComponentEventManager extends EventManager {
    * @private
    */
   _onDragEnd(event) {
-    if (Agent.isTouchDevice()) return this._onTouchDragEnd(event);
+    if (EventManager.isTouchEvent(event)) return this._onTouchDragEnd(event);
     return this._onMouseDragEnd(event);
   }
 

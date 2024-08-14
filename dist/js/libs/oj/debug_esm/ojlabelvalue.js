@@ -103,7 +103,10 @@ import oj from 'ojs/ojcore-base';
  * <p>If the value is 'inherit', it will inherit label-edge from its closest custom element ancestor element. If the ancestor doesn't have a label-edge attribute, the default is "top".</p>
  * <p><b>Note: For 'inherit' to work correctly, the application must use data binding (i.e. calling ko.applyBindings on
  * an ancestor node of the oj-label-value).</b></p>
- *
+ * <p>
+ * When using the oj-label-value custom element inside of a VDOM application, this property will not propagate down to the child components.
+ * This is because binding propagation is Knockout-based, and VDOM applications are not Knockout-based.
+ * </p>
  * @example <caption>Initialize the oj-label-value with the <code class="prettyprint">label-edge</code> attribute specified:</caption>
  * &lt;oj-label-value label-edge="top">
  *   &lt;oj-input-text id="inputcontrol" required value="text" label-hint="input 1">&lt;/oj-input-text>
@@ -129,7 +132,10 @@ import oj from 'ojs/ojcore-base';
  * @desc Specifies the label width.
  * <p>This can be any legal <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/width">CSS width</a> or 'inherit',
  * which will inherit label-width from its closest custom element ancestor element.  If the value is "inherit" and ancestor doesn't have a label-width attribute, the default is "33%".</p>
- *
+ * <p>
+ * When using the oj-label-value custom element inside of a VDOM application, this property will not propagate down to the child components.
+ * This is because binding propagation is Knockout-based, and VDOM applications are not Knockout-based.
+ * </p>
  * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">label-width</code> attribute specified:</caption>
  * &lt;oj-form-layout label-width="50%">
  *   &lt;oj-input-text id="inputcontrol" required value="text" label-hint="input 1">&lt;/oj-input-text>

@@ -7087,12 +7087,8 @@ class ThematicMap extends PanZoomComponent {
     // because selection modes can differ between layers.
     this.EventManager = new DvtThematicMapEventManager(this.getCtx(), this.dispatchEvent, this);
     this.EventManager.addListeners(this);
-    if (!Agent.isTouchDevice()) {
-      this._keyboardHandler = new DvtThematicMapKeyboardHandler(this, this.EventManager);
-      this.EventManager.setKeyboardHandler(this._keyboardHandler);
-    } else {
-      this._keyboardHandler = null;
-    }
+    this._keyboardHandler = new DvtThematicMapKeyboardHandler(this, this.EventManager);
+    this.EventManager.setKeyboardHandler(this._keyboardHandler);
   }
 
   /**

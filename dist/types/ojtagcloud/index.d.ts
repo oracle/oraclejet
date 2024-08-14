@@ -145,6 +145,10 @@ export namespace ojTagCloud {
         parentElement: Element;
         value: number;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
 }
 export interface ojTagCloudEventMap<K, D extends ojTagCloud.Item<K> | any> extends dvtBaseComponentEventMap<ojTagCloudSettableProperties<K, D>> {
     'animationOnDataChangeChanged': JetElementCustomEvent<ojTagCloud<K, D>["animationOnDataChange"]>;
@@ -317,15 +321,39 @@ export namespace TagCloudElement {
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemContext = {
+        color: string;
+        label: string;
+        selected: boolean;
+        tooltip: string;
+        value: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ItemShortDescContext<K> = {
         id: K;
         label: string;
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext<K> = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
         index: number;
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K> = {
+        color: string;
+        componentElement: Element;
+        id: K;
+        label: string;
+        parentElement: Element;
+        value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipRendererContext<K> = {
@@ -336,6 +364,10 @@ export namespace TagCloudElement {
         parentElement: Element;
         value: number;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
 }
 export namespace TagCloudItemElement {
     // tslint:disable-next-line interface-over-type-literal

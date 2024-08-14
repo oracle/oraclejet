@@ -2740,6 +2740,13 @@ var __oj_buttonset_many_metadata =
     /**
      * @ojcomponent oj.ojButtonsetOne
      * @since 0.6.0
+     * @ojdeprecated [
+     *  {
+     *    type: "maintenance",
+     *    since: "17.0.0",
+     *    value: ["oj-c-buttonset-single"]
+     *  }
+     * ]
      *
      * @augments oj.ojButtonset
      * @ojshortdesc A buttonset one is a grouping of related buttons where only one button may be selected.
@@ -2843,6 +2850,13 @@ var __oj_buttonset_many_metadata =
     /**
      * @ojcomponent oj.ojButtonsetMany
      * @since 0.6.0
+     * @ojdeprecated [
+     *  {
+     *    type: "maintenance",
+     *    since: "17.0.0",
+     *    value: ["oj-c-buttonset-multiple"]
+     *  }
+     * ]
      *
      * @augments oj.ojButtonset
      * @ojshortdesc A buttonset many is a grouping of related buttons where any number of buttons may be selected.
@@ -2977,6 +2991,21 @@ var __oj_buttonset_many_metadata =
      *
      * <p>The buttonset's focus management should be turned off when placing the buttonset in a [JET Toolbar]{@link oj.ojToolbar}.  See the <code class="prettyprint">focusManagement</code> attribute.
      * In this case, the "Keyboard End User Information" documented above is superseded by the Toolbar's documented keyboard behavior.
+     *
+     * <h3 id="migration-section">
+     *   Migration
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+     * </h3>
+     * <p>
+     * To migrate from oj-buttonset-many to oj-c-buttonset-multiple, or oj-buttonset-one to oj-c-buttonset-single, you need to revise the import statement
+     * and references to oj-c-buttonset-multiple, or oj-c-buttonset-single in your app. Please note the changes between the components below.
+     * Note that oj-c-toggle-button should be used instead of oj-c-buttonset-multiple, as it provide superior speed, though oj-c-buttonset-multiple
+     * with a single button will function properly.
+     * </p>
+     * <strong>oj-c-buttonset-multiple</strong> no longer supports DOM-centric options specified in the default slot.  Instead, the toggles are specified
+     * in the items property.  Sizes, layout widths, widths, max width, and edge behavior are all now done via properties instead of style classes or styling.
+     * Tooltip replaces title.   Solid chroming is no longer supported.   For oj-c-toggle-button, a value and label are used on the button, instead of having
+     * a value on a containing buttonset.
      *
      * <h3 id="a11y-section">
      *   Accessibility

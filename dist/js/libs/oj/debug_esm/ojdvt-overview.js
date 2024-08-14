@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { BaseComponentDefaults, EventManager, SvgDocumentUtils, Agent, Point, MouseEvent, Rect, PathUtils, Path, ToolkitUtils, OutputText, Container, Line, Stroke, TextUtils, TouchEvent, CSSStyle, Animator, Easing, BackgroundOutputText, EventFactory, KeyboardEvent } from 'ojs/ojdvt-toolkit';
+import { BaseComponentDefaults, EventManager, SvgDocumentUtils, Point, MouseEvent, Agent, Rect, PathUtils, Path, ToolkitUtils, OutputText, Container, Line, Stroke, TextUtils, TouchEvent, CSSStyle, Animator, Easing, BackgroundOutputText, EventFactory, KeyboardEvent } from 'ojs/ojdvt-toolkit';
 
 /**
  * Default values and utility functions for component versioning.
@@ -78,7 +78,7 @@ class DvtOverviewEventManager extends EventManager {
    * @private
    */
   _onDragStart(event) {
-    if (Agent.isTouchDevice()) return this._onTouchDragStart(event);
+    if (EventManager.isTouchEvent(event)) return this._onTouchDragStart(event);
     else return this._onMouseDragStart(event);
   }
 
@@ -89,7 +89,7 @@ class DvtOverviewEventManager extends EventManager {
    * @private
    */
   _onDragMove(event) {
-    if (Agent.isTouchDevice()) return this._onTouchDragMove(event);
+    if (EventManager.isTouchEvent(event)) return this._onTouchDragMove(event);
     else return this._onMouseDragMove(event);
   }
 
@@ -100,7 +100,7 @@ class DvtOverviewEventManager extends EventManager {
    * @private
    */
   _onDragEnd(event) {
-    if (Agent.isTouchDevice()) return this._onTouchDragEnd(event);
+    if (EventManager.isTouchEvent(event)) return this._onTouchDragEnd(event);
     else return this._onMouseDragEnd(event);
   }
 
@@ -1787,16 +1787,14 @@ class Overview extends Container {
       this.EventManager = new DvtOverviewEventManager(this, context, callback, callbackObj);
       this.EventManager.addListeners(this);
       // register listeners
-      if (OverviewUtils.supportsTouch()) {
-        this.addEvtListener(TouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
-        this.addEvtListener(TouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
-        this.addEvtListener(TouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
-        this.addEvtListener(MouseEvent.CLICK, this.HandleShapeClick, false, this);
-      } else {
-        this.addEvtListener(MouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
-        this.addEvtListener(MouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
-        this.addEvtListener(MouseEvent.CLICK, this.HandleShapeClick, false, this);
-      }
+      this.addEvtListener(TouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
+      this.addEvtListener(TouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
+      this.addEvtListener(TouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
+      this.addEvtListener(MouseEvent.CLICK, this.HandleShapeClick, false, this);
+
+      this.addEvtListener(MouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
+      this.addEvtListener(MouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
+      this.addEvtListener(MouseEvent.CLICK, this.HandleShapeClick, false, this);
     }
   }
 
@@ -2270,14 +2268,14 @@ class Overview extends Container {
   }
 
   getPageX(event) {
-    if (OverviewUtils.supportsTouch() && event.targetTouches != null) {
+    if (event.targetTouches != null) {
       if (event.targetTouches.length > 0) return event.targetTouches[0].pageX;
       else return null;
     } else return event.pageX;
   }
 
   getPageY(event) {
-    if (OverviewUtils.supportsTouch() && event.targetTouches != null) {
+    if (event.targetTouches != null) {
       if (event.targetTouches.length > 0) return event.targetTouches[0].pageY;
       else return null;
     } else return event.pageY;
@@ -3494,18 +3492,16 @@ class Overview extends Container {
       this.EventManager = null;
     }
 
-    if (OverviewUtils.supportsTouch()) {
-      this.removeEvtListener(TouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
-      this.removeEvtListener(TouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
-      this.removeEvtListener(TouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
-      this.removeEvtListener(MouseEvent.CLICK, this.HandleShapeClick, false, this);
-    } else {
-      this.removeEvtListener(MouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
-      this.removeEvtListener(MouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
-      this.removeEvtListener(MouseEvent.CLICK, this.HandleShapeClick, false, this);
-      this.removeEvtListener(KeyboardEvent.KEYDOWN, this.HandleKeyDown, false, this);
-      this.removeEvtListener(KeyboardEvent.KEYUP, this.HandleKeyUp, false, this);
-    }
+    this.removeEvtListener(TouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
+    this.removeEvtListener(TouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
+    this.removeEvtListener(TouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
+    this.removeEvtListener(MouseEvent.CLICK, this.HandleShapeClick, false, this);
+
+    this.removeEvtListener(MouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
+    this.removeEvtListener(MouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
+    this.removeEvtListener(MouseEvent.CLICK, this.HandleShapeClick, false, this);
+    this.removeEvtListener(KeyboardEvent.KEYDOWN, this.HandleKeyDown, false, this);
+    this.removeEvtListener(KeyboardEvent.KEYUP, this.HandleKeyUp, false, this);
 
     // Call super last during destroy
     super.destroy();

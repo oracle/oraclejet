@@ -230,6 +230,8 @@ class VTemplateEngine {
                     return this._createBindTemplateNode(engineContext, node);
                 case 'oj-defer':
                     return this._createDeferNode(engineContext, node);
+                case 'oj-if':
+                    return this._createIfNode(engineContext, node);
                 case 'template':
                     return this._createTemplateWithRenderCallback(engineContext, node);
             }
@@ -371,19 +373,33 @@ class VTemplateEngine {
     }
     _createIfExpressionNode(engineContext, node) {
         if (!node.hasAttribute('test')) {
-            throw new Error("Missing the retuired 'test' attribute on <oj-bind-if>");
+            throw new Error("Missing the required 'test' attribute on <oj-bind-if>");
         }
         return {
             type: UNARY_EXP,
             operator: '...',
-            argument: {
-                type: CONDITIONAL_EXP,
-                test: this._createExpressionNode(engineContext, node.getAttribute('test')),
-                consequent: this._createAst(engineContext, Array.from(node.childNodes)),
-                alternate: {
-                    type: LITERAL,
-                    value: []
-                }
+            argument: this._createIfTestNode(engineContext, node)
+        };
+    }
+    _createIfNode(engineContext, node) {
+        if (!node.hasAttribute('test')) {
+            throw new Error("Missing the required 'test' attribute on <oj-if>");
+        }
+        const props = this._getElementProps(engineContext, node);
+        props.push(this._createPropertyNode(engineContext, 'style', 'display:contents;'));
+        return this._createHFunctionCallNode('oj-if', [
+            { type: OBJECT_EXP, properties: props },
+            this._createIfTestNode(engineContext, node)
+        ]);
+    }
+    _createIfTestNode(engineContext, node) {
+        return {
+            type: CONDITIONAL_EXP,
+            test: this._createExpressionNode(engineContext, node.getAttribute('test')),
+            consequent: this._createAst(engineContext, Array.from(node.childNodes)),
+            alternate: {
+                type: LITERAL,
+                value: []
             }
         };
     }
@@ -651,9 +667,9 @@ class VTemplateEngine {
                     acc.push(this._createPropertyNode(engineContext, AttributeUtils.getGlobalPropForAttr(name), value));
                 }
                 else {
+                    const propName = AttributeUtils.attributeToPropertyName(name);
+                    const propNamePath = propName.split('.');
                     if (expValue.expr) {
-                        const propName = AttributeUtils.attributeToPropertyName(name);
-                        const propNamePath = propName.split('.');
                         const propMeta = getPropertyMetadata(propNamePath[0], getPropertiesForElementTag(node.tagName));
                         if (!propMeta?.readOnly) {
                             if (propNamePath.length > 1) {
@@ -684,12 +700,31 @@ class VTemplateEngine {
                             writebacks.set(topProp, valuesArray);
                         }
                     }
-                    else {
+                    else if (name[0] === 'o' && name[1] === 'n') {
                         acc.push({
                             type: PROPERTY,
                             key: { type: LITERAL, value: name.toUpperCase() },
                             value: { type: LITERAL, value: value }
                         });
+                    }
+                    else {
+                        const propMeta = getPropertyMetadata(propName, getPropertiesForElementTag(node.tagName));
+                        const parsedValue = propMeta
+                            ? CustomElementUtils.parseAttrValue(node, name, propName, value, propMeta)
+                            : value;
+                        if (propNamePath.length > 1) {
+                            dottedExpressions.push({
+                                subProps: propName,
+                                expr: { type: LITERAL, value: parsedValue }
+                            });
+                        }
+                        else {
+                            acc.push({
+                                type: PROPERTY,
+                                key: { type: LITERAL, value: propName },
+                                value: { type: LITERAL, value: parsedValue }
+                            });
+                        }
                     }
                 }
             }
@@ -740,7 +775,9 @@ class VTemplateEngine {
                 {
                     type: PROPERTY,
                     key: { type: LITERAL, value: subProps },
-                    value: this._createExpressionEvaluator(engineContext, expr)
+                    value: expr['type'] === LITERAL
+                        ? { type: LITERAL, value: expr['value'] }
+                        : this._createExpressionEvaluator(engineContext, expr)
                 }
             ]
         }));

@@ -842,21 +842,24 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojobservable',
         }
         fetchByKeys(params) {
             const results = new ojMap();
+            const keysToFetch = new ojSet();
             params.keys.forEach((key) => {
                 const item = this._getItemByKey(key);
                 if (item) {
                     results.set(key, item);
-                    params.keys.delete(key);
+                }
+                else {
+                    keysToFetch.add(key);
                 }
             });
-            if (params.keys.size === 0) {
+            if (keysToFetch.size === 0) {
                 return Promise.resolve(new this.FetchByKeysResults(this, params, results));
             }
-            return this.dataProvider.fetchByKeys(params).then((byKeysResult) => {
+            return this.dataProvider.fetchByKeys({ ...params, keys: keysToFetch }).then((byKeysResult) => {
                 byKeysResult.results.forEach((value, searchKey) => {
                     results.set(searchKey, value);
                 });
-                return new this.FetchByKeysResults(this, byKeysResult.fetchParameters, results);
+                return new this.FetchByKeysResults(this, { ...byKeysResult.fetchParameters, keys: params.keys }, results);
             });
         }
         fetchByOffset(params) {

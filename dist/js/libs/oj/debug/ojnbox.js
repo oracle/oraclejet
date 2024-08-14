@@ -2900,7 +2900,7 @@ var __oj_n_box_node_metadata =
    * <ul>
    *   <li>$current - an object that contains information for the current node. (See [oj.ojNBox.NodeTemplateContext]{@link oj.ojNBox.NodeTemplateContext} or the table below for a list of properties available on $current) </li>
    * </li>
-   * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+   * <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.
    * </li>
    * </ul>
    *

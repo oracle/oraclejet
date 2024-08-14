@@ -450,6 +450,12 @@ var __oj_checkboxset_metadata =
      * <p>
      * The <code>display-options</code> attribute only supports the messages sub-property, <code>converter-hint</code> and <code>validator-hint</code> sub-properties were removed.
      * </p>
+     *
+     * <h5>Formatted messages</h5>
+     * <p>
+     * Formatting messages using html tags is not supported in the core pack component.
+     * </p>
+     *
      * <h5>Usage in Dynamic Form</h5>
      * <p>
      * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.

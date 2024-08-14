@@ -218,6 +218,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                         return this._createBindTemplateNode(engineContext, node);
                     case 'oj-defer':
                         return this._createDeferNode(engineContext, node);
+                    case 'oj-if':
+                        return this._createIfNode(engineContext, node);
                     case 'template':
                         return this._createTemplateWithRenderCallback(engineContext, node);
                 }
@@ -359,19 +361,33 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
         }
         _createIfExpressionNode(engineContext, node) {
             if (!node.hasAttribute('test')) {
-                throw new Error("Missing the retuired 'test' attribute on <oj-bind-if>");
+                throw new Error("Missing the required 'test' attribute on <oj-bind-if>");
             }
             return {
                 type: ojexpparser.UNARY_EXP,
                 operator: '...',
-                argument: {
-                    type: ojexpparser.CONDITIONAL_EXP,
-                    test: this._createExpressionNode(engineContext, node.getAttribute('test')),
-                    consequent: this._createAst(engineContext, Array.from(node.childNodes)),
-                    alternate: {
-                        type: ojexpparser.LITERAL,
-                        value: []
-                    }
+                argument: this._createIfTestNode(engineContext, node)
+            };
+        }
+        _createIfNode(engineContext, node) {
+            if (!node.hasAttribute('test')) {
+                throw new Error("Missing the required 'test' attribute on <oj-if>");
+            }
+            const props = this._getElementProps(engineContext, node);
+            props.push(this._createPropertyNode(engineContext, 'style', 'display:contents;'));
+            return this._createHFunctionCallNode('oj-if', [
+                { type: ojexpparser.OBJECT_EXP, properties: props },
+                this._createIfTestNode(engineContext, node)
+            ]);
+        }
+        _createIfTestNode(engineContext, node) {
+            return {
+                type: ojexpparser.CONDITIONAL_EXP,
+                test: this._createExpressionNode(engineContext, node.getAttribute('test')),
+                consequent: this._createAst(engineContext, Array.from(node.childNodes)),
+                alternate: {
+                    type: ojexpparser.LITERAL,
+                    value: []
                 }
             };
         }
@@ -639,9 +655,9 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                         acc.push(this._createPropertyNode(engineContext, ojcustomelementUtils.AttributeUtils.getGlobalPropForAttr(name), value));
                     }
                     else {
+                        const propName = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(name);
+                        const propNamePath = propName.split('.');
                         if (expValue.expr) {
-                            const propName = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(name);
-                            const propNamePath = propName.split('.');
                             const propMeta = ojmetadatautils.getPropertyMetadata(propNamePath[0], ojcustomelementRegistry.getPropertiesForElementTag(node.tagName));
                             if (!propMeta?.readOnly) {
                                 if (propNamePath.length > 1) {
@@ -672,12 +688,31 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                                 writebacks.set(topProp, valuesArray);
                             }
                         }
-                        else {
+                        else if (name[0] === 'o' && name[1] === 'n') {
                             acc.push({
                                 type: ojexpparser.PROPERTY,
                                 key: { type: ojexpparser.LITERAL, value: name.toUpperCase() },
                                 value: { type: ojexpparser.LITERAL, value: value }
                             });
+                        }
+                        else {
+                            const propMeta = ojmetadatautils.getPropertyMetadata(propName, ojcustomelementRegistry.getPropertiesForElementTag(node.tagName));
+                            const parsedValue = propMeta
+                                ? ojcustomelementUtils.CustomElementUtils.parseAttrValue(node, name, propName, value, propMeta)
+                                : value;
+                            if (propNamePath.length > 1) {
+                                dottedExpressions.push({
+                                    subProps: propName,
+                                    expr: { type: ojexpparser.LITERAL, value: parsedValue }
+                                });
+                            }
+                            else {
+                                acc.push({
+                                    type: ojexpparser.PROPERTY,
+                                    key: { type: ojexpparser.LITERAL, value: propName },
+                                    value: { type: ojexpparser.LITERAL, value: parsedValue }
+                                });
+                            }
                         }
                     }
                 }
@@ -728,7 +763,9 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                     {
                         type: ojexpparser.PROPERTY,
                         key: { type: ojexpparser.LITERAL, value: subProps },
-                        value: this._createExpressionEvaluator(engineContext, expr)
+                        value: expr['type'] === ojexpparser.LITERAL
+                            ? { type: ojexpparser.LITERAL, value: expr['value'] }
+                            : this._createExpressionEvaluator(engineContext, expr)
                     }
                 ]
             }));

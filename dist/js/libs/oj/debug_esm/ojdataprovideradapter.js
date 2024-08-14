@@ -264,9 +264,8 @@ class TableDataSourceAdapter extends DataSourceAdapter {
             }
             if (self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA] != null &&
                 params[TableDataSourceAdapter._SORTCRITERIA] == null) {
-                params[TableDataSourceAdapter._SORTCRITERIA] = [];
                 const sortCriterion = new self.SortCriterion(self, self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._KEY], self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._DIRECTION]);
-                params[TableDataSourceAdapter._SORTCRITERIA].push(sortCriterion);
+                params = { ...params, [TableDataSourceAdapter._SORTCRITERIA]: [sortCriterion] };
             }
             options[TableDataSourceAdapter._FETCHTYPE] = params[TableDataSourceAdapter._FETCHTYPE];
             self._isFetching = true;

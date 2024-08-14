@@ -299,6 +299,7 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
                 this.forceUpdate();
             });
         }
+        this.props.onOjClose?.();
     }
     getDrawerSurrogateLayerSelectors() {
         let surrogateLayerStyles = DrawerConstants.DrawerPopupStyleSurrogate;
@@ -419,7 +420,7 @@ DrawerPopup.defaultProps = {
     opened: false,
     closeGesture: 'swipe'
 };
-DrawerPopup._metadata = { "slots": { "": {} }, "properties": { "opened": { "type": "boolean", "writeback": true }, "edge": { "type": "string", "enumValues": ["end", "start", "bottom"] }, "modality": { "type": "string", "enumValues": ["modal", "modeless"] }, "autoDismiss": { "type": "string", "enumValues": ["none", "focus-loss"] }, "closeGesture": { "type": "string", "enumValues": ["none", "swipe"] } }, "events": { "ojBeforeClose": { "cancelable": true } }, "extension": { "_WRITEBACK_PROPS": ["opened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
+DrawerPopup._metadata = { "slots": { "": {} }, "properties": { "opened": { "type": "boolean", "writeback": true }, "edge": { "type": "string", "enumValues": ["end", "start", "bottom"] }, "modality": { "type": "string", "enumValues": ["modal", "modeless"] }, "autoDismiss": { "type": "string", "enumValues": ["none", "focus-loss"] }, "closeGesture": { "type": "string", "enumValues": ["none", "swipe"] } }, "events": { "ojBeforeClose": { "cancelable": true }, "ojClose": {} }, "extension": { "_WRITEBACK_PROPS": ["opened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
 DrawerPopup = DrawerPopup_1 = __decorate([
     customElement('oj-drawer-popup')
 ], DrawerPopup);

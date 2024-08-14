@@ -6,11 +6,11 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
+import { wrapWithAbortHandling } from 'ojs/ojdataprovider';
 import CachedIteratorResultsDataProvider from 'ojs/ojcachediteratorresultsdataprovider';
 import DedupDataProvider from 'ojs/ojdedupdataprovider';
 import 'ojs/ojcomponentcore';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
-import 'ojs/ojdataprovider';
 
 /**
  * @license
@@ -172,17 +172,7 @@ class MutateEventFilteringDataProvider {
             ['next']() {
                 let self = this;
                 const signal = this.params?.signal;
-                if (signal && signal.aborted) {
-                    const reason = signal.reason;
-                    return Promise.reject(new DOMException(reason, 'AbortError'));
-                }
-                return new Promise((resolve, reject) => {
-                    if (signal) {
-                        const reason = signal.reason;
-                        signal.addEventListener('abort', (e) => {
-                            return reject(new DOMException(reason, 'AbortError'));
-                        });
-                    }
+                const callback = (resolve) => {
                     return resolve(this.asyncIterator.next().then((result) => {
                         if (!(self._parent.dataProvider instanceof CachedIteratorResultsDataProvider) &&
                             !(self._parent.dataProvider instanceof DedupDataProvider)) {
@@ -190,7 +180,8 @@ class MutateEventFilteringDataProvider {
                         }
                         return result;
                     }));
-                });
+                };
+                return wrapWithAbortHandling(signal, callback, false);
             }
         };
         this.DataProviderMutationEventDetail = class {
@@ -250,35 +241,17 @@ class MutateEventFilteringDataProvider {
     }
     fetchByKeys(params) {
         const signal = params?.signal;
-        if (signal && signal.aborted) {
-            const reason = signal.reason;
-            return Promise.reject(new DOMException(reason, 'AbortError'));
-        }
-        return new Promise((resolve, reject) => {
-            if (signal) {
-                const reason = signal.reason;
-                signal.addEventListener('abort', (e) => {
-                    return reject(new DOMException(reason, 'AbortError'));
-                });
-            }
+        const callback = (resolve) => {
             return resolve(this.dataProvider.fetchByKeys(params));
-        });
+        };
+        return wrapWithAbortHandling(signal, callback, false);
     }
     fetchByOffset(params) {
         const signal = params?.signal;
-        if (signal && signal.aborted) {
-            const reason = signal.reason;
-            return Promise.reject(new DOMException(reason, 'AbortError'));
-        }
-        return new Promise((resolve, reject) => {
-            if (signal) {
-                const reason = signal.reason;
-                signal.addEventListener('abort', (e) => {
-                    return reject(new DOMException(reason, 'AbortError'));
-                });
-            }
+        const callback = (resolve) => {
             return resolve(this.dataProvider.fetchByOffset(params));
-        });
+        };
+        return wrapWithAbortHandling(signal, callback, false);
     }
     fetchFirst(params) {
         const asyncIterable = this.dataProvider.fetchFirst(params);

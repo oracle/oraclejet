@@ -957,7 +957,7 @@ const ARIA_DISABLED = 'aria-disabled';
         this._AddActiveable(this._element2);
       }
       this._focusable({
-        element: this.switchThumb,
+        element: this.switchTrack,
         applyHighlight: true
       });
     },

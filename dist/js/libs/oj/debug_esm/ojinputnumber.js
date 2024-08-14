@@ -439,6 +439,18 @@ function _getNumberDefaultConverter() {
    * and references to oj-c-input-number in your app. Please note the changes between the two components below.
    * </p>
    *
+   * <h5>Global attributes</h5>
+   * <p>
+   * The following global attributes are no longer supported:
+   * <ul>
+   * <li>accesskey - not considered accessible</li>
+   * <li>tabindex - not considered accessible</li>
+   * <li>
+   * aria-label - use label-hint instead. If you do not want a visible label set label-edge="none".
+   * </li>
+   * </ul>
+   * </p>
+   *
    * <h5>Converter attribute</h5>
    * <p>
    * The converter attribute is changed to support only a converter instance, null, or undefined. It does not support
@@ -557,6 +569,11 @@ function _getNumberDefaultConverter() {
    * <p>
    * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
    * This attribute is not carried forward to the core pack component.
+   * </p>
+   *
+   * <h5>Formatted messages</h5>
+   * <p>
+   * Formatting messages using html tags is not supported in the core pack component.
    * </p>
    *
    * <h5>Usage in Dynamic Form</h5>
@@ -1005,8 +1022,7 @@ function _getNumberDefaultConverter() {
       // one for if they do this will be promptly discarded.
 
       /**
-       * A number converter instance or a Promise to a number converter instance
-       * or one that duck types {@link oj.NumberConverter}. The number converter instance defaults
+       * A number converter instance or one that duck types {@link oj.NumberConverter}. The number converter instance defaults
        * to options suitable for the current locale.
        * <p>
        * When no converter is specified, the default converter will be used,
@@ -1109,7 +1125,7 @@ function _getNumberDefaultConverter() {
        * @ojshortdesc An object that converts the value. See the Help documentation for more information.
        * @ojsignature [{
        *    target: "Type",
-       *    value: "Promise<oj.Converter<number>>|oj.Converter<number>",
+       *    value: "oj.Converter<number>",
        *    jsdocOverride: true},
        * {target: "Type",
        *    value: "Promise<oj.Converter<number>>|oj.Converter<number>|oj.Validation.RegisteredConverter",
@@ -1118,6 +1134,8 @@ function _getNumberDefaultConverter() {
        *                description:'Defining a converter with an object literal with converter type and its options
        *                  (aka JSON format) has been deprecated and does nothing. If needed, you can make the JSON format
        *                  work again by importing the deprecated ojvalidation-number module.'}
+       * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<number>>'],
+       *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the promise and then update the converter attribute with the resolved converter instance.'}
        * @type {Object}
        */
       converter: null,

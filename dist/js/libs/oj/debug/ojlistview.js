@@ -1127,6 +1127,29 @@ var __oj_list_view_metadata =
           successCallback.call(null, parentElem);
         }
 
+        // tracking whether data-oj-context already exists since we don't want to
+        // remove it if it wasn't added from here
+        let removeOjContext = false;
+        if (!parentElem.hasAttribute('data-oj-context')) {
+          parentElem.setAttribute('data-oj-context', '');
+          removeOjContext = true;
+        }
+        let busyContext = Context.getContext(parentElem).getBusyContext();
+        busyContext
+          .whenReady()
+          .then(function () {
+            if (self.m_widget != null) {
+              // calling DataCollectionUtils directly instead of the one
+              // on widget since we want to visit all children in this case
+              DataCollectionUtils.disableAllFocusableElements(parentElem);
+            }
+          })
+          .finally(function () {
+            if (removeOjContext) {
+              parentElem.removeAttribute('data-oj-context');
+            }
+          });
+
         self.m_widget.renderComplete(false);
 
         // process any outstanding events
@@ -1733,7 +1756,8 @@ var __oj_list_view_metadata =
     // if listview is busy, abort the current request (and all child requests)
     // so that we can start a new one
     if (!this.IsReady() && this.m_controller) {
-      this.m_controller.abort();
+      const wrapper = this.m_widget.OuterWrapper ?? this.m_widget.ojContext.element[0];
+      this.m_controller.abort(DataCollectionUtils.getAbortReason(wrapper));
       this.m_fetching = false;
     }
 
@@ -1977,27 +2001,37 @@ var __oj_list_view_metadata =
             touchstart: this._touchStartListener
           });
         }
-        this.ojContext._on(this.element[0].parentElement, {
-          mousedown: function (event) {
-            // set this flag when mousedown inside listview but except listview item
-            if (event.currentTarget.contains(event.target) && !self.FindItem(event.target)?.length) {
-              self.isPaddingClicked = true;
+        if (this.ShouldUseGridRole() && this.OuterWrapper != null) {
+          this.ojContext._on(this.OuterWrapper, {
+            mousedown: function (event) {
+              // JET-62332 spot focus lost to body when mousedown the region e.g. between items or the padding around listview,
+              // because these regions are not focusable i.e. no tabindex.
+              if (event.target.closest('oj-list-view [tabIndex]') === null) {
+                // prevent focus lost
+                event.preventDefault();
+                var item = self.FindItem(event.target);
+                if (item && item.length > 0) {
+                  // if event target is between items
+                  // if oj-list-view has no focus, we will focus item, otherwise we will let
+                  // the mousedown event listener on ul element handle that
+                  if (!self.OuterWrapper.contains(document.activeElement)) {
+                    self._focusItem(item, event);
+                  }
+                } else {
+                  // if event target is within listview, but not around items, e.g. the padding
+                  var active = self.m_active && self.m_active.elem;
+                  if (active == null && self.element.attr('tabIndex') === '0') {
+                    self.element.focus();
+                  } else if (active != null) {
+                    self._makeFocusable(active);
+                    self.HighlightActive();
+                    self._focusItem(active);
+                  }
+                }
+              }
             }
-          },
-          mouseup: function () {
-            // programmatically focus current active element when the flag is set and focus is lost
-            if (
-              self.isPaddingClicked &&
-              self.m_active &&
-              !self.element[0].parentElement.contains(document.activeElement)
-            ) {
-              self._makeFocusable(self.m_active.elem);
-              self.HighlightActive();
-              self._focusItem(self.m_active.elem);
-            }
-            self.isPaddingClicked = false;
-          }
-        });
+          });
+        }
         this.ojContext._on(this.element, {
           click: function (event) {
             self.HandleMouseClick(event);
@@ -2059,7 +2093,12 @@ var __oj_list_view_metadata =
         });
 
         // in Firefox, need to explicitly make list container not focusable otherwise first tab will focus on the list container
-        if (DataCollectionUtils.isFirefox() && this._isComponentFocusable()) {
+        // don't do it for tabbar/navlist
+        if (
+          DataCollectionUtils.isFirefox() &&
+          this._isComponentFocusable() &&
+          this.ShouldUseGridRole()
+        ) {
           this._rootTabIndexSet = true;
           this.getListContainer().attr('tabIndex', -1);
         }
@@ -2141,6 +2180,9 @@ var __oj_list_view_metadata =
         // was updated after detach
         this._syncSelectionWithKeySet();
 
+        // setup selection change listener to support browser selection.
+        this._setupSelectionChangedListener();
+
         this._initContentHandler();
         this._updateGridlines();
       },
@@ -2155,8 +2197,29 @@ var __oj_list_view_metadata =
         this.DestroyContentHandler(true);
         this._unregisterResizeListener(this.getListContainer());
         this._unregisterScrollHandler();
+        this._clearSelectionChangedListener();
         this.SetRootElementTabIndex();
         this._resetState();
+      },
+
+      /**
+       * @private
+       */
+      _isTextSelectionEnabled: function () {
+        const isRedwood = ThemeUtils.parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+        return this.ShouldUseGridRole() && isRedwood;
+      },
+
+      /**
+       * Sets up context menu
+       * Invoked by widget
+       */
+      setupContextMenu: function () {
+        const options = {};
+        if (this._isTextSelectionEnabled()) {
+          options.allowBrowserContextMenu = true;
+        }
+        return options;
       },
 
       /**
@@ -2227,6 +2290,43 @@ var __oj_list_view_metadata =
             },
             changed: true
           });
+        }
+      },
+
+      /**
+       * Sets up selection change event listener.
+       * @private
+       */
+      _setupSelectionChangedListener: function () {
+        this._clearSelectionChangedListener();
+        if (this._isTextSelectionEnabled() && !DataCollectionUtils.isIos()) {
+          this._browserSelectionChangeListener = () => {
+            const selection = document.getSelection();
+            if (
+              selection.type === 'Range' ||
+              (selection.anchorNode !== selection.focusNode &&
+                selection.anchorOffset !== selection.focusOffset)
+            ) {
+              this._allowSelectionOnClick = false;
+            }
+          };
+          document.addEventListener('selectionchange', this._browserSelectionChangeListener, {
+            passive: true
+          });
+        }
+      },
+
+      /**
+       * Clears selection change event listener.
+       * @private
+       */
+      _clearSelectionChangedListener: function () {
+        if (this._browserSelectionChangeListener != null) {
+          document.removeEventListener('selectionchange', this._browserSelectionChangeListener, {
+            passive: true
+          });
+          delete this._browserSelectionChangeListener;
+          delete this._allowSelectionOnClick;
         }
       },
 
@@ -2657,7 +2757,7 @@ var __oj_list_view_metadata =
           item = $(parent).children('li').get(index);
         }
 
-        if (item != null && $(item).hasClass(this.getItemStyleClass())) {
+        if (item != null && $(item).hasClass(this.getItemElementStyleClass())) {
           return this._getDataForItem(item);
         }
 
@@ -3586,9 +3686,9 @@ var __oj_list_view_metadata =
       },
 
       /**
-       * @private
+       * @protected
        */
-      _showLoadingIcon: function () {
+      showLoadingIcon: function () {
         var msg = this.ojContext.getTranslatedString('msgFetchingData');
 
         var container = this.getListContainer();
@@ -3646,7 +3746,7 @@ var __oj_list_view_metadata =
             if (self.isSkeletonSupport()) {
               self._showLoadingSkeleton();
             } else {
-              self._showLoadingIcon();
+              self.showLoadingIcon();
             }
           }
           self.m_showStatusTimeout = null;
@@ -3720,6 +3820,9 @@ var __oj_list_view_metadata =
         }
 
         listContainer.addClass(this.GetContainerStyleClass()).addClass('oj-component');
+        if (!this._isTextSelectionEnabled()) {
+          listContainer.addClass('oj-listview-no-text-selection');
+        }
         listContainer.prepend(this.element); // @HTMLUpdateOK
         return listContainer;
       },
@@ -3741,24 +3844,29 @@ var __oj_list_view_metadata =
        */
       _buildEmptyText: function () {
         var emptyText = this._getEmptyText();
-        var emptyRow = document.createElement('li');
-        emptyRow.setAttribute('role', 'row');
-        emptyRow.id = this._createSubId('empty');
-        emptyRow.classList.add(this.getNoDataItemStyleClass());
-        if (this.isCardDisplayMode()) {
-          emptyRow.classList.add(this.getNoDataCardStyleClass());
+        var isListView = this.ShouldUseGridRole();
+        if (isListView || emptyText !== '') {
+          var emptyRow = document.createElement('li');
+          emptyRow.setAttribute('role', 'row');
+          emptyRow.id = this._createSubId('empty');
+          emptyRow.classList.add(this.getNoDataItemStyleClass());
+          if (this.isCardDisplayMode()) {
+            emptyRow.classList.add(this.getNoDataCardStyleClass());
+          }
+          emptyRow.classList.add(this.getEmptyTextStyleClass());
+          emptyRow.classList.add(this.getEmptyTextMarkerClass());
+
+          var emptyCell = document.createElement('span');
+          emptyCell.setAttribute('role', 'gridcell');
+          emptyCell.textContent = emptyText;
+          emptyCell.classList.add(this.getNoDataCellElementStyleClass());
+
+          emptyRow.appendChild(emptyCell);
+
+          return emptyRow;
         }
-        emptyRow.classList.add(this.getEmptyTextStyleClass());
-        emptyRow.classList.add(this.getEmptyTextMarkerClass());
 
-        var emptyCell = document.createElement('span');
-        emptyCell.setAttribute('role', 'gridcell');
-        emptyCell.textContent = emptyText;
-        emptyCell.classList.add(this.getNoDataCellElementStyleClass());
-
-        emptyRow.appendChild(emptyCell);
-
-        return emptyRow;
+        return null;
       },
 
       /**
@@ -5755,6 +5863,8 @@ var __oj_list_view_metadata =
           return;
         }
 
+        this._preventNativeShiftSelection(event);
+
         this.m_preActive = true;
 
         // make sure listview has focus
@@ -5764,6 +5874,10 @@ var __oj_list_view_metadata =
 
         // we'll need to remove focus in case the actual focus item is different
         this.m_preActiveItem = item;
+
+        if (!DataCollectionUtils.isIos() && this._isTextSelectionEnabled()) {
+          this._allowSelectionOnClick = true;
+        }
 
         // apply focus
         this._highlightElem(item, 'oj-focus');
@@ -5804,6 +5918,18 @@ var __oj_list_view_metadata =
       },
 
       /**
+       * Prevents text getting selected during shift+click
+       * @private
+       */
+      _preventNativeShiftSelection: function (event) {
+        const isTextSelection = this._isTextSelectionEnabled();
+        const isMultiSelect = this.GetOption('selectionMode') === 'multiple';
+        if (isTextSelection && event.shiftKey && this.m_selectionFrontier && isMultiSelect) {
+          event.preventDefault();
+        }
+      },
+
+      /**
        * Event handler for when touch end/cancel happened
        * @param {Event} event touchend or touchcancel event
        * @protected
@@ -5836,7 +5962,7 @@ var __oj_list_view_metadata =
             var target = event.target;
             if (elem) {
               var nodes = elem.querySelectorAll(
-                "input, select, button, a, textarea, object, [tabIndex]:not([tabIndex='-1']), [data-oj-tabmod]"
+                "input, select, button, a, textarea, object, [tabIndex]:not([tabIndex='-1']), [data-oj-tabmod], [contenteditable='true']"
               );
               for (var i = 0; i < nodes.length; i++) {
                 if (nodes[i].contains(target)) {
@@ -5948,10 +6074,17 @@ var __oj_list_view_metadata =
               this.getListContainer().addClass('oj-focus-ancestor');
             }
 
+            var allowSelection =
+              this._isTextSelectionEnabled() === false || this._allowSelectionOnClick !== false;
             var clickthroughDisabled = this._isClickthroughDisabled(event, item);
 
             // check if selection is enabled
-            if (!clickthroughDisabled && this._isSelectionEnabled() && this.IsSelectable(item[0])) {
+            if (
+              !clickthroughDisabled &&
+              allowSelection &&
+              this._isSelectionEnabled() &&
+              this.IsSelectable(item[0])
+            ) {
               var sourceCapabilityTouch =
                 event.originalEvent.sourceCapabilities &&
                 event.originalEvent.sourceCapabilities.firesTouchEvents;
@@ -7836,6 +7969,8 @@ var __oj_list_view_metadata =
             processed = true;
           } else if (key === 'Tab' || key === this.TAB_KEY) {
             var focusElem = this.getFocusItem(current).get(0);
+            // see JET-66869, dynamic content might have elements with data-oj-mod
+            DataCollectionUtils.enableAllFocusableElements(focusElem);
             if (event.shiftKey) {
               processed = DataCollectionUtils.handleActionablePrevTab(event, focusElem);
             } else {
@@ -9820,8 +9955,7 @@ var __oj_list_view_metadata =
    *
    * <p>These features are not yet available in oj-c-list-view, they will be available in a forthcoming version.</p>
    * <ul>
-   *    <li>Reordering, as well as drag and drop with other components</li>
-   *    <li>Context menus</li>
+   *    <li>Drag and drop with other components</li>
    *    <li>Save and restore scroll position</li>
    * </ul>
    *
@@ -9927,6 +10061,8 @@ var __oj_list_view_metadata =
    * <h5>itemTemplate slot</h5>
    * <p>The root node can now take text, and no longer has to be an element. </p>
    *
+   * <h5 id="context-menu-migration"></h5>
+   *
    * <h5>current-item attribute</h5>
    * <p>This is currently a read-only property.</p>
    *
@@ -9952,18 +10088,35 @@ var __oj_list_view_metadata =
    * <h5>refresh method</h5>
    * <p>This is not supported.  Refresh was so that the elements could reread state from the DOM, this is no longer necessary.</p>
    *
+   * <h5>selection-required attribute</h5>
+   * <p>This attribute is now replaced by the new <code>singleRequired</code> selection mode.</p>
+   *
+   * <h5>first-selected-item attribute</h5>
+   * <p> This feature is now changed to an event <code> on-oj-first-selected-item</code>, not an attribute anymore. This event is only fired when <code>selection-mode</code> is <code>singleRequired</code></p>
+   *
+   * <h5>reorder</h5>
+   * <p>The reorder API has changed.</p>
+   * <ul>
+   *   <li>
+   *     <code>dnd.reorder.items</code> has renamed to <code>reorderable.items</code>. The values remain the same.</p>
+   *   </li>
+   *   <li>
+   *     The <code>event.detail</code> of <code>ojReorder</code> has been updated. It has changed to key based and now provides `reorderedKeys`, `itemKeys`, and `referenceKey`.
+   *     It will no longer provide `position`. The position will always be after the `referenceKey`. If the `referenceKey` is null, that implies that the item is moved to the beginning of the list.
+   *   </li>
+   *   <li>
+   *     Applications should use the new <code>oj-c-drag-handle</code> to show drag icon, instead of the <code>oj-listview-drag-handle</code> style class.
+   *   </li
+   * </ul>
+   *
    * <h5>The following APIs are not yet supported</h5>
    *
    * <ul>
-   *   <li>contextMenu slot</li>
    *   <li>dnd attribute</li>
-   *   <li>first-selected-item attribute (this can be derived from the selected attribute combined with the data)</li>
    *   <li>item.selectable attribute</li>
    *   <li>scroll-policy attribute (currently only load more on scroll is supported)</li>
    *   <li>scroll-position attribute</li>
    *   <li>scroll-to-key attribute</li>
-   *   <li>selection-required attribute</li>
-   *   <li>ojReorder event</li>
    *   <li>getContextByNode method</li>
    *   <li>getDataForVisibleItem method</li>
    * </ul>
@@ -11344,6 +11497,17 @@ var __oj_list_view_metadata =
     },
 
     /**
+     * Sets contextmenu adds allowBrowserContextMenu to allow browser context menu on text
+     * @protected
+     * @override
+     * @memberof! oj.ojListView
+     */
+    _SetupContextMenu: function () {
+      const options = this.listview.setupContextMenu();
+      this._super(options);
+    },
+
+    /**
      * Gets the focus element
      * @override
      * @memberof! oj.ojListView
@@ -11501,6 +11665,16 @@ var __oj_list_view_metadata =
      * @protected
      */
     _VerifyConnectedForSetup: function () {
+      return true;
+    },
+
+    /**
+     * Override to allow component to be "suspended"
+     * @memberof oj.ojListView
+     * @override
+     * @protected
+     */
+    _AllowConnectedSuspension: function () {
       return true;
     },
 
@@ -11757,6 +11931,7 @@ var __oj_list_view_metadata =
    * @ojmaxitems 1
    * @memberof oj.ojListView
    * @ojtemplateslotprops {}
+   * @ojtemplateslotrendertype "RenderNoDataTemplate"
    *
    * @example <caption>Initialize the ListView with a noData slot specified:</caption>
    * &lt;oj-list-view>
@@ -12040,12 +12215,12 @@ var __oj_list_view_metadata =
    @property {string} key The key of the current item being rendered
    @property {number} depth The depth of the current item (available when hierarchical data is provided) being rendered. The depth of the first level children under the invisible root is 1.
    @property {boolean} leaf True if the current item is a leaf node (available when hierarchical data is provided).
-   @property {string} parentkey The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.
+   @property {string} parentKey The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.
    @ojsignature [{target:"Type", value:"<K = any,D = any>", for:"genericTypeParameters"},
    {target:"Type", value:"D", for:"data", jsdocOverride: true},
    {target: "Type", value:"Item<K, D>", for:"item", jsdocOverride: true},
    {target:"Type", value:"K", for:"key", jsdocOverride: true},
-  {target:"Type", value:"K", for:"parentkey", jsdocOverride: true}]
+  {target:"Type", value:"K", for:"parentKey", jsdocOverride: true}]
    */
 
   /**

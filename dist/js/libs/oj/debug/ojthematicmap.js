@@ -3605,7 +3605,7 @@ var __oj_thematic_map_marker_metadata =
    *      (See [oj.ojThematicMap.AreaTemplateContext]{@link oj.ojThematicMap.AreaTemplateContext} or the table below for a list of properties available on $current)
    *   </li>
    *   <li>
-   *      alias - if 'as' attribute was specified, the value will be used to provide an
+   *      alias - if data-oj-as attribute was specified, the value will be used to provide an
    *      application-named alias for $current.
    *   </li>
    * </ul>
@@ -3651,7 +3651,7 @@ var __oj_thematic_map_marker_metadata =
    *      (See [oj.ojThematicMap.MarkerTemplateContext]{@link oj.ojThematicMap.MarkerTemplateContext} or the table below for a list of properties available on $current)
    *   </li>
    *   <li>
-   *      alias - if 'as' attribute was specified, the value will be used to provide an
+   *      alias - if data-oj-as attribute was specified, the value will be used to provide an
    *      application-named alias for $current.
    *   </li>
    * </ul>
@@ -3722,7 +3722,7 @@ var __oj_thematic_map_marker_metadata =
    *      (See [oj.ojThematicMap.LinkTemplateContext]{@link oj.ojThematicMap.LinkTemplateContext} or the table below for a list of properties available on $current)
    *   </li>
    *   <li>
-   *      alias - if 'as' attribute was specified, the value will be used to provide an
+   *      alias - if data-oj-as attribute was specified, the value will be used to provide an
    *      application-named alias for $current.
    *   </li>
    * </ul>

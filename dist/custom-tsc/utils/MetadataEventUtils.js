@@ -64,7 +64,7 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
             metaUtilObj.fullMetadata.events = {};
         }
         metaUtilObj.rtMetadata.events[eventProp] = rtEventMeta;
-        metaUtilObj.fullMetadata.events[eventProp] = Object.assign({}, rtEventMeta, getDtMetadataForEvent(propDeclaration, eventTypeName, eventTypeNode, rtEventMeta.cancelable ?? false, metaUtilObj));
+        metaUtilObj.fullMetadata.events[eventProp] = Object.assign({}, rtEventMeta, getDtMetadataForEvent(propDeclaration, eventTypeNode, rtEventMeta.cancelable ?? false, metaUtilObj));
     }
     else {
         if (memberKey.match(_REGEX_RESERVED_EVENT_PREFIX)) {
@@ -74,7 +74,7 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
     return isEvent;
 }
 exports.generateEventsMetadata = generateEventsMetadata;
-function getDtMetadataForEvent(propDeclaration, typeName, typeNode, isCancelable, metaUtilObj) {
+function getDtMetadataForEvent(propDeclaration, typeNode, isCancelable, metaUtilObj) {
     const checker = metaUtilObj.typeChecker;
     const dt = MetaUtils.getDtMetadata(propDeclaration, MetaTypes.MDContext.EVENT, null, metaUtilObj);
     const typeRefNode = typeNode;
@@ -91,27 +91,30 @@ function getDtMetadataForEvent(propDeclaration, typeName, typeNode, isCancelable
     }
     if (typeRefNode?.typeArguments && typeRefNode.typeArguments.length) {
         const detailNode = typeRefNode.typeArguments[0];
-        if (detailNode.kind == ts.SyntaxKind.TypeReference) {
+        if (ts.isTypeReferenceNode(detailNode)) {
             const typeObject = checker.getTypeAtLocation(detailNode);
             const mappedTypesInfo = MetaUtils.getMappedTypesInfo(typeObject, checker, false, detailNode);
             if (mappedTypesInfo && mappedTypesInfo.wrappedTypeNode) {
                 const innerTypeObject = checker.getTypeAtLocation(mappedTypesInfo.wrappedTypeNode);
-                const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(innerTypeObject, metaUtilObj);
+                const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(innerTypeObject, mappedTypesInfo.wrappedTypeNode, metaUtilObj);
                 if (genericsInfo) {
                     dt['evnDetailTypeParamsDeclaration'] = genericsInfo.genericsDeclaration;
-                    dt['evnDetailTypeParams'] = getDetailGenericTypeParams(genericsInfo.genericsTypeParamData, metaUtilObj.propsTypeParamsArray, metaUtilObj.propsClassTypeParamsArray);
-                    dt['evnDetailNameTypeParams'] = MetaUtils.constructMappedTypeName(mappedTypesInfo, genericsInfo.genericsTypeParams);
+                    dt['evnDetailTypeParams'] = genericsInfo.resolvedGenericParams;
                 }
+                dt['evnDetailNameTypeParams'] = MetaUtils.constructMappedTypeName(mappedTypesInfo, genericsInfo?.genericsTypeParams);
             }
             else {
-                const declaration = typeObject.aliasSymbol?.getDeclarations()[0] || typeObject.symbol?.getDeclarations()[0];
-                if (ts.isTypeAliasDeclaration(declaration) || ts.isClassDeclaration(declaration)) {
-                    const eventDetailType = declaration;
-                    const eventDetailName = eventDetailType.name.getText();
-                    const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(typeObject, metaUtilObj);
+                const declaration = typeObject.aliasSymbol?.getDeclarations()?.[0] ??
+                    typeObject.symbol?.getDeclarations()?.[0];
+                if (declaration &&
+                    (ts.isTypeAliasDeclaration(declaration) ||
+                        ts.isInterfaceDeclaration(declaration) ||
+                        ts.isClassDeclaration(declaration))) {
+                    const eventDetailName = declaration.name.getText();
+                    const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(typeObject, detailNode, metaUtilObj);
                     if (genericsInfo) {
                         dt['evnDetailTypeParamsDeclaration'] = genericsInfo.genericsDeclaration;
-                        dt['evnDetailTypeParams'] = getDetailGenericTypeParams(genericsInfo.genericsTypeParamData, metaUtilObj.propsTypeParamsArray, metaUtilObj.propsClassTypeParamsArray);
+                        dt['evnDetailTypeParams'] = genericsInfo.resolvedGenericParams;
                         dt['evnDetailNameTypeParams'] = `${eventDetailName}${genericsInfo.genericsTypeParams}`;
                     }
                     else {
@@ -185,33 +188,5 @@ function getEventDetails(detailNode, metaUtilObj) {
         });
     }
     return details;
-}
-function getDetailGenericTypeParams(genericsTypeParamsArray, propsTypeParamsArray, propsClassTypeParamsArray) {
-    let detailTypeParams = '';
-    if (propsTypeParamsArray) {
-        const resolvedTypeParams = [];
-        let isTypeParamMappingResolved = true;
-        for (const param of genericsTypeParamsArray) {
-            if (param.isGeneric) {
-                const idx = propsClassTypeParamsArray?.indexOf(param.name);
-                if (idx !== undefined && idx >= 0) {
-                    resolvedTypeParams.push(propsTypeParamsArray[idx]);
-                }
-                else {
-                    isTypeParamMappingResolved = false;
-                    break;
-                }
-            }
-        }
-        if (isTypeParamMappingResolved) {
-            if (resolvedTypeParams.length > 0) {
-                detailTypeParams = `<${resolvedTypeParams.join(', ')}>`;
-            }
-        }
-        else {
-            detailTypeParams = `<${propsTypeParamsArray.join(', ')}>`;
-        }
-    }
-    return detailTypeParams;
 }
 //# sourceMappingURL=MetadataEventUtils.js.map

@@ -57,10 +57,10 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
    * Example:<br/>
    * "'{label}' Required"<br/>
    * </p>
-   * @property {string=} messageDetail - a custom error message used for creating detail part
-   * of message, when the value provided is empty. When not present, the default message detail is the
+   * @property {(string|function(Object):string)=} messageDetail - an optional custom error message used for creating the detail part
+   * of the message, when the value provided is empty. When not present, the default message detail is the
    * resource defined with the key <code class="prettyprint">oj-validator.required.detail</code>.
-   * <p>The messageDetail string is passed as the 'pattern' parameter to
+   * <p>If messageDetail is a string, the messageDetail string is passed as the 'pattern' parameter to
    * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
    * that documentation, if you are using a reserved character, you need to escape it with
    * a dollar character ('$').
@@ -70,6 +70,17 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
    * Example:<br/>
    * "A value is required for the field '{label}'."<br/>
    * </p>
+   * <p>If messageDetail is a function, the messageDetail function is called with the {label} parameter.
+   * <p>
+   * Example:<br/>
+   * messageDetail: (p: {label}) => `A value is required for the field '${p.label}'.`<br/>
+   * </p>
+   * @ojsignature {
+   *   target: "Type",
+   *   value: "?(string|(({label: string}) => string))",
+   *   for: "messageDetail",
+   *   jsdocOverride: true
+   * }
    */
   /**
    * Initializes validator instance with the set options
@@ -123,9 +134,14 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
     localizedSummary = summary
       ? Translations.applyParameters(summary, params)
       : Translations.getTranslatedString(this._getSummaryKey(), params);
-    localizedDetail = detail
-      ? Translations.applyParameters(detail, params)
-      : Translations.getTranslatedString(this._getDetailKey(), params);
+    if (detail === null || detail === undefined || typeof detail === 'string') {
+      localizedDetail = detail
+        ? Translations.applyParameters(detail, params)
+        : Translations.getTranslatedString(this._getDetailKey(), params);
+    } else if (typeof detail === 'function') {
+      // function, so pass in parameters.
+      localizedDetail = detail(params);
+    }
 
     throw new ojvalidationError.ValidatorError(localizedSummary, localizedDetail);
   };

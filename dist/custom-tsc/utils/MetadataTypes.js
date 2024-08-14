@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isFunctionInfo = exports.isClassInfo = exports.VCompImportMaps = exports.IMAP = exports.VCompPack = exports.VCompType = exports.MDScope = exports.MDContext = exports.DEPENDENCIES_TOKEN = exports.CONTENTS_TOKEN = exports.DEFAULT_SLOT_PROP = exports.SLOT_TYPE = void 0;
+exports.isFunctionInfo = exports.isClassInfo = exports.VCompImportMaps = exports.IMAP = exports.VCompPack = exports.VCompType = exports.GTExtras = exports.MDScope = exports.MDContext = exports.DEPENDENCIES_TOKEN = exports.CONTENTS_TOKEN = exports.DEFAULT_SLOT_PROP = exports.SLOT_TYPE = void 0;
 const ts = __importStar(require("typescript"));
 exports.SLOT_TYPE = 'Slot';
 exports.DEFAULT_SLOT_PROP = 'children';
@@ -50,6 +50,11 @@ var MDScope;
     MDScope[MDScope["RT"] = 0] = "RT";
     MDScope[MDScope["DT"] = 1] = "DT";
 })(MDScope || (exports.MDScope = MDScope = {}));
+var GTExtras;
+(function (GTExtras) {
+    GTExtras[GTExtras["PARAMS_ANY"] = 1] = "PARAMS_ANY";
+    GTExtras[GTExtras["DECL_NODES"] = 2] = "DECL_NODES";
+})(GTExtras || (exports.GTExtras = GTExtras = {}));
 var VCompType;
 (function (VCompType) {
     VCompType[VCompType["FUNCTION"] = 0] = "FUNCTION";

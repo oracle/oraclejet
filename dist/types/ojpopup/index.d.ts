@@ -183,6 +183,11 @@ export namespace PopupElement {
         offset?: ojPopup.PositionPoint;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type PositionAlign = {
+        horizontal?: 'start' | 'end' | 'left' | 'center' | 'right';
+        vertical?: 'top' | 'bottom' | 'center';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type PositionPoint = {
         x?: number;
         y?: number;

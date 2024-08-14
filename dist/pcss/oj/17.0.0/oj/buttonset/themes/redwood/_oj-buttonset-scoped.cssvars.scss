@@ -1,0 +1,30 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+@import "../../../button/themes/redwood/_oj-button-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.buttonset.scoped") {
+  
+  /* buttonset                  */
+  /* -------------------------- */
+  
+  oj-buttonset-one.oj-color-invert,
+  oj-buttonset-many.oj-color-invert,
+  .oj-color-invert oj-buttonset-one,
+  .oj-color-invert oj-buttonset-many {
+    --oj-button-outlined-chrome-bg-color:                          transparent;
+    --oj-button-outlined-chrome-text-color:                        var(--oj-core-text-color-secondary);
+    --oj-button-outlined-chrome-bg-color-disabled:                 transparent;
+    --oj-buttonset-outlined-chrome-internal-border-color:          var(--oj-button-outlined-chrome-border-color);
+    --oj-buttonset-outlined-chrome-internal-border-color-selected: rgb(var(--oj-palette-brand-rgb-50));
+    --oj-button-outlined-chrome-bg-color-selected:                 rgb(var(--oj-palette-brand-rgb-140));
+    --oj-button-outlined-chrome-border-color-selected:             rgb(var(--oj-palette-brand-rgb-50));
+    --oj-button-borderless-chrome-bg-color-selected:                 rgb(var(--oj-palette-brand-rgb-140));
+    --oj-button-borderless-chrome-border-color-selected:             rgb(var(--oj-palette-brand-rgb-50));
+    --oj-buttonset-borderless-chrome-internal-border-color-selected: rgb(var(--oj-palette-brand-rgb-50));
+    --oj-button-borderless-chrome-bg-color:                          transparent;
+    --oj-button-outlined-chrome-bg-color-selected-disabled:         rgba(var(--oj-palette-neutral-rgb-0), 0.04);
+    --oj-button-borderless-chrome-bg-color-selected-disabled:        rgba(var(--oj-palette-neutral-rgb-0), 0.04);
+    --oj-button-borderless-chrome-bg-color-disabled:                 transparent;    
+  }
+ 
+}

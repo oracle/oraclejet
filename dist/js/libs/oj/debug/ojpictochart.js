@@ -1142,7 +1142,7 @@ var __oj_picto_chart_item_metadata =
    *      (See [oj.ojPictoChart.ItemTemplateContext]{@link oj.ojPictoChart.ItemTemplateContext} or the table below for a list of properties available on $current)
    *   </li>
    * </li>
-   * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+   * <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.
    * </li>
    * </ul>
    *

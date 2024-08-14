@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'preact/hooks', '@oracle/oraclejet-preact/UNSAFE_Environment', 'ojs/ojcore-base', 'ojs/ojpreact-patch', 'ojs/ojmetadatautils', '@oracle/oraclejet-preact/UNSAFE_Layer', 'ojs/ojconfig', 'ojs/ojcontext', 'ojs/ojtranslationbundleutils', 'ojs/ojlogger'], function (require, exports, compat, jsxRuntime, preact, ojcustomelementUtils, ojcustomelementRegistry, hooks, UNSAFE_Environment, oj, ojpreactPatch, MetadataUtils, UNSAFE_Layer, ojconfig, Context, ojtranslationbundleutils, Logger) { 'use strict';
+define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'preact/hooks', '@oracle/oraclejet-preact/UNSAFE_Environment', 'ojs/ojcore-base', 'ojs/ojpreact-patch', 'ojs/ojmetadatautils', '@oracle/oraclejet-preact/UNSAFE_Layer', 'ojs/ojconfig', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojtranslationbundleutils'], function (require, exports, compat, jsxRuntime, preact, ojcustomelementUtils, ojcustomelementRegistry, hooks, UNSAFE_Environment, oj, ojpreactPatch, MetadataUtils, UNSAFE_Layer, ojconfig, Logger, Context, ojtranslationbundleutils) { 'use strict';
 
     function _interopNamespace(e) {
         if (e && e.__esModule) { return e; } else {
@@ -30,7 +30,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
     let _slotIdCount = 0;
-    let _originalCreateElement;
+    let _originalCreateElementNS;
     const _ACTIVE_SLOTS_PER_ELEMENT = new Map();
     const _ACTIVE_SLOTS = new Map();
     const _OJ_SLOT_ID = Symbol();
@@ -113,17 +113,17 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         return key;
     }
     function _patchCreateElement() {
-        _originalCreateElement = document.createElement;
-        document.createElement = _createElementOverride;
+        _originalCreateElementNS = document.createElementNS;
+        document.createElementNS = _createElementOverride;
     }
     function _restoreCreateElement() {
-        document.createElement = _originalCreateElement;
+        document.createElementNS = _originalCreateElementNS;
     }
-    function _createElementOverride(tagName, opts) {
+    function _createElementOverride(namespace, tagName, opts) {
         if (tagName.startsWith(_OJ_SLOT_PREFIX)) {
             return _ACTIVE_SLOTS.get(tagName);
         }
-        return _originalCreateElement.call(document, tagName, opts);
+        return _originalCreateElementNS.call(document, namespace, tagName, opts);
     }
 
     class Parking {
@@ -244,8 +244,8 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             }
         }
         else if (name[0] === 'o' && name[1] === 'n') {
-            useCapture = name !== (name = name.replace(/Capture$/, ''));
-            if (name.toLowerCase() in dom)
+            useCapture = name !== (name = name.replace(/Capture$/i, ''));
+            if (name.toLowerCase() in dom || name === 'onFocusOut' || name === 'onFocusIn')
                 name = name.toLowerCase().slice(2);
             else
                 name = name.slice(2);
@@ -296,6 +296,36 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         this._listeners[e.type + true](preact.options.event ? preact.options.event(e) : e);
     }
 
+    const NEW_DEFAULT_LAYER_ID = '__root_layer_host';
+    const getLayerHost = (element, level, priority) => {
+        let parentLayerHost = null;
+        if (level === 'nearestAncestor') {
+            parentLayerHost = element.closest('[data-oj-layer]');
+        }
+        if (parentLayerHost) {
+            return parentLayerHost;
+        }
+        let rootLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
+        if (!rootLayerHost) {
+            rootLayerHost = document.createElement('div');
+            rootLayerHost.setAttribute('id', NEW_DEFAULT_LAYER_ID);
+            rootLayerHost.setAttribute('data-oj-binding-provider', 'preact');
+            rootLayerHost.style.position = 'relative';
+            rootLayerHost.style.zIndex = '999';
+            document.body.prepend(rootLayerHost);
+        }
+        return rootLayerHost;
+    };
+    const getLayerContext = (baseElem) => {
+        const layerHostResolver = oj.VLayerUtils ? oj.VLayerUtils.getLayerHost : getLayerHost;
+        const onLayerUnmountResolver = oj.VLayerUtils ? oj.VLayerUtils.onLayerUnmount : null;
+        return {
+            getRootLayerHost: layerHostResolver.bind(null, baseElem, 'topLevel'),
+            getLayerHost: layerHostResolver.bind(null, baseElem, 'nearestAncestor'),
+            onLayerUnmount: onLayerUnmountResolver?.bind(null, baseElem)
+        };
+    };
+
     const ELEMENT_REF = Symbol();
     const ROOT_VNODE_PATCH = Symbol();
     class ComponentWithContexts extends preact.Component {
@@ -334,10 +364,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
                 }
             };
             this.state = { compProps: props.initialCompProps };
-            const layerHostResolver = oj.VLayerUtils ? oj.VLayerUtils.getLayerHost : getLayerHost;
-            this._layerContext = {
-                getHost: layerHostResolver.bind(null, props.baseElem)
-            };
+            this._layerContext = getLayerContext(props.baseElem);
         }
         render(props) {
             const compProps = this.state.compProps;
@@ -382,41 +409,6 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         return (!oldArgs ||
             oldArgs.length !== newArgs.length ||
             newArgs.some((arg, index) => arg !== oldArgs[index]));
-    };
-    const NEW_DEFAULT_LAYER_ID = '__root_layer_host';
-    const NEW_DEFAULT_TOP_LAYER_ID = '__top_layer_host';
-    const getLayerHost = (element, priority) => {
-        const parentLayerHost = element.closest(`#${NEW_DEFAULT_TOP_LAYER_ID}`);
-        if (parentLayerHost) {
-            return parentLayerHost;
-        }
-        let rootLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
-        let topLayerHost = document.getElementById(NEW_DEFAULT_TOP_LAYER_ID);
-        if (priority === 'top') {
-            if (!topLayerHost) {
-                topLayerHost = document.createElement('div');
-                topLayerHost.setAttribute('id', NEW_DEFAULT_TOP_LAYER_ID);
-                topLayerHost.setAttribute('data-oj-binding-provider', 'preact');
-                topLayerHost.style.position = 'relative';
-                topLayerHost.style.zIndex = '2000';
-                if (rootLayerHost) {
-                    rootLayerHost.after(topLayerHost);
-                }
-                else {
-                    document.body.prepend(topLayerHost);
-                }
-            }
-            return topLayerHost;
-        }
-        if (!rootLayerHost) {
-            rootLayerHost = document.createElement('div');
-            rootLayerHost.setAttribute('id', NEW_DEFAULT_LAYER_ID);
-            rootLayerHost.setAttribute('data-oj-binding-provider', 'preact');
-            rootLayerHost.style.position = 'relative';
-            rootLayerHost.style.zIndex = '999';
-            document.body.prepend(rootLayerHost);
-        }
-        return rootLayerHost;
     };
 
     const applyRef = (ref, value) => {
@@ -509,7 +501,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             }
             else {
                 if (this._state.allowPropertySets()) {
-                    value = ojcustomelementUtils.transformPreactValue(this._element, subPropMeta, value);
+                    value = ojcustomelementUtils.transformPreactValue(this._element, name, subPropMeta, value);
                     this._updatePropsAndQueueRenderAsNeeded(name, value, propMeta, subPropMeta);
                 }
                 else {
@@ -539,6 +531,12 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         }
         insertBeforeHelper(element, newNode, refNode) {
             if (ojcustomelementUtils.CustomElementUtils.canRelocateNode(element, newNode)) {
+                if (refNode && refNode.parentNode !== element) {
+                    Logger.info(`Using insertBefore where ${element.tagName} is not a parent of ${refNode.tagName}`);
+                }
+                if (refNode && refNode.parentNode) {
+                    return HTMLElement.prototype.insertBefore.call(refNode.parentNode, newNode, refNode);
+                }
                 return HTMLElement.prototype.insertBefore.call(element, newNode, refNode);
             }
             return newNode;
@@ -816,7 +814,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             while (this._earlySets.length) {
                 const setObj = this._earlySets.shift();
                 const meta = MetadataUtils.getPropertyMetadata(setObj.property, this._metadata?.properties);
-                const updatedValue = ojcustomelementUtils.transformPreactValue(this._element, meta, setObj.value);
+                const updatedValue = ojcustomelementUtils.transformPreactValue(this._element, setObj.property, meta, setObj.value);
                 this.setProperty(setObj.property, updatedValue);
             }
         }
@@ -860,11 +858,11 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
                 return true;
             }
             else if (name[0] === 'o' && name[1] === 'n') {
-                const useCapture = name !== (name = name.replace(/Capture$/, ''));
-                const nameLower = name.toLowerCase();
-                if (nameLower in dom)
-                    name = nameLower;
-                name = name.slice(2);
+                const useCapture = name !== (name = name.replace(/Capture$/i, ''));
+                if (name.toLowerCase() in dom || name === 'onFocusOut' || name === 'onFocusIn')
+                    name = name.toLowerCase().slice(2);
+                else
+                    name = name.slice(2);
                 IntrinsicElement._getRootListeners(dom, useCapture)[name] = value;
                 const proxy = useCapture ? IntrinsicElement._eventProxyCapture : IntrinsicElement._eventProxy;
                 if (value) {
@@ -1009,8 +1007,8 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             ParkingLot.reconnectNodes(this._state.getSlotMap());
         }
         _propagateSubtreeHidden(node) {
-            if (oj.Components) {
-                oj.Components.subtreeHidden(node);
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                ojcustomelementUtils.CustomElementUtils.subtreeHidden(node);
             }
         }
         _handleSlotUnmount(node) {
@@ -1024,8 +1022,8 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             }
         }
         _handleSlotMount(node) {
-            const handleMount = oj.Components?.subtreeShown;
-            if (handleMount) {
+            const handleMount = ojcustomelementUtils.CustomElementUtils.subtreeShown;
+            if (handleMount && node.nodeType === Node.ELEMENT_NODE) {
                 if (node.isConnected) {
                     handleMount(node);
                 }
@@ -1086,7 +1084,8 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
 
     const EnvironmentWrapper = compat.forwardRef((props, ref) => {
         const child = props.children;
-        const contexts = ojcustomelementRegistry.getElementRegistration(child.type).cache.contexts;
+        const contexts = ojcustomelementRegistry.getElementRegistration(child.type).cache
+            .contexts;
         const allContexts = [UNSAFE_Environment.EnvironmentContext, ...(contexts ?? [])];
         const allValues = allContexts.map((context) => {
             const ctxValue = hooks.useContext(context);
@@ -1119,7 +1118,9 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
 
     const injectSymbols = (props, property) => {
         if (Object.prototype.hasOwnProperty.call(props, property)) {
-            props[property] = ojcustomelementUtils.toSymbolizedValue(props[property]);
+            const newKey = ojcustomelementUtils.publicToPrivateName.get(property);
+            props[newKey] = ojcustomelementUtils.toSymbolizedValue(props[property]);
+            delete props[property];
         }
     };
     const oldVNodeHook = preact.options.vnode;
@@ -2058,25 +2059,30 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
     /**
      * <p>
      *  The DynamicTemplateSlots type is a companion to
-     *  <a href="#DynamicSlots">DynamicSlots</a> that is
-     *  used in cases where the component accepts an arbitrary number of
+     *  <a href="#DynamicSlots">DynamicSlots</a> that is used in cases
+     *  where the component accepts an arbitrary number of
      *  <a href="#template-slots">template slots</a>.  VComponents may declare a
      *  single property of type DynamicTemplateSlots.  When the component is used as
      *  a custom element, this property will be populated with one entry for each
      *  "dynamic" template slot, where the key is the slot name and the value is a
-     *  <a href="#TemplateSlot">TemplateSlot</a> function.
+     *  corresponding <a href="#TemplateSlot">TemplateSlot</a> function.
      * </p>
      * <p>
-     *   Note that each VComponent class can only contain a single dynamic
-     *   slot property.  That is, each VComponent can have one property
-     *   of type DynamicSlots or one property of type DynamicTemplateSlots, but
-     *   not both.
+     *  Different TemplateSlot functions may require different context objects as arguments,
+     *  so DynamicTemplateSlots can accept a union type for its type parameter.  The
+     *  DynamicTemplateSlots type definition is structured to ensure that each union sub-type
+     *  gets mapped to a separate TemplateSlot function.
+     * </p>
+     * <p>
+     *   Note that each VComponent can only contain a single dynamic slot property.
+     *   That is, each VComponent can have one property of type DynamicSlots or
+     *   one property of type DynamicTemplateSlots, but not both.
      * </p>
      * @typedef {Object} DynamicTemplateSlots
      * @ojexports
      * @memberof ojvcomponent
      * @ojsignature [{target:"Type", value:"<Data>", for:"genericTypeParameters"},
-     *               {target: "Type", value: "Record<string, TemplateSlot<Data>>" }]
+     *               {target: "Type", value: "Record<string, (Data extends object ? TemplateSlot<Data> : never)>" }]
      */
 
     /**
@@ -3059,14 +3065,17 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             });
         }
         GetPreCreatedPromise() {
-            let preCreatePromise = super.GetPreCreatedPromise();
+            let translationPromise;
+            let templateEnginePromise;
             if (this.Element.constructor.translationBundleMap) {
-                preCreatePromise = preCreatePromise.then(() => this._getTranslationBundlesPromise());
+                translationPromise = this._getTranslationBundlesPromise();
             }
             if (!VComponentState._cachedTemplateEngine && this._hasDirectTemplateChildren()) {
-                return preCreatePromise.then(() => this._getTemplateEnginePromise());
+                templateEnginePromise = this._getTemplateEnginePromise();
             }
-            return preCreatePromise;
+            return Promise.all([translationPromise, templateEnginePromise]).then(() => {
+                return this.Element.isConnected ? super.GetPreCreatedPromise() : Promise.reject();
+            });
         }
         IsTransferAttribute(attrName) {
             return this.Element.constructor.rootObservedAttrSet.has(attrName);
@@ -3152,7 +3161,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         if (arguments.length >= 4 && arguments[3]) {
             VCompWrapper._metadata = arguments[3];
             if (arguments.length >= 5 && arguments[4]) {
-                VCompWrapper.defaultProps = arguments[4];
+                VCompWrapper._defaultProps = arguments[4];
             }
         }
         if (arguments.length >= 6) {
@@ -3189,8 +3198,8 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
         HTMLPreactElement.rootObservedAttributes = observedAttrs;
         HTMLPreactElement.rootObservedAttrSet = new Set(observedAttrs);
         HTMLPreactElement.rootObservedProperties = observedProps;
-        HTMLPreactElement.defaultProps = constructor['defaultProps']
-            ? MetadataUtils.deepFreeze(constructor['defaultProps'])
+        HTMLPreactElement.defaultProps = constructor['defaultProps'] || constructor['_defaultProps']
+            ? MetadataUtils.deepFreeze(constructor['defaultProps'] || constructor['_defaultProps'])
             : null;
         HTMLPreactElement.translationBundleMap = translationBundleMap;
         addPropGetterSetters(HTMLPreactElement.prototype, metadata?.properties);
@@ -3214,7 +3223,12 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             if (isElementFirst) {
                 ojcustomelementUtils.CustomElementUtils.getElementState(element).disposeTemplateCache();
             }
-            let vdom = componentRender.call(this, props, state, context);
+            let componentProps = props;
+            if (props[ELEMENT_REF]) {
+                const { [ELEMENT_REF]: remove1, [ROOT_VNODE_PATCH]: remove2, ...keep } = props;
+                componentProps = keep;
+            }
+            let vdom = componentRender.call(this, componentProps, state, context);
             if (vdom?.type?.['__ojIsEnvironmentWrapper'] &&
                 vdom.props.children.type === tagName) {
                 const customElementNode = vdom.props.children;
@@ -3249,6 +3263,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
                     this.setProperty(name, value);
                 }
             });
+            ojcustomelementUtils.addPrivatePropGetterSetters(proto, name);
         }
     }
     function addMethods(proto, methods) {

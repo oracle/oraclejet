@@ -10,6 +10,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     };
     addRowDisplay: 'top' | 'hidden';
     as: string;
+    columnResizeBehavior: 'redistribute' | 'add';
     columns: Array<ojTable.Column<K, D>> | null;
     columnsDefault: ojTable.ColumnDefault<K, D> | null;
     currentRow: ojTable.CurrentRow<K> | null;
@@ -234,6 +235,8 @@ export namespace ojTable {
     type addRowDisplayChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["addRowDisplay"]>;
     // tslint:disable-next-line interface-over-type-literal
     type asChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnResizeBehaviorChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["columnResizeBehavior"]>;
     // tslint:disable-next-line interface-over-type-literal
     type columnsChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["columns"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -545,6 +548,20 @@ export namespace ojTable {
         mode: 'edit' | 'navigation';
         rowContext: object;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderAddRowCellTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<AddRowCellTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderAddRowTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<AddRowTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderCellTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<CellTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderFooterTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<FooterTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNoDataTemplate = import('ojs/ojvcomponent').TemplateSlot<{}>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<RowTemplateContext<K, D>>;
 }
 export interface ojTableEventMap<K, D> extends baseComponentEventMap<ojTableSettableProperties<K, D>> {
     'ojAnimateEnd': ojTable.ojAnimateEnd;
@@ -558,6 +575,7 @@ export interface ojTableEventMap<K, D> extends baseComponentEventMap<ojTableSett
     'accessibilityChanged': JetElementCustomEvent<ojTable<K, D>["accessibility"]>;
     'addRowDisplayChanged': JetElementCustomEvent<ojTable<K, D>["addRowDisplay"]>;
     'asChanged': JetElementCustomEvent<ojTable<K, D>["as"]>;
+    'columnResizeBehaviorChanged': JetElementCustomEvent<ojTable<K, D>["columnResizeBehavior"]>;
     'columnsChanged': JetElementCustomEvent<ojTable<K, D>["columns"]>;
     'columnsDefaultChanged': JetElementCustomEvent<ojTable<K, D>["columnsDefault"]>;
     'currentRowChanged': JetElementCustomEvent<ojTable<K, D>["currentRow"]>;
@@ -588,6 +606,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     };
     addRowDisplay: 'top' | 'hidden';
     as: string;
+    columnResizeBehavior: 'redistribute' | 'add';
     columns: Array<ojTable.Column<K, D>> | null;
     columnsDefault: ojTable.ColumnDefault<K, D> | null;
     currentRow: ojTable.CurrentRow<K> | null;
@@ -794,6 +813,8 @@ export namespace TableElement {
     // tslint:disable-next-line interface-over-type-literal
     type asChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["as"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type columnResizeBehaviorChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["columnResizeBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type columnsChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["columns"]>;
     // tslint:disable-next-line interface-over-type-literal
     type columnsDefaultChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["columnsDefault"]>;
@@ -847,6 +868,11 @@ export namespace TableElement {
         submitAddRow?: ((param0: boolean) => void);
     };
     // tslint:disable-next-line interface-over-type-literal
+    type AddRowTemplateContext<K, D> = {
+        datasource: DataProvider<K, D> | null;
+        submitAddRow?: ((param0: boolean) => void);
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type CellTemplateContext<K, D> = {
         columnIndex: number;
         columnKey: keyof D;
@@ -859,6 +885,39 @@ export namespace TableElement {
         mode: 'edit' | 'navigation';
         row: any;
         rowEditable: 'on' | 'off';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Column<K, D> = {
+        className?: string | null;
+        field?: string | null;
+        footerClassName?: string | null;
+        footerRenderer?: ((context: ojTable.FooterRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        footerStyle?: string | null;
+        footerTemplate?: string | null;
+        frozenEdge?: 'start' | 'end' | null;
+        headerClassName?: string | null;
+        headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        headerStyle?: string | null;
+        headerTemplate?: string | null;
+        headerText?: string | null;
+        id?: string | null;
+        maxWidth?: string | number | null;
+        minWidth?: 'auto' | string | number | null;
+        renderer?: ((context: ojTable.ColumnsRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        resizable?: 'enabled' | 'disabled';
+        showRequired?: boolean;
+        sortProperty?: string | null;
+        sortable?: 'auto' | 'enabled' | 'disabled';
+        style?: string | null;
+        template?: string | null;
+        weight?: number | null;
+        width?: string | number | null;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ColumnDefault<K, D> = {
@@ -892,6 +951,22 @@ export namespace TableElement {
         width?: string | number | null;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ColumnSelectionEnd = {
+        endIndex: {
+            column: number;
+        };
+        endKey?: {
+            column: string;
+        };
+    } | {
+        endIndex?: {
+            column: number;
+        };
+        endKey: {
+            column: string;
+        };
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ColumnSelectionStart = {
         startIndex: {
             column: number;
@@ -908,9 +983,31 @@ export namespace TableElement {
         };
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ColumnsRendererContext<K, D> = {
+        cellContext: {
+            datasource: DataProvider<K, D> | null;
+            mode: 'edit' | 'navigation';
+            rowEditable: 'on' | 'off';
+            status: ojTable.ContextStatus<K>;
+        };
+        columnIndex: number;
+        componentElement: Element;
+        data: any;
+        parentElement: Element;
+        row: D;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type ContextStatus<K> = {
         currentRow: ojTable.CurrentRow<K>;
         rowIndex: number;
+        rowKey: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type CurrentRow<K> = {
+        rowIndex: number;
+        rowKey?: K;
+    } | {
+        rowIndex?: number;
         rowKey: K;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -922,8 +1019,20 @@ export namespace TableElement {
         }>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type DropColumnContext = {
+        columnIndex: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type DropRowContext = {
         rowIndex: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type EditRow<K> = {
+        rowIndex: number;
+        rowKey?: K;
+    } | {
+        rowIndex?: number;
+        rowKey: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type FooterRendererContext<K, D> = {
@@ -933,6 +1042,12 @@ export namespace TableElement {
             datasource: DataProvider<K, D> | null;
         };
         parentElement: Element;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type FooterTemplateContext<D> = {
+        columnIndex: number;
+        columnKey: keyof D;
+        componentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
     type HeaderRendererContext<K, D> = {
@@ -947,6 +1062,14 @@ export namespace TableElement {
         parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type HeaderTemplateContext<D> = {
+        columnIndex: number;
+        columnKey: keyof D;
+        componentElement: Element;
+        data: any;
+        headerText: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type RowRendererContext<K, D> = {
         componentElement: Element;
         data: D;
@@ -956,6 +1079,22 @@ export namespace TableElement {
             editable: 'on' | 'off';
             mode: 'edit' | 'navigation';
             status: ojTable.ContextStatus<K>;
+        };
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RowSelectionEnd<K> = {
+        endIndex: {
+            row: number;
+        };
+        endKey?: {
+            row: K;
+        };
+    } | {
+        endIndex?: {
+            row: number;
+        };
+        endKey: {
+            row: K;
         };
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -974,6 +1113,32 @@ export namespace TableElement {
             row: K;
         };
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RowTemplateContext<K, D> = {
+        componentElement: Element;
+        data: any;
+        datasource: DataProvider<K, D> | null;
+        editable: 'on' | 'off';
+        index: number;
+        item: Item<K, D>;
+        key: any;
+        mode: 'edit' | 'navigation';
+        rowContext: object;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderAddRowCellTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<AddRowCellTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderAddRowTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<AddRowTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderCellTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<CellTemplateContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderFooterTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<FooterTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNoDataTemplate = import('ojs/ojvcomponent').TemplateSlot<{}>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderRowTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<RowTemplateContext<K, D>>;
 }
 export interface TableIntrinsicProps extends Partial<Readonly<ojTableSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojAnimateEnd?: (value: ojTableEventMap<any, any>['ojAnimateEnd']) => void;
@@ -987,6 +1152,7 @@ export interface TableIntrinsicProps extends Partial<Readonly<ojTableSettablePro
     onaccessibilityChanged?: (value: ojTableEventMap<any, any>['accessibilityChanged']) => void;
     onaddRowDisplayChanged?: (value: ojTableEventMap<any, any>['addRowDisplayChanged']) => void;
     onasChanged?: (value: ojTableEventMap<any, any>['asChanged']) => void;
+    oncolumnResizeBehaviorChanged?: (value: ojTableEventMap<any, any>['columnResizeBehaviorChanged']) => void;
     oncolumnsChanged?: (value: ojTableEventMap<any, any>['columnsChanged']) => void;
     oncolumnsDefaultChanged?: (value: ojTableEventMap<any, any>['columnsDefaultChanged']) => void;
     oncurrentRowChanged?: (value: ojTableEventMap<any, any>['currentRowChanged']) => void;

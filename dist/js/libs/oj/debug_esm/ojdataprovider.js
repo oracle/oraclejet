@@ -33,7 +33,7 @@ import { GenericEvent } from 'ojs/ojeventtarget';
  *   <li>Stateless: The DataProvider’s data retrieval APIs are inherently stateless.  Attempts to retrieve data are atomic and are not impacted by previous interactions with the DataProvider.  This avoids potential brittleness when multiple consumers are interacting with the same DataProvider instance.</li>
  *   <li>Key-based: In order to ensure reliable interactions with the data set, the DataProvider contract assumes that each data item can be accessed via a unique key.  While the index can be used as a key if no viable key is available, stable keys should be used whenever possible.</li>
  *   <li>Read only (with mutation notifications):  The base DataProvider contract does not include mutation APIs.  That is, the DataProvider contract defines APIs for reading data, not for writing data.  However, DataProvider implementations may expose their own type-specific mutation APIs, and the DataProvider contract defines an event-based mechanism for notifying consumers of data changes.</li>
- *   <li>Filterable:  When requesting data from a DataProvider, consumers are able to specify filter criteria that area used to restrict the data set to those items that match the specified criteria.</li>
+ *   <li>Filterable:  When requesting data from a DataProvider, consumers are able to specify filter criteria that are used to restrict the data set to those items that match the specified criteria.</li>
  *   <li>Sortable:  When requesting data from a DataProvider, consumers are able to specify sort criteria that impact the ordering of the provided data.</li>
  * </ul>
  * <p>
@@ -63,7 +63,7 @@ import { GenericEvent } from 'ojs/ojeventtarget';
  *         {@link ArrayDataProvider}
  *       </td>
  *       <td>
- *         Basic DataProvider implementation that takes the data from an Javascript array or ko.observableArray.
+ *         Basic DataProvider implementation that takes the data from a Javascript array or ko.observableArray.
  *       </td>
  *     </tr>
  *     <tr>
@@ -71,7 +71,7 @@ import { GenericEvent } from 'ojs/ojeventtarget';
  *         {@link ArrayTreeDataProvider}
  *       </td>
  *       <td>
- *         Basic TreeDataProvider implementation that takes the data from an Javascript array or ko.observableArray that contains "children" property for subtree data.
+ *         Basic TreeDataProvider implementation that takes the data from a Javascript array or ko.observableArray that contains "children" property for subtree data.
  *       </td>
  *     </tr>
  *     <tr>
@@ -103,7 +103,7 @@ import { GenericEvent } from 'ojs/ojeventtarget';
  *         {@link IndexerModelTreeDataProvider}
  *       </td>
  *       <td>
- *         TreeDataProvider implementation that takes the data from an Javascript array that contains "children" property for subtree data. This class also implements the {@link oj.IndexerModel} interface.
+ *         TreeDataProvider implementation that takes the data from a Javascript array that contains "children" property for subtree data. This class also implements the {@link oj.IndexerModel} interface.
  *       </td>
  *     </tr>
  *     <tr>
@@ -187,7 +187,7 @@ import { GenericEvent } from 'ojs/ojeventtarget';
  * </p><p>
  * Consumers can add an event listener for the "mutate" event type on the DataProvider object.
  * </p>
- * <i>Example of implementation firing an DataProviderMutationEvent for removed items:</i>
+ * <i>Example of implementation firing a DataProviderMutationEvent for removed items:</i>
  * <pre class="prettyprint"><code>let removeDetail = {data: removedDataArray,
  *                     indexes: removedIndexArray,
  *                     keys: removedKeySet,
@@ -362,6 +362,10 @@ oj.DataProvider = function () {};
  * } catch (err) {
  *  // if the data fetch has been aborted, retrieving data from the fetched result
  *  // will be rejected with DOMException named AbortError
+ *  if (err.severity === 'info') {
+ *    // if the data fetch has been aborted from a jet component as a performance concern, an <u><a href="AbortReason.html">AbortReason</a></u> will be provided.
+ *    console.log(err.message);
+ *  }
  * }
  * // later when abort is desired, component can invoke abort() on the cached
  * // abort controller to abort any outstanding data retrieval it requested
@@ -464,6 +468,10 @@ oj.DataProvider = function () {};
  * } catch (err) {
  *  // if the data fetch has been aborted, retrieving data from the fetched result
  *  // will be rejected with DOMException named AbortError
+ *  if (err.severity === 'info') {
+ *    // if the data fetch has been aborted from a jet component as a performance concern, an <u><a href="AbortReason.html">AbortReason</a></u> will be provided.
+ *    console.log(err.message);
+ *  }
  * }
  * // later when abort is desired, component can invoke abort() on the cached
  * // abort controller to abort any outstanding data retrieval it requested
@@ -537,7 +545,6 @@ oj.DataProvider = function () {};
  * const abortController = new AbortController();
  * // component passes AbortSignal as part of FetchByOffsetParameters to fetchByOffset
  * // on dataProvider
- *
  * try {
  *  let value = await dataprovider.fetchByOffset({
  *                  size: 5,
@@ -547,6 +554,10 @@ oj.DataProvider = function () {};
  * } catch (err) {
  *  // if the data fetch has been aborted, retrieving data from the fetched result
  *  // will be rejected with DOMException named AbortError
+ *  if (err.severity === 'info') {
+ *    // if the data fetch has been aborted from a jet component as a performance concern, an <u><a href="AbortReason.html">AbortReason</a></u> will be provided.
+ *    console.log(err.message);
+ *  }
  * }
  * // later when abort is desired, component can invoke abort() on the cached
  * // abort controller to abort any outstanding data retrieval it requested
@@ -732,8 +743,8 @@ class DataCache {
             eventDetailKeys.forEach((key) => {
                 eventDetailKeysArray.push(key);
             });
-            const eventDetailData = eventDetail[DataCache._DATA];
-            const eventDetailMetadata = eventDetail[DataCache._METADATA];
+            const eventDetailData = eventDetail[DataCache._DATA] ? eventDetail[DataCache._DATA] : [];
+            const eventDetailMetadata = this._deriveMetadataFromKey(eventDetail[DataCache._METADATA], eventDetailKeys);
             const eventDetailIndexes = eventDetail[DataCache._INDEXES];
             if (eventDetailKeysArray && eventDetailKeysArray.length > 0) {
                 if (eventDetailIndexes) {
@@ -744,8 +755,8 @@ class DataCache {
                 else if (eventDetailBeforeKeys) {
                     const eventDetailBeforeKeysClone = Object.assign([], eventDetailBeforeKeys);
                     const eventDetailKeysClone = Object.assign(new Set(), eventDetail[DataCache._KEYS]);
-                    const eventDetailDataClone = Object.assign([], eventDetail[DataCache._DATA]);
-                    const eventDetailMetadataClone = Object.assign([], eventDetail[DataCache._METADATA]);
+                    const eventDetailDataClone = Object.assign([], eventDetailData);
+                    const eventDetailMetadataClone = Object.assign([], eventDetailMetadata);
                     const outOfRangeKeys = [];
                     let key, findKey, outOfRange;
                     for (const beforeKey of eventDetailBeforeKeys) {
@@ -855,10 +866,10 @@ class DataCache {
             }
         };
         this._handleMutationUpdate = function (eventDetail) {
-            const eventDetailKeys = eventDetail[DataCache._KEYS];
             const eventDetailData = eventDetail[DataCache._DATA];
-            const eventDetailMetadata = eventDetail[DataCache._METADATA];
             if (eventDetailData && eventDetailData.length > 0) {
+                const eventDetailKeys = eventDetail[DataCache._KEYS];
+                const eventDetailMetadata = this._deriveMetadataFromKey(eventDetail[DataCache._METADATA], eventDetailKeys);
                 let i, index = 0;
                 eventDetailKeys.forEach((key) => {
                     for (i = this._items.length - 1; i >= 0; i--) {
@@ -973,6 +984,15 @@ class DataCache {
     }
     isDone() {
         return this._done;
+    }
+    _deriveMetadataFromKey(metadata, keys) {
+        if (!metadata || metadata.length != keys.size) {
+            metadata = [];
+            keys.forEach((key) => {
+                metadata.push({ key });
+            });
+        }
+        return metadata;
     }
     _getSortComparator(sortCriteria) {
         return (x, y) => {
@@ -1269,7 +1289,7 @@ var FilterUtils;
             return true;
         }
         else {
-            const expTree = _buildExpressionTree(selector);
+            const expTree = _buildExpressionTree(selector, selector.collationOptions);
             return _evaluateExpressionTree(expTree, itemData);
         }
     }
@@ -1431,6 +1451,7 @@ var FilterUtils;
                     return true;
                 }
             }
+            return false;
         }
         else {
             throw new Error('not a valid expression!' + expTree);
@@ -1479,7 +1500,7 @@ var FilterUtils;
             return collator ? collator.compare(itemValue, value) !== 0 : itemValue !== value;
         }
         else if (operator === '$regex') {
-            if (itemValue) {
+            if (itemValue != null) {
                 if (!(typeof itemValue === 'string') && !(itemValue instanceof String)) {
                     if (!(itemValue instanceof Object)) {
                         itemValue = new String(itemValue);
@@ -1647,8 +1668,8 @@ class FilterImpl {
                 if (attributeExpr) {
                     const operatorExpr = {};
                     if (op === '$sw' || op === '$ew' || op === '$co') {
-                        op = '$regex';
                         filterValue = FilterImpl._fixStringExpr(op, filterValue);
+                        op = '$regex';
                     }
                     operatorExpr[op] = filterValue;
                     transformedExpr[attributeExpr] = operatorExpr;
@@ -1702,8 +1723,8 @@ class FilterImpl {
                 if (!(fieldValue instanceof Object)) {
                     const operatorExpr = {};
                     if (op === '$sw' || op === '$ew' || op === '$co') {
-                        op = '$regex';
                         fieldValue = FilterImpl._fixStringExpr(op, fieldValue);
+                        op = '$regex';
                     }
                     operatorExpr[op] = fieldValue;
                     const fieldExpr = {};
@@ -1822,4 +1843,26 @@ var SortUtils;
     SortUtils.getNaturalSortComparator = getNaturalSortComparator;
 })(SortUtils || (SortUtils = {}));
 
-export { AttributeFilterOperator, CompoundFilterOperator, DataCache, DataProviderMutationEvent, DataProviderRefreshEvent, FetchByKeysMixin, FetchByOffsetMixin, FilterFactory, FilterUtils, SortUtils };
+const createAbortRejectionValue = (signal) => {
+    return signal.reason instanceof DOMException
+        ? signal.reason
+        : new DOMException(signal.reason, 'AbortError');
+};
+const wrapWithAbortHandling = (signal, wrapped, catchAndRejectErrors) => {
+    if (signal?.aborted) {
+        return Promise.reject(createAbortRejectionValue(signal));
+    }
+    return new Promise((resolve, reject) => {
+        signal?.addEventListener('abort', () => {
+            return reject(createAbortRejectionValue(signal));
+        });
+        if (catchAndRejectErrors) {
+            wrapped(resolve, reject).catch(reject);
+        }
+        else {
+            wrapped(resolve, reject);
+        }
+    });
+};
+
+export { AttributeFilterOperator, CompoundFilterOperator, DataCache, DataProviderMutationEvent, DataProviderRefreshEvent, FetchByKeysMixin, FetchByOffsetMixin, FilterFactory, FilterUtils, SortUtils, wrapWithAbortHandling };

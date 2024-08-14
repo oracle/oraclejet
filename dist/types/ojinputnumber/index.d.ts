@@ -15,7 +15,7 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
     asyncValidators: Array<AsyncValidator<number>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
-    converter: Promise<Converter<number>> | Converter<number>;
+    converter: Converter<number>;
     displayOptions?: {
         converterHint?: 'display' | 'none';
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
@@ -179,7 +179,7 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
     asyncValidators: Array<AsyncValidator<number>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
-    converter: Promise<Converter<number>> | Converter<number>;
+    converter: Converter<number>;
     displayOptions?: {
         converterHint?: 'display' | 'none';
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';

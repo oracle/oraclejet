@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createTypeDefinitionFromTypeRefs = exports.removeQuotes = exports.generateStatementsFromText = exports.getMDValueFromNode = exports.getValueNodeFromPropertyAccessExpression = exports.getValueNodeFromIdentifier = exports.getValueNodeFromReference = exports.isValueNodeReference = exports.removeCastExpressions = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isTypeTreatedAsAny = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.updateFunctionalVCompNode = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.writebackCallbackToProperty = exports.tagNameToElementName = exports.tagNameToElementInterfaceName = void 0;
+exports.createTypeDefinitionFromTypeRefs = exports.removeQuotes = exports.generateStatementsFromText = exports.getMDValueFromNode = exports.getValueNodeFromPropertyAccessExpression = exports.getValueNodeFromIdentifier = exports.getValueNodeFromReference = exports.isValueNodeReference = exports.removeCastExpressions = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isTypeTreatedAsAny = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.isMappedTypeReference = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.updateFunctionalVCompNode = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.writebackCallbackToProperty = exports.tagNameToElementRoot = exports.tagNameToElementInterfaceName = void 0;
 const ts = __importStar(require("typescript"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
@@ -36,16 +36,16 @@ const _IGNORED_BIGINT_DEFAULT_VALUE_MSG_HEADER = 'Default values of type BigInt 
 const _IGNORED_FUNCTION_DEFAULT_VALUE_MSG_HEADER = 'Default values of type Function are not reflected in the generated custom element JSON metadata.';
 const _IGNORED_ARRAY_DEFAULT_VALUE_MSG_HEADER = 'Default array values with items of an unsupported type are not reflected in the generated custom element JSON metadata.';
 function tagNameToElementInterfaceName(tagName) {
-    return `${tagNameToElementName(tagName)}Element`;
+    return `${tagNameToElementRoot(tagName)}Element`;
 }
 exports.tagNameToElementInterfaceName = tagNameToElementInterfaceName;
-function tagNameToElementName(tagName) {
+function tagNameToElementRoot(tagName) {
     return tagName
         .toLowerCase()
         .match(/-(?<match>.*)/)[0]
         .replace(/-(.)/g, (match, group1) => group1.toUpperCase());
 }
-exports.tagNameToElementName = tagNameToElementName;
+exports.tagNameToElementRoot = tagNameToElementRoot;
 function writebackCallbackToProperty(property) {
     if (/^on[A-Z].*Changed$/.test(property)) {
         return property[2].toLowerCase() + property.substring(3, property.length - 7);
@@ -570,6 +570,10 @@ function getMappedTypesInfo(outerType, checker, isPropsInfo, outerTypeNode) {
     return rtnInfo;
 }
 exports.getMappedTypesInfo = getMappedTypesInfo;
+function isMappedTypeReference(typeRefNode) {
+    return _MAPPED_TYPENAMES.has(TypeUtils.getTypeNameFromTypeReference(typeRefNode));
+}
+exports.isMappedTypeReference = isMappedTypeReference;
 function isPropsMappedType(type, typeNode) {
     return (isMappedType(type) &&
         _MAPPED_TYPENAMES.has(typeNode
@@ -802,16 +806,21 @@ exports.walkTypeNodeMembers = walkTypeNodeMembers;
 function updateCompilerPropsMetadata(readOnlyPropNameNodes, metaUtilObj) {
     metaUtilObj.fullMetadata['readOnlyProps'] =
         readOnlyPropNameNodes?.length > 0 ? readOnlyPropNameNodes.map((item) => item.name) : [];
+    if (metaUtilObj.templateSlotProps?.length > 0) {
+        metaUtilObj.fullMetadata['templateSlotProps'] = [...metaUtilObj.templateSlotProps];
+    }
 }
 exports.updateCompilerPropsMetadata = updateCompilerPropsMetadata;
 function updateCompilerCompMetadata(vcompInfo, metaUtilObj) {
     if (MetaTypes.isClassInfo(vcompInfo)) {
         const classNode = vcompInfo.classNode;
         if (classNode.typeParameters) {
-            const genericsInfo = TypeUtils.getGenericsAndTypeParameters(classNode, metaUtilObj);
+            const genericsInfo = TypeUtils.getGenericsAndTypeParameters(classNode, metaUtilObj, MetaTypes.GTExtras.PARAMS_ANY | MetaTypes.GTExtras.DECL_NODES);
             metaUtilObj.fullMetadata['classTypeParamsDeclaration'] = genericsInfo?.genericsDeclaration;
             metaUtilObj.fullMetadata['classTypeParams'] = genericsInfo?.genericsTypeParams;
-            if (genericsInfo.jsdoc && genericsInfo.jsdoc.length > 0) {
+            metaUtilObj.fullMetadata['classTypeParamsAny'] = genericsInfo?.genericsTypeParamsAny;
+            metaUtilObj.classTypeParamsNodes = genericsInfo?.genericsTypeParamsNodes;
+            if (genericsInfo?.jsdoc.length > 0) {
                 metaUtilObj.fullMetadata['jsdoc']['typedefs'] = genericsInfo.jsdoc;
             }
         }
@@ -835,10 +844,12 @@ function updateCompilerCompMetadata(vcompInfo, metaUtilObj) {
     }
     else {
         if (vcompInfo.componentNode['typeParameters']) {
-            const genericsInfo = TypeUtils.getGenericsAndTypeParameters(vcompInfo.componentNode, metaUtilObj);
+            const genericsInfo = TypeUtils.getGenericsAndTypeParameters(vcompInfo.componentNode, metaUtilObj, MetaTypes.GTExtras.PARAMS_ANY | MetaTypes.GTExtras.DECL_NODES);
             metaUtilObj.fullMetadata['classTypeParamsDeclaration'] = genericsInfo?.genericsDeclaration;
             metaUtilObj.fullMetadata['classTypeParams'] = genericsInfo?.genericsTypeParams;
-            if (genericsInfo.jsdoc && genericsInfo.jsdoc.length > 0) {
+            metaUtilObj.fullMetadata['classTypeParamsAny'] = genericsInfo?.genericsTypeParamsAny;
+            metaUtilObj.classTypeParamsNodes = genericsInfo?.genericsTypeParamsNodes;
+            if (genericsInfo?.jsdoc.length > 0) {
                 metaUtilObj.fullMetadata['jsdoc']['typedefs'] = genericsInfo.jsdoc;
             }
         }
@@ -869,7 +880,7 @@ function updateCompilerCompMetadata(vcompInfo, metaUtilObj) {
                 ts.isTypeAliasDeclaration(declaration) ||
                 ts.isInterfaceDeclaration(declaration))) {
             const propsNode = declaration;
-            const genericsInfo = TypeUtils.getGenericsAndTypeParameters(propsNode, metaUtilObj, true);
+            const genericsInfo = TypeUtils.getGenericsAndTypeParameters(propsNode, metaUtilObj, MetaTypes.GTExtras.PARAMS_ANY);
             metaUtilObj.fullMetadata['propsClassTypeParamsDeclaration'] =
                 genericsInfo?.genericsDeclaration;
             metaUtilObj.fullMetadata['propsClassTypeParams'] = genericsInfo?.genericsTypeParams;
@@ -877,9 +888,6 @@ function updateCompilerCompMetadata(vcompInfo, metaUtilObj) {
             metaUtilObj.propsClassTypeParamsArray = genericsInfo?.genericsTypeParamsArray;
         }
         metaUtilObj.fullMetadata['propsClassName'] = propsInfo.propsName;
-        if (propsInfo.propsType.aliasTypeArguments) {
-            metaUtilObj.classPropsAliasTypeArgs = propsInfo.propsType.aliasTypeArguments;
-        }
     }
 }
 exports.updateCompilerCompMetadata = updateCompilerCompMetadata;
@@ -908,6 +916,7 @@ const validSlotSubProps = {
 function pruneCompilerMetadata(metaUtilObj) {
     delete metaUtilObj.fullMetadata['classTypeParams'];
     delete metaUtilObj.fullMetadata['classTypeParamsDeclaration'];
+    delete metaUtilObj.fullMetadata['classTypeParamsAny'];
     delete metaUtilObj.fullMetadata['propsTypeParams'];
     delete metaUtilObj.fullMetadata['propsMappedTypes'];
     delete metaUtilObj.fullMetadata['propsClassTypeParamsDeclaration'];
@@ -921,6 +930,7 @@ function pruneCompilerMetadata(metaUtilObj) {
     delete metaUtilObj.fullMetadata['useComponentPropsForSettableProperties'];
     delete metaUtilObj.fullMetadata['funcVCompMethodSignatures'];
     delete metaUtilObj.fullMetadata['observedGlobalProps'];
+    delete metaUtilObj.fullMetadata['templateSlotProps'];
     pruneMetadata(metaUtilObj.fullMetadata.properties);
     pruneMetadata(metaUtilObj.fullMetadata.methods);
     pruneMetadata(metaUtilObj.fullMetadata.events);
@@ -940,6 +950,7 @@ exports.pruneCompilerMetadata = pruneCompilerMetadata;
 function pruneMetadata(metadata) {
     if (metadata && typeof metadata == 'object') {
         delete metadata['reftype'];
+        delete metadata['isApiDocSignature'];
         delete metadata['optional'];
         delete metadata['isArrayOfObject'];
         delete metadata['isEnumValuesForDTOnly'];
@@ -1119,11 +1130,13 @@ function getMDValueFromNode(valueNode, prop, metaUtilObj, topLvlProp) {
     return value;
 }
 exports.getMDValueFromNode = getMDValueFromNode;
-function generateStatementsFromText(text) {
-    let tmpNode = ts.createSourceFile('temp.ts', text, ts.ScriptTarget.Latest, false, ts.ScriptKind.TSX);
-    _fixSingleQuoteAndNodeFlagsRecursively(tmpNode);
-    tmpNode.statements.forEach((stmt) => ts.setEmitFlags(stmt, ts.EmitFlags.NoNestedComments));
-    return tmpNode.statements;
+function generateStatementsFromText(text, offset) {
+    const tmpNode = ts.createSourceFile('temp.ts', text, ts.ScriptTarget.Latest, false, ts.ScriptKind.TSX);
+    const statements = tmpNode.statements.map((stmt) => {
+        _applyFixups(stmt, offset);
+        return stmt;
+    });
+    return statements;
 }
 exports.generateStatementsFromText = generateStatementsFromText;
 function removeQuotes(str) {
@@ -1197,12 +1210,18 @@ function getTypeDefDetails(typeRefNode, metaUtilObj) {
     md.properties = details;
     return md;
 }
-function _fixSingleQuoteAndNodeFlagsRecursively(node) {
-    if (node.kind == ts.SyntaxKind.StringLiteral && !node['singleQuote']) {
+function _offsetTextRange(tr, offset) {
+    return { pos: tr.pos + offset, end: tr.end + offset };
+}
+function _applyFixups(node, offset) {
+    if (ts.isStringLiteral(node)) {
         node['singleQuote'] = true;
     }
     node.flags |= ts.NodeFlags.Synthesized;
-    node.forEachChild((child) => _fixSingleQuoteAndNodeFlagsRecursively(child));
+    if (offset && node.pos >= 0 && node.end >= 0) {
+        node = ts.setTextRange(node, _offsetTextRange(node, offset));
+    }
+    node.forEachChild((child) => _applyFixups(child, offset));
 }
 function _generateDefaultValueWarning(componentInfo, propertyPath) {
     let msg;
@@ -1247,7 +1266,7 @@ function _getScopedSymbolDeclaration(typeNode, checker) {
         return sym.getName() === aliasTypeName;
     });
     if (scopedAliasSymbol) {
-        scopedSymbolDeclaration = scopedAliasSymbol.getDeclarations()[0];
+        scopedSymbolDeclaration = scopedAliasSymbol.getDeclarations()?.[0];
     }
     return scopedSymbolDeclaration;
 }

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { ExpParser, NEW_EXP, FUNCTION_EXP, OBJECT_EXP, getKeyValue, ARRAY_EXP, CONDITIONAL_EXP, LOGICAL_EXP, BINARY_EXP, UNARY_EXP, IDENTIFIER, CALL_EXP, MEMBER_EXP, LITERAL } from 'ojs/ojexpparser';
+import { ExpParser, TEMPLATE_ELEMENT, TEMPLATE_LITERAL, NEW_EXP, FUNCTION_EXP, OBJECT_EXP, getKeyValue, ARRAY_EXP, CONDITIONAL_EXP, LOGICAL_EXP, BINARY_EXP, UNARY_EXP, IDENTIFIER, CALL_EXP, MEMBER_EXP, LITERAL } from 'ojs/ojexpparser';
 
 /**
  * @license
@@ -258,6 +258,12 @@ const CspExpressionEvaluatorInternal = function (options) {
       case NEW_EXP:
         return _evaluateConstructorExpression(node, contexts);
 
+      case TEMPLATE_LITERAL:
+        return _evaluateTemplateLiteral(node, contexts);
+
+      case TEMPLATE_ELEMENT:
+        return node.value.cooked;
+
       default:
         throw new Error('Unsupported expression type: ' + node.type);
     }
@@ -368,6 +374,18 @@ const CspExpressionEvaluatorInternal = function (options) {
       constrObj,
       [null].concat(_evaluateArray(node.arguments, contexts))
     ))();
+  }
+
+  function _evaluateTemplateLiteral(node, contexts) {
+    const resolvedExpressions = node.expressions.map((expr) => _evaluate(expr, contexts));
+    const result = node.quasis.reduce((acc, curVal, curIndex) => {
+      acc.push(_evaluate(curVal, contexts));
+      if (curIndex < resolvedExpressions.length) {
+        acc.push(resolvedExpressions[curIndex]);
+      }
+      return acc;
+    }, []);
+    return result.join('');
   }
 
   function _getContextForIdentifier(contexts, name) {

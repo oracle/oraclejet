@@ -9,6 +9,7 @@ import { contextFor, computed, observable, cleanNode, pureComputed } from 'knock
 import BindingProviderImpl from 'ojs/ojkoshared';
 import Context from 'ojs/ojcontext';
 import { TemplateEngineUtils, PreactTemplate } from 'ojs/ojtemplateengine-utils';
+import { warn } from 'ojs/ojlogger';
 
 class PreactTemplateEngineKo {
     constructor() {
@@ -90,6 +91,9 @@ class PreactTemplateEngineKo {
         computedVNode.subscribe((newVNode) => {
             const currRow = templateElement._cachedRows.find((row) => row.computedVNode === computedVNode);
             if (currRow) {
+                if (!currRow.nodes[0].isConnected) {
+                    warn(`PreactTemplateEngineKo subscription is called to replace disconnected row for the template slot \'${templateElement.slot}\' on ${componentElement.tagName}`);
+                }
                 PreactTemplate.renderNodes(componentElement, newVNode, currRow, provided);
             }
         });

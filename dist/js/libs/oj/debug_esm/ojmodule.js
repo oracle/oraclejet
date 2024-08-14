@@ -9,6 +9,7 @@ import oj from 'ojs/ojcore-base';
 import { bindingHandlers, utils, virtualElements, computed, ignoreDependencies, cleanNode, contextFor, bindingProvider, applyBindings } from 'knockout';
 import { error } from 'ojs/ojlogger';
 import Context from 'ojs/ojcontext';
+import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
 /**
  * ojModule Conventions
@@ -455,10 +456,7 @@ ModuleBinding._EMPTY_MODULE = 'oj:blank';
 
                 if (saveInCache) {
                   // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-                  _invokeOnSubtree(
-                    cachedNodeArray,
-                    oj.Components ? oj.Components.subtreeHidden : null
-                  );
+                  _invokeOnSubtree(cachedNodeArray, CustomElementUtils.subtreeHidden);
                   cache[currentCacheKey] = { model: currentViewModel, view: cachedNodeArray };
                 } else if (isCustomElement && currentCleanupMode === 'none') {
                   _invokeOnSubtree(

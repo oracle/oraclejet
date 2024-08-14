@@ -481,7 +481,8 @@ class PagingDataProviderView {
     }
     containsKeys(params) {
         return this._checkIfDataInitialized(() => {
-            return this.dataProvider[this._CONTAINSKEYS](params).then((value) => {
+            return this.dataProvider[this._CONTAINSKEYS](params)
+                .then((value) => {
                 const keys = value.results;
                 if (!this._isGlobal(params)) {
                     const currentPageResults = new Set();
@@ -496,7 +497,8 @@ class PagingDataProviderView {
                 else {
                     return new this.ContainsKeysResults(this, params, keys);
                 }
-            }).catch((reject) => {
+            })
+                .catch((reject) => {
                 return Promise.reject(reject);
             });
         });
@@ -505,7 +507,8 @@ class PagingDataProviderView {
         return this._checkIfDataInitialized(() => {
             const requestedKeys = params.keys;
             if (!this._isGlobal(params)) {
-                return this._fetchByOffset(new this.FetchByOffsetParameters(this, this._offset, this._pageSize, this._currentSortCriteria, this._currentFilterCriteria)).then((results) => {
+                return this._fetchByOffset(new this.FetchByOffsetParameters(this, this._offset, this._pageSize, this._currentSortCriteria, this._currentFilterCriteria))
+                    .then((results) => {
                     const result = results['results'];
                     const mappedResultMap = new Map();
                     const filteredResults = result.map((value) => {
@@ -519,7 +522,8 @@ class PagingDataProviderView {
                         }
                     });
                     return new this.FetchByKeysResults(this, params, mappedResultMap);
-                }).catch((reject) => {
+                })
+                    .catch((reject) => {
                     return Promise.reject(reject);
                 });
             }

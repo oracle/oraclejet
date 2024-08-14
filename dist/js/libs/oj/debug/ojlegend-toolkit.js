@@ -2471,9 +2471,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       this._bounds = null;
       this._titles = [];
 
-      // Set up keyboard handler on non-touch devices if the legend is interactive
-      if (!dvt.Agent.isTouchDevice())
-        this.EventManager.setKeyboardHandler(new DvtLegendKeyboardHandler(this.EventManager, this));
+      // Set up keyboard handler if the legend is interactive
+      this.EventManager.setKeyboardHandler(new DvtLegendKeyboardHandler(this.EventManager, this));
 
       this.UpdateAriaAttributes();
 

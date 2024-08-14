@@ -1,0 +1,1507 @@
+:root {
+ 
+  /* General information about variables is available at                               */
+  /* www.oracle.com/webfolder/technetwork/jet/jsdocs/CssVariablesOverview.html */
+
+
+  /* neutral palette            */
+  /* -------------------------- */
+  --oj-palette-neutral-rgb-0:     TBD;
+  --oj-palette-neutral-rgb-10:    TBD;
+  --oj-palette-neutral-rgb-20:    TBD;
+  --oj-palette-neutral-rgb-30:    TBD;
+  --oj-palette-neutral-rgb-40:    TBD;
+  --oj-palette-neutral-rgb-50:    TBD;
+  --oj-palette-neutral-rgb-60:    TBD;
+  --oj-palette-neutral-rgb-70:    TBD;
+  --oj-palette-neutral-rgb-80:    TBD;
+  --oj-palette-neutral-rgb-90:    TBD;
+  --oj-palette-neutral-rgb-100:   TBD;
+  --oj-palette-neutral-rgb-110:   TBD;
+  --oj-palette-neutral-rgb-120:   TBD;
+  --oj-palette-neutral-rgb-130:   TBD;
+  --oj-palette-neutral-rgb-140:   TBD;
+  --oj-palette-neutral-rgb-150:   TBD;
+  --oj-palette-neutral-rgb-160:   TBD;
+  --oj-palette-neutral-rgb-170:   TBD;
+  --oj-palette-neutral-rgb-180:   TBD;
+  --oj-palette-neutral-rgb-190:   TBD;
+  --oj-palette-neutral-rgb-200:   TBD;
+
+  /* brand palette              */
+  /* -------------------------- */
+  --oj-palette-brand-rgb-10:      TBD;
+  --oj-palette-brand-rgb-20:      TBD;
+  --oj-palette-brand-rgb-30:      TBD;
+  --oj-palette-brand-rgb-40:      TBD;
+  --oj-palette-brand-rgb-50:      TBD;
+  --oj-palette-brand-rgb-60:      TBD;
+  --oj-palette-brand-rgb-70:      TBD;
+  --oj-palette-brand-rgb-80:      TBD;
+  --oj-palette-brand-rgb-90:      TBD;
+  --oj-palette-brand-rgb-100:     TBD;
+  --oj-palette-brand-rgb-110:     TBD;
+  --oj-palette-brand-rgb-120:     TBD;
+  --oj-palette-brand-rgb-130:     TBD;
+  --oj-palette-brand-rgb-140:     TBD;
+  --oj-palette-brand-rgb-150:     TBD;
+  --oj-palette-brand-rgb-160:     TBD;
+  --oj-palette-brand-rgb-170:     TBD;
+
+  /* alert palettes             */
+  /* -------------------------- */
+  --oj-palette-danger-rgb-10:     TBD;
+  --oj-palette-danger-rgb-20:     TBD;
+  --oj-palette-danger-rgb-30:     TBD;
+  --oj-palette-danger-rgb-40:     TBD;
+  --oj-palette-danger-rgb-50:     TBD;
+  --oj-palette-danger-rgb-60:     TBD;
+  --oj-palette-danger-rgb-70:     TBD;
+  --oj-palette-danger-rgb-80:     TBD;
+  --oj-palette-danger-rgb-90:     TBD;
+  --oj-palette-danger-rgb-100:    TBD;
+  --oj-palette-danger-rgb-110:    TBD;
+  --oj-palette-danger-rgb-120:    TBD;
+  --oj-palette-danger-rgb-130:    TBD;
+  --oj-palette-danger-rgb-140:    TBD;
+  --oj-palette-danger-rgb-150:    TBD;
+  --oj-palette-danger-rgb-160:    TBD;
+  --oj-palette-danger-rgb-170:    TBD;
+
+  --oj-palette-warning-rgb-10:    TBD;
+  --oj-palette-warning-rgb-20:    TBD;
+  --oj-palette-warning-rgb-30:    TBD;
+  --oj-palette-warning-rgb-40:    TBD;
+  --oj-palette-warning-rgb-50:    TBD;
+  --oj-palette-warning-rgb-60:    TBD;
+  --oj-palette-warning-rgb-70:    TBD;
+  --oj-palette-warning-rgb-80:    TBD;
+  --oj-palette-warning-rgb-90:    TBD;
+  --oj-palette-warning-rgb-100:   TBD;
+  --oj-palette-warning-rgb-110:   TBD;
+  --oj-palette-warning-rgb-120:   TBD;
+  --oj-palette-warning-rgb-130:   TBD;
+  --oj-palette-warning-rgb-140:   TBD;
+  --oj-palette-warning-rgb-150:   TBD;
+  --oj-palette-warning-rgb-160:   TBD;
+  --oj-palette-warning-rgb-170:   TBD;
+
+  --oj-palette-success-rgb-10:    TBD;
+  --oj-palette-success-rgb-20:    TBD;
+  --oj-palette-success-rgb-30:    TBD;
+  --oj-palette-success-rgb-40:    TBD;
+  --oj-palette-success-rgb-50:    TBD;
+  --oj-palette-success-rgb-60:    TBD;
+  --oj-palette-success-rgb-70:    TBD;
+  --oj-palette-success-rgb-80:    TBD;
+  --oj-palette-success-rgb-90:    TBD;
+  --oj-palette-success-rgb-100:   TBD;
+  --oj-palette-success-rgb-110:   TBD;
+  --oj-palette-success-rgb-120:   TBD;
+  --oj-palette-success-rgb-130:   TBD;
+  --oj-palette-success-rgb-140:   TBD;
+  --oj-palette-success-rgb-150:   TBD;
+  --oj-palette-success-rgb-160:   TBD;
+  --oj-palette-success-rgb-170:   TBD;
+
+  --oj-palette-info-rgb-10:       TBD;
+  --oj-palette-info-rgb-20:       TBD;
+  --oj-palette-info-rgb-30:       TBD;
+  --oj-palette-info-rgb-40:       TBD;
+  --oj-palette-info-rgb-50:       TBD;
+  --oj-palette-info-rgb-60:       TBD;
+  --oj-palette-info-rgb-70:       TBD;
+  --oj-palette-info-rgb-80:       TBD;
+  --oj-palette-info-rgb-90:       TBD;
+  --oj-palette-info-rgb-100:      TBD;
+  --oj-palette-info-rgb-110:      TBD;
+  --oj-palette-info-rgb-120:      TBD;
+  --oj-palette-info-rgb-130:      TBD;
+  --oj-palette-info-rgb-140:      TBD;
+  --oj-palette-info-rgb-150:      TBD;
+  --oj-palette-info-rgb-160:      TBD;
+  --oj-palette-info-rgb-170:      TBD;
+
+
+  /* data visualization palette   */
+  /* ---------------------------- */ 
+  --oj-palette-dvt-rgb-1:         TBD;
+  --oj-palette-dvt-rgb-2:         TBD;
+  --oj-palette-dvt-rgb-3:         TBD;
+  --oj-palette-dvt-rgb-4:         TBD;
+  --oj-palette-dvt-rgb-5:         TBD;
+  --oj-palette-dvt-rgb-6:         TBD;
+  --oj-palette-dvt-rgb-7:         TBD;
+  --oj-palette-dvt-rgb-8:         TBD;
+  --oj-palette-dvt-rgb-9:         TBD;
+  --oj-palette-dvt-rgb-10:        TBD;
+  --oj-palette-dvt-rgb-11:        TBD;
+  --oj-palette-dvt-rgb-12:        TBD;
+
+
+  /* typography                 */
+  /* -------------------------- */
+  --oj-typography-heading-2xl-font-size:       TBD;
+  --oj-typography-heading-2xl-font-weight:     TBD;
+  --oj-typography-heading-2xl-line-height:     TBD; /* value must be a unitless number*/
+
+  --oj-typography-heading-xl-font-size:        TBD;
+  --oj-typography-heading-xl-font-weight:      TBD;
+  --oj-typography-heading-xl-line-height:      TBD; /*value must be a unitless number*/
+
+  --oj-typography-heading-lg-font-size:        TBD;
+  --oj-typography-heading-lg-font-weight:      TBD;
+  --oj-typography-heading-lg-line-height:      TBD; /* value must be a unitless number*/
+
+  --oj-typography-heading-md-font-size:        TBD;
+  --oj-typography-heading-md-font-weight:      TBD;
+  --oj-typography-heading-md-line-height:      TBD; /*value must be a unitless number */
+
+  --oj-typography-heading-sm-font-size:        TBD;
+  --oj-typography-heading-sm-font-weight:      TBD;
+  --oj-typography-heading-sm-line-height:      TBD; /* value must be a unitless number */
+
+  --oj-typography-heading-xs-font-size:        TBD;
+  --oj-typography-heading-xs-font-weight:      TBD;
+  --oj-typography-heading-xs-line-height:      TBD; /* value must be a unitless number*/
+
+
+  --oj-typography-subheading-2xl-font-size:    TBD;
+  --oj-typography-subheading-2xl-font-weight:  TBD;
+  --oj-typography-subheading-2xl-line-height:  TBD; /*value must be a unitless number */
+
+  --oj-typography-subheading-xl-font-size:     TBD;
+  --oj-typography-subheading-xl-font-weight:   TBD;
+  --oj-typography-subheading-xl-line-height:   TBD; /*value must be a unitless number */
+
+  --oj-typography-subheading-lg-font-size:     TBD;
+  --oj-typography-subheading-lg-font-weight:   TBD;
+  --oj-typography-subheading-lg-line-height:   TBD; /*value must be a unitless number */
+
+  --oj-typography-subheading-md-font-size:     TBD;
+  --oj-typography-subheading-md-font-weight:   TBD;
+  --oj-typography-subheading-md-line-height:   TBD; /*value must be a unitless number */
+
+  --oj-typography-subheading-sm-font-size:     TBD;
+  --oj-typography-subheading-sm-font-weight:   TBD;
+  --oj-typography-subheading-sm-line-height:   TBD; /*value must be a unitless number */
+
+  --oj-typography-subheading-xs-font-size:     TBD;
+  --oj-typography-subheading-xs-font-weight:   TBD;
+  --oj-typography-subheading-xs-line-height:   TBD; /*value must be a unitless number */
+
+
+  --oj-typography-body-xl-font-size:           TBD;
+  --oj-typography-body-xl-line-height:         TBD; /*value must be a unitless number */
+
+  --oj-typography-body-lg-font-size:           TBD;
+  --oj-typography-body-lg-line-height:         TBD; /*value must be a unitless number */
+
+  --oj-typography-body-md-font-size:           TBD;
+  --oj-typography-body-md-line-height:         TBD; /*value must be a unitless number */
+
+  --oj-typography-body-sm-font-size:           TBD;
+  --oj-typography-body-sm-line-height:         TBD; /*value must be a unitless number */
+
+  --oj-typography-body-xs-font-size:           TBD;
+  --oj-typography-body-xs-line-height:         TBD; /*value must be a unitless number */
+
+  --oj-typography-body-2xs-font-size:          TBD;
+  --oj-typography-body-2xs-line-height:        TBD; /*value must be a unitless number */
+
+
+  /* text colors                */
+  /* -------------------------- */
+  --oj-core-text-color-primary:   TBD;
+  --oj-core-text-color-secondary: TBD;
+  --oj-core-text-color-disabled:  TBD;
+  --oj-core-text-color-brand:     TBD;
+  --oj-core-text-color-danger:    TBD;
+  --oj-core-text-color-warning:   TBD;
+  --oj-core-text-color-success:   TBD;
+
+  /* state colors               */
+  /* -------------------------- */
+  --oj-core-bg-color-content:      TBD;
+  --oj-core-bg-color-hover:        TBD;
+  --oj-core-bg-color-active:       TBD;
+  --oj-core-bg-color-selected:     TBD;
+  --oj-core-border-color-selected: TBD;
+  --oj-core-border-color-enabled:  TBD;
+  --oj-core-color-disabled-1:      TBD;
+  --oj-core-color-disabled-2:      TBD;
+
+  /* dividers                   */
+  /* -------------------------- */
+  --oj-core-divider-color:  TBD;
+  --oj-core-divider-margin: TBD;
+
+  /* Focus Border color         */
+  /* -------------------------- */
+  --oj-core-focus-border-color: TBD;
+
+  /* color neutral              */
+  /* -------------------------- */
+  --oj-core-neutral-1:                  TBD;
+  --oj-core-neutral-2:                  TBD;
+  --oj-core-neutral-3:                  TBD;
+  --oj-core-neutral-contrast:           TBD;
+  
+  /* color neutral secondary    */
+  /* -------------------------- */
+  --oj-core-neutral-secondary-1:        TBD;
+  --oj-core-neutral-secondary-2:        TBD;
+  --oj-core-neutral-secondary-3:        TBD;
+  --oj-core-neutral-secondary-contrast: TBD;
+
+  /* color brand                */
+  /* -------------------------- */
+  --oj-core-brand-1:        TBD;
+  --oj-core-brand-2:        TBD;
+  --oj-core-brand-3:        TBD;
+  --oj-core-brand-contrast: TBD;
+
+
+  /* color danger               */
+  /* -------------------------- */
+  --oj-core-danger-1:                  TBD;
+  --oj-core-danger-2:                  TBD;
+  --oj-core-danger-3:                  TBD;
+  --oj-core-danger-contrast:           TBD;
+
+
+  /* color danger  secondary    */
+  /* -------------------------- */
+  --oj-core-danger-secondary-1:        TBD;
+  --oj-core-danger-secondary-2:        TBD;
+  --oj-core-danger-secondary-3:        TBD;
+  --oj-core-danger-secondary-contrast: TBD;
+
+
+  /* color warning              */
+  /* -------------------------- */
+  --oj-core-warning-1:                  TBD;
+  --oj-core-warning-2:                  TBD;
+  --oj-core-warning-3:                  TBD;
+  --oj-core-warning-contrast:           TBD;
+  
+  /* color warning  secondary   */
+  /* -------------------------- */
+  --oj-core-warning-secondary-1:        TBD;
+  --oj-core-warning-secondary-2:        TBD;
+  --oj-core-warning-secondary-3:        TBD;
+  --oj-core-warning-secondary-contrast: TBD;
+
+
+  /* color success              */
+  /* -------------------------- */
+  --oj-core-success-1:                  TBD;
+  --oj-core-success-2:                  TBD;
+  --oj-core-success-3:                  TBD;
+  --oj-core-success-contrast:           TBD;
+
+
+  /* color success secondary    */
+  /* -------------------------- */
+  --oj-core-success-secondary-1:        TBD;
+  --oj-core-success-secondary-2:        TBD;
+  --oj-core-success-secondary-3:        TBD;
+  --oj-core-success-secondary-contrast: TBD;
+
+
+  /* color info                 */
+  /* -------------------------- */
+  --oj-core-info-1:                  TBD;
+  --oj-core-info-2:                  TBD;
+  --oj-core-info-3:                  TBD;
+  --oj-core-info-contrast:           TBD;
+  
+
+  /* color info secondary       */
+  /* -------------------------- */
+  --oj-core-info-secondary-1:        TBD;
+  --oj-core-info-secondary-2:        TBD;
+  --oj-core-info-secondary-3:        TBD;
+  --oj-core-info-secondary-contrast: TBD;
+  
+
+  /* drag and drop              */
+  /* -------------------------- */
+  --oj-core-drag-drop-color-1:      TBD;
+  --oj-core-drag-drop-color-2:      TBD;
+  --oj-core-drag-drop-line-color:   TBD;
+  
+  /* icon                       */
+  /* -------------------------- */
+  --oj-core-icon-size-lg:         TBD;
+  --oj-core-icon-size-sm:         TBD;
+
+  /* touch target               */
+  /* -------------------------- */
+  --oj-core-touch-target-min-size: TBD;
+
+  /* Cursor                     */
+  /* -------------------------- */
+  --oj-core-cursor-clickable: TBD;
+
+  /* border-radius              */
+  /* -------------------------- */
+  --oj-core-border-radius-sm: TBD;
+  --oj-core-border-radius-md: TBD;
+  --oj-core-border-radius-lg: TBD;
+  --oj-core-border-radius-xl: TBD;
+    
+  /* box shadow                 */
+  /* -------------------------- */
+  --oj-core-box-shadow-rgb: TBD;
+  --oj-core-box-shadow-xs:  TBD;
+  --oj-core-box-shadow-sm:  TBD;
+  --oj-core-box-shadow-md:  TBD;
+  --oj-core-box-shadow-lg:  TBD;
+  --oj-core-box-shadow-xl:  TBD;
+
+  /* a dropdown is a popup that drops down from a component, for example a menu or select popup */
+  --oj-core-dropdown-box-shadow: TBD;
+
+  /* overlay scrim              */
+  /* -------------------------- */
+
+  /* this is used for something like a modal dialog to overlay the
+  /* rest of the screen, indicating it's not reachable */
+  --oj-core-scrim-color: TBD;
+
+  /* spacing                    */
+  /* -------------------------- */
+    --oj-core-spacing-1x:  TBD;
+    --oj-core-spacing-2x:  TBD;
+    --oj-core-spacing-3x:  TBD;
+    --oj-core-spacing-4x:  TBD;
+    --oj-core-spacing-5x:  TBD;
+    --oj-core-spacing-6x:  TBD;
+    --oj-core-spacing-7x:  TBD;
+    --oj-core-spacing-8x:  TBD;
+    --oj-core-spacing-9x:  TBD;
+    --oj-core-spacing-10x: TBD;
+    --oj-core-spacing-11x: TBD;
+    --oj-core-spacing-12x: TBD;
+  
+
+  
+  /* z-index                    */
+  /* -------------------------- */
+  --oj-core-z-index-popup:    TBD;
+  --oj-core-z-index-dialog:   TBD;
+  --oj-core-z-index-messages: TBD;
+
+  /* scrollbar                  */
+  /* -------------------------- */
+  --oj-scrollbar-thumb-color-hover: TBD;
+  --oj-scrollbar-track-color-force: TBD;
+
+
+  
+  /* animation                  */
+  /* -------------------------- */
+  --oj-animation-duration-xshort:         TBD;
+  --oj-animation-duration-short:          TBD;
+  --oj-animation-duration-medium:         TBD;
+  --oj-animation-duration-long:           TBD;
+  --oj-animation-duration-xlong:          TBD;
+
+  --oj-animation-ease-in-out:             TBD;
+  --oj-animation-ease-out:                TBD;
+  --oj-animation-ease-in:                 TBD;
+
+  --oj-animation-effect-ripple-bg-color:  TBD;
+
+  --oj-animation-skeleton-bg-start-color: TBD;
+  --oj-animation-skeleton-bg-end-color:   TBD;
+ 
+  
+  /* html tag                   */
+  /* -------------------------- */
+  
+  /*-----------------------------------------------------------------------------*/
+  /* To target popular system fonts consider using the following for --oj-html-font-family
+  /*    system, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif
+  /*
+  /* Details:
+  /*   * -apple-system targets San Francisco on Mac and ios systems that support it.
+  /*   * BlinkMacSystemFont targets San Francisco for Chrome on Mac OS X.
+  /*   * Segoe UI targets Windows and Windows Phone.
+  /*   * Helvetica Neue targets iOS pre-iOS9 and Mac OS X pre-El Capitan.
+  /*   * Arial targets Roboto on Android
+  /*   * sans-serif is the default sans-serif fallback font.
+  /*-----------------------------------------------------------------------------*/
+  --oj-html-font-family: TBD;
+ 
+  
+  /*-----------------------------------------------------------------------------*/
+  /* font size set on the html element. It's recommended that you use em units, 
+  /* this allows the user's browser font size adjustments to be reflected on the page. 
+  /* The browser default font size is 16px, so for example for 16px use 1em, 
+  /* for 14px use .875em.
+  /* 
+  /* JET generally uses rem instead of px which means that when you change 
+  /* the html element font size components adjust proportionately. 
+  /*-----------------------------------------------------------------------------*/
+  --oj-html-font-size: TBD;
+  
+  
+  /* body tag                   */
+  /* -------------------------- */
+  --oj-body-bg-color:     TBD;
+
+  /* used for background color in a similar way as the CSS keyword currentColor is used for color. */
+  --oj-current-bg-color:  TBD;
+  
+  
+  /* headings                   */
+  /* -------------------------- */
+  --oj-heading-text-color:           TBD;
+  --oj-heading-margin-bottom:        TBD;
+  --oj-heading-margin-top:           TBD;
+  --oj-subheading-margin-top:        TBD;
+  --oj-subheading-margin-bottom:     TBD;
+  
+  /* paragraph                  */
+  /* -------------------------- */
+  --oj-paragraph-margin-bottom: TBD;
+
+  
+  /* list                       */
+  /* -------------------------- */
+  --oj-list-margin-top:                   TBD;
+  --oj-list-nested-padding-start:         TBD;
+  --oj-list-item-line-height:             TBD;
+  --oj-list-unordered-style-type:         TBD;
+  
+  /* link                       */
+  /* -------------------------- */
+  
+  /* default*/
+  --oj-link-text-decoration:              TBD;
+  --oj-link-text-decoration-hover:        TBD;
+  
+  --oj-link-text-color:                   TBD;
+  
+  
+  /* active */
+  --oj-link-text-color-active:            TBD;
+  
+  /* visited */
+  --oj-link-text-color-visited:           TBD;
+  
+  
+  /*-----------------------------------------------------------------------------*/
+  /* there are 2 classes you can add to links
+  /*    1. oj-link-embedded - these are links embedded in paragraph text. 
+  /*          For embedded links use the text-decoration vars if you want 
+  /*          the line close to the text, or use border-bottom-width vars 
+  /*          if you want the line further from the text
+  /*
+  /*    2. oj-link-standalone - links that are on their own, stand alone links use 
+  /*          borders which are only shown on hover.  
+  /*-----------------------------------------------------------------------------*/
+  --oj-link-embedded-text-decoration:            TBD;
+  --oj-link-embedded-text-decoration-hover:      TBD;
+  
+  --oj-link-embedded-border-bottom-width:        TBD;
+  --oj-link-embedded-border-bottom-width-hover:  TBD;
+ 
+
+ 
+  
+  /* button                     */
+  /* -------------------------- */
+  
+  /* default buttons */
+  --oj-button-height:                  TBD;
+  --oj-button-border-radius:           TBD;
+  --oj-button-font-size:               TBD;
+  --oj-button-font-weight:             TBD;
+  --oj-button-icon-size:               TBD;
+  --oj-button-text-to-edge-padding:    TBD;
+  --oj-button-icon-to-text-padding:    TBD;
+  --oj-button-icon-to-edge-padding:    TBD;
+
+
+  /* small buttons */
+  --oj-button-sm-height:               TBD;
+  --oj-button-sm-font-size:            TBD;
+  --oj-button-sm-icon-size:            TBD;
+  --oj-button-sm-text-to-edge-padding: TBD;
+  --oj-button-sm-icon-to-text-padding: TBD;
+  --oj-button-sm-icon-to-edge-padding: TBD;
+
+  
+  /* large buttons */
+  --oj-button-lg-height:               TBD;
+  --oj-button-lg-font-size:            TBD;
+  --oj-button-lg-icon-size:            TBD;
+  --oj-button-lg-text-to-edge-padding: TBD;
+  --oj-button-lg-icon-to-text-padding: TBD;
+  --oj-button-lg-icon-to-edge-padding: TBD;
+
+
+
+  /* solid */
+  
+  /* solid enabled */
+  --oj-button-solid-chrome-bg-color:     TBD;
+  --oj-button-solid-chrome-border-color: TBD;
+  --oj-button-solid-chrome-text-color:   TBD;
+  
+  /* solid hover */
+  --oj-button-solid-chrome-bg-color-hover:     TBD;
+  --oj-button-solid-chrome-border-color-hover: TBD;
+  --oj-button-solid-chrome-text-color-hover:   TBD;
+  
+  /* solid active */
+  --oj-button-solid-chrome-bg-color-active:     TBD;
+  --oj-button-solid-chrome-border-color-active: TBD;
+  --oj-button-solid-chrome-text-color-active:   TBD;
+  
+  
+  /* solid selected */
+  --oj-button-solid-chrome-bg-color-selected:     TBD;
+  --oj-button-solid-chrome-border-color-selected: TBD;
+  --oj-button-solid-chrome-text-color-selected:   TBD;
+  
+  /* solid selected hover */
+  --oj-button-solid-chrome-text-color-selected-hover:   TBD;
+  --oj-button-solid-chrome-bg-color-selected-hover:     TBD;
+  --oj-button-solid-chrome-border-color-selected-hover: TBD;
+  
+  /* solid disabled */
+  --oj-button-solid-chrome-bg-color-disabled:     TBD;
+  --oj-button-solid-chrome-border-color-disabled: TBD;
+  --oj-button-solid-chrome-text-color-disabled:   TBD;
+
+  
+  /* solid selected disabled */
+  --oj-button-solid-chrome-bg-color-selected-disabled:     TBD;
+  --oj-button-solid-chrome-border-color-selected-disabled: TBD;
+  --oj-button-solid-chrome-text-color-selected-disabled:   TBD;
+  
+  
+
+
+  /* borderless chrome enabled */
+  --oj-button-borderless-chrome-text-color: TBD;
+  
+  /* borderless chrome hover */
+  --oj-button-borderless-chrome-bg-color-hover:     TBD;
+  --oj-button-borderless-chrome-border-color-hover: TBD;
+  --oj-button-borderless-chrome-text-color-hover:   TBD;
+  
+  /* borderless chrome active */
+  --oj-button-borderless-chrome-bg-color-active:     TBD;
+  --oj-button-borderless-chrome-border-color-active: TBD;
+  --oj-button-borderless-chrome-text-color-active:   TBD;
+  
+  
+  /* borderless chrome selected */
+  --oj-button-borderless-chrome-bg-color-selected:     TBD;
+  --oj-button-borderless-chrome-border-color-selected: TBD;
+  --oj-button-borderless-chrome-text-color-selected:   TBD;
+  
+  /* borderless chrome selected hover */
+  --oj-button-borderless-chrome-bg-color-selected-hover:     TBD;
+  --oj-button-borderless-chrome-border-color-selected-hover: TBD;
+  --oj-button-borderless-chrome-text-color-selected-hover:   TBD;
+  
+  /* borderless chrome disabled */
+  --oj-button-borderless-chrome-text-color-disabled: TBD;
+
+  
+  /* borderless chrome selected disabled */
+  --oj-button-borderless-chrome-bg-color-selected-disabled:     TBD;
+  --oj-button-borderless-chrome-border-color-selected-disabled: TBD;
+  --oj-button-borderless-chrome-text-color-selected-disabled:   TBD;
+  
+  
+  
+  /* outlined enabled */
+  --oj-button-outlined-chrome-border-color: TBD;
+  --oj-button-outlined-chrome-text-color:   TBD;
+  --oj-button-outlined-chrome-bg-color:     TBD;
+  
+  /* outlined hover */
+  --oj-button-outlined-chrome-bg-color-hover:     TBD;
+  --oj-button-outlined-chrome-border-color-hover: TBD;
+  --oj-button-outlined-chrome-text-color-hover:   TBD;
+  
+  /* outlined active */
+  --oj-button-outlined-chrome-bg-color-active:     TBD;
+  --oj-button-outlined-chrome-border-color-active: TBD;
+  --oj-button-outlined-chrome-text-color-active:   TBD;
+  
+  
+  /* outlined selected */
+  --oj-button-outlined-chrome-bg-color-selected:     TBD;
+  --oj-button-outlined-chrome-border-color-selected: TBD;
+  --oj-button-outlined-chrome-text-color-selected:   TBD;
+  
+  /* outlined selected hover */
+  --oj-button-outlined-chrome-bg-color-selected-hover:     TBD;
+  --oj-button-outlined-chrome-border-color-selected-hover: TBD;
+  --oj-button-outlined-chrome-text-color-selected-hover:   TBD;
+  
+  /* outlined disabled */
+  --oj-button-outlined-chrome-border-color-disabled: TBD;
+  --oj-button-outlined-chrome-text-color-disabled:   TBD;
+  --oj-button-outlined-chrome-bg-color-disabled:     TBD;
+
+  
+  /* outlined selected disabled */
+  --oj-button-outlined-chrome-bg-color-selected-disabled:     TBD;
+  --oj-button-outlined-chrome-border-color-selected-disabled: TBD;
+  --oj-button-outlined-chrome-text-color-selected-disabled:   TBD;
+  
+  /* cta enabled */
+  --oj-button-call-to-action-chrome-bg-color:     TBD;
+  --oj-button-call-to-action-chrome-border-color: TBD;
+  --oj-button-call-to-action-chrome-text-color:   TBD;
+  
+  /* cta hover */
+  --oj-button-call-to-action-chrome-bg-color-hover:     TBD;
+  --oj-button-call-to-action-chrome-border-color-hover: TBD;
+  --oj-button-call-to-action-chrome-text-color-hover:   TBD;
+  
+  /* cta active */
+  --oj-button-call-to-action-chrome-bg-color-active:     TBD;
+  --oj-button-call-to-action-chrome-border-color-active: TBD;
+  --oj-button-call-to-action-chrome-text-color-active:   TBD;
+
+  
+  
+  
+  /* buttonset                     */
+  /* ----------------------------- */
+  --oj-buttonset-outlined-chrome-internal-border-color:                   TBD;
+  --oj-buttonset-outlined-chrome-internal-border-color-active:            TBD;
+  --oj-buttonset-outlined-chrome-internal-border-color-selected:          TBD;
+  --oj-buttonset-outlined-chrome-internal-border-color-selected-disabled: TBD;  
+  
+
+  /* drawer                     */
+  /* ----------------------------- */
+  --oj-drawer-overlay-bg-color:     TBD;
+  --oj-drawer-reflow-bg-color:      TBD;
+  --oj-drawer-reflow-divider-color: TBD;
+
+  /* toolbar                    */
+  /* -------------------------- */
+  --oj-toolbar-button-margin:           TBD;
+  --oj-toolbar-borderless-button-margin:TBD;
+  --oj-toolbar-separator-margin:        TBD;
+
+  
+  
+  
+  /* menu */
+  /* -------------------------- */
+  --oj-menu-icon-size:                  TBD;
+  --oj-menu-icon-to-edge-padding:       TBD;
+  --oj-menu-text-to-start-icon-padding: TBD;
+  --oj-menu-text-to-end-icon-padding:   TBD;
+  --oj-menu-text-to-edge-padding:       TBD;
+  --oj-menu-divider-margin:             TBD;
+  
+  /* menu item */
+  --oj-menu-item-text-color: TBD;
+  --oj-menu-icon-color:      TBD;
+  
+  /* menu sheet */
+  
+  /* on a phone the menu displays as a sheet, aka 'action sheet',
+  /* see the doc for open-options.display in the menu doc */
+  --oj-menu-sheet-margin-horizontal: TBD;
+
+
+  /* label                      */
+  /* -------------------------- */
+  --oj-label-font-size:                TBD;
+  --oj-label-font-weight:              TBD;
+  --oj-label-line-height:              TBD;
+  
+  --oj-label-color:                    TBD;
+  --oj-label-color-disabled:           TBD;
+  --oj-label-required-char-font-size:  TBD;
+  --oj-label-required-icon-color:      TBD;
+
+  --oj-label-inside-edge-font-size:    TBD;
+  --oj-label-inside-edge-font-weight:  TBD;
+  --oj-label-inside-edge-line-height:  TBD;
+  --oj-label-inside-edge-position-top: TBD;
+  --oj-label-inside-edge-color: TBD;
+
+  
+  /* form Controls              */
+  /* -------------------------- */
+  --oj-form-control-font-weight-read-only: TBD;
+
+  
+  /* text fields                */
+  /* -------------------------- */
+  /*   Text fields allow users to input, edit,
+  /*   and select text. These variables are used by
+  /*   oj-input-date
+  /*   oj-input-date-time
+  /*   oj-input-number
+  /*   oj-input-password
+  /*   oj-input-search
+  /*   oj-input-text
+  /*   oj-input-time
+  /*   oj-combobox-many
+  /*   oj-combobox-one
+  /*   oj-select-single
+  /*   oj-select-many
+  /*   oj-select-one          */
+
+  --oj-text-field-border-radius:           TBD;
+  --oj-text-field-border-width:            TBD;
+
+
+  --oj-text-field-icon-to-text-padding:    TBD;
+  --oj-text-field-icon-to-edge-padding:    TBD;
+  --oj-text-field-text-to-edge-padding:    TBD;
+
+  --oj-text-field-text-align:              TBD;
+
+  --oj-text-field-height:                  TBD;
+  --oj-text-field-font-size:               TBD;
+
+  /* enabled */
+  --oj-text-field-bg-color:                TBD;
+  --oj-text-field-border-color:            TBD;
+  --oj-text-field-placeholder-color:       TBD;
+  --oj-text-field-placeholder-font-style:  TBD;
+  --oj-text-field-text-color:              TBD;
+
+  /* focus */
+  --oj-text-field-border-color-focus:      TBD;
+  --oj-text-field-box-shadow-focus:        TBD;
+
+  /* disabled */
+  --oj-text-field-bg-color-disabled:       TBD;
+  --oj-text-field-border-color-disabled:   TBD;
+  --oj-text-field-text-color-disabled:     TBD;
+
+  /* inside edge */
+  --oj-text-field-inside-edge-height:      TBD;
+
+  /* padding between the border and the actual input element, 
+  /* the inside edge label sits over this padding */
+  --oj-text-field-inside-edge-padding-top: TBD;
+
+  --oj-text-field-inside-edge-label-color-error:   TBD;
+  --oj-text-field-inside-edge-label-color-warning: TBD;
+  --oj-text-field-inside-edge-label-color-focus:   TBD;
+
+  /* by default the text field width and max width is 100%,
+  /* these variables are used in the classes 
+  /* .oj-form-control-max-width-sm, .oj-form-control-max-width-md,
+  /* .oj-form-control-width-sm, .oj-form-control-width-md */
+  --oj-text-field-sm-width: TBD;
+  --oj-text-field-md-width: TBD;
+
+
+  /* user assistance           */
+  /*-------------------------- */
+  /* user Assistance */
+  --oj-user-assistance-inline-text-color: TBD;
+  --oj-user-assistance-inline-font-size:   TBD;
+
+
+
+  /* listbox                   */
+  /*-------------------------- */
+
+  /* a listbox is a dropdown used in select and combobox */
+  --oj-listbox-item-padding-horizontal: TBD;
+
+
+  /* date picker     */
+  /*-----------------*/
+  --oj-date-picker-cell-font-size:          TBD;
+  --oj-date-picker-cell-border-color-today: TBD;
+  
+  
+  /* radioset/checkboxset      */
+  /*-------------------------- */
+  --oj-radio-checkbox-width:                  TBD;
+  --oj-radio-checkbox-row-height:             TBD;
+  
+  --oj-radio-checkbox-input-size:             TBD;
+  --oj-radio-checkbox-input-color-unselected: TBD;
+  --oj-radio-checkbox-input-color-selected:   TBD;
+  
+  --oj-radio-checkbox-label-to-edge-padding:  TBD;
+  --oj-radio-checkbox-input-to-label-padding: TBD;
+  --oj-radio-checkbox-input-to-edge-padding:  TBD;
+  
+  --oj-radio-checkbox-item-divider-color:     TBD;
+  
+  --oj-radio-checkbox-input-transform-active: TBD;
+  --oj-radio-checkbox-item-bg-color-active:   TBD;
+
+
+  
+  /* slider                     */
+  /* -------------------------- */
+  
+  --oj-slider-thumb-width:                 TBD;
+  --oj-slider-thumb-height:                TBD;
+  --oj-slider-thumb-border-radius:         TBD;
+  --oj-slider-thumb-border-width:          TBD;
+  
+  --oj-slider-track-thickness:             TBD;
+  
+  /* enabled */
+  --oj-slider-thumb-bg-color:              TBD;
+  --oj-slider-thumb-border-color:          TBD;
+  --oj-slider-thumb-box-shadow:            TBD;
+  
+  --oj-slider-track-bg-color:              TBD;
+  --oj-slider-value-bg-color:              TBD;
+  
+  /* hover */
+  --oj-slider-thumb-bg-color-hover:        TBD;
+  --oj-slider-thumb-box-shadow-hover:      TBD;
+  
+  /* active */
+  --oj-slider-thumb-bg-color-active:       TBD;
+  --oj-slider-thumb-border-color-active:   TBD;
+  --oj-slider-thumb-box-shadow-active:     TBD;
+  --oj-slider-thumb-scale-active:          TBD;
+  
+  /* disabled */
+  --oj-slider-thumb-bg-color-disabled:     TBD;
+  --oj-slider-thumb-border-color-disabled: TBD;
+  
+  --oj-slider-track-bg-color-disabled:     TBD;
+  --oj-slider-value-bg-color-disabled:     TBD;
+  
+  
+  
+  /* switch                   */
+  /*------------------------- */
+  
+  --oj-switch-track-height:                                TBD;
+  --oj-switch-track-width:                                 TBD;
+  --oj-switch-track-border-radius:                         TBD;
+  
+  --oj-switch-thumb-to-track-horizontal-margin:            TBD;
+  
+  
+  /* enabled off */
+  --oj-switch-track-bg-color:                              TBD;
+  --oj-switch-track-border-color:                          TBD;
+  
+  --oj-switch-thumb-bg-color:                              TBD;
+  --oj-switch-thumb-border-color:                          TBD;
+  --oj-switch-thumb-height:                                TBD;
+  --oj-switch-thumb-width:                                 TBD;
+  --oj-switch-thumb-border-radius:                         TBD;
+  --oj-switch-thumb-box-shadow:                            TBD;
+  
+  /* selected (on) */
+  --oj-switch-track-bg-color-selected:                     TBD;
+  --oj-switch-track-border-color-selected:                 TBD;
+  
+  --oj-switch-thumb-bg-color-selected:                     TBD;
+  --oj-switch-thumb-border-color-selected:                 TBD;
+  --oj-switch-thumb-box-shadow-selected:                   TBD;
+  
+  /* hover (off) */
+  --oj-switch-track-bg-color-hover:                        TBD;
+  --oj-switch-track-border-color-hover:                    TBD;
+  
+  --oj-switch-thumb-bg-color-hover:                        TBD;
+  --oj-switch-thumb-border-color-hover:                    TBD;
+  --oj-switch-thumb-box-shadow-hover:                      TBD;
+  
+  /* selected hover (on) */
+  --oj-switch-track-bg-color-selected-hover:               TBD;
+  --oj-switch-track-border-color-selected-hover:           TBD;
+  
+  --oj-switch-thumb-bg-color-selected-hover:               TBD;
+  --oj-switch-thumb-border-color-selected-hover:           TBD;
+  --oj-switch-thumb-box-shadow-selected-hover:             TBD;
+  
+  
+  /* active (off) */
+  --oj-switch-track-bg-color-active:                       TBD;
+  --oj-switch-track-border-color-active:                   TBD;
+  
+  --oj-switch-thumb-bg-color-active:                       TBD;
+  --oj-switch-thumb-border-color-active:                   TBD;
+  --oj-switch-thumb-box-shadow-active:                     TBD;
+  --oj-switch-thumb-width-active:                          TBD;
+  
+  /* selected active (on) */
+  --oj-switch-track-bg-color-selected-active:              TBD;
+  --oj-switch-track-border-color-selected-active:          TBD;
+  
+  --oj-switch-thumb-bg-color-selected-active:              TBD;
+  --oj-switch-thumb-border-color-selected-active:          TBD;
+  --oj-switch-thumb-box-shadow-selected-active:            TBD;
+  
+  /* disabled (off) */
+  --oj-switch-track-bg-color-disabled:                     TBD;
+  --oj-switch-track-border-color-disabled:                 TBD;
+  
+  --oj-switch-thumb-bg-color-disabled:                     TBD;
+  --oj-switch-thumb-border-color-disabled:                 TBD;
+  
+  
+  /* selected disabled (on) */
+  --oj-switch-track-bg-color-selected-disabled:            TBD;
+  --oj-switch-track-border-color-selected-disabled:        TBD;
+  
+  --oj-switch-thumb-bg-color-selected-disabled:            TBD;
+  --oj-switch-thumb-border-color-selected-disabled:        TBD;
+  
+  
+
+  
+  /* color palette                */
+  /* ---------------------------- */
+  --oj-color-palette-swatch-inner-border-color:          TBD;
+  --oj-color-palette-swatch-outer-border-color-selected: TBD;
+  --oj-color-palette-border-radius:                      TBD;
+  --oj-color-palette-swatch-margin:                      TBD;
+  --oj-color-palette-grid-font-size:                     TBD;
+  
+  
+  
+  /* color spectrum */
+  /* ---------------------------- */
+  --oj-color-spectrum-border-color: TBD;
+  
+  
+  /* form Layout                */
+  /* -------------------------- */
+  --oj-form-layout-horizontal-margin:                 TBD;
+  --oj-form-layout-margin-bottom:                     TBD;
+
+  --oj-form-layout-divider-width:                     TBD;
+  --oj-form-layout-divider-margin:                    TBD;
+  
+  --oj-form-layout-start-edge-column-min-width:       TBD;
+  --oj-form-layout-start-edge-column-max-width:       TBD;
+  --oj-form-layout-column-min-width:                  TBD;
+  --oj-form-layout-column-max-width:                  TBD;
+  
+  --oj-form-layout-column-gutter:                     TBD;
+
+  --oj-form-layout-top-edge-label-to-value-padding:   TBD;
+  
+  --oj-form-layout-start-edge-label-text-align:       TBD;
+  --oj-form-layout-start-edge-value-text-align:       TBD;
+  --oj-form-layout-start-edge-label-to-value-padding: TBD;
+  
+  
+  /* collections 
+  /*   These variables are used by 
+  /*    oj-table
+  /*    oj-data-grid
+  /*    oj-list-view
+  /* ---------------------------- */
+
+  /*  --oj-collection-list* variables are for list view and table when display=list */
+  --oj-collection-list-row-height:                         TBD;
+  --oj-collection-list-cell-padding-vertical:              TBD;
+
+
+  /*  --oj-collection-grid* variables are for data grid and table when display=grid */
+  --oj-collection-grid-row-height:                         TBD;
+  --oj-collection-grid-header-height:                      TBD;
+  --oj-collection-grid-cell-padding:                       TBD;
+  --oj-collection-grid-cell-padding-vertical:              TBD;
+  --oj-collection-grid-cell-padding-horizontal:            TBD;
+  
+
+  --oj-collection-bg-color:                                TBD;
+  --oj-collection-border-color:                            TBD;
+  --oj-collection-free-space-bg-color:                     TBD;
+  --oj-collection-default-sort-icon-display:               TBD;
+  --oj-collection-cell-banded-bg-color:                    TBD;
+
+  /* headers */
+  --oj-collection-header-font-size:                        TBD;
+  --oj-collection-header-font-weight:                      TBD;
+
+  /* a header is partially selected when some but not all respective cells are selected */
+  --oj-collection-header-bg-color-partial-selected:        TBD;
+  
+  /* enabled */
+  --oj-collection-header-bg-color:                         TBD;
+  --oj-collection-header-text-color:                       TBD;
+  
+  /* hover */
+  --oj-collection-header-bg-color-hover:                   TBD;
+  
+  /* selected */
+  --oj-collection-header-bg-color-selected:                TBD;
+
+  /* editable */
+  --oj-collection-editable-cell-border-color-focus:        TBD;
+  --oj-collection-editable-cell-bg-color-read-only:        TBD; 
+  
+  /* data grid                  */
+  /* -------------------------- */
+  --oj-data-grid-column-width:                      TBD;
+ 
+  /* list view                  */
+  /* -------------------------- */
+ 
+  --oj-list-view-item-padding-horizontal:      TBD;
+
+  --oj-list-view-group-header-bg-color:        TBD;
+  --oj-list-view-group-header-bg-color-sticky: TBD;
+  --oj-list-view-group-header-font-weight:     TBD;
+  --oj-list-view-group-header-font-size:       TBD;
+  --oj-list-view-group-header-line-height:     TBD; 
+ 
+ 
+ 
+  /* table                        */
+  /* ---------------------------- */
+  --oj-table-header-row-height:            TBD;
+  --oj-table-header-cell-padding-vertical: TBD;
+  --oj-table-cell-padding-horizontal:      TBD;
+   
+  /* tree view                    */
+  /* ---------------------------- */
+  --oj-tree-view-row-height:   TBD;
+  --oj-tree-view-text-color:   TBD;
+  --oj-tree-view-indent-width: TBD;
+   
+ 
+  /* indexer                    */
+  /* -------------------------- */   
+  --oj-indexer-text-color: TBD;
+  --oj-indexer-font-size:  TBD;
+ 
+ 
+  /* refresher                  */
+  /* -------------------------- */
+  --oj-refresher-bg-color: TBD;
+ 
+ 
+ 
+  /* panel                     */
+  /*-------------------------- */
+  --oj-panel-padding:       TBD; 
+  --oj-panel-border-radius: TBD; 
+  --oj-panel-bg-color:      TBD; 
+  --oj-panel-border-color:  TBD;
+  --oj-panel-gutter:        TBD;
+  
+ 
+  /* action card               */
+  /*-------------------------- */
+  --oj-action-card-scale-hover: TBD;
+
+
+  /* badge                      */
+  /* -------------------------- */
+  --oj-badge-height:        TBD;
+  --oj-badge-border-radius: TBD;
+
+  --oj-badge-bg-color:      TBD;
+  --oj-badge-text-color:    TBD;
+  
+  --oj-badge-font-size:     TBD;
+  --oj-badge-font-weight:   TBD;
+  --oj-badge-font-stretch:  TBD;
+ 
+  --oj-badge-padding:        TBD;
+ 
+  /* avatar                     */
+  /* -------------------------- */
+  --oj-avatar-bg-color:             TBD;
+  --oj-avatar-text-color:           TBD;
+  --oj-avatar-pattern-display:      TBD;
+
+  --oj-avatar-size:                 TBD;
+  --oj-avatar-border-radius:        TBD;
+  --oj-avatar-initials-font-size:   TBD;
+  --oj-avatar-initials-font-weight: TBD;
+  --oj-avatar-icon-font-size:       TBD;
+ 
+  /* conveyor belt               */
+  /* -------------------------- */
+  --oj-conveyor-belt-box-shadow-width: TBD;
+ 
+  /* popup                      */
+  /* -------------------------- */
+ 
+  --oj-popup-bg-color:      TBD;
+  --oj-popup-border-color:  TBD;
+  --oj-popup-border-radius: TBD;
+  --oj-popup-box-shadow:    TBD;
+  --oj-popup-padding:       TBD;
+  
+  --oj-popup-tail-height:  TBD;
+  --oj-popup-tail-width:   TBD;
+     
+  /* dialog                     */
+  /* -------------------------- */
+  --oj-dialog-border-radius:          TBD;
+  --oj-dialog-bg-color:               TBD;
+  --oj-dialog-border-color:           TBD;
+  --oj-dialog-box-shadow:             TBD;
+
+  --oj-dialog-header-padding:         TBD;
+  --oj-dialog-body-padding:           TBD;
+  --oj-dialog-footer-padding:         TBD;
+
+  --oj-dialog-header-bg-color:        TBD;
+  --oj-dialog-header-border-color:    TBD;
+
+  --oj-dialog-title-text-color:       TBD;
+  --oj-dialog-title-font-size:        TBD;
+  --oj-dialog-title-line-height:      TBD;
+  --oj-dialog-title-font-weight:      TBD;
+
+  --oj-dialog-cancel-icon-margin-top: TBD;
+  --oj-dialog-cancel-icon-margin-end: TBD;
+
+
+  /* file picker                */
+  /* -------------------------- */
+ 
+  --oj-file-picker-border-color:  TBD;
+  --oj-file-picker-border-width:  TBD;
+  --oj-file-picker-border-radius: TBD;
+ 
+ 
+ 
+  /* masonry layout             */
+  /* -------------------------- */
+  --oj-masonry-layout-tile-width:  TBD;
+  --oj-masonry-layout-tile-height: TBD;
+ 
+ 
+  /* navigation list            */
+  /* -------------------------- */
+
+  --oj-navigation-list-font-size:                          TBD;
+  --oj-navigation-list-font-weight:                        TBD;
+
+  --oj-navigation-list-icon-margin:                        TBD;
+  --oj-navigation-list-icon-size:                          TBD;
+  --oj-navigation-list-icon-to-text-padding:               TBD;
+
+
+  --oj-navigation-list-item-min-height:                    TBD;
+  --oj-navigation-list-item-margin:                        TBD;
+  --oj-navigation-list-item-padding:                       TBD;
+
+
+  /* default */
+  --oj-navigation-list-item-label-color:                   TBD;
+
+  /* hover */
+  --oj-navigation-list-item-label-color-hover:             TBD;
+  --oj-navigation-list-item-bg-color-hover:                TBD;
+
+  /* selected */
+  --oj-navigation-list-item-bg-color-selected:             TBD;
+  --oj-navigation-list-item-border-color-selected:         TBD;
+  --oj-navigation-list-item-label-color-selected:          TBD;
+
+    
+  /* sliding */
+  --oj-navigation-list-sliding-heading-font-size:          TBD;
+  --oj-navigation-list-sliding-heading-font-weight:        TBD;
+  --oj-navigation-list-sliding-heading-line-height:        TBD;
+ 
+ 
+  /* tab bar                    */
+  /* -------------------------- */
+
+  --oj-tab-bar-icon-to-text-padding:       TBD;
+  --oj-tab-bar-icon-size:                  TBD;
+  --oj-tab-bar-icon-margin:                TBD;
+
+  --oj-tab-bar-item-margin:                TBD;
+  --oj-tab-bar-item-min-height:            TBD;
+  --oj-tab-bar-item-line-height:           TBD;
+  --oj-tab-bar-item-font-size:             TBD;
+
+   --oj-tab-bar-item-padding:              TBD;
+
+  /* default */
+  --oj-tab-bar-item-font-weight:           TBD;
+  --oj-tab-bar-item-label-color:           TBD;
+
+
+  /* hover */
+  --oj-tab-bar-item-label-color-hover:     TBD;
+  --oj-tab-bar-item-bg-color-hover:        TBD;
+
+  /* active */
+  --oj-tab-bar-item-bg-color-active:       TBD;
+  --oj-tab-bar-item-border-color-active:   TBD;
+
+  /* selected */
+  --oj-tab-bar-item-font-weight-selected:  TBD;
+  --oj-tab-bar-item-label-color-selected:  TBD;
+  --oj-tab-bar-item-bg-color-selected:     TBD;
+  --oj-tab-bar-item-border-color-selected: TBD;
+
+ 
+  /* progress Bar               */
+  /* -------------------------- */
+ 
+  --oj-progress-bar-height:                        TBD;
+  --oj-progress-bar-border-radius:                 TBD;
+  --oj-progress-bar-track-bg-color:                TBD;
+  --oj-progress-bar-value-bg-color:                TBD;
+ 
+ 
+  /* progress circle            */
+  /* -------------------------- */
+ 
+  --oj-progress-circle-value-bg-color:             TBD;
+  --oj-progress-circle-sm-size:                    TBD;
+  --oj-progress-circle-md-size:                    TBD;
+  --oj-progress-circle-lg-size:                    TBD;
+  --oj-progress-circle-sm-track-width:             TBD;
+  --oj-progress-circle-md-track-width:             TBD;
+  --oj-progress-circle-lg-track-width:             TBD;
+  --oj-progress-circle-determinate-track-bg-color: TBD;
+ 
+ 
+ 
+  /* train                      */
+  /* -------------------------- */
+  --oj-train-step-width:                       TBD;
+  --oj-train-padding:                          TBD;
+  --oj-train-label-font-size:                  TBD;
+  --oj-train-label-font-weight:                TBD;
+  --oj-train-label-padding-top:                TBD;
+  --oj-train-button-diameter:                  TBD;
+  --oj-train-button-font-size:                 TBD;
+  --oj-train-connector-height:                 TBD;
+  --oj-train-connector-padding:                TBD;
+ 
+  /* default */
+  --oj-train-button-bg-color:                  TBD;
+  --oj-train-button-border-color:              TBD;
+  --oj-train-button-text-color:                TBD;
+  --oj-train-label-color:                      TBD;
+  --oj-train-connector-color:                  TBD;
+ 
+  /* visited */
+  --oj-train-button-bg-color-visited:          TBD;
+  --oj-train-button-border-color-visited:      TBD;
+  --oj-train-button-text-color-visited:        TBD;
+  --oj-train-label-color-visited:              TBD;
+ 
+  /* hover */
+  --oj-train-button-bg-color-hover:            TBD;
+  --oj-train-button-border-color-hover:        TBD;
+  --oj-train-button-text-color-hover:          TBD;
+  --oj-train-step-bg-color-hover:              TBD;
+  --oj-train-step-border-radius:               TBD;
+ 
+ 
+  /* active */
+  --oj-train-button-bg-color-active:           TBD;
+  --oj-train-button-border-color-active:       TBD;
+  --oj-train-button-text-color-active:         TBD;
+  --oj-train-label-font-weight-active:         TBD;
+  --oj-train-step-bg-color-active:             TBD;
+ 
+  /* selected */
+  --oj-train-button-bg-color-selected:         TBD;
+  --oj-train-button-border-color-selected:     TBD;
+  --oj-train-button-text-color-selected:       TBD;
+  --oj-train-label-font-weight-selected:       TBD;
+  --oj-train-label-color-selected:             TBD;
+  --oj-train-connector-color-selected:         TBD;
+  --oj-train-connector-padding-selected:       TBD;
+ 
+  /* disabled */
+  --oj-train-button-bg-color-disabled:         TBD;
+  --oj-train-button-border-color-disabled:     TBD;
+  --oj-train-button-text-color-disabled:       TBD;
+  --oj-train-button-opacity-disabled:          TBD;
+  --oj-train-label-color-disabled:             TBD;
+ 
+ 
+ 
+ 
+  /* tooltip                    */
+  /* -------------------------- */
+  --oj-tooltip-border-radius:   TBD;
+  --oj-tooltip-bg-color:        TBD;
+  --oj-tooltip-border-color:    TBD;
+  --oj-tooltip-text-color:      TBD;
+  --oj-tooltip-font-size:       TBD;
+  --oj-tooltip-line-height:     TBD;
+  --oj-tooltip-padding:         TBD;
+ 
+ 
+ 
+ 
+ 
+  /* dvt                        */
+  /* -------------------------- */
+ 
+  /* used for gauge thresholds and stock chart rising and falling colors */
+  --oj-dvt-danger-color:  TBD;
+  --oj-dvt-warning-color: TBD;
+  --oj-dvt-success-color: TBD;
+  
+  /* marquee */
+  --oj-dvt-marquee-color:                TBD;
+  --oj-dvt-marquee-border-color:         TBD;
+    
+  /* selected nodes in sunburst, diagram, treemap, timeline, thematic map, nbox, gantt*/
+  --oj-dvt-item-border-color-selected:   TBD;
+  
+  /* hover/selected inner contrast color in sunburst, diagram, treemap, nbox , thematic map nodes */
+  --oj-dvt-item-contrast-color:          TBD;
+  
+  /* hover nodes in sunburst, treemap */
+  --oj-dvt-node-border-color-hover:      TBD;
+
+  /* reference line contrast line, data cursor contrast line in chart, marquee inner stroke */
+  --oj-dvt-contrast-line-color:          TBD;
+  
+  /* reference area color in chart, gantt */
+  --oj-dvt-reference-object-area-color:  TBD;
+
+  /* reference line primary line, data cursor contrast line in chart, gantt */
+  --oj-dvt-reference-object-line-color:  TBD;
+
+  /* overview window for dvt components, currently timeline and diagram */
+  --oj-dvt-overview-bg-color:            TBD;
+  --oj-dvt-overview-window-bg-color:     TBD;
+  --oj-dvt-overview-window-border-color: TBD; 
+
+
+  /* chart axis, datalabel and legend text */
+  --oj-dvt-label-font-size-sm:           TBD;
+  
+  /* sunburst, diagram, nbox node data labels */
+  --oj-dvt-label-font-size-md:           TBD; 
+
+  /* timeline, gantt labels */
+  --oj-dvt-label-font-size-lg:           TBD; 
+
+ 
+ 
+  /* chart                      */
+  /* -------------------------- */
+  --oj-chart-axis-title-text-color:                  TBD;
+  --oj-chart-axis-tick-label-text-color:             TBD;
+  --oj-chart-animation-rising-icon-color:            TBD;
+  --oj-chart-animation-falling-icon-color:           TBD;
+  --oj-chart-animation-marker-color:                 TBD;
+  --oj-chart-polar-axis-tick-label-inside-bg-color:  TBD;
+  --oj-chart-polar-axis-tick-label-outside-bg-color: TBD;
+  --oj-chart-data-cursor-line-color:                 TBD;
+
+  /* stock charts */
+  --oj-chart-stock-falling-bg-color:  TBD;
+  --oj-chart-stock-range-bg-color:    TBD;
+  --oj-chart-stock-rising-bg-color:   TBD;
+  
+  /* spark chart */
+  --oj-spark-chart-item-color:                       TBD;
+ 
+  /* diagram                    */
+  /* -------------------------- */
+  --oj-diagram-link-color:              TBD;
+  --oj-diagram-node-border-color-hover: TBD;
+  --oj-diagram-node-bg-color:           TBD;
+   
+  /* variables for base gauge. used by all gauges */
+  /* -------------------------- */
+  --oj-gauge-metric-label-font-weight:         TBD;
+   
+  /* rating gauge               */
+  /* -------------------------- */
+  
+  --oj-rating-gauge-sm-size:                   TBD;
+  --oj-rating-gauge-md-size:                   TBD;
+  --oj-rating-gauge-lg-size:                   TBD;
+ 
+  --oj-rating-gauge-border-color-hover:        TBD;
+  --oj-rating-gauge-color-hover:               TBD;
+
+  --oj-rating-gauge-border-color-unselected:   TBD;
+  --oj-rating-gauge-color-unselected:          TBD;
+
+  --oj-rating-gauge-border-color-selected:     TBD;
+  --oj-rating-gauge-color-selected:            TBD;
+
+  --oj-rating-gauge-border-color-changed:      TBD;
+  --oj-rating-gauge-color-changed:             TBD;
+
+  --oj-rating-gauge-color-selected-disabled:   TBD;
+  --oj-rating-gauge-color-unselected-disabled: TBD;
+
+  --oj-rating-gauge-color-selected-readonly:   TBD;
+  --oj-rating-gauge-color-unselected-readonly: TBD;
+
+  --oj-rating-gauge-border-color-selected-readonly:       TBD;
+  --oj-rating-gauge-border-color-unselected-readonly:     TBD;
+
+   /* status meter gauge               */
+  /* -------------------------- */
+ 
+  --oj-statusmeter-gauge-bar-sm-size:          TBD;
+  --oj-statusmeter-gauge-bar-md-size:          TBD;
+  --oj-statusmeter-gauge-bar-lg-size:          TBD;
+  --oj-statusmeter-gauge-bar-plotarea-border-color:     TBD;
+  --oj-statusmeter-gauge-bar-plotarea-color:  TBD;
+
+  --oj-statusmeter-gauge-circular-sm-size:          TBD;
+  --oj-statusmeter-gauge-circular-md-size:          TBD;
+  --oj-statusmeter-gauge-circular-lg-size:          TBD;
+
+    /* led gauge               */
+  /* -------------------------- */
+  --oj-led-gauge-sm-size:  TBD;
+  --oj-led-gauge-md-size:  TBD;
+  --oj-led-gauge-lg-size:  TBD;
+ 
+  /* n-box               */
+  /* -------------------------- */
+  --oj-n-box-cell-bg-color:           TBD;              
+  --oj-n-box-cell-bg-color-maximized: TBD;           
+  --oj-n-box-node-bg-color:           TBD;    
+ 
+ 
+ 
+  /* picto chart                */
+  /* -------------------------- */
+  --oj-picto-chart-item-bg-color: TBD;
+ 
+ 
+  /* thematic map               */
+  /* -------------------------- */
+  --oj-thematic-map-bg-color:            TBD;              
+  --oj-thematic-map-border-color:        TBD;              
+  --oj-thematic-map-marker-bg-color:     TBD;     
+  --oj-thematic-map-marker-border-color: TBD;              
+  --oj-thematic-map-link-color:          TBD;      
+
+
+   
+  /* treemap                    */
+  /* -------------------------- */
+  --oj-treemap-node-header-bg-color:           TBD;             
+  --oj-treemap-node-header-bg-color-selected:  TBD;             
+  --oj-treemap-node-header-border-color:       TBD;              
+  --oj-treemap-node-header-border-color-hover: TBD;
+}

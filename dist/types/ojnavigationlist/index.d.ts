@@ -152,6 +152,8 @@ export namespace ojNavigationList {
         parent?: Element;
         subId: string;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
 }
 export interface ojNavigationListEventMap<K, D> extends baseComponentEventMap<ojNavigationListSettableProperties<K, D>> {
     'ojAnimateEnd': ojNavigationList.ojAnimateEnd;
@@ -352,6 +354,8 @@ export namespace ojTabBar {
         key: K;
         subId: string;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
 }
 export interface ojTabBarEventMap<K, D> extends baseComponentEventMap<ojTabBarSettableProperties<K, D>> {
     'ojAnimateEnd': ojTabBar.ojAnimateEnd;
@@ -505,6 +509,16 @@ export namespace NavigationListElement {
         parentKey?: K;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        depth: number;
+        index: number;
+        key: any;
+        leaf: boolean;
+        parentkey: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext<K> = {
         group: boolean;
         index: number;
@@ -512,6 +526,8 @@ export namespace NavigationListElement {
         parent?: Element;
         subId: string;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
 }
 export namespace TabBarElement {
     interface ojAnimateEnd extends CustomEvent<{
@@ -608,11 +624,20 @@ export namespace TabBarElement {
         parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type NodeContext<K> = {
         index: number;
         key: K;
         subId: string;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
 }
 export interface NavigationListIntrinsicProps extends Partial<Readonly<ojNavigationListSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojAnimateEnd?: (value: ojNavigationListEventMap<any, any>['ojAnimateEnd']) => void;

@@ -258,6 +258,12 @@ define(['exports', 'ojs/ojexpparser'], function (exports, ojexpparser) { 'use st
         case ojexpparser.NEW_EXP:
           return _evaluateConstructorExpression(node, contexts);
 
+        case ojexpparser.TEMPLATE_LITERAL:
+          return _evaluateTemplateLiteral(node, contexts);
+
+        case ojexpparser.TEMPLATE_ELEMENT:
+          return node.value.cooked;
+
         default:
           throw new Error('Unsupported expression type: ' + node.type);
       }
@@ -368,6 +374,18 @@ define(['exports', 'ojs/ojexpparser'], function (exports, ojexpparser) { 'use st
         constrObj,
         [null].concat(_evaluateArray(node.arguments, contexts))
       ))();
+    }
+
+    function _evaluateTemplateLiteral(node, contexts) {
+      const resolvedExpressions = node.expressions.map((expr) => _evaluate(expr, contexts));
+      const result = node.quasis.reduce((acc, curVal, curIndex) => {
+        acc.push(_evaluate(curVal, contexts));
+        if (curIndex < resolvedExpressions.length) {
+          acc.push(resolvedExpressions[curIndex]);
+        }
+        return acc;
+      }, []);
+      return result.join('');
     }
 
     function _getContextForIdentifier(contexts, name) {

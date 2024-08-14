@@ -630,7 +630,8 @@ function MessageBanner({ detailRendererKey, data, onClose, renderers, translatio
     }, []);
     useImperativeHandle(focusHandleRef, () => ({
         focus: () => {
-            if (data.length) {
+            const isVisible = containerDivRef.current?.checkVisibility() ?? false;
+            if (data.length && isVisible) {
                 const firstItemKey = data[0].key;
                 messagesRef.current.get(firstItemKey)?.focus();
                 return true;

@@ -1014,7 +1014,9 @@ oj.__registerWidget(
       this.option('rawValue', this.options.value, flags);
       if (this._SupportsOjLabel()) {
         var labelledBy = this.options.labelledBy;
+        var describedBy = this.options.describedBy;
         this._labelledByUpdatedForSet(this.element[0].id, null, labelledBy, this.element);
+        this._describedByUpdated(null, describedBy, this.element);
       }
     },
     _GetContentElement: function () {
@@ -3419,10 +3421,6 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <p>title will no longer be required to make your rating gauge accessible. Use aria-label attribute instead for text to be used by screen readers, and datatip or tooltip for text to be shown on hover or focus.
  * The tooltip attribute is for readonly rating gauge only. If aria-label is not present for readonly rating gauge, tooltip will be used as aria-label. Note the datatip should be used for interactive gauges only and it takes a function.
  * </p>
- * <h5>role change</h5>
- * <p>The role of interactive oj-rating-gauge has been changed from 'application' to 'slider'. The screenreader behavior will be consistent with that of role slider.
- * Slider related aria attributes (aria-valuenow, aria-valuemin, aria-valuemax, aria-valuetext) will be populated according to element value, min and max attribute.
- * </p>
  * @ojfragment migrationDoc
  * @memberof oj.ojRatingGauge
  */
@@ -3690,12 +3688,9 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <p>
  *  angle extent will only be supported in oj-c-meter-circle and will not be included in oj-c-meter-bar.
  * </p>
- * <h5>size attribute enums</h5>
- * <p>
- * size attribute will only support standard sm, md and lg enums and <i>fit</i> is no longer supported.
- * </p>
  * <h5>track-resize attribute</h5>
- * <p>track-resize attribute is no longer supported. oj-c-meter-bar and oj-c-meter-circle now have fixed sizes. Since we are not supporting the 'fit' enum value for the 'size' api, we no longer need 'track-resize'. </p>
+ * <p>track-resize attribute is no longer supported. The component will itself resize on change in dimension when size is set to fit.
+ * </p>
  * <h5>tooltip attribute and tooltipTemplate slot</h5>
  * <p> tooltip attribute and the tooltipTemplate slot are no longer supported. datatip attribute has been introduced to support this feature. The datatip attribute takes a function that provides datatipContext as argument.
  * </p>
@@ -3703,9 +3698,9 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <p>
  * indicator-size attribute will no longer support values greater than 1 in oj-c-meter-bar and oj-c-meter-circle.
  * </p>
- * <h5>role change</h5>
- * <p>The role of interactive oj-status-meter-gauge has been changed from 'application' to 'slider'. The screenreader behavior will be consistent with that of role slider.
- * Slider related aria attributes (aria-valuenow, aria-valuemin, aria-valuemax, aria-valuetext) will be populated according to element value, min and max attribute.
+ * <h5>min height for vertical meter bar</h5>
+ * <p>
+ * The vertical oj-c-meter-bar now has a default min-height which is theme driven.
  * </p>
  * @ojfragment migrationDoc
  * @memberof oj.ojStatusMeterGauge

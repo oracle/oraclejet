@@ -124,6 +124,10 @@ export namespace ojSelectSingle {
         parentKey: V;
         searchText: string;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderCollectionTemplate<V, D> = import('ojs/ojvcomponent').TemplateSlot<CollectionTemplateContext<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<V, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<V, D>>;
 }
 export interface ojSelectSingleEventMap<V, D> extends ojSelectBaseEventMap<V, D, ojSelectSingleSettableProperties<V, D>> {
     'ojAnimateEnd': ojSelectSingle.ojAnimateEnd;
@@ -253,6 +257,22 @@ export namespace SelectSingleElement {
         selected: KeySet<V>;
         selectedItem: ojcommontypes.ItemContext<V, D>;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext<V, D> = {
+        componentElement: Element;
+        data: D;
+        depth: number;
+        index: number;
+        key: V;
+        leaf: boolean;
+        metadata: ItemMetadata<V>;
+        parentKey: V;
+        searchText: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderCollectionTemplate<V, D> = import('ojs/ojvcomponent').TemplateSlot<CollectionTemplateContext<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderItemTemplate<V, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<V, D>>;
 }
 export interface SelectSingleIntrinsicProps extends Partial<Readonly<ojSelectSingleSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojAnimateEnd?: (value: ojSelectSingleEventMap<any, any>['ojAnimateEnd']) => void;
