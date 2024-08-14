@@ -13,7 +13,7 @@
     "jquery-ui": "1.13.2",
     "signals": "1.0.0",
     "knockout": "3.5.1",
-    "requirejs": "2.3.6",
+    "requirejs": "2.3.7",
     "requirejs-text": "2.0.16",
     "preact": "10.22.0",
     "proj4": "2.9.2",
