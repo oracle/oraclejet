@@ -2159,7 +2159,10 @@ var __oj_form_layout_metadata =
         resolvedUserAssistance =
           useUserAssistanceOption === 'use' ? editableElem.userAssistanceDensity : 'displayOptions';
       }
-      return resolvedUserAssistance === 'compact' || resolvedUserAssistance === 'displayOptions';
+      return (
+        (resolvedUserAssistance === 'compact' || resolvedUserAssistance === 'displayOptions') &&
+        !element.readonly
+      );
     }
 
     /**

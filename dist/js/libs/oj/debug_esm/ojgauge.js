@@ -3421,6 +3421,9 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <p>title will no longer be required to make your rating gauge accessible. Use aria-label attribute instead for text to be used by screen readers, and datatip or tooltip for text to be shown on hover or focus.
  * The tooltip attribute is for readonly rating gauge only. If aria-label is not present for readonly rating gauge, tooltip will be used as aria-label. Note the datatip should be used for interactive gauges only and it takes a function.
  * </p>
+ * <h5>thresholds[].max attribute </h5>
+ * <p>
+ * thresholds[].max is optional in oj-rating-gauge but required in oj-c-rating-gauge.
  * @ojfragment migrationDoc
  * @memberof oj.ojRatingGauge
  */
@@ -3656,13 +3659,21 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <p>
  * oj-c-meter-bar and oj-c-meter-circle will not support metric-label attribute. Applications will be responsible for providing label(s) outside the component.
  * </p>
- * <h5>reference-lines attribute </h5>
+ * <h5>reference-lines[].line-width attribute </h5>
  * <p>
  * oj-c-meter-bar and oj-c-meter-circle will not support reference-lines[].line-width attributes in this release.
  * </p>
- * <h5>thresholds attribute </h5>
+ * <h5>reference-lines[].value attribute </h5>
  * <p>
- *  thresholds[].shortDesc is replaced by thresholds[].accessibleLabel in oj-c-meter-bar and oj-c-meter-circle.
+ * reference-lines[].value is optional in oj-status-meter-gauge but required in oj-c-meter-bar and oj-c-meter-circle.
+ * </p>
+ * <h5>thresholds[].shortDesc attribute </h5>
+ * <p>
+ * thresholds[].shortDesc is replaced by thresholds[].accessibleLabel in oj-c-meter-bar and oj-c-meter-circle.
+ * </p>
+ * <h5>thresholds[].max attribute </h5>
+ * <p>
+ * thresholds[].max is optional in oj-status-meter-gauge but required in oj-c-meter-bar and oj-c-meter-circle.
  * </p>
  * <h5>thresholds-display enums </h5>
  * <p>
@@ -3679,6 +3690,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <h5>plot-area attribute </h5>
  * <p>
  * The 'auto' enum for plot-area.rendered will not be supported. Use the 'on' or 'off' enum values instead. 'on' is the default value for oj-c-meter-bar and oj-c-meter-circle.
+ * plot-area.rendered attribute also changes the baseline between the min value and zero for orientations, vertical and horizontal. Use baseline API in oj-c-meter-bar instead for this feature.
  * </p>
  * <h5>start-angle attribute </h5>
  * <p>

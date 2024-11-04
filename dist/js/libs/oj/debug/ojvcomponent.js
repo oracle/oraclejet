@@ -1083,14 +1083,14 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
     })(ConnectionState || (ConnectionState = {}));
 
     const EnvironmentWrapper = compat.forwardRef((props, ref) => {
-        const child = props.children;
+        let child = props.children;
         const contexts = ojcustomelementRegistry.getElementRegistration(child.type).cache
             .contexts;
         const allContexts = [UNSAFE_Environment.EnvironmentContext, ...(contexts ?? [])];
         const allValues = allContexts.map((context) => {
             const ctxValue = hooks.useContext(context);
-            const providedValue = child.props.__oj_private_contexts?.get(context);
-            return providedValue === undefined ? ctxValue : providedValue;
+            const providedValue = child.props.__oj_provided_contexts?.get(context);
+            return providedValue !== undefined ? providedValue : ctxValue;
         });
         const contextMap = hooks.useMemo(() => {
             const map = new Map();
@@ -1099,6 +1099,10 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             }
             return map;
         }, allValues);
+        if (child.props.__oj_private_contexts !== undefined &&
+            child.props.__oj_private_contexts !== contextMap) {
+            child = preact.cloneElement(child).props.children;
+        }
         child.props.__oj_private_contexts = contextMap;
         if (ref) {
             if (child.ref) {
@@ -3187,6 +3191,9 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
             binding: { consume: { name: 'scale' } }
         };
         metadata.properties.__oj_private_contexts = {
+            type: 'object'
+        };
+        metadata.properties.__oj_provided_contexts = {
             type: 'object'
         };
     }

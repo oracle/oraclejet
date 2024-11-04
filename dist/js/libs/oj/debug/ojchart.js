@@ -30,6 +30,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    */
   /**
    * The color of the major tick mark at the baseline. Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.
+   * If baseline value is zero, the axisLine color of the orthogonal axis may override baseline color.
    * @expose
    * @name baselineColor
    * @ojtypedefmember
@@ -3302,6 +3303,19 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    */
 
   /**
+   * Defines whether the data label has a contrast outline. When set to 'auto', only the area, line, lineWithArea, scatter and bubble chart series will have data label contrast outline.
+   * If applications turn it off they should make sure that the color meets the <a href="https://www.w3.org/TR/WCAG21/#contrast-minimum">minimum contrast ratio</a> against all possible data label background colors like series colors, plot area background color, or chart background color.
+   * @expose
+   * @name dataLabelOutline
+   * @ojtypedefmember
+   * @memberof! oj.ojChart.StyleDefaults
+   * @type {string=}
+   * @ojvalue {string} "auto" Data label outline will be displayed.
+   * @ojvalue {string} "off" Data label outline will not be displayed.
+   * @default "auto"
+   */
+
+  /**
    * Object type that specifies tooltip behavior for the series.
    * @ojtypedef oj.ojChart.SeriesValueFormat
    * @ojimportmembers oj.ojChartTooltipBehaviorProperties
@@ -4634,6 +4648,14 @@ var __oj_chart_metadata =
             "none"
           ],
           "value": "none"
+        },
+        "dataLabelOutline": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "off"
+          ],
+          "value": "auto"
         },
         "dataLabelPosition": {
           "type": "string|Array<string>",
@@ -7326,6 +7348,10 @@ var __oj_spark_chart_item_metadata =
    * </pre>
    *
    * {@ojinclude "name":"a11yKeyboard"}
+   *
+   * <p>
+   * If style-defaults.data-label-outline is set to 'off', the application is also responsible for ensuring that the data label color meets the <a href="https://www.w3.org/TR/WCAG21/#contrast-minimum">minimum contrast ratio</a> against all possible data label background colors like series colors, plot area background color, or chart background color.
+   * </p>
    *
    * <h3 id="touch-section">
    *   Touch End User Information

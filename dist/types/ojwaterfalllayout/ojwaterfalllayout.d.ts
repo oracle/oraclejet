@@ -65,7 +65,7 @@ export declare class WaterfallLayout<K extends string | number, D> extends Compo
     private readonly _handleClick;
     private readonly _handleKeyDown;
     private readonly _touchStartHandler;
-    render(): import("preact/jsx-runtime").JSX.Element;
+    render(): import("preact").JSX.Element;
     private _getScrollPolicyOptions;
     private _debounce;
     componentDidMount(): void;

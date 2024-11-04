@@ -12,7 +12,6 @@ export declare class BigDecimalStringConverter {
     private _stitchFractionOnly;
     private _stitchWholeAndFraction;
     private _formatWithCustomSeparators;
-    private _formatToPartsWithCustomSeparators;
     private _getFractionPart;
     private _getMinimumIntegerDigitsForFraction;
     private _formatDecimalPart;

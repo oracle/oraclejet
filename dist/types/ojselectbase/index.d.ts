@@ -9,6 +9,7 @@ export interface ojSelectBase<V, D, SP extends ojSelectBaseSettableProperties<V,
     matchBy: Array<TextFilter<D>['matchBy']> | null;
     placeholder: string;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     virtualKeyboard: 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
     addEventListener<T extends keyof ojSelectBaseEventMap<V, D, SP>>(type: T, listener: (this: HTMLElement, ev: ojSelectBaseEventMap<V, D, SP>[T]) => any, options?: (boolean |
@@ -49,6 +50,8 @@ export namespace ojSelectBase {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
     type virtualKeyboardChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["virtualKeyboard"]>;
@@ -88,6 +91,7 @@ export interface ojSelectBaseEventMap<V, D, SP extends ojSelectBaseSettablePrope
     'matchByChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["matchBy"]>;
     'placeholderChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["placeholder"]>;
     'readonlyChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["required"]>;
     'virtualKeyboardChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["virtualKeyboard"]>;
     'describedByChanged': JetElementCustomEvent<ojSelectBase<V, D, SP>["describedBy"]>;
@@ -108,6 +112,7 @@ export interface ojSelectBaseSettableProperties<V, D> extends editableValueSetta
     matchBy: Array<TextFilter<D>['matchBy']> | null;
     placeholder: string;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     virtualKeyboard: 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
 }
@@ -141,6 +146,8 @@ export namespace SelectBaseElement {
     type placeholderChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["placeholder"]>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["readonlyUserAssistanceShown"]>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<V, D, SP extends ojSelectBaseSettableProperties<V, D>> = JetElementCustomEvent<ojSelectBase<V, D, SP>["required"]>;
     // tslint:disable-next-line interface-over-type-literal

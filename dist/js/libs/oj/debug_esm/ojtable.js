@@ -11318,11 +11318,10 @@ TableContentsLayoutManager.prototype._removeTableDimensionsStyling = function ()
   TableContentsLayoutManager.superclass._removeTableDimensionsStyling.call(this);
 
   if (this._columnPreferredWidths == null || this._columnSampledMinWidths == null) {
-    this._removeHeaderWrapperClass();
-
-    // for sticky layout, start with 1px wide table to ensure accurate column weights are retreived
+    // shrink table down as much as possible when a 'contents' layout is required, otherwise
+    // the sampled column widths will not reflect the true weight sizes with line-clamping
     var tableElem = this._table._getTable();
-    tableElem.style[Table.CSS_PROP._WIDTH] = 1 + Table.CSS_VAL._PX;
+    tableElem.style[Table.CSS_PROP._WIDTH] = 'max-content';
 
     // TODO: hopefully remove at some point, but seems risky to remove in big JET
     // to support contents with non-intrinisic widths, fallback to using auto width
@@ -11412,8 +11411,8 @@ TableContentsLayoutManager.prototype._initializeColumnLayouts = function () {
       }
     }
 
-    // apply header wrapping to determine the minimum column widths
-    this._applyHeaderWrapperClass();
+    // specify 'min-content' width, allowing measurements to represent minimum auto-resizable column widths
+    this._table._getTable().style[Table.CSS_PROP._WIDTH] = 'min-content';
 
     // loop through columns to get the remaining column widths
     for (i = 0; i < columnsCount; i++) {
@@ -11686,28 +11685,6 @@ TableContentsLayoutManager.prototype._enforceConstrainedWeightRules = function (
       }
     }
   }
-};
-
-/**
- * @private
- */
-TableContentsLayoutManager.prototype._applyHeaderWrapperClass = function () {
-  var headerColumns = this._table._getTableHeaderColumns();
-  for (let i = 0; i < headerColumns.length; i++) {
-    headerColumns[i].classList.add(Table.CSS_CLASSES._TABLE_HEADER_WRAP_TEXT_CLASS);
-  }
-  this._table._getTable().classList.remove(Table.CSS_CLASSES._TABLE_DISABLE_WRAPPING_CLASS);
-};
-
-/**
- * @private
- */
-TableContentsLayoutManager.prototype._removeHeaderWrapperClass = function () {
-  var headerColumns = this._table._getTableHeaderColumns();
-  for (let i = 0; i < headerColumns.length; i++) {
-    headerColumns[i].classList.remove(Table.CSS_CLASSES._TABLE_HEADER_WRAP_TEXT_CLASS);
-  }
-  this._table._getTable().classList.add(Table.CSS_CLASSES._TABLE_DISABLE_WRAPPING_CLASS);
 };
 
 /**
@@ -16309,11 +16286,6 @@ Table.prototype._styleTableContainer = function (tableContainer) {
   } else {
     tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_STICKY_CLASS);
   }
-  if (this._isFixedLayoutEnabled()) {
-    tableContainer.classList.add(Table.CSS_CLASSES._TABLE_FIXED_CLASS);
-  } else {
-    tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_FIXED_CLASS);
-  }
   if (this._isAddNewRowEnabled()) {
     tableContainer.classList.add(Table.CSS_CLASSES._TABLE_ADD_ROW_CLASS);
   } else {
@@ -17172,7 +17144,6 @@ Table.CSS_CLASSES = {
   _TABLE_EXTERNAL_SCROLL_CLASS: 'oj-table-external-scroll',
   _TABLE_CLASS: 'oj-table',
   _TABLE_STICKY_CLASS: 'oj-table-sticky',
-  _TABLE_FIXED_CLASS: 'oj-table-fixed',
   _TABLE_STRETCH_CLASS: 'oj-table-stretch',
   _TABLE_COMPACT_CLASS: 'oj-table-grid-display',
   _TABLE_HGRID_CLASS: 'oj-table-horizontal-grid',
@@ -17195,8 +17166,6 @@ Table.CSS_CLASSES = {
   _TABLE_BOTTOM_SLOT_CLASS: 'oj-table-slot-bottom',
   _TABLE_SORT_ICON_CONTAINER_CLASS: 'oj-table-sort-icon-container',
   _COLUMN_HEADER_CELL_CLASS: 'oj-table-column-header-cell',
-  _TABLE_DISABLE_WRAPPING_CLASS: 'oj-table-disable-wrapping',
-  _TABLE_HEADER_WRAP_TEXT_CLASS: 'oj-table-header-cell-wrap-text',
   _COLUMN_HEADER_SELECTOR_CELL_CLASS: 'oj-table-column-header-selector-cell',
   _COLUMN_HEADER_DROP_EMPTY_CELL_CLASS: 'oj-table-column-header-drop-empty-cell',
   _COLUMN_HEADER_CLASS: 'oj-table-column-header',
@@ -19902,7 +19871,7 @@ Table.prototype._updateRowStateCellsClass = function (rowIdx, tableBodyRow, stat
     tableBodyRow = this._getTableBodyRow(rowIdx);
   }
 
-  if (tableBodyRow[Table._DATA_OJ_SELECTABLE] === Table._CONST_OFF) {
+  if (tableBodyRow == null || tableBodyRow[Table._DATA_OJ_SELECTABLE] === Table._CONST_OFF) {
     return;
   }
 
@@ -23796,6 +23765,119 @@ Table.prototype._updateSelectors = function (selected) {
  * Low vision users may not be able to see the different colors, and in high contrast mode the colors are removed.
  * The Redwood approved way to show status is to use badge.</p>
  *
+ * <h3 id="migration-section">
+ *   Migration
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+ * </h3>
+ *
+ * <h5>Migration to oj-c-table</h5>
+ *
+ * <p>To migrate from oj-table to oj-c-table, you need to revise the import statement and references to oj-c-table in your app. Please note the changes between the two components below.</p>
+ *
+ * <p>These features are not yet available in oj-c-table, they will be available in a forthcoming version.</p>
+ * <ul>
+ *    <li>Sorting</li>
+ *    <li>Column Resizing</li>
+ *    <li>Drag and Drop</li>
+ *    <li>Editing</li>
+ *    <li>Add Row</li>
+ *    <li>Page Scrolling</li>
+ *    <li>First Selected Row</li>
+ *    <li>Sticky Columns</li>
+ *    <li>Edge To Edge Padding</li>
+ *    <li>Tree Data</li>
+ *    <li>Context menu</li>
+ *    <li>Per Row Selectable</li>
+ *    <li>Group By Table</li>
+ * </ul>
+ *
+ * <p>The first step is to determine if your table requires any of the not yet released features (see above list).</p>
+ *
+ * <p>The next step is to determine compatibility with your DataProvider. oj-c-table only supports DataProvider, not TableDataSource.</p>
+ *
+ * <p>In addition, if you have implemented your own custom-elements which are tabbable (capable of receiving keyboard focus via the Tab key)
+ * you will need to implement the <code>useTabbableMode</code> API contract.<p>
+ *
+ * <p>Finally review the list below for specific API changes and changes to table type definitions.</p>
+ *
+ * <h5>Accessibility changes</h5>
+ * <p>oj-c-table is based on the grid role vs the oj-table being role application.</p>
+ *
+ * <h5>Cell based focus change</h5>
+ * <p>Focus is now applied to the cells instead of rows. Left and right arrow keys will shift cell focus.</p>
+ *
+ * <h5>F2 Interaction Mode Changes</h5>
+ * <p>oj-c-table no longer mutates the DOM to manage tab-stops, sub-components in the template need to implement the "isTabbable" API.
+ * </p>
+ * <p>Note oj-c-table tab key behavior changes in actionable mode, wraps focus at the table level, not the row level.
+ * </p>
+ *
+ * <h5>Styling Class Changes</h5>
+ * <p><code>oj-table-data-cell-no-padding</code> and <code>oj-table-data-cell-padding</code> are no longer relevant, padding is controlled via the columns.padding property.</p>
+ * <p><code>oj-table-hide-vertical-scrollbar</code> is not supported.</p>
+ * <p><code>oj-table-stretch</code> is not supported, use styles on the oj-c-table to control dimensions.</p>
+ *
+ * <h5>Table Context Type Definition Changes</h5>
+ * <p>The types have changed for template contexts, see the oj-c-table doc for details of what is supported.</p>
+ *
+ * <p>The following keys are not supported in any contexts:</p>
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Key</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td><kbd>componentElement</kbd></td>
+ *       <td>A reference to the root element of Table.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>datasource</kbd></td>
+ *       <td>A reference to the data source object.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>index/rowIndex/columnIndex</kbd></td>
+ *       <td>All index based properties are deprecated.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>parentElement</kbd></td>
+ *       <td>A reference to the parent DOM node.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * <h5>current-row attribute</h5>
+ * <p>This has been changed to current-cell and is readonly. Use the current-cell-override to set the current-cell.</p>
+ *
+ * <h5>columns attribute</h5>
+ * <p>The columns attribute is no longer an array, it is a record of column keys to columns.</p>
+ * <p>The order of columns is dictated by the oj-c-table columns-order property.</p>
+ *
+ * <h5>Column Type Definition Changes</h5>
+ * <p>className, headerClassName, and footerClassName are no longer supported.</p>
+ * <p>renderer,headerRenderer, and footerRenderer are no longer supported, use the template properties instead.</p>
+ * <p>style, headerStyle, and footerStyle are no longer supported, see the redwood spec for guidance on cell customization and use supported column properties such as padding.</p>
+ * <p>id is no longer supported, the columns record column key is used in its place.</p>
+ * <p>width is no longer supported, use the top level column-widths property.</p>
+ *
+ * <h5>Gridlines attribute</h5>
+ * <p>horizontal-grid-visible and vertical-grid-visible do not support auto. Do not set the property to get the default redwood behavior.</p>
+ *
+ * <h5>accessibility.row-header attribute</h5>
+ * <p>This property is now row.accessible-row-header property.</p>
+ *
+ * <h5>scroll-policy-options.maxCount attribute</h5>
+ * <p>This is no longer supported.</p>
+ *
+ * <h5>ojBeforeCurrentRow event</h5>
+ * <p>This cancellable event is deprecated and is being replaced with <code>onCurrentItemChanged</code> read-only property change event.
+ * </p>
+ *
+ * <h5>refresh method</h5>
+ * <p>This is no longer supported.</p>
+ *
  * <h3 id="perf-section">
  *   Performance
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
@@ -23823,6 +23905,15 @@ Table.prototype._updateSelectors = function (selected) {
  * depending on the number of rows and columns. When set to <code class="prettyprint">fixed</code>, the Table's column widths are determined
  * using the specified <code class="prettyprint">columns[].weight</code> values. This is much more performant when rendering large numbers of
  * columns and rows in the Table.
+ *
+ * <h3 id="binding-section">
+ *   Binding Propagation
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
+ * </h3>
+ * <p>By default, the Table propagates bindings for property defaults to JET form controls used inside of the table to customize default userAssistanceDensity.
+ * Note when using the oj-table custom element inside of a VDOM application, the default userAssistanceDensity properties will not propagate down to the form control child components that may use.
+ * This is because binding propagation is Knockout-based, and VDOM applications are not Knockout-based.
+ * Consider setting userAssistanceDensity to compact on your form controls directly in VDOM.</p>
  *
  * <h3 id="sizing-section">
  *   Sizing Behavior
@@ -24665,11 +24756,12 @@ Table.prototype.options = {
    */
 
   /**
-   * @typedef {Object} oj.ojTable.ContextStatus<K>
+   * @typedef {Object} oj.ojTable.ContextStatus
    * @property {number} rowIndex index of the row
    * @property {any} rowKey key of the row
    * @property {oj.ojTable.CurrentRow<K>} currentRow current row.
-   * @ojsignature {target:"Type", value:"K", for:"rowKey", jsdocOverride:true}
+   * @ojsignature [{target:"Type", value:"<K>", for: "genericTypeParameters"},
+   *               {target:"Type", value:"K", for:"rowKey", jsdocOverride:true}]
    */
 
   /**

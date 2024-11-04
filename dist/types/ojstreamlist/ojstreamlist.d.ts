@@ -77,7 +77,7 @@ export declare class StreamList<K extends string | number, D> extends Component<
     private _handleToggleExpanded;
     private readonly _handleKeyDown;
     private _touchStartHandler;
-    render(): import("preact/jsx-runtime").JSX.Element;
+    render(): import("preact").JSX.Element;
     private _doBlur;
     private _isFocusBlurTriggeredByDescendent;
     private _renderInitialSkeletons;

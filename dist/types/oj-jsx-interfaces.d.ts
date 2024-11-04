@@ -9,7 +9,7 @@ import { ComponentChildren, ClassAttributes, JSX as JSXPreact } from 'preact';
 
 export type LoadIntrinsicElements = {};
 
-declare module 'preact/jsx-runtime' {
+declare module 'preact' {
   export namespace JSX {
     export interface DOMAttributes<Target extends EventTarget> {
       onfocusin?: JSXPreact.FocusEventHandler<Target> | undefined;

@@ -94,6 +94,8 @@ export namespace ojSelectSingle {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<V, D> = ojSelectBase.readonlyChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<V, D> = ojSelectBase.readonlyUserAssistanceShownChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<V, D> = ojSelectBase.requiredChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged<V, D> = ojSelectBase.userAssistanceDensityChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
@@ -149,6 +151,7 @@ export interface ojSelectSingleEventMap<V, D> extends ojSelectBaseEventMap<V, D,
     'messagesCustomChanged': JetElementCustomEvent<ojSelectSingle<V, D>["messagesCustom"]>;
     'placeholderChanged': JetElementCustomEvent<ojSelectSingle<V, D>["placeholder"]>;
     'readonlyChanged': JetElementCustomEvent<ojSelectSingle<V, D>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojSelectSingle<V, D>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojSelectSingle<V, D>["required"]>;
     'userAssistanceDensityChanged': JetElementCustomEvent<ojSelectSingle<V, D>["userAssistanceDensity"]>;
     'validChanged': JetElementCustomEvent<ojSelectSingle<V, D>["valid"]>;
@@ -239,6 +242,8 @@ export namespace SelectSingleElement {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<V, D> = ojSelectBase.readonlyChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<V, D> = ojSelectBase.readonlyUserAssistanceShownChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<V, D> = ojSelectBase.requiredChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged<V, D> = ojSelectBase.userAssistanceDensityChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
@@ -294,6 +299,7 @@ export interface SelectSingleIntrinsicProps extends Partial<Readonly<ojSelectSin
     onmessagesCustomChanged?: (value: ojSelectSingleEventMap<any, any>['messagesCustomChanged']) => void;
     onplaceholderChanged?: (value: ojSelectSingleEventMap<any, any>['placeholderChanged']) => void;
     onreadonlyChanged?: (value: ojSelectSingleEventMap<any, any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojSelectSingleEventMap<any, any>['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojSelectSingleEventMap<any, any>['requiredChanged']) => void;
     onuserAssistanceDensityChanged?: (value: ojSelectSingleEventMap<any, any>['userAssistanceDensityChanged']) => void;
     onvalidChanged?: (value: ojSelectSingleEventMap<any, any>['validChanged']) => void;

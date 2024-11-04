@@ -58,6 +58,9 @@ Upgrade your JET project to TypeScript version ${__SUPPORTED_TS_VERSION}
     if (_buildOptions.followImports == undefined) {
         _buildOptions.followImports = true;
     }
+    if (_buildOptions.debug == undefined) {
+        _buildOptions.debug = false;
+    }
     if (_buildOptions.apiDocBuildEnabled == undefined) {
         _buildOptions.apiDocBuildEnabled = true;
     }
@@ -65,6 +68,11 @@ Upgrade your JET project to TypeScript version ${__SUPPORTED_TS_VERSION}
     if (parsedJsonConfig?.raw?.compilerOptions?.['_JET_disabledExceptionKeys']) {
         _buildOptions.disabledExceptionKeys = [
             ...parsedJsonConfig.raw.compilerOptions['_JET_disabledExceptionKeys']
+        ];
+    }
+    if (parsedJsonConfig?.raw?.compilerOptions?.['_JET_enabledTypeParamSubstitution']) {
+        _buildOptions.enabledTypeParamSubstitution = [
+            ...parsedJsonConfig.raw.compilerOptions['_JET_enabledTypeParamSubstitution']
         ];
     }
     const compilerHost = ts.createCompilerHost(parsedTsconfigJson.compilerOptions);

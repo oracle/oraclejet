@@ -639,6 +639,9 @@ var __oj_gantt_metadata =
         "labelStart": {
           "type": "string"
         },
+        "rowAxisLabel": {
+          "type": "string"
+        },
         "startFinishDependencyAriaDesc": {
           "type": "string"
         },

@@ -30,6 +30,7 @@ export type BuildOptions = {
     parentDirToPackInfo?: Record<string, MetaTypes.VCompPack | null>;
     dependencyPackMap?: Map<string, MetaTypes.VCompPack>;
     disabledExceptionKeys?: Array<string>;
+    enabledTypeParamSubstitution?: Array<string>;
 };
 export default function compile({ tsconfigJson, buildOptions }: CompileOptions): {
     errors: any[];

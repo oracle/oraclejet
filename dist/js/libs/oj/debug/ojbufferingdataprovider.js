@@ -965,8 +965,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     filterObj = filterCriterion;
                 }
             }
+            const includeSubmitted = newItemArray.length !== 0;
             for (const baseItem of baseItemArray) {
-                const editItem = this.editBuffer.getItem(baseItem.metadata.key, true);
+                const editItem = this.editBuffer.getItem(baseItem.metadata.key, includeSubmitted);
                 if (!editItem) {
                     newItemArray.push(baseItem);
                 }

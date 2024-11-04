@@ -41,7 +41,6 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
   const Config = {};
 
   const TEMPLATE_ENGINE_KO = Symbol();
-  const PREACT_TEMPLATE_PROMISE_KO = Symbol();
   const PREACT_TEMPLATE_PROMISE = Symbol();
 
   let trans = ojt;
@@ -307,9 +306,6 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
     if (!Config[templateProp]) {
       let promise;
       switch (templateProp) {
-        case PREACT_TEMPLATE_PROMISE_KO:
-          promise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine-preact-ko'], function (m) { resolve(_interopNamespace(m)); }, reject) });
-          break;
         case PREACT_TEMPLATE_PROMISE:
           promise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine-preact'], function (m) { resolve(_interopNamespace(m)); }, reject) });
           break;
@@ -337,12 +333,9 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
     let enginePromise;
     const state = ojcustomelementUtils.CustomElementUtils.getElementState(options.customElement);
     const bpType = state.getBindingProviderType();
-    if (bpType !== 'preact') {
-      // legacy component - lets use old template engine with knockout
+    if (bpType !== 'preact' || options.needsTrackableProperties || state.getUseKoFlag()) {
+      // legacy component or Preact component that needs knockout - lets use template engine with knockout
       enginePromise = Config._getEngineByType(TEMPLATE_ENGINE_KO);
-    } else if (options.needsTrackableProperties || state.getUseKoFlag()) {
-      // Preact component that needs knockout - lets use preact template engine with knockout
-      enginePromise = Config._getEngineByType(PREACT_TEMPLATE_PROMISE_KO);
     } else {
       // Preact component without knockout - lets use plain preact template engine that does not track observables.
       enginePromise = Config._getEngineByType(PREACT_TEMPLATE_PROMISE);

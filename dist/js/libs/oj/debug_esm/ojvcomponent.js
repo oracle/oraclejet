@@ -7,7 +7,7 @@
  */
 import { forwardRef } from 'preact/compat';
 import { jsx } from 'preact/jsx-runtime';
-import { h, options, Component, createRef, render, Fragment, cloneElement, createContext } from 'preact';
+import { h, options, Component, createRef, render, cloneElement, Fragment, createContext } from 'preact';
 import { JetElementError, CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, publicToPrivateName, toSymbolizedValue, LifecycleElementState, addPrivatePropGetterSetters } from 'ojs/ojcustomelement-utils';
 import { getElementRegistration, isElementRegistered, isVComponent, getElementDescriptor, registerElement as registerElement$1 } from 'ojs/ojcustomelement-registry';
 import { useLayoutEffect, useContext, useMemo } from 'preact/hooks';
@@ -1075,14 +1075,14 @@ var ConnectionState;
 })(ConnectionState || (ConnectionState = {}));
 
 const EnvironmentWrapper = forwardRef((props, ref) => {
-    const child = props.children;
+    let child = props.children;
     const contexts = getElementRegistration(child.type).cache
         .contexts;
     const allContexts = [EnvironmentContext, ...(contexts ?? [])];
     const allValues = allContexts.map((context) => {
         const ctxValue = useContext(context);
-        const providedValue = child.props.__oj_private_contexts?.get(context);
-        return providedValue === undefined ? ctxValue : providedValue;
+        const providedValue = child.props.__oj_provided_contexts?.get(context);
+        return providedValue !== undefined ? providedValue : ctxValue;
     });
     const contextMap = useMemo(() => {
         const map = new Map();
@@ -1091,6 +1091,10 @@ const EnvironmentWrapper = forwardRef((props, ref) => {
         }
         return map;
     }, allValues);
+    if (child.props.__oj_private_contexts !== undefined &&
+        child.props.__oj_private_contexts !== contextMap) {
+        child = cloneElement(child).props.children;
+    }
     child.props.__oj_private_contexts = contextMap;
     if (ref) {
         if (child.ref) {
@@ -3179,6 +3183,9 @@ function extendMetadata(metadata) {
         binding: { consume: { name: 'scale' } }
     };
     metadata.properties.__oj_private_contexts = {
+        type: 'object'
+    };
+    metadata.properties.__oj_provided_contexts = {
         type: 'object'
     };
 }

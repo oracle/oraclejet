@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-amd/keycode', 'jqueryui-amd/focusable', 'jqueryui-amd/tabbable', 'ojs/ojcore', 'jquery', 'ojs/ojmessaging', 'ojs/ojmetadatautils', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'ojs/ojlogger', 'ojs/ojdefaultsutils', 'ojs/ojtranslation', 'ojs/ojfocusutils', 'ojs/ojgestureutils'], function (exports, widget, uniqueId, keycode, focusable, tabbable, oj, $, Message, MetadataUtils, oj$1, DomUtils, ojcustomelement, ojcustomelementUtils, ojcustomelementRegistry, Logger, ojdefaultsutils, Translations, ojfocusutils, GestureUtils) { 'use strict';
+define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-amd/keycode', 'jqueryui-amd/focusable', 'jqueryui-amd/tabbable', 'ojs/ojcore', 'jquery', 'ojs/ojmessaging', 'ojs/ojlogger', 'ojs/ojmetadatautils', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'ojs/ojdefaultsutils', 'ojs/ojtranslation', 'ojs/ojfocusutils', 'ojs/ojgestureutils'], function (exports, widget, uniqueId, keycode, focusable, tabbable, oj, $, Message, Logger, MetadataUtils, oj$1, DomUtils, ojcustomelement, ojcustomelementUtils, ojcustomelementRegistry, ojdefaultsutils, Translations, ojfocusutils, GestureUtils) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -120,14 +120,22 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   /**
    * Utility function that activates messaging on the component using the strategy provided.
    * @param {Object} launcher element(s) to which messaging applies
-   * @param {Object} content
+   * @param {Object} contentElement  The wrapper element for all component messages
+   * @param {Object} content an object containing the messages and the converter hint
+   * @param {Array<string>} severitiesAllowedWhenReadonly an array of message severities that are allowed when readonly
    * @private
    */
-  ComponentMessaging.prototype.activate = function (launcher, contentElement, content) {
+  ComponentMessaging.prototype.activate = function (
+    launcher,
+    contentElement,
+    content,
+    severitiesAllowedWhenReadonly
+  ) {
     var that = this;
     oj.Assert.assertObject(content);
     this._launcher = launcher;
     this._contentElement = contentElement;
+    this._severitiesAllowedWhenReadonly = severitiesAllowedWhenReadonly;
 
     this._messagingContent = oj.CollectionUtils.copyInto(this._messagingContent || {}, content);
 
@@ -730,7 +738,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     } else {
       let options = this._component.options;
       let messagingPreferences = options.displayOptions ? { ...options.displayOptions } : {};
-      if (resolvedUserAssistance === 'compact') {
+      if (resolvedUserAssistance === 'compact' && !options.readOnly) {
         // for 'compact' set displayOptions.messages, validator-hint and converter hint to notewindow.
         messagingPreferences.messages =
           messagingPreferences.messages === 'none' ? 'none' : 'notewindow';
@@ -740,6 +748,15 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
           messagingPreferences.converterHint === 'none' ? 'none' : 'notewindow';
         strategyToArtifacts = this._getResolvedMessagingDisplayOptions(messagingPreferences);
       } else {
+        if (options.readOnly) {
+          if (options.readonlyUserAssistanceShown === 'confirmationAndInfoMessages') {
+            messagingPreferences.messages = ComponentMessaging._STRATEGY_TYPE.INLINE;
+          } else {
+            messagingPreferences.messages = ComponentMessaging._STRATEGY_TYPE.NONE;
+          }
+          messagingPreferences.validatorHint = ComponentMessaging._STRATEGY_TYPE.NONE;
+          messagingPreferences.converterHint = ComponentMessaging._STRATEGY_TYPE.NONE;
+        }
         strategyToArtifacts = this._getResolvedMessagingDisplayOptions(messagingPreferences);
       }
     }
@@ -914,7 +931,28 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    * @private
    */
   MessagingStrategy.prototype.GetMessages = function () {
-    return this.GetValidityState().getMessages();
+    const unfilteredMessages = this.GetValidityState().getMessages();
+    // if we don't have a _severitiesAllowedWhenReadonly filter array, just return the unfiltered messages.
+    const severitiesAllowedWhenReadonly = this._componentMessaging._severitiesAllowedWhenReadonly;
+    const filteredMessages = severitiesAllowedWhenReadonly
+      ? unfilteredMessages.filter((message) =>
+          severitiesAllowedWhenReadonly.includes(message.severity)
+        )
+      : unfilteredMessages;
+    if (filteredMessages.length < unfilteredMessages.length) {
+      const filteredOutMessages = unfilteredMessages.filter(
+        (message) => !severitiesAllowedWhenReadonly.includes(message.severity)
+      );
+      filteredOutMessages.forEach((message) => {
+        Logger.info(
+          'The following message severity is not allowed when readonly: severity:' +
+            message.severity +
+            ', message detail:' +
+            message.detail
+        );
+      });
+    }
+    return filteredMessages;
   };
 
   MessagingStrategy.prototype.GetMaxSeverity = function () {

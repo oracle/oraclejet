@@ -120,15 +120,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
    * @param {Element} element
    * @param {boolean=} excludeActiveElement
    * @param {boolean=} includeReadonly
+   * @param {NodeList=} An array of the dialog elements
    * @return {Element[]} An array of the disabled elements
    * @private
    */
   DataCollectionUtils.disableAllFocusableElements = function (
     element,
     excludeActiveElement,
-    includeReadonly
+    includeReadonly,
+    dialogs
   ) {
-    return ojkeyboardfocusUtils.disableAllFocusableElements(element, excludeActiveElement, includeReadonly);
+    return ojkeyboardfocusUtils.disableAllFocusableElements(element, excludeActiveElement, includeReadonly, dialogs);
   };
 
   /**

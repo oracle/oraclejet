@@ -29,6 +29,7 @@ export interface inputBase<V, SP extends inputBaseSettableProperties<V, SV>, SV 
     placeholder: string;
     readonly rawValue: RV;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     translations: {
@@ -86,6 +87,8 @@ export namespace inputBase {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
     type validatorsChanged<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> = JetElementCustomEvent<inputBase<V, SP, SV, RV>["validators"]>;
@@ -127,6 +130,7 @@ export interface inputBaseEventMap<V, SP extends inputBaseSettableProperties<V, 
     'placeholderChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["required"]>;
     'validatorsChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["validators"]>;
     'describedByChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["describedBy"]>;
@@ -154,6 +158,7 @@ export interface inputBaseSettableProperties<V, SV = V, RV = V> extends editable
     placeholder: string;
     readonly rawValue: RV;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     translations: {
@@ -251,6 +256,8 @@ export namespace ojInputPassword {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<V = string> = inputBase.readonlyChanged<V, ojInputPasswordSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<V = string> = inputBase.readonlyUserAssistanceShownChanged<V, ojInputPasswordSettableProperties<V>>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<V = string> = inputBase.requiredChanged<V, ojInputPasswordSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged<V = string> = inputBase.userAssistanceDensityChanged<V, ojInputPasswordSettableProperties<V>>;
@@ -282,6 +289,7 @@ export interface ojInputPasswordEventMap<V = string> extends inputBaseEventMap<V
     'placeholderChanged': JetElementCustomEvent<ojInputPassword<V>["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<ojInputPassword<V>["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<ojInputPassword<V>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojInputPassword<V>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojInputPassword<V>["required"]>;
     'userAssistanceDensityChanged': JetElementCustomEvent<ojInputPassword<V>["userAssistanceDensity"]>;
     'validChanged': JetElementCustomEvent<ojInputPassword<V>["valid"]>;
@@ -398,6 +406,8 @@ export namespace ojInputText {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<V = any> = inputBase.readonlyChanged<V, ojInputTextSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<V = any> = inputBase.readonlyUserAssistanceShownChanged<V, ojInputTextSettableProperties<V>>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<V = any> = inputBase.requiredChanged<V, ojInputTextSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged<V = any> = inputBase.userAssistanceDensityChanged<V, ojInputTextSettableProperties<V>>;
@@ -434,6 +444,7 @@ export interface ojInputTextEventMap<V = any> extends inputBaseEventMap<V, ojInp
     'placeholderChanged': JetElementCustomEvent<ojInputText<V>["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<ojInputText<V>["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<ojInputText<V>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojInputText<V>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojInputText<V>["required"]>;
     'userAssistanceDensityChanged': JetElementCustomEvent<ojInputText<V>["userAssistanceDensity"]>;
     'validChanged': JetElementCustomEvent<ojInputText<V>["valid"]>;
@@ -543,6 +554,8 @@ export namespace ojTextArea {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<V = any> = inputBase.readonlyChanged<V, ojTextAreaSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<V = any> = inputBase.readonlyUserAssistanceShownChanged<V, ojTextAreaSettableProperties<V>>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<V = any> = inputBase.requiredChanged<V, ojTextAreaSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged<V = any> = inputBase.userAssistanceDensityChanged<V, ojTextAreaSettableProperties<V>>;
@@ -579,6 +592,7 @@ export interface ojTextAreaEventMap<V = any> extends inputBaseEventMap<V, ojText
     'placeholderChanged': JetElementCustomEvent<ojTextArea<V>["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<ojTextArea<V>["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<ojTextArea<V>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojTextArea<V>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojTextArea<V>["required"]>;
     'userAssistanceDensityChanged': JetElementCustomEvent<ojTextArea<V>["userAssistanceDensity"]>;
     'validChanged': JetElementCustomEvent<ojTextArea<V>["valid"]>;
@@ -654,6 +668,8 @@ export namespace InputPasswordElement {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<V = string> = inputBase.readonlyChanged<V, ojInputPasswordSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<V = string> = inputBase.readonlyUserAssistanceShownChanged<V, ojInputPasswordSettableProperties<V>>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<V = string> = inputBase.requiredChanged<V, ojInputPasswordSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged<V = string> = inputBase.userAssistanceDensityChanged<V, ojInputPasswordSettableProperties<V>>;
@@ -722,6 +738,8 @@ export namespace InputTextElement {
     type rawValueChanged<V = any> = inputBase.rawValueChanged<V, ojInputTextSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<V = any> = inputBase.readonlyChanged<V, ojInputTextSettableProperties<V>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<V = any> = inputBase.readonlyUserAssistanceShownChanged<V, ojInputTextSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<V = any> = inputBase.requiredChanged<V, ojInputTextSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
@@ -794,6 +812,8 @@ export namespace TextAreaElement {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<V = any> = inputBase.readonlyChanged<V, ojTextAreaSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<V = any> = inputBase.readonlyUserAssistanceShownChanged<V, ojTextAreaSettableProperties<V>>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<V = any> = inputBase.requiredChanged<V, ojTextAreaSettableProperties<V>>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged<V = any> = inputBase.userAssistanceDensityChanged<V, ojTextAreaSettableProperties<V>>;
@@ -827,6 +847,7 @@ export interface InputPasswordIntrinsicProps extends Partial<Readonly<ojInputPas
     onplaceholderChanged?: (value: ojInputPasswordEventMap<any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojInputPasswordEventMap<any>['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojInputPasswordEventMap<any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojInputPasswordEventMap<any>['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojInputPasswordEventMap<any>['requiredChanged']) => void;
     onuserAssistanceDensityChanged?: (value: ojInputPasswordEventMap<any>['userAssistanceDensityChanged']) => void;
     onvalidChanged?: (value: ojInputPasswordEventMap<any>['validChanged']) => void;
@@ -856,6 +877,7 @@ export interface InputTextIntrinsicProps extends Partial<Readonly<ojInputTextSet
     onplaceholderChanged?: (value: ojInputTextEventMap<any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojInputTextEventMap<any>['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojInputTextEventMap<any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojInputTextEventMap<any>['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojInputTextEventMap<any>['requiredChanged']) => void;
     onuserAssistanceDensityChanged?: (value: ojInputTextEventMap<any>['userAssistanceDensityChanged']) => void;
     onvalidChanged?: (value: ojInputTextEventMap<any>['validChanged']) => void;
@@ -886,6 +908,7 @@ export interface TextAreaIntrinsicProps extends Partial<Readonly<ojTextAreaSetta
     onplaceholderChanged?: (value: ojTextAreaEventMap<any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojTextAreaEventMap<any>['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojTextAreaEventMap<any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojTextAreaEventMap<any>['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojTextAreaEventMap<any>['requiredChanged']) => void;
     onuserAssistanceDensityChanged?: (value: ojTextAreaEventMap<any>['userAssistanceDensityChanged']) => void;
     onvalidChanged?: (value: ojTextAreaEventMap<any>['validChanged']) => void;

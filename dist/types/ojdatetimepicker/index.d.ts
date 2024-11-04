@@ -304,6 +304,8 @@ export namespace ojDateTimePicker {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = ojInputDateTime.readonlyChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged = ojInputDateTime.readonlyUserAssistanceShownChanged<ojDateTimePickerSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
     type validChanged = ojInputDateTime.validChanged<ojDateTimePickerSettableProperties>;
     //------------------------------------------------------------
     // End: generated events for inherited properties
@@ -337,6 +339,7 @@ export interface ojDateTimePickerEventMap extends ojInputDateTimeEventMap<ojDate
     'dayMetaDataChanged': JetElementCustomEvent<ojDateTimePicker["dayMetaData"]>;
     'displayOptionsChanged': JetElementCustomEvent<ojDateTimePicker["displayOptions"]>;
     'readonlyChanged': JetElementCustomEvent<ojDateTimePicker["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojDateTimePicker["readonlyUserAssistanceShown"]>;
     'validChanged': JetElementCustomEvent<ojDateTimePicker["valid"]>;
 }
 export interface ojDateTimePickerSettableProperties extends ojInputDateTimeSettableProperties {
@@ -541,6 +544,8 @@ export namespace ojInputDate {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.readonlyChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.readonlyUserAssistanceShownChanged<string, SP>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.requiredChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.userAssistanceDensityChanged<string, SP>;
@@ -588,6 +593,7 @@ export interface ojInputDateEventMap<SP extends ojInputDateSettableProperties = 
     'messagesCustomChanged': JetElementCustomEvent<ojInputDate<SP>["messagesCustom"]>;
     'rawValueChanged': JetElementCustomEvent<ojInputDate<SP>["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<ojInputDate<SP>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojInputDate<SP>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojInputDate<SP>["required"]>;
     'userAssistanceDensityChanged': JetElementCustomEvent<ojInputDate<SP>["userAssistanceDensity"]>;
     'validChanged': JetElementCustomEvent<ojInputDate<SP>["valid"]>;
@@ -824,6 +830,8 @@ export namespace ojInputDateTime {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = ojInputDate.readonlyChanged<SP>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = ojInputDate.readonlyUserAssistanceShownChanged<SP>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = ojInputDate.requiredChanged<SP>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = ojInputDate.userAssistanceDensityChanged<SP>;
@@ -863,6 +871,7 @@ export interface ojInputDateTimeEventMap<SP extends ojInputDateTimeSettablePrope
     'placeholderChanged': JetElementCustomEvent<ojInputDateTime<SP>["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<ojInputDateTime<SP>["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<ojInputDateTime<SP>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojInputDateTime<SP>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojInputDateTime<SP>["required"]>;
     'userAssistanceDensityChanged': JetElementCustomEvent<ojInputDateTime<SP>["userAssistanceDensity"]>;
     'validChanged': JetElementCustomEvent<ojInputDateTime<SP>["valid"]>;
@@ -1057,6 +1066,8 @@ export namespace ojInputTime {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = inputBase.readonlyChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged = inputBase.readonlyUserAssistanceShownChanged<string, ojInputTimeSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged = inputBase.requiredChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged = inputBase.userAssistanceDensityChanged<string, ojInputTimeSettableProperties>;
@@ -1093,6 +1104,7 @@ export interface ojInputTimeEventMap extends inputBaseEventMap<string, ojInputTi
     'placeholderChanged': JetElementCustomEvent<ojInputTime["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<ojInputTime["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<ojInputTime["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojInputTime["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojInputTime["required"]>;
     'userAssistanceDensityChanged': JetElementCustomEvent<ojInputTime["userAssistanceDensity"]>;
     'validChanged': JetElementCustomEvent<ojInputTime["valid"]>;
@@ -1298,6 +1310,8 @@ export namespace DateTimePickerElement {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = ojInputDateTime.readonlyChanged<ojDateTimePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged = ojInputDateTime.readonlyUserAssistanceShownChanged<ojDateTimePickerSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
     type validChanged = ojInputDateTime.validChanged<ojDateTimePickerSettableProperties>;
     //------------------------------------------------------------
     // End: generated events for inherited properties
@@ -1372,6 +1386,8 @@ export namespace InputDateElement {
     type rawValueChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.rawValueChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.readonlyChanged<string, SP>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.readonlyUserAssistanceShownChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = inputBase.requiredChanged<string, SP>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1463,6 +1479,8 @@ export namespace InputDateTimeElement {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = ojInputDate.readonlyChanged<SP>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = ojInputDate.readonlyUserAssistanceShownChanged<SP>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = ojInputDate.requiredChanged<SP>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = ojInputDate.userAssistanceDensityChanged<SP>;
@@ -1538,6 +1556,8 @@ export namespace InputTimeElement {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = inputBase.readonlyChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged = inputBase.readonlyUserAssistanceShownChanged<string, ojInputTimeSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged = inputBase.requiredChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged = inputBase.userAssistanceDensityChanged<string, ojInputTimeSettableProperties>;
@@ -1605,6 +1625,7 @@ export interface DateTimePickerIntrinsicProps extends Partial<Readonly<ojDateTim
     ondayMetaDataChanged?: (value: ojDateTimePickerEventMap['dayMetaDataChanged']) => void;
     ondisplayOptionsChanged?: (value: ojDateTimePickerEventMap['displayOptionsChanged']) => void;
     onreadonlyChanged?: (value: ojDateTimePickerEventMap['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojDateTimePickerEventMap['readonlyUserAssistanceShownChanged']) => void;
     onvalidChanged?: (value: ojDateTimePickerEventMap['validChanged']) => void;
     children?: ComponentChildren;
 }
@@ -1637,6 +1658,7 @@ export interface InputDateIntrinsicProps extends Partial<Readonly<ojInputDateSet
     onmessagesCustomChanged?: (value: ojInputDateEventMap<any>['messagesCustomChanged']) => void;
     onrawValueChanged?: (value: ojInputDateEventMap<any>['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojInputDateEventMap<any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojInputDateEventMap<any>['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojInputDateEventMap<any>['requiredChanged']) => void;
     onuserAssistanceDensityChanged?: (value: ojInputDateEventMap<any>['userAssistanceDensityChanged']) => void;
     onvalidChanged?: (value: ojInputDateEventMap<any>['validChanged']) => void;
@@ -1672,6 +1694,7 @@ export interface InputDateTimeIntrinsicProps extends Partial<Readonly<ojInputDat
     onplaceholderChanged?: (value: ojInputDateTimeEventMap<any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojInputDateTimeEventMap<any>['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojInputDateTimeEventMap<any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojInputDateTimeEventMap<any>['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojInputDateTimeEventMap<any>['requiredChanged']) => void;
     onuserAssistanceDensityChanged?: (value: ojInputDateTimeEventMap<any>['userAssistanceDensityChanged']) => void;
     onvalidChanged?: (value: ojInputDateTimeEventMap<any>['validChanged']) => void;
@@ -1704,6 +1727,7 @@ export interface InputTimeIntrinsicProps extends Partial<Readonly<ojInputTimeSet
     onplaceholderChanged?: (value: ojInputTimeEventMap['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojInputTimeEventMap['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojInputTimeEventMap['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojInputTimeEventMap['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojInputTimeEventMap['requiredChanged']) => void;
     onuserAssistanceDensityChanged?: (value: ojInputTimeEventMap['userAssistanceDensityChanged']) => void;
     onvalidChanged?: (value: ojInputTimeEventMap['validChanged']) => void;

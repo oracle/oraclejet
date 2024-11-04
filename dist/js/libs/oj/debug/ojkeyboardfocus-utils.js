@@ -153,6 +153,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * @param {Element} element
    * @param {boolean=} excludeActiveElement
    * @param {boolean=} includeReadonly
+   * @param {NodeList=} An array of the dialog elements
    * @return {Element[]} An array of the disabled elements
    * @export
    * @ignore
@@ -160,18 +161,23 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
   const disableAllFocusableElements = function (
     element,
     excludeActiveElement,
-    includeReadonly
+    includeReadonly,
+    dialogs
   ) {
     var disabledElems = [];
     // make all focusable elements non-focusable, since we want to manage tab stops
     var focusElems = getFocusableElementsInNode(element, true);
     for (var i = 0; i < focusElems.length; i++) {
-      if (!excludeActiveElement || focusElems[i] !== document.activeElement) {
-        disableElement(focusElems[i]);
-        disabledElems.push(focusElems[i]);
-      }
-      if (includeReadonly && focusElems[i].hasAttribute(_ARIA_READONLY)) {
-        removeAriaReadonly(focusElems[i]);
+      const elem = focusElems[i];
+      const isInsideDialog = Array.from(dialogs || []).find((dialog) => dialog.contains(elem));
+      if (isInsideDialog === undefined) {
+        if (!excludeActiveElement || focusElems[i] !== document.activeElement) {
+          disableElement(focusElems[i]);
+          disabledElems.push(focusElems[i]);
+        }
+        if (includeReadonly && focusElems[i].hasAttribute(_ARIA_READONLY)) {
+          removeAriaReadonly(focusElems[i]);
+        }
       }
     }
     return disabledElems;
@@ -253,10 +259,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
 
         // Check if the parent contains the launcher
         if (launcher != null && $(parentElement).has(launcher.get(0)).length > 0) {
-          // only return the popup if the child popup is currently open
-          if (oj.ZOrderUtils.getStatus(popupElem) === oj.ZOrderUtils.STATUS.OPEN) {
-            childPopups.push(popupElem);
-          }
+          childPopups.push(popupElem);
         }
       }
       return { popups: childPopups };

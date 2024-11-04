@@ -144,6 +144,7 @@ export interface ojComboboxMany<K, D, V = any> extends ojCombobox<V[], ojCombobo
     placeholder: string | null;
     readonly rawValue: string[] | null;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     value: V[] | null;
@@ -211,6 +212,8 @@ export namespace ojComboboxMany {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
     type validatorsChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["validators"]>;
@@ -260,6 +263,7 @@ export interface ojComboboxManyEventMap<K, D, V = any> extends ojComboboxEventMa
     'placeholderChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["required"]>;
     'validatorsChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["validators"]>;
     'valueChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["value"]>;
@@ -291,6 +295,7 @@ export interface ojComboboxManySettableProperties<K, D, V = any> extends ojCombo
     placeholder: string | null;
     readonly rawValue: string[] | null;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     value: V[] | null;
@@ -331,6 +336,7 @@ export interface ojComboboxOne<K, D, V = any> extends ojCombobox<V, ojComboboxOn
     placeholder: string | null;
     readonly rawValue: string | null;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     value: V | null;
@@ -405,6 +411,8 @@ export namespace ojComboboxOne {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
     type validatorsChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["validators"]>;
@@ -456,6 +464,7 @@ export interface ojComboboxOneEventMap<K, D, V = any> extends ojComboboxEventMap
     'placeholderChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["required"]>;
     'validatorsChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["validators"]>;
     'valueChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["value"]>;
@@ -488,6 +497,7 @@ export interface ojComboboxOneSettableProperties<K, D, V = any> extends ojCombob
     placeholder: string | null;
     readonly rawValue: string | null;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     value: V | null;
@@ -641,6 +651,7 @@ export interface ojSelectMany<K, D, V = any> extends ojSelect<V[], ojSelectManyS
     };
     placeholder: string | null;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     renderMode: 'jet' | 'native';
     required: boolean;
     value: V[] | null;
@@ -703,6 +714,8 @@ export namespace ojSelectMany {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type renderModeChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["renderMode"]>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["required"]>;
@@ -749,6 +762,7 @@ export interface ojSelectManyEventMap<K, D, V = any> extends ojSelectEventMap<V[
     'pickerAttributesChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["pickerAttributes"]>;
     'placeholderChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["placeholder"]>;
     'readonlyChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["readonlyUserAssistanceShown"]>;
     'renderModeChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["renderMode"]>;
     'requiredChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["required"]>;
     'valueChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["value"]>;
@@ -777,6 +791,7 @@ export interface ojSelectManySettableProperties<K, D, V = any[]> extends ojSelec
     };
     placeholder: string | null;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     renderMode: 'jet' | 'native';
     required: boolean;
     value: V[] | null;
@@ -814,6 +829,7 @@ export interface ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSetta
     };
     placeholder: string | null;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     renderMode: 'jet' | 'native';
     required: boolean;
     value: V | null;
@@ -875,6 +891,8 @@ export namespace ojSelectOne {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type renderModeChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["renderMode"]>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["required"]>;
@@ -921,6 +939,7 @@ export interface ojSelectOneEventMap<K, D, V = any> extends ojSelectEventMap<V, 
     'pickerAttributesChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["pickerAttributes"]>;
     'placeholderChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["placeholder"]>;
     'readonlyChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["readonlyUserAssistanceShown"]>;
     'renderModeChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["renderMode"]>;
     'requiredChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["required"]>;
     'valueChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["value"]>;
@@ -949,6 +968,7 @@ export interface ojSelectOneSettableProperties<K, D, V = any> extends ojSelectSe
     };
     placeholder: string | null;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     renderMode: 'jet' | 'native';
     required: boolean;
     value: V | null;
@@ -1096,6 +1116,8 @@ export namespace ComboboxManyElement {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
     type validatorsChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxMany<K, D, V>["validators"]>;
@@ -1176,6 +1198,8 @@ export namespace ComboboxOneElement {
     type rawValueChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["rawValue"]>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["readonlyUserAssistanceShown"]>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojComboboxOne<K, D, V>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1315,6 +1339,8 @@ export namespace SelectManyElement {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type renderModeChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["renderMode"]>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojSelectMany<K, D, V>["required"]>;
@@ -1382,6 +1408,8 @@ export namespace SelectOneElement {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type renderModeChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["renderMode"]>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojSelectOne<K, D, V>["required"]>;
@@ -1431,6 +1459,7 @@ export interface ComboboxManyIntrinsicProps extends Partial<Readonly<ojComboboxM
     onplaceholderChanged?: (value: ojComboboxManyEventMap<any, any, any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojComboboxManyEventMap<any, any, any>['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojComboboxManyEventMap<any, any, any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojComboboxManyEventMap<any, any, any>['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojComboboxManyEventMap<any, any, any>['requiredChanged']) => void;
     onvalidatorsChanged?: (value: ojComboboxManyEventMap<any, any, any>['validatorsChanged']) => void;
     onvalueChanged?: (value: ojComboboxManyEventMap<any, any, any>['valueChanged']) => void;
@@ -1464,6 +1493,7 @@ export interface ComboboxOneIntrinsicProps extends Partial<Readonly<ojComboboxOn
     onplaceholderChanged?: (value: ojComboboxOneEventMap<any, any, any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojComboboxOneEventMap<any, any, any>['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojComboboxOneEventMap<any, any, any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojComboboxOneEventMap<any, any, any>['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojComboboxOneEventMap<any, any, any>['requiredChanged']) => void;
     onvalidatorsChanged?: (value: ojComboboxOneEventMap<any, any, any>['validatorsChanged']) => void;
     onvalueChanged?: (value: ojComboboxOneEventMap<any, any, any>['valueChanged']) => void;
@@ -1492,6 +1522,7 @@ export interface SelectManyIntrinsicProps extends Partial<Readonly<ojSelectManyS
     onpickerAttributesChanged?: (value: ojSelectManyEventMap<any, any, any>['pickerAttributesChanged']) => void;
     onplaceholderChanged?: (value: ojSelectManyEventMap<any, any, any>['placeholderChanged']) => void;
     onreadonlyChanged?: (value: ojSelectManyEventMap<any, any, any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojSelectManyEventMap<any, any, any>['readonlyUserAssistanceShownChanged']) => void;
     onrenderModeChanged?: (value: ojSelectManyEventMap<any, any, any>['renderModeChanged']) => void;
     onrequiredChanged?: (value: ojSelectManyEventMap<any, any, any>['requiredChanged']) => void;
     onvalueChanged?: (value: ojSelectManyEventMap<any, any, any>['valueChanged']) => void;
@@ -1520,6 +1551,7 @@ export interface SelectOneIntrinsicProps extends Partial<Readonly<ojSelectOneSet
     onpickerAttributesChanged?: (value: ojSelectOneEventMap<any, any, any>['pickerAttributesChanged']) => void;
     onplaceholderChanged?: (value: ojSelectOneEventMap<any, any, any>['placeholderChanged']) => void;
     onreadonlyChanged?: (value: ojSelectOneEventMap<any, any, any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojSelectOneEventMap<any, any, any>['readonlyUserAssistanceShownChanged']) => void;
     onrenderModeChanged?: (value: ojSelectOneEventMap<any, any, any>['renderModeChanged']) => void;
     onrequiredChanged?: (value: ojSelectOneEventMap<any, any, any>['requiredChanged']) => void;
     onvalueChanged?: (value: ojSelectOneEventMap<any, any, any>['valueChanged']) => void;

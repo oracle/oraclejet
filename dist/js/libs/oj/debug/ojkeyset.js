@@ -20,9 +20,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojkeysetimpl'], function (exports, oj
      */
 
     /**
-     * @typedef {Object} ImmutableKeySet.ImmutableSet<V> An immutable Set of unique values.
-     * @ojsignature {target: "Type",
-     *               value: "{ size: number; has(value: V): boolean; values(): IterableIterator<V>; }"}
+     * @typedef {Object} ImmutableKeySet.ImmutableSet An immutable Set of unique values.
+     * @ojsignature [{target: "Type",
+     *               value: "{ size: number; has(value: V): boolean; values(): IterableIterator<V>; }"},
+     *              {target:"Type", value:"<V>", for: "genericTypeParameters"}]
      */
 
     /**

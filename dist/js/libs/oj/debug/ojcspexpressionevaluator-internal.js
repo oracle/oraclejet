@@ -253,6 +253,7 @@ define(['exports', 'ojs/ojexpparser'], function (exports, ojexpparser) { 'use st
           return _evaluateObjectExpression(node, contexts);
 
         case ojexpparser.FUNCTION_EXP:
+        case ojexpparser.ARROW_EXP:
           return _evaluateFunctionExpression(node, contexts);
 
         case ojexpparser.NEW_EXP:
@@ -339,11 +340,10 @@ define(['exports', 'ojs/ojexpparser'], function (exports, ojexpparser) { 'use st
     }
 
     function _evaluateFunctionExpression(node, contexts) {
-      // eslint-disable-next-line consistent-return
       return function () {
         var _args = arguments;
 
-        var argScope = node.arguments.reduce(function (acc, arg, i) {
+        var argScope = node.params.reduce(function (acc, arg, i) {
           acc[arg.name] = _args[i];
           return acc;
         }, {});
@@ -352,14 +352,16 @@ define(['exports', 'ojs/ojexpparser'], function (exports, ojexpparser) { 'use st
         argScope['this'] = this;
 
         try {
-          var val = _evaluate(node.body, [argScope].concat(contexts));
-
-          if (node.return) {
-            return val;
-          }
+          // Expect to get node.body.type = 'BlockStatement'.
+          // Expect to get node.body.body = {type: 'ReturnStatement', argument: <node to evaluate>} || <node to evaluate>
+          const hasReturn = node.body.body.type === ojexpparser.RETURN_STATEMENT;
+          const codeBlock = hasReturn ? node.body.body.argument : node.body.body;
+          const val = _evaluate(codeBlock, [argScope].concat(contexts));
+          return hasReturn ? val : undefined;
         } catch (e) {
-          _throwErrorWithExpression(e, node.expr);
+          _throwErrorWithExpression(e, node.body.expr);
         }
+        return undefined;
       };
     }
 

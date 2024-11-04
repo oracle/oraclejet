@@ -78,12 +78,12 @@ function assembleTypes(buildOptions) {
                 }
             }
         }
-        const pathToCompiledTsCode = buildOptions.tsBuiltDir;
         const regexExportDep = new RegExp(/^\s*export\s+[\w ,]*{\s*(?<exports>[\w ,]+)\s*}[\w ,]*(\s+from\s+)['"](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
         const regexImportDep = new RegExp(/^[\s]*import\s+[\w\s\{\}\*,]*["'](?<localdep>[\.]{1,2}[\/][\w_-]+)['"];?$/gm);
         const moduleTypeDependencies = {};
         const processedModuleNames = new Set();
         let destFilePath;
+        const pathToCompiledTsCode = path.normalize(buildOptions.tsBuiltDir);
         const moduleEntryFiles = glob.sync(`${pathToCompiledTsCode}/**/*(index.d.ts|loader.d.ts)`);
         moduleEntryFiles.forEach((entryFile) => {
             const moduleDir = path.dirname(entryFile);

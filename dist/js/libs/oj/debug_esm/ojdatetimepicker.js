@@ -35,6 +35,9 @@ import LabeledByUtils from 'ojs/ojlabelledbyutils';
       readonly: {
         binding: { consume: { name: 'readonly' } }
       },
+      readonlyUserAssistanceShown: {
+        binding: { consume: { name: 'readonlyUserAssistanceShown' } }
+      },
       userAssistanceDensity: {
         binding: { consume: { name: 'userAssistanceDensity' } }
       },
@@ -179,6 +182,14 @@ var __oj_input_time_metadata =
     "readonly": {
       "type": "boolean",
       "value": false
+    },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
     },
     "renderMode": {
       "type": "string",
@@ -598,6 +609,14 @@ var __oj_input_date_metadata =
       "type": "boolean",
       "value": false
     },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
+    },
     "renderMode": {
       "type": "string",
       "enumValues": [
@@ -1008,6 +1027,14 @@ var __oj_input_date_time_metadata =
     "readonly": {
       "type": "boolean",
       "value": false
+    },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
     },
     "renderMode": {
       "type": "string",
@@ -1540,6 +1567,14 @@ function formatYear(year, month) {
  * @ojoracleicon 'oj-ux-ico-calendar'
  * @ojuxspecs ['date-picker']
  *
+ * @ojdeprecated [
+ *   {
+ *     "type": "maintenance",
+ *     "since": "17.1.0",
+ *     "value": ["oj-c-date-picker"]
+ *   }
+ * ]
+ *
  * @classdesc
  * <h3 id="inputDateOverview-section">
  *   JET DatePicker (Inline mode)
@@ -1591,7 +1626,7 @@ function formatYear(year, month) {
  * </p>
  * <h5>date-picker.week-display attribute</h5>
  * <p>
- * date-picker.week-display is not yet supported in oj-c-date-picker.
+ * date-picker.week-display has changed to week-display.
  * </p>
  * <h5>day-formatter attribute</h5>
  * <p>
@@ -1653,6 +1688,14 @@ function formatYear(year, month) {
  *
  * @ojoracleicon 'oj-ux-ico-calendar'
  * @ojuxspecs ['input-date']
+ *
+ * @ojdeprecated [
+ *   {
+ *     "type": "maintenance",
+ *     "since": "17.1.0",
+ *     "value": ["oj-c-input-date-picker"]
+ *   }
+ * ]
  *
  * @classdesc
  * <h3 id="inputDateOverview-section">
@@ -1776,7 +1819,7 @@ function formatYear(year, month) {
  *
  * <h6>date-picker.week-display</h6>
  * <p>
- * The date-picker.week-display attribute is not yet supported in oj-c-input-date-picker.
+ * The date-picker.week-display attribute has changed to week-display.
  * </p>
  *
  * <h5>DayFormatter attribute</h5>
@@ -2385,7 +2428,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @instance
        * @type {string}
        * @ojvalue {string} 'number' Will show the week of the year as a number
-       * @ojvalue {string} 'none' Nothing will be shown
+       * @ojvalue {string} 'none' The week of the year column will not be shown
        * @default "none"
        * @ojsignature { target: "Type", value: "?string"}
        */
@@ -2891,6 +2934,21 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @ojdeprecated {since: '17.0.0', description: "oj-date-picker doesn't have a text input, so this was never needed."}
      * @type {string}
      * @ojtranslatable
+     */
+    /**
+     * readonlyUserAssistanceShown is private - messagesCustom is a deprecated UI for this component so readonlyUserAssistanceShown serves no purpose.
+     *
+     * Specifies which user assistance types should be shown when the component is readonly.
+     *
+     * @private
+     * @name readonlyUserAssistanceShown
+     * @instance
+     * @memberof oj.ojDatePicker
+     * @default 'none'
+     * @type {string}
+     * @ojvalue {string} 'none' no user assistance is shown when the component is readonly
+     * @ojvalue {string} 'confirmationAndInfoMessages' messagesCustom messages of severity 'confirmation' and 'info' are shown when the component is readonly. Other severities will be filtered out and an info log message will be logged to the console.
+     * @since 17.1.0
      */
     /**
      * The placeholder text to set on the element.
@@ -4109,6 +4167,13 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       .attr('data-oj-internal', ''); // mark internal component, used in Components.getComponentElementByNode;
     this.element.attr('data-oj-popup-' + this._popUpDpDiv.attr('id') + '-parent', ''); // mark parent of pop up @HTMLUpdateOK
 
+    // JET-57860 - Date Picker Pop Up - Last Day not visible in landscape
+    // When rendering as a sheet on small devices, we need to let the picker
+    // overflow and scroll when there is not enough space to show all the elements.
+    // Add a different class when the picker is opened as a sheet.
+    if (!_isLargeScreen()) {
+      this._popUpDpDiv.addClass('oj-datepicker-sheet');
+    }
     var pickerAttrs = this.options.pickerAttributes;
     if (pickerAttrs) {
       EditableValueUtils.setPickerAttributes(this._popUpDpDiv.ojPopup('widget'), pickerAttrs);
@@ -14876,7 +14941,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
           this._createTimePickerConverter(ci);
           this._timePicker.ojInputTime('option', key, this._timeConverter);
         }.bind(this);
-        var newConverter = value || this._GetDefaultConverter();
+        var newConverter =
+          IntlConverterUtils.getConverterInstance(value) || this._GetDefaultConverter();
 
         if (newConverter instanceof Promise) {
           newConverter.then(function (ci) {

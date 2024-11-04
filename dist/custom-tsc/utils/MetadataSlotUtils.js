@@ -317,26 +317,8 @@ function getSlotData(slotDataNode, metaUtilObj) {
             if (slotDataMetadata.type === 'Array<object>') {
                 nestedArrayStack.push(key);
             }
-            const subprops = TypeUtils.getComplexPropertyMetadata(symbol, slotDataMetadata.type, detailName, MetaTypes.MDScope.DT, MetaTypes.MDContext.SLOT | MetaTypes.MDContext.SLOT_DATA, propertyPath, nestedArrayStack, metaUtilObj);
-            if (subprops) {
-                if (subprops.circRefDetected) {
-                    data[property].type = TypeUtils.getSubstituteTypeForCircularReference(slotDataMetadata);
-                }
-                else if (slotDataMetadata.type === 'Array<object>') {
-                    data[property].extension = {};
-                    data[property].extension.vbdt = {};
-                    data[property].extension.vbdt.itemProperties = subprops;
-                }
-                else {
-                    data[property].type = 'object';
-                    data[property].properties = subprops;
-                }
-                const typeDef = TypeUtils.getPossibleTypeDef(property, symbol, slotDataMetadata, metaUtilObj);
-                if (typeDef && (typeDef.name || typeDef.coreJetModule)) {
-                    data[property]['jsdoc'] = data[property]['jsdoc'] || {};
-                    data[property]['jsdoc']['typedef'] = typeDef;
-                }
-            }
+            const complexMD = TypeUtils.getComplexPropertyMetadata(symbol, slotDataMetadata, detailName, MetaTypes.MDScope.DT, MetaTypes.MDContext.SLOT | MetaTypes.MDContext.SLOT_DATA, propertyPath, nestedArrayStack, metaUtilObj);
+            TypeUtils.processComplexPropertyMetadata(property, slotDataMetadata, complexMD, data[property]);
         }
     });
     return data;
@@ -417,6 +399,20 @@ function populateDynamicSlotDefsMapping(properties, dynSlotDefs) {
         }
         else if (properties[prop].extension?.['vbdt']?.['itemProperties']) {
             populateDynamicSlotDefsMapping(properties[prop].extension['vbdt']['itemProperties'], dynSlotDefs);
+        }
+        let keyedProps = properties[prop].extension?.['vbdt']?.['keyedProperties'] ??
+            properties[prop]['keyedProperties'];
+        while (keyedProps) {
+            if (keyedProps.values?.properties) {
+                populateDynamicSlotDefsMapping(keyedProps.values.properties, dynSlotDefs);
+                break;
+            }
+            else if (keyedProps.values?.keyedProperties) {
+                keyedProps = keyedProps.values.keyedProperties;
+            }
+            else {
+                break;
+            }
         }
     }
 }

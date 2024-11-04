@@ -1466,6 +1466,9 @@ const DataGridResources = function (
   this.attributes.hiddenIndicatorIndex = 'data-oj-hiddenIndicatorIndex';
   this.attributes.filterable = 'data-oj-filterable';
   this.attributes.readOnly = 'data-oj-readOnly';
+  this.attributes.dropIndex = 'data-oj-dropIndex';
+  this.attributes.dropLevel = 'data-oj-dropLevel';
+  this.attributes.dropAxis = 'data-oj-dropAxis';
 };
 
 oj._registerLegacyNamespaceProp('DataGridResources', DataGridResources);
@@ -4875,7 +4878,7 @@ DvtDataGrid.prototype._handleInitialization = function (hasData) {
  *        at its completion. See handleExpandEvent for an example
  * @private
  */
-DvtDataGrid.prototype._runModelEventQueue = function () {
+DvtDataGrid.prototype._runModelEventQueue = function (fillIfDone) {
   var event;
   // Run the event queue generally after initialization
   // or animations are complete.
@@ -4887,6 +4890,9 @@ DvtDataGrid.prototype._runModelEventQueue = function () {
     this.m_processingEventQueue = true;
     if (this.m_modelEvents.length === 0) {
       this.m_processingEventQueue = false;
+      if (fillIfDone) {
+        this.fillViewport();
+      }
       return;
     }
 
@@ -4901,6 +4907,9 @@ DvtDataGrid.prototype._runModelEventQueue = function () {
     }
   } else {
     this.m_processingEventQueue = false;
+    if (fillIfDone) {
+      this.fillViewport();
+    }
   }
 };
 
@@ -16320,22 +16329,23 @@ DvtDataGrid.prototype.handleModelEvent = function (event, fromQueue) {
   var requiresAnimation = false;
 
   this.m_processingModelEvent = true;
+  let clearProcessing = true;
 
   if (event.detail) {
     // handle new event
     if (operation === 'delete') {
       this._handleDeleteRangeEvent(event.detail);
-      this.m_processingModelEvent = false;
     }
     if (operation === 'insert') {
       this._handleInsertRangeEvent(event.detail);
+      clearProcessing = false;
     }
     if (operation === 'update') {
       this._handleUpdateRangeEvent(event.detail);
+      clearProcessing = false;
     }
     if (operation === 'refresh') {
       this._handleModelRefreshEvent(event.detail);
-      this.m_processingModelEvent = false;
     }
   } else if (operation === 'insert') {
     this._adjustActive(operation, indexes);
@@ -16390,7 +16400,7 @@ DvtDataGrid.prototype.handleModelEvent = function (event, fromQueue) {
     this._handleModelSyncEvent(event);
   }
 
-  if (!event.detail) {
+  if (clearProcessing) {
     this.m_processingModelEvent = false;
   }
 
@@ -16627,7 +16637,8 @@ DvtDataGrid.prototype._handleInsertRangeEvent = function (eventDetail) {
   let axis = eventDetail.axis;
   let ranges = eventDetail.ranges;
   if (ranges.length === 0) {
-    this.fillViewport();
+    this.m_processingModelEvent = false;
+    this._runModelEventQueue(true);
     return;
   }
 
@@ -16762,7 +16773,8 @@ DvtDataGrid.prototype._handleUpdateRangeEvent = function (eventDetail) {
     this._resetEditableClone();
     this.applySelection();
     this._resetHeaderHighLight();
-    this.fillViewport();
+    this.m_processingModelEvent = false;
+    this._runModelEventQueue(true);
     return;
   }
 
@@ -16886,25 +16898,21 @@ DvtDataGrid.prototype._handleUpdateEditableHeader = function (props, cellSet, ce
   ];
   let eventDetail = { axis, ranges, editHeader };
   let hasBrowserFocus = this.m_root.contains(document.activeElement);
+  const focusCallback = () => {
+    if (this._isActiveWithinUpdateRange({ detail: { ranges: [range] } })) {
+      if (!hasBrowserFocus) {
+        this.m_shouldFocus = false;
+      }
+      this._highlightActive();
+    }
+  };
 
   this._handleDeleteRangeEvent(eventDetail);
   // handleInsertRangeCellFetchSuccess expects { offset, count } as commonProps.range
   delete commonProps.range;
   commonProps.range = { offset, count };
-  this._handleInsertRangeCellFetchSuccess(commonProps, cellSet, cellRange);
-
-  if (this._isActiveWithinUpdateRange({ detail: { ranges: [range] } })) {
-    if (!hasBrowserFocus) {
-      this.m_shouldFocus = false;
-    }
-    this._highlightActive();
-  }
-
-  this._runModelEventQueue();
-  if (!this.m_modelEvents?.length) {
-    this.m_processingModelEvent = false;
-  }
-  this._signalTaskEnd();
+  // this ends the task
+  this._handleInsertRangeCellFetchSuccess(commonProps, cellSet, cellRange, focusCallback);
 };
 
 DvtDataGrid.prototype._handleInsertRangeHeaderFetchSuccess = function (
@@ -17069,7 +17077,8 @@ DvtDataGrid.prototype._handleInsertRangeHeaderFetchSuccess = function (
 DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
   commonProps,
   cellSet,
-  cellRanges
+  cellRanges,
+  focusCallback
 ) {
   const range = commonProps.range;
   const axis = commonProps.axis;
@@ -17095,11 +17104,9 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
     frozenEndHeaderRoot = this.m_colEndHeaderFrozen;
   }
 
-  if (!this.m_modelEvents?.length) {
-    this.m_processingModelEvent = false;
-  }
   this._signalTaskEnd();
   this.m_fetching.cells = false;
+
   if (!dontModifySelection) {
     this.unhighlightSelection();
   }
@@ -17474,6 +17481,10 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
     this.applySelection();
     this._resetHeaderHighLight();
     this.resizeGrid();
+  }
+
+  if (focusCallback) {
+    focusCallback();
   }
 
   commonProps.promiseResolve();
@@ -18255,13 +18266,8 @@ DvtDataGrid.prototype._handleUpdateRangeFetchSuccess = function (commonProps, ce
     this._highlightActive();
   }
 
-  this._runModelEventQueue();
-  if (!this.m_modelEvents?.length) {
-    this.m_processingModelEvent = false;
-  }
   // end fetch
   this._signalTaskEnd();
-
   commonProps.promiseResolve();
 };
 
@@ -43338,6 +43344,7 @@ DvtDataGrid.prototype.handleRowDragEnd = function (event) {
   return this._invokeDndCallback('drag', 'rows', 'dragEnd', event, this._cellsDragged);
 };
 
+// if similar dataTypes on headers and labels then check for reodering and then pivot for backward compatibility.
 // eslint-disable-next-line consistent-return
 DvtDataGrid.prototype.handleRowDragOver = function (event) {
   let returnValue;
@@ -43358,10 +43365,16 @@ DvtDataGrid.prototype.handleRowDragOver = function (event) {
         return returnValue;
       }
     }
-    if (index != null) {
+    if (
+      index != null &&
+      (this.m_dropTarget == null ||
+        index !== this._getAttribute(this.m_dropTarget, 'dropIndex', true))
+    ) {
       this.handleFreezeIndicatorDragOver(event, index, axis);
+    } else {
+      event.preventDefault();
     }
-  } else {
+  } else if (this._matchDragDataType(event, 'rows')) {
     this.m_databodyReorder = true;
     let axis = 'row';
     let rowIndex = this._getOverIndex(event, axis);
@@ -43379,7 +43392,11 @@ DvtDataGrid.prototype.handleRowDragOver = function (event) {
         let position = this._getRelativePosition(event, axis, header, true);
         let dropContext = this._getDropContext(event, this.m_dropRowIndex, 'row');
         returnValue = this._invokeDropCallback('rows', 'dragOver', event, dropContext);
-        if (returnValue === false || event.defaultPrevented) {
+        if (
+          (returnValue === false || event.defaultPrevented) &&
+          (this.m_dropTarget == null ||
+            rowIndex !== this._getAttribute(this.m_dropTarget, 'dropIndex', true))
+        ) {
           this._removeDropTargetLine(axis);
           this._removeDropTargetClass();
           if (!isHeaderWithinSelection) {
@@ -43399,6 +43416,8 @@ DvtDataGrid.prototype.handleRowDragOver = function (event) {
       }
       return returnValue;
     }
+  } else if (this._matchDragDataType(event, 'rowLabels')) {
+    this._handlePivotDragOverOnHeader(event);
   }
 };
 
@@ -43456,7 +43475,13 @@ DvtDataGrid.prototype.handleDatabodyDragOver = function (event) {
             });
           }
 
-          if (returnValue === false || event.defaultPrevented) {
+          if (
+            returnValue === false ||
+            (event.defaultPrevented &&
+              (this.m_dropTarget === undefined ||
+                cellIndex[selectionAxis] !==
+                  this._getAttribute(this.m_dropTarget, 'dropIndex', true)))
+          ) {
             this._removeDropTargetLine(selectionAxis);
             this._removeDropTargetClass();
             if (!isCellSelected) {
@@ -43625,7 +43650,7 @@ DvtDataGrid.prototype.handleRowDrag = function (event) {
 DvtDataGrid.prototype.handleRowDrop = function (event) {
   if (this.m_pivotInProgress) {
     this._handlePivotDropOnHeader(event);
-  } else {
+  } else if (this._matchDragDataType(event, 'rows')) {
     let dropRowIndex = this.m_dropRowIndex;
     if (this.m_dropRowIndex === null) {
       dropRowIndex = this._getOverIndex(event, 'row');
@@ -43668,6 +43693,8 @@ DvtDataGrid.prototype.handleRowDrop = function (event) {
     if (this._isSelectionEnabled() && this.m_utils.isTouchDevice() && this.m_selection.length > 0) {
       this._moveTouchSelectionAffordance();
     }
+  } else if (this._matchDragDataType(event, 'rowLabels')) {
+    this._handlePivotDropOnHeader(event);
   }
 };
 
@@ -43688,7 +43715,7 @@ DvtDataGrid.prototype.handleColumnDragOver = function (event) {
   let returnValue;
   if (this.m_pivotInProgress) {
     this._handlePivotDragOverOnHeader(event);
-  } else {
+  } else if (this._matchDragDataType(event, 'columns')) {
     let colIndex = this._getOverIndex(event, 'column');
     if (this.m_dragFrozenIndicator) {
       let axis = this.m_freezeIndicatorAxis;
@@ -43704,8 +43731,14 @@ DvtDataGrid.prototype.handleColumnDragOver = function (event) {
           return returnValue;
         }
       }
-      if (colIndex != null) {
+      if (
+        colIndex != null &&
+        (this.m_dropTarget == null ||
+          colIndex !== this._getAttribute(this.m_dropTarget, 'dropIndex', true))
+      ) {
         this.handleFreezeIndicatorDragOver(event, colIndex, axis);
+      } else {
+        event.preventDefault();
       }
     } else {
       this.m_databodyReorder = true;
@@ -43729,7 +43762,11 @@ DvtDataGrid.prototype.handleColumnDragOver = function (event) {
           index: this.m_dropColumnIndex
         };
         returnValue = this._invokeDropCallback('columns', 'dragOver', event, dropContext);
-        if (returnValue === false || event.defaultPrevented) {
+        if (
+          (returnValue === false || event.defaultPrevented) &&
+          (this.m_dropTarget == null ||
+            colIndex !== this._getAttribute(this.m_dropTarget, 'dropIndex', true))
+        ) {
           this._removeDropTargetLine(axis);
           this._removeDropTargetClass();
           if (position === 'inside') {
@@ -43747,6 +43784,8 @@ DvtDataGrid.prototype.handleColumnDragOver = function (event) {
         return returnValue;
       }
     }
+  } else if (this._matchDragDataType(event, 'columnLabels')) {
+    this._handlePivotDragOverOnHeader(event);
   }
 };
 
@@ -43772,7 +43811,7 @@ DvtDataGrid.prototype.handleColumnDrag = function (event) {
 DvtDataGrid.prototype.handleColumnDrop = function (event) {
   if (this.m_pivotInProgress) {
     this._handlePivotDropOnHeader(event);
-  } else {
+  } else if (this._matchDragDataType(event, 'columns')) {
     let dropColumnIndex = this.m_dropColumnIndex;
     if (this.m_dropColumnIndex === null) {
       dropColumnIndex = this._getOverIndex(event, 'column');
@@ -43811,10 +43850,12 @@ DvtDataGrid.prototype.handleColumnDrop = function (event) {
         this._invokeDropCallback('columns', 'drop', event, dropContext);
       }
     }
-  }
-  this.m_dropColumnIndex = null;
-  if (this._isSelectionEnabled() && this.m_utils.isTouchDevice() && this.m_selection.length > 0) {
-    this._moveTouchSelectionAffordance();
+    this.m_dropColumnIndex = null;
+    if (this._isSelectionEnabled() && this.m_utils.isTouchDevice() && this.m_selection.length > 0) {
+      this._moveTouchSelectionAffordance();
+    }
+  } else if (this._matchDragDataType(event, 'columnLabels')) {
+    this._handlePivotDropOnHeader(event);
   }
 };
 
@@ -44317,7 +44358,7 @@ DvtDataGrid.prototype._addDropTargetLine = function (axis, top, dir, dirValue, i
   this.m_dropTarget = document.createElement('div');
   this.m_dropHeaderTarget = document.createElement('div');
   this.m_dropEndHeaderTarget = document.createElement('div');
-  this._setAttribute(this.m_dropTarget, 'index', index);
+  this._setAttribute(this.m_dropTarget, 'dropIndex', index);
 
   let databodyElem = this.m_databody;
   let headerElem = this.m_rowHeader;
@@ -44629,6 +44670,9 @@ DvtDataGrid.prototype._setDropTargetLineStyle = function (
 
 DvtDataGrid.prototype._removeDropTargetLine = function () {
   this._removeDropTargetEventListeners();
+  if (this.m_dropTarget) {
+    this.m_dropTarget.removeAttribute(this.getResources().getMappedAttribute('dropIndex'));
+  }
   this._remove(this.m_dropTarget);
   this._remove(this.m_dropHeaderTarget);
   if (this.m_dropEndHeaderTarget) {
@@ -44862,7 +44906,7 @@ DvtDataGrid.prototype.handleDropTargetDragOver = function (event) {
   let axis = this.m_utils.containsCSSClassName(target, this.getMappedStyle('rowDropTargetLine'))
     ? 'row'
     : 'column';
-  let index = this._getAttribute(this.m_dropTarget, 'index');
+  let index = this._getAttribute(this.m_dropTarget, 'dropIndex');
   let dropContext = {
     axis: axis,
     position: 'after',
@@ -44877,7 +44921,7 @@ DvtDataGrid.prototype.handleDropTargetDrop = function (event) {
   let axis = this.m_utils.containsCSSClassName(target, this.getMappedStyle('rowDropTargetLine'))
     ? 'row'
     : 'column';
-  let index = this._getAttribute(this.m_dropTarget, 'index');
+  let index = this._getAttribute(this.m_dropTarget, 'dropIndex');
   if (axis === 'row') {
     this.m_dropRowIndex = null;
   } else {
@@ -48880,14 +48924,22 @@ DvtDataGrid.prototype.handleCornerDragOver = function (event) {
     }
   }
   if (dragOverLabel) {
-    this._addPivotDropTargetLine(
-      dragOverAxis,
-      dropLineTop,
-      dir,
-      dropLineDir,
-      position,
-      dragOverLabel
-    );
+    if (
+      this.m_pivotDropTarget == null ||
+      !(
+        this._getAttribute(this.m_pivotDropTarget, 'dropLevel', true) === dragOverLevel &&
+        this._getAttribute(this.m_pivotDropTarget, 'dropAxis') === dragOverAxis
+      )
+    ) {
+      this._addPivotDropTargetLine(
+        dragOverAxis,
+        dropLineTop,
+        dir,
+        dropLineDir,
+        position,
+        dragOverLabel
+      );
+    }
     let dropContext = {
       level: dragOverLevel,
       axis: dragOverAxis,
@@ -48914,8 +48966,8 @@ DvtDataGrid.prototype._addPivotDropTargetLine = function (
   this._removePivotDropTargetLine();
   this.m_pivotDropTarget = document.createElement('div');
   this.m_pivotDropHeaderTarget = document.createElement('div');
-  this._setAttribute(this.m_pivotDropTarget, 'level', level);
-  this._setAttribute(this.m_pivotDropTarget, 'axis', axis);
+  this._setAttribute(this.m_pivotDropTarget, 'dropLevel', level);
+  this._setAttribute(this.m_pivotDropTarget, 'dropAxis', axis);
 
   let headerElem = label;
   let databodyElem = this.m_colHeader;
@@ -49180,6 +49232,10 @@ DvtDataGrid.prototype.handleCornerDragEnter = function (event) {
 
 DvtDataGrid.prototype._removePivotDropTargetLine = function () {
   this._remove(this.m_pivotDropTarget);
+  if (this.m_pivotDropTarget) {
+    this.m_pivotDropTarget.removeAttribute(this.getResources().getMappedAttribute('dropLevel'));
+    this.m_pivotDropTarget.removeAttribute(this.getResources().getMappedAttribute('dropAxis'));
+  }
   this._remove(this.m_pivotDropHeaderTarget);
   this.m_pivotDropTarget = null;
   this.m_pivotDropHeaderTarget = null;
@@ -49324,30 +49380,38 @@ DvtDataGrid.prototype._handlePivotDragOverOnHeader = function (event) {
       dragOverLevel = dragOverLabel[context].level;
       position = this._getLabelRelativePosition(event, dragOverAxis, dragOverLabel);
 
-      dropLineTop =
-        this.getElementDir(dragOverLabel, 'top') +
-        (position === 'after' ? this.getElementHeight(dragOverLabel) : 0);
+      if (
+        this.m_pivotDropTarget == null ||
+        !(
+          this._getAttribute(this.m_pivotDropTarget, 'dropLevel', true) === dragOverLevel &&
+          this._getAttribute(this.m_pivotDropTarget, 'dropAxis') === dragOverAxis
+        )
+      ) {
+        dropLineTop =
+          this.getElementDir(dragOverLabel, 'top') +
+          (position === 'after' ? this.getElementHeight(dragOverLabel) : 0);
 
-      if (dragOverAxis === 'columnEnd') {
-        dropLineTop += this.getElementDir(this.m_rowHeaderScrollbarSpacer, 'top');
+        if (dragOverAxis === 'columnEnd') {
+          dropLineTop += this.getElementDir(this.m_rowHeaderScrollbarSpacer, 'top');
+        }
+
+        dropLineDir =
+          this.getElementDir(dragOverLabel, dir) +
+          (position === 'after' ? this.getElementWidth(dragOverLabel) : 0);
+
+        if (dragOverAxis === 'rowEnd') {
+          dropLineDir += this.getElementDir(this.m_columnHeaderScrollbarSpacer, dir);
+        }
+
+        this._addPivotDropTargetLine(
+          dragOverAxis,
+          dropLineTop,
+          dir,
+          dropLineDir,
+          position,
+          dragOverLabel
+        );
       }
-
-      dropLineDir =
-        this.getElementDir(dragOverLabel, dir) +
-        (position === 'after' ? this.getElementWidth(dragOverLabel) : 0);
-
-      if (dragOverAxis === 'rowEnd') {
-        dropLineDir += this.getElementDir(this.m_columnHeaderScrollbarSpacer, dir);
-      }
-
-      this._addPivotDropTargetLine(
-        dragOverAxis,
-        dropLineTop,
-        dir,
-        dropLineDir,
-        position,
-        dragOverLabel
-      );
       let dropContext = {
         level: dragOverLevel,
         axis: dragOverAxis,

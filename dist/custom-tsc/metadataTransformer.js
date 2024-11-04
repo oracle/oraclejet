@@ -59,7 +59,7 @@ function transformer(program, buildOptions) {
             console.log(`${sf.fileName}: processing metadata...`);
         const visitor = (node) => {
             if (ts.isImportDeclaration(node)) {
-                storeImport(node, _BUILD_OPTIONS.programImportMaps);
+                storeImport(node, _BUILD_OPTIONS.programImportMaps, path.dirname(sf.fileName));
                 return node;
             }
             else if (ts.isClassDeclaration(node)) {
@@ -274,8 +274,13 @@ function getNewMetaUtilObj(typeChecker, buildOptions, componentInfo, progImportM
         dynamicSlotsInUse: 0b0000,
         dynamicSlotsInfo: [],
         followImports: buildOptions['followImports'],
+        debugMode: buildOptions['debug'] || false,
         coreJetModuleMapping: _CORE_JET_MODULE_MAPPING,
-        excludedTypes: new Set(_EXCLUDED_NAMED_EXPORT_TYPES)
+        excludedTypes: new Set(_EXCLUDED_NAMED_EXPORT_TYPES),
+        isTypeParamSubstitutionEnabled: buildOptions.enabledTypeParamSubstitution &&
+            buildOptions.enabledTypeParamSubstitution.indexOf(componentName) > -1
+            ? true
+            : false
     };
     if (componentInfo.packInfo) {
         rtnObj.fullMetadata.pack = componentInfo.packInfo.name;
@@ -367,7 +372,7 @@ const _VCOMPONENT_EXPORTS = new Set([
     'consumedContexts'
 ]);
 const _VCOMPONENT_BINDING_EXPORTS = new Set(['consumedBindings', 'providedBindings']);
-function storeImport(node, progImportMaps) {
+function storeImport(node, progImportMaps, fileName) {
     const bindings = node.importClause?.namedBindings;
     if (bindings && ts.isNamedImports(bindings)) {
         for (let binding of bindings.elements) {
@@ -381,14 +386,26 @@ function storeImport(node, progImportMaps) {
             if (isCoreJetModule(module) && !_CORE_JET_MODULE_MAPPING.has(namedImport)) {
                 _CORE_JET_MODULE_MAPPING.set(namedImport, {
                     binding: decrName,
-                    module: module.split('/')[1]
+                    module: module.split('/')[1],
+                    fileName
                 });
             }
         }
     }
+    else {
+        const defaultImport = node.importClause?.name?.getText();
+        const module = trimQuotes(node.moduleSpecifier.getText());
+        if (isCoreJetModule(module) && !_CORE_JET_MODULE_MAPPING.has(defaultImport)) {
+            _CORE_JET_MODULE_MAPPING.set(defaultImport, {
+                binding: defaultImport,
+                module: module.split('/')[1],
+                fileName
+            });
+        }
+    }
 }
 function trimQuotes(text) {
-    return text.slice(1, text.length - 1);
+    return text.replace(/^['"]|['"]$/g, '');
 }
 function isVComponentModule(module) {
     return (module === 'ojs/ojvcomponent' ||
@@ -402,7 +419,7 @@ function isCoreJetModule(module) {
 function generateApiDocMetadata(metaUtilObj) {
     if (_BUILD_OPTIONS.apiDocDir && _BUILD_OPTIONS.apiDocBuildEnabled) {
         try {
-            console.log('building API Doc metadata...');
+            console.log(`building API Doc metadata for component ${metaUtilObj.componentName}...`);
             const apidoc = ApiDocUtils.generateDoclets(metaUtilObj);
             writeApiDocFiles(apidoc, metaUtilObj.componentName);
         }

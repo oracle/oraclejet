@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Point, Rectangle, OutputText, GradientParser, LinearGradientFill, ArrayUtils, EventFactory, ResourceUtils, Displayable, KeyboardEvent, Agent, KeyboardHandler, EventManager, BlackBoxAnimationHandler, CSSStyle, JsonUtils, DataAnimationHandler, Rect, KeyboardFocusEffect, SimpleScrollableContainer, Container, ToolkitUtils, IconButton, TextUtils, CustomAnimation, Animator, AnimFadeOut, AnimFadeIn, Playable, Shadow, Stroke, ColorUtils, ImageMarker, SimpleMarker, PatternFill, ClipPath, AnimMoveTo, SolidFill, AnimMoveBy, SelectionEffectUtils, MouseEvent, AnimScaleTo, PathUtils, Path, Matrix, Automation, BaseComponentDefaults, CategoryRolloverHandler, BaseComponent, BaseComponentCache, SelectionHandler } from 'ojs/ojdvt-toolkit';
+import { Point, Rectangle, OutputText, GradientParser, LinearGradientFill, ArrayUtils, EventFactory, ResourceUtils, Displayable, KeyboardEvent, Agent, BlackBoxAnimationHandler, CSSStyle, JsonUtils, DataAnimationHandler, Container, TextUtils, Rect, Stroke, ColorUtils, ImageMarker, SimpleMarker, PatternFill, ToolkitUtils, ClipPath, AnimMoveTo, Playable, CustomAnimation, SolidFill, Animator, AnimMoveBy, AnimFadeOut, SelectionEffectUtils, MouseEvent, KeyboardHandler, EventManager, KeyboardFocusEffect, SimpleScrollableContainer, IconButton, AnimFadeIn, Shadow, AnimScaleTo, PathUtils, Path, Matrix, Automation, BaseComponentDefaults, CategoryRolloverHandler, BaseComponent, BaseComponentCache, SelectionHandler } from 'ojs/ojdvt-toolkit';
 import { getTranslatedString } from 'ojs/ojtranslation';
 
 /**
@@ -1067,166 +1067,6 @@ const DvtNBoxDataUtils = {
 };
 
 /**
- * Keyboard handler for the NBox component
- * @param {dvt.EventManager} manager The owning dvt.EventManager
- * @param {NBox} nbox The owning NBox component
- * @class DvtNBoxKeyboardHandler
- * @constructor
- * @extends {dvt.KeyboardHandler}
- */
-class DvtNBoxKeyboardHandler extends KeyboardHandler {
-  constructor(manager, nbox) {
-    super(manager);
-    this._nbox = nbox;
-  }
-
-  /**
-   * @override
-   */
-  processKeyDown(event) {
-    var keyCode = event.keyCode;
-
-    if (keyCode == KeyboardEvent.TAB) {
-      var currentNavigable = this._eventManager.getFocus();
-      var next = null;
-      EventManager.consumeEvent(event);
-      if (!currentNavigable) {
-        var drawerData = DvtNBoxDataUtils.getDrawer(this._nbox);
-        if (drawerData) {
-          //drawer
-          next = DvtNBoxUtils.getDisplayable(this._nbox, drawerData);
-        } else if (DvtNBoxDataUtils.getGroupBehavior(this._nbox) == 'acrossCells') {
-          //find first group node
-          var groups = this._nbox.getOptions()['__groups'];
-          if (groups) {
-            var groupNodes = [];
-            for (var id in groups) {
-              var displayable = DvtNBoxUtils.getDisplayable(this._nbox, groups[id]);
-              if (displayable) groupNodes.push(displayable);
-            }
-            next = DvtNBoxKeyboardHandler.getNextNavigableCategoryNode(null, event, groupNodes);
-          }
-        }
-        if (!next) {
-          var index =
-            DvtNBoxDataUtils.getColCount(this._nbox) *
-            (DvtNBoxDataUtils.getRowCount(this._nbox) - 1);
-          next = DvtNBoxUtils.getDisplayable(
-            this._nbox,
-            DvtNBoxDataUtils.getCell(this._nbox, index)
-          );
-        }
-      } else {
-        next = currentNavigable;
-      }
-      return next;
-    }
-    return super.processKeyDown(event);
-  }
-
-  /**
-   * @override
-   */
-  isSelectionEvent(event) {
-    if (event.keyCode == KeyboardEvent.TAB) return false;
-    else return this.isNavigationEvent(event) && !event.ctrlKey;
-  }
-
-  /**
-   * @override
-   */
-  isMultiSelectEvent(event) {
-    return event.keyCode == KeyboardEvent.SPACE && event.ctrlKey;
-  }
-
-  /**
-   * @override
-   */
-  isNavigationEvent(event) {
-    var retVal = false;
-    switch (event.keyCode) {
-      case KeyboardEvent.OPEN_BRACKET:
-      case KeyboardEvent.CLOSE_BRACKET:
-        retVal = true;
-        break;
-      default:
-        retVal = super.isNavigationEvent(event);
-    }
-    return retVal;
-  }
-
-  /**
-   * Finds next navigable category node based on node size and direction  among sorted category nodes
-   * @param {DvtKeyboardNavigable} curr current navigable item with keyboard focus (optional).
-   * @param {dvt.KeyboardEvent} event
-   * @param {Array} navigableItems An array of items that could receive focus next
-   * @return {DvtNBoxCategoryNode} The object that can get keyboard focus as a result of the keyboard event.
-   */
-  static getNextNavigableCategoryNode(curr, event, navigableItems) {
-    if (!navigableItems || navigableItems.length <= 0) return null;
-
-    if (navigableItems[0].nboxType === 'categoryNode') {
-      navigableItems.sort((a, b) => {
-        return DvtNBoxDataUtils.compareCategoryNodeSize(a.getData(), b.getData());
-      });
-    }
-
-    // get default node
-    if (curr == null) {
-      return navigableItems[0];
-    }
-
-    var next = curr;
-    var bNext =
-      event.keyCode == KeyboardEvent.RIGHT_ARROW ||
-      event.keyCode == KeyboardEvent.DOWN_ARROW
-        ? true
-        : false;
-    var itemCount = navigableItems.length;
-    for (var i = 0; i < itemCount; i++) {
-      var testObj = navigableItems[i];
-      if (testObj === curr) {
-        var nextIndex = i + 1 < itemCount ? i + 1 : i;
-        var prevIndex = i - 1 >= 0 ? i - 1 : i;
-        next = navigableItems[bNext ? nextIndex : prevIndex];
-        break;
-      }
-    }
-    return next;
-  }
-
-  /**
-   * Finds next navigable cell
-   * Using grid coordinates in calculating the next navigable cell
-   * @param {DvtNBoxCell} curr current navigable cell with keyboard focus.
-   * @param {dvt.KeyboardEvent} event
-   * @param {Array} navigableItems An array of items that could receive focus next
-   * @param {DvtNBox} nbox The current nbox
-   * @return {DvtNBoxCell} The object that can get keyboard focus as a result of the keyboard event.
-   */
-  static getNextNavigableCell(curr, event, navigableItems, nbox) {
-    if (!navigableItems || navigableItems.length === 0) return null;
-
-    var nextRow = parseInt(curr.getData()['row']);
-    var nextCol = parseInt(curr.getData()['column']);
-    var maxRow = DvtNBoxDataUtils.getRowCount(nbox);
-    var maxCol = DvtNBoxDataUtils.getColCount(nbox);
-
-    const bound = (val, max) => (max + val) % max;
-    if (event.keyCode == KeyboardEvent.RIGHT_ARROW) {
-      nextCol = bound(nextCol + 1, maxCol);
-    } else if (event.keyCode == KeyboardEvent.LEFT_ARROW) {
-      nextCol = bound(nextCol - 1, maxCol);
-    } else if (event.keyCode == KeyboardEvent.UP_ARROW) {
-      nextRow = bound(nextRow + 1, maxRow);
-    } else {
-      nextRow = bound(nextRow - 1, maxRow);
-    }
-    return DvtNBoxDataUtils.getCellByRowCol(nbox, nextRow, nextCol);
-  }
-}
-
-/**
  * Style related utility functions for NBox.
  * @class
  */
@@ -1652,6 +1492,24 @@ const DvtNBoxStyleUtils = {
   },
 
   /**
+   * Returns the alpha value of a cut node
+   * @param {NBox} nbox
+   * @return {number} the alpha value of a cut node
+   */
+  getNodeCutAlpha: (nbox) => {
+    return nbox.getOptions()['styleDefaults']['nodeDefaults']['_cutAlpha'];
+  },
+
+  /**
+   * Returns the alpha value of a dragged node
+   * @param {NBox} nbox
+   * @return {number} the alpha value of a dragged node
+   */
+  getNodeDragSourceAlpha: (nbox) => {
+    return nbox.getOptions()['styleDefaults']['nodeDefaults']['_dragSourceAlpha'];
+  },
+
+  /**
    * Gets the icon for the specified node
    * @param {NBox} nbox the nbox component
    * @param {object} node the node data
@@ -2034,1635 +1892,6 @@ class DvtNBoxDataAnimationHandler extends DataAnimationHandler {
 DvtNBoxDataAnimationHandler.DELETE = 0;
 DvtNBoxDataAnimationHandler.UPDATE = 1;
 DvtNBoxDataAnimationHandler.INSERT = 2;
-
-/**
- * Renderer for DvtNBoxCell.
- * @class
- */
-const DvtNBoxCellRenderer = {
-  /**
-   * Renders the nbox cell into the available space.
-   * @param {NBox} nbox The nbox component
-   * @param {object} cellData The cell data being rendered
-   * @param {DvtNBoxCell} cellContainer The container to render into
-   * @param {dvt.Rectangle} availSpace The available space
-   */
-  render: (nbox, cellData, cellContainer, availSpace) => {
-    var options = nbox.getOptions();
-    var cellGap = parseInt(options['__layout']['cellGap']);
-    var cellPadding = parseInt(options['__layout']['cellInnerPadding']);
-
-    var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
-
-    var r = DvtNBoxDataUtils.getRowIndex(nbox, cellData['row']);
-    var c = DvtNBoxDataUtils.getColIdx(nbox, cellData['column']);
-
-    var cellDims = DvtNBoxCellRenderer.getCellDims(nbox, r, c, availSpace);
-
-    cellContainer.setTranslate(cellDims.x + cellGap / 2, cellDims.y + cellGap / 2);
-    var cellIndex = r * DvtNBoxDataUtils.getColCount(nbox) + c; // cells are in sorted row-major order
-    var cellRect = new Rect(
-      nbox.getCtx(),
-      0,
-      0,
-      Math.max(cellDims.w - cellGap, 0),
-      Math.max(cellDims.h - cellGap, 0)
-    );
-    cellRect.setPixelHinting(true);
-    var style = DvtNBoxStyleUtils.getCellStyle(nbox, cellIndex);
-    DvtNBoxCellRenderer._applyStyleToRect(cellRect, style);
-    var borderRadius = DvtNBoxStyleUtils.getCellBorderRadius(nbox);
-    cellRect.setRx(borderRadius);
-    cellRect.setRy(borderRadius);
-
-    //Apply the custom style and classname on the cell
-    var styleObj = DvtNBoxStyleUtils.getCellStyleObject(nbox, cellIndex);
-    cellRect.setStyle(styleObj);
-    var className = DvtNBoxStyleUtils.getCellClassName(nbox, cellIndex);
-    cellRect.setClassName(className);
-
-    cellContainer.addChild(cellRect);
-
-    var filter = nbox.getCellFilter();
-    if (filter === undefined) {
-      filter = DvtNBoxCellRenderer._createShadow(
-        options['styleDefaults']['cellDefaults']['_panelShadow']
-      );
-      nbox.setCellFilter(filter);
-    }
-    if (filter) {
-      cellRect.addDrawEffect(filter);
-    }
-
-    DvtNBoxUtils.setDisplayable(nbox, cellData, cellRect, 'background');
-
-    var keyboardFocusEffect = new KeyboardFocusEffect(
-      nbox.getCtx(),
-      cellContainer,
-      new Rectangle(-1, -1, cellRect.getWidth() + 2, cellRect.getHeight() + 2)
-    );
-    DvtNBoxUtils.setDisplayable(nbox, cellData, keyboardFocusEffect, 'focusEffect');
-
-    DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, false);
-
-    var cellMaximized = DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex);
-    var headerSize = cellMaximized ? cellLayout['maximizedHeaderSize'] : cellLayout['headerSize'];
-    var labelHeight = cellMaximized
-      ? cellLayout['maximizedLabelHeight']
-      : cellLayout['labelHeight'];
-
-    var childContainer = cellMaximized
-      ? new SimpleScrollableContainer(
-          nbox.getCtx(),
-          cellRect.getWidth(),
-          cellRect.getHeight() - headerSize
-        )
-      : new Container(nbox.getCtx());
-
-    cellContainer.addChild(childContainer);
-    cellContainer.setChildContainer(childContainer);
-
-    var childArea = null;
-    if (labelHeight) {
-      if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
-        childArea = new Rectangle(
-          headerSize,
-          cellPadding,
-          cellRect.getWidth() - headerSize - cellPadding,
-          cellRect.getHeight() - cellPadding - cellPadding
-        );
-      } else {
-        childArea = new Rectangle(
-          cellPadding,
-          headerSize,
-          cellRect.getWidth() - cellPadding - cellPadding,
-          cellRect.getHeight() - headerSize - cellPadding
-        );
-      }
-      if (childContainer instanceof SimpleScrollableContainer)
-        childContainer.setTranslate(0, headerSize);
-    } else {
-      childArea = new Rectangle(
-        cellPadding,
-        cellPadding,
-        cellRect.getWidth() - cellPadding - cellPadding,
-        cellRect.getHeight() - cellPadding - cellPadding
-      );
-    }
-    childArea.w = Math.max(childArea.w, 0);
-    childArea.h = Math.max(childArea.h, 0);
-    cellData['__childArea'] = childArea;
-  },
-
-  /**
-   * Renders the nbox cell header
-   * @param {NBox} nbox The nbox components
-   * @param {object} cellData The cell data
-   * @param {DvtNBoxCell} cellContainer The container to render into.
-   * @param {boolean} noCount Indicates whether the count label should be suppressed
-   * @return {boolean} true if a header was rendered, false otherwise
-   */
-  renderHeader: (nbox, cellData, cellContainer, noCount) => {
-    var oldLabel = DvtNBoxUtils.getDisplayable(nbox, cellData, 'label');
-    if (oldLabel) {
-      oldLabel.getParent().removeChild(oldLabel);
-      DvtNBoxUtils.setDisplayable(nbox, cellData, null, 'label');
-    }
-    var oldCountLabel = DvtNBoxUtils.getDisplayable(nbox, cellData, 'countLabel');
-    if (oldCountLabel) {
-      oldCountLabel.getParent().removeChild(oldCountLabel);
-      DvtNBoxUtils.setDisplayable(nbox, cellData, null, 'countLabel');
-    }
-    var oldClose = DvtNBoxUtils.getDisplayable(nbox, cellData, 'closeButton');
-    if (oldClose) {
-      oldClose.getParent().removeChild(oldClose);
-      DvtNBoxUtils.setDisplayable(nbox, cellData, null, 'closeButton');
-    }
-    var addedHeader = false;
-    if (cellData) {
-      var options = nbox.getOptions();
-      var countLabelGap = options['__layout']['countLabelGap'];
-      var cellCloseGap = options['__layout']['cellCloseGap'];
-      var cellPadding = parseInt(options['__layout']['cellInnerPadding']);
-
-      var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
-      var cellCounts = DvtNBoxDataUtils.getCellCounts(nbox);
-
-      var cellRect = DvtNBoxUtils.getDisplayable(nbox, cellData, 'background');
-
-      var r = DvtNBoxDataUtils.getRowIndex(nbox, cellData['row']);
-      var c = DvtNBoxDataUtils.getColIdx(nbox, cellData['column']);
-      var cellIndex = r * DvtNBoxDataUtils.getColCount(nbox) + c; // cells are in sorted row-major order
-
-      var rtl = Agent.isRightToLeft(nbox.getCtx());
-
-      var cellCloseWidthWithGap = 0;
-      if (DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex)) {
-        var close = options['_resources']['close'];
-        var closeWidth = close['width'];
-        if (cellRect.getWidth() - cellPadding - cellPadding > closeWidth) {
-          var context = nbox.getCtx();
-          var iconStyle = ToolkitUtils.getIconStyle(context, close['class']);
-          var closeButton = new IconButton(
-            context,
-            'borderless',
-            { style: iconStyle, size: closeWidth },
-            null,
-            null,
-            cellContainer.handleDoubleClick,
-            cellContainer
-          );
-
-          // Center/hide close button if cell too thin for normal rendering
-          var closeButtonX = rtl
-            ? Math.min((cellRect.getWidth() - closeWidth) / 2, cellPadding)
-            : Math.max(
-                (cellRect.getWidth() - closeWidth) / 2,
-                cellRect.getWidth() - cellPadding - closeWidth
-              );
-          closeButton.setTranslate(closeButtonX, cellPadding);
-          cellContainer.addChild(closeButton);
-          cellCloseWidthWithGap = closeWidth + cellCloseGap;
-          DvtNBoxUtils.setDisplayable(nbox, cellData, closeButton, 'closeButton');
-          addedHeader = true;
-        }
-      }
-      var countLabelOffset;
-      if (cellData['label']) {
-        var labelHeight = cellLayout['labelHeight'];
-        var skipLabel = false;
-        var halign = DvtNBoxStyleUtils.getLabelHalign(nbox, cellData);
-        var countLabelWidth = 0;
-        var countLabelWidthWithGap = 0;
-        var countLabel = null;
-        var countLabelX = 0;
-        var countLabelY = 0;
-        var countText = null;
-        var showCount = DvtNBoxStyleUtils.getCellShowCount(nbox, cellData);
-        if (!noCount && showCount != 'off') {
-          var cellCountLabel = DvtNBoxUtils.getDisplayable(nbox, cellData).getCountLabel();
-          if (cellCountLabel) countText = cellCountLabel;
-          else if (showCount == 'on') {
-            countText = '' + cellCounts['total'][cellIndex];
-            if (cellCounts['highlighted']) {
-              countText = ResourceUtils.format(options.translations.highlightedCount, [
-                cellCounts['highlighted'][cellIndex],
-                countText
-              ]);
-            }
-          }
-        }
-        if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
-          // Vertical Label
-          if (countText) {
-            countLabel = DvtNBoxUtils.createText(
-              nbox.getCtx(),
-              countText,
-              DvtNBoxStyleUtils.getCellCountLabelStyle(nbox, cellIndex),
-              OutputText.H_ALIGN_CENTER,
-              OutputText.V_ALIGN_CENTRAL
-            );
-            countLabel.setClassName('oj-typography-semi-bold');
-            if (
-              TextUtils.fitText(
-                countLabel,
-                cellRect.getHeight() - cellPadding - cellPadding,
-                cellRect.getWidth() - 2 * cellPadding,
-                cellContainer
-              )
-            ) {
-              DvtNBoxUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
-              addedHeader = true;
-              countLabelWidth = countLabel.getDimensions().w;
-              countLabelWidthWithGap = countLabelWidth + countLabelGap;
-              // Count label will get offset after rendering the cell label
-              countLabelY = cellRect.getHeight() / 2;
-              countLabelX = cellRect.getWidth() / 2;
-            } else {
-              skipLabel = true;
-            }
-          }
-          countLabelOffset = 0;
-          if (!skipLabel) {
-            var label = DvtNBoxUtils.createText(
-              nbox.getCtx(),
-              cellData['label'],
-              DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex),
-              OutputText.H_ALIGN_CENTER,
-              OutputText.V_ALIGN_CENTRAL
-            );
-            if (
-              TextUtils.fitText(
-                label,
-                cellRect.getHeight() - cellPadding - cellPadding - countLabelWidthWithGap,
-                cellRect.getWidth() - 2 * cellPadding,
-                cellContainer
-              )
-            ) {
-              DvtNBoxUtils.setDisplayable(nbox, cellData, label, 'label');
-              var labelWidth = label.getDimensions().w;
-              addedHeader = true;
-              DvtNBoxUtils.positionText(
-                label,
-                cellRect.getWidth() / 2,
-                (cellRect.getHeight() + countLabelWidthWithGap) / 2,
-                rtl ? Math.PI / 2 : -Math.PI / 2
-              );
-              countLabelOffset = (labelWidth + countLabelGap) / 2;
-            }
-          }
-          if (countLabel) {
-            countLabelY -= countLabelOffset;
-            DvtNBoxUtils.positionText(
-              countLabel,
-              countLabelX,
-              countLabelY,
-              rtl ? Math.PI / 2 : -Math.PI / 2
-            );
-          }
-        } else {
-          if (countText) {
-            countLabel = DvtNBoxUtils.createText(
-              nbox.getCtx(),
-              countText,
-              DvtNBoxStyleUtils.getCellCountLabelStyle(nbox, cellIndex),
-              halign,
-              OutputText.V_ALIGN_CENTRAL
-            );
-            countLabel.setClassName('oj-typography-semi-bold');
-            if (
-              TextUtils.fitText(
-                countLabel,
-                cellRect.getWidth() - cellPadding - cellPadding - cellCloseWidthWithGap,
-                cellRect.getHeight() - 2 * cellPadding,
-                cellContainer
-              )
-            ) {
-              DvtNBoxUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
-              addedHeader = true;
-              countLabelWidth = countLabel.getDimensions().w;
-              countLabelWidthWithGap = countLabelWidth + countLabelGap;
-              // Count label will get offset after rendering the cell label
-              if (halign == OutputText.H_ALIGN_CENTER) {
-                countLabelX = cellRect.getWidth() / 2;
-              } else if (halign == OutputText.H_ALIGN_RIGHT) {
-                countLabelX = cellRect.getWidth() - cellPadding;
-              } else {
-                // halign == dvt.OutputText.H_ALIGN_LEFT
-                countLabelX = cellPadding;
-              }
-              countLabelY = DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)
-                ? cellRect.getHeight() / 2
-                : cellPadding + labelHeight / 2;
-              DvtNBoxUtils.positionText(countLabel, countLabelX, countLabelY);
-            } else {
-              skipLabel = true;
-            }
-          }
-          countLabelOffset = 0;
-          if (!skipLabel) {
-            var labelHorizontal = DvtNBoxUtils.createText(
-              nbox.getCtx(),
-              cellData['label'],
-              DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex),
-              halign,
-              OutputText.V_ALIGN_CENTRAL
-            );
-            if (
-              TextUtils.fitText(
-                labelHorizontal,
-                cellRect.getWidth() -
-                  cellPadding -
-                  cellPadding -
-                  cellCloseWidthWithGap -
-                  countLabelWidthWithGap,
-                cellRect.getHeight() - 2 * cellPadding,
-                cellContainer
-              )
-            ) {
-              DvtNBoxUtils.setDisplayable(nbox, cellData, labelHorizontal, 'label');
-              var horizLabelWidth = labelHorizontal.getDimensions().w;
-              addedHeader = true;
-              var labelX;
-              if (halign == OutputText.H_ALIGN_CENTER) {
-                labelX = (cellRect.getWidth() - (rtl ? -1 : 1) * countLabelWidthWithGap) / 2;
-                countLabelOffset = ((rtl ? -1 : 1) * (horizLabelWidth + countLabelGap)) / 2;
-              } else if (halign == OutputText.H_ALIGN_RIGHT) {
-                labelX = cellRect.getWidth() - cellPadding - (rtl ? 0 : 1) * countLabelWidthWithGap;
-                countLabelOffset = (rtl ? -1 : 0) * (horizLabelWidth + countLabelGap);
-              } else {
-                // halign == dvt.OutputText.H_ALIGN_LEFT
-                labelX = cellPadding + (rtl ? 1 : 0) * countLabelWidthWithGap;
-                countLabelOffset = (rtl ? 0 : 1) * (horizLabelWidth + countLabelGap);
-              }
-              var labelY = DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)
-                ? cellRect.getHeight() / 2
-                : cellPadding + labelHeight / 2;
-              DvtNBoxUtils.positionText(labelHorizontal, labelX, labelY);
-            }
-          }
-          if (countLabel && countLabelOffset) {
-            DvtNBoxUtils.positionText(countLabel, countLabelX + countLabelOffset, countLabelY);
-          }
-        }
-      }
-    }
-    DvtNBoxCellRenderer._addAccessibilityAttr(nbox, cellData, cellContainer);
-    return addedHeader;
-  },
-
-  /**
-   * Renders the body countLabels for the specified cells
-   * @param {NBox} nbox The nbox components
-   * @param {array} cellIndices The indices of the cells
-   */
-  renderBodyCountLabels: (nbox, cellIndices) => {
-    var cellPadding = parseInt(nbox.getOptions()['__layout']['cellInnerPadding']);
-
-    var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
-    var cellCounts = DvtNBoxDataUtils.getCellCounts(nbox);
-
-    var headerFontSize = Number.MAX_VALUE;
-    var removeHeaders = false;
-
-    // calculate header font sizes
-    var cellData = DvtNBoxDataUtils.getCell(nbox, cellIndices[0]);
-    var headerLabel = DvtNBoxUtils.getDisplayable(nbox, cellData, 'label');
-    var headerCount = DvtNBoxUtils.getDisplayable(nbox, cellData, 'countLabel');
-    var headerLabelSize =
-      headerLabel && headerLabel.getCSSStyle() ? headerLabel.getCSSStyle().getFontSize() : null;
-    var headerCountSize =
-      headerCount && headerCount.getCSSStyle() ? headerCount.getCSSStyle().getFontSize() : null;
-    // parse out 'px'
-    headerLabelSize = isNaN(headerLabelSize) ? parseFloat(headerLabelSize) : headerLabelSize;
-    headerCountSize = isNaN(headerCountSize) ? parseFloat(headerCountSize) : headerCountSize;
-    if (!isNaN(headerLabelSize) || !isNaN(headerCountSize)) {
-      var headerSize = isNaN(headerCountSize)
-        ? headerLabelSize
-        : Math.max(headerLabelSize, headerCountSize);
-      headerFontSize = isNaN(headerLabelSize) ? headerCountSize : headerSize;
-    }
-
-    // Separate maximized cells from minimized. If maximizedRow and maximizedColumn are unset,
-    // all indices will be placed into maximizedCellIndices.
-    var maximizedCellIndices = [];
-    var minimizedCellIndices = [];
-    var cellIndex;
-    var count;
-    for (var z = 0; z < cellIndices.length; z++) {
-      cellIndex = cellIndices[z];
-      DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)
-        ? minimizedCellIndices.push(cellIndex)
-        : maximizedCellIndices.push(cellIndex);
-    }
-
-    // create labels
-    var maximizedLabels = [];
-    var minimizedLabels = [];
-    for (var i = 0; i < maximizedCellIndices.length; i++) {
-      cellIndex = maximizedCellIndices[i];
-      count = cellCounts['total'][cellIndex];
-      maximizedLabels[i] = DvtNBoxUtils.createText(
-        nbox.getCtx(),
-        '' + count,
-        DvtNBoxStyleUtils.getCellBodyCountLabelStyle(nbox),
-        OutputText.H_ALIGN_CENTER,
-        OutputText.V_ALIGN_CENTRAL
-      );
-    }
-    for (var y = 0; y < minimizedCellIndices.length; y++) {
-      cellIndex = minimizedCellIndices[y];
-      count = cellCounts['total'][cellIndex];
-      minimizedLabels[y] = DvtNBoxUtils.createText(
-        nbox.getCtx(),
-        '' + count,
-        DvtNBoxStyleUtils.getCellBodyCountLabelStyle(nbox),
-        OutputText.H_ALIGN_CENTER,
-        OutputText.V_ALIGN_CENTRAL
-      );
-    }
-
-    // remove headers if either of the following:
-    // 1) calculated body countLabel font size is less than header font size
-    // 2) count is the only thing in the cell header (no label)
-    var maximizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(
-      nbox,
-      maximizedCellIndices,
-      maximizedLabels
-    );
-    if (maximizedFontSize <= headerFontSize || (headerCount && !headerLabel)) {
-      removeHeaders = true;
-    }
-    var minimizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(
-      nbox,
-      minimizedCellIndices,
-      minimizedLabels
-    );
-    if (minimizedFontSize <= headerFontSize || (headerCount && !headerLabel)) {
-      removeHeaders = true;
-    }
-
-    if (removeHeaders) {
-      for (var w = 0; w < cellIndices.length; w++) {
-        cellData = DvtNBoxDataUtils.getCell(nbox, cellIndices[w]);
-        headerLabel = DvtNBoxUtils.getDisplayable(nbox, cellData, 'label');
-        headerCount = DvtNBoxUtils.getDisplayable(nbox, cellData, 'countLabel');
-        var childArea = cellData['__childArea'];
-        var headerRemoved = false;
-        if (headerLabel) {
-          headerLabel.getParent().removeChild(headerLabel);
-          DvtNBoxUtils.setDisplayable(nbox, cellData, null, 'label');
-          headerRemoved = true;
-        }
-        if (headerCount) {
-          headerCount.getParent().removeChild(headerCount);
-          DvtNBoxUtils.setDisplayable(nbox, cellData, null, 'countLabel');
-          headerRemoved = true;
-        }
-        // reallocate header space to childArea if a header element has been removed
-        if (headerRemoved) {
-          if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
-            childArea.x -= cellLayout['headerSize'] - cellPadding;
-            childArea.w += cellLayout['headerSize'] - cellPadding;
-          } else {
-            childArea.y -= cellLayout['headerSize'] - cellPadding;
-            childArea.h += cellLayout['headerSize'] - cellPadding;
-          }
-          cellData['__childArea'] = childArea;
-        }
-      }
-
-      // recalculate font sizes
-      maximizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(
-        nbox,
-        maximizedCellIndices,
-        maximizedLabels
-      );
-      minimizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(
-        nbox,
-        minimizedCellIndices,
-        minimizedLabels
-      );
-    }
-    var childArea;
-    var cellContainer;
-    for (var u = 0; u < maximizedCellIndices.length; u++) {
-      cellIndex = maximizedCellIndices[u];
-      cellData = DvtNBoxDataUtils.getCell(nbox, cellIndex);
-      cellContainer = DvtNBoxUtils.getDisplayable(nbox, cellData);
-      childArea = cellData['__childArea'];
-
-      maximizedLabels[u].setFontSize(maximizedFontSize);
-      if (TextUtils.fitText(maximizedLabels[u], childArea.w, childArea.h, cellContainer)) {
-        if (!removeHeaders) DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true);
-        DvtNBoxUtils.positionText(
-          maximizedLabels[u],
-          childArea.x + childArea.w / 2,
-          childArea.y + childArea.h / 2
-        );
-      }
-    }
-    for (var t = 0; t < minimizedCellIndices.length; t++) {
-      cellIndex = minimizedCellIndices[t];
-      cellData = DvtNBoxDataUtils.getCell(nbox, cellIndex);
-      cellContainer = DvtNBoxUtils.getDisplayable(nbox, cellData);
-      childArea = cellData['__childArea'];
-
-      minimizedLabels[t].setFontSize(minimizedFontSize);
-      if (TextUtils.fitText(minimizedLabels[t], childArea.w, childArea.h, cellContainer)) {
-        if (!removeHeaders) DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true);
-        DvtNBoxUtils.positionText(
-          minimizedLabels[t],
-          childArea.x + childArea.w / 2,
-          childArea.y + childArea.h / 2
-        );
-      }
-    }
-  },
-
-  /**
-   * Calculate thes font size for the body countLabels for the specified cells
-   * @param {NBox} nbox The nbox components
-   * @param {array} cellIndices The indices of the cells
-   * @param {array} labels The body countLabels for the specified cells
-   * @return {number} computed font size of body countLabels
-   */
-  getBodyCountLabelsFontSize: (nbox, cellIndices, labels) => {
-    var fontSize = Number.MAX_VALUE;
-    for (var i = 0; i < cellIndices.length; i++) {
-      var childArea = DvtNBoxDataUtils.getCell(nbox, cellIndices[i])['__childArea'];
-      fontSize = Math.min(
-        fontSize,
-        parseInt(
-          TextUtils.getOptimalFontSize(
-            labels[i].getCtx(),
-            labels[i].getTextString(),
-            labels[i].getCSSStyle(),
-            childArea
-          )
-        )
-      );
-    }
-    return fontSize;
-  },
-
-  /**
-   * Gets whether the labels for the specified cell should be rendered vertically
-   *
-   * @param {NBox} nbox the nbox component
-   * @param {object} cellData the cell data
-   * @return whether the labels for the specified cell should be rendered vertically
-   */
-  _isLabelVertical: (nbox, cellData) => {
-    var maximizedColumn = DvtNBoxDataUtils.getMaximizedCol(nbox);
-    var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
-    return maximizedColumn &&
-      maximizedColumn != cellData['column'] &&
-      (!maximizedRow || maximizedRow == cellData['row'])
-      ? true
-      : false;
-  },
-
-  /**
-   * Calculates the dimensions for the specified cell
-   *
-   * @param {NBox} nbox The nbox components
-   * @param {number} rowIndex the row index of the specified cell
-   * @param {number} columnIndex the column index of the specified cell
-   * @param {dvt.Rectangle} availSpace The available space.
-   *
-   * @return {dvt.Rectangle} the dimensions for the specified cell
-   */
-  getCellDims: (nbox, rowIndex, columnIndex, availSpace) => {
-    var options = nbox.getOptions();
-    var cellGap = parseInt(options['__layout']['cellGap']);
-    var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
-
-    var rtl = Agent.isRightToLeft(nbox.getCtx());
-
-    var minimizedSize = cellGap + parseInt(cellLayout['minimumCellSize']);
-    var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
-    var columnCount = DvtNBoxDataUtils.getColCount(nbox);
-    var defaultRowDimensions = DvtNBoxDataUtils.getRowDims(nbox, rowIndex, availSpace);
-    var defaultColumnDimensions = DvtNBoxDataUtils.getColDims(nbox, columnIndex, availSpace);
-    var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
-    var maximizedColumn = DvtNBoxDataUtils.getMaximizedCol(nbox);
-
-    var columnX = defaultColumnDimensions.x;
-    var rowY = defaultRowDimensions.y;
-    var columnW = defaultColumnDimensions.w;
-    var rowH = defaultRowDimensions.h;
-
-    var processColumn = true;
-
-    if (maximizedRow) {
-      var maximizedRowIndex = DvtNBoxDataUtils.getRowIndex(nbox, maximizedRow);
-
-      // Ensure maximized row takes at least 2/3 of available height.  Split remaining height across minimized rows.
-      // minimizedRowSize * number of minimized rows will be at most 1/3 available height.
-      var minimizedRowSize = Math.min(availSpace.h / (3 * (rowCount - 1)), minimizedSize);
-
-      if (rowIndex < maximizedRowIndex) {
-        rowY = availSpace.y + availSpace.h - (rowIndex + 1) * minimizedRowSize;
-        rowH = minimizedRowSize;
-        processColumn = false;
-      } else if (rowIndex == maximizedRowIndex) {
-        rowY = availSpace.y + (rowCount - rowIndex - 1) * minimizedRowSize;
-        rowH = availSpace.h - (rowCount - 1) * minimizedRowSize;
-      } else {
-        // rowIndex > maximizedRowIndex
-        rowY = availSpace.y + (rowCount - rowIndex - 1) * minimizedRowSize;
-        rowH = minimizedRowSize;
-        processColumn = false;
-      }
-    }
-
-    if (maximizedColumn && processColumn) {
-      var maximizedColumnIndex = DvtNBoxDataUtils.getColIdx(nbox, maximizedColumn);
-
-      // Ensure maximized column takes at least 2/3 of available width.  Split remaining width across minimized columns.
-      // minimizedColumnSize * number of minimized columns will be at most 1/3 available width.
-      var minimizedColumnSize = Math.min(availSpace.w / (3 * (columnCount - 1)), minimizedSize);
-      if (columnIndex < maximizedColumnIndex) {
-        columnW = minimizedColumnSize;
-        columnX =
-          availSpace.x +
-          (rtl ? availSpace.w - minimizedColumnSize : 0) +
-          (rtl ? -1 : 1) * columnIndex * minimizedColumnSize;
-      } else if (columnIndex == maximizedColumnIndex) {
-        columnW = availSpace.w - (columnCount - 1) * minimizedColumnSize;
-        columnX =
-          availSpace.x +
-          (rtl ? availSpace.w - columnW : 0) +
-          (rtl ? -1 : 1) * columnIndex * minimizedColumnSize;
-      } else {
-        // columnIndex > maximizedColumnIndex
-        columnW = minimizedColumnSize;
-        columnX =
-          availSpace.x +
-          (rtl ? -minimizedColumnSize : availSpace.w) +
-          (rtl ? 1 : -1) * (columnCount - columnIndex) * minimizedColumnSize;
-      }
-    }
-    return new Rectangle(columnX, rowY, columnW, rowH);
-  },
-
-  /**
-   * Calculates sizes related to cell layout, based upon the first specified cell
-   * (Assumes that the cells are specified homogeneously)
-   * @param {NBox} nbox the nbox component
-   * @return {object} an object containing the calculated sizes
-   */
-  getCellLayout: (nbox) => {
-    return (
-      nbox.getOptions()['__layout']['__cellLayout'] ||
-      DvtNBoxCellRenderer._calculateCellLayout(nbox)
-    );
-  },
-
-  /**
-   * @private
-   * Calculates sizes related to cell layout, based upon the first specified cell
-   * (Assumes that the cells are specified homogeneously)
-   * @param {NBox} nbox the nbox component
-   * @return {object} an object containing the calculated sizes
-   */
-  _calculateCellLayout: (nbox) => {
-    var options = nbox.getOptions();
-    var cellCounts = DvtNBoxDataUtils.getCellCounts(nbox);
-    var cellPadding = parseInt(options['__layout']['cellInnerPadding']);
-    var cellLabelGap = options['__layout']['cellLabelGap'];
-    var minimumCellSize = parseInt(options['__layout']['minimumCellSize']);
-
-    var labelHeight = 0;
-    var maximizedLabelHeight = 0;
-    var cellCount = DvtNBoxDataUtils.getRowCount(nbox) * DvtNBoxDataUtils.getColCount(nbox);
-    for (var i = 0; i < cellCount; i++) {
-      var cellData = DvtNBoxDataUtils.getCell(nbox, i);
-      if (cellData && cellData['label']) {
-        var halign = cellData['labelHalign'];
-        var label = DvtNBoxUtils.createText(
-          nbox.getCtx(),
-          cellData['label'],
-          DvtNBoxStyleUtils.getCellLabelStyle(nbox, i),
-          halign,
-          OutputText.V_ALIGN_CENTRAL
-        );
-        var cellLabelHeight = label.getDimensions().h;
-        if (DvtNBoxStyleUtils.getCellShowCount(nbox, cellData) == 'on') {
-          var count = DvtNBoxUtils.createText(
-            nbox.getCtx(),
-            cellCounts['total'][i],
-            DvtNBoxStyleUtils.getCellCountLabelStyle(nbox, i),
-            halign,
-            OutputText.V_ALIGN_CENTRAL
-          );
-          var countLabelHeight = count.getDimensions().h;
-          cellLabelHeight = Math.max(cellLabelHeight, countLabelHeight);
-        }
-        labelHeight = Math.max(labelHeight, cellLabelHeight);
-      }
-    }
-    if (DvtNBoxDataUtils.getMaximizedRow(nbox) && DvtNBoxDataUtils.getMaximizedCol(nbox)) {
-      maximizedLabelHeight = Math.max(labelHeight, options['_resources']['close']['height']);
-    }
-
-    var minimizedHeaderSize = labelHeight + cellPadding + cellPadding;
-    var headerSize = labelHeight + cellPadding + cellLabelGap;
-    var maximizedHeaderSize = maximizedLabelHeight + cellPadding + cellLabelGap;
-    minimumCellSize = Math.max(minimizedHeaderSize, minimumCellSize);
-    var cellLayout = {
-      labelHeight: labelHeight,
-      headerSize: headerSize,
-      maximizedLabelHeight: maximizedLabelHeight,
-      maximizedHeaderSize: maximizedHeaderSize,
-      minimumCellSize: minimumCellSize
-    };
-    options['__layout']['__cellLayout'] = cellLayout;
-    return cellLayout;
-  },
-
-  /**
-   * Animates an update between NBox states
-   *
-   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
-   * @param {object} oldCell an object representing the old cell state
-   * @param {object} newCell an object representing the new cell state
-   */
-  animateUpdate: (animationHandler, oldCell, newCell) => {
-    var oldNBox = animationHandler.getOldNBox();
-    var newNBox = animationHandler.getNewNBox();
-    var playable = new CustomAnimation(
-      newNBox.getCtx(),
-      newCell,
-      animationHandler.getAnimationDuration()
-    );
-
-    // Promote the child container first so that nodes that position themselves correctly
-    var childContainer = newCell.getChildContainer();
-    var childMatrix = childContainer.getMatrix();
-    childContainer.setMatrix(DvtNBoxUtils.getGlobalMatrix(childContainer));
-    var cellParent = newCell.getParent();
-    cellParent.addChildAt(childContainer, cellParent.getChildIndex(newCell) + 1);
-
-    // Grab cell translation
-    var cellTx = newCell.getTranslateX();
-    var cellTy = newCell.getTranslateY();
-
-    // Position
-    playable
-      .getAnimator()
-      .addProp(
-        Animator.TYPE_MATRIX,
-        newCell,
-        newCell.getMatrix,
-        newCell.setMatrix,
-        newCell.getMatrix()
-      );
-    newCell.setMatrix(oldCell.getMatrix());
-
-    // Background
-    var oldBackground = DvtNBoxUtils.getDisplayable(oldNBox, oldCell.getData(), 'background');
-    var newBackground = DvtNBoxUtils.getDisplayable(newNBox, newCell.getData(), 'background');
-
-    var rtl = Agent.isRightToLeft(newNBox.getCtx());
-    var widthDiff = rtl ? 0 : newBackground.getWidth() - oldBackground.getWidth();
-
-    if (!newBackground.getFill().equals(oldBackground.getFill())) {
-      playable
-        .getAnimator()
-        .addProp(
-          Animator.TYPE_FILL,
-          newBackground,
-          newBackground.getFill,
-          newBackground.setFill,
-          newBackground.getFill()
-        );
-      newBackground.setFill(oldBackground.getFill());
-    }
-    playable
-      .getAnimator()
-      .addProp(
-        Animator.TYPE_NUMBER,
-        newBackground,
-        newBackground.getWidth,
-        newBackground.setWidth,
-        newBackground.getWidth()
-      );
-    newBackground.setWidth(oldBackground.getWidth());
-    playable
-      .getAnimator()
-      .addProp(
-        Animator.TYPE_NUMBER,
-        newBackground,
-        newBackground.getHeight,
-        newBackground.setHeight,
-        newBackground.getHeight()
-      );
-    newBackground.setHeight(oldBackground.getHeight());
-
-    // Keyboard focus effect
-    if (newCell.isShowingKeyboardFocusEffect()) {
-      var effect = DvtNBoxUtils.getDisplayable(
-        newNBox,
-        newCell.getData(),
-        'focusEffect'
-      ).getEffect();
-      if (effect) {
-        playable
-          .getAnimator()
-          .addProp(
-            Animator.TYPE_NUMBER,
-            effect,
-            effect.getWidth,
-            effect.setWidth,
-            effect.getWidth()
-          );
-        effect.setWidth(oldBackground.getWidth() + 2);
-        playable
-          .getAnimator()
-          .addProp(
-            Animator.TYPE_NUMBER,
-            effect,
-            effect.getHeight,
-            effect.setHeight,
-            effect.getHeight()
-          );
-        effect.setHeight(oldBackground.getHeight() + 2);
-      }
-    }
-
-    // Labels
-    DvtNBoxCellRenderer._animateLabels(animationHandler, oldCell, newCell, 'countLabel');
-    DvtNBoxCellRenderer._animateLabels(animationHandler, oldCell, newCell, 'label');
-
-    // Close button
-    var oldClose = DvtNBoxUtils.getDisplayable(oldNBox, oldCell.getData(), 'closeButton');
-    var newClose = DvtNBoxUtils.getDisplayable(newNBox, newCell.getData(), 'closeButton');
-    if (oldClose) {
-      if (newClose) {
-        playable
-          .getAnimator()
-          .addProp(
-            Animator.TYPE_MATRIX,
-            newClose,
-            newClose.getMatrix,
-            newClose.setMatrix,
-            newClose.getMatrix()
-          );
-        newClose.setMatrix(oldClose.getMatrix());
-      } else {
-        var oldCloseStart = DvtNBoxUtils.getGlobalMatrix(oldClose);
-        oldClose.setTranslate(
-          oldClose.getTranslateX() + widthDiff + cellTx,
-          oldClose.getTranslateY() + cellTy
-        );
-
-        animationHandler.add(
-          new AnimFadeOut(newNBox.getCtx(), oldClose, animationHandler.getAnimationDuration()),
-          DvtNBoxDataAnimationHandler.UPDATE
-        );
-        playable
-          .getAnimator()
-          .addProp(
-            Animator.TYPE_MATRIX,
-            oldClose,
-            oldClose.getMatrix,
-            oldClose.setMatrix,
-            oldClose.getMatrix()
-          );
-        oldClose.setMatrix(oldCloseStart);
-        newNBox.getDeleteContainer().addChild(oldClose);
-      }
-    } else if (newClose) {
-      animationHandler.add(
-        new AnimFadeIn(newNBox.getCtx(), newClose, animationHandler.getAnimationDuration()),
-        DvtNBoxDataAnimationHandler.UPDATE
-      );
-      playable
-        .getAnimator()
-        .addProp(
-          Animator.TYPE_MATRIX,
-          newClose,
-          newClose.getMatrix,
-          newClose.setMatrix,
-          newClose.getMatrix()
-        );
-      newClose.setTranslate(newClose.getTranslateX() - widthDiff, newClose.getTranslateY());
-      newClose.setAlpha(0);
-    }
-
-    Playable.appendOnEnd(playable, () => {
-      newCell.addChild(childContainer);
-      childContainer.setMatrix(childMatrix);
-    });
-    animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
-  },
-
-  _animateLabels: (animationHandler, oldCell, newCell, labelKey) => {
-    var oldNBox = animationHandler.getOldNBox();
-    var newNBox = animationHandler.getNewNBox();
-    var oldLabel = DvtNBoxUtils.getDisplayable(oldNBox, oldCell.getData(), labelKey);
-    var newLabel = DvtNBoxUtils.getDisplayable(newNBox, newCell.getData(), labelKey);
-    var oldVerticalLabel = DvtNBoxCellRenderer._isLabelVertical(oldNBox, oldCell.getData());
-    var newVerticalLabel = DvtNBoxCellRenderer._isLabelVertical(newNBox, newCell.getData());
-    if (oldLabel || newLabel) {
-      if (oldLabel && newLabel && oldVerticalLabel == newVerticalLabel) {
-        var playable = new CustomAnimation(
-          newNBox.getCtx(),
-          newLabel,
-          animationHandler.getAnimationDuration()
-        );
-        var oldAlign = oldLabel.getHorizAlignment();
-        var oAlign = oldAlign == 'center' ? 0 : 1;
-        oldAlign = oldAlign == 'left' ? -1 : oAlign;
-        var newAlign = newLabel.getHorizAlignment();
-        var nAlign = newAlign == 'center' ? 0 : 1;
-        newAlign = newAlign == 'left' ? -1 : nAlign;
-        var alignOffset = ((newAlign - oldAlign) * newLabel.getDimensions().w) / 2;
-        playable
-          .getAnimator()
-          .addProp(
-            Animator.TYPE_NUMBER,
-            newLabel,
-            newLabel.getX,
-            newLabel.setX,
-            newLabel.getX()
-          );
-        newLabel.setX(oldLabel.getX() + alignOffset);
-        playable
-          .getAnimator()
-          .addProp(
-            Animator.TYPE_NUMBER,
-            newLabel,
-            newLabel.getY,
-            newLabel.setY,
-            newLabel.getY()
-          );
-        newLabel.setY(oldLabel.getY());
-        playable
-          .getAnimator()
-          .addProp(
-            Animator.TYPE_MATRIX,
-            newLabel,
-            newLabel.getMatrix,
-            newLabel.setMatrix,
-            newLabel.getMatrix()
-          );
-        newLabel.setMatrix(oldLabel.getMatrix());
-        animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
-
-        if (labelKey == 'countLabel' && oldLabel.getTextString() != newLabel.getTextString()) {
-          newLabel.setAlpha(0);
-          newCell.addChild(oldLabel);
-
-          var fadeOutAnim = new AnimFadeOut(
-            newNBox.getCtx(),
-            oldLabel,
-            animationHandler.getAnimationDuration()
-          );
-          var fadeInAnim = new AnimFadeIn(
-            newNBox.getCtx(),
-            newLabel,
-            animationHandler.getAnimationDuration()
-          );
-          animationHandler.add(fadeOutAnim, DvtNBoxDataAnimationHandler.UPDATE);
-          animationHandler.add(fadeInAnim, DvtNBoxDataAnimationHandler.INSERT);
-
-          Playable.appendOnEnd(fadeOutAnim, () => {
-            newNBox.getDeleteContainer().addChild(oldLabel);
-          });
-        }
-      } else {
-        if (oldLabel) {
-          oldLabel.setMatrix(DvtNBoxUtils.getGlobalMatrix(oldLabel));
-          newNBox.getDeleteContainer().addChild(oldLabel);
-          animationHandler.add(
-            new AnimFadeOut(
-              newNBox.getCtx(),
-              oldLabel,
-              animationHandler.getAnimationDuration()
-            ),
-            DvtNBoxDataAnimationHandler.UPDATE
-          );
-        }
-        if (newLabel) {
-          newLabel.setAlpha(0);
-          animationHandler.add(
-            new AnimFadeIn(newNBox.getCtx(), newLabel, animationHandler.getAnimationDuration()),
-            DvtNBoxDataAnimationHandler.UPDATE
-          );
-        }
-      }
-    }
-  },
-
-  /**
-   * Animates a cell deletion
-   *
-   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
-   * @param {object} oldCell an object representing the old cell state
-   */
-  animateDelete: (animationHandler, oldCell) => {
-    var nbox = animationHandler.getNewNBox();
-    // Reparent the child container if any
-    var childContainer = oldCell.getChildContainer();
-    if (childContainer) {
-      var globalMatrix = DvtNBoxUtils.getGlobalMatrix(childContainer);
-      var cellParent = oldCell.getParent();
-      cellParent.addChildAt(childContainer, cellParent.getChildIndex(oldCell) + 1);
-      childContainer.setMatrix(globalMatrix);
-    }
-    // Add the cell to the delete container and fade out
-    nbox.getDeleteContainer().addChild(oldCell);
-    animationHandler.add(
-      new AnimFadeOut(nbox.getCtx(), oldCell, animationHandler.getAnimationDuration()),
-      DvtNBoxDataAnimationHandler.UPDATE
-    );
-  },
-
-  /**
-   * Animates a cell insertion
-   *
-   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
-   * @param {object} newCell an object representing the new cell state
-   */
-  animateInsert: (animationHandler, newCell) => {
-    var nbox = animationHandler.getNewNBox();
-    // Reparent the child container if any
-    var childContainer = newCell.getChildContainer();
-    var childMatrix = null;
-    if (childContainer) {
-      childMatrix = childContainer.getMatrix();
-      var globalMatrix = DvtNBoxUtils.getGlobalMatrix(newCell);
-      var cellParent = newCell.getParent();
-      cellParent.addChildAt(childContainer, cellParent.getChildIndex(newCell) + 1);
-      childContainer.setMatrix(globalMatrix);
-    }
-    // Fade in the cell
-    newCell.setAlpha(0);
-    var playable = new AnimFadeIn(
-      nbox.getCtx(),
-      newCell,
-      animationHandler.getAnimationDuration()
-    );
-    if (childContainer) {
-      Playable.appendOnEnd(playable, () => {
-        newCell.addChild(childContainer);
-        childContainer.setMatrix(childMatrix);
-      });
-    }
-    animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
-  },
-
-  /**
-   * Renders the drop site feedback for the specified cell
-   *
-   * @param {NBox} nbox the nbox component
-   * @param {DvtNBoxCell} cell the cell
-   * @return {dvt.Displayable} the drop site feedback
-   */
-  renderDropSiteFeedback: (nbox, cell) => {
-    var background = DvtNBoxUtils.getDisplayable(nbox, cell.getData(), 'background');
-    var dropSiteFeedback = new Rect(
-      nbox.getCtx(),
-      background.getX(),
-      background.getY(),
-      background.getWidth(),
-      background.getHeight()
-    );
-    dropSiteFeedback.setPixelHinting(true);
-    var style = DvtNBoxStyleUtils.getCellDropTargetStyle(nbox);
-    DvtNBoxCellRenderer._applyStyleToRect(dropSiteFeedback, style);
-    cell.addChildAt(dropSiteFeedback, cell.getChildIndex(background) + 1);
-    return dropSiteFeedback;
-  },
-
-  /**
-   * Applies CSS properties to a dvt.Rect (placed here to avoid changing the behavior of dvt.Rect.setCSSStyle)
-   *
-   * @param {dvt.Rect} rect the dvt.Rect
-   * @param {dvt.CSSStyle} style  the dvt.CSSStyle
-   */
-  _applyStyleToRect: (rect, style) => {
-    var bgFill = style.getStyle(CSSStyle.BACKGROUND);
-    var colorFill = style.getStyle(CSSStyle.BACKGROUND_COLOR);
-    var fill = bgFill ? bgFill : colorFill;
-    if (fill) {
-      DvtNBoxUtils.setFill(rect, fill);
-    }
-    var borderStyle = style.getStyle(CSSStyle.BORDER_STYLE);
-    if (borderStyle == 'solid') {
-      var borderColor = style.getStyle(CSSStyle.BORDER_COLOR);
-      borderColor = borderColor ? borderColor : '#000000';
-      var borderWidth = style.getStyle(CSSStyle.BORDER_WIDTH);
-      borderWidth = borderWidth == null ? 1 : parseFloat(borderWidth);
-      rect.setSolidStroke(borderColor, null, borderWidth);
-    }
-  },
-
-  /**
-   * @private
-   * Adds accessibility attributes to the object
-   * @param {NBox} nbox The nbox component
-   * @param {object} cellData the cell data
-   * @param {DvtNBoxCell} cellContainer the object that should be updated with accessibility attributes
-   */
-  _addAccessibilityAttr: (nbox, cellData, cellContainer) => {
-    var object = Agent.isTouchDevice()
-      ? DvtNBoxUtils.getDisplayable(nbox, cellData, 'background')
-      : cellContainer;
-    object.setAriaRole('img');
-    if (!Agent.deferAriaCreation()) {
-      var desc = cellContainer.getAriaLabel();
-      if (desc) object.setAriaProperty('label', desc);
-    }
-  },
-
-  _createShadow: (shadowStyle) => {
-    if (shadowStyle && shadowStyle.length > 0 && shadowStyle !== 'none') {
-      // Different browsers return either:
-      // Case 1: 'color h-offset v-offset blur spread'
-      // Case 2: 'h-offset v-offset blur spread color'
-      var tokens = shadowStyle.match(/\S+\([^\)]+\)|\S+/g);
-      var firstChar = shadowStyle.charAt(0);
-      if (firstChar >= '0' && firstChar <= '9') {
-        // Case 2
-        return new Shadow(
-          parseInt(tokens[0]),
-          parseInt(tokens[1]),
-          parseInt(tokens[2]) / 2,
-          tokens[4]
-        );
-      } else {
-        // Case 1
-        return new Shadow(
-          parseInt(tokens[1]),
-          parseInt(tokens[2]),
-          parseInt(tokens[3]) / 2,
-          tokens[0]
-        );
-      }
-    }
-    return null;
-  }
-};
-
-class DvtNBoxCell extends Container {
-  /**
-   * @constructor
-   * @class nbox cell
-   * @param {NBox} nbox the parent nbox
-   * @param {object} data the data for this cell
-   * @implements {DvtKeyboardNavigable}
-   */
-  constructor(nbox, data) {
-    var r = DvtNBoxDataUtils.getRowIndex(nbox, data['row']);
-    var c = DvtNBoxDataUtils.getColIdx(nbox, data['column']);
-    super(nbox.getCtx(), null, 'c:' + r + ',' + c);
-    this._nbox = nbox;
-    this._data = data;
-    this._data['__cacheId'] = 'cell:' + this.getId();
-    this._scrollContainer = false;
-    this.nboxType = 'cell';
-  }
-
-  /**
-   * Gets the data object
-   *
-   * @return {object} the data object
-   */
-  getData() {
-    return this._data;
-  }
-
-  /**
-   * Renders the nbox cell into the available space.
-   * @param {dvt.Container} container the container to render into
-   * @param {dvt.Rectangle} availSpace The available space.
-   */
-  render(container, availSpace) {
-    container.addChild(this);
-    DvtNBoxUtils.setDisplayable(this._nbox, this._data, this);
-    DvtNBoxCellRenderer.render(this._nbox, this._data, this, availSpace);
-    this._nbox.EventManager.associate(this, this);
-  }
-
-  /**
-   * Gets the container that child nodes should be added to
-   *
-   * @return {dvt.Container} the container that child nodes should be added to
-   */
-  getChildContainer() {
-    return this._childContainer;
-  }
-
-  /**
-   * Sets the container that child nodes should be added to
-   *
-   * @param {dvt.Container} container the container that child nodes should be added to
-   */
-  setChildContainer(container) {
-    this._childContainer = container;
-  }
-
-  /**
-   * Animates an update between cell states
-   *
-   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
-   * @param {object} oldCell an object representing the old cell state
-   */
-  animateUpdate(animationHandler, oldCell) {
-    DvtNBoxCellRenderer.animateUpdate(animationHandler, oldCell, this);
-  }
-
-  /**
-   * Animates a cell deletion
-   *
-   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
-   */
-  animateDelete(animationHandler) {
-    DvtNBoxCellRenderer.animateDelete(animationHandler, this);
-  }
-
-  /**
-   * Animates a cell insertion
-   *
-   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
-   */
-  animateInsert(animationHandler) {
-    DvtNBoxCellRenderer.animateInsert(animationHandler, this);
-  }
-
-  /**
-   * Returns whether the cell is double clickable
-   *
-   * @return {boolean} true if cell is double clickable
-   */
-  isDoubleClickable() {
-    return DvtNBoxDataUtils.isMaximizeEnabled(this._nbox);
-  }
-
-  /**
-   * Handles a double click
-   */
-  handleDoubleClick() {
-    if (!this.isDoubleClickable()) return;
-
-    var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(this._nbox);
-    var maximizedColumn = DvtNBoxDataUtils.getMaximizedCol(this._nbox);
-    DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, '_drawer', null);
-    if (maximizedRow == this._data['row'] && maximizedColumn == this._data['column']) {
-      DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, 'maximizedRow', null);
-      DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, 'maximizedColumn', null);
-    } else {
-      DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, 'maximizedRow', this._data['row']);
-      DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, 'maximizedColumn', this._data['column']);
-    }
-
-    var otherCell;
-    var oldFocus = this._nbox.EventManager.getFocus();
-    // if no keyboard focus, set to cell
-    if (!oldFocus) this._nbox.EventManager.setFocusObj(this);
-    else {
-      if (oldFocus.nboxType === 'node')
-        otherCell =
-          this.getCellIndex() != DvtNBoxDataUtils.getCellIndex(this._nbox, oldFocus.getData());
-      else if (oldFocus.nboxType === 'overflow') otherCell = this != oldFocus.getParentCell();
-      else if (oldFocus.nboxType === 'cell')
-        otherCell = this.getCellIndex() != oldFocus.getCellIndex();
-      else if (oldFocus.nboxType === 'categoryNode')
-        otherCell = this.getCellIndex() != oldFocus.getData()['cell'];
-    }
-
-    // if keyboard focus on object in another cell, give focus to current cell.
-    if (otherCell) {
-      this._nbox.EventManager.setFocusObj(this);
-      this._nbox.EventManager.setFocused(false);
-    }
-
-    this._nbox.processEvent(EventFactory.newRenderEvent());
-  }
-
-  /**
-   * Determines whether the specified coordinates are contained by this cell
-   *
-   * @param {number} x the x coordinate
-   * @param {number} y the y coordinate
-   * @return {boolean} true if the coordinates are contained by this cell, false otherwise
-   */
-  contains(x, y) {
-    var background = DvtNBoxUtils.getDisplayable(this._nbox, this._data, 'background');
-    var minX = this.getTranslateX() + background.getX();
-    var minY = this.getTranslateY() + background.getY();
-    var maxX = minX + background.getWidth();
-    var maxY = minY + background.getHeight();
-    return minX <= x && x <= maxX && minY <= y && y <= maxY;
-  }
-
-  /**
-   * Renders the drop site feedback for this cell
-   *
-   * @return {dvt.Displayable} the drop site feedback
-   */
-  renderDropSiteFeedback() {
-    return DvtNBoxCellRenderer.renderDropSiteFeedback(this._nbox, this);
-  }
-
-  /**
-   * Process a keyboard event
-   * @param {dvt.KeyboardEvent} event
-   */
-  HandleKeyboardEvent(event) {
-    //use ENTER to drill down the cell and ESCAPE to drill up
-    var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(this._nbox);
-    var maximizedColumn = DvtNBoxDataUtils.getMaximizedCol(this._nbox);
-    var isCellMaximized =
-      maximizedRow == this._data['row'] && maximizedColumn == this._data['column'] ? true : false;
-
-    if (
-      (!isCellMaximized && event.keyCode == KeyboardEvent.ENTER) ||
-      (isCellMaximized && event.keyCode == KeyboardEvent.ESCAPE)
-    ) {
-      this.handleDoubleClick();
-    }
-  }
-
-  /**
-   * Returns the aria label of the node
-   * @return {string} aria label of the node
-   */
-  getAriaLabel() {
-    var cellIndex = this.getCellIndex();
-    var states = [];
-    var translations = this._nbox.getOptions().translations;
-    if (DvtNBoxDataUtils.isCellMaximized(this._nbox, cellIndex))
-      states.push(translations.stateMaximized);
-    else if (DvtNBoxDataUtils.isCellMinimized(this._nbox, cellIndex))
-      states.push(translations.stateMinimized);
-    states.push([translations.labelSize, this.getNodeCount()]);
-    return Displayable.generateAriaLabel(this.getData()['shortDesc'], states);
-  }
-
-  //---------------------------------------------------------------------//
-  // Keyboard Support: DvtKeyboardNavigable impl                        //
-  //---------------------------------------------------------------------//
-  /**
-   * @override
-   */
-  getKeyboardBoundingBox() {
-    return DvtNBoxUtils.getKeyboardBoundingBox(this);
-  }
-
-  /**
-   * @override
-   */
-  getTargetElem() {
-    return this.getElem();
-  }
-
-  /**
-   * @override
-   */
-  showKeyboardFocusEffect() {
-    this._isShowingKeyboardFocusEffect = true;
-    DvtNBoxUtils.getDisplayable(this._nbox, this.getData(), 'focusEffect').show();
-  }
-
-  /**
-   * @override
-   */
-  hideKeyboardFocusEffect() {
-    this._isShowingKeyboardFocusEffect = false;
-    DvtNBoxUtils.getDisplayable(this._nbox, this.getData(), 'focusEffect').hide();
-  }
-
-  /**
-   * @override
-   */
-  isShowingKeyboardFocusEffect() {
-    return this._isShowingKeyboardFocusEffect;
-  }
-
-  /**
-   * @override
-   */
-  getNextNavigable(event) {
-    var next = null;
-    if (this._nbox.EventManager.getKeyboardHandler().isNavigationEvent(event)) {
-      if (event.keyCode == KeyboardEvent.OPEN_BRACKET) {
-        next = this._getFirstNavigableChild(event);
-      } else {
-        next = this._getNextSibling(event);
-      }
-    }
-    return next;
-  }
-
-  /**
-   * @private
-   * Gets next sibling cell based on direction
-   * @param {dvt.KeyboardEvent} event
-   * @return {DvtKeyboardNavigable} a sibling cell
-   */
-  _getNextSibling(event) {
-    var cells = [];
-    var cellCount =
-      DvtNBoxDataUtils.getRowCount(this._nbox) * DvtNBoxDataUtils.getColCount(this._nbox);
-    for (var i = 0; i < cellCount; i++)
-      cells.push(DvtNBoxUtils.getDisplayable(this._nbox, DvtNBoxDataUtils.getCell(this._nbox, i)));
-    // Cannot use dvt.KeyboardHandler.getNextNavigable because initials background image distorts KeyboardBoundingBox
-    // JET-49672
-    return DvtNBoxKeyboardHandler.getNextNavigableCell(this, event, cells, this._nbox);
-  }
-
-  /**
-   * @private
-   * Gets a first navigable child node based on direction
-   * @param {dvt.KeyboardEvent} event
-   * @return {DvtKeyboardNavigable} a sibling cell
-   */
-  _getFirstNavigableChild(event) {
-    //node or drawer
-    var childObj = null;
-    var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(this._nbox);
-    var maximizedColumn = DvtNBoxDataUtils.getMaximizedCol(this._nbox);
-    var drawerData = DvtNBoxDataUtils.getDrawer(this._nbox);
-    if (
-      drawerData &&
-      maximizedRow == this.getData()['row'] &&
-      maximizedColumn == this.getData()['column']
-    ) {
-      childObj = DvtNBoxUtils.getDisplayable(this._nbox, drawerData);
-    } else {
-      var container = this.getChildContainer();
-      if (container.getScrollingPane) container = container.getScrollingPane();
-      if (
-        container.getNumChildren() > 0 &&
-        (container.getChildAt(0).nboxType === 'node' ||
-          container.getChildAt(0).nboxType === 'overflow')
-      ) {
-        //find first individual node
-        childObj = DvtNBoxDataUtils.getFirstNavigableNode(container);
-      } else {
-        // find first category node
-        var nodes = [];
-        for (var i = 0; i < container.getNumChildren(); i++) {
-          var child = container.getChildAt(i);
-          if (child.nboxType === 'categoryNode') nodes.push(child);
-        }
-        childObj = DvtNBoxKeyboardHandler.getNextNavigableCategoryNode(null, event, nodes);
-      }
-    }
-    return childObj;
-  }
-
-  /**
-   * Get the current cell index
-   * @return {Number} cell index
-   */
-  getCellIndex() {
-    return DvtNBoxDataUtils.getCellIdxByRowCol(
-      this._nbox,
-      this.getData()['row'],
-      this.getData()['column']
-    );
-  }
-
-  /**
-   * Get the cell label
-   * @return {String} cell label
-   */
-  getLabel() {
-    var label = this.getData()['label'];
-    return label ? label : null;
-  }
-
-  /**
-   * Get the cell count label
-   * @return {String} cell count label
-   */
-  getCountLabel() {
-    var data = this.getData();
-    // Custom count label support
-    // Custom count label via function
-    var countLabelFunc = this._nbox.getOptions()['countLabel'];
-    if (countLabelFunc) {
-      var dataContext = {
-        row: data['row'],
-        column: data['column'],
-        nodeCount: this.getNodeCount(),
-        highlightedNodeCount: this.getHighlightedNodeCount(),
-        totalNodeCount: DvtNBoxDataUtils.getNodeCount(this._nbox)
-      };
-      return countLabelFunc(dataContext);
-    }
-    return data['countLabel'];
-  }
-
-  /**
-   * Get the cell background
-   * @return {String} cell background
-   */
-  getBackground() {
-    var style = DvtNBoxStyleUtils.getCellStyle(this._nbox, this.getCellIndex());
-    var bgFill = style.getStyle(CSSStyle.BACKGROUND);
-    var colorFill = style.getStyle(CSSStyle.BACKGROUND_COLOR);
-    return bgFill ? bgFill : colorFill;
-  }
-
-  /**
-   * Returns whether the cell has overflow indicator
-   * @return {boolean} whether the cell has overflow indicator
-   */
-  hasOverflowIndicator() {
-    var options = this._nbox.getOptions();
-    if (
-      options &&
-      options['__layout'] &&
-      options['__layout']['__nodeLayout'] &&
-      options['__layout']['__nodeLayout']['cellLayouts']
-    ) {
-      var index = this.getCellIndex();
-      var cellLayout = options['__layout']['__nodeLayout']['cellLayouts'][index];
-      if (cellLayout) return cellLayout['overflow'];
-    }
-    return false;
-  }
-
-  /**
-   * Get the number of nodes in the cell
-   * @return {Number} number of nodes in the cell
-   */
-  getNodeCount() {
-    var cellCounts = DvtNBoxDataUtils.getCellCounts(this._nbox);
-    return cellCounts['total'][this.getCellIndex()];
-  }
-
-  /**
-   * Get the number of highlighted nodes in the cell
-   * @return {Number} number of highlighted nodes in the cell
-   */
-  getHighlightedNodeCount() {
-    var cellCounts = DvtNBoxDataUtils.getCellCounts(this._nbox);
-    if (cellCounts['highlighted']) return cellCounts['highlighted'][this.getCellIndex()];
-    return null;
-  }
-
-  /**
-   * Get the node at the specific index
-   * @param {Number} index  node index
-   * @return {DvtNBoxNode} node object
-   */
-  getNode(index) {
-    var nodes = this._nbox.getOptions()['nodes'];
-    if (nodes) {
-      var nodeIndex = 0;
-      for (var idx = 0; idx < nodes.length; idx++) {
-        if (
-          this.getData()['row'] == nodes[idx]['row'] &&
-          this.getData()['column'] == nodes[idx]['column'] &&
-          !DvtNBoxDataUtils.isNodeHidden(this._nbox, nodes[idx])
-        ) {
-          if (index == nodeIndex) return nodes[idx];
-          nodeIndex++;
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Returns the cell displayable (itself)
-   *
-   * @return {dvt.Displayable} displayable
-   */
-  getDisplayable() {
-    return this;
-  }
-
-  /**
-   * Returns the displayable that should receive the keyboard focus
-   *
-   * @return {dvt.Displayable} displayable to receive keyboard focus
-   */
-  getKeyboardFocusDisplayable() {
-    // return the cell
-    if (
-      DvtNBoxDataUtils.getGroupBehavior(this._nbox) != 'acrossCells' ||
-      !this._nbox.getOptions()['__groups']
-    ) {
-      return DvtNBoxUtils.getDisplayable(
-        this._nbox,
-        DvtNBoxDataUtils.getCell(
-          this._nbox,
-          DvtNBoxDataUtils.getCellIndex(this._nbox, this.getData())
-        )
-      );
-    }
-    return null;
-  }
-}
 
 /**
  * Renderer for DvtNBoxNode.
@@ -5126,6 +3355,7 @@ const DvtNBoxNodeRenderer = {
  * An NBox node.
  * @param {NBox} nbox the parent nbox
  * @param {object} data the data for this node
+ * @implements {DvtDraggable}
  * @class
  * @constructor
  */
@@ -5159,8 +3389,10 @@ class DvtNBoxNode extends Container {
    */
   render(container, nodeLayout) {
     DvtNBoxNodeRenderer.render(this._nbox, this._data, this, nodeLayout);
+    this._nodeLayout = nodeLayout;
     container.addChild(this);
     DvtNBoxUtils.setDisplayable(this._nbox, this._data, this);
+    this._setDraggableStyleClass();
     this._nbox.EventManager.associate(this, this);
   }
 
@@ -5231,20 +3463,27 @@ class DvtNBoxNode extends Container {
     var customTooltip = this._nbox.getOptions()['tooltip'];
     var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
     if (tooltipFunc) {
-      var dataContext = {
-        id: this._data['id'],
-        label: this._data['label'],
-        secondaryLabel: this._data['secondaryLabel'],
-        row: this._data['row'],
-        column: this._data['column'],
-        color: DvtNBoxStyleUtils.getNodeColor(this._nbox, this._data),
-        indicatorColor: DvtNBoxStyleUtils.getNodeIndicatorColor(this._nbox, this._data)
-      };
+      var dataContext = this.getDataContext();
       return this._nbox.getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, dataContext);
     }
     return Displayable.resolveShortDesc(this.getShortDesc(), () =>
       DvtNBoxNode.getShortDescContext(this)
     );
+  }
+  /**
+   * Returns the data context that will be passed to the tooltip function.
+   * @return {object}
+   */
+  getDataContext() {
+    return {
+      id: this._data['id'],
+      label: this._data['label'],
+      secondaryLabel: this._data['secondaryLabel'],
+      row: this._data['row'],
+      column: this._data['column'],
+      color: DvtNBoxStyleUtils.getNodeColor(this._nbox, this._data),
+      indicatorColor: DvtNBoxStyleUtils.getNodeIndicatorColor(this._nbox, this._data)
+    };
   }
 
   /**
@@ -5348,6 +3587,13 @@ class DvtNBoxNode extends Container {
    */
   getDragFeedback() {
     return this._nbox.__getDragFeedback();
+  }
+
+  /**
+   * Returns parent cell
+   */
+  getParentCell() {
+    return this._getParentContainer();
   }
 
   /**
@@ -5593,6 +3839,1878 @@ class DvtNBoxNode extends Container {
    */
   setChildContainer(container) {
     this._childContainer = container;
+  }
+
+  /**
+   * Sets draggable style class to a draggable node
+   * @private
+   */
+  _setDraggableStyleClass() {
+    if (this._nbox.getOptions().dnd) {
+      ToolkitUtils.addClassName(this.getElem(), 'oj-draggable');
+    }
+  }
+}
+
+/**
+ * Keyboard handler for the NBox component
+ * @param {dvt.EventManager} manager The owning dvt.EventManager
+ * @param {NBox} nbox The owning NBox component
+ * @class DvtNBoxKeyboardHandler
+ * @constructor
+ * @extends {dvt.KeyboardHandler}
+ */
+class DvtNBoxKeyboardHandler extends KeyboardHandler {
+  constructor(manager, nbox) {
+    super(manager);
+    this._nbox = nbox;
+  }
+
+  /**
+   * @override
+   */
+  processKeyDown(event) {
+    var keyCode = event.keyCode;
+    var transferOptions = this._nbox.getOptions().dataTransferOptions;
+    var currentNavigable = this._eventManager.getFocus();
+
+    if (keyCode == KeyboardEvent.TAB) {
+      var next = null;
+      EventManager.consumeEvent(event);
+      if (!currentNavigable) {
+        var drawerData = DvtNBoxDataUtils.getDrawer(this._nbox);
+        if (drawerData) {
+          //drawer
+          next = DvtNBoxUtils.getDisplayable(this._nbox, drawerData);
+        } else if (DvtNBoxDataUtils.getGroupBehavior(this._nbox) == 'acrossCells') {
+          //find first group node
+          var groups = this._nbox.getOptions()['__groups'];
+          if (groups) {
+            var groupNodes = [];
+            for (var id in groups) {
+              var displayable = DvtNBoxUtils.getDisplayable(this._nbox, groups[id]);
+              if (displayable) groupNodes.push(displayable);
+            }
+            next = DvtNBoxKeyboardHandler.getNextNavigableCategoryNode(null, event, groupNodes);
+          }
+        }
+        if (!next) {
+          var index =
+            DvtNBoxDataUtils.getColCount(this._nbox) *
+            (DvtNBoxDataUtils.getRowCount(this._nbox) - 1);
+          next = DvtNBoxUtils.getDisplayable(
+            this._nbox,
+            DvtNBoxDataUtils.getCell(this._nbox, index)
+          );
+        }
+      } else {
+        next = currentNavigable;
+      }
+      return next;
+    } else if (
+      (keyCode == KeyboardEvent.X && event.ctrlKey && transferOptions.cut === 'enable') ||
+      (keyCode == KeyboardEvent.C && event.ctrlKey && transferOptions.copy === 'enable')
+    ) {
+      var navigables = [];
+      var contexts = [];
+      if (
+        this._nbox.isSelectionSupported() &&
+        this._nbox.getSelectionHandler().getSelectedCount() > 1
+      ) {
+        var selection = this._nbox.getSelectionHandler().getSelection();
+        for (var i = 0; i < selection.length; i++) {
+          if (selection[i] instanceof DvtNBoxNode) {
+            navigables.push(selection[i]);
+            contexts.push(selection[i].getDataContext());
+          }
+        }
+      } else if (currentNavigable instanceof DvtNBoxNode) {
+        navigables.push(currentNavigable);
+        contexts.push(currentNavigable.getDataContext());
+      }
+      var event;
+      if (keyCode == KeyboardEvent.X) {
+        event = new EventFactory.newEvent('cutRequest');
+        this._nbox.setActiveCut(navigables);
+      } else if (keyCode == KeyboardEvent.C) {
+        event = new EventFactory.newEvent('copyRequest');
+      }
+      if (event) {
+        event['source'] = contexts;
+        this._nbox.dispatchEvent(event);
+      }
+      return null;
+    } else if (
+      keyCode == KeyboardEvent.V &&
+      event.ctrlKey &&
+      transferOptions.paste === 'enable'
+    ) {
+      // check that currentNavigable is a cell
+      // Cannot use instanceof Cell or else there will be a dependency loop
+      if (currentNavigable && currentNavigable.getData().row) {
+        var data = currentNavigable.getData();
+        var target = {
+          column: data.column,
+          row: data.row
+        };
+        var event = new EventFactory.newEvent('pasteRequest');
+        event['target'] = target;
+        this._nbox.setActiveCut(null);
+        this._nbox.dispatchEvent(event);
+      }
+      return null;
+    } else if (keyCode == KeyboardEvent.ESCAPE && this._nbox.getActiveCut()) {
+      this._nbox.setActiveCut(null);
+      return null;
+    }
+    return super.processKeyDown(event);
+  }
+
+  /**
+   * @override
+   */
+  isSelectionEvent(event) {
+    if (event.keyCode == KeyboardEvent.TAB) return false;
+    else return this.isNavigationEvent(event) && !event.ctrlKey;
+  }
+
+  /**
+   * @override
+   */
+  isMultiSelectEvent(event) {
+    return event.keyCode == KeyboardEvent.SPACE && event.ctrlKey;
+  }
+
+  /**
+   * @override
+   */
+  isNavigationEvent(event) {
+    var retVal = false;
+    switch (event.keyCode) {
+      case KeyboardEvent.OPEN_BRACKET:
+      case KeyboardEvent.CLOSE_BRACKET:
+        retVal = true;
+        break;
+      default:
+        retVal = super.isNavigationEvent(event);
+    }
+    return retVal;
+  }
+
+  /**
+   * Finds next navigable category node based on node size and direction  among sorted category nodes
+   * @param {DvtKeyboardNavigable} curr current navigable item with keyboard focus (optional).
+   * @param {dvt.KeyboardEvent} event
+   * @param {Array} navigableItems An array of items that could receive focus next
+   * @return {DvtNBoxCategoryNode} The object that can get keyboard focus as a result of the keyboard event.
+   */
+  static getNextNavigableCategoryNode(curr, event, navigableItems) {
+    if (!navigableItems || navigableItems.length <= 0) return null;
+
+    if (navigableItems[0].nboxType === 'categoryNode') {
+      navigableItems.sort((a, b) => {
+        return DvtNBoxDataUtils.compareCategoryNodeSize(a.getData(), b.getData());
+      });
+    }
+
+    // get default node
+    if (curr == null) {
+      return navigableItems[0];
+    }
+
+    var next = curr;
+    var bNext =
+      event.keyCode == KeyboardEvent.RIGHT_ARROW ||
+      event.keyCode == KeyboardEvent.DOWN_ARROW
+        ? true
+        : false;
+    var itemCount = navigableItems.length;
+    for (var i = 0; i < itemCount; i++) {
+      var testObj = navigableItems[i];
+      if (testObj === curr) {
+        var nextIndex = i + 1 < itemCount ? i + 1 : i;
+        var prevIndex = i - 1 >= 0 ? i - 1 : i;
+        next = navigableItems[bNext ? nextIndex : prevIndex];
+        break;
+      }
+    }
+    return next;
+  }
+
+  /**
+   * Finds next navigable cell
+   * Using grid coordinates in calculating the next navigable cell
+   * @param {DvtNBoxCell} curr current navigable cell with keyboard focus.
+   * @param {dvt.KeyboardEvent} event
+   * @param {Array} navigableItems An array of items that could receive focus next
+   * @param {DvtNBox} nbox The current nbox
+   * @return {DvtNBoxCell} The object that can get keyboard focus as a result of the keyboard event.
+   */
+  static getNextNavigableCell(curr, event, navigableItems, nbox) {
+    if (!navigableItems || navigableItems.length === 0) return null;
+
+    var nextRow = parseInt(curr.getData()['row']);
+    var nextCol = parseInt(curr.getData()['column']);
+    var maxRow = DvtNBoxDataUtils.getRowCount(nbox);
+    var maxCol = DvtNBoxDataUtils.getColCount(nbox);
+
+    const bound = (val, max) => (max + val) % max;
+    if (event.keyCode == KeyboardEvent.RIGHT_ARROW) {
+      nextCol = bound(nextCol + 1, maxCol);
+    } else if (event.keyCode == KeyboardEvent.LEFT_ARROW) {
+      nextCol = bound(nextCol - 1, maxCol);
+    } else if (event.keyCode == KeyboardEvent.UP_ARROW) {
+      nextRow = bound(nextRow + 1, maxRow);
+    } else {
+      nextRow = bound(nextRow - 1, maxRow);
+    }
+    return DvtNBoxDataUtils.getCellByRowCol(nbox, nextRow, nextCol);
+  }
+}
+
+/**
+ * Renderer for DvtNBoxCell.
+ * @class
+ */
+const DvtNBoxCellRenderer = {
+  /**
+   * Renders the nbox cell into the available space.
+   * @param {NBox} nbox The nbox component
+   * @param {object} cellData The cell data being rendered
+   * @param {DvtNBoxCell} cellContainer The container to render into
+   * @param {dvt.Rectangle} availSpace The available space
+   */
+  render: (nbox, cellData, cellContainer, availSpace) => {
+    var options = nbox.getOptions();
+    var cellGap = parseInt(options['__layout']['cellGap']);
+    var cellPadding = parseInt(options['__layout']['cellInnerPadding']);
+
+    var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
+
+    var r = DvtNBoxDataUtils.getRowIndex(nbox, cellData['row']);
+    var c = DvtNBoxDataUtils.getColIdx(nbox, cellData['column']);
+
+    var cellDims = DvtNBoxCellRenderer.getCellDims(nbox, r, c, availSpace);
+
+    cellContainer.setTranslate(cellDims.x + cellGap / 2, cellDims.y + cellGap / 2);
+    var cellIndex = r * DvtNBoxDataUtils.getColCount(nbox) + c; // cells are in sorted row-major order
+    var cellRect = new Rect(
+      nbox.getCtx(),
+      0,
+      0,
+      Math.max(cellDims.w - cellGap, 0),
+      Math.max(cellDims.h - cellGap, 0)
+    );
+    cellRect.setPixelHinting(true);
+    var style = DvtNBoxStyleUtils.getCellStyle(nbox, cellIndex);
+    DvtNBoxCellRenderer._applyStyleToRect(cellRect, style);
+    var borderRadius = DvtNBoxStyleUtils.getCellBorderRadius(nbox);
+    cellRect.setRx(borderRadius);
+    cellRect.setRy(borderRadius);
+
+    //Apply the custom style and classname on the cell
+    var styleObj = DvtNBoxStyleUtils.getCellStyleObject(nbox, cellIndex);
+    cellRect.setStyle(styleObj);
+    var className = DvtNBoxStyleUtils.getCellClassName(nbox, cellIndex);
+    cellRect.setClassName(className);
+
+    cellContainer.addChild(cellRect);
+
+    var filter = nbox.getCellFilter();
+    if (filter === undefined) {
+      filter = DvtNBoxCellRenderer._createShadow(
+        options['styleDefaults']['cellDefaults']['_panelShadow']
+      );
+      nbox.setCellFilter(filter);
+    }
+    if (filter) {
+      cellRect.addDrawEffect(filter);
+    }
+
+    DvtNBoxUtils.setDisplayable(nbox, cellData, cellRect, 'background');
+
+    var keyboardEffect = new KeyboardFocusEffect(
+      nbox.getCtx(),
+      cellContainer,
+      new Rectangle(-1, -1, cellRect.getWidth() + 2, cellRect.getHeight() + 2)
+    );
+    DvtNBoxUtils.setDisplayable(nbox, cellData, keyboardEffect, 'focusEffect');
+    DvtNBoxUtils.setDisplayable(nbox, cellData, keyboardEffect, 'dragEffect');
+
+    DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, false);
+
+    var cellMaximized = DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex);
+    var headerSize = cellMaximized ? cellLayout['maximizedHeaderSize'] : cellLayout['headerSize'];
+    var labelHeight = cellMaximized
+      ? cellLayout['maximizedLabelHeight']
+      : cellLayout['labelHeight'];
+
+    var childContainer = cellMaximized
+      ? new SimpleScrollableContainer(
+          nbox.getCtx(),
+          cellRect.getWidth(),
+          cellRect.getHeight() - headerSize
+        )
+      : new Container(nbox.getCtx());
+
+    cellContainer.addChild(childContainer);
+    cellContainer.setChildContainer(childContainer);
+
+    var childArea = null;
+    if (labelHeight) {
+      if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
+        childArea = new Rectangle(
+          headerSize,
+          cellPadding,
+          cellRect.getWidth() - headerSize - cellPadding,
+          cellRect.getHeight() - cellPadding - cellPadding
+        );
+      } else {
+        childArea = new Rectangle(
+          cellPadding,
+          headerSize,
+          cellRect.getWidth() - cellPadding - cellPadding,
+          cellRect.getHeight() - headerSize - cellPadding
+        );
+      }
+      if (childContainer instanceof SimpleScrollableContainer)
+        childContainer.setTranslate(0, headerSize);
+    } else {
+      childArea = new Rectangle(
+        cellPadding,
+        cellPadding,
+        cellRect.getWidth() - cellPadding - cellPadding,
+        cellRect.getHeight() - cellPadding - cellPadding
+      );
+    }
+    childArea.w = Math.max(childArea.w, 0);
+    childArea.h = Math.max(childArea.h, 0);
+    cellData['__childArea'] = childArea;
+  },
+
+  /**
+   * Renders the nbox cell header
+   * @param {NBox} nbox The nbox components
+   * @param {object} cellData The cell data
+   * @param {DvtNBoxCell} cellContainer The container to render into.
+   * @param {boolean} noCount Indicates whether the count label should be suppressed
+   * @return {boolean} true if a header was rendered, false otherwise
+   */
+  renderHeader: (nbox, cellData, cellContainer, noCount) => {
+    var oldLabel = DvtNBoxUtils.getDisplayable(nbox, cellData, 'label');
+    if (oldLabel) {
+      oldLabel.getParent().removeChild(oldLabel);
+      DvtNBoxUtils.setDisplayable(nbox, cellData, null, 'label');
+    }
+    var oldCountLabel = DvtNBoxUtils.getDisplayable(nbox, cellData, 'countLabel');
+    if (oldCountLabel) {
+      oldCountLabel.getParent().removeChild(oldCountLabel);
+      DvtNBoxUtils.setDisplayable(nbox, cellData, null, 'countLabel');
+    }
+    var oldClose = DvtNBoxUtils.getDisplayable(nbox, cellData, 'closeButton');
+    if (oldClose) {
+      oldClose.getParent().removeChild(oldClose);
+      DvtNBoxUtils.setDisplayable(nbox, cellData, null, 'closeButton');
+    }
+    var addedHeader = false;
+    if (cellData) {
+      var options = nbox.getOptions();
+      var countLabelGap = options['__layout']['countLabelGap'];
+      var cellCloseGap = options['__layout']['cellCloseGap'];
+      var cellPadding = parseInt(options['__layout']['cellInnerPadding']);
+
+      var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
+      var cellCounts = DvtNBoxDataUtils.getCellCounts(nbox);
+
+      var cellRect = DvtNBoxUtils.getDisplayable(nbox, cellData, 'background');
+
+      var r = DvtNBoxDataUtils.getRowIndex(nbox, cellData['row']);
+      var c = DvtNBoxDataUtils.getColIdx(nbox, cellData['column']);
+      var cellIndex = r * DvtNBoxDataUtils.getColCount(nbox) + c; // cells are in sorted row-major order
+
+      var rtl = Agent.isRightToLeft(nbox.getCtx());
+
+      var cellCloseWidthWithGap = 0;
+      if (DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex)) {
+        var close = options['_resources']['close'];
+        var closeWidth = close['width'];
+        if (cellRect.getWidth() - cellPadding - cellPadding > closeWidth) {
+          var context = nbox.getCtx();
+          var iconStyle = ToolkitUtils.getIconStyle(context, close['class']);
+          var closeButton = new IconButton(
+            context,
+            'borderless',
+            { style: iconStyle, size: closeWidth },
+            null,
+            null,
+            cellContainer.handleDoubleClick,
+            cellContainer
+          );
+
+          // Center/hide close button if cell too thin for normal rendering
+          var closeButtonX = rtl
+            ? Math.min((cellRect.getWidth() - closeWidth) / 2, cellPadding)
+            : Math.max(
+                (cellRect.getWidth() - closeWidth) / 2,
+                cellRect.getWidth() - cellPadding - closeWidth
+              );
+          closeButton.setTranslate(closeButtonX, cellPadding);
+          cellContainer.addChild(closeButton);
+          cellCloseWidthWithGap = closeWidth + cellCloseGap;
+          DvtNBoxUtils.setDisplayable(nbox, cellData, closeButton, 'closeButton');
+          addedHeader = true;
+        }
+      }
+      var countLabelOffset;
+      if (cellData['label']) {
+        var labelHeight = cellLayout['labelHeight'];
+        var skipLabel = false;
+        var halign = DvtNBoxStyleUtils.getLabelHalign(nbox, cellData);
+        var countLabelWidth = 0;
+        var countLabelWidthWithGap = 0;
+        var countLabel = null;
+        var countLabelX = 0;
+        var countLabelY = 0;
+        var countText = null;
+        var showCount = DvtNBoxStyleUtils.getCellShowCount(nbox, cellData);
+        if (!noCount && showCount != 'off') {
+          var cellCountLabel = DvtNBoxUtils.getDisplayable(nbox, cellData).getCountLabel();
+          if (cellCountLabel) countText = cellCountLabel;
+          else if (showCount == 'on') {
+            countText = '' + cellCounts['total'][cellIndex];
+            if (cellCounts['highlighted']) {
+              countText = ResourceUtils.format(options.translations.highlightedCount, [
+                cellCounts['highlighted'][cellIndex],
+                countText
+              ]);
+            }
+          }
+        }
+        if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
+          // Vertical Label
+          if (countText) {
+            countLabel = DvtNBoxUtils.createText(
+              nbox.getCtx(),
+              countText,
+              DvtNBoxStyleUtils.getCellCountLabelStyle(nbox, cellIndex),
+              OutputText.H_ALIGN_CENTER,
+              OutputText.V_ALIGN_CENTRAL
+            );
+            countLabel.setClassName('oj-typography-semi-bold');
+            if (
+              TextUtils.fitText(
+                countLabel,
+                cellRect.getHeight() - cellPadding - cellPadding,
+                cellRect.getWidth() - 2 * cellPadding,
+                cellContainer
+              )
+            ) {
+              DvtNBoxUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
+              addedHeader = true;
+              countLabelWidth = countLabel.getDimensions().w;
+              countLabelWidthWithGap = countLabelWidth + countLabelGap;
+              // Count label will get offset after rendering the cell label
+              countLabelY = cellRect.getHeight() / 2;
+              countLabelX = cellRect.getWidth() / 2;
+            } else {
+              skipLabel = true;
+            }
+          }
+          countLabelOffset = 0;
+          if (!skipLabel) {
+            var label = DvtNBoxUtils.createText(
+              nbox.getCtx(),
+              cellData['label'],
+              DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex),
+              OutputText.H_ALIGN_CENTER,
+              OutputText.V_ALIGN_CENTRAL
+            );
+            if (
+              TextUtils.fitText(
+                label,
+                cellRect.getHeight() - cellPadding - cellPadding - countLabelWidthWithGap,
+                cellRect.getWidth() - 2 * cellPadding,
+                cellContainer
+              )
+            ) {
+              DvtNBoxUtils.setDisplayable(nbox, cellData, label, 'label');
+              var labelWidth = label.getDimensions().w;
+              addedHeader = true;
+              DvtNBoxUtils.positionText(
+                label,
+                cellRect.getWidth() / 2,
+                (cellRect.getHeight() + countLabelWidthWithGap) / 2,
+                rtl ? Math.PI / 2 : -Math.PI / 2
+              );
+              countLabelOffset = (labelWidth + countLabelGap) / 2;
+            }
+          }
+          if (countLabel) {
+            countLabelY -= countLabelOffset;
+            DvtNBoxUtils.positionText(
+              countLabel,
+              countLabelX,
+              countLabelY,
+              rtl ? Math.PI / 2 : -Math.PI / 2
+            );
+          }
+        } else {
+          if (countText) {
+            countLabel = DvtNBoxUtils.createText(
+              nbox.getCtx(),
+              countText,
+              DvtNBoxStyleUtils.getCellCountLabelStyle(nbox, cellIndex),
+              halign,
+              OutputText.V_ALIGN_CENTRAL
+            );
+            countLabel.setClassName('oj-typography-semi-bold');
+            if (
+              TextUtils.fitText(
+                countLabel,
+                cellRect.getWidth() - cellPadding - cellPadding - cellCloseWidthWithGap,
+                cellRect.getHeight() - 2 * cellPadding,
+                cellContainer
+              )
+            ) {
+              DvtNBoxUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
+              addedHeader = true;
+              countLabelWidth = countLabel.getDimensions().w;
+              countLabelWidthWithGap = countLabelWidth + countLabelGap;
+              // Count label will get offset after rendering the cell label
+              if (halign == OutputText.H_ALIGN_CENTER) {
+                countLabelX = cellRect.getWidth() / 2;
+              } else if (halign == OutputText.H_ALIGN_RIGHT) {
+                countLabelX = cellRect.getWidth() - cellPadding;
+              } else {
+                // halign == dvt.OutputText.H_ALIGN_LEFT
+                countLabelX = cellPadding;
+              }
+              countLabelY = DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)
+                ? cellRect.getHeight() / 2
+                : cellPadding + labelHeight / 2;
+              DvtNBoxUtils.positionText(countLabel, countLabelX, countLabelY);
+            } else {
+              skipLabel = true;
+            }
+          }
+          countLabelOffset = 0;
+          if (!skipLabel) {
+            var labelHorizontal = DvtNBoxUtils.createText(
+              nbox.getCtx(),
+              cellData['label'],
+              DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex),
+              halign,
+              OutputText.V_ALIGN_CENTRAL
+            );
+            if (
+              TextUtils.fitText(
+                labelHorizontal,
+                cellRect.getWidth() -
+                  cellPadding -
+                  cellPadding -
+                  cellCloseWidthWithGap -
+                  countLabelWidthWithGap,
+                cellRect.getHeight() - 2 * cellPadding,
+                cellContainer
+              )
+            ) {
+              DvtNBoxUtils.setDisplayable(nbox, cellData, labelHorizontal, 'label');
+              var horizLabelWidth = labelHorizontal.getDimensions().w;
+              addedHeader = true;
+              var labelX;
+              if (halign == OutputText.H_ALIGN_CENTER) {
+                labelX = (cellRect.getWidth() - (rtl ? -1 : 1) * countLabelWidthWithGap) / 2;
+                countLabelOffset = ((rtl ? -1 : 1) * (horizLabelWidth + countLabelGap)) / 2;
+              } else if (halign == OutputText.H_ALIGN_RIGHT) {
+                labelX = cellRect.getWidth() - cellPadding - (rtl ? 0 : 1) * countLabelWidthWithGap;
+                countLabelOffset = (rtl ? -1 : 0) * (horizLabelWidth + countLabelGap);
+              } else {
+                // halign == dvt.OutputText.H_ALIGN_LEFT
+                labelX = cellPadding + (rtl ? 1 : 0) * countLabelWidthWithGap;
+                countLabelOffset = (rtl ? 0 : 1) * (horizLabelWidth + countLabelGap);
+              }
+              var labelY = DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)
+                ? cellRect.getHeight() / 2
+                : cellPadding + labelHeight / 2;
+              DvtNBoxUtils.positionText(labelHorizontal, labelX, labelY);
+            }
+          }
+          if (countLabel && countLabelOffset) {
+            DvtNBoxUtils.positionText(countLabel, countLabelX + countLabelOffset, countLabelY);
+          }
+        }
+      }
+    }
+    DvtNBoxCellRenderer._addAccessibilityAttr(nbox, cellData, cellContainer);
+    return addedHeader;
+  },
+
+  /**
+   * Renders the body countLabels for the specified cells
+   * @param {NBox} nbox The nbox components
+   * @param {array} cellIndices The indices of the cells
+   */
+  renderBodyCountLabels: (nbox, cellIndices) => {
+    var cellPadding = parseInt(nbox.getOptions()['__layout']['cellInnerPadding']);
+
+    var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
+    var cellCounts = DvtNBoxDataUtils.getCellCounts(nbox);
+
+    var headerFontSize = Number.MAX_VALUE;
+    var removeHeaders = false;
+
+    // calculate header font sizes
+    var cellData = DvtNBoxDataUtils.getCell(nbox, cellIndices[0]);
+    var headerLabel = DvtNBoxUtils.getDisplayable(nbox, cellData, 'label');
+    var headerCount = DvtNBoxUtils.getDisplayable(nbox, cellData, 'countLabel');
+    var headerLabelSize =
+      headerLabel && headerLabel.getCSSStyle() ? headerLabel.getCSSStyle().getFontSize() : null;
+    var headerCountSize =
+      headerCount && headerCount.getCSSStyle() ? headerCount.getCSSStyle().getFontSize() : null;
+    // parse out 'px'
+    headerLabelSize = isNaN(headerLabelSize) ? parseFloat(headerLabelSize) : headerLabelSize;
+    headerCountSize = isNaN(headerCountSize) ? parseFloat(headerCountSize) : headerCountSize;
+    if (!isNaN(headerLabelSize) || !isNaN(headerCountSize)) {
+      var headerSize = isNaN(headerCountSize)
+        ? headerLabelSize
+        : Math.max(headerLabelSize, headerCountSize);
+      headerFontSize = isNaN(headerLabelSize) ? headerCountSize : headerSize;
+    }
+
+    // Separate maximized cells from minimized. If maximizedRow and maximizedColumn are unset,
+    // all indices will be placed into maximizedCellIndices.
+    var maximizedCellIndices = [];
+    var minimizedCellIndices = [];
+    var cellIndex;
+    var count;
+    for (var z = 0; z < cellIndices.length; z++) {
+      cellIndex = cellIndices[z];
+      DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)
+        ? minimizedCellIndices.push(cellIndex)
+        : maximizedCellIndices.push(cellIndex);
+    }
+
+    // create labels
+    var maximizedLabels = [];
+    var minimizedLabels = [];
+    for (var i = 0; i < maximizedCellIndices.length; i++) {
+      cellIndex = maximizedCellIndices[i];
+      count = cellCounts['total'][cellIndex];
+      maximizedLabels[i] = DvtNBoxUtils.createText(
+        nbox.getCtx(),
+        '' + count,
+        DvtNBoxStyleUtils.getCellBodyCountLabelStyle(nbox),
+        OutputText.H_ALIGN_CENTER,
+        OutputText.V_ALIGN_CENTRAL
+      );
+    }
+    for (var y = 0; y < minimizedCellIndices.length; y++) {
+      cellIndex = minimizedCellIndices[y];
+      count = cellCounts['total'][cellIndex];
+      minimizedLabels[y] = DvtNBoxUtils.createText(
+        nbox.getCtx(),
+        '' + count,
+        DvtNBoxStyleUtils.getCellBodyCountLabelStyle(nbox),
+        OutputText.H_ALIGN_CENTER,
+        OutputText.V_ALIGN_CENTRAL
+      );
+    }
+
+    // remove headers if either of the following:
+    // 1) calculated body countLabel font size is less than header font size
+    // 2) count is the only thing in the cell header (no label)
+    var maximizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(
+      nbox,
+      maximizedCellIndices,
+      maximizedLabels
+    );
+    if (maximizedFontSize <= headerFontSize || (headerCount && !headerLabel)) {
+      removeHeaders = true;
+    }
+    var minimizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(
+      nbox,
+      minimizedCellIndices,
+      minimizedLabels
+    );
+    if (minimizedFontSize <= headerFontSize || (headerCount && !headerLabel)) {
+      removeHeaders = true;
+    }
+
+    if (removeHeaders) {
+      for (var w = 0; w < cellIndices.length; w++) {
+        cellData = DvtNBoxDataUtils.getCell(nbox, cellIndices[w]);
+        headerLabel = DvtNBoxUtils.getDisplayable(nbox, cellData, 'label');
+        headerCount = DvtNBoxUtils.getDisplayable(nbox, cellData, 'countLabel');
+        var childArea = cellData['__childArea'];
+        var headerRemoved = false;
+        if (headerLabel) {
+          headerLabel.getParent().removeChild(headerLabel);
+          DvtNBoxUtils.setDisplayable(nbox, cellData, null, 'label');
+          headerRemoved = true;
+        }
+        if (headerCount) {
+          headerCount.getParent().removeChild(headerCount);
+          DvtNBoxUtils.setDisplayable(nbox, cellData, null, 'countLabel');
+          headerRemoved = true;
+        }
+        // reallocate header space to childArea if a header element has been removed
+        if (headerRemoved) {
+          if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
+            childArea.x -= cellLayout['headerSize'] - cellPadding;
+            childArea.w += cellLayout['headerSize'] - cellPadding;
+          } else {
+            childArea.y -= cellLayout['headerSize'] - cellPadding;
+            childArea.h += cellLayout['headerSize'] - cellPadding;
+          }
+          cellData['__childArea'] = childArea;
+        }
+      }
+
+      // recalculate font sizes
+      maximizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(
+        nbox,
+        maximizedCellIndices,
+        maximizedLabels
+      );
+      minimizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(
+        nbox,
+        minimizedCellIndices,
+        minimizedLabels
+      );
+    }
+    var childArea;
+    var cellContainer;
+    for (var u = 0; u < maximizedCellIndices.length; u++) {
+      cellIndex = maximizedCellIndices[u];
+      cellData = DvtNBoxDataUtils.getCell(nbox, cellIndex);
+      cellContainer = DvtNBoxUtils.getDisplayable(nbox, cellData);
+      childArea = cellData['__childArea'];
+
+      maximizedLabels[u].setFontSize(maximizedFontSize);
+      if (TextUtils.fitText(maximizedLabels[u], childArea.w, childArea.h, cellContainer)) {
+        if (!removeHeaders) DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true);
+        DvtNBoxUtils.positionText(
+          maximizedLabels[u],
+          childArea.x + childArea.w / 2,
+          childArea.y + childArea.h / 2
+        );
+      }
+    }
+    for (var t = 0; t < minimizedCellIndices.length; t++) {
+      cellIndex = minimizedCellIndices[t];
+      cellData = DvtNBoxDataUtils.getCell(nbox, cellIndex);
+      cellContainer = DvtNBoxUtils.getDisplayable(nbox, cellData);
+      childArea = cellData['__childArea'];
+
+      minimizedLabels[t].setFontSize(minimizedFontSize);
+      if (TextUtils.fitText(minimizedLabels[t], childArea.w, childArea.h, cellContainer)) {
+        if (!removeHeaders) DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true);
+        DvtNBoxUtils.positionText(
+          minimizedLabels[t],
+          childArea.x + childArea.w / 2,
+          childArea.y + childArea.h / 2
+        );
+      }
+    }
+  },
+
+  /**
+   * Calculate thes font size for the body countLabels for the specified cells
+   * @param {NBox} nbox The nbox components
+   * @param {array} cellIndices The indices of the cells
+   * @param {array} labels The body countLabels for the specified cells
+   * @return {number} computed font size of body countLabels
+   */
+  getBodyCountLabelsFontSize: (nbox, cellIndices, labels) => {
+    var fontSize = Number.MAX_VALUE;
+    for (var i = 0; i < cellIndices.length; i++) {
+      var childArea = DvtNBoxDataUtils.getCell(nbox, cellIndices[i])['__childArea'];
+      fontSize = Math.min(
+        fontSize,
+        parseInt(
+          TextUtils.getOptimalFontSize(
+            labels[i].getCtx(),
+            labels[i].getTextString(),
+            labels[i].getCSSStyle(),
+            childArea
+          )
+        )
+      );
+    }
+    return fontSize;
+  },
+
+  /**
+   * Gets whether the labels for the specified cell should be rendered vertically
+   *
+   * @param {NBox} nbox the nbox component
+   * @param {object} cellData the cell data
+   * @return whether the labels for the specified cell should be rendered vertically
+   */
+  _isLabelVertical: (nbox, cellData) => {
+    var maximizedColumn = DvtNBoxDataUtils.getMaximizedCol(nbox);
+    var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
+    return maximizedColumn &&
+      maximizedColumn != cellData['column'] &&
+      (!maximizedRow || maximizedRow == cellData['row'])
+      ? true
+      : false;
+  },
+
+  /**
+   * Calculates the dimensions for the specified cell
+   *
+   * @param {NBox} nbox The nbox components
+   * @param {number} rowIndex the row index of the specified cell
+   * @param {number} columnIndex the column index of the specified cell
+   * @param {dvt.Rectangle} availSpace The available space.
+   *
+   * @return {dvt.Rectangle} the dimensions for the specified cell
+   */
+  getCellDims: (nbox, rowIndex, columnIndex, availSpace) => {
+    var options = nbox.getOptions();
+    var cellGap = parseInt(options['__layout']['cellGap']);
+    var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
+
+    var rtl = Agent.isRightToLeft(nbox.getCtx());
+
+    var minimizedSize = cellGap + parseInt(cellLayout['minimumCellSize']);
+    var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
+    var columnCount = DvtNBoxDataUtils.getColCount(nbox);
+    var defaultRowDimensions = DvtNBoxDataUtils.getRowDims(nbox, rowIndex, availSpace);
+    var defaultColumnDimensions = DvtNBoxDataUtils.getColDims(nbox, columnIndex, availSpace);
+    var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
+    var maximizedColumn = DvtNBoxDataUtils.getMaximizedCol(nbox);
+
+    var columnX = defaultColumnDimensions.x;
+    var rowY = defaultRowDimensions.y;
+    var columnW = defaultColumnDimensions.w;
+    var rowH = defaultRowDimensions.h;
+
+    var processColumn = true;
+
+    if (maximizedRow) {
+      var maximizedRowIndex = DvtNBoxDataUtils.getRowIndex(nbox, maximizedRow);
+
+      // Ensure maximized row takes at least 2/3 of available height.  Split remaining height across minimized rows.
+      // minimizedRowSize * number of minimized rows will be at most 1/3 available height.
+      var minimizedRowSize = Math.min(availSpace.h / (3 * (rowCount - 1)), minimizedSize);
+
+      if (rowIndex < maximizedRowIndex) {
+        rowY = availSpace.y + availSpace.h - (rowIndex + 1) * minimizedRowSize;
+        rowH = minimizedRowSize;
+        processColumn = false;
+      } else if (rowIndex == maximizedRowIndex) {
+        rowY = availSpace.y + (rowCount - rowIndex - 1) * minimizedRowSize;
+        rowH = availSpace.h - (rowCount - 1) * minimizedRowSize;
+      } else {
+        // rowIndex > maximizedRowIndex
+        rowY = availSpace.y + (rowCount - rowIndex - 1) * minimizedRowSize;
+        rowH = minimizedRowSize;
+        processColumn = false;
+      }
+    }
+
+    if (maximizedColumn && processColumn) {
+      var maximizedColumnIndex = DvtNBoxDataUtils.getColIdx(nbox, maximizedColumn);
+
+      // Ensure maximized column takes at least 2/3 of available width.  Split remaining width across minimized columns.
+      // minimizedColumnSize * number of minimized columns will be at most 1/3 available width.
+      var minimizedColumnSize = Math.min(availSpace.w / (3 * (columnCount - 1)), minimizedSize);
+      if (columnIndex < maximizedColumnIndex) {
+        columnW = minimizedColumnSize;
+        columnX =
+          availSpace.x +
+          (rtl ? availSpace.w - minimizedColumnSize : 0) +
+          (rtl ? -1 : 1) * columnIndex * minimizedColumnSize;
+      } else if (columnIndex == maximizedColumnIndex) {
+        columnW = availSpace.w - (columnCount - 1) * minimizedColumnSize;
+        columnX =
+          availSpace.x +
+          (rtl ? availSpace.w - columnW : 0) +
+          (rtl ? -1 : 1) * columnIndex * minimizedColumnSize;
+      } else {
+        // columnIndex > maximizedColumnIndex
+        columnW = minimizedColumnSize;
+        columnX =
+          availSpace.x +
+          (rtl ? -minimizedColumnSize : availSpace.w) +
+          (rtl ? 1 : -1) * (columnCount - columnIndex) * minimizedColumnSize;
+      }
+    }
+    return new Rectangle(columnX, rowY, columnW, rowH);
+  },
+
+  /**
+   * Calculates sizes related to cell layout, based upon the first specified cell
+   * (Assumes that the cells are specified homogeneously)
+   * @param {NBox} nbox the nbox component
+   * @return {object} an object containing the calculated sizes
+   */
+  getCellLayout: (nbox) => {
+    return (
+      nbox.getOptions()['__layout']['__cellLayout'] ||
+      DvtNBoxCellRenderer._calculateCellLayout(nbox)
+    );
+  },
+
+  /**
+   * @private
+   * Calculates sizes related to cell layout, based upon the first specified cell
+   * (Assumes that the cells are specified homogeneously)
+   * @param {NBox} nbox the nbox component
+   * @return {object} an object containing the calculated sizes
+   */
+  _calculateCellLayout: (nbox) => {
+    var options = nbox.getOptions();
+    var cellCounts = DvtNBoxDataUtils.getCellCounts(nbox);
+    var cellPadding = parseInt(options['__layout']['cellInnerPadding']);
+    var cellLabelGap = options['__layout']['cellLabelGap'];
+    var minimumCellSize = parseInt(options['__layout']['minimumCellSize']);
+
+    var labelHeight = 0;
+    var maximizedLabelHeight = 0;
+    var cellCount = DvtNBoxDataUtils.getRowCount(nbox) * DvtNBoxDataUtils.getColCount(nbox);
+    for (var i = 0; i < cellCount; i++) {
+      var cellData = DvtNBoxDataUtils.getCell(nbox, i);
+      if (cellData && cellData['label']) {
+        var halign = cellData['labelHalign'];
+        var label = DvtNBoxUtils.createText(
+          nbox.getCtx(),
+          cellData['label'],
+          DvtNBoxStyleUtils.getCellLabelStyle(nbox, i),
+          halign,
+          OutputText.V_ALIGN_CENTRAL
+        );
+        var cellLabelHeight = label.getDimensions().h;
+        if (DvtNBoxStyleUtils.getCellShowCount(nbox, cellData) == 'on') {
+          var count = DvtNBoxUtils.createText(
+            nbox.getCtx(),
+            cellCounts['total'][i],
+            DvtNBoxStyleUtils.getCellCountLabelStyle(nbox, i),
+            halign,
+            OutputText.V_ALIGN_CENTRAL
+          );
+          var countLabelHeight = count.getDimensions().h;
+          cellLabelHeight = Math.max(cellLabelHeight, countLabelHeight);
+        }
+        labelHeight = Math.max(labelHeight, cellLabelHeight);
+      }
+    }
+    if (DvtNBoxDataUtils.getMaximizedRow(nbox) && DvtNBoxDataUtils.getMaximizedCol(nbox)) {
+      maximizedLabelHeight = Math.max(labelHeight, options['_resources']['close']['height']);
+    }
+
+    var minimizedHeaderSize = labelHeight + cellPadding + cellPadding;
+    var headerSize = labelHeight + cellPadding + cellLabelGap;
+    var maximizedHeaderSize = maximizedLabelHeight + cellPadding + cellLabelGap;
+    minimumCellSize = Math.max(minimizedHeaderSize, minimumCellSize);
+    var cellLayout = {
+      labelHeight: labelHeight,
+      headerSize: headerSize,
+      maximizedLabelHeight: maximizedLabelHeight,
+      maximizedHeaderSize: maximizedHeaderSize,
+      minimumCellSize: minimumCellSize
+    };
+    options['__layout']['__cellLayout'] = cellLayout;
+    return cellLayout;
+  },
+
+  /**
+   * Animates an update between NBox states
+   *
+   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
+   * @param {object} oldCell an object representing the old cell state
+   * @param {object} newCell an object representing the new cell state
+   */
+  animateUpdate: (animationHandler, oldCell, newCell) => {
+    var oldNBox = animationHandler.getOldNBox();
+    var newNBox = animationHandler.getNewNBox();
+    var playable = new CustomAnimation(
+      newNBox.getCtx(),
+      newCell,
+      animationHandler.getAnimationDuration()
+    );
+
+    // Promote the child container first so that nodes that position themselves correctly
+    var childContainer = newCell.getChildContainer();
+    var childMatrix = childContainer.getMatrix();
+    childContainer.setMatrix(DvtNBoxUtils.getGlobalMatrix(childContainer));
+    var cellParent = newCell.getParent();
+    cellParent.addChildAt(childContainer, cellParent.getChildIndex(newCell) + 1);
+
+    // Grab cell translation
+    var cellTx = newCell.getTranslateX();
+    var cellTy = newCell.getTranslateY();
+
+    // Position
+    playable
+      .getAnimator()
+      .addProp(
+        Animator.TYPE_MATRIX,
+        newCell,
+        newCell.getMatrix,
+        newCell.setMatrix,
+        newCell.getMatrix()
+      );
+    newCell.setMatrix(oldCell.getMatrix());
+
+    // Background
+    var oldBackground = DvtNBoxUtils.getDisplayable(oldNBox, oldCell.getData(), 'background');
+    var newBackground = DvtNBoxUtils.getDisplayable(newNBox, newCell.getData(), 'background');
+
+    var rtl = Agent.isRightToLeft(newNBox.getCtx());
+    var widthDiff = rtl ? 0 : newBackground.getWidth() - oldBackground.getWidth();
+
+    if (!newBackground.getFill().equals(oldBackground.getFill())) {
+      playable
+        .getAnimator()
+        .addProp(
+          Animator.TYPE_FILL,
+          newBackground,
+          newBackground.getFill,
+          newBackground.setFill,
+          newBackground.getFill()
+        );
+      newBackground.setFill(oldBackground.getFill());
+    }
+    playable
+      .getAnimator()
+      .addProp(
+        Animator.TYPE_NUMBER,
+        newBackground,
+        newBackground.getWidth,
+        newBackground.setWidth,
+        newBackground.getWidth()
+      );
+    newBackground.setWidth(oldBackground.getWidth());
+    playable
+      .getAnimator()
+      .addProp(
+        Animator.TYPE_NUMBER,
+        newBackground,
+        newBackground.getHeight,
+        newBackground.setHeight,
+        newBackground.getHeight()
+      );
+    newBackground.setHeight(oldBackground.getHeight());
+
+    // Keyboard focus effect
+    if (newCell.isShowingKeyboardFocusEffect()) {
+      var effect = DvtNBoxUtils.getDisplayable(
+        newNBox,
+        newCell.getData(),
+        'focusEffect'
+      ).getEffect();
+      if (effect) {
+        playable
+          .getAnimator()
+          .addProp(
+            Animator.TYPE_NUMBER,
+            effect,
+            effect.getWidth,
+            effect.setWidth,
+            effect.getWidth()
+          );
+        effect.setWidth(oldBackground.getWidth() + 2);
+        playable
+          .getAnimator()
+          .addProp(
+            Animator.TYPE_NUMBER,
+            effect,
+            effect.getHeight,
+            effect.setHeight,
+            effect.getHeight()
+          );
+        effect.setHeight(oldBackground.getHeight() + 2);
+      }
+    }
+
+    // Labels
+    DvtNBoxCellRenderer._animateLabels(animationHandler, oldCell, newCell, 'countLabel');
+    DvtNBoxCellRenderer._animateLabels(animationHandler, oldCell, newCell, 'label');
+
+    // Close button
+    var oldClose = DvtNBoxUtils.getDisplayable(oldNBox, oldCell.getData(), 'closeButton');
+    var newClose = DvtNBoxUtils.getDisplayable(newNBox, newCell.getData(), 'closeButton');
+    if (oldClose) {
+      if (newClose) {
+        playable
+          .getAnimator()
+          .addProp(
+            Animator.TYPE_MATRIX,
+            newClose,
+            newClose.getMatrix,
+            newClose.setMatrix,
+            newClose.getMatrix()
+          );
+        newClose.setMatrix(oldClose.getMatrix());
+      } else {
+        var oldCloseStart = DvtNBoxUtils.getGlobalMatrix(oldClose);
+        oldClose.setTranslate(
+          oldClose.getTranslateX() + widthDiff + cellTx,
+          oldClose.getTranslateY() + cellTy
+        );
+
+        animationHandler.add(
+          new AnimFadeOut(newNBox.getCtx(), oldClose, animationHandler.getAnimationDuration()),
+          DvtNBoxDataAnimationHandler.UPDATE
+        );
+        playable
+          .getAnimator()
+          .addProp(
+            Animator.TYPE_MATRIX,
+            oldClose,
+            oldClose.getMatrix,
+            oldClose.setMatrix,
+            oldClose.getMatrix()
+          );
+        oldClose.setMatrix(oldCloseStart);
+        newNBox.getDeleteContainer().addChild(oldClose);
+      }
+    } else if (newClose) {
+      animationHandler.add(
+        new AnimFadeIn(newNBox.getCtx(), newClose, animationHandler.getAnimationDuration()),
+        DvtNBoxDataAnimationHandler.UPDATE
+      );
+      playable
+        .getAnimator()
+        .addProp(
+          Animator.TYPE_MATRIX,
+          newClose,
+          newClose.getMatrix,
+          newClose.setMatrix,
+          newClose.getMatrix()
+        );
+      newClose.setTranslate(newClose.getTranslateX() - widthDiff, newClose.getTranslateY());
+      newClose.setAlpha(0);
+    }
+
+    Playable.appendOnEnd(playable, () => {
+      newCell.addChild(childContainer);
+      childContainer.setMatrix(childMatrix);
+    });
+    animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
+  },
+
+  _animateLabels: (animationHandler, oldCell, newCell, labelKey) => {
+    var oldNBox = animationHandler.getOldNBox();
+    var newNBox = animationHandler.getNewNBox();
+    var oldLabel = DvtNBoxUtils.getDisplayable(oldNBox, oldCell.getData(), labelKey);
+    var newLabel = DvtNBoxUtils.getDisplayable(newNBox, newCell.getData(), labelKey);
+    var oldVerticalLabel = DvtNBoxCellRenderer._isLabelVertical(oldNBox, oldCell.getData());
+    var newVerticalLabel = DvtNBoxCellRenderer._isLabelVertical(newNBox, newCell.getData());
+    if (oldLabel || newLabel) {
+      if (oldLabel && newLabel && oldVerticalLabel == newVerticalLabel) {
+        var playable = new CustomAnimation(
+          newNBox.getCtx(),
+          newLabel,
+          animationHandler.getAnimationDuration()
+        );
+        var oldAlign = oldLabel.getHorizAlignment();
+        var oAlign = oldAlign == 'center' ? 0 : 1;
+        oldAlign = oldAlign == 'left' ? -1 : oAlign;
+        var newAlign = newLabel.getHorizAlignment();
+        var nAlign = newAlign == 'center' ? 0 : 1;
+        newAlign = newAlign == 'left' ? -1 : nAlign;
+        var alignOffset = ((newAlign - oldAlign) * newLabel.getDimensions().w) / 2;
+        playable
+          .getAnimator()
+          .addProp(
+            Animator.TYPE_NUMBER,
+            newLabel,
+            newLabel.getX,
+            newLabel.setX,
+            newLabel.getX()
+          );
+        newLabel.setX(oldLabel.getX() + alignOffset);
+        playable
+          .getAnimator()
+          .addProp(
+            Animator.TYPE_NUMBER,
+            newLabel,
+            newLabel.getY,
+            newLabel.setY,
+            newLabel.getY()
+          );
+        newLabel.setY(oldLabel.getY());
+        playable
+          .getAnimator()
+          .addProp(
+            Animator.TYPE_MATRIX,
+            newLabel,
+            newLabel.getMatrix,
+            newLabel.setMatrix,
+            newLabel.getMatrix()
+          );
+        newLabel.setMatrix(oldLabel.getMatrix());
+        animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
+
+        if (labelKey == 'countLabel' && oldLabel.getTextString() != newLabel.getTextString()) {
+          newLabel.setAlpha(0);
+          newCell.addChild(oldLabel);
+
+          var fadeOutAnim = new AnimFadeOut(
+            newNBox.getCtx(),
+            oldLabel,
+            animationHandler.getAnimationDuration()
+          );
+          var fadeInAnim = new AnimFadeIn(
+            newNBox.getCtx(),
+            newLabel,
+            animationHandler.getAnimationDuration()
+          );
+          animationHandler.add(fadeOutAnim, DvtNBoxDataAnimationHandler.UPDATE);
+          animationHandler.add(fadeInAnim, DvtNBoxDataAnimationHandler.INSERT);
+
+          Playable.appendOnEnd(fadeOutAnim, () => {
+            newNBox.getDeleteContainer().addChild(oldLabel);
+          });
+        }
+      } else {
+        if (oldLabel) {
+          oldLabel.setMatrix(DvtNBoxUtils.getGlobalMatrix(oldLabel));
+          newNBox.getDeleteContainer().addChild(oldLabel);
+          animationHandler.add(
+            new AnimFadeOut(
+              newNBox.getCtx(),
+              oldLabel,
+              animationHandler.getAnimationDuration()
+            ),
+            DvtNBoxDataAnimationHandler.UPDATE
+          );
+        }
+        if (newLabel) {
+          newLabel.setAlpha(0);
+          animationHandler.add(
+            new AnimFadeIn(newNBox.getCtx(), newLabel, animationHandler.getAnimationDuration()),
+            DvtNBoxDataAnimationHandler.UPDATE
+          );
+        }
+      }
+    }
+  },
+
+  /**
+   * Animates a cell deletion
+   *
+   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
+   * @param {object} oldCell an object representing the old cell state
+   */
+  animateDelete: (animationHandler, oldCell) => {
+    var nbox = animationHandler.getNewNBox();
+    // Reparent the child container if any
+    var childContainer = oldCell.getChildContainer();
+    if (childContainer) {
+      var globalMatrix = DvtNBoxUtils.getGlobalMatrix(childContainer);
+      var cellParent = oldCell.getParent();
+      cellParent.addChildAt(childContainer, cellParent.getChildIndex(oldCell) + 1);
+      childContainer.setMatrix(globalMatrix);
+    }
+    // Add the cell to the delete container and fade out
+    nbox.getDeleteContainer().addChild(oldCell);
+    animationHandler.add(
+      new AnimFadeOut(nbox.getCtx(), oldCell, animationHandler.getAnimationDuration()),
+      DvtNBoxDataAnimationHandler.UPDATE
+    );
+  },
+
+  /**
+   * Animates a cell insertion
+   *
+   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
+   * @param {object} newCell an object representing the new cell state
+   */
+  animateInsert: (animationHandler, newCell) => {
+    var nbox = animationHandler.getNewNBox();
+    // Reparent the child container if any
+    var childContainer = newCell.getChildContainer();
+    var childMatrix = null;
+    if (childContainer) {
+      childMatrix = childContainer.getMatrix();
+      var globalMatrix = DvtNBoxUtils.getGlobalMatrix(newCell);
+      var cellParent = newCell.getParent();
+      cellParent.addChildAt(childContainer, cellParent.getChildIndex(newCell) + 1);
+      childContainer.setMatrix(globalMatrix);
+    }
+    // Fade in the cell
+    newCell.setAlpha(0);
+    var playable = new AnimFadeIn(
+      nbox.getCtx(),
+      newCell,
+      animationHandler.getAnimationDuration()
+    );
+    if (childContainer) {
+      Playable.appendOnEnd(playable, () => {
+        newCell.addChild(childContainer);
+        childContainer.setMatrix(childMatrix);
+      });
+    }
+    animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
+  },
+
+  /**
+   * Renders the drop site feedback for the specified cell
+   *
+   * @param {NBox} nbox the nbox component
+   * @param {DvtNBoxCell} cell the cell
+   * @return {dvt.Displayable} the drop site feedback
+   */
+  renderDropSiteFeedback: (nbox, cell) => {
+    var background = DvtNBoxUtils.getDisplayable(nbox, cell.getData(), 'background');
+    var dropSiteFeedback = new Rect(
+      nbox.getCtx(),
+      background.getX(),
+      background.getY(),
+      background.getWidth(),
+      background.getHeight()
+    );
+    dropSiteFeedback.setPixelHinting(true);
+    var style = DvtNBoxStyleUtils.getCellDropTargetStyle(nbox);
+    DvtNBoxCellRenderer._applyStyleToRect(dropSiteFeedback, style);
+    cell.addChildAt(dropSiteFeedback, cell.getChildIndex(background) + 1);
+    return dropSiteFeedback;
+  },
+
+  /**
+   * Applies CSS properties to a dvt.Rect (placed here to avoid changing the behavior of dvt.Rect.setCSSStyle)
+   *
+   * @param {dvt.Rect} rect the dvt.Rect
+   * @param {dvt.CSSStyle} style  the dvt.CSSStyle
+   */
+  _applyStyleToRect: (rect, style) => {
+    var bgFill = style.getStyle(CSSStyle.BACKGROUND);
+    var colorFill = style.getStyle(CSSStyle.BACKGROUND_COLOR);
+    var fill = bgFill ? bgFill : colorFill;
+    if (fill) {
+      DvtNBoxUtils.setFill(rect, fill);
+    }
+    var borderStyle = style.getStyle(CSSStyle.BORDER_STYLE);
+    if (borderStyle == 'solid') {
+      var borderColor = style.getStyle(CSSStyle.BORDER_COLOR);
+      borderColor = borderColor ? borderColor : '#000000';
+      var borderWidth = style.getStyle(CSSStyle.BORDER_WIDTH);
+      borderWidth = borderWidth == null ? 1 : parseFloat(borderWidth);
+      rect.setSolidStroke(borderColor, null, borderWidth);
+    }
+  },
+
+  /**
+   * @private
+   * Adds accessibility attributes to the object
+   * @param {NBox} nbox The nbox component
+   * @param {object} cellData the cell data
+   * @param {DvtNBoxCell} cellContainer the object that should be updated with accessibility attributes
+   */
+  _addAccessibilityAttr: (nbox, cellData, cellContainer) => {
+    var object = Agent.isTouchDevice()
+      ? DvtNBoxUtils.getDisplayable(nbox, cellData, 'background')
+      : cellContainer;
+    object.setAriaRole('group');
+    if (!Agent.deferAriaCreation()) {
+      var desc = cellContainer.getAriaLabel();
+      if (desc) object.setAriaProperty('label', desc);
+    }
+  },
+
+  _createShadow: (shadowStyle) => {
+    if (shadowStyle && shadowStyle.length > 0 && shadowStyle !== 'none') {
+      // Different browsers return either:
+      // Case 1: 'color h-offset v-offset blur spread'
+      // Case 2: 'h-offset v-offset blur spread color'
+      var tokens = shadowStyle.match(/\S+\([^\)]+\)|\S+/g);
+      var firstChar = shadowStyle.charAt(0);
+      if (firstChar >= '0' && firstChar <= '9') {
+        // Case 2
+        return new Shadow(
+          parseInt(tokens[0]),
+          parseInt(tokens[1]),
+          parseInt(tokens[2]) / 2,
+          tokens[4]
+        );
+      } else {
+        // Case 1
+        return new Shadow(
+          parseInt(tokens[1]),
+          parseInt(tokens[2]),
+          parseInt(tokens[3]) / 2,
+          tokens[0]
+        );
+      }
+    }
+    return null;
+  }
+};
+
+class DvtNBoxCell extends Container {
+  /**
+   * @constructor
+   * @class nbox cell
+   * @param {NBox} nbox the parent nbox
+   * @param {object} data the data for this cell
+   * @implements {DvtKeyboardNavigable}
+   */
+  constructor(nbox, data) {
+    var r = DvtNBoxDataUtils.getRowIndex(nbox, data['row']);
+    var c = DvtNBoxDataUtils.getColIdx(nbox, data['column']);
+    super(nbox.getCtx(), null, 'c:' + r + ',' + c);
+    this._nbox = nbox;
+    this._data = data;
+    this._data['__cacheId'] = 'cell:' + this.getId();
+    this._scrollContainer = false;
+    this.nboxType = 'cell';
+  }
+
+  /**
+   * Gets the data object
+   *
+   * @return {object} the data object
+   */
+  getData() {
+    return this._data;
+  }
+
+  /**
+   * Renders the nbox cell into the available space.
+   * @param {dvt.Container} container the container to render into
+   * @param {dvt.Rectangle} availSpace The available space.
+   */
+  render(container, availSpace) {
+    container.addChild(this);
+    DvtNBoxUtils.setDisplayable(this._nbox, this._data, this);
+    DvtNBoxCellRenderer.render(this._nbox, this._data, this, availSpace);
+    this._nbox.EventManager.associate(this, this);
+  }
+
+  /**
+   * Gets the container that child nodes should be added to
+   *
+   * @return {dvt.Container} the container that child nodes should be added to
+   */
+  getChildContainer() {
+    return this._childContainer;
+  }
+
+  /**
+   * Sets the container that child nodes should be added to
+   *
+   * @param {dvt.Container} container the container that child nodes should be added to
+   */
+  setChildContainer(container) {
+    this._childContainer = container;
+  }
+
+  /**
+   * Animates an update between cell states
+   *
+   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
+   * @param {object} oldCell an object representing the old cell state
+   */
+  animateUpdate(animationHandler, oldCell) {
+    DvtNBoxCellRenderer.animateUpdate(animationHandler, oldCell, this);
+  }
+
+  /**
+   * Animates a cell deletion
+   *
+   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
+   */
+  animateDelete(animationHandler) {
+    DvtNBoxCellRenderer.animateDelete(animationHandler, this);
+  }
+
+  /**
+   * Animates a cell insertion
+   *
+   * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
+   */
+  animateInsert(animationHandler) {
+    DvtNBoxCellRenderer.animateInsert(animationHandler, this);
+  }
+
+  /**
+   * Returns whether the cell is double clickable
+   *
+   * @return {boolean} true if cell is double clickable
+   */
+  isDoubleClickable() {
+    return DvtNBoxDataUtils.isMaximizeEnabled(this._nbox);
+  }
+
+  /**
+   * Handles a double click
+   */
+  handleDoubleClick() {
+    if (!this.isDoubleClickable()) return;
+
+    var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(this._nbox);
+    var maximizedColumn = DvtNBoxDataUtils.getMaximizedCol(this._nbox);
+    DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, '_drawer', null);
+    if (maximizedRow == this._data['row'] && maximizedColumn == this._data['column']) {
+      DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, 'maximizedRow', null);
+      DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, 'maximizedColumn', null);
+    } else {
+      DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, 'maximizedRow', this._data['row']);
+      DvtNBoxDataUtils.fireOptionChangeEvent(this._nbox, 'maximizedColumn', this._data['column']);
+    }
+
+    var otherCell;
+    var oldFocus = this._nbox.EventManager.getFocus();
+    // if no keyboard focus, set to cell
+    if (!oldFocus) this._nbox.EventManager.setFocusObj(this);
+    else {
+      if (oldFocus.nboxType === 'node')
+        otherCell =
+          this.getCellIndex() != DvtNBoxDataUtils.getCellIndex(this._nbox, oldFocus.getData());
+      else if (oldFocus.nboxType === 'overflow') otherCell = this != oldFocus.getParentCell();
+      else if (oldFocus.nboxType === 'cell')
+        otherCell = this.getCellIndex() != oldFocus.getCellIndex();
+      else if (oldFocus.nboxType === 'categoryNode')
+        otherCell = this.getCellIndex() != oldFocus.getData()['cell'];
+    }
+
+    // if keyboard focus on object in another cell, give focus to current cell.
+    if (otherCell) {
+      this._nbox.EventManager.setFocusObj(this);
+      this._nbox.EventManager.setFocused(false);
+    }
+
+    this._nbox.processEvent(EventFactory.newRenderEvent());
+  }
+
+  /**
+   * Determines whether the specified coordinates are contained by this cell
+   *
+   * @param {number} x the x coordinate
+   * @param {number} y the y coordinate
+   * @return {boolean} true if the coordinates are contained by this cell, false otherwise
+   */
+  contains(x, y) {
+    var background = DvtNBoxUtils.getDisplayable(this._nbox, this._data, 'background');
+    var minX = this.getTranslateX() + background.getX();
+    var minY = this.getTranslateY() + background.getY();
+    var maxX = minX + background.getWidth();
+    var maxY = minY + background.getHeight();
+    return minX <= x && x <= maxX && minY <= y && y <= maxY;
+  }
+
+  /**
+   * Renders the drop site feedback for this cell
+   *
+   * @return {dvt.Displayable} the drop site feedback
+   */
+  renderDropSiteFeedback() {
+    return DvtNBoxCellRenderer.renderDropSiteFeedback(this._nbox, this);
+  }
+
+  /**
+   * Process a keyboard event
+   * @param {dvt.KeyboardEvent} event
+   */
+  HandleKeyboardEvent(event) {
+    //use ENTER to drill down the cell and ESCAPE to drill up
+    var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(this._nbox);
+    var maximizedColumn = DvtNBoxDataUtils.getMaximizedCol(this._nbox);
+    var isCellMaximized =
+      maximizedRow == this._data['row'] && maximizedColumn == this._data['column'] ? true : false;
+
+    if (
+      (!isCellMaximized && event.keyCode == KeyboardEvent.ENTER) ||
+      (isCellMaximized && event.keyCode == KeyboardEvent.ESCAPE)
+    ) {
+      this.handleDoubleClick();
+    }
+  }
+
+  /**
+   * Returns the aria label of the node
+   * @return {string} aria label of the node
+   */
+  getAriaLabel() {
+    var cellIndex = this.getCellIndex();
+    var states = [];
+    var translations = this._nbox.getOptions().translations;
+    if (DvtNBoxDataUtils.isCellMaximized(this._nbox, cellIndex))
+      states.push(translations.stateMaximized);
+    else if (DvtNBoxDataUtils.isCellMinimized(this._nbox, cellIndex))
+      states.push(translations.stateMinimized);
+    states.push([translations.labelSize, this.getNodeCount()]);
+    return Displayable.generateAriaLabel(this.getData()['shortDesc'], states);
+  }
+
+  //---------------------------------------------------------------------//
+  // Keyboard Support: DvtKeyboardNavigable impl                        //
+  //---------------------------------------------------------------------//
+  /**
+   * @override
+   */
+  getKeyboardBoundingBox() {
+    return DvtNBoxUtils.getKeyboardBoundingBox(this);
+  }
+
+  /**
+   * @override
+   */
+  getTargetElem() {
+    return this.getElem();
+  }
+
+  /**
+   * @override
+   */
+  showKeyboardFocusEffect() {
+    this._isShowingKeyboardFocusEffect = true;
+    DvtNBoxUtils.getDisplayable(this._nbox, this.getData(), 'focusEffect').show();
+  }
+
+  /**
+   * @override
+   */
+  hideKeyboardFocusEffect() {
+    this._isShowingKeyboardFocusEffect = false;
+    DvtNBoxUtils.getDisplayable(this._nbox, this.getData(), 'focusEffect').hide();
+  }
+
+  /**
+   * @override
+   */
+  isShowingKeyboardFocusEffect() {
+    return this._isShowingKeyboardFocusEffect;
+  }
+
+  /**
+   * @override
+   */
+  getNextNavigable(event) {
+    var next = null;
+    if (this._nbox.EventManager.getKeyboardHandler().isNavigationEvent(event)) {
+      if (event.keyCode == KeyboardEvent.OPEN_BRACKET) {
+        next = this._getFirstNavigableChild(event);
+      } else {
+        next = this._getNextSibling(event);
+      }
+    }
+    return next;
+  }
+
+  /**
+   * @override
+   */
+  showDragOverEffect() {
+    this._isShowingKeyboardFocusEffect = true;
+    DvtNBoxUtils.getDisplayable(this._nbox, this.getData(), 'dragEffect').show();
+  }
+
+  /**
+   * @override
+   */
+  hideDragOverEffect() {
+    this._isShowingKeyboardFocusEffect = false;
+    DvtNBoxUtils.getDisplayable(this._nbox, this.getData(), 'dragEffect').hide();
+  }
+
+  /**
+   * @private
+   * Gets next sibling cell based on direction
+   * @param {dvt.KeyboardEvent} event
+   * @return {DvtKeyboardNavigable} a sibling cell
+   */
+  _getNextSibling(event) {
+    var cells = [];
+    var cellCount =
+      DvtNBoxDataUtils.getRowCount(this._nbox) * DvtNBoxDataUtils.getColCount(this._nbox);
+    for (var i = 0; i < cellCount; i++)
+      cells.push(DvtNBoxUtils.getDisplayable(this._nbox, DvtNBoxDataUtils.getCell(this._nbox, i)));
+    // Cannot use dvt.KeyboardHandler.getNextNavigable because initials background image distorts KeyboardBoundingBox
+    // JET-49672
+    return DvtNBoxKeyboardHandler.getNextNavigableCell(this, event, cells, this._nbox);
+  }
+
+  /**
+   * @private
+   * Gets a first navigable child node based on direction
+   * @param {dvt.KeyboardEvent} event
+   * @return {DvtKeyboardNavigable} a sibling cell
+   */
+  _getFirstNavigableChild(event) {
+    //node or drawer
+    var childObj = null;
+    var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(this._nbox);
+    var maximizedColumn = DvtNBoxDataUtils.getMaximizedCol(this._nbox);
+    var drawerData = DvtNBoxDataUtils.getDrawer(this._nbox);
+    if (
+      drawerData &&
+      maximizedRow == this.getData()['row'] &&
+      maximizedColumn == this.getData()['column']
+    ) {
+      childObj = DvtNBoxUtils.getDisplayable(this._nbox, drawerData);
+    } else {
+      var container = this.getChildContainer();
+      if (container.getScrollingPane) container = container.getScrollingPane();
+      if (
+        container.getNumChildren() > 0 &&
+        (container.getChildAt(0).nboxType === 'node' ||
+          container.getChildAt(0).nboxType === 'overflow')
+      ) {
+        //find first individual node
+        childObj = DvtNBoxDataUtils.getFirstNavigableNode(container);
+      } else {
+        // find first category node
+        var nodes = [];
+        for (var i = 0; i < container.getNumChildren(); i++) {
+          var child = container.getChildAt(i);
+          if (child.nboxType === 'categoryNode') nodes.push(child);
+        }
+        childObj = DvtNBoxKeyboardHandler.getNextNavigableCategoryNode(null, event, nodes);
+      }
+    }
+    return childObj;
+  }
+
+  /**
+   * Get the current cell index
+   * @return {Number} cell index
+   */
+  getCellIndex() {
+    return DvtNBoxDataUtils.getCellIdxByRowCol(
+      this._nbox,
+      this.getData()['row'],
+      this.getData()['column']
+    );
+  }
+
+  /**
+   * Get the cell label
+   * @return {String} cell label
+   */
+  getLabel() {
+    var label = this.getData()['label'];
+    return label ? label : null;
+  }
+
+  /**
+   * Get the cell count label
+   * @return {String} cell count label
+   */
+  getCountLabel() {
+    var data = this.getData();
+    // Custom count label support
+    // Custom count label via function
+    var countLabelFunc = this._nbox.getOptions()['countLabel'];
+    if (countLabelFunc) {
+      var dataContext = {
+        row: data['row'],
+        column: data['column'],
+        nodeCount: this.getNodeCount(),
+        highlightedNodeCount: this.getHighlightedNodeCount(),
+        totalNodeCount: DvtNBoxDataUtils.getNodeCount(this._nbox)
+      };
+      return countLabelFunc(dataContext);
+    }
+    return data['countLabel'];
+  }
+
+  /**
+   * Get the cell background
+   * @return {String} cell background
+   */
+  getBackground() {
+    var style = DvtNBoxStyleUtils.getCellStyle(this._nbox, this.getCellIndex());
+    var bgFill = style.getStyle(CSSStyle.BACKGROUND);
+    var colorFill = style.getStyle(CSSStyle.BACKGROUND_COLOR);
+    return bgFill ? bgFill : colorFill;
+  }
+
+  /**
+   * Returns whether the cell has overflow indicator
+   * @return {boolean} whether the cell has overflow indicator
+   */
+  hasOverflowIndicator() {
+    var options = this._nbox.getOptions();
+    if (
+      options &&
+      options['__layout'] &&
+      options['__layout']['__nodeLayout'] &&
+      options['__layout']['__nodeLayout']['cellLayouts']
+    ) {
+      var index = this.getCellIndex();
+      var cellLayout = options['__layout']['__nodeLayout']['cellLayouts'][index];
+      if (cellLayout) return cellLayout['overflow'];
+    }
+    return false;
+  }
+
+  /**
+   * Get the number of nodes in the cell
+   * @return {Number} number of nodes in the cell
+   */
+  getNodeCount() {
+    var cellCounts = DvtNBoxDataUtils.getCellCounts(this._nbox);
+    return cellCounts['total'][this.getCellIndex()];
+  }
+
+  /**
+   * Get the number of highlighted nodes in the cell
+   * @return {Number} number of highlighted nodes in the cell
+   */
+  getHighlightedNodeCount() {
+    var cellCounts = DvtNBoxDataUtils.getCellCounts(this._nbox);
+    if (cellCounts['highlighted']) return cellCounts['highlighted'][this.getCellIndex()];
+    return null;
+  }
+
+  /**
+   * Get the node at the specific index
+   * @param {Number} index  node index
+   * @return {DvtNBoxNode} node object
+   */
+  getNode(index) {
+    var nodes = this._nbox.getOptions()['nodes'];
+    if (nodes) {
+      var nodeIndex = 0;
+      for (var idx = 0; idx < nodes.length; idx++) {
+        if (
+          this.getData()['row'] == nodes[idx]['row'] &&
+          this.getData()['column'] == nodes[idx]['column'] &&
+          !DvtNBoxDataUtils.isNodeHidden(this._nbox, nodes[idx])
+        ) {
+          if (index == nodeIndex) return nodes[idx];
+          nodeIndex++;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the cell displayable (itself)
+   *
+   * @return {dvt.Displayable} displayable
+   */
+  getDisplayable() {
+    return this;
+  }
+
+  /**
+   * Returns the displayable that should receive the keyboard focus
+   *
+   * @return {dvt.Displayable} displayable to receive keyboard focus
+   */
+  getKeyboardFocusDisplayable() {
+    // return the cell
+    if (
+      DvtNBoxDataUtils.getGroupBehavior(this._nbox) != 'acrossCells' ||
+      !this._nbox.getOptions()['__groups']
+    ) {
+      return DvtNBoxUtils.getDisplayable(
+        this._nbox,
+        DvtNBoxDataUtils.getCell(
+          this._nbox,
+          DvtNBoxDataUtils.getCellIndex(this._nbox, this.getData())
+        )
+      );
+    }
+    return null;
   }
 }
 
@@ -7884,6 +8002,8 @@ class DvtNBoxDefaults extends BaseComponentDefaults {
           labelStyle: new CSSStyle(),
           secondaryLabelStyle: new CSSStyle(),
           alphaFade: 0.2,
+          _cutAlpha: 0.4,
+          _dragSourceAlpha: 0.4,
           _borderRadius: 1,
           hoverColor: '#FFFFFF',
           selectionColor: '#000000',
@@ -8071,7 +8191,10 @@ class DvtNBoxEventManager extends EventManager {
     var keyCode = event.keyCode;
     var navigable = this.getFocus(); // the item with current keyboard focus
 
-    if (keyCode == KeyboardEvent.ENTER || keyCode == KeyboardEvent.ESCAPE) {
+    if (
+      keyCode == KeyboardEvent.ENTER ||
+      (keyCode == KeyboardEvent.ESCAPE && !this._nbox.getActiveCut())
+    ) {
       //drill up and down
       if (navigable && navigable.HandleKeyboardEvent) navigable.HandleKeyboardEvent(event);
     } else if (event.keyCode == KeyboardEvent.SPACE && event.ctrlKey) {
@@ -8144,6 +8267,157 @@ class DvtNBoxEventManager extends EventManager {
     else if (options['touchResponse'] === EventManager.TOUCH_RESPONSE_TOUCH_START)
       return EventManager.TOUCH_RESPONSE_TOUCH_START;
     return EventManager.TOUCH_RESPONSE_AUTO;
+  }
+
+  /**
+   * @override
+   * @return {boolean} whether DnD dragging is happening
+   */
+  isDndSupported() {
+    return true;
+  }
+
+  /**
+   * @override
+   */
+  GetDragSourceType(event) {
+    var obj = this.DragSource.getDragObject();
+    if (obj instanceof DvtNBoxNode) {
+      return 'nodes';
+    }
+    return null;
+  }
+
+  /**
+   * @override
+   */
+  ShowDropEffect(event) {
+    let obj = this.GetLogicalObjectAndDisplayable(event.target).displayable;
+    if (obj instanceof DvtNBoxNode) {
+      obj = obj.getParentCell();
+    } else if (obj instanceof DvtNBoxNodeOverflow) {
+      obj = obj.getParentCell();
+    }
+    if (obj instanceof DvtNBoxCell) {
+      obj.showDragOverEffect();
+      // Needs to be an array because of timing issues.  Don't want to overwrite the previous drop effect obj
+      this._nbox.addDropEffectObj(obj);
+    }
+  }
+
+  /**
+   * @override
+   */
+  ClearDropEffect() {
+    let dropObjs = this._nbox.getDropEffectObj();
+    for (let i = 0; i < dropObjs.length; i++) {
+      var obj = dropObjs[i];
+      if (obj instanceof DvtNBoxNode) {
+        obj = obj.getParentCell();
+      } else if (obj instanceof DvtNBoxNodeOverflow) {
+        obj = obj.getParentCell();
+      }
+      if (obj instanceof DvtNBoxCell) {
+        obj.hideDragOverEffect();
+      }
+    }
+    this._nbox.clearDropEffectObj();
+  }
+
+  /**
+   * @override
+   */
+  GetDragDataContexts(bSanitize) {
+    var obj = this.DragSource.getDragObject();
+    var contexts = [];
+    var context;
+    if (
+      this._component.isSelectionSupported() &&
+      this._component.getSelectionHandler().getSelectedCount() > 1
+    ) {
+      var selection = this._component.getSelectionHandler().getSelection();
+      for (var i = 0; i < selection.length; i++) {
+        if (selection[i] instanceof DvtNBoxNode) {
+          context = selection[i].getDataContext();
+          if (bSanitize) ToolkitUtils.cleanDragDataContext(context);
+          contexts.push(context);
+        }
+      }
+    } else if (obj instanceof DvtNBoxNode) {
+      context = obj.getDataContext();
+      if (bSanitize) ToolkitUtils.cleanDragDataContext(context);
+      contexts.push(context);
+    }
+    return contexts;
+  }
+
+  /**
+   * @override
+   */
+  GetDropEventPayload(event) {
+    const obj = this.GetLogicalObjectAndDisplayable(event.target).displayable;
+    let data;
+    if (obj instanceof DvtNBoxCell || obj instanceof DvtNBoxNode) {
+      data = obj.getData();
+    } else if (obj instanceof DvtNBoxNodeOverflow) {
+      data = obj.getParentCell().getData();
+    }
+    return {
+      row: data.row,
+      column: data.column
+    };
+  }
+
+  /**
+   * @override
+   */
+  GetDropTargetType(event) {
+    var obj = this.GetLogicalObject(event.target);
+    if (
+      obj instanceof DvtNBoxCell ||
+      obj instanceof DvtNBoxNode ||
+      obj instanceof DvtNBoxNodeOverflow
+    ) {
+      return 'cells';
+    }
+    return null;
+  }
+
+  /**
+   * @override
+   */
+  SetDragSourceEffect(node) {
+    var ghostNodes = [];
+    var alpha = DvtNBoxStyleUtils.getNodeDragSourceAlpha(this._nbox);
+    if (
+      this._component.isSelectionSupported() &&
+      this._component.getSelectionHandler().getSelectedCount() > 1
+    ) {
+      var selection = this._component.getSelectionHandler().getSelection();
+      for (var i = 0; i < selection.length; i++) {
+        if (selection[i] instanceof DvtNBoxNode) {
+          selection[i].setAlpha(alpha);
+          ghostNodes.push(selection[i]);
+        }
+      }
+    } else {
+      node.setAlpha(alpha);
+      ghostNodes.push(node);
+    }
+    this._component.getCache().putToCache('ghostNodes', ghostNodes);
+  }
+
+  /**
+   * @override
+   */
+  ClearDragSourceEffect() {
+    var nodes = this._component.getCache().getFromCache('ghostNodes');
+    if (nodes && nodes.length > 0) {
+      for (var i = 0; i < nodes.length; i++) {
+        ToolkitUtils.setAttrNullNS(nodes[i].getElem(), 'opacity', '1');
+      }
+    }
+    this._component.getCache().putToCache('ghostNodes', null);
   }
 }
 
@@ -9325,12 +9599,12 @@ const DvtNBoxRenderer = {
    */
   _renderInitialSelection: (nbox) => {
     if (nbox.isSelectionSupported()) {
-      var selectedMap = {};
+      var selectedMap = new Map();
       var selectedIds = [];
       var selectedItems = DvtNBoxDataUtils.getSelectedItems(nbox);
       if (selectedItems) {
         for (var i = 0; i < selectedItems.length; i++) {
-          selectedMap[selectedItems[i]] = true;
+          selectedMap.set(selectedItems[i], true);
         }
         var objects = nbox.getObjects();
         // Process category nodes
@@ -9342,7 +9616,7 @@ const DvtNBoxRenderer = {
               var selected = true;
               for (var j = 0; j < nodeIndices.length; j++) {
                 var node = DvtNBoxDataUtils.getNode(nbox, nodeIndices[j]);
-                if (!selectedMap[node['id']]) {
+                if (!selectedMap.get(node['id'])) {
                   selected = false;
                   break;
                 }
@@ -9353,7 +9627,7 @@ const DvtNBoxRenderer = {
                 if (!drawer || drawer['id'] !== objects[i].getId()) {
                   for (j = 0; j < nodeIndices.length; j++) {
                     node = DvtNBoxDataUtils.getNode(nbox, nodeIndices[j]);
-                    selectedMap[node['id']] = false;
+                    selectedMap.set(node['id'], false);
                   }
                   selectedIds.push(objects[q].getId());
                 }
@@ -9361,11 +9635,11 @@ const DvtNBoxRenderer = {
             }
           }
         }
-        for (var id in selectedMap) {
-          if (selectedMap[id]) {
-            selectedIds.push(id);
+        selectedMap.forEach((value, key) => {
+          if (value) {
+            selectedIds.push(key);
           }
-        }
+        });
       }
       nbox.getSelectionHandler().processInitialSelections(selectedIds, objects);
     }
@@ -9853,6 +10127,8 @@ class NBox extends BaseComponent {
      * @private
      */
     this._animationAllowed = true;
+
+    this._dropObj = [];
   }
   /**
    * @override
@@ -10181,9 +10457,9 @@ class NBox extends BaseComponent {
     var selection = event['selection'];
     var selectedItems = null;
     if (selection) {
-      var selectedMap = {};
+      var selectedMap = new Map();
       for (var i = 0; i < selection.length; i++) {
-        selectedMap[selection[i]] = true;
+        selectedMap.set(selection[i], true);
       }
       var objects = this.getObjects();
       // Process category nodes
@@ -10191,14 +10467,14 @@ class NBox extends BaseComponent {
       if (DvtNBoxDataUtils.getGrouping(this)) {
         for (var z = 0; z < objects.length; z++) {
           if (objects[z].nboxType === 'categoryNode') {
-            if (selectedMap[objects[z].getId()]) {
+            if (selectedMap.get(objects[z].getId())) {
               // Replace with the individual ids
-              selectedMap[objects[z].getId()] = false;
+              selectedMap.set(objects[z].getId(), false);
               var data = objects[z].getData();
               var nodeIndices = data['nodeIndices'];
               for (var j = 0; j < nodeIndices.length; j++) {
                 var node = DvtNBoxDataUtils.getNode(this, nodeIndices[j]);
-                selectedMap[node['id']] = true;
+                selectedMap.set(node['id'], true);
               }
             }
           } else if (objects[i].nboxType === 'drawer') drawer = objects[i];
@@ -10206,12 +10482,12 @@ class NBox extends BaseComponent {
       }
       var eventSelection = [];
       selectedItems = [];
-      for (var id in selectedMap) {
-        if (selectedMap[id]) {
-          eventSelection.push(id);
-          selectedItems.push(id);
+      selectedMap.forEach((value, key) => {
+        if (value) {
+          eventSelection.push(key);
+          selectedItems.push(key);
         }
-      }
+      });
       event = EventFactory.newSelectionEvent(eventSelection);
     }
     DvtNBoxDataUtils.setSelectedItems(this, selectedItems);
@@ -10644,6 +10920,38 @@ class NBox extends BaseComponent {
    */
   getNodeIconClipPath() {
     return this._nodeIconClipPath;
+  }
+
+  getActiveCut() {
+    return this._activeCut;
+  }
+
+  setActiveCut(active) {
+    if (this._activeCut && this._activeCut.length > 0) {
+      for (let i = 0; i < this._activeCut.length; i++) {
+        this._activeCut[i].setAlpha(1);
+      }
+    }
+    if (active) {
+      for (let i = 0; i < active.length; i++) {
+        var alpha = DvtNBoxStyleUtils.getNodeCutAlpha(this);
+        active[i].setAlpha(alpha);
+      }
+    }
+    this._activeCut = active;
+  }
+
+  addDropEffectObj(obj) {
+    // Needs to be an array because of timing issues.  Don't want to overwrite the previous drop effect obj
+    this._dropObj.push(obj);
+  }
+
+  getDropEffectObj() {
+    return this._dropObj;
+  }
+
+  clearDropEffectObj() {
+    this._dropObj = [];
   }
 
   /**

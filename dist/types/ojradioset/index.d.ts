@@ -16,6 +16,7 @@ export interface ojRadioset<K, D, V = any> extends editableValue<V, ojRadiosetSe
     options: DataProvider<K, D> | null;
     optionsKeys?: ojRadioset.OptionsKeys;
     readonly: boolean | null;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     value: V | null;
     translations: {
@@ -65,6 +66,8 @@ export namespace ojRadioset {
     type optionsKeysChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["optionsKeys"]>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["readonlyUserAssistanceShown"]>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -116,6 +119,7 @@ export interface ojRadiosetEventMap<K, D, V = any> extends editableValueEventMap
     'optionsChanged': JetElementCustomEvent<ojRadioset<K, D, V>["options"]>;
     'optionsKeysChanged': JetElementCustomEvent<ojRadioset<K, D, V>["optionsKeys"]>;
     'readonlyChanged': JetElementCustomEvent<ojRadioset<K, D, V>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojRadioset<K, D, V>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojRadioset<K, D, V>["required"]>;
     'valueChanged': JetElementCustomEvent<ojRadioset<K, D, V>["value"]>;
     'describedByChanged': JetElementCustomEvent<ojRadioset<K, D, V>["describedBy"]>;
@@ -140,6 +144,7 @@ export interface ojRadiosetSettableProperties<K, D, V> extends editableValueSett
     options: DataProvider<K, D> | null;
     optionsKeys?: ojRadioset.OptionsKeys;
     readonly: boolean | null;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     value: V | null;
     translations: {
@@ -183,6 +188,8 @@ export namespace RadiosetElement {
     type optionsKeysChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["optionsKeys"]>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["readonlyUserAssistanceShown"]>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -234,6 +241,7 @@ export interface RadiosetIntrinsicProps extends Partial<Readonly<ojRadiosetSetta
     onoptionsChanged?: (value: ojRadiosetEventMap<any, any, any>['optionsChanged']) => void;
     onoptionsKeysChanged?: (value: ojRadiosetEventMap<any, any, any>['optionsKeysChanged']) => void;
     onreadonlyChanged?: (value: ojRadiosetEventMap<any, any, any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojRadiosetEventMap<any, any, any>['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojRadiosetEventMap<any, any, any>['requiredChanged']) => void;
     onvalueChanged?: (value: ojRadiosetEventMap<any, any, any>['valueChanged']) => void;
     ondescribedByChanged?: (value: ojRadiosetEventMap<any, any, any>['describedByChanged']) => void;

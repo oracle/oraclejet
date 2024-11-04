@@ -4348,9 +4348,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (this._comp.isMarqueeSelectEnabled()) {
         var selectionHandler = this.getSelectionHandler();
         if (event.subtype === 'start') {
+          this._initSelectedIds = selectionHandler.getSelectedIds();
+          this._initSelectionTargets = selectionHandler.getSelection();
           // If ctrl key is pressed at start of drag, the previous selection should be preserved.
-          this._initSelection = event.ctrlKey ? selectionHandler.getSelectedIds() : [];
-          this._initSelectionTargets = event.ctrlKey ? selectionHandler.getSelection() : [];
+          this._initMarqueeSelection = event.ctrlKey ? this._initSelectedIds : [];
+          this._initMarqueeSelectionTargets = event.ctrlKey ? this._initSelectionTargets : [];
         } else if (event.subtype === 'move') {
           this._isMarqueeDragging = true;
           var localPos = this._comp.getMarqueeArtifactsContainer().stageToLocal(event._relPos);
@@ -4368,13 +4370,32 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             return taskObj['node'];
           });
 
-          selectionHandler.processInitialSelections(this._initSelection, this._initSelectionTargets);
+          selectionHandler.processInitialSelections(
+            this._initMarqueeSelection,
+            this._initMarqueeSelectionTargets
+          );
           selectionHandler.processGroupSelection(targets, true);
-          this._isMarqueeDragging = false;
         } else if (event.subtype === 'end') {
+          this._isMarqueeDragging = false;
+          this._initSelectedIds = null;
+          this._initSelectionTargets = null;
           this.fireSelectionEvent();
         }
       }
+    }
+
+    /**
+     * @override
+     */
+    cancelMarquee(event) {
+      super.cancelMarquee();
+      if (this._isMarqueeDragging && this._initSelectedIds && this._initSelectionTargets) {
+        this.getSelectionHandler().processInitialSelections(
+          this._initSelectedIds,
+          this._initSelectionTargets
+        );
+      }
+      this._isMarqueeDragging = false;
     }
 
     isMarqueeDragging() {
@@ -16384,7 +16405,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {boolean} isResize Whether this render call is due to component resize.
      */
     render(totalAvailWidth, isResize) {
-      if (!isResize) this.setAriaRole('grid', true);
+      if (!isResize) {
+        this.setAriaRole('grid', true);
+        // JET-68049 - ensure role grid element has accessible text
+        var translations = this._gantt.getOptions().translations;
+        this.setAriaProperty('label', translations.rowAxisLabel, true);
+      }
       this._availableWidth = this._getAvailableWidth(totalAvailWidth);
 
       if (isResize) {
@@ -18219,6 +18245,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     render(options, width, height) {
       // Reset cache
       this.getCache().clearCache();
+
+      // JET-68129 - cancel any ongoing marquee actions from the previous render
+      var eventManager = this.getEventManager();
+      if (eventManager) eventManager.cancelMarquee();
 
       if (!options) {
         this._handleResize(width, height);

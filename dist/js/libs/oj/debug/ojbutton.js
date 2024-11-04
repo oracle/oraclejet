@@ -2740,14 +2740,6 @@ var __oj_buttonset_many_metadata =
     /**
      * @ojcomponent oj.ojButtonsetOne
      * @since 0.6.0
-     * @ojdeprecated [
-     *  {
-     *    type: "maintenance",
-     *    since: "17.0.0",
-     *    value: ["oj-c-buttonset-single"]
-     *  }
-     * ]
-     *
      * @augments oj.ojButtonset
      * @ojshortdesc A buttonset one is a grouping of related buttons where only one button may be selected.
      * @ojrole button
@@ -2850,14 +2842,6 @@ var __oj_buttonset_many_metadata =
     /**
      * @ojcomponent oj.ojButtonsetMany
      * @since 0.6.0
-     * @ojdeprecated [
-     *  {
-     *    type: "maintenance",
-     *    since: "17.0.0",
-     *    value: ["oj-c-buttonset-multiple"]
-     *  }
-     * ]
-     *
      * @augments oj.ojButtonset
      * @ojshortdesc A buttonset many is a grouping of related buttons where any number of buttons may be selected.
      * @ojrole button

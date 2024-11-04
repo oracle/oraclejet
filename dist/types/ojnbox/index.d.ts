@@ -14,6 +14,15 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
     columnsTitle?: string;
     countLabel?: ((context: ojNBox.CountLabelContext) => (string | null));
     data: DataProvider<K, D> | null;
+    dataTransferOptions: {
+        copy?: 'disable' | 'enable';
+        cut?: 'disable' | 'enable';
+        paste?: 'disable' | 'enable';
+    };
+    dnd?: {
+        drag?: ojNBox.DndDragConfigs<K>;
+        drop?: ojNBox.DndDropConfigs;
+    };
     groupAttributes?: 'color' | 'indicatorColor' | 'indicatorIconColor' | 'indicatorIconPattern' | 'indicatorIconShape';
     groupBehavior?: 'acrossCells' | 'none' | 'withinCell';
     hiddenCategories?: string[];
@@ -123,6 +132,21 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
     getContextByNode(node: Element): ojNBox.NodeContext<K> | ojNBox.CellContext | ojNBox.DialogContext | ojNBox.GroupNodeContext | null;
 }
 export namespace ojNBox {
+    interface ojCopyRequest<K> extends CustomEvent<{
+        source: Array<CopyNode<K>>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCutRequest<K> extends CustomEvent<{
+        source: Array<CutNode<K>>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojPasteRequest extends CustomEvent<{
+        target: PasteCell;
+        [propName: string]: any;
+    }> {
+    }
     // tslint:disable-next-line interface-over-type-literal
     type animationOnDataChangeChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["animationOnDataChange"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -143,6 +167,10 @@ export namespace ojNBox {
     type countLabelChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["countLabel"]>;
     // tslint:disable-next-line interface-over-type-literal
     type dataChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataTransferOptionsChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["dataTransferOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["dnd"]>;
     // tslint:disable-next-line interface-over-type-literal
     type groupAttributesChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["groupAttributes"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -213,6 +241,16 @@ export namespace ojNBox {
         labelStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type CopyNode<K> = {
+        color: string;
+        column: string;
+        id: K;
+        indicatorColor: string;
+        label: string;
+        row: string;
+        secondaryLabel: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type CountLabelContext = {
         column: string;
         highlightedNodeCount: number;
@@ -221,8 +259,60 @@ export namespace ojNBox {
         totalNodeCount: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type CutNode<K> = {
+        color: string;
+        column: string;
+        id: K;
+        indicatorColor: string;
+        label: string;
+        row: string;
+        secondaryLabel: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type DialogContext = {
         subId: 'oj-nbox-dialog';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDragConfig<T> = {
+        dataTypes?: string | string[];
+        drag?: ((param0: DragEvent) => void);
+        dragEnd?: ((param0: DragEvent) => void);
+        dragStart?: ((event: DragEvent, context: T) => void);
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDragConfigs<K> = {
+        nodes?: DndDragConfig<DndDragNodes<K>>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDragNode<K> = {
+        color: string;
+        column: string;
+        id: K;
+        indicatorColor: string;
+        label: string;
+        row: string;
+        secondaryLabel: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDragNodes<K> = {
+        nodes?: Array<DndDragNode<K>>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDropCell = {
+        column: string;
+        row: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDropConfig = {
+        dataTypes?: string | string[];
+        dragEnter?: ((event: DragEvent, context: DndDropCell) => void);
+        dragLeave?: ((event: DragEvent, context: DndDropCell) => void);
+        dragOver?: ((event: DragEvent, context: DndDropCell) => void);
+        drop?: ((event: DragEvent, context: DndDropCell) => void);
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDropConfigs = {
+        cells?: DndDropConfig;
     };
     // tslint:disable-next-line interface-over-type-literal
     type GroupNodeContext = {
@@ -303,6 +393,11 @@ export namespace ojNBox {
         key: any;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type PasteCell = {
+        column: string;
+        row: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Row = {
         id: string;
         label?: string;
@@ -326,6 +421,9 @@ export namespace ojNBox {
     type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
 }
 export interface ojNBoxEventMap<K, D extends ojNBox.Node<K> | any> extends dvtBaseComponentEventMap<ojNBoxSettableProperties<K, D>> {
+    'ojCopyRequest': ojNBox.ojCopyRequest<K>;
+    'ojCutRequest': ojNBox.ojCutRequest<K>;
+    'ojPasteRequest': ojNBox.ojPasteRequest;
     'animationOnDataChangeChanged': JetElementCustomEvent<ojNBox<K, D>["animationOnDataChange"]>;
     'animationOnDisplayChanged': JetElementCustomEvent<ojNBox<K, D>["animationOnDisplay"]>;
     'asChanged': JetElementCustomEvent<ojNBox<K, D>["as"]>;
@@ -336,6 +434,8 @@ export interface ojNBoxEventMap<K, D extends ojNBox.Node<K> | any> extends dvtBa
     'columnsTitleChanged': JetElementCustomEvent<ojNBox<K, D>["columnsTitle"]>;
     'countLabelChanged': JetElementCustomEvent<ojNBox<K, D>["countLabel"]>;
     'dataChanged': JetElementCustomEvent<ojNBox<K, D>["data"]>;
+    'dataTransferOptionsChanged': JetElementCustomEvent<ojNBox<K, D>["dataTransferOptions"]>;
+    'dndChanged': JetElementCustomEvent<ojNBox<K, D>["dnd"]>;
     'groupAttributesChanged': JetElementCustomEvent<ojNBox<K, D>["groupAttributes"]>;
     'groupBehaviorChanged': JetElementCustomEvent<ojNBox<K, D>["groupBehavior"]>;
     'hiddenCategoriesChanged': JetElementCustomEvent<ojNBox<K, D>["hiddenCategories"]>;
@@ -367,6 +467,15 @@ export interface ojNBoxSettableProperties<K, D extends ojNBox.Node<K> | any> ext
     columnsTitle?: string;
     countLabel?: ((context: ojNBox.CountLabelContext) => (string | null));
     data: DataProvider<K, D> | null;
+    dataTransferOptions: {
+        copy?: 'disable' | 'enable';
+        cut?: 'disable' | 'enable';
+        paste?: 'disable' | 'enable';
+    };
+    dnd?: {
+        drag?: ojNBox.DndDragConfigs<K>;
+        drop?: ojNBox.DndDropConfigs;
+    };
     groupAttributes?: 'color' | 'indicatorColor' | 'indicatorIconColor' | 'indicatorIconPattern' | 'indicatorIconShape';
     groupBehavior?: 'acrossCells' | 'none' | 'withinCell';
     hiddenCategories?: string[];
@@ -636,6 +745,21 @@ export interface ojNBoxNodeSettablePropertiesLenient<K = any> extends Partial<oj
 export type NBoxElement<K, D extends ojNBox.Node<K> | any> = ojNBox<K, D>;
 export type NBoxNodeElement<K = any> = ojNBoxNode<K>;
 export namespace NBoxElement {
+    interface ojCopyRequest<K> extends CustomEvent<{
+        source: Array<ojNBox.CopyNode<K>>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCutRequest<K> extends CustomEvent<{
+        source: Array<ojNBox.CutNode<K>>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojPasteRequest extends CustomEvent<{
+        target: ojNBox.PasteCell;
+        [propName: string]: any;
+    }> {
+    }
     // tslint:disable-next-line interface-over-type-literal
     type animationOnDataChangeChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["animationOnDataChange"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -656,6 +780,10 @@ export namespace NBoxElement {
     type countLabelChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["countLabel"]>;
     // tslint:disable-next-line interface-over-type-literal
     type dataChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataTransferOptionsChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["dataTransferOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["dnd"]>;
     // tslint:disable-next-line interface-over-type-literal
     type groupAttributesChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["groupAttributes"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -726,6 +854,16 @@ export namespace NBoxElement {
         labelStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type CopyNode<K> = {
+        color: string;
+        column: string;
+        id: K;
+        indicatorColor: string;
+        label: string;
+        row: string;
+        secondaryLabel: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type CountLabelContext = {
         column: string;
         highlightedNodeCount: number;
@@ -734,8 +872,60 @@ export namespace NBoxElement {
         totalNodeCount: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type CutNode<K> = {
+        color: string;
+        column: string;
+        id: K;
+        indicatorColor: string;
+        label: string;
+        row: string;
+        secondaryLabel: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type DialogContext = {
         subId: 'oj-nbox-dialog';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDragConfig<T> = {
+        dataTypes?: string | string[];
+        drag?: ((param0: DragEvent) => void);
+        dragEnd?: ((param0: DragEvent) => void);
+        dragStart?: ((event: DragEvent, context: T) => void);
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDragConfigs<K> = {
+        nodes?: ojNBox.DndDragConfig<ojNBox.DndDragNodes<K>>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDragNode<K> = {
+        color: string;
+        column: string;
+        id: K;
+        indicatorColor: string;
+        label: string;
+        row: string;
+        secondaryLabel: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDragNodes<K> = {
+        nodes?: Array<ojNBox.DndDragNode<K>>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDropCell = {
+        column: string;
+        row: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDropConfig = {
+        dataTypes?: string | string[];
+        dragEnter?: ((event: DragEvent, context: ojNBox.DndDropCell) => void);
+        dragLeave?: ((event: DragEvent, context: ojNBox.DndDropCell) => void);
+        dragOver?: ((event: DragEvent, context: ojNBox.DndDropCell) => void);
+        drop?: ((event: DragEvent, context: ojNBox.DndDropCell) => void);
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDropConfigs = {
+        cells?: ojNBox.DndDropConfig;
     };
     // tslint:disable-next-line interface-over-type-literal
     type GroupNodeContext = {
@@ -816,6 +1006,11 @@ export namespace NBoxElement {
         key: any;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type PasteCell = {
+        column: string;
+        row: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Row = {
         id: string;
         label?: string;
@@ -875,6 +1070,9 @@ export namespace NBoxNodeElement {
     type yPercentageChanged<K = any> = JetElementCustomEvent<ojNBoxNode<K>["yPercentage"]>;
 }
 export interface NBoxIntrinsicProps extends Partial<Readonly<ojNBoxSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojCopyRequest?: (value: ojNBoxEventMap<any, any>['ojCopyRequest']) => void;
+    onojCutRequest?: (value: ojNBoxEventMap<any, any>['ojCutRequest']) => void;
+    onojPasteRequest?: (value: ojNBoxEventMap<any, any>['ojPasteRequest']) => void;
     onanimationOnDataChangeChanged?: (value: ojNBoxEventMap<any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojNBoxEventMap<any, any>['animationOnDisplayChanged']) => void;
     onasChanged?: (value: ojNBoxEventMap<any, any>['asChanged']) => void;
@@ -885,6 +1083,8 @@ export interface NBoxIntrinsicProps extends Partial<Readonly<ojNBoxSettablePrope
     oncolumnsTitleChanged?: (value: ojNBoxEventMap<any, any>['columnsTitleChanged']) => void;
     oncountLabelChanged?: (value: ojNBoxEventMap<any, any>['countLabelChanged']) => void;
     ondataChanged?: (value: ojNBoxEventMap<any, any>['dataChanged']) => void;
+    ondataTransferOptionsChanged?: (value: ojNBoxEventMap<any, any>['dataTransferOptionsChanged']) => void;
+    ondndChanged?: (value: ojNBoxEventMap<any, any>['dndChanged']) => void;
     ongroupAttributesChanged?: (value: ojNBoxEventMap<any, any>['groupAttributesChanged']) => void;
     ongroupBehaviorChanged?: (value: ojNBoxEventMap<any, any>['groupBehaviorChanged']) => void;
     onhiddenCategoriesChanged?: (value: ojNBoxEventMap<any, any>['hiddenCategoriesChanged']) => void;

@@ -65,7 +65,7 @@ export declare class FilePicker extends Component<ExtendGlobalProps<Props>, Stat
     blur(): void;
     private _handleFocus;
     private _handleBlur;
-    render(props: ExtendGlobalProps<Props>): import("preact/jsx-runtime").JSX.Element;
+    render(props: ExtendGlobalProps<Props>): import("preact").JSX.Element;
     private _renderDisabled;
     private _renderWithCustomTrigger;
     private _renderWithDefaultTrigger;

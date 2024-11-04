@@ -108,7 +108,7 @@ function MessageStartIcon({ severity, translations }) {
 }
 
 function MessageSummary({ text }) {
-    return (jsx("div", { role: "heading", class: "oj-messagebanner-summary", children: text }));
+    return (jsx("div", { role: "heading", "aria-level": 2, class: "oj-messagebanner-summary", children: text }));
 }
 
 function MessageTimestamp({ value }) {
@@ -630,7 +630,13 @@ function MessageBanner({ detailRendererKey, data, onClose, renderers, translatio
     }, []);
     useImperativeHandle(focusHandleRef, () => ({
         focus: () => {
-            const isVisible = containerDivRef.current?.checkVisibility() ?? false;
+            const isVisible = containerDivRef.current
+                ?
+                    containerDivRef.current.checkVisibility
+                        ? containerDivRef.current.checkVisibility()
+                        :
+                            containerDivRef.current.offsetParent != null
+                : false;
             if (data.length && isVisible) {
                 const firstItemKey = data[0].key;
                 messagesRef.current.get(firstItemKey)?.focus();

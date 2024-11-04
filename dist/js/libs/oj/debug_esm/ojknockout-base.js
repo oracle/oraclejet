@@ -593,11 +593,43 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
     }
   }
 
+  /**
+   * Helper function that checks whether subproperty path from event detail
+   * matches the listener path.
+   * We want to run the update when the path matches (the one path is a subset of another path), e.g.
+   *  - listener propName=a.b.c and detail subproperty=a.b.c
+   *  - listener propName=a.b.c and detail subproperty=a.b
+   *  - listener propName=a.b and detail subproperty=a.b.c.
+   * We want to skip the update when the path does not match, e.g.
+   *  - listener propName=a.b.c and detail subprop=a.b.d
+   * @param {*} eventDetail
+   * @param {*} subscribedProp
+   * @returns true if subproperty path matches subscribed property or if subproperty value does not exist.
+   * @ignore
+   */
+  function _matchedPropertyPath(eventDetail, subscribedProp) {
+    // subproperty is not given, nothing to check
+    if (!eventDetail.subproperty) {
+      return true;
+    }
+    const testSubprop = eventDetail.subproperty.path;
+    const testPath = testSubprop.split('.');
+    const subscribedPath = subscribedProp.split('.');
+
+    const len = Math.min(subscribedPath.length, testPath.length);
+    for (let i = 0; i < len; i++) {
+      if (subscribedPath[i] !== testPath[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   function _listenToPropertyChanges(propName, expr, evaluator) {
     var splitProps = propName.split('.');
     var topProp = splitProps[0];
     var listener = function (evt) {
-      if (!_isSettingProperty(topProp)) {
+      if (!_isSettingProperty(topProp) && _matchedPropertyPath(evt.detail, propName)) {
         let failure;
         let writer;
         ignoreDependencies(function () {
@@ -1024,8 +1056,13 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
               consumingPropValue
             );
           } else if (consumingProp === CONSUMED_CONTEXT) {
-            // Pass context values via __oj_private_contexts property since component properties are available to the
-            // EnvironmentWrapper class.
+            // Pass context values via __oj_private_contexts property to make it available to the ComponentWithContexts class.
+            // The ComponentWithContext will gets the property, parses the contexts and wraps the base component into Preact context providers.
+            // Notice that we have a similar step in VTemplateEngine class, but the VTemplateEngine uses
+            // __oj_provided_contexts property to pass provided values. The difference in steps is due to the fact
+            // that VTemplateEngine nodes are processed by EnvironmentWrapper class before going to ComponentWithContexts class.
+            // The EnvironmentWrapper class will set __oj_private_contexts property based on multiple factors that don't play role here.
+            // See JET-68575 for details.
             const provided = bindingContext.$provided;
             const providedValues = new Map();
             consumingPropValue.forEach((context) => {

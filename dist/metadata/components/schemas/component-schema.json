@@ -50,6 +50,118 @@
       }
     },
 
+
+    "commonPropsMetadataDef": {
+      "$comment": "definitions of common Property metadata properties:  top-level, nested, or within an extension",
+      "properties": {
+        "enumValues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        },
+        "value": {
+          "type": ["array", "boolean", "number", "null", "object", "string"]
+        },
+        "writeback": {
+          "type": "boolean"
+        },
+        "binding": {
+          "$ref": "#/definitions/bindingDef"
+        },
+        "description": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "dynamicSlotDef": {
+          "type": "string"
+        },
+        "eventGroup": {
+          "type": "string"
+        },
+        "exclusiveMaximum": {
+          "type": ["number", "string"]
+        },
+        "exclusiveMinimum": {
+          "type": ["number", "string"]
+        },
+        "format": {
+          "type": "string",
+          "enum": ["double", "float", "int32", "int64", "binary", "byte", "color",
+                    "date", "date-time", "email", "time", "password", "uri"]
+        },
+        "help": {
+          "type": "string"
+        },
+        "maximum": {
+          "type": ["number", "string"]
+        },
+        "minimum": {
+          "type": ["number", "string"]
+        },
+        "minCapabilities": {
+          "$ref": "#/definitions/minCapabilitiesDef"
+        },
+        "pattern": {
+          "type": "string",
+          "format": "regex"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "propertyEditorValues": {
+          "type": "object",
+          "patternProperties": {
+            "^([A-Za-z0-9_\u002d])*$": {
+              "type": "object",
+              "properties": {
+                "description": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                },
+                "icon": {
+                  "$ref": "#/definitions/iconsDef"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "propertyGroup": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/definitions/statusDef"
+        },
+        "templateSlotRenderType": {
+          "type": "string"
+        },
+        "translatable": {
+          "type": "boolean"
+        },
+        "units": {
+          "type": "string"
+        },
+        "visible": {
+          "type": "boolean"
+        }
+      }
+    },
+
     "extensionApiDecorationDef": {
       "type": "object",
       "properties": {
@@ -169,6 +281,15 @@
             "audits": {
               "type": "string"
             },
+            "componentPalette": {
+              "type": "object",
+              "properties": {
+                "visibility": {
+                  "type": "string",
+                  "enum": ["visible", "whenPreferred", "never"]
+                }
+              }
+            },
             "defaultColumns": {
               "type": "number",
               "multipleOf": 1.0,
@@ -180,6 +301,10 @@
               "multipleOf": 1.0,
               "minimum": 1.0,
               "maximum": 12.0
+            },
+            "visibility": {
+              "type": "string",
+              "enum": ["visible", "oracleInternal"]
             }
           }
         },
@@ -192,6 +317,60 @@
       }
     },
 
+    "extensionSubPropsDef": {
+      "type": "object",
+
+      "$comment": "relaxed definition for nested extension Properties; property names follow HTML attribute name restrictions",
+      "patternProperties": {
+        "^([^\t\n\f \u002f\u003e\u0022\u0027=]+)$": {
+          "type": "object",
+          "allOf": [
+            { "$ref": "#/definitions/commonPropsMetadataDef" },
+            {
+              "$comment": "list of properties with empty schemas MUST be kept in sync with commonPropsMetadataDef!!",
+              "properties": {
+                "enumValues": {},
+                "properties": {
+                  "$ref": "#/definitions/extensionSubPropsDef"
+                },
+                "keyedProperties": {
+                  "$ref": "#/definitions/extensionKeyedPropsDef"
+                },
+                "readOnly": {},
+                "type": {},
+                "value": {},
+                "writeback": {},
+                "binding": {},
+                "description": {},
+                "displayName": {},
+                "dynamicSlotDef": {},
+                "eventGroup": {},
+                "exclusiveMaximum": {},
+                "exclusiveMinimum": {},
+                "format": {},
+                "help": {},
+                "maximum": {},
+                "minimum": {},
+                "minCapabilities": {},
+                "pattern": {},
+                "placeholder": {},
+                "propertyEditorValues": {},
+                "propertyGroup": {},
+                "required": {},
+                "status": {},
+                "templateSlotRenderType": {},
+                "translatable": {},
+                "units": {},
+                "visible": {}
+              },
+              "required": ["type"]
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    
     "extensionPropsDef": {
       "type": "object",
       "properties": {
@@ -199,10 +378,10 @@
           "type": "object",
           "properties" : {
             "itemProperties": {
-              "$ref": "#/definitions/propsDef"
+              "$ref": "#/definitions/extensionSubPropsDef"
             },
-            "slotData" : {
-              "$ref": "#/definitions/slotDataDef"
+            "keyedProperties": {
+              "$ref": "#/definitions/extensionKeyedPropsDef"
             }
           }
         },
@@ -225,6 +404,40 @@
         },
         "webelement": {
           "$ref": "#/definitions/extensionWebElementExceptionStatusDef"
+        }
+      }
+    },
+
+    "extensionKeyedPropsDef": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "enumValues": {
+              "type": "array",
+              "items": {
+                  "type": ["string", "number"]
+              }
+            }
+          }
+        },
+        "values": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "properties": {
+              "$ref": "#/definitions/extensionSubPropsDef"
+            },
+            "keyedProperties": {
+              "$ref": "#/definitions/extensionKeyedPropsDef"
+            }
+          }
         }
       }
     },
@@ -489,125 +702,53 @@
     "propsDef": {
       "type": "object",
 
-      "$comment": "property names follow HTML attribute name restrictions",
+      "$comment": "strict definition for nested Properties; property names follow HTML attribute name restrictions",
       "patternProperties": {
         "^([^\t\n\f \u002f\u003e\u0022\u0027=]+)$": {
           "type": "object",
-          "properties": {
-            "enumValues": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "properties": {
-              "$ref": "#/definitions/propsDef"
-            },
-            "readOnly": {
-              "type": "boolean"
-            },
-            "type": {
-              "type": "string"
-            },
-            "value": {
-              "type": ["array", "boolean", "number", "null", "object", "string"]
-            },
-            "writeback": {
-              "type": "boolean"
-            },
-            "binding": {
-              "$ref": "#/definitions/bindingDef"
-            },
-            "description": {
-              "type": "string"
-            },
-            "displayName": {
-              "type": "string"
-            },
-            "dynamicSlotDef": {
-              "type": "string"
-            },
-            "eventGroup": {
-              "type": "string"
-            },
-            "exclusiveMaximum": {
-              "type": ["number", "string"]
-            },
-            "exclusiveMinimum": {
-              "type": ["number", "string"]
-            },
-            "extension" : {
-              "$ref": "#/definitions/extensionPropsDef"
-            },
-            "format": {
-              "type": "string",
-              "enum": ["double", "float", "int32", "int64", "binary", "byte", "color",
-                       "date", "date-time", "email", "time", "password", "uri"]
-            },
-            "help": {
-              "type": "string"
-            },
-            "maximum": {
-              "type": ["number", "string"]
-            },
-            "minimum": {
-              "type": ["number", "string"]
-            },
-            "minCapabilities": {
-              "$ref": "#/definitions/minCapabilitiesDef"
-            },
-            "pattern": {
-              "type": "string",
-              "format": "regex"
-            },
-            "placeholder": {
-              "type": "string"
-            },
-            "propertyEditorValues": {
-              "type": "object",
-              "patternProperties": {
-                "^([A-Za-z0-9_\u002d])*$": {
-                  "type": "object",
-                  "properties": {
-                    "description": {
-                      "type": "string"
-                    },
-                    "displayName": {
-                      "type": "string"
-                    },
-                    "icon": {
-                      "$ref": "#/definitions/iconsDef"
-                    }
-                  },
-                  "additionalProperties": false
-                }
+          "allOf": [
+            { "$ref": "#/definitions/commonPropsMetadataDef" },
+            {
+              "$comment": "list of properties with empty schemas MUST be kept in sync with commonPropsMetadataDef!!",
+              "properties": {
+                "enumValues": {},
+                "properties": {
+                  "$ref": "#/definitions/propsDef"
+                },
+                "readOnly": {},
+                "type": {},
+                "value": {},
+                "writeback": {},
+                "binding": {},
+                "description": {},
+                "displayName": {},
+                "dynamicSlotDef": {},
+                "eventGroup": {},
+                "exclusiveMaximum": {},
+                "exclusiveMinimum": {},
+                "extension" : {
+                  "$ref": "#/definitions/extensionPropsDef"
+                },
+                "format": {},
+                "help": {},
+                "maximum": {},
+                "minimum": {},
+                "minCapabilities": {},
+                "pattern": {},
+                "placeholder": {},
+                "propertyEditorValues": {},
+                "propertyGroup": {},
+                "required": {},
+                "status": {},
+                "templateSlotRenderType": {},
+                "translatable": {},
+                "units": {},
+                "visible": {}
               },
+              "required": ["type"],
               "additionalProperties": false
-            },
-            "propertyGroup": {
-              "type": "string"
-            },
-            "required": {
-              "type": "boolean"
-            },
-            "status": {
-              "$ref": "#/definitions/statusDef"
-            },
-            "templateSlotRenderType": {
-              "type": "string"
-            },
-            "translatable": {
-              "type": "boolean"
-            },
-            "units": {
-              "type": "string"
-            },
-            "visible": {
-              "type": "boolean"
             }
-          },
-          "required": ["type"],
-          "additionalProperties": false
+          ]
         }
       },
       "additionalProperties": false
@@ -1401,7 +1542,7 @@
       }
     },
 
-    "commonContentsPropsDef": {
+    "commonContentsPropNamesDef": {
       "enum": ["name", "type", "description", "displayName", "defaultExport", "export", "main", "since", "status",
                 "version", "jetVersion", "pack", "license", "extension", "help", "icon"]
     },
@@ -1906,7 +2047,7 @@
           {
             "propertyNames": {
               "anyOf": [
-                { "$ref": "#/definitions/commonContentsPropsDef" },
+                { "$ref": "#/definitions/commonContentsPropNamesDef" },
                 { "enum": ["properties"] }
               ]
             }
@@ -1944,7 +2085,7 @@
       "then": {
         "propertyNames": {
           "anyOf": [
-            { "$ref": "#/definitions/commonContentsPropsDef" },
+            { "$ref": "#/definitions/commonContentsPropNamesDef" },
             { "enum": ["params", "return"] }
           ]
         }

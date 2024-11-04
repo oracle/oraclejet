@@ -16,7 +16,8 @@ export declare enum MDContext {
     SLOT_DATA = 256,
     METHOD_PARAM = 512,
     METHOD_RETURN = 1024,
-    EXT_ITEMPROPS = 2048
+    EXTENSION_MD = 2048,
+    KEYPROPS_KEYS = 4096
 }
 export declare enum MDScope {
     RT_EXTENDED = -1,
@@ -56,11 +57,14 @@ export type AllMetadataTypes = Metadata.ComponentMetadata | Metadata.ComponentMe
 export type ALL_TYPES = {
     type: string;
     reftype?: string;
+    rawType?: string;
     optional?: boolean;
     enumValues?: string[];
+    enumNumericKeys?: number[];
     isArrayOfObject?: boolean;
     isEnumValuesForDTOnly?: boolean;
     isApiDocSignature?: boolean;
+    typeDefs?: Array<TypedefObj>;
 };
 export type MDValidationInfo = {
     baseType: 'string' | 'number' | 'boolean' | 'object' | 'string|number' | 'any';
@@ -139,6 +143,47 @@ export type MappedTypesInfo = {
     mappedTypes: Array<MappedTypeItem>;
     wrappedTypeName: string;
     wrappedTypeNode?: ts.TypeNode;
+};
+export type KeyedPropsMetadata = {
+    keys?: {
+        type?: string;
+        enumValues?: Array<string | number>;
+    };
+    values?: {
+        type?: string;
+        properties?: Record<string, Metadata.ComponentMetadataProperties>;
+        keyedProperties?: KeyedPropsMetadata;
+    };
+};
+export declare enum KPType {
+    NONE = 0,
+    INDEXED = 1,
+    MAP = 2,
+    SET = 3
+}
+export type KeyedPropsTypeInfo = {
+    type: KPType;
+    keysTypeName?: string;
+    keysRefType?: string;
+    keysEnum?: Array<string | number>;
+    valuesType?: ts.Type;
+};
+export type ComplexPropertyMetadata = {
+    circRefDetected?: {
+        type: string;
+    };
+    properties?: Record<string, Metadata.ComponentMetadataProperties>;
+    keyedProperties?: KeyedPropsMetadata;
+};
+export type SubPropertyMetadata = {
+    circularRefs?: Array<CircularRefInfo>;
+    subpropsMD?: Record<string, Metadata.ComponentMetadataProperties>;
+    keyedpropsMD?: KeyedPropsMetadata;
+};
+export type SubPropertyMembersInfo = {
+    processedMembers: number;
+    indexSignatureMembers: number;
+    metadata?: Record<string, Metadata.ComponentMetadataProperties>;
 };
 export type IntersectionTypeNodeInfo = {
     observedProps?: Array<string>;
@@ -256,6 +301,7 @@ export type MetaUtilObj = {
     dynamicSlotsInUse: number;
     dynamicSlotsInfo: Array<DynamicSlotItem>;
     excludedTypes: Set<string>;
+    isTypeParamSubstitutionEnabled: boolean;
     propsName?: string;
     reservedGlobalProps?: Set<string>;
     defaultProps?: Record<string, ts.Node>;
@@ -267,18 +313,47 @@ export type MetaUtilObj = {
     classProvidedBindingsDecorator?: ts.Decorator;
     functionPropBindings?: PropertyBindingMetadata;
     followImports?: boolean;
+    debugMode?: boolean;
     coreJetModuleMapping?: Map<string, ImportBindings>;
+    typeDefinitions?: Array<TypedefObj>;
 };
 export type ImportBindings = {
     binding?: string;
     module?: string;
+    fileName?: string;
 };
 export type TypedefObj = {
     name?: string;
+    properties?: Record<string, Metadata.ComponentMetadataProperties>;
     jsdoc?: Record<string, string>;
     genericsDeclaration?: string;
     genericsTypeParams?: string;
     coreJetModule?: Record<string, string>;
-    properties?: Record<string, Metadata.ComponentMetadataProperties>;
+    typeReference?: ts.TypeReferenceNode;
+};
+export declare const Color: {
+    Reset: string;
+    Bright: string;
+    Dim: string;
+    Underscore: string;
+    Blink: string;
+    Reverse: string;
+    Hidden: string;
+    FgBlack: string;
+    FgRed: string;
+    FgGreen: string;
+    FgYellow: string;
+    FgBlue: string;
+    FgMagenta: string;
+    FgCyan: string;
+    FgWhite: string;
+    BgBlack: string;
+    BgRed: string;
+    BgGreen: string;
+    BgYellow: string;
+    BgBlue: string;
+    BgMagenta: string;
+    BgCyan: string;
+    BgWhite: string;
 };
 export {};

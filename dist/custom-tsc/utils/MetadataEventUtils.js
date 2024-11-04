@@ -163,27 +163,8 @@ function getEventDetails(detailNode, metaUtilObj) {
                 if (eventDetailMetadata.type === 'Array<object>') {
                     nestedArrayStack.push(key);
                 }
-                const subprops = TypeUtils.getComplexPropertyMetadata(symbol, eventDetailMetadata.type, detailName, MetaTypes.MDScope.DT, MetaTypes.MDContext.EVENT | MetaTypes.MDContext.EVENT_DETAIL, propertyPath, nestedArrayStack, metaUtilObj);
-                if (subprops) {
-                    if (subprops.circRefDetected) {
-                        details[property].type =
-                            TypeUtils.getSubstituteTypeForCircularReference(eventDetailMetadata);
-                    }
-                    else if (eventDetailMetadata.type === 'Array<object>') {
-                        details[property].extension = {};
-                        details[property].extension.vbdt = {};
-                        details[property].extension.vbdt.itemProperties = subprops;
-                    }
-                    else {
-                        details[property].type = 'object';
-                        details[property].properties = subprops;
-                    }
-                    const typeDef = TypeUtils.getPossibleTypeDef(property, symbol, eventDetailMetadata, metaUtilObj);
-                    if (typeDef && (typeDef.name || typeDef.coreJetModule)) {
-                        details[property]['jsdoc'] = details[property]['jsdoc'] || {};
-                        details[property]['jsdoc']['typedef'] = typeDef;
-                    }
-                }
+                const complexMD = TypeUtils.getComplexPropertyMetadata(symbol, eventDetailMetadata, detailName, MetaTypes.MDScope.DT, MetaTypes.MDContext.EVENT | MetaTypes.MDContext.EVENT_DETAIL, propertyPath, nestedArrayStack, metaUtilObj);
+                TypeUtils.processComplexPropertyMetadata(property, eventDetailMetadata, complexMD, details[property]);
             }
         });
     }

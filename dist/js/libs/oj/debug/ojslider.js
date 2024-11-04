@@ -1369,6 +1369,39 @@ var __oj_range_slider_metadata =
          * @memberof oj.ojRangeSlider
          */
         readOnly: false,
+        /**
+         * readonlyUserAssistanceShown is private - more UX design is necessary to support readonly across
+         * components.  Until then, readonlyUserAssistanceShown serves no purpose.
+         *
+         * Specifies which user assistance types should be shown when the component is readonly.
+         *
+         * @private
+         * @name readonlyUserAssistanceShown
+         * @instance
+         * @memberof oj.ojSlider
+         * @default 'none'
+         * @type {string}
+         * @ojvalue {string} 'none' no user assistance is shown when the component is readonly
+         * @ojvalue {string} 'confirmationAndInfoMessages' messagesCustom messages of severity 'confirmation' and 'info' are shown when the component is readonly. Other severities will be filtered out and an info log message will be logged to the console.
+         * @since 17.1.0
+         */
+        /**
+         * readonlyUserAssistanceShown is private - more UX design is necessary to support readonly across
+         * components.  Until then, readonlyUserAssistanceShown serves no purpose.
+         *
+         * Specifies which user assistance types should be shown when the component is readonly.
+         *
+         * @private
+         * @name readonlyUserAssistanceShown
+         * @instance
+         * @memberof oj.ojRangeSlider
+         * @default 'none'
+         * @type {string}
+         * @ojvalue {string} 'none' no user assistance is shown when the component is readonly
+         * @ojvalue {string} 'confirmationAndInfoMessages' messagesCustom messages of severity 'confirmation' and 'info' are shown when the component is readonly. Other severities will be filtered out and an info log message will be logged to the console.
+         * @since 17.1.0
+         */
+        readonlyUserAssistanceShown: 'none',
 
         /**
          * Whether the component is disabled. The

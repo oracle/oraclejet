@@ -77,7 +77,7 @@ class PreactTemplate {
         if (node && node.hasAttribute && node.hasAttribute('data-oj-vdom-template-root')) {
             vdomTemplateRoots.push(node);
         }
-        let findTextNodes = componentElement?.hasAttribute('data-oj-vdom-template-text-roots');
+        let findTextNodes = componentElement?.hasAttribute?.('data-oj-vdom-template-text-roots');
         if (!findTextNodes) {
             let containTextNodesOnly = node && node.querySelectorAll
                 ? node.querySelectorAll('[data-oj-vdom-template-text-roots=""]')

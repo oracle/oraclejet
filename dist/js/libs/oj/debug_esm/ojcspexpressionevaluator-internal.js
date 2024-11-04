@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { ExpParser, TEMPLATE_ELEMENT, TEMPLATE_LITERAL, NEW_EXP, FUNCTION_EXP, OBJECT_EXP, getKeyValue, ARRAY_EXP, CONDITIONAL_EXP, LOGICAL_EXP, BINARY_EXP, UNARY_EXP, IDENTIFIER, CALL_EXP, MEMBER_EXP, LITERAL } from 'ojs/ojexpparser';
+import { ExpParser, TEMPLATE_ELEMENT, TEMPLATE_LITERAL, NEW_EXP, ARROW_EXP, RETURN_STATEMENT, FUNCTION_EXP, OBJECT_EXP, getKeyValue, ARRAY_EXP, CONDITIONAL_EXP, LOGICAL_EXP, BINARY_EXP, UNARY_EXP, IDENTIFIER, CALL_EXP, MEMBER_EXP, LITERAL } from 'ojs/ojexpparser';
 
 /**
  * @license
@@ -253,6 +253,7 @@ const CspExpressionEvaluatorInternal = function (options) {
         return _evaluateObjectExpression(node, contexts);
 
       case FUNCTION_EXP:
+      case ARROW_EXP:
         return _evaluateFunctionExpression(node, contexts);
 
       case NEW_EXP:
@@ -339,11 +340,10 @@ const CspExpressionEvaluatorInternal = function (options) {
   }
 
   function _evaluateFunctionExpression(node, contexts) {
-    // eslint-disable-next-line consistent-return
     return function () {
       var _args = arguments;
 
-      var argScope = node.arguments.reduce(function (acc, arg, i) {
+      var argScope = node.params.reduce(function (acc, arg, i) {
         acc[arg.name] = _args[i];
         return acc;
       }, {});
@@ -352,14 +352,16 @@ const CspExpressionEvaluatorInternal = function (options) {
       argScope['this'] = this;
 
       try {
-        var val = _evaluate(node.body, [argScope].concat(contexts));
-
-        if (node.return) {
-          return val;
-        }
+        // Expect to get node.body.type = 'BlockStatement'.
+        // Expect to get node.body.body = {type: 'ReturnStatement', argument: <node to evaluate>} || <node to evaluate>
+        const hasReturn = node.body.body.type === RETURN_STATEMENT;
+        const codeBlock = hasReturn ? node.body.body.argument : node.body.body;
+        const val = _evaluate(codeBlock, [argScope].concat(contexts));
+        return hasReturn ? val : undefined;
       } catch (e) {
-        _throwErrorWithExpression(e, node.expr);
+        _throwErrorWithExpression(e, node.body.expr);
       }
+      return undefined;
     };
   }
 

@@ -200,7 +200,20 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     const ojlabel = element.querySelector(`[id='${labelId}']`);
     if (ojlabel) {
       ojlabel.for = ''; // Triggers code to unlink the oj-label from its form component
-      ojlabel.parentElement.removeChild(ojlabel);
+      // JET-69716 - Regression: Can not refresh values in dynamic form, in stripe 2501
+      // Setting for on the ojlabel above, triggers a setOption call on oj-label, which in turn
+      // updates labelled-by on this component. At this point, if there are any other property
+      // updates that are queued up for this component, it will be applied before applying labelled-by.
+      // During this setting of queued updates, if any of the updates result in reactivating the
+      // component messaging, it hits this point again (recursive at this point) and removes the label.
+      // Then the code goes back to the previous _DestroyLabel call and reached this point again.
+      // But, the label might already have been removed, so we need to consider this before
+      // trying to remove it.
+      // Previously, we were using ojlabel.parentElement.removeChild(ojlabel) to remove the label.
+      // But this is an issue if ojlabel is already removed as the parentElement will be null.
+      // Now, we use ojlabel.remove() which will be a no-op if the label is already removed and we
+      // should be good.
+      ojlabel.remove();
     }
     options.labelledBy = undefined;
     this._DeleteEventHandlers(element);
@@ -2130,6 +2143,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
          * To format the message detail, you could do this:
          * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
          * </p>
+         * <p>A messagesCustom message with severity error will make the component's valid state invalidShown.
+         * However, a messagesCustom message, no matter the severity, does not prevent the value from being changed, as
+         * well as pushed to the view model.
+         * </p>
+         * <p>Messages are shown on an enabled component, but not on a disabled component. On a readonly component, if
+         * readonlyMessagesCustom is set to 'confirmationOrInfoMessages', then info and confirmation custom messages are shown.
+         * </p>
          * <p>
          * See the <a href="#validation-section">Validation and Messages</a> section
          * for details on when the component clears <code class="prettyprint">messagesCustom</code>;
@@ -3158,6 +3178,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
                 }
               }, 0);
             }
+            // we need to re-init the component messaging to update the launcher
+            this._initComponentMessaging();
+            break;
+
+          case 'readonlyUserAssistanceShown':
+            this._initComponentMessaging();
             break;
 
           case 'title':
@@ -5230,7 +5256,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       _initComponentMessaging: function () {
         var compMessaging = this._getComponentMessaging();
         var messagingLauncher = this._GetMessagingLauncherElement();
-        var compContentElement = this._GetContentElement();
+        // when readonly, we want the focus element, otherwise we want the content element, which in
+        // the case of checkboxset and radioset is multiple inputs
+        var compContentElement = this.options.readOnly
+          ? $(this.GetFocusElement()) // Expects a jQuery element
+          : this._GetContentElement();
         var messagingContent = this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.INIT);
 
         // if default placeholder is currently set then it needs to be cleared here. This is needed for
@@ -5242,11 +5272,23 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         if (!this._customPlaceholderSet) {
           this._ClearPlaceholder();
         }
-
+        // for readonly case, we need to be able to filter messages by severity.  The fourth argument to
+        // ComponentMessaging.activate is an array of allowed severities.  If undefined, then all severities
+        // are allowed.
+        const severitiesAllowed =
+          this.options.readOnly &&
+          this.options.readonlyUserAssistanceShown === 'confirmationAndInfoMessages'
+            ? ['info', 'confirmation']
+            : undefined;
         // this sets all messaging content other than messaging content not needed until the user
         // does something to see them. e.g, validator hints are shown until focus on the field.
         // we do this to help initial render performance.
-        compMessaging.activate(messagingLauncher, compContentElement, messagingContent);
+        compMessaging.activate(
+          messagingLauncher,
+          compContentElement,
+          messagingContent,
+          severitiesAllowed
+        );
 
         // Async validators hints are retrieved only when they are needed to be shown to the user.
         // See PopupComponentMessaging.js
@@ -5677,7 +5719,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       _showUserAssistanceNotInline: function () {
         let resolvedUserAssistance = this._getResolvedUserAssistance();
 
-        return resolvedUserAssistance === 'compact' || resolvedUserAssistance === 'displayOptions';
+        return (
+          (resolvedUserAssistance === 'compact' &&
+            !(this.options.readOnly && this.options.readonlyUserAssistanceShown !== 'none')) ||
+          resolvedUserAssistance === 'displayOptions'
+        );
       },
 
       /**
@@ -10291,10 +10337,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     const options = component.options;
     const element = component._getRootElement();
 
-    // set readonly and disabled event listeners
-    this._readonlyChangedCallback = this._readonlyChangedHandler.bind(this, component);
+    // set readonly, readonlyUserAssistanceShown and disabled event listeners
+    this._readonlyChangedCallback = this._activateOrDeactivateOnOptionChangedHandler.bind(
+      this,
+      options
+    );
     element.addEventListener('readonlyChanged', this._readonlyChangedCallback);
-    this._disabledChangedCallback = this._disabledChangedHandler.bind(this, component);
+    this._readonlyUserAssistanceShownChangedCallback =
+      this._activateOrDeactivateOnOptionChangedHandler.bind(this, options);
+    element.addEventListener(
+      'readonlyUserAssistanceShownChanged',
+      this._readonlyUserAssistanceShownChangedCallback
+    );
+    this._disabledChangedCallback = this._disabledChangedHandler.bind(this, options);
     element.addEventListener('disabledChanged', this._disabledChangedCallback);
 
     // set userAssistanceDensity event listener to change styleclass
@@ -10314,14 +10369,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       this._createInlineContainer();
     }
 
-    // Do not create any dom for sub-dom if readonly or disabled is true
-    // since we do not want to show Required, Inline messages, nor help hints in
-    // readonly or disabled modes.
-    if (this._isDisabledOrReadonly()) {
-      return;
-    }
-
-    this._activateContainerStrategies(cm, options);
+    this._activateOrDeactivateContainerStrategies(cm, options);
   };
 
   /**
@@ -10352,19 +10400,32 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
     // if we have already activated our sub-strategies,
     // this._inlineMessagingStrategy will not be undefined
-    if (this._inlineMessagingStrategy) {
-      // delegate to contained strategies.
+    if (options.readOnly && options.readonlyUserAssistanceShown === 'none') {
+      if (this._inlineMessagingStrategy) {
+        this._inlineMessagingStrategy.deactivate();
+      }
+    } else if (this._inlineMessagingStrategy) {
+      // delegate to container strategies.
       this._inlineMessagingStrategy.reactivate(newDisplayOptions, this.containerRoot);
-      if (this._inlineRequiredStrategy) {
-        this._inlineRequiredStrategy.reactivate(newDisplayOptions, this.containerRoot);
-      }
-      if (this._inlineHelpHintsStrategy) {
-        this._inlineHelpHintsStrategy.reactivate(newDisplayOptions, this.containerRoot);
-      }
-    } else {
-      // we haven't activated the sub-strategies yet, so do it now.
-      this._activateContainerStrategies(this._componentMessaging, options);
     }
+    // because we now show messagesCustom for readonly if readonlyUserAssistance is not 'none',
+    // we need to check here ourselves and not show required messages for readonly
+    if (options.readOnly) {
+      if (this._inlineRequiredStrategy) {
+        this._inlineRequiredStrategy.deactivate();
+      }
+    } else if (this._inlineRequiredStrategy) {
+      this._inlineRequiredStrategy.reactivate(newDisplayOptions, this.containerRoot);
+    }
+    if (options.readOnly) {
+      if (this._inlineHelpHintsStrategy) {
+        this._inlineHelpHintsStrategy.deactivate();
+      }
+    } else if (this._inlineHelpHintsStrategy) {
+      this._inlineHelpHintsStrategy.reactivate(newDisplayOptions, this.containerRoot);
+    }
+    // activate any unactivated container strategies and deactivate any unneeded strategies
+    this._activateOrDeactivateContainerStrategies(this._componentMessaging, options);
   };
 
   /**
@@ -10454,6 +10515,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     const element = component._getRootElement();
     element.removeEventListener('readonlyChanged', this._readonlyChangedCallback);
     delete this._readonlyChangedCallback;
+    element.removeEventListener(
+      'readonlyUserAssistanceShownChanged',
+      this._readonlyUserAssistanceShownChangedCallback
+    );
+    delete this._readonlyChangedCallback;
     element.removeEventListener('disabledChanged', this._disabledChangedCallback);
     delete this._disabledChangedCallback;
     element.removeEventListener(
@@ -10524,34 +10590,59 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   };
 
   /**
-   * activate the Container Strategies if they have not already been activated.
+   * activates and deactivates the container strategies depending on the disabled, readonly and
+   * readonlyUserAssistanceShown property values.
+   * Only activate the Container Strategies if they have not already been activated.
    *
    * @private
    * @memberof InlineUserAssistanceStrategy
    * @instance
    */
-  InlineUserAssistanceStrategy.prototype._activateContainerStrategies = function (cm, options) {
-    // instantiate and activate the strategy objects this strategy delegates to
-    // we wait until this function to instantiate because we want to have the containerRoot
+  InlineUserAssistanceStrategy.prototype._activateOrDeactivateContainerStrategies = function (
+    cm,
+    options
+  ) {
+    var isDisabled = options.disabled || false;
+    var isReadOnly = options.readOnly || false;
+    // instantiate and activate or deactivate and delete the strategy if disabled or readonly and
+    // readonlyUserAssistanceShown === 'none'.
+    // We wait until this function to instantiate because we want to have the containerRoot
     // created, and we wait until activate to do that in our strategies.
-    if (this._inlineMessagingStrategy === undefined) {
+    if (isDisabled || (isReadOnly && options.readonlyUserAssistanceShown === 'none')) {
+      if (this._inlineMessagingStrategy) {
+        this._inlineMessagingStrategy.deactivate();
+        delete this._inlineMessagingStrategy;
+      }
+    } else if (this._inlineMessagingStrategy === undefined) {
       this._inlineMessagingStrategy = new InlineMessagingStrategy(
         this._displayOptions,
         this.containerRoot
       );
       this._inlineMessagingStrategy.activate(cm);
     }
-
-    // Set up the strategy if the component has a required attribute. It doesn't have to be
+    // instantiate and activate the strategy if the component has a required attribute or deactivate and delete
+    // the strategy if disabled or readonly.  It doesn't have to be
     // set to required, but it needs to have a required attribute in its api.
-    if (options.required !== undefined && this._inlineRequiredStrategy === undefined) {
+    if (isDisabled || isReadOnly) {
+      if (this._inlineRequiredStrategy) {
+        this._inlineRequiredStrategy.deactivate();
+        delete this._inlineRequiredStrategy;
+      }
+    } else if (options.required !== undefined && this._inlineRequiredStrategy === undefined) {
       this._inlineRequiredStrategy = new InlineRequiredStrategy(
         this._displayOptions,
         this.containerRoot
       );
       this._inlineRequiredStrategy.activate(cm);
     }
-    if (this._inlineHelpHintsStrategy === undefined) {
+    // instantiate and activate the help hints strategy or deactivate and delete
+    // the strategy if disabled or readonly.
+    if (isDisabled || isReadOnly) {
+      if (this._inlineHelpHintsStrategy) {
+        this._inlineHelpHintsStrategy.deactivate();
+        delete this._inlineHelpHintsStrategy;
+      }
+    } else if (this._inlineHelpHintsStrategy === undefined) {
       // setup InlineHelpHintsStrategy
       this._inlineHelpHintsStrategy = new InlineHelpHintsStrategy(
         this._displayOptions,
@@ -10589,71 +10680,33 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       this.containerRoot.classList.remove(_OJ_REFLOW);
     }
   };
-
   /**
-   * If readonly is true, then delete the user-assistance-display dom
-   * and deactivate all the sub-strategies, otherwise activate them.
+   * If readonly or readonlyUserAssistanceShown properties are changed activate/deactivate the container strategies
    * @memberof InlineUserAssistanceStrategy
    * @instance
    * @private
-   * @param {Component} the component
-   * @param {CustomEvent} event readonlyChanged event
+   * @param {Options} options the component options
    */
-  InlineUserAssistanceStrategy.prototype._readonlyChangedHandler = function (component, event) {
-    let readonlyOptionValue = event.detail.value;
-
-    if (readonlyOptionValue) {
-      this._deactivateContainerStrategies();
-    } else {
-      const options = component.options;
-      this._activateContainerStrategies(this._componentMessaging, options);
-    }
+  InlineUserAssistanceStrategy.prototype._activateOrDeactivateOnOptionChangedHandler = function (
+    options
+  ) {
+    this._activateOrDeactivateContainerStrategies(this._componentMessaging, options);
   };
 
   /**
-   * If disabled is true, then delete the user-assistance-display dom
-   * and deactivate all the sub-strategies, otherwise activate them.
+   * If disabled is changed activate/deactivate the container strategies
    * @memberof InlineUserAssistanceStrategy
    * @instance
    * @private
-   * @param {Component} the component
-   * @param {CustomEvent} event disabledChanged event
+   * @param {Options} options the component options
    */
-  InlineUserAssistanceStrategy.prototype._disabledChangedHandler = function (component, event) {
-    let disabledOptionValue = event.detail.value;
-
-    if (disabledOptionValue) {
-      this._deactivateContainerStrategies();
-    } else {
-      const options = component.options;
-      this._activateContainerStrategies(this._componentMessaging, options);
-    }
-  };
-
-  /**
-   * Deactivate all the sub-strategies.
-   * @memberof InlineUserAssistanceStrategy
-   * @instance
-   * @private
-   */
-  InlineUserAssistanceStrategy.prototype._deactivateContainerStrategies = function () {
-    if (this._inlineMessagingStrategy) {
-      this._inlineMessagingStrategy.deactivate();
-    }
-    if (this._inlineRequiredStrategy) {
-      this._inlineRequiredStrategy.deactivate();
-    }
-    if (this._inlineHelpHintsStrategy) {
-      this._inlineHelpHintsStrategy.deactivate();
-    }
-
-    delete this._inlineMessagingStrategy;
-    delete this._inlineRequiredStrategy;
-    delete this._inlineHelpHintsStrategy;
+  InlineUserAssistanceStrategy.prototype._disabledChangedHandler = function (options) {
+    this._activateOrDeactivateContainerStrategies(this._componentMessaging, options);
   };
 
   /**
    * If component readOnly or disabled.
+   * For readonly, if readonlyUserAssistance is not 'none', then return false for readonly.
    * @return {boolean}
    * @private
    * @memberof InlineUserAssistanceStrategy
@@ -10663,7 +10716,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     options = this.GetComponent().options
   ) {
     var isDisabled = options.disabled || false;
-    var isReadOnly = options.readOnly || false;
+    var isReadOnly = (options.readOnly && options.readonlyUserAssistanceShown === 'none') || false;
 
     return isDisabled || isReadOnly;
   };

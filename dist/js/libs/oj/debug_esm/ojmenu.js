@@ -2298,7 +2298,15 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
         this._setup();
       }
       if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
-        this._reposition();
+        var busyContext = Context.getContext(this.element[0]).getBusyContext();
+        var resolveBusyState = busyContext.addBusyState({
+          description: 'Waiting for menu to be rendered with new DOM correctly'
+        });
+        // We use requestAnimationFrame to trigger reposition asynchronously when menu is already refreshed correctly. This only applies when menu is already opened
+        requestAnimationFrame(() => {
+          resolveBusyState();
+          this._reposition();
+        });
       }
     },
 
@@ -3486,7 +3494,9 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
         // keypress and keyup targeted at the menu instead of the launcher.
         if (this._IsCustomElement()) {
           window.setImmediate(function () {
-            focusElement.focus();
+            // Since there are situations where menu element can be absent from the dom in this next tick (you close menu before finishing closing)
+            // we check for element to be focusuble
+            if (focusElement.is(':focusable')) focusElement.focus();
           });
         } else {
           // For jquery ui components, move immediate focus.  The synchronous button qunit tests expect this behavior.
@@ -3625,7 +3635,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
 
       this._updateMenuMaxHeight(submenu);
       // Important to reposition submenu since if its taking all the height its position starting point will not be the correct
-      this._reposition();
+      submenu.position(submenu.data(_POSITION_DATA));
 
       if (!this._isAnimationDisabled()) {
         var busyContext = Context.getContext(this.element[0]).getBusyContext();

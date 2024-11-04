@@ -2831,6 +2831,21 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
        * @default false
        */
       readOnly: false,
+      /**
+       * Specifies which user assistance types should be shown when the component is readonly.
+       *
+       * @expose
+       * @access public
+       * @name readonlyUserAssistanceShown
+       * @instance
+       * @memberof oj.ojSelectBase
+       * @default 'none'
+       * @type {string}
+       * @ojvalue {string} 'none' no user assistance is shown when the component is readonly
+       * @ojvalue {string} 'confirmationAndInfoMessages' messagesCustom messages of severity 'confirmation' and 'info' are shown when the component is readonly. Other severities will be filtered out and an info log message will be logged to the console.
+       * @since 17.1.0
+       */
+      readonlyUserAssistanceShown: 'none',
 
       /**
        * Specifies the text string to render for a data item.
@@ -3261,7 +3276,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
       var filterInputText = this._createFilterInputText(className, idSuffix);
       if (!this._fullScreenPopup) {
-        filterInputText.style.visibility = 'hidden';
+        OuterWrapper.classList.remove('oj-searchselect-filter-shown');
         OuterWrapper.appendChild(filterInputText);
       }
       this._filterInputText = filterInputText;
@@ -3570,6 +3585,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       owClassList.remove('oj-read-only');
       owClassList.remove('oj-enabled');
       owClassList.remove('oj-disabled');
+      owClassList.remove('oj-searchselect-filter-shown');
       $(OuterWrapper)
         .off('change', '.' + this._className + '-input', LovUtils.stopEventPropagation)
         .off(this._containerEventListeners);
@@ -3813,6 +3829,16 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     },
 
     /**
+     * Determine if the filter field is currently shown.
+     * @memberof! oj.ojSelectBase
+     * @instance
+     * @protected
+     */
+    _IsFilterFieldShown: function () {
+      return this.OuterWrapper.classList.contains('oj-searchselect-filter-shown');
+    },
+
+    /**
      * @memberof! oj.ojSelectBase
      * @instance
      * @protected
@@ -3823,7 +3849,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       }
 
       var filterInputText = this._filterInputText;
-      if (filterInputText.style.visibility === 'hidden') {
+      if (!this._IsFilterFieldShown()) {
         var lovMainField = this._lovMainField;
         var mainInputElem = lovMainField.getInputElem();
         if (!preserveState) {
@@ -3847,9 +3873,23 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
           }
         }
 
-        lovMainField.getInputElem().style.visibility = 'hidden';
-        filterInputText.style.visibility = '';
-        this.OuterWrapper.appendChild(filterInputText);
+        // JET-64811 - oj-select-single inside oj-popup keyboard accessibility issue
+        // We have two inputs in oj-select-single, one that we show when the component does not
+        // have focus and one in the oj-input-text that we show for filtering when the component
+        // has focus. The filtering input normally comes after the regular one in the DOM. When
+        // the user presses Shift+Tab in the field, we want the browser to move focus to the
+        // previous element on the page, outside of the select-single, instead of moving focus
+        // from the filter input to the regular input.
+        // When hiding the main input, set its tabindex to -1 so that the browser will skip over
+        // it when the user Shift+Tabs out of the filter input.  When the filter input is hidden
+        // and the main input is shown again, its tabindex will be restored.
+        // (We don't need to set tabindex of the filter input to -1 for tabbing forward because when
+        // the component has focus, the main input is hidden and the filter input is always shown.
+        // So the user is never actually tabbing out of the main input.)
+        this._origMainInputTabIndex = mainInputElem.tabIndex;
+        mainInputElem.tabIndex = -1;
+
+        this.OuterWrapper.classList.add('oj-searchselect-filter-shown');
       }
       if (!preserveState) {
         //  - help.instruction text not always shown
@@ -3877,8 +3917,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         return;
       }
 
-      var filterInputText = this._filterInputText;
-      if (filterInputText.style.visibility !== 'hidden') {
+      if (this._IsFilterFieldShown()) {
         var mainInputElem = this._lovMainField.getInputElem();
 
         // JET-34889 - WHEN OJ-SELECT-SINGLE GETS FOCUS, SELECT THE INPUT TEXT TO ALLOW
@@ -3897,8 +3936,24 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         // shown in Firefox instead of the beginning.
         mainInputElem.setSelectionRange(0, 0);
 
-        mainInputElem.style.visibility = '';
-        filterInputText.style.visibility = 'hidden';
+        // JET-64811 - oj-select-single inside oj-popup keyboard accessibility issue
+        // We have two inputs in oj-select-single, one that we show when the component does not
+        // have focus and one in the oj-input-text that we show for filtering when the component
+        // has focus. The filtering input normally comes after the regular one in the DOM. When
+        // the user presses Shift+Tab in the field, we want the browser to move focus to the
+        // previous element on the page, outside of the select-single, instead of moving focus
+        // from the filter input to the regular input.
+        // When hiding the main input, its tabindex is set to -1 so that the browser will skip over
+        // it when the user Shift+Tabs out of the filter input.  When the filter input is hidden
+        // and the main input is shown again, restore its tabindex.
+        // (We don't need to set tabindex of the filter input to -1 for tabbing forward because when
+        // the component has focus, the main input is hidden and the filter input is always shown.
+        // So the user is never actually tabbing out of the main input.)
+        if (this._origMainInputTabIndex !== undefined) {
+          mainInputElem.tabIndex = this._origMainInputTabIndex;
+        }
+
+        this.OuterWrapper.classList.remove('oj-searchselect-filter-shown');
       }
     },
 
@@ -3991,11 +4046,17 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
           break;
 
         case LovUtils.KEYS.ENTER:
-          // lovDropdown.activateHighlightedElem();
-          //  - select and combobox stop keyboard event propegation
-          event.preventDefault();
+          // only process the Enter key for select specific purposes if it wasn't pressed
+          // on a help link;  in that case, we want the browser to launch the link
+          if (
+            event.target.closest('.oj-user-assistance-inline-container') == null &&
+            event.target.closest('.oj-label-help-icon-anchor') == null
+          ) {
+            //  - select and combobox stop keyboard event propegation
+            event.preventDefault();
 
-          this._HandleContainerKeyDownEnter(event);
+            this._HandleContainerKeyDownEnter(event);
+          }
           break;
 
         case LovUtils.KEYS.TAB:
@@ -4110,7 +4171,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
           // if the filter field is already shown, call _ShowFilterField directly anyway to do
           // whatever other processing it needs to do, because the main input elem is hidden and
           // can't receive focus
-          if (this._filterInputText.style.visibility === 'hidden') {
+          if (!this._IsFilterFieldShown()) {
             // don't call preventDefault() because it prevents the cursor from moving to where
             // the mouse was clicked
             // JET-40451 - oj-select-single inside oj-table: dropdown immediately closes when
@@ -4546,7 +4607,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
             // focus the input element after canceling on mobile because we want the focus to
             // go back to the main part of the component, and the user can tab out or reopen the
             // dropdown
-            this._lovMainField.getInputElem().focus();
+            this._lovMainField.getInputElem().focus({ preventScroll: true });
             this._abstractLovBase.cancel();
           }.bind(this)
         );
@@ -4843,6 +4904,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
       this._superSetOptions = null;
       this._setOptionsQueue = null;
+      this._setOptionsQueuePromise = null;
     },
 
     /**
@@ -4875,21 +4937,30 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
      * @memberof oj.ojSelectBase
      */
     validate: function () {
-      // JET-42413: set flag while we're processing a value change so that if an app makes
-      // changes to the component from within the change listener, we can defer processing the
-      // new change until after we're done processing the current change
-      if (this._makingInternalValueChange) {
+      if (this._makingInternalValueChange || this._setOptionsQueuePromise) {
         var resolveFunc;
         var rejectFunc;
         var promise = new Promise(function (resolve, reject) {
           resolveFunc = resolve;
           rejectFunc = reject;
         });
-        this._queueValueChangeDeferredCallback(
-          function () {
-            this.validate().then(resolveFunc, rejectFunc);
-          }.bind(this)
-        );
+        var validateFunc = function () {
+          this.validate().then(resolveFunc, rejectFunc);
+        }.bind(this);
+
+        // JET-42413: set flag while we're processing a value change so that if an app makes
+        // changes to the component from within the change listener, we can defer processing the
+        // new change until after we're done processing the current change
+        if (this._makingInternalValueChange) {
+          this._queueValueChangeDeferredCallback(validateFunc);
+        }
+        // JET-69768 - select-single should report pending as validity when it syncs value/value-Item
+        // We synchronously set valid to 'pending' when value/valueItem is set if we're going to
+        // queue a microtask to process the set.  In that case, we want the validate promise to
+        // resolve after the microtask executes.
+        else if (this._setOptionsQueuePromise) {
+          this._setOptionsQueuePromise.then(validateFunc);
+        }
 
         return promise;
       }
@@ -4990,11 +5061,20 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // option, our microtask callback will have access to all the accumulated options at once,
       // similar to what would happen in MVVM.
 
+      // JET-69768 - select-single should report pending as validity when it syncs value/value-Item
+      // Maintain a promise that will be resolved when the microtask executes so that we can
+      // defer any validate() calls that come in before then.
+      var resolvePromise;
+      this._setOptionsQueuePromise = new Promise((resolve) => {
+        resolvePromise = resolve;
+      });
+
       var microtaskFunc = () => {
         // reset the queue first so that any new _setOptions calls made during processing of
         // this microtask will start a new queue
         var setOptionsQueue = this._setOptionsQueue;
         this._setOptionsQueue = null;
+        this._setOptionsQueuePromise = null;
 
         // JET-66038 - REGRESSION FOR EXPENSETYPEID FIELD 'GETINPUTELEM' ERROR
         // When this function is executed in a microtask, it's possible that the element has been
@@ -5052,6 +5132,8 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         }
 
         this._setOptionsHelper(options, flags, this._superSetOptions);
+
+        resolvePromise();
       };
 
       window.queueMicrotask(microtaskFunc);
@@ -5076,6 +5158,44 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
           this._queueSetOptionsMicrotask();
         }
         this._setOptionsQueue.push({ options: { ...options }, flags: { ...flags } });
+
+        // JET-69768 - select-single should report pending as validity when it syncs value/value-Item
+        // Synchronously set valid to 'pending' until the queued microtask runs and actually sets
+        // the value/valueItem.
+        // eslint-disable-next-line no-prototype-builtins
+        var hasValue = options.hasOwnProperty('value');
+        // eslint-disable-next-line no-prototype-builtins
+        var hasValueItem = options.hasOwnProperty(this._GetValueItemPropertyName());
+        if (hasValue || hasValueItem) {
+          if (this.options.valid !== 'pending') {
+            // JET-70095 - 25B: 10 Karma Mocha LOV + 2 Webdriver consistent failures
+            // dinamicForm tags/17.1
+            // In DynUI tests, when the user selects a new value in select-single, DynUI turns around
+            // and sets a different instance of the new valueItem (with no metadata) on the component,
+            // which can result in a hanging "pending" validity state because there will be no
+            // new value change to trigger validation.  So, we want to skip setting the "pending"
+            // state here if a new valueItem is being set by itself whose key is the same
+            // as the current value.
+            var newValItem = options[this._GetValueItemPropertyName()];
+            var isEmptyNewValItem = this._IsValueItemForPlaceholder(newValItem);
+            var skipValidPending =
+              hasValueItem &&
+              !hasValue &&
+              ((isEmptyNewValItem && this._IsValueForPlaceholder(this.options.value)) ||
+                (!isEmptyNewValItem && oj.Object.compareValues(newValItem.key, this.options.value)));
+            if (!skipValidPending) {
+              // 'valid' is read-only
+              var setValidPendingFlags = {
+                _context: {
+                  writeback: true,
+                  internalSet: true,
+                  readOnly: true
+                }
+              };
+              this.option('valid', 'pending', setValidPendingFlags);
+            }
+          }
+        }
       } else {
         this._setOptionsHelper(options, flags, this._super.bind(this));
       }
@@ -5185,11 +5305,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // remember whether the filter field is shown before processing the new options so that
       // we can restore it afterwards, if necessary
       var showFilterField = false;
-      if (
-        !this._fullScreenPopup &&
-        this._lovEnabled &&
-        this._filterInputText.style.visibility !== 'hidden'
-      ) {
+      if (!this._fullScreenPopup && this._lovEnabled && this._IsFilterFieldShown()) {
         showFilterField = true;
       }
 
@@ -5231,7 +5347,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         // JET-42353 - SELECT SINGLE FOCUS LOST ON CHANGE OF THE DEPENDENT VALUE
         // if the filter field was shown before processing the new options, but is no longer shown,
         // show it again
-        if (showFilterField && this._filterInputText.style.visibility === 'hidden') {
+        if (showFilterField && !this._IsFilterFieldShown()) {
           // need to wait for the new filter oj-input-text to be upgraded
           var busyContext = Context.getContext(this._filterInputText).getBusyContext();
           busyContext.whenReady().then(

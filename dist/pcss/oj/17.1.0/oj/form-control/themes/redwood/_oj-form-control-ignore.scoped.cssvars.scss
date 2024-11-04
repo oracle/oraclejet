@@ -1,0 +1,10 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.formcontrol.ignored.scoped") {
+  .oj-color-invert {
+    --oj-private-text-field-button-icon-color:          var(--oj-private-button-ghost-chrome-text-color);
+    --oj-private-text-field-button-icon-color-hover:    var(--oj-private-button-ghost-chrome-text-color-hover);
+    --oj-private-text-field-button-icon-color-active:   var(--oj-private-button-ghost-chrome-text-color-active);
+    --oj-private-text-field-button-icon-color-disabled: var(--oj-button-borderless-chrome-text-color-disabled);
+  }
+}

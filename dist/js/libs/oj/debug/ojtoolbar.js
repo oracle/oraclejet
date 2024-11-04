@@ -174,7 +174,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
      *
      * @ojchild Default
      * @memberof oj.ojToolbar
-     * @ojpreferredcontent ["ButtonElement", "CButtonElement", "ButtonsetManyElement","ButtonsetOneElement","MenuButtonElement", "CMenuButtonElement", "CSplitMenuButtonElement"]
+     * @ojpreferredcontent ["ButtonElement", "CButtonElement", "ButtonsetManyElement","ButtonsetOneElement","MenuButtonElement", "CMenuButtonElement", "CSplitMenuButtonElement", "CProgressButtonElement"]
      *
      * @example <caption>Initialize the Toolbar with child content specified:</caption>
      * &lt;oj-toolbar>

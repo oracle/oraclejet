@@ -1628,6 +1628,8 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
  * @ojimportmembers oj.ojSharedContextMenu
  * @since 1.1.0
  *
+ * @ojdeprecated {since: '17.1.0', description: 'The use of this component is not recommended in the Redwood design system.'}
+ *
  * @ojshortdesc A masonry layout lays out its children in a grid of tiles.
  * @class oj.ojMasonryLayout
  *

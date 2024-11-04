@@ -119,24 +119,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
                         }
                     });
                 }
-                if (detail.add) {
-                    const keys = detail.add.keys;
-                    const keysArray = [...keys];
-                    const metadata = this.callback.getData()?.value.metadata;
-                    const addDetail = { ...detail.add };
-                    metadata?.forEach((data) => {
-                        if (keys.has(data.key) && addAndRemoveKeys.indexOf(data.key) == -1) {
-                            const index = keysArray.indexOf(data.key);
-                            addDetail.addBeforeKeys?.splice(index, 1);
-                            addDetail.data?.splice(index, 1);
-                            addDetail.indexes?.splice(index, 1);
-                            addDetail.keys?.delete(data.key);
-                            addDetail.metadata?.splice(index, 1);
-                            addDetail.parentKeys?.splice(index, 1);
-                        }
-                    });
-                    this.handleItemsAdded(addDetail);
-                }
                 if (detail.remove) {
                     const handleDetailRemove = () => {
                         this.handleItemsRemoved(detail.remove);
@@ -155,6 +137,24 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
                     else {
                         handleDetailRemove();
                     }
+                }
+                if (detail.add) {
+                    const keys = detail.add.keys;
+                    const keysArray = [...keys];
+                    const metadata = this.callback.getData()?.value.metadata;
+                    const addDetail = { ...detail.add };
+                    metadata?.forEach((data) => {
+                        if (keys.has(data.key) && addAndRemoveKeys.indexOf(data.key) == -1) {
+                            const index = keysArray.indexOf(data.key);
+                            addDetail.addBeforeKeys?.splice(index, 1);
+                            addDetail.data?.splice(index, 1);
+                            addDetail.indexes?.splice(index, 1);
+                            addDetail.keys?.delete(data.key);
+                            addDetail.metadata?.splice(index, 1);
+                            addDetail.parentKeys?.splice(index, 1);
+                        }
+                    });
+                    this.handleItemsAdded(addDetail);
                 }
                 if (detail.update) {
                     this.handleItemsUpdated(detail.update);
@@ -868,7 +868,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
                             else if (addBeforeKeys != null && addBeforeKeys[i] != null) {
                                 index = this._findIndex(newData.value.metadata, addBeforeKeys[i]);
                             }
-                            if (index > -1 && index < newData.value.data.length) {
+                            if (index > -1 && (index < newData.value.data.length || !this._isLoadMoreOnScroll())) {
                                 newData.value.data.splice(index, 0, data);
                                 newData.value.metadata.splice(index, 0, metadata);
                             }

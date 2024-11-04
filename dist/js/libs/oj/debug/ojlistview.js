@@ -2143,6 +2143,9 @@ var __oj_list_view_metadata =
         var postProcess = function (contentHandler) {
           self.m_contentHandler = contentHandler;
 
+          // add acc info for expand/collapse case
+          self._buildAccExpdesc();
+
           // kick start rendering
           contentHandler.RenderContent();
 
@@ -3521,11 +3524,6 @@ var __oj_list_view_metadata =
 
           this._buildFocusCaptureDiv(container[0]);
         }
-
-        if (this.isExpandable()) {
-          const accInfoExpandCollapse = this._buildAccExpdesc();
-          container.append(accInfoExpandCollapse); // @HTMLUpdateOK
-        }
       },
 
       /**
@@ -3574,18 +3572,31 @@ var __oj_list_view_metadata =
        * @private
        */
       _buildAccExpdesc: function () {
-        const root = $(document.createElement('div'));
-        const msg = this.ojContext.getTranslatedString('accessibleExpandCollapseInstructionText');
-        this.m_accExpdescId = this._createSubId('expdesc');
+        // only add the acc info for expand/collapse when:
+        // 1. using tree data
+        // 2. group header is collapsible (drill-mode is not 'none')
+        // 3. not in touch device
+        // 4. there is no acc info for expand/collapse
+        if (
+          this.m_accExpdescId === undefined &&
+          this.m_contentHandler?.IsHierarchical() &&
+          this.isExpandable() &&
+          !DataCollectionUtils.isMobileTouchDevice()
+        ) {
+          let msg = this.ojContext.getTranslatedString('accessibleExpandCollapseInstructionText');
+          this.m_accExpdescId = this._createSubId('expdesc');
 
-        root
-          .addClass('oj-helper-hidden-accessible')
-          .attr({
-            id: this.m_accExpdescId
-          })
-          .html(msg); // @HTMLUpdateOK
+          const accInfoExpandCollapse = $(document.createElement('div'));
+          accInfoExpandCollapse
+            .addClass('oj-helper-hidden-accessible')
+            .attr({
+              id: this.m_accExpdescId
+            })
+            .html(msg); // @HTMLUpdateOK
 
-        return root;
+          const container = this.getListContainer();
+          container.append(accInfoExpandCollapse); // @HTMLUpdateOK
+        }
       },
 
       /**
@@ -5234,8 +5245,14 @@ var __oj_list_view_metadata =
         // on every item on render, it becomes expensive.  Do the filter later in enableTabbableElements, which is only
         // triggered by entering actionable mode.
         if (elem[0]) {
+          const dialogs = elem[0].querySelectorAll('oj-dialog');
           var elems = $(
-            DataCollectionUtils.disableAllFocusableElements(elem[0], excludeActiveElement)
+            DataCollectionUtils.disableAllFocusableElements(
+              elem[0],
+              excludeActiveElement,
+              false,
+              dialogs
+            )
           );
 
           elems.each(function () {
@@ -10098,7 +10115,7 @@ var __oj_list_view_metadata =
    * <p>The reorder API has changed.</p>
    * <ul>
    *   <li>
-   *     <code>dnd.reorder.items</code> has renamed to <code>reorderable.items</code>. The values remain the same.</p>
+   *     <code>dnd.reorder.items</code> has renamed to <code>reorderable.items</code>. The values remain the same.
    *   </li>
    *   <li>
    *     The <code>event.detail</code> of <code>ojReorder</code> has been updated. It has changed to key based and now provides `reorderedKeys`, `itemKeys`, and `referenceKey`.
@@ -10106,7 +10123,7 @@ var __oj_list_view_metadata =
    *   </li>
    *   <li>
    *     Applications should use the new <code>oj-c-drag-handle</code> to show drag icon, instead of the <code>oj-listview-drag-handle</code> style class.
-   *   </li
+   *   </li>
    * </ul>
    *
    * <h5>The following APIs are not yet supported</h5>

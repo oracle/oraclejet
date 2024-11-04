@@ -21,12 +21,16 @@ type CurrencyFormatOptions = 'standard' | 'short';
 export type DecimalOptions = SharedConverterOptions & {
     style?: 'decimal';
     decimalFormat?: FormatOptions;
+    virtualKeyboardHint?: 'number' | 'text';
 };
 export type CurrencyOptions = SharedConverterOptions & {
     style: 'currency';
     currency: ISO4217CurrencyCode;
     currencyDisplay?: 'code' | 'symbol' | 'name';
     currencyFormat?: CurrencyFormatOptions;
+    currencySign?: 'standard' | 'accounting';
+    customCurrencyCode?: string;
+    customCurrencySymbol?: string;
 };
 type PercentOptions = SharedConverterOptions & {
     style: 'percent';

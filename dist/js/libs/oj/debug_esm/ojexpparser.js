@@ -62,15 +62,22 @@ const ExpParser = function () {
     while (context.index < length) {
       _gobbleSpaces(context);
       const ch_i = expr.charCodeAt(context.index);
-      if (ch_i === untilICode) {
-        break;
-      } else if (ch_i === SEMCOL_CODE || ch_i === COMMA_CODE) {
+      // Expressions can be separated by semicolons, commas, or just inferred without any
+      // separators
+      // They are not used as untilICode.
+      if (ch_i === SEMCOL_CODE || ch_i === COMMA_CODE) {
         context.index++; // ignore separators
       } else {
+        // Try to gobble each expression individually
         const node = _gobbleExpression(context);
         if (node) {
           nodes.push(node);
+          // If we weren't able to find a binary expression and are out of room, then
+          // the expression passed in probably has too much
         } else if (context.index < length) {
+          if (ch_i === untilICode) {
+            break;
+          }
           _throwError('Unexpected "' + expr.charAt(context.index) + '"', context.index);
         }
       }
@@ -91,8 +98,9 @@ const ExpParser = function () {
   // The main parsing function. Much of this code is dedicated to ternary expressions
   // eslint-disable-next-line consistent-return
   function _gobbleExpression(context) {
-    var expr = context.expr;
-    var test = _gobbleBinaryExpression(context),
+    const expr = context.expr;
+    // Check for arrow expression special case first, if it is not continue with binary expression parser.
+    let test = _gobbleArrowFunctionExpression(context) || _gobbleBinaryExpression(context),
       consequent,
       alternate;
     _gobbleSpaces(context);
@@ -110,17 +118,20 @@ const ExpParser = function () {
         if (!alternate) {
           _throwError('Expected expression', context.index);
         }
-        return {
+        test = {
           type: CONDITIONAL_EXP,
           test: test,
           consequent: consequent,
           alternate: alternate
         };
+      } else {
+        _throwError('Expected :', context.index);
       }
-      _throwError('Expected :', context.index);
-    } else {
-      return test;
     }
+    // The following form or arrow function such as p =>p or (p1, p2) => ...
+    // are parsed as binary expression. We need to convert them into ArrowFunctionExpression form.
+    _updateBinariesToArrows(test);
+    return test;
   }
 
   // Search for the operation portion of the string (e.g. `+`, `===`)
@@ -169,7 +180,7 @@ const ExpParser = function () {
     // precedence structure
     biop_info = { value: biop, prec: _binaryPrecedence(biop) };
 
-    right = _gobbleToken(context);
+    right = biop === '=>' ? _gobbleArrowFunctionBody(context) : _gobbleToken(context);
     if (!right) {
       _throwError('Expected expression after ' + biop, context.index);
     }
@@ -606,11 +617,18 @@ const ExpParser = function () {
   // eslint-disable-next-line consistent-return
   function _gobbleGroup(context) {
     context.index++;
-    var node = _gobbleExpression(context);
-    _gobbleSpaces(context);
+    let nodes = _gobbleExpressions(context, CPAREN_CODE);
     if (context.expr.charCodeAt(context.index) === CPAREN_CODE) {
       context.index++;
-      return node;
+      if (nodes.length === 1) {
+        return nodes[0];
+      } else if (!nodes.length) {
+        return false;
+      }
+      return {
+        type: SEQUENCE_EXP,
+        expressions: nodes
+      };
     }
     _throwError('Unclosed (', context.index);
   }
@@ -626,6 +644,54 @@ const ExpParser = function () {
     };
   }
 
+  // This code parses function body within {...}.
+  // Note that the code block is limited to a single statement,
+  // might or might not have a return statement and
+  // it does not allow an assignment operation.
+  // This parser is used for both, function and arrow function, code blocks.
+  function _gobbleFunctionBody(context) {
+    _gobbleSpaces(context);
+    const expr = context.expr;
+    let ch_i = expr.charCodeAt(context.index);
+    context.index++;
+    _gobbleSpaces(context);
+
+    let hasReturn = false;
+    const start = context.index;
+    if (expr.substring(start, start + 6) === 'return') {
+      hasReturn = true;
+      context.index += 6;
+    }
+    _gobbleSpaces(context);
+    const funcBody = _gobbleExpression(context);
+    _gobbleSpaces(context);
+    ch_i = expr.charCodeAt(context.index);
+    if (ch_i === SEMCOL_CODE) {
+      context.index++;
+      _gobbleSpaces(context);
+    }
+
+    ch_i = expr.charCodeAt(context.index);
+    if (ch_i !== CBRACE_CODE) {
+      _throwError('Expected },', context.index);
+    }
+    context.index++;
+
+    return {
+      type: BLOCK_STATEMENT,
+      expr: expr.substring(start, context.index - 1),
+      body: hasReturn
+        ? {
+            type: RETURN_STATEMENT,
+            argument: funcBody
+          }
+        : funcBody
+    };
+  }
+
+  // Creates a node for the FunctionExpression, such as 'function(p1, p2){return p1 + p2}'
+  // This code does not support complex code blocks for the function.
+  // See _gobbleFunctionBody() for details.
   function _gobbleFunction(context) {
     var expr = context.expr;
 
@@ -641,39 +707,11 @@ const ExpParser = function () {
     if (ch_i !== OBRACE_CODE) {
       _throwError('Expected {,', context.index);
     }
-    context.index++;
-    _gobbleSpaces(context);
-    var startDef = context.index;
-    var hasReturn;
-    var start = context.index;
-    if (expr.substring(start, start + 6) === 'return') {
-      hasReturn = true;
-      context.index += 6;
-    }
-    _gobbleSpaces(context);
-    var body = _gobbleExpression(context);
-
-    _gobbleSpaces(context);
-    ch_i = expr.charCodeAt(context.index);
-    if (ch_i === SEMCOL_CODE) {
-      context.index++;
-      _gobbleSpaces(context);
-    }
-
-    ch_i = expr.charCodeAt(context.index);
-
-    if (ch_i !== CBRACE_CODE) {
-      _throwError('Expected },', context.index);
-    }
-
-    context.index++;
 
     return {
       type: FUNCTION_EXP,
-      arguments: args,
-      body: body,
-      expr: expr.substring(startDef, context.index - 1),
-      return: hasReturn
+      params: args,
+      body: _gobbleFunctionBody(context)
     };
   }
 
@@ -828,6 +866,97 @@ const ExpParser = function () {
     return false;
   }
 
+  // This code searches for the special case () => ...
+  // which would normally throw an error because of the invalid LHS to the bin op.
+  // The other forms of arrow function such as p => p or (p, p2) => ...
+  // are parsed using _gobbleBinaryExpression() logic, then updated to the proper form.
+  function _gobbleArrowFunctionExpression(context) {
+    const expr = context.expr;
+    let ch = expr.charCodeAt(context.index);
+    let node;
+
+    if (ch === OPAREN_CODE) {
+      const backupIndex = context.index;
+      context.index++;
+
+      _gobbleSpaces(context);
+      ch = expr.charCodeAt(context.index);
+      if (ch === CPAREN_CODE) {
+        context.index++;
+
+        const biop = _gobbleBinaryOp(context);
+        if (biop === '=>') {
+          // () => ...
+          const body = _gobbleArrowFunctionBody(context);
+          if (!body) {
+            _throwError('Expected expression after ' + biop);
+          }
+          node = {
+            type: ARROW_EXP,
+            params: [],
+            body
+          };
+        }
+      }
+      if (!node) {
+        // not a () => ... case, go back
+        context.index = backupIndex;
+      }
+    }
+    return node;
+  }
+
+  // Creates a node for the right side of arrow function.
+  function _gobbleArrowFunctionBody(context) {
+    const expr = context.expr;
+    _gobbleSpaces(context);
+
+    let returnNode;
+    if (expr.charCodeAt(context.index) === OBRACE_CODE) {
+      returnNode = _gobbleFunctionBody(context);
+    } else {
+      const startDef = context.index;
+      _gobbleSpaces(context);
+      const funcBody = _gobbleExpression(context);
+      _gobbleSpaces(context);
+      context.index++;
+      returnNode = {
+        type: BLOCK_STATEMENT,
+        expr: expr.substring(startDef, context.index - 1),
+        body: {
+          type: RETURN_STATEMENT,
+          argument: funcBody
+        }
+      };
+    }
+    return returnNode;
+  }
+
+  // Converts binary expression into arrow function expression
+  // if arrow operation is detected.
+  function _updateBinariesToArrows(node) {
+    if (node) {
+      // Traverse full tree, converting any sub-object nodes as needed
+      Object.values(node).forEach((val) => {
+        if (val && typeof val === 'object') {
+          _updateBinariesToArrows(val);
+        }
+      });
+
+      if (node.operator === '=>') {
+        node.type = ARROW_EXP;
+        node.params = node.left ? [node.left] : null;
+        node.body = node.right;
+        if (node.params && node.params[0].type === SEQUENCE_EXP) {
+          node.params = node.params[0].expressions;
+        }
+        delete node.left;
+        delete node.right;
+        delete node.operator;
+      }
+    }
+  }
+
   var PERIOD_CODE = 46, // '.'
     COMMA_CODE = 44, // ','
     SQUOTE_CODE = 39, // single quote
@@ -884,7 +1013,8 @@ const ExpParser = function () {
       '*': 11,
       '/': 11,
       '%': 11,
-      '**': 12
+      '**': 12,
+      '=>': 0.1
     },
     // Get return the longest key length of any object
     _max_unop_len = _getMaxKeyLen(_unary_ops),
@@ -1000,5 +1130,9 @@ const NEW_EXP = 'NewExpression';
 const PROPERTY = 'Property';
 const TEMPLATE_LITERAL = 'TemplateLiteral';
 const TEMPLATE_ELEMENT = 'TemplateElement';
+const SEQUENCE_EXP = 'SequenceExpression';
+const ARROW_EXP = 'ArrowFunctionExpression';
+const RETURN_STATEMENT = 'ReturnStatement';
+const BLOCK_STATEMENT = 'BlockStatement';
 
-export { ARRAY_EXP, BINARY_EXP, CALL_EXP, COMPOUND, CONDITIONAL_EXP, ExpParser, FUNCTION_EXP, IDENTIFIER, LITERAL, LOGICAL_EXP, MEMBER_EXP, NEW_EXP, OBJECT_EXP, PROPERTY, TEMPLATE_ELEMENT, TEMPLATE_LITERAL, UNARY_EXP, getKeyValue };
+export { ARRAY_EXP, ARROW_EXP, BINARY_EXP, BLOCK_STATEMENT, CALL_EXP, COMPOUND, CONDITIONAL_EXP, ExpParser, FUNCTION_EXP, IDENTIFIER, LITERAL, LOGICAL_EXP, MEMBER_EXP, NEW_EXP, OBJECT_EXP, PROPERTY, RETURN_STATEMENT, TEMPLATE_ELEMENT, TEMPLATE_LITERAL, UNARY_EXP, getKeyValue };

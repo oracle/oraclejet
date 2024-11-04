@@ -6700,6 +6700,7 @@ HorizontalNavListHandler.prototype._getOverflowMenuButton = function () {
       .addClass(this.m_widget.getOverflowItemIconStyleClass());
     var iconLabel = this.m_widget.ojContext.getTranslatedString('overflowItemLabel');
     iconElement.attr('aria-label', iconLabel);
+    iconElement.attr('role', 'img');
 
     overflowMenuItem[0].key = overflowMenuItem.attr('id');
     this.m_root.find('.' + this.m_widget.GetStyleClass()).append(overflowMenuItem); // @HTMLUpdateOK constructed by component and not using string passed through any API

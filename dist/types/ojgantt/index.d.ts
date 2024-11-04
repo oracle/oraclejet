@@ -215,6 +215,7 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
         labelResizeBy?: string;
         labelRow?: string;
         labelStart?: string;
+        rowAxisLabel?: string;
         startFinishDependencyAriaDesc?: string;
         startStartDependencyAriaDesc?: string;
         stateCollapsed?: string;
@@ -929,6 +930,7 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
         labelResizeBy?: string;
         labelRow?: string;
         labelStart?: string;
+        rowAxisLabel?: string;
         startFinishDependencyAriaDesc?: string;
         startStartDependencyAriaDesc?: string;
         stateCollapsed?: string;

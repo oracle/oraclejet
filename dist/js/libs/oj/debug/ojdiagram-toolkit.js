@@ -439,7 +439,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         -Number.MAX_VALUE,
         -Number.MAX_VALUE
       );
-      var points = linkObj.getPoints();
+      var points = linkObj.getPoints() || linkObj.getCustomPoints();
       if (points) {
         if (DvtDiagramLinkUtils.IsPath(points)) {
           linkBounds = dvt.PathUtils.getDimensions(points);
@@ -2896,6 +2896,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      */
     getPoints() {
       return this._arPoints;
+    }
+
+    /**
+     * Gets the points used for rendering this custom link.  The array can contain
+     * coordinates, like [x1, y1, x2, y2, ..., xn, yn], or SVG path commands, like
+     * ["M", x1, y1, "L", x2, y2, ..., "L", xn, yn].
+     * @return {array} link points
+     */
+    getCustomPoints() {
+      return this._customPoints;
     }
 
     /**

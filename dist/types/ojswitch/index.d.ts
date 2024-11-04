@@ -12,6 +12,7 @@ export interface ojSwitch extends editableValue<boolean, ojSwitchSettablePropert
     };
     labelledBy: string | null;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     value: boolean;
     translations: {
         switchOff?: string;
@@ -48,6 +49,8 @@ export namespace ojSwitch {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = JetElementCustomEvent<ojSwitch["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged = JetElementCustomEvent<ojSwitch["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojSwitch["value"]>;
     //------------------------------------------------------------
     // Start: generated events for inherited properties
@@ -79,6 +82,7 @@ export interface ojSwitchEventMap extends editableValueEventMap<boolean, ojSwitc
     'displayOptionsChanged': JetElementCustomEvent<ojSwitch["displayOptions"]>;
     'labelledByChanged': JetElementCustomEvent<ojSwitch["labelledBy"]>;
     'readonlyChanged': JetElementCustomEvent<ojSwitch["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojSwitch["readonlyUserAssistanceShown"]>;
     'valueChanged': JetElementCustomEvent<ojSwitch["value"]>;
     'describedByChanged': JetElementCustomEvent<ojSwitch["describedBy"]>;
     'helpChanged': JetElementCustomEvent<ojSwitch["help"]>;
@@ -99,6 +103,7 @@ export interface ojSwitchSettableProperties extends editableValueSettablePropert
     };
     labelledBy: string | null;
     readonly: boolean;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     value: boolean;
     translations: {
         switchOff?: string;
@@ -132,6 +137,8 @@ export namespace SwitchElement {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = JetElementCustomEvent<ojSwitch["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged = JetElementCustomEvent<ojSwitch["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojSwitch["value"]>;
     //------------------------------------------------------------
     // Start: generated events for inherited properties
@@ -163,6 +170,7 @@ export interface SwitchIntrinsicProps extends Partial<Readonly<ojSwitchSettableP
     ondisplayOptionsChanged?: (value: ojSwitchEventMap['displayOptionsChanged']) => void;
     onlabelledByChanged?: (value: ojSwitchEventMap['labelledByChanged']) => void;
     onreadonlyChanged?: (value: ojSwitchEventMap['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojSwitchEventMap['readonlyUserAssistanceShownChanged']) => void;
     onvalueChanged?: (value: ojSwitchEventMap['valueChanged']) => void;
     ondescribedByChanged?: (value: ojSwitchEventMap['describedByChanged']) => void;
     onhelpChanged?: (value: ojSwitchEventMap['helpChanged']) => void;

@@ -121,15 +121,17 @@ DataCollectionUtils.disableElement = function (element) {
  * @param {Element} element
  * @param {boolean=} excludeActiveElement
  * @param {boolean=} includeReadonly
+ * @param {NodeList=} An array of the dialog elements
  * @return {Element[]} An array of the disabled elements
  * @private
  */
 DataCollectionUtils.disableAllFocusableElements = function (
   element,
   excludeActiveElement,
-  includeReadonly
+  includeReadonly,
+  dialogs
 ) {
-  return disableAllFocusableElements$1(element, excludeActiveElement, includeReadonly);
+  return disableAllFocusableElements$1(element, excludeActiveElement, includeReadonly, dialogs);
 };
 
 /**

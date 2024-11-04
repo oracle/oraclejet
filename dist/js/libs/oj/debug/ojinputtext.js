@@ -18,6 +18,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojeditablevalue', 'ojs/
         readonly: {
           binding: { consume: { name: 'readonly' } }
         },
+        readonlyUserAssistanceShown: {
+          binding: { consume: { name: 'readonlyUserAssistanceShown' } }
+        },
         userAssistanceDensity: {
           binding: { consume: { name: 'userAssistanceDensity' } }
         },
@@ -143,6 +146,14 @@ var __oj_input_password_metadata =
     "readonly": {
       "type": "boolean",
       "value": false
+    },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
     },
     "required": {
       "type": "boolean",
@@ -391,6 +402,14 @@ var __oj_input_text_metadata =
     "readonly": {
       "type": "boolean",
       "value": false
+    },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
     },
     "required": {
       "type": "boolean",
@@ -648,6 +667,14 @@ var __oj_text_area_metadata =
     "readonly": {
       "type": "boolean",
       "value": false
+    },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
     },
     "required": {
       "type": "boolean",
@@ -1290,6 +1317,21 @@ var __oj_text_area_metadata =
          * @memberof! oj.inputBase
          */
         readOnly: false,
+        /**
+         * Specifies which user assistance types should be shown when the component is readonly.
+         *
+         * @expose
+         * @access public
+         * @name readonlyUserAssistanceShown
+         * @instance
+         * @memberof! oj.inputBase
+         * @default 'none'
+         * @type {string}
+         * @ojvalue {string} 'none' no user assistance is shown when the component is readonly
+         * @ojvalue {string} 'confirmationAndInfoMessages' messagesCustom messages of severity 'confirmation' and 'info' are shown when the component is readonly. Other severities will be filtered out and an info log message will be logged to the console.
+         * @since 17.1.0
+         */
+        readonlyUserAssistanceShown: 'none',
         /**
          * <p>
          * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.

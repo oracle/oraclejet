@@ -2449,6 +2449,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
           dataLabelStyle: new dvt.CSSStyle(''),
           _dataLabelStyle: new dvt.CSSStyle(''),
           dataLabelPosition: 'auto',
+          dataLabelOutline: 'auto',
           funnelBackgroundColor: '#EDEDED',
           x1Format: {},
           y1Format: {},
@@ -3700,13 +3701,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       const supportsOutline = DvtChartStyleUtils.supportsLabelOutline(chart, seriesIndex);
       if (
         !supportsOutline &&
-        dataColor &&
-        (seriesType == 'bar' || DvtChartTypeUtils.isBubble(chart)) &&
-        (position == 'center' ||
-          position == 'inBottom' ||
-          position == 'inTop' ||
-          position == 'inRight' ||
-          position == 'inLeft')
+        ((dataColor &&
+          (seriesType == 'bar' || DvtChartTypeUtils.isBubble(chart)) &&
+          (position == 'center' ||
+            position == 'inBottom' ||
+            position == 'inTop' ||
+            position == 'inRight' ||
+            position == 'inLeft')) ||
+          (seriesType == 'area' &&
+            !DvtChartDataUtils.isRangeSeries(chart, seriesIndex) &&
+            position == 'bottom' &&
+            DvtChartTypeUtils.isVertical(chart)))
       ) {
         // issue identified by JET-56558, JET-59519, JET-59520 will be solved by JET-65212
         contrastingColor =
@@ -4436,12 +4441,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @return {boolean}
      */
     supportsLabelOutline: (chart, seriesIndex) => {
+      const dataLabelOutline = chart.getOptions().styleDefaults.dataLabelOutline;
       var seriesType = DvtChartDataUtils.getSeriesType(chart, seriesIndex);
       if (
-        seriesType === 'area' ||
-        seriesType === 'line' ||
-        seriesType === 'lineWithArea' ||
-        DvtChartTypeUtils.isScatterBubble(chart)
+        dataLabelOutline === 'auto' &&
+        (seriesType === 'area' ||
+          seriesType === 'line' ||
+          seriesType === 'lineWithArea' ||
+          DvtChartTypeUtils.isScatterBubble(chart))
       ) {
         return true;
       }
@@ -18041,6 +18048,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       if (this._dataCursorHandler) {
         relPos = this._component.stageToLocal(relPos);
         this._dataCursorHandler.processMove(relPos);
+
+        if (!event.relatedTarget) {
+          this._dataCursorHandler.processEnd();
+        }
       }
 
       var obj = this.GetLogicalObject(event.target);

@@ -28,6 +28,7 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
     placeholder: string | null;
     readonly rawValue: string;
     readonly: boolean | null;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     step: number | null;
     readonly transientValue: number | null;
@@ -109,6 +110,8 @@ export namespace ojInputNumber {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = JetElementCustomEvent<ojInputNumber["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged = JetElementCustomEvent<ojInputNumber["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged = JetElementCustomEvent<ojInputNumber["required"]>;
     // tslint:disable-next-line interface-over-type-literal
     type stepChanged = JetElementCustomEvent<ojInputNumber["step"]>;
@@ -159,6 +162,7 @@ export interface ojInputNumberEventMap extends editableValueEventMap<number | nu
     'placeholderChanged': JetElementCustomEvent<ojInputNumber["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<ojInputNumber["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<ojInputNumber["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojInputNumber["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojInputNumber["required"]>;
     'stepChanged': JetElementCustomEvent<ojInputNumber["step"]>;
     'transientValueChanged': JetElementCustomEvent<ojInputNumber["transientValue"]>;
@@ -192,6 +196,7 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
     placeholder: string | null;
     readonly rawValue: string;
     readonly: boolean | null;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     step: number | null;
     readonly transientValue: number | null;
@@ -266,6 +271,8 @@ export namespace InputNumberElement {
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = JetElementCustomEvent<ojInputNumber["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged = JetElementCustomEvent<ojInputNumber["readonlyUserAssistanceShown"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type requiredChanged = JetElementCustomEvent<ojInputNumber["required"]>;
     // tslint:disable-next-line interface-over-type-literal
     type stepChanged = JetElementCustomEvent<ojInputNumber["step"]>;
@@ -316,6 +323,7 @@ export interface InputNumberIntrinsicProps extends Partial<Readonly<ojInputNumbe
     onplaceholderChanged?: (value: ojInputNumberEventMap['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojInputNumberEventMap['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojInputNumberEventMap['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojInputNumberEventMap['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojInputNumberEventMap['requiredChanged']) => void;
     onstepChanged?: (value: ojInputNumberEventMap['stepChanged']) => void;
     ontransientValueChanged?: (value: ojInputNumberEventMap['transientValueChanged']) => void;

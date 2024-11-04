@@ -17,10 +17,14 @@ export declare function isAliasToMappedType(type: ts.Type, typeNode: ts.TypeNode
 export declare function getWrappedReadonlyType(type: ts.Type, typeNode: ts.TypeNode, componentName: string, checker: ts.TypeChecker): ts.Type | null;
 export declare function constructMappedTypeName(mappedTypesInfo: MetaTypes.MappedTypesInfo, wrappedTypeGenerics?: string): string;
 export declare function isMappedType(type: ts.Type): boolean;
+export declare function isRecordType(type: ts.Type): boolean;
+export declare function isFunctionType(type: ts.Type, checker: ts.TypeChecker): boolean;
 export declare function isConditionalType(type: ts.Type): boolean;
 export declare function isObjectType(type: ts.Type): boolean;
 export declare function isTypeTreatedAsAny(type: ts.Type): boolean;
+export declare function isIndexedAccessTypeParameters(type: ts.Type): boolean;
 export declare const _UNION_SPLITTER: RegExp;
+export declare const _INTERSECTION_SPLITTER: RegExp;
 export declare function isConditionalTypeNodeDetected(typeNode: ts.TypeNode, seen: Set<string>, metaUtilObj: MetaTypes.MetaUtilObj): boolean;
 export declare function walkTypeMembers(type: ts.Type, metaUtilObj: MetaTypes.MetaUtilObj, callback: (memberSymbol: ts.Symbol, memberKey: ts.__String, mappedTypeSymbol?: ts.Symbol) => void): void;
 export declare function walkTypeNodeMembers(typeNode: ts.TypeNode, metaUtilObj: MetaTypes.MetaUtilObj, callback: (memberSymbol: ts.Symbol, memberKey: ts.__String, mappedTypeSymbol?: ts.Symbol) => void): void;
@@ -37,4 +41,6 @@ export declare function getValueNodeFromPropertyAccessExpression(propAccessNode:
 export declare function getMDValueFromNode(valueNode: ts.Node, prop: string, metaUtilObj?: MetaTypes.MetaUtilObj, topLvlProp?: string): any;
 export declare function generateStatementsFromText(text: string, offset?: number): ts.Statement[];
 export declare function removeQuotes(str: any): any;
-export declare function createTypeDefinitionFromTypeRefs(typeRefs: ts.TypeReferenceNode[], metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.TypedefObj[];
+export declare function createTypeDefinitionFromTypeRefs(typeRefs: ts.TypeReferenceNode[], metaUtilObj: MetaTypes.MetaUtilObj, seenTypeDefs?: Set<string> | null): MetaTypes.TypedefObj[];
+export declare function findTypeDefByName(typeDef: MetaTypes.TypedefObj, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.TypedefObj;
+export declare function printInColor(color: any, text: any, metaUtilObj: MetaTypes.MetaUtilObj, indent: any): void;

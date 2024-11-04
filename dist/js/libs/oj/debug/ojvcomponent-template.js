@@ -88,6 +88,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
     const COMPONENT_ELEMENT = Symbol();
     const UNWRAP_EXTRAS = Symbol();
     const BINDING_CONTEXT = Symbol();
+    const PREVIOUS_DOT_PROPS_VALUES = Symbol();
     const _DEFAULT_UNWRAP = function (target) {
         return target;
     };
@@ -474,7 +475,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                     if (pName === ojbindpropagation.CONSUMED_CONTEXT) {
                         consumingProps.push({
                             type: ojexpparser.PROPERTY,
-                            key: { type: ojexpparser.LITERAL, value: '__oj_private_contexts' },
+                            key: { type: ojexpparser.LITERAL, value: '__oj_provided_contexts' },
                             value: this._createCallNodeWithContext(($ctx) => {
                                 const providedValues = new Map();
                                 const provided = unwrap($ctx)?.[_PROVIDED_KEY];
@@ -782,9 +783,27 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
         }
         static _nestedPropsRefCallback(bindingProvider, resolvedSubPropValues, refObj) {
             if (refObj && refObj.setProperties) {
-                const updatedProps = Object.assign({}, ...resolvedSubPropValues);
-                refObj.setProperties(updatedProps);
+                const oldValues = VTemplateEngine._getPreviousNestedPropValues(refObj);
+                const modifiedSubPropValues = resolvedSubPropValues.filter((record) => {
+                    const propPath = Object.keys(record)[0];
+                    const value = record[propPath];
+                    return oldValues?.[propPath] !== value;
+                });
+                const newValues = Object.assign({}, ...modifiedSubPropValues);
+                VTemplateEngine._setUpdatedNestedPropValues(refObj, newValues);
+                refObj.setProperties(newValues);
             }
+        }
+        static _getPreviousNestedPropValues(refObj) {
+            return refObj[PREVIOUS_DOT_PROPS_VALUES];
+        }
+        static _setUpdatedNestedPropValues(refObj, newValues) {
+            let map = refObj[PREVIOUS_DOT_PROPS_VALUES];
+            if (!map) {
+                map = {};
+                refObj[PREVIOUS_DOT_PROPS_VALUES] = map;
+            }
+            Object.assign(map, newValues);
         }
         _createWritebackPropertyNode(engineContext, property, eventPropName, valuesArray, existingCallbackExpr) {
             const propExprEvaluators = [];

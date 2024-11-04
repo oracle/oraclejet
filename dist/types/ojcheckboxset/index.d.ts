@@ -16,6 +16,7 @@ export interface ojCheckboxset<K, D, V = any> extends editableValue<V[], ojCheck
     options: DataProvider<K, D> | null;
     optionsKeys?: ojCheckboxset.OptionsKeys;
     readonly: boolean | null;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     value: V[] | null;
     translations: {
@@ -65,6 +66,8 @@ export namespace ojCheckboxset {
     type optionsKeysChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["optionsKeys"]>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["readonlyUserAssistanceShown"]>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -116,6 +119,7 @@ export interface ojCheckboxsetEventMap<K, D, V = any> extends editableValueEvent
     'optionsChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["options"]>;
     'optionsKeysChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["optionsKeys"]>;
     'readonlyChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["readonly"]>;
+    'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["readonlyUserAssistanceShown"]>;
     'requiredChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["required"]>;
     'valueChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["value"]>;
     'describedByChanged': JetElementCustomEvent<ojCheckboxset<K, D, V>["describedBy"]>;
@@ -140,6 +144,7 @@ export interface ojCheckboxsetSettableProperties<K, D, V> extends editableValueS
     options: DataProvider<K, D> | null;
     optionsKeys?: ojCheckboxset.OptionsKeys;
     readonly: boolean | null;
+    readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     required: boolean;
     value: V[] | null;
     translations: {
@@ -183,6 +188,8 @@ export namespace CheckboxsetElement {
     type optionsKeysChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["optionsKeys"]>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyUserAssistanceShownChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["readonlyUserAssistanceShown"]>;
     // tslint:disable-next-line interface-over-type-literal
     type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -234,6 +241,7 @@ export interface CheckboxsetIntrinsicProps extends Partial<Readonly<ojCheckboxse
     onoptionsChanged?: (value: ojCheckboxsetEventMap<any, any, any>['optionsChanged']) => void;
     onoptionsKeysChanged?: (value: ojCheckboxsetEventMap<any, any, any>['optionsKeysChanged']) => void;
     onreadonlyChanged?: (value: ojCheckboxsetEventMap<any, any, any>['readonlyChanged']) => void;
+    onreadonlyUserAssistanceShownChanged?: (value: ojCheckboxsetEventMap<any, any, any>['readonlyUserAssistanceShownChanged']) => void;
     onrequiredChanged?: (value: ojCheckboxsetEventMap<any, any, any>['requiredChanged']) => void;
     onvalueChanged?: (value: ojCheckboxsetEventMap<any, any, any>['valueChanged']) => void;
     ondescribedByChanged?: (value: ojCheckboxsetEventMap<any, any, any>['describedByChanged']) => void;

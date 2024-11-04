@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isFunctionInfo = exports.isClassInfo = exports.VCompImportMaps = exports.IMAP = exports.VCompPack = exports.VCompType = exports.GTExtras = exports.MDScope = exports.MDContext = exports.DEPENDENCIES_TOKEN = exports.CONTENTS_TOKEN = exports.DEFAULT_SLOT_PROP = exports.SLOT_TYPE = void 0;
+exports.Color = exports.isFunctionInfo = exports.isClassInfo = exports.VCompImportMaps = exports.IMAP = exports.VCompPack = exports.KPType = exports.VCompType = exports.GTExtras = exports.MDScope = exports.MDContext = exports.DEPENDENCIES_TOKEN = exports.CONTENTS_TOKEN = exports.DEFAULT_SLOT_PROP = exports.SLOT_TYPE = void 0;
 const ts = __importStar(require("typescript"));
 exports.SLOT_TYPE = 'Slot';
 exports.DEFAULT_SLOT_PROP = 'children';
@@ -42,7 +42,8 @@ var MDContext;
     MDContext[MDContext["SLOT_DATA"] = 256] = "SLOT_DATA";
     MDContext[MDContext["METHOD_PARAM"] = 512] = "METHOD_PARAM";
     MDContext[MDContext["METHOD_RETURN"] = 1024] = "METHOD_RETURN";
-    MDContext[MDContext["EXT_ITEMPROPS"] = 2048] = "EXT_ITEMPROPS";
+    MDContext[MDContext["EXTENSION_MD"] = 2048] = "EXTENSION_MD";
+    MDContext[MDContext["KEYPROPS_KEYS"] = 4096] = "KEYPROPS_KEYS";
 })(MDContext || (exports.MDContext = MDContext = {}));
 var MDScope;
 (function (MDScope) {
@@ -60,6 +61,13 @@ var VCompType;
     VCompType[VCompType["FUNCTION"] = 0] = "FUNCTION";
     VCompType[VCompType["CLASS"] = 1] = "CLASS";
 })(VCompType || (exports.VCompType = VCompType = {}));
+var KPType;
+(function (KPType) {
+    KPType[KPType["NONE"] = 0] = "NONE";
+    KPType[KPType["INDEXED"] = 1] = "INDEXED";
+    KPType[KPType["MAP"] = 2] = "MAP";
+    KPType[KPType["SET"] = 3] = "SET";
+})(KPType || (exports.KPType = KPType = {}));
 class VCompPack {
     constructor(packObj) {
         this._packObject = packObj;
@@ -175,4 +183,29 @@ function isFunctionInfo(info) {
     return info.componentNode !== undefined;
 }
 exports.isFunctionInfo = isFunctionInfo;
+exports.Color = {
+    Reset: '\x1b[0m',
+    Bright: '\x1b[1m',
+    Dim: '\x1b[2m',
+    Underscore: '\x1b[4m',
+    Blink: '\x1b[5m',
+    Reverse: '\x1b[7m',
+    Hidden: '\x1b[8m',
+    FgBlack: '\x1b[30m',
+    FgRed: '\x1b[31m',
+    FgGreen: '\x1b[32m',
+    FgYellow: '\x1b[33m',
+    FgBlue: '\x1b[34m',
+    FgMagenta: '\x1b[35m',
+    FgCyan: '\x1b[36m',
+    FgWhite: '\x1b[37m',
+    BgBlack: '\x1b[40m',
+    BgRed: '\x1b[41m',
+    BgGreen: '\x1b[42m',
+    BgYellow: '\x1b[43m',
+    BgBlue: '\x1b[44m',
+    BgMagenta: '\x1b[45m',
+    BgCyan: '\x1b[46m',
+    BgWhite: '\x1b[47m'
+};
 //# sourceMappingURL=MetadataTypes.js.map

@@ -1057,7 +1057,7 @@ DataProviderHandler.prototype._getDataProviderEventHandler = function (dataPrope
  * @memberof oj.dvtBaseComponent
  */
 DataProviderHandler.prototype._addDPEventListeners = function (dataProvider, dataProperty) {
-  if (this._dataProviderEventListeners[dataProperty]) {
+  if (this._dataProviderEventListeners[dataProperty] === dataProvider) {
     return;
   }
 

@@ -961,6 +961,7 @@ export namespace ojChart {
         dataCursor?: DataCursorDefaults;
         dataItemGaps?: string;
         dataLabelCollision?: 'fitInBounds' | 'none';
+        dataLabelOutline?: 'auto' | 'off';
         dataLabelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
         dataLabelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
         funnelBackgroundColor?: string;
@@ -2956,6 +2957,7 @@ export namespace ChartElement {
         dataCursor?: ojChart.DataCursorDefaults;
         dataItemGaps?: string;
         dataLabelCollision?: 'fitInBounds' | 'none';
+        dataLabelOutline?: 'auto' | 'off';
         dataLabelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
         dataLabelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
         funnelBackgroundColor?: string;

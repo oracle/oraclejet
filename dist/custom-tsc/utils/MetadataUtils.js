@@ -23,10 +23,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createTypeDefinitionFromTypeRefs = exports.removeQuotes = exports.generateStatementsFromText = exports.getMDValueFromNode = exports.getValueNodeFromPropertyAccessExpression = exports.getValueNodeFromIdentifier = exports.getValueNodeFromReference = exports.isValueNodeReference = exports.removeCastExpressions = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._UNION_SPLITTER = exports.isTypeTreatedAsAny = exports.isObjectType = exports.isConditionalType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.isMappedTypeReference = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.updateFunctionalVCompNode = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.writebackCallbackToProperty = exports.tagNameToElementRoot = exports.tagNameToElementInterfaceName = void 0;
+exports.printInColor = exports.findTypeDefByName = exports.createTypeDefinitionFromTypeRefs = exports.removeQuotes = exports.generateStatementsFromText = exports.getMDValueFromNode = exports.getValueNodeFromPropertyAccessExpression = exports.getValueNodeFromIdentifier = exports.getValueNodeFromReference = exports.isValueNodeReference = exports.removeCastExpressions = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._INTERSECTION_SPLITTER = exports._UNION_SPLITTER = exports.isIndexedAccessTypeParameters = exports.isTypeTreatedAsAny = exports.isObjectType = exports.isConditionalType = exports.isFunctionType = exports.isRecordType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.isMappedTypeReference = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.updateFunctionalVCompNode = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.writebackCallbackToProperty = exports.tagNameToElementRoot = exports.tagNameToElementInterfaceName = void 0;
 const ts = __importStar(require("typescript"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
+const MetadataTypes_1 = require("./MetadataTypes");
 const MetaValid = __importStar(require("./MetadataValidationUtils"));
 const TypeUtils = __importStar(require("./MetadataTypeUtils"));
 const TransformerError_1 = require("./TransformerError");
@@ -122,7 +123,7 @@ function getDtMetadata(objWithJsDoc, context, propertyPath, metaUtilObj) {
                     if (!(context & MetaTypes.MDContext.PROP)) {
                         continue;
                     }
-                    else if (!(context & (MetaTypes.MDContext.PROP_RO_WRITEBACK | MetaTypes.MDContext.EXT_ITEMPROPS))) {
+                    else if (!(context & (MetaTypes.MDContext.PROP_RO_WRITEBACK | MetaTypes.MDContext.EXTENSION_MD))) {
                         TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.IGNORED_OJMETADATA_VALUE, TransformerError_1.ExceptionType.LOG_WARNING, metaUtilObj.componentName, `${_generateDefaultValueWarning(metaUtilObj.componentInfo, propertyPath)}`, tag);
                         continue;
                     }
@@ -650,6 +651,33 @@ function isMappedType(type) {
     return decl && ts.isMappedTypeNode(decl);
 }
 exports.isMappedType = isMappedType;
+function isRecordType(type) {
+    let bRetVal = false;
+    if (isMappedType(type)) {
+        let objAlias = type.aliasSymbol;
+        if (objAlias) {
+            if (objAlias.getName() === 'Record') {
+                bRetVal = true;
+            }
+            else {
+                const aliasDecl = objAlias.declarations?.[0];
+                if (aliasDecl &&
+                    ts.isTypeAliasDeclaration(aliasDecl) &&
+                    ts.isTypeReferenceNode(aliasDecl.type) &&
+                    aliasDecl.type.typeName.getText() === 'Record') {
+                    bRetVal = true;
+                }
+            }
+        }
+    }
+    return bRetVal;
+}
+exports.isRecordType = isRecordType;
+function isFunctionType(type, checker) {
+    const callSignatures = type.getCallSignatures();
+    return callSignatures.length > 0;
+}
+exports.isFunctionType = isFunctionType;
 function isConditionalType(type) {
     return !!(type['flags'] & ts.TypeFlags.Conditional);
 }
@@ -662,7 +690,22 @@ function isTypeTreatedAsAny(type) {
     return !!(type['flags'] & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
 }
 exports.isTypeTreatedAsAny = isTypeTreatedAsAny;
+function isIndexedAccessTypeParameters(type) {
+    let isDetected = false;
+    if (type['flags'] & ts.TypeFlags.IndexedAccess) {
+        const objType = type.objectType;
+        const idxType = type.indexType['type'];
+        isDetected =
+            objType &&
+                !!(objType['flags'] & ts.TypeFlags.TypeParameter) &&
+                idxType &&
+                !!(idxType['flags'] & ts.TypeFlags.TypeParameter);
+    }
+    return isDetected;
+}
+exports.isIndexedAccessTypeParameters = isIndexedAccessTypeParameters;
 exports._UNION_SPLITTER = /\s*\|\s*/;
+exports._INTERSECTION_SPLITTER = /\s*\&\s*/;
 function isConditionalTypeNodeDetected(typeNode, seen, metaUtilObj) {
     let foundIt = false;
     if (ts.isConditionalTypeNode(typeNode)) {
@@ -951,6 +994,8 @@ function pruneMetadata(metadata) {
     if (metadata && typeof metadata == 'object') {
         delete metadata['reftype'];
         delete metadata['isApiDocSignature'];
+        delete metadata['typeDefs'];
+        delete metadata['rawType'];
         delete metadata['optional'];
         delete metadata['isArrayOfObject'];
         delete metadata['isEnumValuesForDTOnly'];
@@ -1146,70 +1191,121 @@ function removeQuotes(str) {
     return str;
 }
 exports.removeQuotes = removeQuotes;
-function createTypeDefinitionFromTypeRefs(typeRefs, metaUtilObj) {
+function createTypeDefinitionFromTypeRefs(typeRefs, metaUtilObj, seenTypeDefs) {
     let retObj = [];
     typeRefs.forEach((node) => {
-        let typeDefDetails = getTypeDefDetails(node, metaUtilObj);
-        if (typeDefDetails.name) {
+        let typeDefDetails = getTypeDefDetails(node, metaUtilObj, seenTypeDefs);
+        if (typeDefDetails && typeDefDetails.name) {
             retObj.push(typeDefDetails);
+            if (!findTypeDefByName(typeDefDetails, metaUtilObj) &&
+                ((typeDefDetails.properties && Object.keys(typeDefDetails.properties).length > 0) ||
+                    typeDefDetails.coreJetModule)) {
+                metaUtilObj.typeDefinitions.push(typeDefDetails);
+            }
         }
     });
     return retObj;
 }
 exports.createTypeDefinitionFromTypeRefs = createTypeDefinitionFromTypeRefs;
-function getTypeDefDetails(typeRefNode, metaUtilObj) {
+function findTypeDefByName(typeDef, metaUtilObj) {
+    metaUtilObj.typeDefinitions = metaUtilObj.typeDefinitions || [];
+    return metaUtilObj.typeDefinitions.find((td) => {
+        if (typeDef.coreJetModule) {
+            return td.name === typeDef.name && td.coreJetModule;
+        }
+        else {
+            return td.name === typeDef.name;
+        }
+    });
+}
+exports.findTypeDefByName = findTypeDefByName;
+function getTypeDefDetails(typeRefNode, metaUtilObj, seenTypeDefs) {
     let md;
     let details;
-    if (ts.isTypeReferenceNode(typeRefNode)) {
-        const typedefType = metaUtilObj.typeChecker.getTypeAtLocation(typeRefNode);
-        md = TypeUtils.getTypeDefMetadata(typedefType, metaUtilObj, typedefType);
-        if (md.name) {
+    const typeRefType = metaUtilObj.typeChecker.getTypeAtLocation(typeRefNode);
+    if (typeRefType && metaUtilObj.typeChecker.getPropertiesOfType(typeRefType)?.length > 0) {
+        md = TypeUtils.getTypeDefMetadata(typeRefType, metaUtilObj);
+        if (md.name && !findTypeDefByName(md, metaUtilObj) && !md.coreJetModule) {
             let detailName = md.name;
-            walkTypeNodeMembers(typeRefNode, metaUtilObj, (symbol, key, mappedTypeSymbol) => {
-                const propSignature = symbol.valueDeclaration;
-                if (!propSignature) {
-                    return;
-                }
-                if (ts.isPropertySignature(propSignature) || ts.isPropertyDeclaration(propSignature)) {
-                    const property = key.toString();
-                    const propertyPath = [property];
-                    const typeDefMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MDScope.DT, MetaTypes.MDContext.TYPEDEF, propertyPath, symbol, metaUtilObj);
-                    const propSym = mappedTypeSymbol ?? symbol;
-                    typeDefMetadata['optional'] = propSym.flags & ts.SymbolFlags.Optional ? true : false;
-                    details = details || {};
-                    details[property] = typeDefMetadata;
-                    let nestedArrayStack = [];
-                    if (typeDefMetadata.type === 'Array<object>') {
-                        nestedArrayStack.push(key);
+            seenTypeDefs = seenTypeDefs ?? new Set();
+            if (!seenTypeDefs.has(detailName)) {
+                seenTypeDefs.add(detailName);
+                printInColor(MetadataTypes_1.Color.FgCyan, `getTypeDefDetails:: push ${detailName} to the stack and walk it's members.`, metaUtilObj, 2);
+                printStack(seenTypeDefs, metaUtilObj);
+                walkTypeNodeMembers(typeRefNode, metaUtilObj, (symbol, key, mappedTypeSymbol) => {
+                    const propSignature = symbol.valueDeclaration;
+                    if (!propSignature) {
+                        return;
                     }
-                    const subprops = TypeUtils.getComplexPropertyMetadata(symbol, typeDefMetadata.type, detailName, MetaTypes.MDScope.DT, MetaTypes.MDContext.PROP, propertyPath, nestedArrayStack, metaUtilObj);
-                    if (subprops) {
-                        if (subprops.circRefDetected) {
-                            details[property].type =
-                                TypeUtils.getSubstituteTypeForCircularReference(typeDefMetadata);
+                    if (ts.isPropertySignature(propSignature) ||
+                        ts.isPropertyDeclaration(propSignature) ||
+                        ts.isMethodSignature(propSignature) ||
+                        ts.isMethodDeclaration(propSignature)) {
+                        const property = key.toString();
+                        const propertyPath = [property];
+                        const typeDefMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MDScope.DT, MetaTypes.MDContext.TYPEDEF, propertyPath, symbol, metaUtilObj);
+                        const propSym = mappedTypeSymbol ?? symbol;
+                        typeDefMetadata['optional'] = propSym.flags & ts.SymbolFlags.Optional ? true : false;
+                        details = details || {};
+                        details[property] = typeDefMetadata;
+                        if (typeDefMetadata['rawType'] && seenTypeDefs.has(typeDefMetadata['rawType'])) {
+                            printInColor(MetadataTypes_1.Color.FgYellow, `getTypeDefDetails:: Circular reference detected for type:  ${typeDefMetadata['rawType']}.`, metaUtilObj, 2);
+                            delete details[property]['typeDefs'];
+                            delete details[property]['rawType'];
+                            return;
                         }
-                        else if (typeDefMetadata.type === 'Array<object>') {
-                            details[property].extension = {};
-                            details[property].extension['vbdt'] = {};
-                            details[property].extension['vbdt'].itemProperties = subprops;
+                        let nestedArrayStack = [];
+                        if (typeDefMetadata.type === 'Array<object>') {
+                            nestedArrayStack.push(key);
                         }
-                        else {
-                            details[property].type = 'object';
-                            details[property].properties = subprops;
-                        }
-                        const typeDef = TypeUtils.getPossibleTypeDef(property, symbol, typeDefMetadata, metaUtilObj);
-                        if (typeDef && (typeDef.name || typeDef.coreJetModule)) {
-                            details[property]['jsdoc'] = details[property]['jsdoc'] || {};
-                            details[property]['jsdoc']['typedef'] = typeDef;
-                        }
+                        const complexMD = TypeUtils.getComplexPropertyMetadata(symbol, typeDefMetadata, detailName, MetaTypes.MDScope.DT, MetaTypes.MDContext.PROP | MetaTypes.MDContext.TYPEDEF, propertyPath, nestedArrayStack, metaUtilObj, seenTypeDefs);
+                        TypeUtils.processComplexPropertyMetadata(property, typeDefMetadata, complexMD, details[property]);
                     }
-                }
-            });
+                    else {
+                        printInColor(MetadataTypes_1.Color.FgYellow, `getTypeDefDetails:: ${key.toString()} is not a supported declaration`, metaUtilObj, 2);
+                    }
+                });
+                seenTypeDefs.delete(detailName);
+                printInColor(MetadataTypes_1.Color.FgCyan, `getTypeDefDetails:: Pop type:  ${md.name} from stack.`, metaUtilObj, 2);
+                printStack(seenTypeDefs, metaUtilObj);
+            }
+            else {
+                printInColor(MetadataTypes_1.Color.FgYellow, `getTypeDefDetails:: Circular reference detected for type:  ${md.name}.`, metaUtilObj, 2);
+                return md;
+            }
         }
     }
-    md.properties = details;
+    if (md) {
+        if (details) {
+            md.properties = details;
+            printInColor(MetadataTypes_1.Color.FgCyan, `getTypeDefDetails:: created TypeDef for ${md.name}.`, metaUtilObj, 2);
+        }
+        else if (md.name) {
+            printInColor(MetadataTypes_1.Color.FgCyan, `getTypeDefDetails:: TypeDef for ${md.name} was already created, skip.`, metaUtilObj, 2);
+            if (md.coreJetModule) {
+                printInColor(MetadataTypes_1.Color.FgCyan, `getTypeDefDetails:: TypeDef is a core Jet type.`, metaUtilObj, 3);
+            }
+        }
+        else {
+            printInColor(MetadataTypes_1.Color.FgYellow, `getTypeDefDetails:: Cannot create TypeDef for this type reference. Reason: no discoverable name.`, metaUtilObj, 2);
+        }
+    }
+    else {
+        printInColor(MetadataTypes_1.Color.FgYellow, `getTypeDefDetails:: Cannot create TypeDef for this type reference. Reason: no metadata.`, metaUtilObj, 2);
+    }
     return md;
 }
+function printStack(stackSet, metaUtilObj) {
+    let stack = [];
+    stackSet.forEach((v) => stack.push(v));
+    printInColor(MetadataTypes_1.Color.BgGreen, `getTypeDefDetails:: Stack is: ${stack.length == 0 ? 'empty' : stack.join('->')}`, metaUtilObj, 2);
+}
+function printInColor(color, text, metaUtilObj, indent) {
+    if (metaUtilObj.debugMode) {
+        console.log(color + ' '.repeat(indent) + '%s' + MetadataTypes_1.Color.Reset, text);
+    }
+}
+exports.printInColor = printInColor;
 function _offsetTextRange(tr, offset) {
     return { pos: tr.pos + offset, end: tr.end + offset };
 }

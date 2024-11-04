@@ -3284,11 +3284,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         if (windowWidth - delta <= this.getMinimumWindowWidth()) return;
 
         // make sure position of left handle is not less than minimum (delta is negative when moving handle to the left)
-        if (windowPos + delta <= this.getMinimumPositionX()) return;
+        if (windowPos + delta < this.getMinimumPositionX()) {
+          delta = this.getMinimumPositionX() - windowPos;
+        }
 
         // window should only resize when the cursor is back to where the handle is
-        var relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).x;
-        relPos = this.stageToLocal(relPos);
+        var relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event));
+        relPos = this.stageToLocal(relPos).x;
 
         if ((delta > 0 && relPos <= windowPos) || (delta < 0 && relPos >= windowPos)) return;
 
@@ -3299,11 +3301,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         if (windowWidth + delta <= this.getMinimumWindowWidth()) return;
 
         // make sure position of right handle is not less than minimum
-        if (windowPos + windowWidth + delta >= this.getMaximumPositionX()) return;
+        if (windowPos + windowWidth + delta >= this.getMaximumPositionX()) {
+          delta = this.getMaximumPositionX() - windowPos - windowWidth;
+        }
 
         // window should only resize when the cursor is back to where the handle is
-        relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).x;
-        relPos = this.stageToLocal(relPos);
+        relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event));
+        relPos = this.stageToLocal(relPos).x;
 
         if (
           (delta > 0 && relPos <= windowPos + windowWidth) ||

@@ -341,7 +341,7 @@
 }
 
 .oj-theme-json {
-  font-family: '{"name":"stable","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v17.0.0"}' !important;
+  font-family: '{"name":"stable","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v17.1.0"}' !important;
 }
 
 .oj-helper-hidden-accessible {
@@ -10697,6 +10697,13 @@ oj-chart {
 }
 
 .oj-color-invert {
+  --oj-private-text-field-button-icon-color: var(--oj-private-icon-color-default);
+  --oj-private-text-field-button-icon-color-hover: var(--oj-private-icon-color-hover);
+  --oj-private-text-field-button-icon-color-active: var(--oj-private-icon-color-active);
+  --oj-private-text-field-button-icon-color-disabled: var(--oj-private-icon-color-disabled);
+}
+
+.oj-color-invert {
   color: var(--oj-core-text-color-primary);
 }
 
@@ -11540,7 +11547,7 @@ html[dir="rtl"] .oj-label-inline .oj-label-help-icon-anchor {
   color: var(--oj-label-required-icon-color);
   font-size: var(--oj-label-required-char-font-size);
   font-weight: normal;
-  line-height: 0.5rem;
+  line-height: 1;
   font-family: inherit;
 }
 
@@ -12229,10 +12236,14 @@ html[dir="rtl"] .oj-form-control:has(.oj-buttonset) .oj-text-field-input, html[d
   color: var(--oj-private-icon-color-disabled);
 }
 
-.oj-text-field-container .oj-button-icon,
-.oj-text-field-container .oj-component-icon,
-.oj-text-field-container .oj-menucheckbox-icon,
-.oj-text-field-container .oj-text-field-start-end-icon {
+.oj-text-field-end .oj-button-icon,
+.oj-text-field-end .oj-component-icon,
+.oj-text-field-end .oj-menucheckbox-icon,
+.oj-text-field-end .oj-text-field-start-end-icon,
+.oj-text-field-start .oj-button-icon,
+.oj-text-field-start .oj-component-icon,
+.oj-text-field-start .oj-menucheckbox-icon,
+.oj-text-field-start .oj-text-field-start-end-icon {
   font-size: var(--oj-private-text-field-icon-size);
 }
 
@@ -16509,6 +16520,11 @@ oj-calendar:not(.oj-complete) {
   line-height: inherit;
 }
 
+.oj-inputdatetime-calendar-clock-icon,
+.oj-inputdatetime-calendar-icon {
+  font-size: var(--oj-private-text-field-icon-size);
+}
+
 .oj-inputdatetime-calendar-clock-icon.oj-disabled,
 .oj-inputdatetime-calendar-icon.oj-disabled,
 .oj-inputdatetime-time-icon.oj-disabled {
@@ -16540,6 +16556,10 @@ a.oj-inputdatetime-clear-icon-btn:active {
 .oj-datepicker-popup {
   min-width: 17.5rem;
   min-height: 21.5rem;
+}
+
+.oj-datepicker-sheet {
+  overflow-y: auto;
 }
 
 .oj-datepicker-popup.oj-popup {
@@ -19865,6 +19885,10 @@ html[dir="rtl"] .oj-text-field-label-inside.oj-inputnumber .oj-buttonset {
   border-color: var(--oj-private-text-field-button-border-color-hover);
 }
 
+.oj-inputnumber-button .oj-component-icon, .oj-inputnumber-button .oj-menucheckbox-icon {
+  font-size: var(--oj-private-text-field-icon-size);
+}
+
 oj-input-text:not(.oj-complete) {
   visibility: hidden;
 }
@@ -19881,6 +19905,7 @@ oj-input-password:not(.oj-complete) {
   width: 1.5625rem;
   text-decoration: none;
   cursor: var(--oj-core-cursor-clickable);
+  font-size: var(--oj-private-text-field-icon-size);
 }
 
 a.oj-inputtext-clear-icon-btn:active {
@@ -20111,6 +20136,10 @@ html:not([dir="rtl"]) .oj-input-search-hero.oj-text-field .oj-text-field-start .
 html[dir="rtl"] .oj-input-search-hero.oj-text-field .oj-text-field-start .oj-text-field-start-end-icon {
   margin-right: var(--oj-text-field-icon-to-edge-padding);
   margin-left: var(--oj-text-field-icon-to-text-padding);
+}
+
+.oj-input-search-hero .oj-text-field-start .oj-component-icon, .oj-input-search-hero .oj-text-field-start .oj-menucheckbox-icon {
+  font-size: var(--oj-core-icon-size-lg);
 }
 
 /* hero styling */
@@ -21377,6 +21406,14 @@ oj-n-box {
 
 .oj-nbox-node-initials-bg-color {
   fill: var(--oj-avatar-bg-color);
+}
+
+.oj-nbox-node-cut {
+  opacity: 0.4;
+}
+
+.oj-nbox-node-drag-source {
+  opacity: 0.4;
 }
 
 .oj-nbox-dialog {
@@ -23946,10 +23983,12 @@ html:not([dir="rtl"]) .oj-searchselect.oj-form-control-text-align-right .oj-sear
 }
 
 /*
-     * On desktop, hide the dropdown arrow in the main field when the component has focus
-     * (when the filter field is shown)
+     * On desktop, hide the main field when the filter field is shown (when the component
+     * has focus) and vice versa
      */
-.oj-searchselect.oj-focus:not(.oj-searchselect-mobile) .oj-searchselect-main-field .oj-searchselect-arrow {
+.oj-searchselect.oj-searchselect-filter-shown:not(.oj-searchselect-mobile) .oj-searchselect-main-field .oj-searchselect-arrow,
+.oj-searchselect.oj-searchselect-filter-shown:not(.oj-searchselect-mobile) .oj-searchselect-main-field .oj-searchselect-input,
+.oj-searchselect:not(.oj-searchselect-filter-shown):not(.oj-searchselect-mobile) .oj-searchselect-filter {
   visibility: hidden;
 }
 
@@ -26494,12 +26533,6 @@ oj-table:not(.oj-complete) {
   overflow: hidden;
 }
 
-/* Styling override to temporarily disable wrapping when sizing columns */
-.oj-table-element.oj-table-disable-wrapping,
-.oj-table-element.oj-table-disable-wrapping .oj-helper-white-space-normal {
-  white-space: nowrap !important;
-}
-
 .oj-table-scroller {
   background-color: inherit;
   box-sizing: border-box;
@@ -26632,18 +26665,13 @@ table.oj-table-element.oj-table-column-header-resizing {
   line-height: 1.25;
   vertical-align: middle;
   float: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-align: start;
-  box-sizing: border-box;
-}
-
-.oj-table-fixed .oj-table-column-header-cell,
-.oj-table-header-cell-wrap-text {
   white-space: normal;
   overflow-wrap: normal;
   -webkit-hyphens: none;
           hyphens: none;
+  overflow: hidden;
+  text-align: start;
+  box-sizing: border-box;
 }
 
 .oj-table-column-header-cell,
@@ -28291,8 +28319,12 @@ html[dir="rtl"] .oj-textarea .oj-text-field-container:not([style*='resize: none;
   min-height: var(--oj-text-field-height);
 }
 
-.oj-textarea.oj-read-only .oj-text-field-container {
-  min-height: 0;
+.oj-textarea.oj-read-only .oj-text-field-container:not([style*='resize: none;']) {
+  min-height: calc(var(--oj-typography-body-md-line-height) * var(--oj-typography-body-md-font-size));
+}
+
+.oj-textarea.oj-read-only.oj-text-field-label-inside .oj-text-field-container:not([style*='resize: none;']) {
+  min-height: var(--oj-text-field-height);
 }
 
 .oj-textarea.oj-text-field-label-inside .oj-text-field-container {

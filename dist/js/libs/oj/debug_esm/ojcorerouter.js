@@ -161,7 +161,7 @@ function getPathParam(segment) {
  * </p>
  * @name beforeStateChange
  * @memberof CoreRouter
- * @type {CoreRouter.Observable<VetoableState>}
+ * @type {object}
  * @ojsignature [{target: 'Type', value: 'CoreRouter.Observable<CoreRouter.VetoableState<D, P>>'},
  *               {target: 'Type', value: '<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>', for: 'genericTypeParameters'}]
  * @instance
@@ -201,7 +201,7 @@ function getPathParam(segment) {
  * The returned value must be a Promise.
  * @name currentState
  * @memberof CoreRouter
- * @type {CoreRouter.Observable<ActionableState>}
+ * @type {object}
  * @ojsignature [{target: 'Type', value: 'CoreRouter.Observable<CoreRouter.ActionableState<D, P>>'},
  *               {target: 'Type', value: '<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>', for: 'genericTypeParameters'}]
  * @instance
@@ -1082,11 +1082,12 @@ CoreRouter.prototype.destroy = function () {
 
 /**
  * An Observable which can receive subscriptions for new Observers
- * @typedef {object} CoreRouter.Observable<T>
+ * @typedef {object} CoreRouter.Observable
  * @property {function(function(T): void): CoreRouter.Observer} subscribe Subscribe to the observable to get
  * notifications when the value changse. The subscriber callback will receive the
  * value as its single argument. Calling subscribe will return the subscriber
  * object, which can be used to unsubscribe from the observable.
+ * @ojsignature [{target:"Type", value:"<T>", for: "genericTypeParameters"}]
  */
 
 /**

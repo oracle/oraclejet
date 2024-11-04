@@ -166,10 +166,12 @@
     }
 
     /*
-     * On desktop, hide the dropdown arrow in the main field when the component has focus
-     * (when the filter field is shown)
+     * On desktop, hide the main field when the filter field is shown (when the component
+     * has focus) and vice versa
      */
-    .oj-searchselect.oj-focus:not(.oj-searchselect-mobile) .oj-searchselect-main-field .oj-searchselect-arrow {
+    .oj-searchselect.oj-searchselect-filter-shown:not(.oj-searchselect-mobile) .oj-searchselect-main-field .oj-searchselect-arrow,
+    .oj-searchselect.oj-searchselect-filter-shown:not(.oj-searchselect-mobile) .oj-searchselect-main-field .oj-searchselect-input,
+    .oj-searchselect:not(.oj-searchselect-filter-shown):not(.oj-searchselect-mobile) .oj-searchselect-filter {
       visibility: hidden;
     }
  

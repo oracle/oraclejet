@@ -12,7 +12,6 @@ import $ from 'jquery';
 import { setDefaultOptions } from 'ojs/ojcomponentcore';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import { warn } from 'ojs/ojlogger';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
 (function () {
 var __oj_select_single_metadata = 
@@ -109,6 +108,14 @@ var __oj_select_single_metadata =
     "readonly": {
       "type": "boolean",
       "value": false
+    },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
     },
     "required": {
       "type": "boolean",
@@ -234,6 +241,9 @@ var __oj_select_single_metadata =
       properties: {
         readonly: {
           binding: { consume: { name: 'readonly' } }
+        },
+        readonlyUserAssistanceShown: {
+          binding: { consume: { name: 'readonlyUserAssistanceShown' } }
         },
         userAssistanceDensity: {
           binding: { consume: { name: 'userAssistanceDensity' } }
@@ -970,7 +980,7 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
             // focus the input element after selecting an item on mobile because we want the focus
             // to go back to the main part of the component, and the user can tab out or reopen the
             // dropdown
-            inputElem.focus();
+            inputElem.focus({ preventScroll: true });
           }
         }
 
@@ -1416,7 +1426,7 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
       // JET-40375 - SELECT SINGLE - DEFAULTED VALUE OVERRIDES USER INPUT
       // ...unless the user has already typed some filter text
       if (
-        ((!this._fullScreenPopup && this._filterInputText.style.visibility !== 'hidden') ||
+        ((!this._fullScreenPopup && this._IsFilterFieldShown()) ||
           (this._fullScreenPopup && this._abstractLovBase.isDropdownOpen())) &&
         !this._userHasTypedFilterText
       ) {
@@ -1695,29 +1705,6 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
     this._userHasTypedFilterText = false;
 
     if (!this._fullScreenPopup) {
-      if (event.shiftKey) {
-        var filterInputText = this._filterInputText;
-        var parentElem = filterInputText.parentNode;
-
-        // As discussed in JET-49016, the appendChild calls below end up being
-        // short-circuited by our Preact slot management workarounds.  As a
-        // result, the appendChild calls are treated as no-ops and we end up in an
-        // infinite while loop.  To avoid this fate, we temporarily disable the slot
-        // management workarounds.
-        CustomElementUtils.allowSlotRelocation(true);
-
-        try {
-          // move all the siblings before the filterInputText to the end, so that focus won't go
-          // to the main input field and will instead go to the previous tabbable elem on the page
-          // (can't just move the filterInputText because it's involved in the focus change and
-          // the browser throws an error)
-          while (parentElem.firstChild !== filterInputText) {
-            parentElem.appendChild(parentElem.firstChild);
-          }
-        } finally {
-          CustomElementUtils.allowSlotRelocation(false);
-        }
-      }
       // JET-44700 - <OJ-SELECT-SINGLE> AND <OJ-INPUT-NUMBER/DATE/TEXT> ARE NOT BEHAVING
       // UNIFORMLY FOR REQUIRED FIELDS
       // check whether placeholder valueItem is already set so that we don't trigger
@@ -2237,6 +2224,64 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    * Formatting messages using html tags is not supported in the core pack component.
    * </p>
    *
+   * <h5>Data Provider key type</h5>
+   * <p>
+   * In oj-c-select-single, the type of the data attribute is <code>DataProvider&lt;V, D&gt;</code> where
+   * V can only be of type string or number. This also affects the type of the component value, which is V,
+   * and the value-item, which is <code>ItemContext&lt;V, D&gt;</code>.
+   * </p>
+   *
+   * <h5>Collection Template</h5>
+   * <p>
+   * Currently in oj-c-select-single, only oj-c-table is supported in the collectionTemplate template slot. Other collection components, including legacy oj-table, are not supported.
+   * Some of the properties of the <code class="prettyprint">$current</code> object are changed. Please refer below on how to migrate these properties.
+   *
+   * <h6>currentRow</h6>
+   * <p>
+   * There are a few changes made to the <code class="prettyprint">currentRow</code> property:
+   * <ul>
+   * <li>This is renamed to <code class="prettyprint">currentRowOverride</code> and as such needs to be bound to the oj-c-table's <code class="prettyprint">current-cell-override</code>
+   * attribute.</li>
+   * <li>The <code class="prettyprint">currentRowOverride</code> is not a writable property. In <code class="prettyprint">oj-c-select-single</code> the <code class="prettyprint">onCurrentRowChanged</code> property from the
+   * <code class="prettyprint">$current</code> is used to listen to the changes made by the table. You need to provide a function to the oj-c-table's <code class="prettyprint">on-current-cell-changed</code> attribute
+   * and then call the <code class="prettyprint">$current.onCurrentRowChanged</code> function with the appropriate parameters.
+   * <p>
+   * Example:
+   * <pre>
+   * <code>
+   * &lt;oj-c-table
+   *   ...
+   *   current-cell-override="[[$current.currentRow]]"
+   *   on-current-cell-changed="[[ (event) => event.detail.value && $current.onCurrentRowChanged({ rowKey: event.detail.value.type === 'data' ? event.detail.value.rowKey : undefined }) ]]"
+   *   ...&gt;
+   * </code>
+   * </pre>
+   * </p>
+   * </li>
+   * </ul>
+   * </p>
+   * </li>
+   * </p>
+   *
+   * <h6>handleRowAction</h6>
+   * <p>
+   * This property is renamed to <code class="prettyprint">onRowAction</code>. The <code class="prettyprint">onRowAction</code> expects a different argument, so you need to provide a function to the
+   * oj-c-table's <code class="prettyprint">on-oj-row-action</code> attribute and then call the <code class="prettyprint">$current.onRowAction</code> function with the appropriate parameters.
+   * </p>
+   * <p>
+   * Example:
+   * <pre>
+   * <code>
+   * &lt;oj-c-table
+   *   ...
+   *   on-oj-row-action="[[ (event) => $current.onRowAction({ item: event.detail.context.item }) ]]"
+   *   ...&gt;
+   * </code>
+   * </pre>
+   * </p>
+   *
+   * </p>
+   *
    * <h5>Usage in Dynamic Form</h5>
    * <p>
    * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
@@ -2244,11 +2289,11 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    *
    * <h5>Limitations</h5>
    * <p>
-   * Note that oj-c-select-single supports a limited feature set in JET 16. It does not support:
+   * Note that oj-c-select-single supports a limited feature set in JET 17.1.0.
    * </p>
    * <ul>
-   * <li>hierarchical data</li>
-   * <li>customizing dropdown content by providing a customized collection component (no collectionTemplate)</li>
+   * <li>It does not support hierarchical data.</li>
+   * <li>It supports customizing dropdown content only using oj-c-table. Other collection components (including legacy oj-table) are not supported.</li>
    * </ul>
    * @ojfragment migrationDoc
    * @memberof oj.ojSelectSingle

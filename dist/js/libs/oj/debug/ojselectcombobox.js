@@ -20,6 +20,9 @@ define(['ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'ojs/ojhighligh
         readonly: {
           binding: { consume: { name: 'readonly' } }
         },
+        readonlyUserAssistanceShown: {
+          binding: { consume: { name: 'readonlyUserAssistanceShown' } }
+        },
         userAssistanceDensity: {
           binding: { consume: { name: 'userAssistanceDensity' } }
         },
@@ -197,6 +200,14 @@ var __oj_combobox_one_metadata =
     "readonly": {
       "type": "boolean",
       "value": false
+    },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
     },
     "required": {
       "type": "boolean",
@@ -467,6 +478,14 @@ var __oj_combobox_many_metadata =
       "type": "boolean",
       "value": false
     },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
+    },
     "required": {
       "type": "boolean",
       "value": false
@@ -704,6 +723,14 @@ var __oj_select_one_metadata =
     "readonly": {
       "type": "boolean",
       "value": false
+    },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
     },
     "renderMode": {
       "type": "string",
@@ -953,6 +980,14 @@ var __oj_select_many_metadata =
     "readonly": {
       "type": "boolean",
       "value": false
+    },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
     },
     "renderMode": {
       "type": "string",
@@ -12220,6 +12255,35 @@ var __oj_select_many_metadata =
        * @default false
        */
       readOnly: false,
+      /**
+       * Specifies which user assistance types should be shown when the component is readonly.
+       *
+       * @expose
+       * @access public
+       * @name readonlyUserAssistanceShown
+       * @instance
+       * @memberof oj.ojComboboxOne
+       * @default 'none'
+       * @type {string}
+       * @ojvalue {string} 'none' no user assistance is shown when the component is readonly
+       * @ojvalue {string} 'confirmationAndInfoMessages' messagesCustom messages of severity 'confirmation' and 'info' are shown when the component is readonly. Other severities will be filtered out and an info log message will be logged to the console.
+       * @since 17.1.0
+       */
+      /**
+       * Specifies which user assistance types should be shown when the component is readonly.
+       *
+       * @expose
+       * @access public
+       * @name readonlyUserAssistanceShown
+       * @instance
+       * @memberof oj.ojComboboxMany
+       * @default 'none'
+       * @type {string}
+       * @ojvalue {string} 'none' no user assistance is shown when the component is readonly
+       * @ojvalue {string} 'confirmationAndInfoMessages' messagesCustom messages of severity 'confirmation' and 'info' are shown when the component is readonly. Other severities will be filtered out and an info log message will be logged to the console.
+       * @since 17.1.0
+       */
+      readonlyUserAssistanceShown: 'none',
 
       /**
        * {@ojinclude "name":"comboboxCommonValidators"}
@@ -17055,11 +17119,10 @@ var __oj_select_many_metadata =
    *
    * <h5>Limitations</h5>
    * <p>
-   * Note that oj-c-select-multiple supports a limited feature set in JET 15. It does not support:
+   * Note that oj-c-select-multiple supports a limited feature set in JET 17.1.0. It does not support:
    * </p>
    * <ul>
    * <li>hierarchical data</li>
-   * <li>customizing dropdown content by providing a customized collection component (no collectionTemplate)</li>
    * </ul>
    * @ojfragment migrationDoc
    * @memberof oj.ojSelectMany
@@ -18363,6 +18426,35 @@ var __oj_select_many_metadata =
        * @default false
        */
       readOnly: false,
+      /**
+       * Specifies which user assistance types should be shown when the component is readonly.
+       *
+       * @expose
+       * @access public
+       * @name readonlyUserAssistanceShown
+       * @instance
+       * @memberof oj.ojSelectOne
+       * @default 'none'
+       * @type {string}
+       * @ojvalue {string} 'none' no user assistance is shown when the component is readonly
+       * @ojvalue {string} 'confirmationAndInfoMessages' messagesCustom messages of severity 'confirmation' and 'info' are shown when the component is readonly. Other severities will be filtered out and an info log message will be logged to the console.
+       * @since 17.1.0
+       */
+      /**
+       * Specifies which user assistance types should be shown when the component is readonly.
+       *
+       * @expose
+       * @access public
+       * @name readonlyUserAssistanceShown
+       * @instance
+       * @memberof oj.ojSelectMany
+       * @default 'none'
+       * @type {string}
+       * @ojvalue {string} 'none' no user assistance is shown when the component is readonly
+       * @ojvalue {string} 'confirmationAndInfoMessages' messagesCustom messages of severity 'confirmation' and 'info' are shown when the component is readonly. Other severities will be filtered out and an info log message will be logged to the console.
+       * @since 17.1.0
+       */
+      readonlyUserAssistanceShown: 'none',
 
       /**
        * {@ojinclude "name":"selectCommonRenderMode"}

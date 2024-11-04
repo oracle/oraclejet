@@ -1397,6 +1397,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
           if (this._comp.IsMarqueeEnabled()) {
             var dragHandlerEvent = dragHandler.processDragStart(relPos, event.ctrlKey);
             if (dragHandlerEvent) {
+              this._marqueeCancelled = false;
               dragHandlerEvent._relPos = relPos;
               this.ProcessMarqueeEvent(dragHandlerEvent);
             }
@@ -1461,6 +1462,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
           if (dragHandlerEvent) {
             dragHandlerEvent._relPos = relPos;
             this.ProcessMarqueeEvent(dragHandlerEvent);
+          } else if (
+            this._marqueeCancelled &&
+            this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y)
+          ) {
+            this._preventClick = true;
           }
           this._comp.setCursor(dragHandler.getCursor(relPos));
         }
@@ -1667,6 +1673,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
     cancelMarquee(event) {
       if (this._comp.isMarqueeSelectEnabled() && this._marqueeSelectHandler) {
         this._marqueeSelectHandler.cancelMarquee();
+        this._marqueeCancelled = true;
       }
     }
 

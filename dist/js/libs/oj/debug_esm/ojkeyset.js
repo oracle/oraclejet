@@ -18,9 +18,10 @@ import KeySetImpl$1 from 'ojs/ojkeysetimpl';
  */
 
 /**
- * @typedef {Object} ImmutableKeySet.ImmutableSet<V> An immutable Set of unique values.
- * @ojsignature {target: "Type",
- *               value: "{ size: number; has(value: V): boolean; values(): IterableIterator<V>; }"}
+ * @typedef {Object} ImmutableKeySet.ImmutableSet An immutable Set of unique values.
+ * @ojsignature [{target: "Type",
+ *               value: "{ size: number; has(value: V): boolean; values(): IterableIterator<V>; }"},
+ *              {target:"Type", value:"<V>", for: "genericTypeParameters"}]
  */
 
 /**

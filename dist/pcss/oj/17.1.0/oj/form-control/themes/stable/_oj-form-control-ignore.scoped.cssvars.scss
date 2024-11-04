@@ -1,0 +1,10 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.variables.formcontrol.ignored.scoped") {
+  .oj-color-invert {
+    --oj-private-text-field-button-icon-color: var(--oj-private-icon-color-default);
+    --oj-private-text-field-button-icon-color-hover: var(--oj-private-icon-color-hover);
+    --oj-private-text-field-button-icon-color-active: var(--oj-private-icon-color-active);
+    --oj-private-text-field-button-icon-color-disabled: var(--oj-private-icon-color-disabled);
+  }
+}

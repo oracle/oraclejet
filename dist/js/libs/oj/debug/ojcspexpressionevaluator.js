@@ -61,17 +61,24 @@ define(['ojs/ojcspexpressionevaluator-internal', 'ojs/ojkoshared'], function (oj
    *  <li>Optional chaining operators, e.g. <code>[[a?.b]]</code>.</li>
    *  <li>Array literals, e.g. <code>[a, b, c]</code>.</li>
    *  <li>Object literals, e.g. <code>[[{'selection_state': selected}]]</code>.</li>
-   *  <li>Functions are limited to a single statement, e.g. <code>[[function(){return 'abc'}]]</code>.</li>
    *  <li>'new' operator such as <code>'new Object()'</code></li>
    *  <li>Regular expressions in the form of explicit RegExp objects such as <code>[[testString.match(new RegExp('abc', 'i'))]]</code></li>
    *  <li>Template literals except tagged templates, e.g. <code>[[`Hello, ${user}!`]]</code></li>
+   *  <li>Functions are limited to a single statement, e.g.
+   *    <code>function(){return 'abc'}</code> or
+   *    <code>function(x, y){return x + y}</code>.
+   *  </li>
+   *  <li>Arrow functions are limited to a single statement, e.g.
+   *    <code>() => 'abc'</code>, <code>() => {return 'abc'}</code>,
+   *    <code>(x, y) => {return x + y}</code> or
+   *    <code>[1, 2, 3].map(item => item + 1)</code>
+   *  </li>
    *</ul>
    * <h2 id="invalidExpressions">Expression limitations:
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#invalidExpressions"></a>
    * </h2>
    * <p> The following code is not supported in expressions:
    * <ul>
-   *  <li>Arrow functions such as <code>'[1, 2, 3].map(item => item + 1)'</code></li>
    *  <li>Assignment operators of any types such as <code>'='</code> or <code>'+='</code> or <code>'|='</code></li>
    *  <li>Blocks of code such as <code>'if (...){}'</code></li>
    *  <li>Comma operator (,) such as <code>'(expr1, expr2)'</code></li>

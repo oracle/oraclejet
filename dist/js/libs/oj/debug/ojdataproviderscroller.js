@@ -1248,6 +1248,12 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
 
         var elem = this.FindElementByKey(keys[i]);
         if (elem != null) {
+          // check if the item is animating, if so we'll need to pick the right element
+          // this could happen if the item to be update is a just inserted item (and still animating)
+          if (elem.parentNode && elem.parentNode.classList.contains('oj-listview-temp-item')) {
+            elem = elem.parentNode;
+          }
+
           if (
             restoreFocusElem === undefined &&
             (elem.contains(document.activeElement) || this.m_widget.isInShiftingFocus())

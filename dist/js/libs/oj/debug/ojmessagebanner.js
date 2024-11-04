@@ -99,7 +99,7 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
     }
 
     function MessageSummary({ text }) {
-        return (jsxRuntime.jsx("div", { role: "heading", class: "oj-messagebanner-summary", children: text }));
+        return (jsxRuntime.jsx("div", { role: "heading", "aria-level": 2, class: "oj-messagebanner-summary", children: text }));
     }
 
     function MessageTimestamp({ value }) {
@@ -621,7 +621,13 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
         }, []);
         hooks.useImperativeHandle(focusHandleRef, () => ({
             focus: () => {
-                const isVisible = containerDivRef.current?.checkVisibility() ?? false;
+                const isVisible = containerDivRef.current
+                    ?
+                        containerDivRef.current.checkVisibility
+                            ? containerDivRef.current.checkVisibility()
+                            :
+                                containerDivRef.current.offsetParent != null
+                    : false;
                 if (data.length && isVisible) {
                     const firstItemKey = data[0].key;
                     messagesRef.current.get(firstItemKey)?.focus();

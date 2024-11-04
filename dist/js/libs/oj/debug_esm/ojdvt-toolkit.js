@@ -5848,6 +5848,12 @@ KeyboardEvent.GECKO_PLUS = 61;
 KeyboardEvent.GECKO_MINUS = 173;
 /** Key code for letter M key **/
 KeyboardEvent.M = 77;
+/** Key code for letter X key **/
+KeyboardEvent.X = 88;
+/** Key code for letter C key **/
+KeyboardEvent.C = 67;
+/** Key code for letter V key **/
+KeyboardEvent.V = 86;
 /** Open angled bracket key **/
 KeyboardEvent.OPEN_ANGLED_BRACKET = 188;
 /** Closed angled bracket key **/
@@ -19871,8 +19877,9 @@ EventManager.prototype.OnDndDragStart = function (event) {
 
   dragImage.style.width = dragFeedback.width + 'px';
   dragImage.style.height = dragFeedback.height + 'px';
-  dragImage.style.left = event.pageX - dragOffset.x + 'px';
-  dragImage.style.top = event.pageY - dragOffset.y + 'px';
+  // JET-69400 Drag and drop multiple nodes far apart shows wrong drag image
+  dragImage.style.left = -1 * dragFeedback.width + 'px';
+  dragImage.style.top = -1 * dragFeedback.height + 'px';
   dragImage.style.position = 'absolute';
   dragImage.style.fontFamily = this._context.getDefaultFontFamily();
   dragImage.style.fontSize = this._context.getDefaultFontSize();
@@ -19887,6 +19894,7 @@ EventManager.prototype.OnDndDragStart = function (event) {
   });
 
   dataTransfer.setDragImage(dragImage, dragOffset.x, dragOffset.y);
+  this.SetDragSourceEffect(obj, true);
 
   // Store the drop offsets in the dataTransfer so we can position the item correctly if the drop happens on a DVT component
   var dropOffset = this.GetDropOffset(event);
@@ -19919,6 +19927,7 @@ EventManager.prototype.OnDndDrag = function (event) {
 EventManager.prototype.OnDndDragEnd = function (event) {
   this.DragSource.setDragCandidate(null); // Reset drag candidate
   this._handleDragSourceEvent(event, 'dragEnd');
+  this.ClearDragSourceEffect();
 };
 
 /**
@@ -20180,6 +20189,24 @@ EventManager.prototype.DispatchElementEvent = function (eventType, eventDetail) 
   this.getCtx()
     .getSvgDocument()
     .dispatchEvent(new CustomEvent(eventType, { detail: eventDetail }));
+};
+
+/**
+ * Sets the drag source effect
+ * @protected
+ */
+EventManager.prototype.SetDragSourceEffect = function (node) {
+  // subclasses should override
+  return null;
+};
+
+/**
+ * Clears the drag source effect
+ * @protected
+ */
+EventManager.prototype.ClearDragSourceEffect = function (node) {
+  // subclasses should override
+  return null;
 };
 
 // Custom tooltip event handler
@@ -20884,10 +20911,25 @@ Context.prototype.getScheduler = function () {
  * @returns
  */
 Context.prototype.computeParentScale = function () {
-  var comp = this.getDvtComponent();
-  if (comp && comp.getWidth) {
-    var boundingWidth = this._root.getBoundingClientRect().width;
-    return boundingWidth / comp.getWidth();
+  if (this._parentDiv) {
+    // (border box) width accounting for transforms
+    const rectWidth = this._parentDiv.getBoundingClientRect().width;
+
+    // css (border box) width that doesn't account for transforms
+    // Note we can't directly use element.offsetWidth because it's rounded to an integer.
+    const computedStyle = getComputedStyle(this._parentDiv);
+    let offsetWidth = parseFloat(computedStyle.width);
+    if (computedStyle.boxSizing === 'content-box') {
+      // Include padding and border to obtain the border box width
+      const paddingLeft = parseFloat(computedStyle.paddingLeft);
+      const paddingRight = parseFloat(computedStyle.paddingRight);
+      const borderLeft = parseFloat(computedStyle.borderLeftWidth);
+      const borderRight = parseFloat(computedStyle.borderRightWidth);
+      offsetWidth += paddingLeft + paddingRight + borderLeft + borderRight;
+    }
+
+    // Scale is the ratio between transformed width and css width
+    return rectWidth / offsetWidth;
   }
   return 1;
 };

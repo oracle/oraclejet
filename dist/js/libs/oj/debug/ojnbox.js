@@ -77,6 +77,87 @@ var __oj_n_box_metadata =
         }
       }
     },
+    "dataTransferOptions": {
+      "type": "object",
+      "properties": {
+        "copy": {
+          "type": "string",
+          "enumValues": [
+            "disable",
+            "enable"
+          ],
+          "value": "disable"
+        },
+        "cut": {
+          "type": "string",
+          "enumValues": [
+            "disable",
+            "enable"
+          ],
+          "value": "disable"
+        },
+        "paste": {
+          "type": "string",
+          "enumValues": [
+            "disable",
+            "enable"
+          ],
+          "value": "disable"
+        }
+      }
+    },
+    "dnd": {
+      "type": "object",
+      "properties": {
+        "drag": {
+          "type": "object",
+          "properties": {
+            "nodes": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "drag": {
+                  "type": "function"
+                },
+                "dragEnd": {
+                  "type": "function"
+                },
+                "dragStart": {
+                  "type": "function"
+                }
+              }
+            }
+          }
+        },
+        "drop": {
+          "type": "object",
+          "properties": {
+            "cells": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "dragEnter": {
+                  "type": "function"
+                },
+                "dragLeave": {
+                  "type": "function"
+                },
+                "dragOver": {
+                  "type": "function"
+                },
+                "drop": {
+                  "type": "function"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "groupAttributes": {
       "type": "Array<string>",
       "enumValues": [
@@ -494,6 +575,11 @@ var __oj_n_box_metadata =
     "setProperty": {},
     "getNodeBySubId": {},
     "getSubIdByNode": {}
+  },
+  "events": {
+    "ojCopyRequest": {},
+    "ojCutRequest": {},
+    "ojPasteRequest": {}
   },
   "extension": {}
 };
@@ -1002,6 +1088,59 @@ var __oj_n_box_node_metadata =
        * myNBox.data = dataProvider;
        */
       data: null,
+      /**
+       * <p>Enables or disables data transfer features on the nbox.
+       *
+       * @type {Object}
+       * @expose
+       * @instance
+       * @memberof oj.ojNBox
+       * @ojshortdesc Specifies data transfer features.
+       */
+      dataTransferOptions: {
+        /**
+         * <p>Enables or disables keyboard cut on Nbox.
+         *
+         * @expose
+         * @name dataTransferOptions.cut
+         * @instance
+         * @memberof! oj.ojNBox
+         * @type {string=}
+         * @default 'disable'
+         * @ojvalue {string} "disable"
+         * @ojvalue {string} "enable"
+         * @ojshortdesc Allows cut on nbox node.
+         */
+        cut: 'disable',
+        /**
+         * <p>Enables or disables keyboard copy on Nbox.
+         *
+         * @expose
+         * @name dataTransferOptions.copy
+         * @instance
+         * @memberof! oj.ojNBox
+         * @type {string=}
+         * @default 'disable'
+         * @ojvalue {string} "disable"
+         * @ojvalue {string} "enable"
+         * @ojshortdesc Allows copy on nbox node.
+         */
+        copy: 'disable',
+        /**
+         * <p>Enables or disables keyboard paste on Nbox.
+         *
+         * @expose
+         * @name dataTransferOptions.paste
+         * @instance
+         * @memberof! oj.ojNBox
+         * @type {string=}
+         * @default 'disable'
+         * @ojvalue {string} "disable"
+         * @ojvalue {string} "enable"
+         * @ojshortdesc Allows paste on nbox cell.
+         */
+        paste: 'disable'
+      },
 
       /**
        * Specifies how nodes should be grouped.
@@ -1873,7 +2012,45 @@ var __oj_n_box_node_metadata =
        * @ojvalue {string} "auto"
        * @default "auto"
        */
-      touchResponse: 'auto'
+      touchResponse: 'auto',
+      /**
+       * Triggered when a user invokes a copy keyboard gesture.  The application should listen to this event and track the node(s) that have been copied from the Nbox to perform a subsequent paste.
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojNBox
+       * @ojshortdesc Triggered on copy.
+       * @instance
+       * @property {oj.ojNBox.CopyNode} source The list of nodes being copied.
+       * @ojsignature [{target:"Type", value:"Array<oj.ojNBox.CopyNode<K>>", for:"source", jsdocOverride:true},
+       *               {target:"Type", value:"<K>", for:"genericTypeParameters"}]
+       */
+      copyRequest: null,
+      /**
+       * Triggered when a user invokes a cut keyboard gesture.  The application should listen to this event and track the node(s) that have been cut from the Nbox to perform a subsequent paste.
+       * The appropriate visual feedback will be automatically applied to the cut node(s).
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojNBox
+       * @ojshortdesc Triggered on cut.
+       * @instance
+       * @property {oj.ojNBox.CutNode} source The list of nodes being cut.
+       * @ojsignature [{target:"Type", value:"Array<oj.ojNBox.CutNode<K>>", for:"source", jsdocOverride:true},
+       *               {target:"Type", value:"<K>", for:"genericTypeParameters"}]
+       */
+      cutRequest: null,
+      /**
+       * Triggered when a user invokes a paste keyboard gesture.
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojNBox
+       * @ojshortdesc Triggered on paste.
+       * @instance
+       * @property {oj.ojNBox.PasteCell} target The cell where the paste request happens.
+       */
+      pasteRequest: null
     },
 
     _CreateDvtComponent: function (context, callback, callbackObj) {
@@ -2105,6 +2282,14 @@ var __oj_n_box_node_metadata =
         path: 'styleDefaults/nodeDefaults/iconDefaults/backgroundIosSize',
         property: 'width'
       };
+      styleClasses['oj-nbox-node-cut'] = {
+        path: 'styleDefaults/nodeDefaults/_cutAlpha',
+        property: 'opacity'
+      };
+      styleClasses['oj-nbox-node-drag-source'] = {
+        path: 'styleDefaults/nodeDefaults/_dragSourceAlpha',
+        property: 'opacity'
+      };
       styleClasses['oj-nbox-node-categorylabel'] = {
         path: 'styleDefaults/_categoryNodeDefaults/labelStyle',
         property: 'TEXT'
@@ -2125,8 +2310,24 @@ var __oj_n_box_node_metadata =
       return styleClasses;
     },
 
+    _IsDraggable: function () {
+      var dragObj = this.options.dnd ? this.options.dnd.drag : null;
+      return dragObj && dragObj.nodes && Object.keys(dragObj.nodes).length > 0;
+    },
+
     _GetEventTypes: function () {
-      return ['optionChange'];
+      return ['optionChange', 'copyRequest', 'cutRequest', 'pasteRequest'];
+    },
+
+    _HandleEvent: function (event) {
+      var type = event.type;
+      if (type === 'copyRequest' || type === 'cutRequest') {
+        this._trigger(type, null, { source: event.source });
+      } else if (type === 'pasteRequest') {
+        this._trigger(type, null, { target: event.target });
+      } else {
+        this._super(event);
+      }
     },
 
     _LoadResources: function () {
@@ -2587,11 +2788,15 @@ var __oj_n_box_node_metadata =
    *     </tr>
    *     <tr>
    *       <td><kbd>Escape</kbd></td>
-   *       <td>Restore maximized cell.</td>
+   *       <td>Cancels any active cut operation.  This will remove the visual feedback on the cut node.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>Escape</kbd></td>
-   *       <td>Close dialog.</td>
+   *       <td>Restore maximized cell, if there's no active cut operation.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Escape</kbd></td>
+   *       <td>Close dialog, if there's no active cut operation.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>[</kbd></td>
@@ -2644,6 +2849,18 @@ var __oj_n_box_node_metadata =
    *     <tr>
    *       <td><kbd>Shift + Right Arrow or Down + Up Arrow</kbd></td>
    *       <td>Move focus and multi-select next node.</td>
+   *     </tr>
+   *  *     <tr>
+   *       <td><kbd>Ctrl + C</kbd></td>
+   *       <td>Triggers ojCopyRequest with the focused cell if dataTransferOptions.copy is enabled.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + X</kbd></td>
+   *       <td>Triggers ojCutRequest with the focused node(s) if dataTransferOptions.cut is enabled.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + V</kbd></td>
+   *       <td>Triggers ojPasteRequest with the focused cell if dataTransferOptions.paste is enabled.</td>
    *     </tr>
    *   </tbody>
    * </table>
@@ -2802,6 +3019,33 @@ var __oj_n_box_node_metadata =
    * @property {string} column The id of the column containing the hovered node.
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+   */
+  /**
+   * Provides support for HTML5 Drag and Drop events. Please refer to <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop">third party documentation</a> on HTML5 Drag and Drop to learn how to use it.
+   * @expose
+   * @name dnd
+   * @ojshortdesc Provides support for HTML5 Drag and Drop events. See the Help documentation for more information.
+   * @memberof oj.ojNBox
+   * @instance
+   * @type {Object=}
+   */
+  /**
+   * An object that describes drag functionality.
+   * @expose
+   * @name dnd.drag
+   * @memberof! oj.ojNBox
+   * @instance
+   * @type {Object=}
+   * @ojsignature {target: "Type", value: "oj.ojNBox.DndDragConfigs<K>", jsdocOverride: true}
+   */
+  /**
+   * An object that describes drop functionality.
+   * @expose
+   * @name dnd.drop
+   * @memberof! oj.ojNBox
+   * @instance
+   * @type {Object=}
+   * @ojsignature {target: "Type", value: "oj.ojNBox.DndDropConfigs", jsdocOverride: true}
    */
 
   // SubId Locators **************************************************************
@@ -3006,6 +3250,190 @@ var __oj_n_box_node_metadata =
    * @ojstylevariable oj-n-box-cell-bg-color {description: "Nbox cell background color", formats: ["color"], help: "#css-variables"}
    * @ojstylevariable oj-n-box-cell-bg-color-maximized {description: "Nbox maximized cell background color",formats: ["color"], help: "#css-variables"}
    * @memberof oj.ojNBox
+   */
+
+  /**
+   * Object type that allows dragging elements.
+   * @ojtypedef oj.ojNBox.DndDragConfig
+   * @ojsignature {target: "Type", value: "<T>", for: "genericTypeParameters"}
+   */
+  /**
+   * The MIME types to use for the dragged data in the dataTransfer object.
+   * This can be a string if there is only one type, or an array of strings if multiple types are needed.
+   * For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json".
+   * Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData
+   * will be called with the specified type and the data. The data is an array of the dataContexts of the selected data items.
+   * The dataContext is the JSON version of the dataContext that we use for "tooltip" option, excluding componentElement and parentElement.
+   * This property is required unless the application calls setData itself in a dragStart callback function.
+   * @expose
+   * @name dataTypes
+   * @ojtypedefmember
+   * @memberof! oj.ojNBox.DndDragConfig
+   * @ojshortdesc The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed.
+   * @type {(string|Array.<string>)=}
+   * @default null
+   */
+  /**
+   * An optional callback function that receives the "drag" event as argument.
+   * @expose
+   * @name drag
+   * @ojtypedefmember
+   * @memberof! oj.ojNBox.DndDragConfig
+   * @type {function(DragEvent)=}
+   * @default null
+   */
+  /**
+   * An optional callback function that receives the "dragend" event as argument.
+   * @expose
+   * @name dragEnd
+   * @ojtypedefmember
+   * @memberof! oj.ojNBox.DndDragConfig
+   * @type {function(DragEvent)=}
+   * @default null
+   */
+  /**
+   * An optional callback function that receives the "dragstart" event and context information as arguments.
+   * This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.
+   * @expose
+   * @name dragStart
+   * @ojtypedefmember
+   * @memberof! oj.ojNBox.DndDragConfig
+   * @ojshortdesc An optional callback function that receives the "dragstart" event and context information as arguments. See the Help documentation for more information.
+   * @type {function(DragEvent, Object)=}
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: T) => void)", jsdocOverride: true}
+   * @default null
+   */
+
+  /**
+   * Object type that describes drag functionality.
+   * @ojtypedef oj.ojNBox.DndDragConfigs
+   * @property {Object=} nodes Allows dragging of nbox nodes.
+   * @ojsignature [{target: "Type", value: "<K>", for: "genericTypeParameters"},
+   *               {target: "Type", value: "oj.ojNBox.DndDragConfig<ojNBox.DndDragNodes<K>>", for: "nodes", jsdocOverride: true}]
+   */
+
+  /**
+   * Object type that describes drag nodes
+   * @ojtypedef oj.ojNBox.DndDragNodes
+   * @property {Object=} nodes Allows dragging of nbox nodes.
+   * @ojsignature [{target: "Type", value: "<K>", for: "genericTypeParameters"},
+   *               {target: "Type", value: "Array<oj.ojNBox.DndDragNode<K>>", for: "nodes", jsdocOverride: true}]
+   */
+
+  /**
+   * @typedef {Object} oj.ojNBox.DndDragNode
+   * @property {any} id The id of the dragged node.
+   * @property {string} label The label of the dragged node.
+   * @property {string} secondaryLabel The secondaryLabel of the dragged node.
+   * @property {string} row The id of the row containing the dragged node.
+   * @property {string} column The id of the column containing the dragged node.
+   * @property {string} color The color of the dragged node.
+   * @property {string} indicatorColor The indicator color of the dragged node.
+   * @ojsignature [{target: "Type", value: "K", for: "id"},
+   *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+   */
+
+  /**
+   * Object type that allows dropping on an element.
+   * @ojtypedef oj.ojNBox.DndDropConfig
+   */
+  /**
+   * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+   * @expose
+   * @name dataTypes
+   * @ojtypedefmember
+   * @memberof! oj.ojNBox.DndDropConfig
+   * @type {(string|Array.<string>)=}
+   * @default null
+   */
+  /**
+   * An optional callback function that receives the "dragenter" event and context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+   * @expose
+   * @name dragEnter
+   * @ojtypedefmember
+   * @memberof! oj.ojNBox.DndDropConfig
+   * @ojshortdesc An optional callback function that receives the "dragenter" event and context information as arguments. See the Help documentation for more information.
+   * @type {function(DragEvent, Object)=}
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: oj.ojNBox.DndDropCell) => void)", jsdocOverride: true}
+   * @default null
+   */
+  /**
+   * An optional callback function that receives the "dragover" event and context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+   * @expose
+   * @name dragOver
+   * @ojtypedefmember
+   * @memberof! oj.ojNBox.DndDropConfig
+   * @ojshortdesc An optional callback function that receives the "dragover" event and context information as arguments. See the Help documentation for more information.
+   * @type {function(DragEvent, Object)=}
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: oj.ojNBox.DndDropCell) => void)", jsdocOverride: true}
+   * @default null
+   */
+  /**
+   * An optional callback function that receives the "dragleave" event and context information as arguments.
+   * @expose
+   * @name dragLeave
+   * @ojtypedefmember
+   * @memberof! oj.ojNBox.DndDropConfig
+   * @ojshortdesc An optional callback function that receives the "dragleave" event and context information as arguments. See the Help documentation for more information.
+   * @type {function(DragEvent, Object)=}
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: oj.ojNBox.DndDropCell) => void)", jsdocOverride: true}
+   * @default null
+   */
+  /**
+   * An optional callback function that receives the "drop" event and context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+   * @expose
+   * @name drop
+   * @ojtypedefmember
+   * @memberof! oj.ojNBox.DndDropConfig
+   * @ojshortdesc An optional callback function that receives the "drop" event and context information as arguments. See the Help documentation for more information.
+   * @type {function(DragEvent, Object)=}
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: oj.ojNBox.DndDropCell) => void)", jsdocOverride: true}
+   * @default null
+   */
+
+  /**
+   * Object type that describes drop functionality.
+   * @ojtypedef oj.ojNBox.DndDropConfigs
+   * @property {Object=} cells Allows dropping on cells.
+   * @ojsignature [{target: "Type", value: "oj.ojNBox.DndDropConfig", for: "cells", jsdocOverride: true}]
+   */
+
+  /**
+   * @typedef {Object} oj.ojNBox.DndDropCell
+   * @property {string} row The ID of the row of the event position.
+   * @property {string} column The ID of the column of the event position.
+   */
+
+  /**
+   * @typedef {Object} oj.ojNBox.CutNode
+   * @property {any} id The id of the cut node.
+   * @property {string} label The label of the cut node.
+   * @property {string} secondaryLabel The secondaryLabel of the cut node.
+   * @property {string} row The id of the row containing the cut node.
+   * @property {string} column The id of the column containing the cut node.
+   * @property {string} color The color of the cut node.
+   * @property {string} indicatorColor The indicator color of the cut node.
+   * @ojsignature [{target: "Type", value: "K", for: "id"},
+   *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+   */
+
+  /**
+   * @typedef {Object} oj.ojNBox.CopyNode
+   * @property {any} id The id of the copy node.
+   * @property {string} label The label of the copy node.
+   * @property {string} secondaryLabel The secondaryLabel of the copy node.
+   * @property {string} row The id of the row containing the copy node.
+   * @property {string} column The id of the column containing the copy node.
+   * @property {string} color The color of the copy node.
+   * @property {string} indicatorColor The indicator color of the copy node.
+   * @ojsignature [{target: "Type", value: "K", for: "id"},
+   *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+   */
+
+  /**
+   * @typedef {Object} oj.ojNBox.PasteCell
+   * @property {string} row The ID of the row of the event position.
+   * @property {string} column The ID of the column of the event position.
    */
 
   /**

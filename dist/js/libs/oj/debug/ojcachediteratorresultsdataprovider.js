@@ -178,13 +178,34 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcom
                             params?.includeFilteredRowCount === 'enabled' &&
                             _parent._baseFetchFirstCapability?.totalFilteredRowCount !== 'exact';
                 }
+                _getStaleResult(result) {
+                    return result != null
+                        ? result.value.data?.length > 0
+                            ? new this._parent.CacheAsyncIteratorYieldResult(result.value, -1)
+                            : new this._parent.CacheAsyncIteratorReturnResult(result.value, -1)
+                        : {
+                            value: {
+                                data: [],
+                                metadata: [],
+                                fetchParameters: this.params,
+                                totalFilteredRowCount: -1
+                            },
+                            done: true
+                        };
+                }
                 ['next']() {
                     const params = this.params || {};
                     const size = params.size || -1;
                     const signal = params?.signal;
                     const callback = (resolve) => {
+                        if (this.asyncIterator !== this._parent._currentAsyncIterator) {
+                            return resolve(this._getStaleResult());
+                        }
                         if (this._needLocalRowCount && this._cachedOffset === 0) {
                             return resolve(this._checkCachedParamsAndIterate(params, -1).then((result) => {
+                                if (this.asyncIterator !== this._parent._currentAsyncIterator) {
+                                    return this._getStaleResult(result);
+                                }
                                 return this._getResult(params, size, this._parent.cache.getSize());
                             }));
                         }
@@ -214,7 +235,10 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcom
                                 if (this._parent._getSharedIteratorState().fetchOffset < this._cachedOffset) {
                                     const fetchUntilOffset = () => {
                                         return this._checkCachedParamsAndIterate(params, size).then((result) => {
-                                            if (this._parent._getSharedIteratorState().fetchOffset >= this._cachedOffset ||
+                                            if (this.asyncIterator !== this._parent._currentAsyncIterator) {
+                                                resolve();
+                                            }
+                                            else if (this._parent._getSharedIteratorState().fetchOffset >= this._cachedOffset ||
                                                 result.done) {
                                                 resolve();
                                             }
@@ -229,7 +253,13 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcom
                                     resolve();
                                 }
                             }).then(() => {
+                                if (this.asyncIterator !== this._parent._currentAsyncIterator) {
+                                    return this._getStaleResult();
+                                }
                                 return this._checkCachedParamsAndIterate(params, size).then((result) => {
+                                    if (this.asyncIterator !== this._parent._currentAsyncIterator) {
+                                        return this._getStaleResult(result);
+                                    }
                                     this._cachedOffset = this._parent._getSharedIteratorState().fetchOffset;
                                     return Promise.resolve(this._getFinalResult(result.value, totalFilteredRowCount));
                                 });
@@ -237,6 +267,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcom
                         }
                     }
                     return this._checkCachedParamsAndIterate(params, size).then((result) => {
+                        if (this.asyncIterator !== this._parent._currentAsyncIterator) {
+                            return this._getStaleResult(result);
+                        }
                         this._cachedOffset = this._parent._getSharedIteratorState().fetchOffset;
                         return Promise.resolve(this._getFinalResult(result.value, totalFilteredRowCount));
                     });
@@ -267,20 +300,28 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcom
                         this._parent._getSharedIteratorState().fetchPromise = this.asyncIterator
                             .next()
                             .then((result) => {
-                            if (result.value.fetchParameters?.sortCriteria) {
-                                this._parent._getSharedIteratorState().cachedFetchParams.sortCriteria =
-                                    result.value.fetchParameters?.sortCriteria;
+                            if (this.asyncIterator !== this._parent._currentAsyncIterator) {
+                                return this._getStaleResult(result);
                             }
-                            this._parent._getSharedIteratorState().fetchOffset =
-                                this._parent._getSharedIteratorState().fetchOffset + result.value.data.length;
-                            this._parent._getSharedIteratorState().fetchPromise = null;
-                            this.cache.addListResult(result);
-                            if ((size === -1 && !this.cache.isDone()) ||
-                                (size > 0 && !this.cache.isDone() && result.value.data.length < size)) {
-                                return this.asyncIterator.next().then((finalResult) => {
-                                    this.cache.addListResult(finalResult);
-                                    return result;
-                                });
+                            else {
+                                if (result.value.fetchParameters?.sortCriteria) {
+                                    this._parent._getSharedIteratorState().cachedFetchParams.sortCriteria =
+                                        result.value.fetchParameters?.sortCriteria;
+                                }
+                                this._parent._getSharedIteratorState().fetchOffset =
+                                    this._parent._getSharedIteratorState().fetchOffset + result.value.data.length;
+                                this._parent._getSharedIteratorState().fetchPromise = null;
+                                this.cache.addListResult(result);
+                                if ((size === -1 && !this.cache.isDone()) ||
+                                    (size > 0 && !this.cache.isDone() && result.value.data.length < size)) {
+                                    return this.asyncIterator.next().then((finalResult) => {
+                                        if (this.asyncIterator !== this._parent._currentAsyncIterator) {
+                                            return this._getStaleResult(result);
+                                        }
+                                        this.cache.addListResult(finalResult);
+                                        return result;
+                                    });
+                                }
                             }
                             return result;
                         });
@@ -423,6 +464,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcom
             if (params?.signal?.aborted) {
                 const asyncIterable = this.dataProvider.fetchFirst(params);
                 const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+                this._currentAsyncIterator = asyncIterator;
                 return new this.CacheAsyncIterable(this, asyncIterator, null, null);
             }
             if (!this._getSharedIteratorState() ||
@@ -440,6 +482,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcom
                     asyncIterator: asyncIterator
                 };
             }
+            this._currentAsyncIterator = this._getSharedIteratorState().asyncIterator;
             return new this.CacheAsyncIterable(this, this._getSharedIteratorState().asyncIterator, params, this.cache);
         }
         getCapability(capabilityName) {

@@ -94,13 +94,15 @@ function _loadData(locale) {
     const positiveSign = _getSign(locale, true);
     const percentSign = _getPercentSign(locale);
     const exponentSeparator = _getExponentSeparator(locale);
+    const negativeAccountingSign = _getNegativeAccountingSign(locale);
     return {
         localToAsciiNumbers,
         decimalSeparator,
         negativeSign,
         positiveSign,
         percentSign,
-        exponentSeparator
+        exponentSeparator,
+        negativeAccountingSign
     };
 }
 function _getNumberCharacterMap(locale) {
@@ -122,6 +124,15 @@ function _getSign(locale, positive) {
     return positive
         ? _getPart(locale, opts, 1, 'plusSign', '+')
         : _getPart(locale, opts, -1, 'minusSign', '-');
+}
+function _getNegativeAccountingSign(locale) {
+    const opts = {
+        style: 'currency',
+        currency: 'USD',
+        currencySign: 'accounting'
+    };
+    const firstPart = new Intl.NumberFormat(locale, opts).formatToParts(-1)[0].value;
+    return firstPart;
 }
 function _getPercentSign(locale) {
     return _getPart(locale, { style: 'percent' }, 1, 'percentSign', '%');
@@ -225,9 +236,14 @@ const _ASCII_NUMBER_CHARS = new Set(['0', '1', '2', '3', '4', '5', '6', '7', '8'
 function parseInput(input, resolvedOptions, locale) {
     const localeData = getLocaleData(locale);
     const { decimal, group } = resolvedOptions.separators;
-    const { negativeSign, positiveSign, percentSign, localToAsciiNumbers, exponentSeparator } = localeData;
+    const { negativeSign, positiveSign, percentSign, localToAsciiNumbers, exponentSeparator, negativeAccountingSign } = localeData;
     let exponent = 0;
     let buffer = '';
+    if (resolvedOptions.style === 'currency' &&
+        resolvedOptions.currencySign === 'accounting' &&
+        negativeAccountingSign !== negativeSign) {
+        input = _convertParenthesesToNegative(input);
+    }
     for (let char of input) {
         switch (char) {
             case negativeSign:
@@ -297,6 +313,20 @@ function _possiblyThrowParseError(options) {
 function _throwUserInputError() {
     throw new Error('Not a valid number', { cause: 'userInput' });
 }
+function _convertParenthesesToNegative(input) {
+    const trimmedInput = input.trim();
+    const openParenthesis = '(';
+    const closeParenthesis = ')';
+    const fullWidthOpenParenthesis = '\uFF08';
+    const fullWidthCloseParenthesis = '\uFF09';
+    const startsWithParenthesis = trimmedInput.startsWith(openParenthesis) || trimmedInput.startsWith(fullWidthOpenParenthesis);
+    const endsWithParenthesis = trimmedInput.endsWith(closeParenthesis) || trimmedInput.endsWith(fullWidthCloseParenthesis);
+    if (startsWithParenthesis && endsWithParenthesis) {
+        const trimmed = trimmedInput.slice(1, -1);
+        return '-' + trimmed;
+    }
+    return input;
+}
 
 function getResolvedAndNativeOptions(options, locale) {
     const native = _getNativeOptions(options);
@@ -328,6 +358,7 @@ function getResolvedAndNativeOptions(options, locale) {
             resolved = {
                 style: 'decimal',
                 decimalFormat: options.decimalFormat ?? 'standard',
+                virtualKeyboardHint: _getVirtualKeyboardHint(common.useGrouping, common.separators.decimal, common.separators.group),
                 ...common
             };
             break;
@@ -337,6 +368,9 @@ function getResolvedAndNativeOptions(options, locale) {
                 currency: options.currency,
                 currencyFormat: options.currencyFormat ?? 'standard',
                 currencyDisplay: options.currencyDisplay ?? 'symbol',
+                currencySign: options.currencySign ?? 'standard',
+                customCurrencyCode: options.customCurrencyCode,
+                customCurrencySymbol: options.customCurrencySymbol,
                 ...common
             };
             break;
@@ -406,7 +440,8 @@ function _getCurrencyNativeOptions(options) {
     const nativeOpts = {
         style: 'currency',
         currency,
-        currencyDisplay: options.currencyDisplay ?? 'symbol'
+        currencyDisplay: options.currencyDisplay ?? 'symbol',
+        currencySign: options.currencySign ?? 'standard'
     };
     switch (currencyFormat) {
         case 'short':
@@ -424,6 +459,15 @@ function _getDefaultGroupingSeparator(options, locale, forceGrouping = true) {
     const formatOpts = forceGrouping ? { ...options, useGrouping: true } : options;
     const parts = new Intl.NumberFormat(locale, formatOpts).formatToParts(1000000);
     return parts.find((part) => part.type === 'group')?.value;
+}
+function _getVirtualKeyboardHint(useGrouping, decimalSeparator, groupSeparator) {
+    if (useGrouping && decimalSeparator === '.' && groupSeparator === '') {
+        return 'number';
+    }
+    if (!useGrouping && decimalSeparator === '.') {
+        return 'number';
+    }
+    return 'text';
 }
 
 const _BYTE_SCALE_THRESHOLDS = [10 ** 3, 10 ** 6, 10 ** 9, 10 ** 12, 10 ** 15];
@@ -499,6 +543,60 @@ function _scaleNumber(value, thresholds, options) {
         scaled = value * 10 ** exponent;
     }
     return { scaled, scaleIndex: scaleIndex + 1 };
+}
+
+function applyCustomCurrency(parts, options) {
+    if (options.style === 'currency') {
+        const shouldReplaceCurrencyCode = options.currencyDisplay === 'code' && options.customCurrencyCode !== undefined;
+        const shouldReplaceCurrencySign = options.currencyDisplay === 'symbol' && options.customCurrencySymbol !== undefined;
+        if (shouldReplaceCurrencyCode || shouldReplaceCurrencySign) {
+            const customString = shouldReplaceCurrencyCode
+                ? options.customCurrencyCode
+                : options.customCurrencySymbol;
+            return replaceCurrencyParts(parts, customString);
+        }
+    }
+    return parts;
+}
+function replaceCurrencyParts(parts, customCurrencyCodeOrSymbol) {
+    if (customCurrencyCodeOrSymbol !== '') {
+        const partsWithCustomCurrency = parts.map((part) => {
+            if (part.type === 'currency') {
+                return { ...part, value: customCurrencyCodeOrSymbol };
+            }
+            else {
+                return part;
+            }
+        });
+        return partsWithCustomCurrency;
+    }
+    const processedPartsNoCurrency = removeCurrencyPart(parts);
+    const processedParts = removeLiteralEmptyStringPart(processedPartsNoCurrency);
+    return processedParts;
+}
+function removeCurrencyPart(parts) {
+    return parts.filter((part) => part.type !== 'currency');
+}
+function removeLiteralEmptyStringPart(parts) {
+    return parts.filter((part) => !(part.type === 'literal' && part.value.trim() === ''));
+}
+
+function formatToPartsWithCustomSeparators(formatInstance, value, decimal, group) {
+    if (decimal === undefined && group === undefined) {
+        return formatInstance.formatToParts(value);
+    }
+    const parts = formatInstance.formatToParts(value);
+    return parts.map((part) => {
+        if (part.type === 'group') {
+            return { ...part, value: group ?? part.value };
+        }
+        else if (part.type === 'decimal') {
+            return { ...part, value: decimal ?? part.value };
+        }
+        else {
+            return part;
+        }
+    });
 }
 
 class BigDecimalStringConverter {
@@ -587,11 +685,18 @@ class BigDecimalStringConverter {
             wholeNum = -wholeNum;
         }
         if (!decimal) {
-            return this._formatWithCustomSeparators(new Intl.NumberFormat(this.locale, opts), wholeNum);
+            let parts = formatToPartsWithCustomSeparators(new Intl.NumberFormat(this.locale, opts), wholeNum, options?.separators?.decimal, options?.separators?.group);
+            parts = applyCustomCurrency(parts, this.options);
+            let formatted = '';
+            for (let part of parts) {
+                formatted += `${part.value}`;
+            }
+            return formatted;
         }
         else {
             opts.minimumFractionDigits = 1;
-            const parts = this._formatToPartsWithCustomSeparators(new Intl.NumberFormat(this.locale, opts), wholeNum);
+            let parts = formatToPartsWithCustomSeparators(new Intl.NumberFormat(this.locale, opts), wholeNum, options?.separators?.decimal, options?.separators?.group);
+            parts = applyCustomCurrency(parts, this.options);
             const fractionPart = this._getFractionPart(decimal, minimumFractionDigits);
             const decOpts = {
                 useGrouping: false,
@@ -619,7 +724,7 @@ class BigDecimalStringConverter {
             useGrouping: false,
             minimumFractionDigits: hasFraction ? Math.max(minimumFractionDigits, 1) : 0
         };
-        const pattern = this._formatToPartsWithCustomSeparators(new Intl.NumberFormat(this.locale, patternOpts), negative ? -1 : 1);
+        const pattern = formatToPartsWithCustomSeparators(new Intl.NumberFormat(this.locale, patternOpts), negative ? -1 : 1, options?.separators?.decimal, options?.separators?.group);
         const intPartOpts = {
             minimumIntegerDigits: options.minimumIntegerDigits
         };
@@ -655,39 +760,12 @@ class BigDecimalStringConverter {
         if (decimal === undefined && group === undefined) {
             return formatInstance.format(value);
         }
-        const parts = formatInstance.formatToParts(value);
+        const parts = formatToPartsWithCustomSeparators(formatInstance, value, decimal, group);
         let formatted = '';
         for (let part of parts) {
-            if (part.type === 'group') {
-                formatted += group ?? part.value;
-            }
-            else if (part.type === 'decimal') {
-                formatted += decimal ?? part.value;
-            }
-            else {
-                formatted += part.value;
-            }
+            formatted += part.value;
         }
         return formatted;
-    }
-    _formatToPartsWithCustomSeparators(formatInstance, value) {
-        const decimal = this.options?.separators?.decimal;
-        const group = this.options?.separators?.group;
-        if (decimal === undefined && group === undefined) {
-            return formatInstance.formatToParts(value);
-        }
-        const parts = formatInstance.formatToParts(value);
-        return parts.map((part) => {
-            if (part.type === 'group') {
-                return { ...part, value: group ?? part.value };
-            }
-            else if (part.type === 'decimal') {
-                return { ...part, value: decimal ?? part.value };
-            }
-            else {
-                return part;
-            }
-        });
     }
     _getFractionPart(decimal, minimumFractionDigits) {
         const exp = minimumFractionDigits - decimal.length;
@@ -742,26 +820,15 @@ class NumberConverter {
             numberNativeOpts.unit = unit;
         }
         const format = new Intl.NumberFormat(this.locale, numberNativeOpts);
-        if (options.separators) {
-            const decimal = options?.separators?.decimal;
-            const group = options?.separators?.group;
-            if (decimal === undefined && group === undefined) {
-                return format.format(valueToFormat);
-            }
-            const parts = format.formatToParts(valueToFormat);
-            return parts.reduce((acc, part) => {
-                if (part.type === 'group') {
-                    return acc + (group ?? part.value);
-                }
-                else if (part.type === 'decimal') {
-                    return acc + (decimal ?? part.value);
-                }
-                else {
-                    return acc + part.value;
-                }
-            }, '');
+        const decimal = options?.separators?.decimal;
+        const group = options?.separators?.group;
+        let parts = formatToPartsWithCustomSeparators(format, valueToFormat, decimal, group);
+        parts = applyCustomCurrency(parts, options);
+        let formatted = '';
+        for (let part of parts) {
+            formatted += `${part.value}`;
         }
-        return format.format(valueToFormat);
+        return formatted;
     }
     parse(input) {
         return new Number(parseInput(input, this.resolvedOptions(), this.locale)).valueOf();

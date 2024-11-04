@@ -1468,6 +1468,9 @@ var __oj_data_grid_metadata =
     this.attributes.hiddenIndicatorIndex = 'data-oj-hiddenIndicatorIndex';
     this.attributes.filterable = 'data-oj-filterable';
     this.attributes.readOnly = 'data-oj-readOnly';
+    this.attributes.dropIndex = 'data-oj-dropIndex';
+    this.attributes.dropLevel = 'data-oj-dropLevel';
+    this.attributes.dropAxis = 'data-oj-dropAxis';
   };
 
   oj._registerLegacyNamespaceProp('DataGridResources', DataGridResources);
@@ -4877,7 +4880,7 @@ var __oj_data_grid_metadata =
    *        at its completion. See handleExpandEvent for an example
    * @private
    */
-  DvtDataGrid.prototype._runModelEventQueue = function () {
+  DvtDataGrid.prototype._runModelEventQueue = function (fillIfDone) {
     var event;
     // Run the event queue generally after initialization
     // or animations are complete.
@@ -4889,6 +4892,9 @@ var __oj_data_grid_metadata =
       this.m_processingEventQueue = true;
       if (this.m_modelEvents.length === 0) {
         this.m_processingEventQueue = false;
+        if (fillIfDone) {
+          this.fillViewport();
+        }
         return;
       }
 
@@ -4903,6 +4909,9 @@ var __oj_data_grid_metadata =
       }
     } else {
       this.m_processingEventQueue = false;
+      if (fillIfDone) {
+        this.fillViewport();
+      }
     }
   };
 
@@ -16322,22 +16331,23 @@ var __oj_data_grid_metadata =
     var requiresAnimation = false;
 
     this.m_processingModelEvent = true;
+    let clearProcessing = true;
 
     if (event.detail) {
       // handle new event
       if (operation === 'delete') {
         this._handleDeleteRangeEvent(event.detail);
-        this.m_processingModelEvent = false;
       }
       if (operation === 'insert') {
         this._handleInsertRangeEvent(event.detail);
+        clearProcessing = false;
       }
       if (operation === 'update') {
         this._handleUpdateRangeEvent(event.detail);
+        clearProcessing = false;
       }
       if (operation === 'refresh') {
         this._handleModelRefreshEvent(event.detail);
-        this.m_processingModelEvent = false;
       }
     } else if (operation === 'insert') {
       this._adjustActive(operation, indexes);
@@ -16392,7 +16402,7 @@ var __oj_data_grid_metadata =
       this._handleModelSyncEvent(event);
     }
 
-    if (!event.detail) {
+    if (clearProcessing) {
       this.m_processingModelEvent = false;
     }
 
@@ -16629,7 +16639,8 @@ var __oj_data_grid_metadata =
     let axis = eventDetail.axis;
     let ranges = eventDetail.ranges;
     if (ranges.length === 0) {
-      this.fillViewport();
+      this.m_processingModelEvent = false;
+      this._runModelEventQueue(true);
       return;
     }
 
@@ -16764,7 +16775,8 @@ var __oj_data_grid_metadata =
       this._resetEditableClone();
       this.applySelection();
       this._resetHeaderHighLight();
-      this.fillViewport();
+      this.m_processingModelEvent = false;
+      this._runModelEventQueue(true);
       return;
     }
 
@@ -16888,25 +16900,21 @@ var __oj_data_grid_metadata =
     ];
     let eventDetail = { axis, ranges, editHeader };
     let hasBrowserFocus = this.m_root.contains(document.activeElement);
+    const focusCallback = () => {
+      if (this._isActiveWithinUpdateRange({ detail: { ranges: [range] } })) {
+        if (!hasBrowserFocus) {
+          this.m_shouldFocus = false;
+        }
+        this._highlightActive();
+      }
+    };
 
     this._handleDeleteRangeEvent(eventDetail);
     // handleInsertRangeCellFetchSuccess expects { offset, count } as commonProps.range
     delete commonProps.range;
     commonProps.range = { offset, count };
-    this._handleInsertRangeCellFetchSuccess(commonProps, cellSet, cellRange);
-
-    if (this._isActiveWithinUpdateRange({ detail: { ranges: [range] } })) {
-      if (!hasBrowserFocus) {
-        this.m_shouldFocus = false;
-      }
-      this._highlightActive();
-    }
-
-    this._runModelEventQueue();
-    if (!this.m_modelEvents?.length) {
-      this.m_processingModelEvent = false;
-    }
-    this._signalTaskEnd();
+    // this ends the task
+    this._handleInsertRangeCellFetchSuccess(commonProps, cellSet, cellRange, focusCallback);
   };
 
   DvtDataGrid.prototype._handleInsertRangeHeaderFetchSuccess = function (
@@ -17071,7 +17079,8 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
     commonProps,
     cellSet,
-    cellRanges
+    cellRanges,
+    focusCallback
   ) {
     const range = commonProps.range;
     const axis = commonProps.axis;
@@ -17097,11 +17106,9 @@ var __oj_data_grid_metadata =
       frozenEndHeaderRoot = this.m_colEndHeaderFrozen;
     }
 
-    if (!this.m_modelEvents?.length) {
-      this.m_processingModelEvent = false;
-    }
     this._signalTaskEnd();
     this.m_fetching.cells = false;
+
     if (!dontModifySelection) {
       this.unhighlightSelection();
     }
@@ -17476,6 +17483,10 @@ var __oj_data_grid_metadata =
       this.applySelection();
       this._resetHeaderHighLight();
       this.resizeGrid();
+    }
+
+    if (focusCallback) {
+      focusCallback();
     }
 
     commonProps.promiseResolve();
@@ -18257,13 +18268,8 @@ var __oj_data_grid_metadata =
       this._highlightActive();
     }
 
-    this._runModelEventQueue();
-    if (!this.m_modelEvents?.length) {
-      this.m_processingModelEvent = false;
-    }
     // end fetch
     this._signalTaskEnd();
-
     commonProps.promiseResolve();
   };
 
@@ -43340,6 +43346,7 @@ var __oj_data_grid_metadata =
     return this._invokeDndCallback('drag', 'rows', 'dragEnd', event, this._cellsDragged);
   };
 
+  // if similar dataTypes on headers and labels then check for reodering and then pivot for backward compatibility.
   // eslint-disable-next-line consistent-return
   DvtDataGrid.prototype.handleRowDragOver = function (event) {
     let returnValue;
@@ -43360,10 +43367,16 @@ var __oj_data_grid_metadata =
           return returnValue;
         }
       }
-      if (index != null) {
+      if (
+        index != null &&
+        (this.m_dropTarget == null ||
+          index !== this._getAttribute(this.m_dropTarget, 'dropIndex', true))
+      ) {
         this.handleFreezeIndicatorDragOver(event, index, axis);
+      } else {
+        event.preventDefault();
       }
-    } else {
+    } else if (this._matchDragDataType(event, 'rows')) {
       this.m_databodyReorder = true;
       let axis = 'row';
       let rowIndex = this._getOverIndex(event, axis);
@@ -43381,7 +43394,11 @@ var __oj_data_grid_metadata =
           let position = this._getRelativePosition(event, axis, header, true);
           let dropContext = this._getDropContext(event, this.m_dropRowIndex, 'row');
           returnValue = this._invokeDropCallback('rows', 'dragOver', event, dropContext);
-          if (returnValue === false || event.defaultPrevented) {
+          if (
+            (returnValue === false || event.defaultPrevented) &&
+            (this.m_dropTarget == null ||
+              rowIndex !== this._getAttribute(this.m_dropTarget, 'dropIndex', true))
+          ) {
             this._removeDropTargetLine(axis);
             this._removeDropTargetClass();
             if (!isHeaderWithinSelection) {
@@ -43401,6 +43418,8 @@ var __oj_data_grid_metadata =
         }
         return returnValue;
       }
+    } else if (this._matchDragDataType(event, 'rowLabels')) {
+      this._handlePivotDragOverOnHeader(event);
     }
   };
 
@@ -43458,7 +43477,13 @@ var __oj_data_grid_metadata =
               });
             }
 
-            if (returnValue === false || event.defaultPrevented) {
+            if (
+              returnValue === false ||
+              (event.defaultPrevented &&
+                (this.m_dropTarget === undefined ||
+                  cellIndex[selectionAxis] !==
+                    this._getAttribute(this.m_dropTarget, 'dropIndex', true)))
+            ) {
               this._removeDropTargetLine(selectionAxis);
               this._removeDropTargetClass();
               if (!isCellSelected) {
@@ -43627,7 +43652,7 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype.handleRowDrop = function (event) {
     if (this.m_pivotInProgress) {
       this._handlePivotDropOnHeader(event);
-    } else {
+    } else if (this._matchDragDataType(event, 'rows')) {
       let dropRowIndex = this.m_dropRowIndex;
       if (this.m_dropRowIndex === null) {
         dropRowIndex = this._getOverIndex(event, 'row');
@@ -43670,6 +43695,8 @@ var __oj_data_grid_metadata =
       if (this._isSelectionEnabled() && this.m_utils.isTouchDevice() && this.m_selection.length > 0) {
         this._moveTouchSelectionAffordance();
       }
+    } else if (this._matchDragDataType(event, 'rowLabels')) {
+      this._handlePivotDropOnHeader(event);
     }
   };
 
@@ -43690,7 +43717,7 @@ var __oj_data_grid_metadata =
     let returnValue;
     if (this.m_pivotInProgress) {
       this._handlePivotDragOverOnHeader(event);
-    } else {
+    } else if (this._matchDragDataType(event, 'columns')) {
       let colIndex = this._getOverIndex(event, 'column');
       if (this.m_dragFrozenIndicator) {
         let axis = this.m_freezeIndicatorAxis;
@@ -43706,8 +43733,14 @@ var __oj_data_grid_metadata =
             return returnValue;
           }
         }
-        if (colIndex != null) {
+        if (
+          colIndex != null &&
+          (this.m_dropTarget == null ||
+            colIndex !== this._getAttribute(this.m_dropTarget, 'dropIndex', true))
+        ) {
           this.handleFreezeIndicatorDragOver(event, colIndex, axis);
+        } else {
+          event.preventDefault();
         }
       } else {
         this.m_databodyReorder = true;
@@ -43731,7 +43764,11 @@ var __oj_data_grid_metadata =
             index: this.m_dropColumnIndex
           };
           returnValue = this._invokeDropCallback('columns', 'dragOver', event, dropContext);
-          if (returnValue === false || event.defaultPrevented) {
+          if (
+            (returnValue === false || event.defaultPrevented) &&
+            (this.m_dropTarget == null ||
+              colIndex !== this._getAttribute(this.m_dropTarget, 'dropIndex', true))
+          ) {
             this._removeDropTargetLine(axis);
             this._removeDropTargetClass();
             if (position === 'inside') {
@@ -43749,6 +43786,8 @@ var __oj_data_grid_metadata =
           return returnValue;
         }
       }
+    } else if (this._matchDragDataType(event, 'columnLabels')) {
+      this._handlePivotDragOverOnHeader(event);
     }
   };
 
@@ -43774,7 +43813,7 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype.handleColumnDrop = function (event) {
     if (this.m_pivotInProgress) {
       this._handlePivotDropOnHeader(event);
-    } else {
+    } else if (this._matchDragDataType(event, 'columns')) {
       let dropColumnIndex = this.m_dropColumnIndex;
       if (this.m_dropColumnIndex === null) {
         dropColumnIndex = this._getOverIndex(event, 'column');
@@ -43813,10 +43852,12 @@ var __oj_data_grid_metadata =
           this._invokeDropCallback('columns', 'drop', event, dropContext);
         }
       }
-    }
-    this.m_dropColumnIndex = null;
-    if (this._isSelectionEnabled() && this.m_utils.isTouchDevice() && this.m_selection.length > 0) {
-      this._moveTouchSelectionAffordance();
+      this.m_dropColumnIndex = null;
+      if (this._isSelectionEnabled() && this.m_utils.isTouchDevice() && this.m_selection.length > 0) {
+        this._moveTouchSelectionAffordance();
+      }
+    } else if (this._matchDragDataType(event, 'columnLabels')) {
+      this._handlePivotDropOnHeader(event);
     }
   };
 
@@ -44319,7 +44360,7 @@ var __oj_data_grid_metadata =
     this.m_dropTarget = document.createElement('div');
     this.m_dropHeaderTarget = document.createElement('div');
     this.m_dropEndHeaderTarget = document.createElement('div');
-    this._setAttribute(this.m_dropTarget, 'index', index);
+    this._setAttribute(this.m_dropTarget, 'dropIndex', index);
 
     let databodyElem = this.m_databody;
     let headerElem = this.m_rowHeader;
@@ -44631,6 +44672,9 @@ var __oj_data_grid_metadata =
 
   DvtDataGrid.prototype._removeDropTargetLine = function () {
     this._removeDropTargetEventListeners();
+    if (this.m_dropTarget) {
+      this.m_dropTarget.removeAttribute(this.getResources().getMappedAttribute('dropIndex'));
+    }
     this._remove(this.m_dropTarget);
     this._remove(this.m_dropHeaderTarget);
     if (this.m_dropEndHeaderTarget) {
@@ -44864,7 +44908,7 @@ var __oj_data_grid_metadata =
     let axis = this.m_utils.containsCSSClassName(target, this.getMappedStyle('rowDropTargetLine'))
       ? 'row'
       : 'column';
-    let index = this._getAttribute(this.m_dropTarget, 'index');
+    let index = this._getAttribute(this.m_dropTarget, 'dropIndex');
     let dropContext = {
       axis: axis,
       position: 'after',
@@ -44879,7 +44923,7 @@ var __oj_data_grid_metadata =
     let axis = this.m_utils.containsCSSClassName(target, this.getMappedStyle('rowDropTargetLine'))
       ? 'row'
       : 'column';
-    let index = this._getAttribute(this.m_dropTarget, 'index');
+    let index = this._getAttribute(this.m_dropTarget, 'dropIndex');
     if (axis === 'row') {
       this.m_dropRowIndex = null;
     } else {
@@ -48882,14 +48926,22 @@ var __oj_data_grid_metadata =
       }
     }
     if (dragOverLabel) {
-      this._addPivotDropTargetLine(
-        dragOverAxis,
-        dropLineTop,
-        dir,
-        dropLineDir,
-        position,
-        dragOverLabel
-      );
+      if (
+        this.m_pivotDropTarget == null ||
+        !(
+          this._getAttribute(this.m_pivotDropTarget, 'dropLevel', true) === dragOverLevel &&
+          this._getAttribute(this.m_pivotDropTarget, 'dropAxis') === dragOverAxis
+        )
+      ) {
+        this._addPivotDropTargetLine(
+          dragOverAxis,
+          dropLineTop,
+          dir,
+          dropLineDir,
+          position,
+          dragOverLabel
+        );
+      }
       let dropContext = {
         level: dragOverLevel,
         axis: dragOverAxis,
@@ -48916,8 +48968,8 @@ var __oj_data_grid_metadata =
     this._removePivotDropTargetLine();
     this.m_pivotDropTarget = document.createElement('div');
     this.m_pivotDropHeaderTarget = document.createElement('div');
-    this._setAttribute(this.m_pivotDropTarget, 'level', level);
-    this._setAttribute(this.m_pivotDropTarget, 'axis', axis);
+    this._setAttribute(this.m_pivotDropTarget, 'dropLevel', level);
+    this._setAttribute(this.m_pivotDropTarget, 'dropAxis', axis);
 
     let headerElem = label;
     let databodyElem = this.m_colHeader;
@@ -49182,6 +49234,10 @@ var __oj_data_grid_metadata =
 
   DvtDataGrid.prototype._removePivotDropTargetLine = function () {
     this._remove(this.m_pivotDropTarget);
+    if (this.m_pivotDropTarget) {
+      this.m_pivotDropTarget.removeAttribute(this.getResources().getMappedAttribute('dropLevel'));
+      this.m_pivotDropTarget.removeAttribute(this.getResources().getMappedAttribute('dropAxis'));
+    }
     this._remove(this.m_pivotDropHeaderTarget);
     this.m_pivotDropTarget = null;
     this.m_pivotDropHeaderTarget = null;
@@ -49326,30 +49382,38 @@ var __oj_data_grid_metadata =
         dragOverLevel = dragOverLabel[context].level;
         position = this._getLabelRelativePosition(event, dragOverAxis, dragOverLabel);
 
-        dropLineTop =
-          this.getElementDir(dragOverLabel, 'top') +
-          (position === 'after' ? this.getElementHeight(dragOverLabel) : 0);
+        if (
+          this.m_pivotDropTarget == null ||
+          !(
+            this._getAttribute(this.m_pivotDropTarget, 'dropLevel', true) === dragOverLevel &&
+            this._getAttribute(this.m_pivotDropTarget, 'dropAxis') === dragOverAxis
+          )
+        ) {
+          dropLineTop =
+            this.getElementDir(dragOverLabel, 'top') +
+            (position === 'after' ? this.getElementHeight(dragOverLabel) : 0);
 
-        if (dragOverAxis === 'columnEnd') {
-          dropLineTop += this.getElementDir(this.m_rowHeaderScrollbarSpacer, 'top');
+          if (dragOverAxis === 'columnEnd') {
+            dropLineTop += this.getElementDir(this.m_rowHeaderScrollbarSpacer, 'top');
+          }
+
+          dropLineDir =
+            this.getElementDir(dragOverLabel, dir) +
+            (position === 'after' ? this.getElementWidth(dragOverLabel) : 0);
+
+          if (dragOverAxis === 'rowEnd') {
+            dropLineDir += this.getElementDir(this.m_columnHeaderScrollbarSpacer, dir);
+          }
+
+          this._addPivotDropTargetLine(
+            dragOverAxis,
+            dropLineTop,
+            dir,
+            dropLineDir,
+            position,
+            dragOverLabel
+          );
         }
-
-        dropLineDir =
-          this.getElementDir(dragOverLabel, dir) +
-          (position === 'after' ? this.getElementWidth(dragOverLabel) : 0);
-
-        if (dragOverAxis === 'rowEnd') {
-          dropLineDir += this.getElementDir(this.m_columnHeaderScrollbarSpacer, dir);
-        }
-
-        this._addPivotDropTargetLine(
-          dragOverAxis,
-          dropLineTop,
-          dir,
-          dropLineDir,
-          position,
-          dragOverLabel
-        );
         let dropContext = {
           level: dragOverLevel,
           axis: dragOverAxis,

@@ -12,7 +12,6 @@ import { CustomElementUtils, AttributeUtils } from 'ojs/ojcustomelement-utils';
 import BindingProviderImpl from 'ojs/ojkoshared';
 import { warn, error } from 'ojs/ojlogger';
 import TemplateEngine from 'ojs/ojtemplateengine-ko';
-import PreactTemplateEngine from 'ojs/ojtemplateengine-preact-ko';
 
 /**
  * @ignore
@@ -405,7 +404,7 @@ bindingHandlers._ojBindTemplateSlot_ = {
       // Get the slot value of this oj-bind-template element so we can assign it to its
       // assigned nodes for downstream slotting
       template.__oj_slots = unwrap(values.slot) || '';
-      const engine = template.render ? PreactTemplateEngine : TemplateEngine;
+      const engine = TemplateEngine;
       const componentElement = isDefaultTemplate ? element : composite;
       let nodes;
 

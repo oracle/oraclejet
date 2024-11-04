@@ -32,6 +32,7 @@ const DecoratorUtils = __importStar(require("./DecoratorUtils"));
 const MetadataSlotUtils_1 = require("./MetadataSlotUtils");
 const MetadataEventUtils_1 = require("./MetadataEventUtils");
 const TransformerError_1 = require("./TransformerError");
+const MetadataTypes_1 = require("./MetadataTypes");
 function generatePropertiesMetadata(propsInfo, metaUtilObj) {
     let readOnlyPropNameNodes = [];
     let writebackPropNameNodes = [];
@@ -57,7 +58,9 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
                     else if (metaUtilObj.rtMetadata.properties?.[readOnlyWritebackProp]) {
                         TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.DUPLICATE_PROP_ROWRITEBACK, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Duplicate '${readOnlyWritebackProp}' property detected.`, propDeclaration);
                     }
+                    MetaUtils.printInColor(MetadataTypes_1.Color.FgCyan, `Processing properties RT metadata...`, metaUtilObj, 0);
                     const rt = getMetadataForProperty(readOnlyWritebackProp, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MDScope.RT, MetaTypes.MDContext.PROP | MetaTypes.MDContext.PROP_RO_WRITEBACK, metaUtilObj);
+                    MetaUtils.printInColor(MetadataTypes_1.Color.BgCyan, `Processing properties DT metadata...`, metaUtilObj, 0);
                     const dt = getMetadataForProperty(readOnlyWritebackProp, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MDScope.DT, MetaTypes.MDContext.PROP | MetaTypes.MDContext.PROP_RO_WRITEBACK, metaUtilObj);
                     rt.readOnly = true;
                     dt.readOnly = true;
@@ -93,6 +96,7 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
                     metaUtilObj.fullMetadata.properties = {};
                 }
                 const rt = getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MDScope.RT, MetaTypes.MDContext.PROP, metaUtilObj);
+                MetaUtils.printInColor(MetadataTypes_1.Color.BgCyan, `Processing properties DT metadata...`, metaUtilObj, 0);
                 const dt = getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeSymbol, MetaTypes.MDScope.DT, MetaTypes.MDContext.PROP, metaUtilObj);
                 metaUtilObj.rtMetadata.properties[prop] = rt;
                 metaUtilObj.fullMetadata.properties[prop] = dt;
@@ -298,6 +302,9 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeS
             }
         }
     };
+    if (scope == MetaTypes.MDScope.DT) {
+        MetaUtils.printInColor(MetadataTypes_1.Color.FgCyan, `Processing property: ${prop}`, metaUtilObj, 2);
+    }
     const metaObj = TypeUtils.getAllMetadataForDeclaration(propDeclaration, scope, context, propertyPath, memberSymbol, metaUtilObj);
     if (scope == MetaTypes.MDScope.DT && metaObj.type.indexOf('function') > -1) {
         let declTypeNode = propDeclaration.type;
@@ -317,36 +324,39 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeS
     if (scope == MetaTypes.MDScope.DT && metaObj.isArrayOfObject) {
         nestedArrayStack.push(propDeclaration.name.getText());
     }
-    const subprops = TypeUtils.getComplexPropertyMetadata(memberSymbol, metaObj.type, propsName, scope, context, propertyPath, nestedArrayStack, metaUtilObj);
+    if (scope == MetaTypes.MDScope.DT) {
+        MetaUtils.printInColor(MetadataTypes_1.Color.FgCyan, `Processing sub-properties for: ${prop}`, metaUtilObj, 2);
+    }
+    const complexMD = TypeUtils.getComplexPropertyMetadata(memberSymbol, metaObj, propsName, scope, context, propertyPath, nestedArrayStack, metaUtilObj);
     md = metaObj;
     if (scope == MetaTypes.MDScope.DT) {
         const propSym = mappedTypeSymbol ?? memberSymbol;
         md['optional'] = propSym.flags & ts.SymbolFlags.Optional ? true : false;
     }
-    if (subprops) {
-        if (subprops.circRefDetected) {
-            md.type = TypeUtils.getSubstituteTypeForCircularReference(metaObj);
-        }
-        else {
-            if (scope == MetaTypes.MDScope.DT) {
-                const typeDef = TypeUtils.getPossibleTypeDef(prop, memberSymbol, metaObj, metaUtilObj);
-                if (typeDef && (typeDef.name || typeDef.coreJetModule)) {
-                    md['jsdoc'] = md['jsdoc'] || {};
-                    md['jsdoc']['typedef'] = typeDef;
-                }
-            }
+    if (complexMD.circRefDetected) {
+        md.type = TypeUtils.getSubstituteTypeForCircularReference(metaObj);
+    }
+    else {
+        if (complexMD.properties) {
             if (metaObj.isArrayOfObject) {
                 if (scope == MetaTypes.MDScope.DT) {
                     md.extension = md.extension ?? {};
                     md.extension['vbdt'] = md.extension['vbdt'] ?? {};
-                    md.extension['vbdt']['itemProperties'] = subprops;
+                    md.extension['vbdt']['itemProperties'] = complexMD.properties;
                 }
             }
             else {
                 const typeNames = md.type.split(MetaUtils._UNION_SPLITTER);
                 md.type =
                     typeNames.length <= 1 || typeNames.indexOf('null') === -1 ? 'object' : 'object|null';
-                md.properties = subprops;
+                md.properties = complexMD.properties;
+            }
+        }
+        if (complexMD.keyedProperties) {
+            if (scope == MetaTypes.MDScope.DT) {
+                md.extension = md.extension ?? {};
+                md.extension['vbdt'] = md.extension['vbdt'] ?? {};
+                md.extension['vbdt']['keyedProperties'] = complexMD.keyedProperties;
             }
         }
     }
@@ -380,6 +390,8 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeS
     }
     delete md['isArrayOfObject'];
     delete md['isEnumValuesForDTOnly'];
+    delete md['typeDefs'];
+    delete md['rawType'];
     return md;
 }
 function updateDefaultValue(md, propertyName, propNode, metaUtilObj) {

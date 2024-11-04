@@ -13,13 +13,13 @@ import 'jqueryui-amd/tabbable';
 import oj from 'ojs/ojcore';
 import $ from 'jquery';
 import Message from 'ojs/ojmessaging';
+import { info, error } from 'ojs/ojlogger';
 import { getDefaultValue, getPropertyMetadata, getFlattenedAttributes } from 'ojs/ojmetadatautils';
 import oj$1 from 'ojs/ojcore-base';
 import { fixResizeListeners, dispatchEvent, recentTouchEnd, isTouchSupported, makeFocusable, getReadingDirection } from 'ojs/ojdomutils';
 import 'ojs/ojcustomelement';
 import { CustomElementUtils, ElementUtils, transformPreactValue, addPrivatePropGetterSetters, ElementState, AttributeUtils, JetElementError } from 'ojs/ojcustomelement-utils';
 import { isElementRegistered, getElementProperties, registerElement } from 'ojs/ojcustomelement-registry';
-import { info, error } from 'ojs/ojlogger';
 import { DefaultsUtils } from 'ojs/ojdefaultsutils';
 import { applyParameters, getComponentTranslations } from 'ojs/ojtranslation';
 import 'ojs/ojfocusutils';
@@ -133,14 +133,22 @@ ComponentMessaging.prototype.Init = function (component) {
 /**
  * Utility function that activates messaging on the component using the strategy provided.
  * @param {Object} launcher element(s) to which messaging applies
- * @param {Object} content
+ * @param {Object} contentElement  The wrapper element for all component messages
+ * @param {Object} content an object containing the messages and the converter hint
+ * @param {Array<string>} severitiesAllowedWhenReadonly an array of message severities that are allowed when readonly
  * @private
  */
-ComponentMessaging.prototype.activate = function (launcher, contentElement, content) {
+ComponentMessaging.prototype.activate = function (
+  launcher,
+  contentElement,
+  content,
+  severitiesAllowedWhenReadonly
+) {
   var that = this;
   oj.Assert.assertObject(content);
   this._launcher = launcher;
   this._contentElement = contentElement;
+  this._severitiesAllowedWhenReadonly = severitiesAllowedWhenReadonly;
 
   this._messagingContent = oj.CollectionUtils.copyInto(this._messagingContent || {}, content);
 
@@ -743,7 +751,7 @@ ComponentMessaging.prototype._strategyToArtifacts = function () {
   } else {
     let options = this._component.options;
     let messagingPreferences = options.displayOptions ? { ...options.displayOptions } : {};
-    if (resolvedUserAssistance === 'compact') {
+    if (resolvedUserAssistance === 'compact' && !options.readOnly) {
       // for 'compact' set displayOptions.messages, validator-hint and converter hint to notewindow.
       messagingPreferences.messages =
         messagingPreferences.messages === 'none' ? 'none' : 'notewindow';
@@ -753,6 +761,15 @@ ComponentMessaging.prototype._strategyToArtifacts = function () {
         messagingPreferences.converterHint === 'none' ? 'none' : 'notewindow';
       strategyToArtifacts = this._getResolvedMessagingDisplayOptions(messagingPreferences);
     } else {
+      if (options.readOnly) {
+        if (options.readonlyUserAssistanceShown === 'confirmationAndInfoMessages') {
+          messagingPreferences.messages = ComponentMessaging._STRATEGY_TYPE.INLINE;
+        } else {
+          messagingPreferences.messages = ComponentMessaging._STRATEGY_TYPE.NONE;
+        }
+        messagingPreferences.validatorHint = ComponentMessaging._STRATEGY_TYPE.NONE;
+        messagingPreferences.converterHint = ComponentMessaging._STRATEGY_TYPE.NONE;
+      }
       strategyToArtifacts = this._getResolvedMessagingDisplayOptions(messagingPreferences);
     }
   }
@@ -927,7 +944,28 @@ MessagingStrategy.prototype.GenerateIdIfNeeded = function (element) {
  * @private
  */
 MessagingStrategy.prototype.GetMessages = function () {
-  return this.GetValidityState().getMessages();
+  const unfilteredMessages = this.GetValidityState().getMessages();
+  // if we don't have a _severitiesAllowedWhenReadonly filter array, just return the unfiltered messages.
+  const severitiesAllowedWhenReadonly = this._componentMessaging._severitiesAllowedWhenReadonly;
+  const filteredMessages = severitiesAllowedWhenReadonly
+    ? unfilteredMessages.filter((message) =>
+        severitiesAllowedWhenReadonly.includes(message.severity)
+      )
+    : unfilteredMessages;
+  if (filteredMessages.length < unfilteredMessages.length) {
+    const filteredOutMessages = unfilteredMessages.filter(
+      (message) => !severitiesAllowedWhenReadonly.includes(message.severity)
+    );
+    filteredOutMessages.forEach((message) => {
+      info(
+        'The following message severity is not allowed when readonly: severity:' +
+          message.severity +
+          ', message detail:' +
+          message.detail
+      );
+    });
+  }
+  return filteredMessages;
 };
 
 MessagingStrategy.prototype.GetMaxSeverity = function () {

@@ -89,6 +89,14 @@ var __oj_switch_metadata =
       "type": "boolean",
       "value": false
     },
+    "readonlyUserAssistanceShown": {
+      "type": "string",
+      "enumValues": [
+        "confirmationAndInfoMessages",
+        "none"
+      ],
+      "value": "none"
+    },
     "translations": {
       "type": "object",
       "value": {},
@@ -152,6 +160,9 @@ var __oj_switch_metadata =
       properties: {
         readonly: {
           binding: { consume: { name: 'readonly' } }
+        },
+        readonlyUserAssistanceShown: {
+          binding: { consume: { name: 'readonlyUserAssistanceShown' } }
         },
         userAssistanceDensity: {
           binding: { consume: { name: 'userAssistanceDensity' } }
@@ -571,6 +582,21 @@ const ARIA_DISABLED = 'aria-disabled';
        * @memberof oj.ojSwitch
        */
       readOnly: false,
+      /**
+       * Specifies which user assistance types should be shown when the component is readonly.
+       *
+       * @expose
+       * @access public
+       * @name readonlyUserAssistanceShown
+       * @instance
+       * @memberof oj.ojSwitch
+       * @default 'none'
+       * @type {string}
+       * @ojvalue {string} 'none' no user assistance is shown when the component is readonly
+       * @ojvalue {string} 'confirmationAndInfoMessages' messagesCustom messages of severity 'confirmation' and 'info' are shown when the component is readonly. Other severities will be filtered out and an info log message will be logged to the console.
+       * @since 17.1.0
+       */
+      readonlyUserAssistanceShown: 'none',
 
       /**
        * The boolean state of the switch component.
