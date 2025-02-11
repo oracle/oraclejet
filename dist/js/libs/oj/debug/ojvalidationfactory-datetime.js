@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -21,7 +21,7 @@ define(['ojs/ojcore', 'ojs/ojvalidationfactory-base',
  * {@link oj.IntlDateTimeConverter}.
  *
  * @name oj.DateTimeConverterFactory
- * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of DateTimeConverter instead.'}
+ * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of {@link oj.IntlDateTimeConverter} instead.'}
  * @hideconstructor
  * @ojtsnoexport
  * @ojtsexportastype
@@ -82,7 +82,7 @@ __ValidationFactoryBase.Validation.__registerDefaultConverterFactory(
  * var birthdateValidator = drvf.createValidator(birthdateOptions);
  *
  * @name oj.DateTimeRangeValidatorFactory
- * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of DateTimeRangeValidator instead.'}
+ * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of {@link oj.DateTimeRangeValidator} instead.'}
  * @hideconstructor
  * @ojtsnoexport
  * @ojtsexportastype
@@ -132,7 +132,7 @@ __ValidationFactoryBase.Validation.__registerDefaultValidatorFactory(
  * var drValidator = drvf.createValidator();
  *
  * @name oj.DateRestrictionValidatorFactory
- * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of DateRestrictionValidator instead.'}
+ * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of {@link oj.DateRestrictionValidator} instead.'}
  * @class
  * @hideconstructor
  * @ojtsnoexport

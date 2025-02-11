@@ -218,6 +218,7 @@
   --oj-core-border-radius-xl:               .5rem;
   --oj-private-core-z-index-fixed:           100;
   --oj-private-core-z-index-off-canvas:      200;
+  --oj-private-core-z-index-tooltip:         800;
   --oj-private-core-z-index-resizable:       900;
   --oj-core-z-index-popup:                   1000;
   --oj-core-z-index-dialog:                  1050;
@@ -341,7 +342,7 @@
 }
 
 .oj-theme-json {
-  font-family: '{"name":"stable","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v17.1.0"}' !important;
+  font-family: '{"name":"stable","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v18.0.0"}' !important;
 }
 
 .oj-helper-hidden-accessible {
@@ -1012,15 +1013,23 @@ a.oj-link-embedded:active:not(.oj-disabled) {
   transition: text-decoration var(--oj-animation-duration-long), box-shadow var(--oj-animation-duration-long), -webkit-text-decoration var(--oj-animation-duration-long);
 }
 
+a.oj-link-standalone {
+  font-weight: 600;
+  display: inline-block;
+  min-height: 24px;
+  min-width: 24px;
+}
+
 a.oj-link-standalone:not(.oj-disabled),
 a.oj-link-standalone:visited:not(.oj-disabled) {
   text-decoration: none;
 }
 
-a.oj-link-standalone:hover:not(.oj-disabled),
-a.oj-link-standalone:active:not(.oj-disabled) {
-  box-shadow: 0px 1px 0px 0px;
-  transition: box-shadow var(--oj-animation-duration-long);
+a.oj-link-standalone:active:not(.oj-disabled),
+a.oj-link-standalone:hover:not(.oj-disabled) {
+  -webkit-text-decoration: underline 1px;
+          text-decoration: underline 1px;
+  text-underline-offset: .3em;
 }
 
 a.oj-link-subtle-primary,
@@ -1349,7 +1358,7 @@ html.oj-agent-os-windows {
   }
 }
 
-@keyframes SkeletonFadeInAnimation {
+@keyframes OjSkeletonFadeInAnimation {
   0% {
     opacity: 0;
   }
@@ -1360,13 +1369,13 @@ html.oj-agent-os-windows {
 
 /* Styling for skeleton fade in animation */
 .oj-animation-skeleton-fade-in {
-  animation-name: SkeletonFadeInAnimation;
+  animation-name: OjSkeletonFadeInAnimation;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   animation-duration: 0.75s;
 }
 
-@keyframes SkeletonFadeOutAnimation {
+@keyframes OjSkeletonFadeOutAnimation {
   0% {
     opacity: 1;
   }
@@ -1377,13 +1386,13 @@ html.oj-agent-os-windows {
 
 /* Styling for skeleton fade out animation */
 .oj-animation-skeleton-fade-out {
-  animation-name: SkeletonFadeOutAnimation;
+  animation-name: OjSkeletonFadeOutAnimation;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   animation-duration: 0.1s;
 }
 
-@keyframes SkeletonAnimation {
+@keyframes OjSkeletonAnimation {
   0% {
     background-color: var(--oj-animation-skeleton-bg-end-color);
   }
@@ -1394,7 +1403,7 @@ html.oj-agent-os-windows {
 
 /* Styling for skeleton main (loop) animation */
 .oj-animation-skeleton {
-  animation-name: SkeletonAnimation;
+  animation-name: OjSkeletonAnimation;
   animation-iteration-count: infinite;
   animation-direction: alternate;
   animation-duration: 1.5s;
@@ -10536,11 +10545,16 @@ oj-chart {
   stroke-width: 0.25em;
   stroke-linejoin: round;
   paint-order: stroke;
+  font-weight: 600;
 }
 
 .oj-hicontrast .oj-chart-data-label-contrast {
   fill: CanvasText;
   stroke: Canvas;
+}
+
+.oj-chart-overview-filter-panel {
+  background-color: var(--oj-dvt-overview-bg-color);
 }
 
 .oj-chart-pie-skeleton-container {
@@ -11021,7 +11035,7 @@ html[dir="rtl"] .oj-message-content .oj-message-detail:not(:first-child) {
   position: absolute;
 }
 
-.oj-component-layer, .oj-popup-layer, .oj-listbox-drop-layer, .oj-dialog-layer, .oj-menu-layer, .oj-messages-layer {
+.oj-component-layer, .oj-popup-layer, .oj-tooltip-layer, .oj-listbox-drop-layer, .oj-dialog-layer, .oj-menu-layer, .oj-messages-layer {
   position: relative;
 }
 
@@ -11068,6 +11082,11 @@ oj-popup {
   z-index: var(--oj-core-z-index-popup);
 }
 
+/* defines the stacking contenxt for tooltips */
+.oj-tooltip-layer {
+  z-index: var(--oj-private-core-z-index-tooltip);
+}
+
 .oj-popup-layer.oj-focus-within {
   z-index: calc(var(--oj-core-z-index-popup) + 1);
 }
@@ -11092,6 +11111,7 @@ oj-popup {
 .oj-popup {
   max-width: calc(100vw - 3rem);
   max-height: calc(100vh - 3rem);
+  overflow: auto;
   border: 1px solid var(--oj-popup-border-color);
   border-radius: var(--oj-popup-border-radius);
   background-color: var(--oj-popup-bg-color);
@@ -12262,7 +12282,7 @@ html[dir="rtl"] .oj-form-control:has(.oj-buttonset) .oj-text-field-input, html[d
   background-color: var(--oj-animation-skeleton-bg-end-color);
   background-size: 200% 200%;
   border-width: 0;
-  animation-name: SkeletonAnimation;
+  animation-name: OjSkeletonAnimation;
   animation-iteration-count: infinite;
   animation-direction: alternate;
   animation-duration: 1.5s;
@@ -12457,6 +12477,20 @@ html[dir="rtl"] .oj-checkboxset:not(.oj-choice-direction-row) .oj-required-inlin
   animation-name: animatePlaceholder;
   animation-duration: var(--oj-animation-duration-xlong);
   animation-timing-function: var(--oj-animation-ease-in);
+}
+
+.oj-form-control-label-tooltip {
+  max-width: 21rem;
+  border-radius: var(--oj-tooltip-border-radius);
+  color: var(--oj-tooltip-text-color);
+  background-color: var(--oj-tooltip-bg-color);
+  border-color: var(--oj-tooltip-border-color);
+}
+
+.oj-agent-os-mac.oj-agent-browser-safari .oj-text-field-label-inside .oj-label span::after,
+.oj-agent-os-mac.oj-agent-browser-safari .oj-form-control-label-inside:not(.oj-label-value) .oj-label span::after {
+  content: '';
+  display: block;
 }
 
 .oj-radiocheckbox-icon {
@@ -14295,9 +14329,36 @@ oj-highlight-text:not(.oj-complete) {
   border: none;
 }
 
+/* the following styles are to enable wrapping of the inside label of the search field when fullscreen in mobile */
+.oj-listbox-drop.oj-listbox-searchselect.oj-listbox-fullscreen .oj-text-field-label-inside.oj-text-field.oj-inputtext .oj-text-field-container {
+  height: auto;
+}
+
+.oj-listbox-drop.oj-listbox-searchselect.oj-listbox-fullscreen .oj-text-field-label-inside.oj-text-field.oj-inputtext .oj-text-field-middle {
+  flex-direction: column;
+}
+
+.oj-listbox-drop.oj-listbox-searchselect.oj-listbox-fullscreen .oj-text-field-label-inside.oj-text-field.oj-inputtext .oj-text-field-middle .oj-inputtext-label.oj-label {
+  white-space: normal;
+  position: relative;
+  top: calc(var(--oj-label-inside-edge-font-size) / 2);
+  font-size: var(--oj-label-inside-edge-font-size);
+  transform: none;
+  transition: none;
+}
+
 /*
-     * applied to the dropdown when it is open above the component
-     */
+   * the min-height and padding-top needed to be adjusted since the layout for this
+   * case is now flex column
+   */
+.oj-listbox-drop.oj-listbox-searchselect.oj-listbox-fullscreen .oj-text-field-label-inside.oj-text-field.oj-inputtext .oj-text-field-middle .oj-inputtext-input {
+  padding-top: 0;
+  min-height: calc(var(--oj-text-field-inside-edge-height) - var(--oj-label-inside-edge-font-size) * var(--oj-label-inside-edge-line-height) - var(--oj-label-inside-edge-font-size) / 2);
+}
+
+/*
+    * applied to the dropdown when it is open above the component
+    */
 .oj-listbox-drop-above {
   margin-top: -1px;
 }
@@ -15261,9 +15322,9 @@ oj-conveyor-belt {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  min-width: var(--oj-button-height);
-  min-height: var(--oj-button-height);
-  line-height: var(--oj-button-height);
+  min-width: var(--oj-button-sm-height);
+  min-height: var(--oj-button-sm-height);
+  line-height: var(--oj-button-sm-height);
   text-align: center;
   border: 1px solid;
   flex: 0 0 auto;
@@ -15314,23 +15375,10 @@ html[dir="rtl"] .oj-conveyorbelt-overflow-indicator.oj-end {
 }
 
 .oj-conveyorbelt-overflow-button {
-  height: var(--oj-button-height);
-  width: var(--oj-button-height);
+  height: var(--oj-button-sm-height);
+  width: var(--oj-button-sm-height);
   cursor: var(--oj-core-cursor-clickable);
   border-radius: var(--oj-button-border-radius);
-  border-color: var(--oj-button-borderless-chrome-border-color-hover);
-}
-
-.oj-conveyorbelt-overflow-indicator.oj-hover .oj-conveyorbelt-overflow-button,
-.oj-conveyorbelt-overflow-button:hover {
-  background-color: var(--oj-button-borderless-chrome-bg-color-hover);
-  border-color: var(--oj-button-borderless-chrome-border-color-hover);
-}
-
-.oj-conveyorbelt-overflow-indicator.oj-active .oj-conveyorbelt-overflow-button,
-.oj-conveyorbelt-overflow-indicator.oj-active.oj-hover .oj-conveyorbelt-overflow-button {
-  background-color: var(--oj-button-borderless-chrome-bg-color-active);
-  border-color: var(--oj-button-borderless-chrome-border-color-active);
 }
 
 /* overflow icons */
@@ -15338,19 +15386,20 @@ html[dir="rtl"] .oj-conveyorbelt-overflow-indicator.oj-end {
   cursor: inherit;
   vertical-align: middle;
   margin-bottom: 3px;
+  font-size: var(--oj-button-sm-icon-size);
 }
 
 .oj-conveyorbelt-overflow-indicator.oj-default .oj-conveyorbelt-overflow-icon {
-  color: var(--oj-button-borderless-chrome-text-color);
+  color: var(--oj-private-button-ghost-chrome-text-color);
 }
 
 .oj-conveyorbelt-overflow-indicator.oj-hover .oj-conveyorbelt-overflow-icon {
-  color: var(--oj-button-borderless-chrome-text-color-hover);
+  color: var(--oj-private-button-ghost-chrome-text-color-hover);
 }
 
 .oj-conveyorbelt-overflow-indicator.oj-active .oj-conveyorbelt-overflow-icon,
 .oj-conveyorbelt-overflow-indicator.oj-active.oj-hover .oj-conveyorbelt-overflow-icon {
-  color: var(--oj-button-borderless-chrome-text-color-active);
+  color: var(--oj-private-button-ghost-chrome-text-color-active);
 }
 
 :root {
@@ -16501,7 +16550,7 @@ oj-calendar:not(.oj-complete) {
 .oj-inputdatetime-date-only.oj-loading .oj-datepicker-popup {
   background-color: var(--oj-animation-skeleton-bg-end-color);
   background-size: 200% 200%;
-  animation-name: SkeletonAnimation;
+  animation-name: OjSkeletonAnimation;
   animation-iteration-count: infinite;
   animation-direction: alternate;
   animation-duration: 1.5s;
@@ -17402,58 +17451,58 @@ oj-drawer-popup {
   overscroll-behavior: contain;
 }
 
-.oj-drawer-popup-surrogate .oj-drawer-start,
-.oj-drawer-popup-surrogate .oj-drawer-end {
+.oj-drawer-popup-surrogate > .oj-drawer-start,
+.oj-drawer-popup-surrogate > .oj-drawer-end {
   max-width: 90vw;
   min-width: 320px;
   top: 0;
   bottom: 0;
 }
 
-html:not([dir="rtl"]) .oj-drawer-popup-surrogate .oj-drawer-start {
+html:not([dir="rtl"]) .oj-drawer-popup-surrogate > .oj-drawer-start {
   left: 0;
 }
 
-html[dir="rtl"] .oj-drawer-popup-surrogate .oj-drawer-start {
+html[dir="rtl"] .oj-drawer-popup-surrogate > .oj-drawer-start {
   right: 0;
 }
 
-html:not([dir="rtl"]) .oj-drawer-popup-surrogate .oj-drawer-end {
+html:not([dir="rtl"]) .oj-drawer-popup-surrogate > .oj-drawer-end {
   right: 0;
 }
 
-html[dir="rtl"] .oj-drawer-popup-surrogate .oj-drawer-end {
+html[dir="rtl"] .oj-drawer-popup-surrogate > .oj-drawer-end {
   left: 0;
 }
 
-.oj-drawer-popup-surrogate .oj-drawer-full-overlay {
+.oj-drawer-popup-surrogate > .oj-drawer-full-overlay {
   width: 100%;
   max-width: 100%;
 }
 
-.oj-drawer-popup-surrogate .oj-drawer-bottom {
+.oj-drawer-popup-surrogate > .oj-drawer-bottom {
   left: 0;
   right: 0;
   bottom: 0;
 }
 
-html:not([dir="rtl"]) .oj-drawer-popup-surrogate .oj-drawer-start {
+html:not([dir="rtl"]) .oj-drawer-popup-surrogate > .oj-drawer-start {
   box-shadow: 0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb), 0.05);
 }
 
-html[dir="rtl"] .oj-drawer-popup-surrogate .oj-drawer-start {
+html[dir="rtl"] .oj-drawer-popup-surrogate > .oj-drawer-start {
   box-shadow: -0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb), 0.05);
 }
 
-html:not([dir="rtl"]) .oj-drawer-popup-surrogate .oj-drawer-end {
+html:not([dir="rtl"]) .oj-drawer-popup-surrogate > .oj-drawer-end {
   box-shadow: -0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb), 0.05);
 }
 
-html[dir="rtl"] .oj-drawer-popup-surrogate .oj-drawer-end {
+html[dir="rtl"] .oj-drawer-popup-surrogate > .oj-drawer-end {
   box-shadow: 0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb), 0.05);
 }
 
-.oj-drawer-popup-surrogate .oj-drawer-bottom {
+.oj-drawer-popup-surrogate > .oj-drawer-bottom {
   box-shadow: 0 -0.3rem 0.3rem 0 rgba(var(--oj-core-box-shadow-rgb), 0.05);
 }
 
@@ -18314,7 +18363,6 @@ html[dir="rtl"] .oj-formlayout-inline-label .oj-label-required-icon, html[dir="r
 .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
 .oj-formlayout-inline-label > .oj-label {
   display: inline-flex;
-  align-items: center;
 }
 
 html:not([dir="rtl"]) .oj-formlayout .oj-form.oj-enabled.oj-form-cols-labels-inline .oj-label, html:not([dir="rtl"])
@@ -18340,7 +18388,7 @@ oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-labe
 oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label:not(.oj-read-only).oj-combobox-label,
 oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label:not(.oj-read-only).oj-searchselect-label,
 oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label:not(.oj-read-only).oj-textarea-label {
-  min-height: var(--oj-text-field-height);
+  padding-block-start: calc((var(--oj-text-field-height) - var(--oj-label-font-size) * var(--oj-label-line-height)) * 0.5);
 }
 
 .oj-formlayout-inline-label > .oj-label-inline-top {
@@ -18351,6 +18399,7 @@ oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-labe
 .oj-formlayout-inline-label > .oj-switch-label:not(.oj-read-only),
 .oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-switch-label:not(.oj-read-only) {
   min-height: var(--oj-core-touch-target-min-size);
+  align-items: center;
 }
 
 .oj-formlayout .oj-form.oj-form-cols-labels-inline .oj-label.oj-slider-label,
@@ -20939,7 +20988,7 @@ oj-message-banner:not(.oj-complete) {
   outline-style: dotted;
   outline-width: 1px;
   outline-color: var(--oj-core-focus-border-color);
-  outline-offset: 1px;
+  outline-offset: -1px;
 }
 
 .oj-messagebanner-item.oj-messagebanner-section {
@@ -23952,6 +24001,10 @@ oj-searchselect:not(.oj-complete) {
   box-shadow: none !important;
 }
 
+.oj-searchselect .oj-searchselect-filter.oj-text-field .oj-text-field-container .oj-inputtext-label {
+  color: transparent !important;
+}
+
 html:not([dir="rtl"]) .oj-searchselect.oj-form-control-text-align-right .oj-searchselect-filter {
   padding-right: 1px;
 }
@@ -25517,6 +25570,7 @@ oj-switcher:not(.oj-complete) {
   --oj-tab-bar-item-line-height:                    var(--oj-typography-body-md-line-height);
   --oj-tab-bar-item-font-size:                      var(--oj-typography-body-md-font-size);
   --oj-tab-bar-item-padding:                         0;
+  --oj-private-tab-bar-item-label-min-width:                 3rem;
   --oj-tab-bar-item-font-weight:                    600;
   --oj-private-tab-bar-item-border-color:           transparent;
   --oj-tab-bar-item-label-color:                    var(--oj-core-text-color-secondary);
@@ -25662,7 +25716,7 @@ a.oj-tabbar-item-content .oj-tabbar-item-label {
   order: 2;
   text-overflow: ellipsis;
   white-space: nowrap;
-  min-width: 3rem;
+  min-width: min(auto, var(--oj-private-tab-bar-item-label-min-width));
   overflow-x: hidden;
   display: inline-block;
   line-height: normal;
@@ -26344,7 +26398,7 @@ html[dir="rtl"] .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-tab
 }
 
 .oj-tabbar-horizontal:not(.oj-tabbar-stack-icon-label):not(.oj-tabbar-icon-only) .oj-tabbar-item-end {
-  margin-left: var(--oj-tab-bar-icon-to-text-padding);
+  margin-inline-start: var(--oj-tab-bar-icon-to-text-padding);
   flex: 0 0 auto;
   order: 3;
   align-self: center;
@@ -26702,13 +26756,17 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* Styling for the vertical grid lines for header, data, and footer cells. */
 .oj-table-column-header-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
-.oj-table-column-header-cell.oj-table-vgrid-lines + .oj-table-gutter-end-header-cell:not(.oj-table-frozen-end.oj-table-frozen-edge),
+.oj-table-column-header-cell.oj-table-vgrid-lines:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-column-header-cell.oj-table-vgrid-lines + .oj-table-gutter-end-header-cell:not(.oj-table-frozen-all.oj-table-frozen-edge),
 .oj-table-data-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
-.oj-table-data-cell.oj-table-vgrid-lines + .oj-table-gutter-end-body-cell:not(.oj-table-frozen-end.oj-table-frozen-edge),
+.oj-table-data-cell.oj-table-vgrid-lines:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-data-cell.oj-table-vgrid-lines + .oj-table-gutter-end-body-cell:not(.oj-table-frozen-all.oj-table-frozen-edge),
 .oj-table-footer-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
-.oj-table-footer-cell.oj-table-vgrid-lines + .oj-table-gutter-end-footer-cell:not(.oj-table-frozen-end.oj-table-frozen-edge),
+.oj-table-footer-cell.oj-table-vgrid-lines:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-footer-cell.oj-table-vgrid-lines + .oj-table-gutter-end-footer-cell:not(.oj-table-frozen-all.oj-table-frozen-edge),
 .oj-table-add-row-placeholder > td.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
-.oj-table-add-row-placeholder > td.oj-table-vgrid-lines + .oj-table-gutter-end-body-cell:not(.oj-table-frozen-end.oj-table-frozen-edge) {
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines + .oj-table-gutter-end-body-cell:not(.oj-table-frozen-all.oj-table-frozen-edge) {
   border-inline-start-style: solid;
   border-inline-start-color: var(--oj-core-divider-color);
   border-inline-start-width: 1px;
@@ -26716,13 +26774,21 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* selection borders for column selection when vertical grid lines are enabled. */
 .oj-table-column-header-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-column-header-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
 .oj-table-column-header-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-helper-hidden-accessible) + .oj-table-column-header-cell,
+.oj-table-column-header-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-helper-hidden-accessible) + .oj-table-column-header-cell,
 .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
 .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-helper-hidden-accessible) + .oj-table-data-cell,
+.oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-helper-hidden-accessible) + .oj-table-data-cell,
 .oj-table-footer-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-footer-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
 .oj-table-footer-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-helper-hidden-accessible) + .oj-table-footer-cell,
+.oj-table-footer-cell.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-helper-hidden-accessible) + .oj-table-footer-cell,
 .oj-table-add-row-placeholder > td.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
-.oj-table-add-row-placeholder > td.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-helper-hidden-accessible) + td {
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator):not(:first-child):not(.oj-helper-hidden-accessible),
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-helper-hidden-accessible) + td,
+.oj-table-add-row-placeholder > td.oj-table-vgrid-lines.oj-selected:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-helper-hidden-accessible) + td {
   border-inline-start-color: var(--oj-core-border-color-selected);
 }
 
@@ -26745,8 +26811,11 @@ table.oj-table-element.oj-table-column-header-resizing {
 }
 
 .oj-table-column-header-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator),
+.oj-table-column-header-cell.oj-table-vgrid-lines:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator),
 .oj-table-data-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator),
+.oj-table-data-cell.oj-table-vgrid-lines:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator),
 .oj-table-footer-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator),
+.oj-table-footer-cell.oj-table-vgrid-lines:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator),
 .oj-table-column-header-cell.oj-selected:not(.oj-table-column-resize-indicator):not(:first-child),
 .oj-table-column-header-cell.oj-selected + .oj-table-column-header-cell:not(.oj-table-column-resize-indicator),
 .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected:not(.oj-table-column-resize-indicator):not(:first-child),
@@ -26757,8 +26826,11 @@ table.oj-table-element.oj-table-column-header-resizing {
 }
 
 .oj-table-grid-display .oj-table-column-header-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator),
+.oj-table-grid-display .oj-table-column-header-cell.oj-table-vgrid-lines:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator),
 .oj-table-grid-display .oj-table-data-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator),
+.oj-table-grid-display .oj-table-data-cell.oj-table-vgrid-lines:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator),
 .oj-table-grid-display .oj-table-footer-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(.oj-table-column-resize-indicator),
+.oj-table-grid-display .oj-table-footer-cell.oj-table-vgrid-lines:not(.oj-table-frozen-all.oj-table-frozen-end-edge):not(.oj-table-column-resize-indicator),
 .oj-table-grid-display .oj-table-column-header-cell.oj-selected:not(.oj-table-column-resize-indicator):not(:first-child),
 .oj-table-grid-display .oj-table-column-header-cell.oj-selected + .oj-table-column-header-cell:not(.oj-table-column-resize-indicator),
 .oj-table-grid-display .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected:not(.oj-table-column-resize-indicator):not(:first-child),
@@ -26919,185 +26991,224 @@ table.oj-table-element.oj-table-column-header-resizing {
 }
 
 .oj-table-data-cell.oj-table-frozen-start,
-.oj-table-gutter-start-body-cell.oj-table-frozen-start,
-.oj-table-frozen-start {
-  position: sticky;
-}
-
-html:not([dir="rtl"]) .oj-table-data-cell.oj-table-frozen-start, html:not([dir="rtl"])
-.oj-table-gutter-start-body-cell.oj-table-frozen-start, html:not([dir="rtl"])
-.oj-table-frozen-start {
-  left: 0;
-}
-
-html[dir="rtl"] .oj-table-data-cell.oj-table-frozen-start, html[dir="rtl"]
-.oj-table-gutter-start-body-cell.oj-table-frozen-start, html[dir="rtl"]
-.oj-table-frozen-start {
-  right: 0;
-}
-
-html:not([dir="rtl"]) .oj-table-frozen-start.oj-table-frozen-edge {
-  box-shadow: 2px 0px 0px var(--oj-collection-border-color);
-}
-
-html[dir="rtl"] .oj-table-frozen-start.oj-table-frozen-edge {
-  box-shadow: -2px 0px 0px var(--oj-collection-border-color);
-}
-
 .oj-table-data-cell.oj-table-frozen-end,
-.oj-table-gutter-end-body-cell.oj-table-frozen-end,
-.oj-table-frozen-end {
+.oj-table-data-cell.oj-table-frozen-all,
+.oj-table-selector-cell {
   position: sticky;
 }
 
-html:not([dir="rtl"]) .oj-table-data-cell.oj-table-frozen-end, html:not([dir="rtl"])
-.oj-table-gutter-end-body-cell.oj-table-frozen-end, html:not([dir="rtl"])
-.oj-table-frozen-end {
-  right: 0;
-}
-
-html[dir="rtl"] .oj-table-data-cell.oj-table-frozen-end, html[dir="rtl"]
-.oj-table-gutter-end-body-cell.oj-table-frozen-end, html[dir="rtl"]
-.oj-table-frozen-end {
+html:not([dir="rtl"]) .oj-table-frozen-start, html:not([dir="rtl"])
+.oj-table-frozen-all {
   left: 0;
 }
 
-html:not([dir="rtl"]) .oj-table-frozen-end.oj-table-frozen-edge {
-  box-shadow: -2px 0px 0px var(--oj-collection-border-color);
+html[dir="rtl"] .oj-table-frozen-start, html[dir="rtl"]
+.oj-table-frozen-all {
+  right: 0;
 }
 
-html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
+html:not([dir="rtl"]) .oj-table-frozen-start.oj-table-frozen-edge, html:not([dir="rtl"])
+.oj-table-frozen-start-edge {
   box-shadow: 2px 0px 0px var(--oj-collection-border-color);
 }
 
-.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-gutter-start-header-cell.oj-table-frozen-start {
-  z-index: 100011;
+html[dir="rtl"] .oj-table-frozen-start.oj-table-frozen-edge, html[dir="rtl"]
+.oj-table-frozen-start-edge {
+  box-shadow: -2px 0px 0px var(--oj-collection-border-color);
 }
 
-.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-start.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-start.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-gutter-start-header-cell.oj-table-frozen-start.oj-table-frozen-edge {
-  z-index: 100012;
+html:not([dir="rtl"]) .oj-table-frozen-end, html:not([dir="rtl"])
+.oj-table-frozen-all {
+  right: 0;
+}
+
+html[dir="rtl"] .oj-table-frozen-end, html[dir="rtl"]
+.oj-table-frozen-all {
+  left: 0;
+}
+
+html:not([dir="rtl"]) .oj-table-frozen-end.oj-table-frozen-edge, html:not([dir="rtl"])
+.oj-table-frozen-end-edge {
+  box-shadow: -2px 0px 0px var(--oj-collection-border-color);
+}
+
+html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge, html[dir="rtl"]
+.oj-table-frozen-end-edge {
+  box-shadow: 2px 0px 0px var(--oj-collection-border-color);
+}
+
+.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-start {
+  z-index: 100015;
+}
+
+.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-start.oj-table-frozen-edge {
+  z-index: 100016;
 }
 
 .oj-table-sticky .oj-table-column-header-cell,
+.oj-table-sticky .oj-table-column-header-selector-cell,
 .oj-table-sticky .oj-table-gutter-start-header-cell,
 .oj-table-sticky .oj-table-gutter-end-header-cell {
-  z-index: 100010;
-}
-
-.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end,
-.oj-table-sticky .oj-table-gutter-end-header-cell.oj-table-frozen-end {
-  z-index: 100013;
-}
-
-.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-gutter-end-header-cell.oj-table-frozen-end.oj-table-frozen-edge {
   z-index: 100014;
 }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start,
-.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-start {
+.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end {
+  z-index: 100017;
+}
+
+.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end.oj-table-frozen-edge {
+  z-index: 100018;
+}
+
+.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-gutter-start-header-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-gutter-end-header-cell.oj-table-frozen-all {
+  z-index: 100019;
+}
+
+.oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-start-header-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-end-header-cell.oj-table-frozen-all.oj-table-frozen-edge {
+  z-index: 100020;
+}
+
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start {
   z-index: 100001;
 }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-start.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start.oj-table-frozen-edge {
   z-index: 100002;
 }
 
 .oj-table-sticky .oj-table-add-row-placeholder td,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-selector-cell,
 .oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell,
 .oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell {
   z-index: 100000;
 }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end,
-.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-end {
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end {
   z-index: 100003;
 }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-end.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end.oj-table-frozen-edge {
   z-index: 100004;
 }
 
-.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-start,
-.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-start {
-  z-index: 6;
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-all,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-selector-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-all {
+  z-index: 100005;
 }
 
-.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-start.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-start.oj-table-frozen-edge {
-  z-index: 7;
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-selector-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge {
+  z-index: 100006;
+}
+
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-start {
+  z-index: 8;
+}
+
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-start.oj-table-frozen-edge {
+  z-index: 9;
 }
 
 .oj-table-sticky .oj-table-sticky-row td,
 .oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell,
 .oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell {
-  z-index: 5;
+  z-index: 7;
 }
 
-.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-end,
-.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell.oj-table-frozen-end {
-  z-index: 8;
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-end {
+  z-index: 10;
 }
 
-.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-end.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell.oj-table-frozen-end.oj-table-frozen-edge {
-  z-index: 9;
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-end.oj-table-frozen-edge {
+  z-index: 11;
 }
 
-.oj-table-sticky .oj-table-data-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-selector-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-start {
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-all,
+.oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-all .oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell.oj-table-frozen-all {
+  z-index: 12;
+}
+
+.oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge {
+  z-index: 13;
+}
+
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-start {
   z-index: 1;
 }
 
-.oj-table-sticky .oj-table-data-cell.oj-table-frozen-start.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-selector-cell.oj-table-frozen-start.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-start.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-start.oj-table-frozen-edge {
   z-index: 2;
 }
 
-.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end,
-.oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-end {
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end {
   z-index: 3;
 }
 
-.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-end.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end.oj-table-frozen-edge {
   z-index: 4;
 }
 
-.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-start,
-.oj-table-sticky .oj-table-gutter-start-footer-cell.oj-table-frozen-start {
-  z-index: 100006;
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all .oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all {
+  z-index: 5;
 }
 
-.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-start.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-start.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-gutter-start-footer-cell.oj-table-frozen-start.oj-table-frozen-edge {
-  z-index: 100007;
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all.oj-table-frozen-edge .oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge {
+  z-index: 6;
 }
 
-.oj-table-sticky .oj-table-footer-cell,
-.oj-table-sticky .oj-table-gutter-start-footer-cell,
-.oj-table-sticky .oj-table-gutter-end-footer-cell {
-  z-index: 100005;
-}
-
-.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end,
-.oj-table-sticky .oj-table-gutter-end-footer-cell.oj-table-frozen-end {
+.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-start {
   z-index: 100008;
 }
 
-.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-gutter-end-footer-cell.oj-table-frozen-end.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-start.oj-table-frozen-edge {
   z-index: 100009;
+}
+
+.oj-table-sticky .oj-table-footer-cell,
+.oj-table-sticky .oj-table-footer-selector-cell,
+.oj-table-sticky .oj-table-gutter-start-footer-cell,
+.oj-table-sticky .oj-table-gutter-end-footer-cell {
+  z-index: 100007;
+}
+
+.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end {
+  z-index: 100010;
+}
+
+.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end.oj-table-frozen-edge {
+  z-index: 100011;
+}
+
+.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-gutter-start-footer-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-gutter-end-footer-cell.oj-table-frozen-all {
+  z-index: 100012;
+}
+
+.oj-table-sticky .oj-table-footer-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-start-footer-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-end-footer-cell.oj-table-frozen-all.oj-table-frozen-edge {
+  z-index: 100013;
 }
 
 .oj-table-body-row .oj-selector,
@@ -27556,7 +27667,7 @@ html[dir="rtl"] .oj-table-body-row-drag-image td:last-child {
   border-inline-start-style: solid;
   border-inline-start-color: var(--oj-core-drag-drop-line-color);
   border-inline-start-width: 2px;
-  z-index: 100015;
+  z-index: 100021;
 }
 
 /* Styling for the data cell elements. */
@@ -28207,7 +28318,7 @@ html[dir="rtl"] .oj-table-sort .oj-table-column-header-show-required-icon {
 .oj-table-gutter-end-footer-cell {
   padding: 0px;
   background-color: inherit;
-  position: relative;
+  position: sticky;
 }
 
 .oj-table-gutter-start-header-cell,
@@ -28452,6 +28563,25 @@ oj-time-axis:not(.oj-complete) {
   fill: var(--oj-collection-header-text-color);
 }
 
+/* Styling for drillable time axis labels */
+.oj-timeaxis-label-drillable {
+  fill: var(--oj-link-text-color);
+  -webkit-text-decoration: var(--oj-link-text-decoration);
+          text-decoration: var(--oj-link-text-decoration);
+}
+
+.oj-timeaxis-label-drillable.oj-hover {
+  -webkit-text-decoration: var(--oj-link-text-decoration-hover);
+          text-decoration: var(--oj-link-text-decoration-hover);
+  cursor: pointer;
+}
+
+.oj-timeaxis-label-drillable.oj-focus {
+  outline-width: 1px;
+  outline-style: dotted;
+  outline-color: var(--oj-link-text-color);
+}
+
 /* Styling for the timeaxis separators */
 .oj-timeaxis-separator {
   stroke: var(--oj-collection-border-color);
@@ -28485,7 +28615,7 @@ oj-time-axis:not(.oj-complete) {
   --oj-private-timeline-reference-object-color:                rgb(var(--oj-palette-danger-rgb-100));
   --oj-private-timeline-border-color:                          rgb(var(--oj-palette-neutral-rgb-50));
   --oj-private-timeline-item-bg-color:                         rgb(var(--oj-palette-neutral-rgb-0));
-  --oj-private-timeline-item-stripe-bg-color:                     rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-private-timeline-item-stripe-bg-color:                  rgb(var(--oj-palette-neutral-rgb-100));
   --oj-private-timeline-item-border-color:                     rgb(var(--oj-palette-neutral-rgb-160));
   --oj-private-timeline-item-border-color-hover:               rgb(var(--oj-palette-brand-rgb-70));
   --oj-private-timeline-minor-axis-bg-color:                   rgb(var(--oj-palette-neutral-rgb-40));
@@ -28615,15 +28745,19 @@ oj-timeline:not(.oj-complete) {
 }
 
 .oj-timeline-overview-label {
-  color: var(--oj-core-text-color-secondary);
+  color: var(--oj-core-text-color-primary);
   font-size: var(--oj-dvt-label-font-size-md);
   white-space: nowrap;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .oj-timeline-overview-window {
   background-color: var(--oj-dvt-overview-window-bg-color);
   border-top-color: var(--oj-dvt-overview-window-border-color);
+}
+
+.oj-timeline-overview-marker {
+  fill: var(--oj-private-timeline-item-stripe-bg-color);
 }
 
 .oj-timeline-reference-object {
@@ -28705,7 +28839,9 @@ oj-toolbar:not(.oj-complete) {
 .oj-toolbar > .oj-buttonset:not(:first-child),
 .oj-toolbar > oj-c-button:not(:first-child),
 .oj-toolbar > oj-c-split-menu-button:not(:first-child),
-.oj-toolbar > oj-c-menu-button:not(:first-child) {
+.oj-toolbar > oj-c-menu-button:not(:first-child),
+.oj-toolbar > oj-c-toggle-button:not(:first-child),
+.oj-toolbar > oj-c-progress-button:not(:first-child) {
   margin-inline-start: var(--oj-toolbar-button-margin);
 }
 
@@ -28713,7 +28849,9 @@ oj-toolbar:not(.oj-complete) {
 .oj-toolbar > .oj-buttonset:not(:last-child),
 .oj-toolbar > oj-c-button:not(:last-child),
 .oj-toolbar > oj-c-split-menu-button:not(:last-child),
-.oj-toolbar > oj-c-menu-button:not(:last-child) {
+.oj-toolbar > oj-c-menu-button:not(:last-child),
+.oj-toolbar > oj-c-toggle-button:not(:last-child),
+.oj-toolbar > oj-c-progress-button:not(:last-child) {
   margin-inline-end: var(--oj-toolbar-button-margin);
 }
 

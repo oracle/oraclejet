@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -164,6 +164,13 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  * fetchFirst has to iterate through all the data in search of rows corresponding to the provided keys. Without an iteration limit, the iteration can continue
  * for a long time if the provided keys are invalid or the corresponding rows are at the end of the dataset.
  * @property {Function} error - Callback function that is executed when a fetch error has occurred.
+ * @property {string=} enforceKeyStringify - Optionally specify whether keys need to be converted to strings. Supported values:<br>
+ *                                  <ul>
+ *                                    <li>'off': the key values are returned as it is.
+ *                                    <li>'on': the key values are converted into string.
+ *                                  </ul>
+ *                                Default is 'off'.
+ *                                Key stringify will directly call JSON.stringify on all keys passed out of the DataProvider. Use JSON.parse if you need to convert the key back to a complex type.
  * @ojsignature [
  *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
  *  {target: "Type", value: "string | string[]", for: "keyAttributes"},
@@ -171,7 +178,9 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  *  {target: "Type", value: "Capabilities", for: "capabilities"},
  *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
  *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
- *  {target: "Type", value: "?((response: FetchErrorDetail<K,D > | FetchResponseErrorDetail<K,D>) => void)", for: "error", jsdocOverride: true}]
+ *  {target: "Type", value: "?((response: FetchErrorDetail<K,D > | FetchResponseErrorDetail<K,D>) => void)", for: "error", jsdocOverride: true},
+ *  {target: "Type", value: "'off' | 'on'", for: "enforceKeyStringify"}
+ * ]
  */
 
 /**
@@ -191,14 +200,14 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  * @property {string} fetchType - Type of fetch that was made
  * @property {Object} options - Options passed in to RESTDataProvider
  * @property {TypeError} error - TypeError returned from fetch call
- * @property {TypeError} err - TypeError returned from fetch call (Deprecated use error instead)
+ * @property {TypeError} err - TypeError returned from fetch call (deprecated)
  * @property {Object} fetchParameters - FetchParams passed into the fetch call
  * @ojsignature [
  *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
  *  {target: "Type", value: "'fetchFirst' | 'fetchByKeys' | 'fetchByOffset'", for: "fetchType"},
  *  {target: "Type", value: "RESTDataProvider.Options<K, D>", for: "options"},
  *  {target: "Type", value: "FetchListParameters<D> | FetchByKeysParameters<K> | FetchByOffsetParameters<D>", for: "fetchParameters"}]
- * @ojdeprecated [{target:'propertyValue', for:"err", since: "15.1.0", description: "Use Error instead."}]
+ * @ojdeprecated [{target: "property", for: "err", since: "15.1.0", description: "Use FetchErrorDetail.error instead."}]
  */
 
 /**
@@ -770,14 +779,7 @@ class RESTDataProvider {
                 });
                 const fetchResult = await restHelper.fetch();
                 const { data, totalSize, hasMore } = fetchResult;
-                let metadata;
-                if (fetchResult.metadata) {
-                    metadata = fetchResult.metadata.map((entry) => ({ ...entry }));
-                }
-                else {
-                    const keys = fetchResult.keys || this._generateKeysFromData(data);
-                    metadata = this._generateMetadataFromKeys(keys);
-                }
+                let metadata = this._getFetchResultMetaData(fetchResult);
                 const mergedSortCriteria = this._mergeSortCriteria(fetchParameters.sortCriteria);
                 if (mergedSortCriteria) {
                     fetchParameters = { ...fetchParameters, sortCriteria: mergedSortCriteria };
@@ -836,7 +838,7 @@ class RESTDataProvider {
         const callback = async (resolve, reject) => {
             const fetchPromises = [];
             const fetchedData = [];
-            const fetchedDataMetadata = [];
+            let fetchedDataMetadata = [];
             for (let key of fetchParameters.keys) {
                 const restHelper = new RESTHelper({
                     fetchType: _FETCHBYKEYS,
@@ -855,8 +857,7 @@ class RESTDataProvider {
                 fetchResult.data.forEach((item) => {
                     fetchedData.push(item);
                 });
-                const keys = fetchResult.keys || this._generateKeysFromData(fetchResult.data);
-                const metadata = fetchResult.metadata || this._generateMetadataFromKeys(keys);
+                const metadata = this._getFetchResultMetaData(fetchResult);
                 metadata.forEach((entry) => {
                     fetchedDataMetadata.push(entry);
                 });
@@ -877,8 +878,7 @@ class RESTDataProvider {
                 options: this.options
             });
             const fetchResult = await restHelper.fetch();
-            const keys = fetchResult.keys || this._generateKeysFromData(fetchResult.data);
-            const metadata = fetchResult.metadata || this._generateMetadataFromKeys(keys);
+            const metadata = this._getFetchResultMetaData(fetchResult);
             return resolve(this._createFetchByKeysResults(fetchParameters, fetchResult.data, metadata));
         };
         return wrapWithAbortHandling(signal, callback, true);
@@ -891,6 +891,10 @@ class RESTDataProvider {
         const { value, done } = fetchResult.result;
         const { data, metadata } = value;
         const results = data.map((value, index) => ({ metadata: metadata[index], data: value }));
+        const mergedSortCriteria = this._mergeSortCriteria(fetchParameters.sortCriteria);
+        if (mergedSortCriteria) {
+            fetchParameters = { ...fetchParameters, sortCriteria: mergedSortCriteria };
+        }
         return { fetchParameters, results, done };
     }
     async _fetchByOffsetIteration(fetchParameters, offset) {
@@ -924,14 +928,20 @@ class RESTDataProvider {
         const data = fetchResultData.slice(start, end);
         const metadata = fetchResultMetadata.slice(start, end);
         const results = data.map((value, index) => ({ metadata: metadata[index], data: value }));
+        const mergedSortCriteria = this._mergeSortCriteria(fetchParameters.sortCriteria);
+        if (mergedSortCriteria) {
+            fetchParameters = { ...fetchParameters, sortCriteria: mergedSortCriteria };
+        }
         return { fetchParameters, results, done: fetchResultDone };
     }
     _generateKeysFromData(data) {
         const keyAttributes = this.options != null ? this.options.keyAttributes : null;
+        const enforceKeyStringify = this.options?.enforceKeyStringify;
         return data.map((item) => {
             let id = this._getId(item);
             if (id == null || keyAttributes == _ATINDEX) {
-                id = this._sequenceNum++;
+                id =
+                    enforceKeyStringify === 'on' ? JSON.stringify(this._sequenceNum++) : this._sequenceNum++;
             }
             return id;
         });
@@ -1072,6 +1082,19 @@ class RESTDataProvider {
         else {
             return sortCriteria;
         }
+    }
+    _getFetchResultMetaData(fetchResult) {
+        const keys = fetchResult.keys || this._generateKeysFromData(fetchResult.data);
+        let metadata = fetchResult.metadata || this._generateMetadataFromKeys(keys);
+        const enforceKeyStringify = this.options?.enforceKeyStringify;
+        metadata = metadata.map((entry) => {
+            let metadataObj = { ...entry };
+            if (enforceKeyStringify === 'on') {
+                metadataObj.key = JSON.stringify(metadataObj.key);
+            }
+            return metadataObj;
+        });
+        return metadata;
     }
     _adjustIteratorOffset(remove, add) {
         const removeIndexes = remove ? remove.indexes : null;

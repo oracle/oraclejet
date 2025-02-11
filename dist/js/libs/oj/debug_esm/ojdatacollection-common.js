@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -121,7 +121,8 @@ DataCollectionUtils.disableElement = function (element) {
  * @param {Element} element
  * @param {boolean=} excludeActiveElement
  * @param {boolean=} includeReadonly
- * @param {NodeList=} An array of the dialog elements
+ * @param {boolean=} inlcudeSelf
+ * @param {Element[]} dialogs An array of the dialog elements
  * @return {Element[]} An array of the disabled elements
  * @private
  */
@@ -129,19 +130,27 @@ DataCollectionUtils.disableAllFocusableElements = function (
   element,
   excludeActiveElement,
   includeReadonly,
+  includeSelf,
   dialogs
 ) {
-  return disableAllFocusableElements$1(element, excludeActiveElement, includeReadonly, dialogs);
+  return disableAllFocusableElements$1(
+    element,
+    excludeActiveElement,
+    includeReadonly,
+    includeSelf,
+    dialogs
+  );
 };
 
 /**
  * Enable all focusable elements within the specified element that were previously disabled
  * @param {Element} element
+ * @param {boolean=} includeSelf
  * @return {Element[]} An array of the enabled elements
  * @private
  */
-DataCollectionUtils.enableAllFocusableElements = function (element) {
-  return enableAllFocusableElements$1(element);
+DataCollectionUtils.enableAllFocusableElements = function (element, includeSelf) {
+  return enableAllFocusableElements$1(element, includeSelf);
 };
 
 /**
@@ -452,6 +461,8 @@ DataCollectionUtils.KEYBOARD_KEYS = {
   _ESCAPE_CODE: 27,
   _F2: 'F2',
   _F2_CODE: 113,
+  _F10: 'F10',
+  _F10_CODE: 121,
   _NUM5_KEY: '5',
   _NUM5_KEY_CODE: 53,
   _LETTER_A: 'a',
@@ -605,6 +616,17 @@ DataCollectionUtils.isMetaKeyEvent = function (eventKey) {
   return (
     eventKey === DataCollectionUtils.KEYBOARD_KEYS._META ||
     eventKey === DataCollectionUtils.KEYBOARD_KEYS._META_CODE
+  );
+};
+
+/**
+ * @private
+ */
+DataCollectionUtils.isContextMenuKeyEvent = function (eventKey, shiftKey) {
+  return (
+    (eventKey === DataCollectionUtils.KEYBOARD_KEYS._F10 ||
+      eventKey === DataCollectionUtils.KEYBOARD_KEYS._F10_CODE) &&
+    shiftKey
   );
 };
 
@@ -1136,5 +1158,6 @@ const isWebkit = DataCollectionUtils.isWebkit;
 const isBlink = DataCollectionUtils.isBlink;
 const getBrowserVersion = DataCollectionUtils.getBrowserVersion;
 const doesAttributeExistInFilterCriterion = DataCollectionUtils.doesAttributeExistInFilterCriterion;
+const isContextMenuKeyEvent = DataCollectionUtils.isContextMenuKeyEvent;
 
-export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, WARN_DUPLICATE_KEYS_DETAIL, applyMergedInlineStyles, applyRendererContent, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, doesAttributeExistInFilterCriterion, enableAllFocusableElements, getAbortReason, getActionableElementsInNode, getAddEventKeysResult, getBrowserVersion, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getLogicalChildPopup, getNoJQFocusHandlers, getScrollEventElement, handleActionablePrevTab, handleActionableTab, isAndroid, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isBlink, isChrome, isClickthroughDisabled, isEdge, isElementIntersectingScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFetchAborted, isFirefox, isFromDefaultSelector, isHomeKeyEvent, isIE, isIos, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMac, isMetaKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSafari, isSpaceBarKeyEvent, isTabKeyEvent, isWebkit, isWindows };
+export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, WARN_DUPLICATE_KEYS_DETAIL, applyMergedInlineStyles, applyRendererContent, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, doesAttributeExistInFilterCriterion, enableAllFocusableElements, getAbortReason, getActionableElementsInNode, getAddEventKeysResult, getBrowserVersion, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getLogicalChildPopup, getNoJQFocusHandlers, getScrollEventElement, handleActionablePrevTab, handleActionableTab, isAndroid, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isBlink, isChrome, isClickthroughDisabled, isContextMenuKeyEvent, isEdge, isElementIntersectingScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFetchAborted, isFirefox, isFromDefaultSelector, isHomeKeyEvent, isIE, isIos, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMac, isMetaKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSafari, isSpaceBarKeyEvent, isTabKeyEvent, isWebkit, isWindows };

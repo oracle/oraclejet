@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -60,7 +60,8 @@ Validation._defaultValidatorFactories = {};
  * expect to get back the default 'number', 'datetime', or 'color' converters.
  * When passed two arguments, a new factory for the name is registered. If the name already exists
  * the new instance replaces the old one.
- * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances ColorConverter, DateTimeConverter, and NumberConverter instead.'}
+ * @ojdeprecated {since: '8.0.0',
+ *        description: 'Directly create new instances of {@link oj.ColorConverter}, {@link oj.IntlDateTimeConverter}, and {@link oj.NumberConverter} instead.'}
  * @param {string} type a case insensitive name of the converter factory. e.g., 'number' (or
  * oj.ConverterFactory.CONVERTER_TYPE_NUMBER), 'datetime' (or oj.ConverterFactory.CONVERTER_TYPE_DATETIME),
  * or 'color' (or oj.ConverterFactory.CONVERTER_TYPE_COLOR).
@@ -492,7 +493,7 @@ var ConverterFactory = {
    *  currency: 'USD',
    *  currencyDisplay: 'symbol',
    *  pattern: '¤ ##,##0.00'});
-   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string literal instead.'}
    * @expose
    * @const
    * @member
@@ -509,7 +510,7 @@ var ConverterFactory = {
    * var dateTimeCvtr = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
    * var dateOptions = {day: 'numeric', month: 'numeric'};
    * var dayMonthConverter = dateTimeCvtr.createConverter(dateOptions);
-   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string literal instead.'}
    * @expose
    * @const
    * @member
@@ -526,7 +527,7 @@ var ConverterFactory = {
    * @example <caption>Create a JET color converter with options</caption>
    * this._convFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);
    * this._convHex  =  this._convFactory.createConverter({"format": "hex"})
-   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string literal instead.'}
    * @expose
    * @const
    * @member
@@ -650,7 +651,7 @@ var ValidatorFactory = {
    * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED);
    * var options = {'hint' : 'a value is required for this field'};
    * var requiredValidator = rvf.createValidator(options);
-   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string literal instead.'}
    * @expose
    * @const
    * @member
@@ -671,7 +672,7 @@ var ValidatorFactory = {
    * hint: 'enter at least 3 letters or numbers.',
    * messageDetail: 'You must enter at least 3 letters or numbers.'}
    * var validator = validatorFactory.createValidator(options);
-   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string literal instead.'}
    * @expose
    * @const
    * @member
@@ -690,7 +691,7 @@ var ValidatorFactory = {
    * var options = {min: 10000.05, max: 25000.95,
    * hint: {inRange: 'Enter a value between {min} and {max}.'}};
    * var validator = validatorFactory.createValidator(options);
-   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string literal instead.'}
    * @expose
    * @const
    * @member
@@ -708,7 +709,7 @@ var ValidatorFactory = {
    * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_LENGTH);
    * var options = {min: 5, max: 10};
    * var validator = validatorFactory.createValidator(options);
-   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string literal instead.'}
    * @expose
    * @const
    * @member
@@ -727,7 +728,7 @@ var ValidatorFactory = {
    * .createValidator({{max: oj.IntlConverterUtils.dateToLocalIso(new Date()),
    * min: oj.IntlConverterUtils.dateToLocalIso(new Date(2000, 00, 01)),
    * hint: {'inRange': 'Enter a date that falls in the current millennium.'}});
-   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string literal instead.'}
    * @expose
    * @const
    * @member
@@ -746,7 +747,7 @@ var ValidatorFactory = {
    * var options = {dayFormatter : self.aprilFoolsFormatter, // your own formatter code
    * message : {messageDayMetaData : 'You can\'t fool me! Try a different date.'}};
    * var validator = validatorFactory.createValidator(options);
-   * @ojdeprecated {since: '8.0.0', description: 'Use the string instead.'}
+   * @ojdeprecated {since: '8.0.0', description: 'Use the string literal instead.'}
    * @expose
    * @const
    * @member
@@ -878,7 +879,7 @@ Validation.__registerDefaultConverterFactory(
  * var requiredValidator = rvf.createValidator(options);
  *
  * @name oj.RequiredValidatorFactory
- * @ojdeprecated {since: '17.0.0', description: 'Directly create new instances of RequiredValidator instead.'}
+ * @ojdeprecated {since: '17.0.0', description: 'Directly create new instances of {@link oj.RequiredValidator} instead.'}
  * @hideconstructor
  * @ojtsnoexport
  * @ojtsexportastype
@@ -932,7 +933,7 @@ Validation.__registerDefaultValidatorFactory(
  *  });
  *
  * @name oj.RegExpValidatorFactory
- * @ojdeprecated {since: '17.0.0', description: 'Directly create new instances of RegExpValidator instead.'}
+ * @ojdeprecated {since: '17.0.0', description: 'Directly create new instances of {@link oj.RegExpValidator} instead.'}
  * @ojtsnoexport
  * @ojtsexportastype
  * @ojtsimport {module: "ojvalidator-regexp", type: "AMD", importName: "RegExpValidator"}
@@ -984,7 +985,7 @@ Validation.__registerDefaultValidatorFactory(
  * var lValidator = lvf.createValidator(options);
  *
  * @name oj.LengthValidatorFactory
- * @ojdeprecated {since: '17.0.0', description: 'Directly create new instances of LengthValidator instead.'}
+ * @ojdeprecated {since: '17.0.0', description: 'Directly create new instances of {@link oj.LengthValidator} instead.'}
  * @hideconstructor
  * @ojtsnoexport
  * @ojtsexportastype

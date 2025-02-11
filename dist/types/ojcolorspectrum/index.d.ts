@@ -6,6 +6,7 @@ import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropert
 export interface ojColorSpectrum extends editableValue<Color, ojColorSpectrumSettableProperties> {
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -94,6 +95,7 @@ export interface ojColorSpectrumEventMap extends editableValueEventMap<Color, oj
 export interface ojColorSpectrumSettableProperties extends editableValueSettableProperties<Color> {
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -160,7 +162,9 @@ export namespace ColorSpectrumElement {
     //------------------------------------------------------------
 }
 export interface ColorSpectrumIntrinsicProps extends Partial<Readonly<ojColorSpectrumSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojColorSpectrumEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojColorSpectrumEventMap['ojAnimateStart']) => void;
     ondisplayOptionsChanged?: (value: ojColorSpectrumEventMap['displayOptionsChanged']) => void;
     onlabelledByChanged?: (value: ojColorSpectrumEventMap['labelledByChanged']) => void;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -12,6 +12,7 @@ import { getMetadata, getPropertiesForElementTag } from 'ojs/ojcustomelement-reg
 import { Component, Fragment, h, render } from 'preact';
 import { jsx } from 'preact/jsx-runtime';
 import Context from 'ojs/ojcontext';
+import { ReportBusyContext } from 'ojs/ojvcomponent';
 import { withDataProvider } from 'ojs/ojdataproviderhandler';
 import { ManageTabStops } from 'ojs/ojpreact-managetabstops';
 import { getPropagationMetadataViaCache, CONSUMED_CONTEXT, STATIC_PROPAGATION } from 'ojs/ojbindpropagation';
@@ -27,9 +28,16 @@ class BindDom extends Component {
     constructor(props) {
         super(props);
         this._resolveConfig = (configPromise) => {
-            configPromise.then((result) => {
+            this._registerBusyState();
+            configPromise
+                .then((result) => {
                 if (configPromise === this.props.config) {
-                    this.setState({ view: this._getFragment(result.view), data: result.data });
+                    this.setState({ view: this._getFragment(result?.view ?? []), data: result?.data });
+                }
+            })
+                .finally(() => {
+                if (configPromise === this.props.config) {
+                    this._resolveBusyState();
                 }
             });
         };
@@ -40,7 +48,28 @@ class BindDom extends Component {
             });
             return fragment;
         };
+        this._registerBusyState = () => {
+            if (!this._resolveBusyStateCallback) {
+                const busyElem = this._busyContextEl?.current
+                    ? this._busyContextEl?.current
+                    : this.props.componentElement;
+                if (busyElem) {
+                    this._resolveBusyStateCallback = Context.getContext(busyElem)
+                        .getBusyContext()
+                        .addBusyState({
+                        description: `oj-bind-dom is waiting on config Promise resolution on element ${busyElem.tagName}#${busyElem.id}`
+                    });
+                }
+            }
+        };
+        this._resolveBusyState = () => {
+            if (this._resolveBusyStateCallback) {
+                this._resolveBusyStateCallback();
+                this._resolveBusyStateCallback = null;
+            }
+        };
         this.state = { view: null, data: null };
+        this._busyContextEl = null;
     }
     componentDidMount() {
         this._resolveConfig(this.props.config);
@@ -51,9 +80,12 @@ class BindDom extends Component {
         }
     }
     render() {
-        return (jsx(Fragment, { children: this.state.view && this.props.executeFragment
-                ? this.props.executeFragment(null, this.state.view, this.state.data, this.forceUpdate.bind(this), this.props.bindingProvider)
-                : null }));
+        return (jsx(Fragment, { children: jsx(ReportBusyContext.Consumer, { children: (value) => {
+                    this._busyContextEl = value;
+                    return this.state.view && this.props.executeFragment
+                        ? this.props.executeFragment(null, this.state.view, this.state.data, this.forceUpdate.bind(this), this.props.bindingProvider)
+                        : null;
+                } }) }));
     }
 }
 
@@ -61,7 +93,10 @@ class BindForEachWrapper extends Component {
     constructor(props) {
         super(props);
         this._addBusyState = (description) => {
-            const busyContext = Context.getContext(this.props.componentElement).getBusyContext();
+            const busyElem = this._busyContextEl?.current
+                ? this._busyContextEl?.current
+                : this.props.componentElement;
+            const busyContext = Context.getContext(busyElem).getBusyContext();
             return busyContext.addBusyState({ description });
         };
         this.BindForEachWithDP = withDataProvider(BindForEachDataUnwrapper, 'data');
@@ -71,7 +106,10 @@ class BindForEachWrapper extends Component {
             return jsx(BindForEachWithArray, { data: props.data, itemRenderer: props.itemRenderer });
         }
         else {
-            return (jsx(this.BindForEachWithDP, { addBusyState: this._addBusyState, data: props.data, itemRenderer: props.itemRenderer }));
+            return (jsx(ReportBusyContext.Consumer, { children: (value) => {
+                    this._busyContextEl = value;
+                    return (jsx(this.BindForEachWithDP, { addBusyState: this._addBusyState, data: props.data, itemRenderer: props.itemRenderer }));
+                } }));
         }
     }
 }
@@ -98,6 +136,7 @@ class BindForEachWithArray extends Component {
 
 const BINDING_PROVIDER = Symbol();
 const COMPONENT_ELEMENT = Symbol();
+const TEMPLATE_ELEMENT = Symbol();
 const UNWRAP_EXTRAS = Symbol();
 const BINDING_CONTEXT = Symbol();
 const PREVIOUS_DOT_PROPS_VALUES = Symbol();
@@ -111,6 +150,7 @@ const _CONTEXT_PARAM = [
         name: '$context'
     }
 ];
+const _LITERALS_CACHE = new Map();
 class VTemplateEngine {
     constructor() {
         this._templateAstCache = new WeakMap();
@@ -135,6 +175,7 @@ class VTemplateEngine {
         return this._execute({
             [BINDING_PROVIDER]: bindingProvider,
             [COMPONENT_ELEMENT]: componentElement,
+            [TEMPLATE_ELEMENT]: fragment,
             [BINDING_CONTEXT]: properties
         }, fragment, properties, mutationCallback);
     }
@@ -144,6 +185,7 @@ class VTemplateEngine {
         return this._execute({
             [BINDING_PROVIDER]: bindingProvider,
             [COMPONENT_ELEMENT]: componentElement,
+            [TEMPLATE_ELEMENT]: templateElement,
             [BINDING_CONTEXT]: context
         }, templateElement, context, mutationCallback);
     }
@@ -428,6 +470,7 @@ class VTemplateEngine {
             [BINDING_PROVIDER]: engineContext[BINDING_PROVIDER],
             [BINDING_CONTEXT]: engineContext[BINDING_CONTEXT],
             [COMPONENT_ELEMENT]: engineContext[COMPONENT_ELEMENT],
+            [TEMPLATE_ELEMENT]: engineContext[TEMPLATE_ELEMENT],
             [UNWRAP_EXTRAS]: (exp, value) => {
                 if (typeof value === 'function' &&
                     (exp === '$current.observableIndex' || exp === `${templateAlias}.observableIndex`)) {
@@ -581,7 +624,7 @@ class VTemplateEngine {
             throw new Error("Missing the required 'config' attribute on <oj-bind-dom>");
         }
         const configValue = node.attributes['config'].value;
-        return this._createComponentNode(engineContext, node, BindDom, [
+        const props = [
             this._createPropertyNode(engineContext, 'config', configValue, (config) => Promise.resolve(config)),
             {
                 type: PROPERTY,
@@ -590,10 +633,16 @@ class VTemplateEngine {
             },
             {
                 type: PROPERTY,
+                key: { type: LITERAL, value: 'componentElement' },
+                value: { type: LITERAL, value: engineContext[COMPONENT_ELEMENT] }
+            },
+            {
+                type: PROPERTY,
                 key: { type: LITERAL, value: 'executeFragment' },
                 value: { type: LITERAL, value: this.executeFragment.bind(this) }
             }
-        ]);
+        ];
+        return this._createHFunctionCallNode(BindDom, [{ type: OBJECT_EXP, properties: props }]);
     }
     _createComponentNode(engineContext, node, component, extraProps) {
         let props = node ? this._getElementProps(engineContext, node) : [];
@@ -709,10 +758,7 @@ class VTemplateEngine {
                         });
                     }
                     else {
-                        const propMeta = getPropertyMetadata(propName, getPropertiesForElementTag(node.tagName));
-                        const parsedValue = propMeta
-                            ? CustomElementUtils.parseAttrValue(node, name, propName, value, propMeta)
-                            : value;
+                        const parsedValue = this._getLiteralValueViaCache(engineContext, node, name, propName, value);
                         if (propNamePath.length > 1) {
                             dottedExpressions.push({
                                 subProps: propName,
@@ -768,6 +814,22 @@ class VTemplateEngine {
             }
         });
         return attrNodes;
+    }
+    _getLiteralValueViaCache(engineContext, node, name, propName, value) {
+        const propMeta = getPropertyMetadata(propName, getPropertiesForElementTag(node.tagName));
+        if (!propMeta) {
+            return value;
+        }
+        const templateId = engineContext[TEMPLATE_ELEMENT]?.id;
+        const key = templateId ? JSON.stringify([templateId, propName, value]) : null;
+        let propertyValue = key ? _LITERALS_CACHE.get(key) : null;
+        if (!propertyValue) {
+            propertyValue = CustomElementUtils.parseAttrValue(node, name, propName, value, propMeta);
+            if (key && (typeof propertyValue == 'object' || Array.isArray(propertyValue))) {
+                _LITERALS_CACHE.set(key, propertyValue);
+            }
+        }
+        return propertyValue;
     }
     _createRefPropertyNodeForNestedProps(engineContext, dottedExpressions) {
         const dottedPropObjectNodes = dottedExpressions.map(({ subProps, expr }) => ({

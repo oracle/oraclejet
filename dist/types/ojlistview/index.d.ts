@@ -5,6 +5,7 @@ import { KeySet } from '../ojkeyset';
 import { DataProvider, ItemMetadata, Item } from '../ojdataprovider';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojListView<K, D> extends baseComponent<ojListViewSettableProperties<K, D>> {
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as: string;
     currentItem: K;
     data: DataProvider<K, D>;
@@ -47,6 +48,7 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
     };
     groupHeaderPosition: 'static' | 'sticky';
     item: {
+        /** @deprecated since 13.0.0 - Not accessible by screen reader. */
         focusable?: ((param0: ojListView.ItemContext<K, D>) => boolean) | boolean;
         renderer?: ((param0: ojListView.ItemContext<K, D>) => {
             insert: Element | string;
@@ -70,6 +72,7 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
     };
     scrollToKey: 'auto' | 'capability' | 'always' | 'never';
     selected: KeySet<K>;
+    /** @deprecated since 7.0.0 - Use selected attribute instead. */
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple';
     selectionRequired: boolean;
@@ -300,6 +303,7 @@ export interface ojListViewEventMap<K, D> extends baseComponentEventMap<ojListVi
     'selectionRequiredChanged': JetElementCustomEvent<ojListView<K, D>["selectionRequired"]>;
 }
 export interface ojListViewSettableProperties<K, D> extends baseComponentSettableProperties {
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as: string;
     currentItem: K;
     data: DataProvider<K, D>;
@@ -342,6 +346,7 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
     };
     groupHeaderPosition: 'static' | 'sticky';
     item: {
+        /** @deprecated since 13.0.0 - Not accessible by screen reader. */
         focusable?: ((param0: ojListView.ItemContext<K, D>) => boolean) | boolean;
         renderer?: ((param0: ojListView.ItemContext<K, D>) => {
             insert: Element | string;
@@ -365,6 +370,7 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
     };
     scrollToKey: 'auto' | 'capability' | 'always' | 'never';
     selected: KeySet<K>;
+    /** @deprecated since 7.0.0 - Use selected attribute instead. */
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple';
     selectionRequired: boolean;
@@ -555,13 +561,16 @@ export interface ListViewIntrinsicProps extends Partial<Readonly<ojListViewSetta
     onojBeforeCurrentItem?: (value: ojListViewEventMap<any, any>['ojBeforeCurrentItem']) => void;
     onojBeforeExpand?: (value: ojListViewEventMap<any, any>['ojBeforeExpand']) => void;
     onojCollapse?: (value: ojListViewEventMap<any, any>['ojCollapse']) => void;
+    /** @deprecated since 11.0.0 - Use event from context menu or KeyEvent instead. */
     onojCopy?: (value: ojListViewEventMap<any, any>['ojCopy']) => void;
+    /** @deprecated since 11.0.0 - Use event from context menu or KeyEvent instead. */
     onojCut?: (value: ojListViewEventMap<any, any>['ojCut']) => void;
     onojExpand?: (value: ojListViewEventMap<any, any>['ojExpand']) => void;
     onojItemAction?: (value: ojListViewEventMap<any, any>['ojItemAction']) => void;
+    /** @deprecated since 11.0.0 - Use event from context menu or KeyEvent instead. */
     onojPaste?: (value: ojListViewEventMap<any, any>['ojPaste']) => void;
     onojReorder?: (value: ojListViewEventMap<any, any>['ojReorder']) => void;
-    onasChanged?: (value: ojListViewEventMap<any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojListViewEventMap<any, any>['asChanged']) => void;
     oncurrentItemChanged?: (value: ojListViewEventMap<any, any>['currentItemChanged']) => void;
     ondataChanged?: (value: ojListViewEventMap<any, any>['dataChanged']) => void;
     ondisplayChanged?: (value: ojListViewEventMap<any, any>['displayChanged']) => void;
@@ -577,7 +586,7 @@ export interface ListViewIntrinsicProps extends Partial<Readonly<ojListViewSetta
     onscrollPositionChanged?: (value: ojListViewEventMap<any, any>['scrollPositionChanged']) => void;
     onscrollToKeyChanged?: (value: ojListViewEventMap<any, any>['scrollToKeyChanged']) => void;
     onselectedChanged?: (value: ojListViewEventMap<any, any>['selectedChanged']) => void;
-    onselectionChanged?: (value: ojListViewEventMap<any, any>['selectionChanged']) => void;
+    /** @deprecated since 7.0.0 */ onselectionChanged?: (value: ojListViewEventMap<any, any>['selectionChanged']) => void;
     onselectionModeChanged?: (value: ojListViewEventMap<any, any>['selectionModeChanged']) => void;
     onselectionRequiredChanged?: (value: ojListViewEventMap<any, any>['selectionRequiredChanged']) => void;
     children?: ComponentChildren;

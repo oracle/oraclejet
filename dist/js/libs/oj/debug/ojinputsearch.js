@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'ojs/ojcore-base', 'ojs/ojconfig', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojtranslation', 'preact', 'ojs/ojhighlighttext', 'ojs/ojvcomponent', 'ojs/ojpopupcore'], function (exports, jsxRuntime, DomUtils, ojlistdataproviderview, oj, Config, Context, Logger, ThemeUtils, TimerUtils, Translations, preact, ojhighlighttext, ojvcomponent, ojpopupcore) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'ojs/ojcore-base', 'ojs/ojconfig', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojtranslation', 'preact', 'ojs/ojhighlighttext', 'ojs/ojvcomponent', 'ojs/ojpopupcore', 'ojs/ojdatacollection-common', 'ojs/ojdebouncingdataproviderview'], function (exports, jsxRuntime, DomUtils, ojlistdataproviderview, oj, Config, Context, Logger, ThemeUtils, TimerUtils, Translations, preact, ojhighlighttext, ojvcomponent, ojpopupcore, ojdatacollectionCommon, ojdebouncingdataproviderview) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -246,6 +246,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             };
             this._handleInputChanged = (detail) => {
                 const value = detail.value;
+                const isAutocompleteOn = this.props.autocomplete === 'on';
                 const filterText = this.state.filterText || '';
                 const lowercaseFilter = filterText.toLowerCase();
                 const lowercaseValue = value.toLowerCase();
@@ -267,7 +268,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 }
                 else {
                     Object.assign(updatedState, {
-                        showAutocompleteText: value.length > 0
+                        showAutocompleteText: isAutocompleteOn && value.length > 0
                     });
                 }
                 Object.assign(updatedState, {
@@ -288,7 +289,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 if (this.state.dropdownOpen &&
                     focusIndex >= 0 &&
                     this._suggestionsList?.getCount() > focusIndex &&
-                    !this._resolveFetchBusyState) {
+                    !this._resolveFetchBusyState &&
+                    this.props.autocomplete === 'on') {
                     this._suggestionsList?.fireSuggestionAction(focusIndex);
                 }
                 else {
@@ -353,7 +355,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                             }
                             index = Math.min(this._suggestionsList?.getCount() - 1, index);
                             updatedState.focusedSuggestionIndex = index;
-                            const autocomplete = index === 0 && this.state.filterText?.length > 0;
+                            const autocomplete = this.props.autocomplete === 'on' && index === 0 && this.state.filterText?.length > 0;
                             updatedState.showAutocompleteText = autocomplete;
                             if (autocomplete) {
                                 updatedState.displayValue = this.state.filterText;
@@ -622,6 +624,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             this.setState(newUpdater);
         }
         componentDidUpdate(oldProps, oldState) {
+            const isAutocompleteOn = this.props.autocomplete === 'on';
             if (this.state.fullScreenPopup && !oldState.dropdownOpen && this.state.dropdownOpen) {
                 this._mobileFilterInputElem?.focus();
             }
@@ -683,7 +686,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                     else {
                         this._updateState((state, props) => {
                             const newIndex = state.filterText?.length > 0 ? 0 : -1;
-                            if (state.focusedSuggestionIndex !== newIndex) {
+                            if (!isAutocompleteOn && newIndex === -1) {
+                                return { focusedSuggestionIndex: -1 };
+                            }
+                            else if (isAutocompleteOn && state.focusedSuggestionIndex !== newIndex) {
                                 return { focusedSuggestionIndex: newIndex };
                             }
                             return null;
@@ -693,7 +699,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 else if (this.state.fetchedData) {
                     this._updateState((state, props) => {
                         const newIndex = Math.min(state.fetchedData.length - 1, state.focusedSuggestionIndex);
-                        if (state.focusedSuggestionIndex !== newIndex) {
+                        if (isAutocompleteOn && state.focusedSuggestionIndex !== newIndex) {
                             return { focusedSuggestionIndex: newIndex };
                         }
                         return null;
@@ -880,7 +886,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
         }
         _renderDesktopMainTextFieldContainer(props, state, searchIcon, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem) {
             const containerClasses = 'oj-text-field-container oj-text-field-has-start-slot';
-            return (jsxRuntime.jsxs("div", { role: "presentation", class: containerClasses, id: this._getMainInputContainerId(), ref: this._setMainInputContainerElem, children: [jsxRuntime.jsx("span", { class: "oj-text-field-start", children: searchIcon }), jsxRuntime.jsxs("div", { class: "oj-text-field-middle", role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-controls": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": state.dropdownOpen ? 'true' : 'false', children: [jsxRuntime.jsx(ComposingInput, { type: inputType, inputRef: this._setMainInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: "off", autocorrect: "off", autocapitalize: "off", spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-busy": state.dropdownOpen && state.loading, "aria-activedescendant": this._dataProvider ? state.activeDescendantId : null, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onInputChanged: this._handleInputChanged, onKeyDown: this._handleDesktopMainInputKeydown }), autocompleteFloatingElem] })] }));
+            return (jsxRuntime.jsxs("div", { role: "presentation", class: containerClasses, id: this._getMainInputContainerId(), ref: this._setMainInputContainerElem, children: [jsxRuntime.jsx("span", { class: "oj-text-field-start", children: searchIcon }), jsxRuntime.jsxs("div", { class: "oj-text-field-middle", role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-controls": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : undefined, "aria-expanded": this._dataProvider ? (state.dropdownOpen ? 'true' : 'false') : undefined, children: [jsxRuntime.jsx(ComposingInput, { type: inputType, inputRef: this._setMainInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: "off", autocorrect: "off", autocapitalize: "off", spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-busy": state.dropdownOpen && state.loading, "aria-activedescendant": this._dataProvider ? state.activeDescendantId : null, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onInputChanged: this._handleInputChanged, onKeyDown: this._handleDesktopMainInputKeydown }), autocompleteFloatingElem] })] }));
         }
         _renderMobileMainTextFieldContainer(props, state, searchIcon, inputClasses, ariaLabel, listboxId) {
             const { placeholder, value } = props;
@@ -980,12 +986,17 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
         _fetchData(_searchText) {
             this._queryCount += 1;
             const queryNumber = this._queryCount;
+            if (this.state.fetching) {
+                this._abortController?.abort(ojdatacollectionCommon.getAbortReason());
+            }
+            const abortController = new AbortController();
+            this._abortController = abortController;
             let searchText = _searchText;
             if (searchText === '') {
                 searchText = null;
             }
             const maxFetchCount = 12;
-            let fetchParams = { size: maxFetchCount };
+            let fetchParams = { size: maxFetchCount, signal: abortController.signal };
             if (searchText) {
                 const filterCapability = this._dataProvider.getCapability('filter');
                 if (!filterCapability || !filterCapability.textFilter) {
@@ -1048,7 +1059,14 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                     asyncIterator.next().then(processNextFunc);
                 }
             }.bind(this);
-            asyncIterator.next().then(processNextFunc);
+            asyncIterator
+                .next()
+                .then(processNextFunc)
+                .catch((error) => {
+                if (error instanceof DOMException && error.name === 'AbortError')
+                    return;
+                throw error;
+            });
         }
         _renderDropdownSkeleton() {
             let numItems = 1;
@@ -1086,6 +1104,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 if (!(wrapper instanceof oj.ListDataProviderView)) {
                     wrapper = new oj.ListDataProviderView(wrapper);
                 }
+                const filterCapability = wrapper.getCapability('fetchFirst');
+                const isImmediate = filterCapability?.iterationSpeed === 'immediate';
+                wrapper = isImmediate ? wrapper : new ojdebouncingdataproviderview.DebouncingDataProviderView(wrapper);
                 return wrapper;
             }
             return null;
@@ -1176,12 +1197,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
         }
     };
     exports.InputSearch.defaultProps = {
+        autocomplete: 'on',
         suggestions: null,
         suggestionItemText: 'label',
         placeholder: '',
         value: null
     };
-    exports.InputSearch._metadata = { "properties": { "suggestions": { "type": "object" }, "suggestionItemText": { "type": "string|number|function" }, "placeholder": { "type": "string" }, "rawValue": { "type": "string", "readOnly": true, "writeback": true }, "value": { "type": "string", "writeback": true } }, "events": { "ojValueAction": {} }, "slots": { "suggestionItemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["rawValue", "value"], "_READ_ONLY_PROPS": ["rawValue"], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "id"] }, "methods": { "focus": {}, "blur": {}, "_testChangeValue": {}, "_testChangeValueByKey": {} } };
+    exports.InputSearch._metadata = { "properties": { "suggestions": { "type": "object" }, "suggestionItemText": { "type": "string|number|function" }, "placeholder": { "type": "string" }, "rawValue": { "type": "string", "readOnly": true, "writeback": true }, "value": { "type": "string", "writeback": true }, "autocomplete": { "type": "string", "enumValues": ["off", "on"] } }, "events": { "ojValueAction": {} }, "slots": { "suggestionItemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["rawValue", "value"], "_READ_ONLY_PROPS": ["rawValue"], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "id"] }, "methods": { "focus": {}, "blur": {}, "_testChangeValue": {}, "_testChangeValueByKey": {} } };
     exports.InputSearch = InputSearch_1 = __decorate([
         ojvcomponent.customElement('oj-input-search')
     ], exports.InputSearch);

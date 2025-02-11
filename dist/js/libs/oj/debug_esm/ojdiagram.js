@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -3516,6 +3516,8 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
      * @ojvalue {string} "touchStart"
      * @ojvalue {string} "auto"
      * @default "auto"
+     * @ojdeprecated {since: '18.0.0', description: 'This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead.'}
+
      *
      * @example <caption>Initialize the diagram with the
      * <code class="prettyprint">touch-response</code> attribute specified:</caption>
@@ -3555,7 +3557,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
      * @instance
      * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
      *               {target:"Type", value:"K1", for:"nodeId"}]
-     * @ojdeprecated {since: '12.1.0', description: 'The oj-before-expand event has been deprecated.  Lazy loading of data can be done through the data provider.'}
+     * @ojdeprecated {since: '12.1.0', description: 'Support for this custom event has been deprecated. Lazy loading of data can be implemented through the data provider.'}
      */
     beforeExpand: null,
     /**
@@ -3569,7 +3571,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
      * @instance
      * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
      *               {target:"Type", value:"K1", for:"nodeId"}]
-     * @ojdeprecated {since: '12.1.0', description: 'The oj-expand event has been deprecated.  Use on-expanded-changed instead.'}
+     * @ojdeprecated {since: '12.1.0', description: 'Support for this custom event has been deprecated. Use on-expanded-changed to listen for changes to the "expanded" property instead.'}
      */
     expand: null,
     /**
@@ -3584,7 +3586,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
      * @instance
      * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
      *               {target:"Type", value:"K1", for:"nodeId"}]
-     * @ojdeprecated {since: '12.1.0', description: 'The oj-before-collapse event has been deprecated.  Lazy loading of data can be done through the data provider.'}
+     * @ojdeprecated {since: '12.1.0', description: 'Support for this custom event has been deprecated. Lazy loading of data can be implemented through the data provider.'}
      */
     beforeCollapse: null,
     /**
@@ -3598,7 +3600,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
      * @instance
      * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
      *               {target:"Type", value:"K1", for:"nodeId"}]
-     * @ojdeprecated {since: '12.1.0', description: 'The oj-collapse event has been deprecated.  Use on-expanded-changed instead.'}
+     * @ojdeprecated {since: '12.1.0', description: 'Support for this custom event has been deprecated. Use on-expanded-changed to listen for changes to the "expanded" property instead.'}
      */
     collapse: null,
     /**
@@ -4830,9 +4832,9 @@ setDefaultOptions({
  *            {target: "Type", value: "oj.ojDiagram.Node<K1>", for: "data"},
  *            {target: "Type", value: "D1", for: "itemData"},
  *            {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
- * @ojdeprecated [{target:"property", for: "renderDefaultFocus", since: "17.0.0", description: "The renderDefaultFocus property is deprecated. This behavior can be implemented in the custom renderer." },
- *                {target:"property", for: "renderDefaultHover", since: "17.0.0", description: "The renderDefaultHover property is deprecated. This behavior can be implemented in the custom renderer." },
- *                {target:"property", for: "renderDefaultSelection", since: "17.0.0", description: "The renderDefaultSelection property is deprecated. This behavior can be implemented in the custom renderer." }]
+ * @ojdeprecated [{target:"property", for: "renderDefaultFocus", since: "17.0.0", description: "Implement the focus effect in the node custom renderer instead." },
+ *                {target:"property", for: "renderDefaultHover", since: "17.0.0", description: "Implement the hover effect in the node custom renderer instead." },
+ *                {target:"property", for: "renderDefaultSelection", since: "17.0.0", description: "Implement the selection effect in the node custom renderer instead." }]
  */
 
 /**
@@ -4870,9 +4872,9 @@ setDefaultOptions({
  *            {target: "Type", value: "D1", for: "itemData"},
  *            {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
  * @ojdeprecated [{target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." },
- *                {target:"property", for: "renderDefaultFocus", since: "17.0.0", description: "The renderDefaultFocus property is deprecated. This behavior can be implemented in the custom template." },
- *                {target:"property", for: "renderDefaultHover", since: "17.0.0", description: "The renderDefaultHover property is deprecated. This behavior can be implemented in the custom template." },
- *                {target:"property", for: "renderDefaultSelection", since: "17.0.0", description: "The renderDefaultSelection property is deprecated. This behavior can be implemented in the custom template." }] */
+ *                {target:"property", for: "renderDefaultFocus", since: "17.0.0", description: "Implement the focus effect in the custom template instead." },
+ *                {target:"property", for: "renderDefaultHover", since: "17.0.0", description: "Implement the hover effect in the custom template instead." },
+ *                {target:"property", for: "renderDefaultSelection", since: "17.0.0", description: "Implement the selection effect in the custom template instead." }] */
 
 /**
  * @typedef {Object} oj.ojDiagram.LinkRendererContext

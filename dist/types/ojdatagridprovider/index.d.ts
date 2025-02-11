@@ -115,6 +115,7 @@ export interface GridHeaderItem<D> {
     };
 }
 export interface GridHeaderMetadata {
+    description?: string;
     expanded?: 'expanded' | 'collapsed';
     filter?: 'filterable' | 'filtered';
     showRequired?: boolean;
@@ -128,6 +129,7 @@ export interface GridItem<D> {
     };
 }
 export interface GridItemMetadata {
+    description?: string;
     sortDirection?: 'ascending' | 'descending' | 'unsorted';
 }
 export interface VersionCapability {

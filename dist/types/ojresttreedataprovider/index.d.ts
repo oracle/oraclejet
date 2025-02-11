@@ -59,6 +59,7 @@ export namespace RESTTreeDataProvider {
     };
     // tslint:disable-next-line interface-over-type-literal
     type FetchErrorDetail<K, D> = {
+        /** @deprecated since 15.1.0 - Use FetchErrorDetail.error instead. */
         err: TypeError;
         error: TypeError;
         fetchParameters: FetchListParameters<D> | FetchByKeysParameters<K> | FetchByOffsetParameters<D>;

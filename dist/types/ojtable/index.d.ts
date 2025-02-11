@@ -9,6 +9,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         rowHeader: string | string[];
     };
     addRowDisplay: 'top' | 'hidden';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as: string;
     columnResizeBehavior: 'redistribute' | 'add';
     columns: Array<ojTable.Column<K, D>> | null;
@@ -84,6 +85,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         row?: KeySet<K>;
         column?: KeySet<string>;
     };
+    /** @deprecated since 7.0.0 - Use selected attribute instead. */
     selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart & ojTable.ColumnSelectionEnd>;
     selectionMode: {
         column?: 'none' | 'single' | 'multiple';
@@ -113,6 +115,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         labelDisableNonContiguousSelection?: string;
         labelEditRow?: string;
         labelEnableNonContiguousSelection?: string;
+        /** @deprecated since 11.1.0 - Use labelResizeColumn instead. */
         labelResize?: string;
         labelResizeColumn?: string;
         labelResizeColumnDialog?: string;
@@ -128,6 +131,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         labelSortAsc?: string;
         labelSortDsc?: string;
         msgColumnResizeWidthValidation?: string;
+        /** @deprecated since 16.0.0 - This resource is only used with the deprecated Alta theme. */
         msgFetchingData?: string;
         msgInitializing?: string;
         msgNoData?: string;
@@ -299,13 +303,16 @@ export namespace ojTable {
     type CellTemplateContext<K, D> = {
         columnIndex: number;
         columnKey: keyof D;
+        /** @deprecated since 10.0.0 - Use HTMLDocument methods to retrieve this element. */
         componentElement: Element;
         data: D[keyof D];
         datasource: DataProvider<K, D> | null;
         index: number;
         item: Item<K, D>;
+        /** @deprecated since 10.0.0 - Use CellTemplateContext.item.key instead. */
         key: any;
         mode: 'edit' | 'navigation';
+        /** @deprecated since 10.0.0 - Use CellTemplateContext.item.data instead. */
         row: any;
         rowEditable: 'on' | 'off';
     };
@@ -319,7 +326,7 @@ export namespace ojTable {
         } | void) | null;
         footerStyle?: string | null;
         footerTemplate?: string | null;
-        frozenEdge?: 'start' | 'end' | null;
+        frozenEdge?: 'start' | 'end' | 'all' | null;
         headerClassName?: string | null;
         headerRenderer?: ((context: HeaderRendererContext<K, D>) => {
             insert: HTMLElement | string;
@@ -351,12 +358,14 @@ export namespace ojTable {
             insert: HTMLElement | string;
         } | void) | null;
         footerStyle?: string | null;
+        /** @deprecated since 7.0.0 - Use the footerTemplate slot instead. */
         footerTemplate?: string | null;
         headerClassName?: string | null;
         headerRenderer?: ((context: HeaderRendererContext<K, D>) => {
             insert: HTMLElement | string;
         } | void) | null;
         headerStyle?: string | null;
+        /** @deprecated since 7.0.0 - Use the headerTemplate slot instead. */
         headerTemplate?: string | null;
         headerText?: string | null;
         maxWidth?: string | number | null;
@@ -369,6 +378,7 @@ export namespace ojTable {
         sortProperty?: string | null;
         sortable?: 'auto' | 'enabled' | 'disabled';
         style?: string | null;
+        /** @deprecated since 7.0.0 - Use the template slot instead. */
         template?: string | null;
         weight?: number | null;
         width?: string | number | null;
@@ -470,6 +480,7 @@ export namespace ojTable {
     type FooterTemplateContext<D> = {
         columnIndex: number;
         columnKey: keyof D;
+        /** @deprecated since 10.0.0 - Use HTMLDocument methods to retrieve this element. */
         componentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -488,7 +499,9 @@ export namespace ojTable {
     type HeaderTemplateContext<D> = {
         columnIndex: number;
         columnKey: keyof D;
+        /** @deprecated since 10.0.0 - Use HTMLDocument methods to retrieve this element. */
         componentElement: Element;
+        /** @deprecated since 10.0.0 - Use HeaderTemplateContext.headerText instead. */
         data: any;
         headerText: string;
     };
@@ -538,14 +551,18 @@ export namespace ojTable {
     };
     // tslint:disable-next-line interface-over-type-literal
     type RowTemplateContext<K, D> = {
+        /** @deprecated since 10.0.0 - Use HTMLDocument methods to retrieve this element. */
         componentElement: Element;
+        /** @deprecated since 10.0.0 - Use RowTemplateContext.item.data instead. */
         data: any;
         datasource: DataProvider<K, D> | null;
         editable: 'on' | 'off';
         index: number;
         item: Item<K, D>;
+        /** @deprecated since 10.0.0 - Use RowTemplateContext.item.key instead. */
         key: any;
         mode: 'edit' | 'navigation';
+        /** @deprecated since 10.0.0 - Use Top level RowTemplateContext APIs instead. */
         rowContext: object;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -605,6 +622,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         rowHeader: string | string[];
     };
     addRowDisplay: 'top' | 'hidden';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as: string;
     columnResizeBehavior: 'redistribute' | 'add';
     columns: Array<ojTable.Column<K, D>> | null;
@@ -680,6 +698,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         row?: KeySet<K>;
         column?: KeySet<string>;
     };
+    /** @deprecated since 7.0.0 - Use selected attribute instead. */
     selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart & ojTable.ColumnSelectionEnd>;
     selectionMode: {
         column?: 'none' | 'single' | 'multiple';
@@ -709,6 +728,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         labelDisableNonContiguousSelection?: string;
         labelEditRow?: string;
         labelEnableNonContiguousSelection?: string;
+        /** @deprecated since 11.1.0 - Use labelResizeColumn instead. */
         labelResize?: string;
         labelResizeColumn?: string;
         labelResizeColumnDialog?: string;
@@ -724,6 +744,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         labelSortAsc?: string;
         labelSortDsc?: string;
         msgColumnResizeWidthValidation?: string;
+        /** @deprecated since 16.0.0 - This resource is only used with the deprecated Alta theme. */
         msgFetchingData?: string;
         msgInitializing?: string;
         msgNoData?: string;
@@ -876,13 +897,16 @@ export namespace TableElement {
     type CellTemplateContext<K, D> = {
         columnIndex: number;
         columnKey: keyof D;
+        /** @deprecated since 10.0.0 - Use HTMLDocument methods to retrieve this element. */
         componentElement: Element;
         data: D[keyof D];
         datasource: DataProvider<K, D> | null;
         index: number;
         item: Item<K, D>;
+        /** @deprecated since 10.0.0 - Use CellTemplateContext.item.key instead. */
         key: any;
         mode: 'edit' | 'navigation';
+        /** @deprecated since 10.0.0 - Use CellTemplateContext.item.data instead. */
         row: any;
         rowEditable: 'on' | 'off';
     };
@@ -896,7 +920,7 @@ export namespace TableElement {
         } | void) | null;
         footerStyle?: string | null;
         footerTemplate?: string | null;
-        frozenEdge?: 'start' | 'end' | null;
+        frozenEdge?: 'start' | 'end' | 'all' | null;
         headerClassName?: string | null;
         headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
             insert: HTMLElement | string;
@@ -928,12 +952,14 @@ export namespace TableElement {
             insert: HTMLElement | string;
         } | void) | null;
         footerStyle?: string | null;
+        /** @deprecated since 7.0.0 - Use the footerTemplate slot instead. */
         footerTemplate?: string | null;
         headerClassName?: string | null;
         headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
             insert: HTMLElement | string;
         } | void) | null;
         headerStyle?: string | null;
+        /** @deprecated since 7.0.0 - Use the headerTemplate slot instead. */
         headerTemplate?: string | null;
         headerText?: string | null;
         maxWidth?: string | number | null;
@@ -946,6 +972,7 @@ export namespace TableElement {
         sortProperty?: string | null;
         sortable?: 'auto' | 'enabled' | 'disabled';
         style?: string | null;
+        /** @deprecated since 7.0.0 - Use the template slot instead. */
         template?: string | null;
         weight?: number | null;
         width?: string | number | null;
@@ -1047,6 +1074,7 @@ export namespace TableElement {
     type FooterTemplateContext<D> = {
         columnIndex: number;
         columnKey: keyof D;
+        /** @deprecated since 10.0.0 - Use HTMLDocument methods to retrieve this element. */
         componentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -1065,7 +1093,9 @@ export namespace TableElement {
     type HeaderTemplateContext<D> = {
         columnIndex: number;
         columnKey: keyof D;
+        /** @deprecated since 10.0.0 - Use HTMLDocument methods to retrieve this element. */
         componentElement: Element;
+        /** @deprecated since 10.0.0 - Use HeaderTemplateContext.headerText instead. */
         data: any;
         headerText: string;
     };
@@ -1115,14 +1145,18 @@ export namespace TableElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type RowTemplateContext<K, D> = {
+        /** @deprecated since 10.0.0 - Use HTMLDocument methods to retrieve this element. */
         componentElement: Element;
+        /** @deprecated since 10.0.0 - Use RowTemplateContext.item.data instead. */
         data: any;
         datasource: DataProvider<K, D> | null;
         editable: 'on' | 'off';
         index: number;
         item: Item<K, D>;
+        /** @deprecated since 10.0.0 - Use RowTemplateContext.item.key instead. */
         key: any;
         mode: 'edit' | 'navigation';
+        /** @deprecated since 10.0.0 - Use Top level RowTemplateContext APIs instead. */
         rowContext: object;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -1141,8 +1175,11 @@ export namespace TableElement {
     type RenderRowTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<RowTemplateContext<K, D>>;
 }
 export interface TableIntrinsicProps extends Partial<Readonly<ojTableSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojTableEventMap<any, any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojTableEventMap<any, any>['ojAnimateStart']) => void;
+    /** @deprecated since 17.0.0 - Use currentRowChanged instead. */
     onojBeforeCurrentRow?: (value: ojTableEventMap<any, any>['ojBeforeCurrentRow']) => void;
     onojBeforeRowAddEnd?: (value: ojTableEventMap<any, any>['ojBeforeRowAddEnd']) => void;
     onojBeforeRowEdit?: (value: ojTableEventMap<any, any>['ojBeforeRowEdit']) => void;
@@ -1151,7 +1188,7 @@ export interface TableIntrinsicProps extends Partial<Readonly<ojTableSettablePro
     onojSort?: (value: ojTableEventMap<any, any>['ojSort']) => void;
     onaccessibilityChanged?: (value: ojTableEventMap<any, any>['accessibilityChanged']) => void;
     onaddRowDisplayChanged?: (value: ojTableEventMap<any, any>['addRowDisplayChanged']) => void;
-    onasChanged?: (value: ojTableEventMap<any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojTableEventMap<any, any>['asChanged']) => void;
     oncolumnResizeBehaviorChanged?: (value: ojTableEventMap<any, any>['columnResizeBehaviorChanged']) => void;
     oncolumnsChanged?: (value: ojTableEventMap<any, any>['columnsChanged']) => void;
     oncolumnsDefaultChanged?: (value: ojTableEventMap<any, any>['columnsDefaultChanged']) => void;
@@ -1172,7 +1209,7 @@ export interface TableIntrinsicProps extends Partial<Readonly<ojTableSettablePro
     onscrollToKeyChanged?: (value: ojTableEventMap<any, any>['scrollToKeyChanged']) => void;
     onselectAllControlChanged?: (value: ojTableEventMap<any, any>['selectAllControlChanged']) => void;
     onselectedChanged?: (value: ojTableEventMap<any, any>['selectedChanged']) => void;
-    onselectionChanged?: (value: ojTableEventMap<any, any>['selectionChanged']) => void;
+    /** @deprecated since 7.0.0 */ onselectionChanged?: (value: ojTableEventMap<any, any>['selectionChanged']) => void;
     onselectionModeChanged?: (value: ojTableEventMap<any, any>['selectionModeChanged']) => void;
     onselectionRequiredChanged?: (value: ojTableEventMap<any, any>['selectionRequiredChanged']) => void;
     onverticalGridVisibleChanged?: (value: ojTableEventMap<any, any>['verticalGridVisibleChanged']) => void;

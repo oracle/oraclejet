@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -120,7 +120,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
    * @param {Element} element
    * @param {boolean=} excludeActiveElement
    * @param {boolean=} includeReadonly
-   * @param {NodeList=} An array of the dialog elements
+   * @param {boolean=} inlcudeSelf
+   * @param {Element[]} dialogs An array of the dialog elements
    * @return {Element[]} An array of the disabled elements
    * @private
    */
@@ -128,19 +129,27 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
     element,
     excludeActiveElement,
     includeReadonly,
+    includeSelf,
     dialogs
   ) {
-    return ojkeyboardfocusUtils.disableAllFocusableElements(element, excludeActiveElement, includeReadonly, dialogs);
+    return ojkeyboardfocusUtils.disableAllFocusableElements(
+      element,
+      excludeActiveElement,
+      includeReadonly,
+      includeSelf,
+      dialogs
+    );
   };
 
   /**
    * Enable all focusable elements within the specified element that were previously disabled
    * @param {Element} element
+   * @param {boolean=} includeSelf
    * @return {Element[]} An array of the enabled elements
    * @private
    */
-  DataCollectionUtils.enableAllFocusableElements = function (element) {
-    return ojkeyboardfocusUtils.enableAllFocusableElements(element);
+  DataCollectionUtils.enableAllFocusableElements = function (element, includeSelf) {
+    return ojkeyboardfocusUtils.enableAllFocusableElements(element, includeSelf);
   };
 
   /**
@@ -451,6 +460,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
     _ESCAPE_CODE: 27,
     _F2: 'F2',
     _F2_CODE: 113,
+    _F10: 'F10',
+    _F10_CODE: 121,
     _NUM5_KEY: '5',
     _NUM5_KEY_CODE: 53,
     _LETTER_A: 'a',
@@ -604,6 +615,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
     return (
       eventKey === DataCollectionUtils.KEYBOARD_KEYS._META ||
       eventKey === DataCollectionUtils.KEYBOARD_KEYS._META_CODE
+    );
+  };
+
+  /**
+   * @private
+   */
+  DataCollectionUtils.isContextMenuKeyEvent = function (eventKey, shiftKey) {
+    return (
+      (eventKey === DataCollectionUtils.KEYBOARD_KEYS._F10 ||
+        eventKey === DataCollectionUtils.KEYBOARD_KEYS._F10_CODE) &&
+      shiftKey
     );
   };
 
@@ -1135,6 +1157,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   const isBlink = DataCollectionUtils.isBlink;
   const getBrowserVersion = DataCollectionUtils.getBrowserVersion;
   const doesAttributeExistInFilterCriterion = DataCollectionUtils.doesAttributeExistInFilterCriterion;
+  const isContextMenuKeyEvent = DataCollectionUtils.isContextMenuKeyEvent;
 
   exports.CHECKVIEWPORT_THRESHOLD = CHECKVIEWPORT_THRESHOLD;
   exports.KEYBOARD_KEYS = KEYBOARD_KEYS;
@@ -1171,6 +1194,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   exports.isBlink = isBlink;
   exports.isChrome = isChrome;
   exports.isClickthroughDisabled = isClickthroughDisabled;
+  exports.isContextMenuKeyEvent = isContextMenuKeyEvent;
   exports.isEdge = isEdge;
   exports.isElementIntersectingScrollerBounds = isElementIntersectingScrollerBounds;
   exports.isElementOrAncestorFocusable = isElementOrAncestorFocusable;

@@ -72,9 +72,11 @@ export interface dvtBaseGaugeSettableProperties extends dvtBaseComponentSettable
 export interface dvtBaseGaugeSettablePropertiesLenient extends Partial<dvtBaseGaugeSettableProperties> {
     [key: string]: any;
 }
+/** @deprecated since 13.1.0 - Use <a href="Badge.html">Badge</a> classes or icons instead. */
 export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
     borderColor?: string;
     color?: string;
+    /** @deprecated since 12.1.0 - Use metric-label instead. */
     label?: {
         style?: Partial<CSSStyleDeclaration>;
         text?: string;
@@ -104,6 +106,7 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
     };
     type?: 'arrow' | 'diamond' | 'square' | 'rectangle' | 'triangle' | 'star' | 'human' | 'circle' | string;
     value: number | null;
+    /** @deprecated since 12.1.0 - Overlays and gradients are not supported in Redwood theme and are not recommended. */
     visualEffects?: 'none' | 'auto';
     addEventListener<T extends keyof ojLedGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojLedGaugeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -190,6 +193,7 @@ export interface ojLedGaugeEventMap extends dvtBaseGaugeEventMap<ojLedGaugeSetta
 export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProperties {
     borderColor?: string;
     color?: string;
+    /** @deprecated since 12.1.0 - Use metric-label instead. */
     label?: {
         style?: Partial<CSSStyleDeclaration>;
         text?: string;
@@ -219,6 +223,7 @@ export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProper
     };
     type?: 'arrow' | 'diamond' | 'square' | 'rectangle' | 'triangle' | 'star' | 'human' | 'circle' | string;
     value: number | null;
+    /** @deprecated since 12.1.0 - Overlays and gradients are not supported in Redwood theme and are not recommended. */
     visualEffects?: 'none' | 'auto';
 }
 export interface ojLedGaugeSettablePropertiesLenient extends Partial<ojLedGaugeSettableProperties> {
@@ -227,15 +232,21 @@ export interface ojLedGaugeSettablePropertiesLenient extends Partial<ojLedGaugeS
 export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettableProperties> {
     changed?: boolean;
     changedState?: {
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         borderColor?: string;
         color?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         source?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgClassName?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     describedBy?: string | null;
     disabled?: boolean;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     hoverState?: {
         borderColor?: string;
         color?: string;
@@ -246,16 +257,23 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
     };
     labelledBy?: string | null;
     max?: number;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     min?: number;
+    /** @deprecated since 9.0.0 - Usage of vertical rating gauges is not recommended. */
     orientation?: 'vertical' | 'horizontal';
     preserveAspectRatio?: 'none' | 'meet';
     readonly?: boolean;
     selectedState?: {
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         borderColor?: string;
         color?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         source?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgClassName?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     size?: 'sm' | 'md' | 'lg' | 'fit' | 'small' | 'medium' | 'large';
@@ -269,6 +287,7 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         }));
     };
     readonly transientValue?: number | null;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     unselectedState?: {
         borderColor?: string;
         color?: string;
@@ -278,25 +297,39 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     value: number | null;
+    /** @deprecated since 12.1.0 - Overlays and gradients are not supported in Redwood theme and are not recommended. */
     visualEffects?: 'none' | 'auto';
     translations: {
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         labelClearSelection?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         labelCountWithTotal?: string;
         labelDataVisualization?: string;
         labelInvalidData?: string;
         labelNoData?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateCollapsed?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateDrillable?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateExpanded?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateHidden?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateIsolated?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateMaximized?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateMinimized?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateSelected?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateUnselected?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateVisible?: string;
     };
     addEventListener<T extends keyof ojRatingGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojRatingGaugeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -355,6 +388,7 @@ export namespace ojRatingGauge {
     type trackResizeChanged = dvtBaseGauge.trackResizeChanged<ojRatingGaugeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type Threshold = {
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system */
         borderColor?: string;
         color?: string;
         max?: number;
@@ -396,15 +430,21 @@ export interface ojRatingGaugeEventMap extends dvtBaseGaugeEventMap<ojRatingGaug
 export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettableProperties {
     changed?: boolean;
     changedState?: {
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         borderColor?: string;
         color?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         source?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgClassName?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     describedBy?: string | null;
     disabled?: boolean;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     hoverState?: {
         borderColor?: string;
         color?: string;
@@ -415,16 +455,23 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
     };
     labelledBy?: string | null;
     max?: number;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     min?: number;
+    /** @deprecated since 9.0.0 - Usage of vertical rating gauges is not recommended. */
     orientation?: 'vertical' | 'horizontal';
     preserveAspectRatio?: 'none' | 'meet';
     readonly?: boolean;
     selectedState?: {
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         borderColor?: string;
         color?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         source?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgClassName?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     size?: 'sm' | 'md' | 'lg' | 'fit' | 'small' | 'medium' | 'large';
@@ -438,6 +485,7 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         }));
     };
     readonly transientValue?: number | null;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     unselectedState?: {
         borderColor?: string;
         color?: string;
@@ -447,25 +495,39 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     value: number | null;
+    /** @deprecated since 12.1.0 - Overlays and gradients are not supported in Redwood theme and are not recommended. */
     visualEffects?: 'none' | 'auto';
     translations: {
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         labelClearSelection?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         labelCountWithTotal?: string;
         labelDataVisualization?: string;
         labelInvalidData?: string;
         labelNoData?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateCollapsed?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateDrillable?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateExpanded?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateHidden?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateIsolated?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateMaximized?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateMinimized?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateSelected?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateUnselected?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-rating-gauge. */
         stateVisible?: string;
     };
 }
@@ -477,7 +539,9 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     animationDuration?: number;
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     borderColor?: string;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     borderRadius?: string;
     center?: {
         renderer: ((context: ojStatusMeterGauge.CenterContext) => ({
@@ -490,6 +554,7 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     describedBy?: string | null;
     indicatorSize?: number;
     innerRadius?: number;
+    /** @deprecated since 12.1.0 - Use metric-label instead. */
     label?: {
         position?: 'center' | 'start' | 'auto';
         style?: Partial<CSSStyleDeclaration>;
@@ -497,6 +562,7 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     };
     labelledBy?: string | null;
     max?: number;
+    /** @deprecated since 18.0.0 - This component is superceded by oj-c-meter-bar and oj-c-meter-circle. Applications with this use case should instead create their own labels that also satisfy accessibility requirements. */
     metricLabel?: {
         converter?: Converter<string | number>;
         position?: 'center' | 'insideIndicatorEdge' | 'outsideIndicatorEdge' | 'outsidePlotArea' | 'withLabel' | 'auto';
@@ -509,11 +575,15 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     min?: number;
     orientation?: 'circular' | 'vertical' | 'horizontal';
     plotArea?: {
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         borderColor?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         borderRadius?: string;
         color?: string;
         rendered?: 'on' | 'off' | 'auto';
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgClassName?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     readonly?: boolean;
@@ -521,7 +591,9 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     size?: 'sm' | 'md' | 'lg' | 'fit';
     startAngle?: number;
     step?: number | null;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     svgClassName?: string;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     thresholdDisplay?: 'currentOnly' | 'all' | 'onIndicator';
     thresholds?: ojStatusMeterGauge.Threshold[];
@@ -534,25 +606,39 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     };
     readonly transientValue?: number | null;
     value: number | null;
+    /** @deprecated since 12.1.0 - Overlays and gradients are not supported in Redwood theme and are not recommended. */
     visualEffects?: 'none' | 'auto';
     translations: {
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         labelClearSelection?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         labelCountWithTotal?: string;
         labelDataVisualization?: string;
         labelInvalidData?: string;
         labelNoData?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateCollapsed?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateDrillable?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateExpanded?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateHidden?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateIsolated?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateMaximized?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateMinimized?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateSelected?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateUnselected?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateVisible?: string;
     };
     addEventListener<T extends keyof ojStatusMeterGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojStatusMeterGaugeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -648,12 +734,15 @@ export namespace ojStatusMeterGauge {
     // tslint:disable-next-line interface-over-type-literal
     type ReferenceLine = {
         color?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system */
         lineStyle?: 'dashed' | 'dotted' | 'solid';
+        /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system */
         lineWidth?: number;
         value?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Threshold = {
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system */
         borderColor?: string;
         color?: string;
         max?: number;
@@ -710,7 +799,9 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
     animationDuration?: number;
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     borderColor?: string;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     borderRadius?: string;
     center?: {
         renderer: ((context: ojStatusMeterGauge.CenterContext) => ({
@@ -723,6 +814,7 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
     describedBy?: string | null;
     indicatorSize?: number;
     innerRadius?: number;
+    /** @deprecated since 12.1.0 - Use metric-label instead. */
     label?: {
         position?: 'center' | 'start' | 'auto';
         style?: Partial<CSSStyleDeclaration>;
@@ -730,6 +822,7 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
     };
     labelledBy?: string | null;
     max?: number;
+    /** @deprecated since 18.0.0 - This component is superceded by oj-c-meter-bar and oj-c-meter-circle. Applications with this use case should instead create their own labels that also satisfy accessibility requirements. */
     metricLabel?: {
         converter?: Converter<string | number>;
         position?: 'center' | 'insideIndicatorEdge' | 'outsideIndicatorEdge' | 'outsidePlotArea' | 'withLabel' | 'auto';
@@ -742,11 +835,15 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
     min?: number;
     orientation?: 'circular' | 'vertical' | 'horizontal';
     plotArea?: {
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         borderColor?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         borderRadius?: string;
         color?: string;
         rendered?: 'on' | 'off' | 'auto';
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgClassName?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     readonly?: boolean;
@@ -754,7 +851,9 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
     size?: 'sm' | 'md' | 'lg' | 'fit';
     startAngle?: number;
     step?: number | null;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     svgClassName?: string;
+    /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     thresholdDisplay?: 'currentOnly' | 'all' | 'onIndicator';
     thresholds?: ojStatusMeterGauge.Threshold[];
@@ -767,31 +866,46 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
     };
     readonly transientValue?: number | null;
     value: number | null;
+    /** @deprecated since 12.1.0 - Overlays and gradients are not supported in Redwood theme and are not recommended. */
     visualEffects?: 'none' | 'auto';
     translations: {
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         labelClearSelection?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         labelCountWithTotal?: string;
         labelDataVisualization?: string;
         labelInvalidData?: string;
         labelNoData?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateCollapsed?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateDrillable?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateExpanded?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateHidden?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateIsolated?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateMaximized?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateMinimized?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateSelected?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateUnselected?: string;
+        /** @deprecated since 14.0.0 - This resource is not used by oj-status-meter-gauge. */
         stateVisible?: string;
     };
 }
 export interface ojStatusMeterGaugeSettablePropertiesLenient extends Partial<ojStatusMeterGaugeSettableProperties> {
     [key: string]: any;
 }
+/** @deprecated since 13.1.0 - Use <a href="Badge.html">Badge</a> classes or icons instead. */
 export type LedGaugeElement = ojLedGauge;
 export type RatingGaugeElement = ojRatingGauge;
 export type StatusMeterGaugeElement = ojStatusMeterGauge;
@@ -898,6 +1012,7 @@ export namespace RatingGaugeElement {
     type trackResizeChanged = dvtBaseGauge.trackResizeChanged<ojRatingGaugeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type Threshold = {
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system */
         borderColor?: string;
         color?: string;
         max?: number;
@@ -998,12 +1113,15 @@ export namespace StatusMeterGaugeElement {
     // tslint:disable-next-line interface-over-type-literal
     type ReferenceLine = {
         color?: string;
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system */
         lineStyle?: 'dashed' | 'dotted' | 'solid';
+        /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system */
         lineWidth?: number;
         value?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Threshold = {
+        /** @deprecated since 14.0.0 - This is not recommended in the Redwood design system */
         borderColor?: string;
         color?: string;
         max?: number;
@@ -1024,7 +1142,7 @@ export namespace StatusMeterGaugeElement {
 export interface LedGaugeIntrinsicProps extends Partial<Readonly<ojLedGaugeSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onborderColorChanged?: (value: ojLedGaugeEventMap['borderColorChanged']) => void;
     oncolorChanged?: (value: ojLedGaugeEventMap['colorChanged']) => void;
-    onlabelChanged?: (value: ojLedGaugeEventMap['labelChanged']) => void;
+    /** @deprecated since 12.1.0 */ onlabelChanged?: (value: ojLedGaugeEventMap['labelChanged']) => void;
     onmarkerSizeChanged?: (value: ojLedGaugeEventMap['markerSizeChanged']) => void;
     onmaxChanged?: (value: ojLedGaugeEventMap['maxChanged']) => void;
     onmetricLabelChanged?: (value: ojLedGaugeEventMap['metricLabelChanged']) => void;
@@ -1037,7 +1155,7 @@ export interface LedGaugeIntrinsicProps extends Partial<Readonly<ojLedGaugeSetta
     ontooltipChanged?: (value: ojLedGaugeEventMap['tooltipChanged']) => void;
     ontypeChanged?: (value: ojLedGaugeEventMap['typeChanged']) => void;
     onvalueChanged?: (value: ojLedGaugeEventMap['valueChanged']) => void;
-    onvisualEffectsChanged?: (value: ojLedGaugeEventMap['visualEffectsChanged']) => void;
+    /** @deprecated since 12.1.0 */ onvisualEffectsChanged?: (value: ojLedGaugeEventMap['visualEffectsChanged']) => void;
     ontrackResizeChanged?: (value: ojLedGaugeEventMap['trackResizeChanged']) => void;
     children?: ComponentChildren;
 }
@@ -1046,11 +1164,11 @@ export interface RatingGaugeIntrinsicProps extends Partial<Readonly<ojRatingGaug
     onchangedStateChanged?: (value: ojRatingGaugeEventMap['changedStateChanged']) => void;
     ondescribedByChanged?: (value: ojRatingGaugeEventMap['describedByChanged']) => void;
     ondisabledChanged?: (value: ojRatingGaugeEventMap['disabledChanged']) => void;
-    onhoverStateChanged?: (value: ojRatingGaugeEventMap['hoverStateChanged']) => void;
+    /** @deprecated since 14.0.0 */ onhoverStateChanged?: (value: ojRatingGaugeEventMap['hoverStateChanged']) => void;
     onlabelledByChanged?: (value: ojRatingGaugeEventMap['labelledByChanged']) => void;
     onmaxChanged?: (value: ojRatingGaugeEventMap['maxChanged']) => void;
-    onminChanged?: (value: ojRatingGaugeEventMap['minChanged']) => void;
-    onorientationChanged?: (value: ojRatingGaugeEventMap['orientationChanged']) => void;
+    /** @deprecated since 14.0.0 */ onminChanged?: (value: ojRatingGaugeEventMap['minChanged']) => void;
+    /** @deprecated since 9.0.0 */ onorientationChanged?: (value: ojRatingGaugeEventMap['orientationChanged']) => void;
     onpreserveAspectRatioChanged?: (value: ojRatingGaugeEventMap['preserveAspectRatioChanged']) => void;
     onreadonlyChanged?: (value: ojRatingGaugeEventMap['readonlyChanged']) => void;
     onselectedStateChanged?: (value: ojRatingGaugeEventMap['selectedStateChanged']) => void;
@@ -1059,9 +1177,9 @@ export interface RatingGaugeIntrinsicProps extends Partial<Readonly<ojRatingGaug
     onthresholdsChanged?: (value: ojRatingGaugeEventMap['thresholdsChanged']) => void;
     ontooltipChanged?: (value: ojRatingGaugeEventMap['tooltipChanged']) => void;
     ontransientValueChanged?: (value: ojRatingGaugeEventMap['transientValueChanged']) => void;
-    onunselectedStateChanged?: (value: ojRatingGaugeEventMap['unselectedStateChanged']) => void;
+    /** @deprecated since 14.0.0 */ onunselectedStateChanged?: (value: ojRatingGaugeEventMap['unselectedStateChanged']) => void;
     onvalueChanged?: (value: ojRatingGaugeEventMap['valueChanged']) => void;
-    onvisualEffectsChanged?: (value: ojRatingGaugeEventMap['visualEffectsChanged']) => void;
+    /** @deprecated since 12.1.0 */ onvisualEffectsChanged?: (value: ojRatingGaugeEventMap['visualEffectsChanged']) => void;
     ontrackResizeChanged?: (value: ojRatingGaugeEventMap['trackResizeChanged']) => void;
     children?: ComponentChildren;
 }
@@ -1070,17 +1188,17 @@ export interface StatusMeterGaugeIntrinsicProps extends Partial<Readonly<ojStatu
     onanimationDurationChanged?: (value: ojStatusMeterGaugeEventMap['animationDurationChanged']) => void;
     onanimationOnDataChangeChanged?: (value: ojStatusMeterGaugeEventMap['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojStatusMeterGaugeEventMap['animationOnDisplayChanged']) => void;
-    onborderColorChanged?: (value: ojStatusMeterGaugeEventMap['borderColorChanged']) => void;
-    onborderRadiusChanged?: (value: ojStatusMeterGaugeEventMap['borderRadiusChanged']) => void;
+    /** @deprecated since 14.0.0 */ onborderColorChanged?: (value: ojStatusMeterGaugeEventMap['borderColorChanged']) => void;
+    /** @deprecated since 14.0.0 */ onborderRadiusChanged?: (value: ojStatusMeterGaugeEventMap['borderRadiusChanged']) => void;
     oncenterChanged?: (value: ojStatusMeterGaugeEventMap['centerChanged']) => void;
     oncolorChanged?: (value: ojStatusMeterGaugeEventMap['colorChanged']) => void;
     ondescribedByChanged?: (value: ojStatusMeterGaugeEventMap['describedByChanged']) => void;
     onindicatorSizeChanged?: (value: ojStatusMeterGaugeEventMap['indicatorSizeChanged']) => void;
     oninnerRadiusChanged?: (value: ojStatusMeterGaugeEventMap['innerRadiusChanged']) => void;
-    onlabelChanged?: (value: ojStatusMeterGaugeEventMap['labelChanged']) => void;
+    /** @deprecated since 12.1.0 */ onlabelChanged?: (value: ojStatusMeterGaugeEventMap['labelChanged']) => void;
     onlabelledByChanged?: (value: ojStatusMeterGaugeEventMap['labelledByChanged']) => void;
     onmaxChanged?: (value: ojStatusMeterGaugeEventMap['maxChanged']) => void;
-    onmetricLabelChanged?: (value: ojStatusMeterGaugeEventMap['metricLabelChanged']) => void;
+    /** @deprecated since 18.0.0 */ onmetricLabelChanged?: (value: ojStatusMeterGaugeEventMap['metricLabelChanged']) => void;
     onminChanged?: (value: ojStatusMeterGaugeEventMap['minChanged']) => void;
     onorientationChanged?: (value: ojStatusMeterGaugeEventMap['orientationChanged']) => void;
     onplotAreaChanged?: (value: ojStatusMeterGaugeEventMap['plotAreaChanged']) => void;
@@ -1089,14 +1207,14 @@ export interface StatusMeterGaugeIntrinsicProps extends Partial<Readonly<ojStatu
     onsizeChanged?: (value: ojStatusMeterGaugeEventMap['sizeChanged']) => void;
     onstartAngleChanged?: (value: ojStatusMeterGaugeEventMap['startAngleChanged']) => void;
     onstepChanged?: (value: ojStatusMeterGaugeEventMap['stepChanged']) => void;
-    onsvgClassNameChanged?: (value: ojStatusMeterGaugeEventMap['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojStatusMeterGaugeEventMap['svgStyleChanged']) => void;
+    /** @deprecated since 14.0.0 */ onsvgClassNameChanged?: (value: ojStatusMeterGaugeEventMap['svgClassNameChanged']) => void;
+    /** @deprecated since 14.0.0 */ onsvgStyleChanged?: (value: ojStatusMeterGaugeEventMap['svgStyleChanged']) => void;
     onthresholdDisplayChanged?: (value: ojStatusMeterGaugeEventMap['thresholdDisplayChanged']) => void;
     onthresholdsChanged?: (value: ojStatusMeterGaugeEventMap['thresholdsChanged']) => void;
     ontooltipChanged?: (value: ojStatusMeterGaugeEventMap['tooltipChanged']) => void;
     ontransientValueChanged?: (value: ojStatusMeterGaugeEventMap['transientValueChanged']) => void;
     onvalueChanged?: (value: ojStatusMeterGaugeEventMap['valueChanged']) => void;
-    onvisualEffectsChanged?: (value: ojStatusMeterGaugeEventMap['visualEffectsChanged']) => void;
+    /** @deprecated since 12.1.0 */ onvisualEffectsChanged?: (value: ojStatusMeterGaugeEventMap['visualEffectsChanged']) => void;
     ontrackResizeChanged?: (value: ojStatusMeterGaugeEventMap['trackResizeChanged']) => void;
     children?: ComponentChildren;
 }

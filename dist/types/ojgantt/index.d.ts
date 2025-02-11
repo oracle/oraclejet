@@ -11,6 +11,7 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
    any> extends dvtTimeComponent<ojGanttSettableProperties<K1, K2, D1, D2, K3, D3>> {
     animationOnDataChange: 'auto' | 'none';
     animationOnDisplay: 'auto' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as: string;
     axisPosition: 'bottom' | 'top';
     dependencyData?: (DataProvider<K1, D1>);
@@ -29,12 +30,14 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
     };
     majorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
+        drillable?: 'on' | 'off';
         height?: number;
         scale?: (string | DvtTimeComponentScale);
         zoomOrder?: Array<string | DvtTimeComponentScale>;
     };
     minorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
+        drillable?: 'on' | 'off';
         height?: number;
         scale?: (string | DvtTimeComponentScale);
         zoomOrder?: Array<string | DvtTimeComponentScale>;
@@ -64,6 +67,7 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
     selectionMode: 'none' | 'single' | 'multiple';
     start: string;
     taskAggregation: 'on' | 'off';
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute instead. */
     taskData?: (DataProvider<K2, D2>);
     taskDefaults: {
         attribute?: {
@@ -215,6 +219,7 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
         labelResizeBy?: string;
         labelRow?: string;
         labelStart?: string;
+        /** @deprecated since 17.1.0 - This is not supported by the component. */
         rowAxisLabel?: string;
         startFinishDependencyAriaDesc?: string;
         startStartDependencyAriaDesc?: string;
@@ -262,6 +267,18 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
     } | null;
 }
 export namespace ojGantt {
+    interface ojMajorAxisDrill extends CustomEvent<{
+        intervalEnd: string;
+        intervalStart: string;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojMinorAxisDrill extends CustomEvent<{
+        intervalEnd: string;
+        intervalStart: string;
+        [propName: string]: any;
+    }> {
+    }
     interface ojMove<K2 = any, D2 = any, K3 = any, D3 = any> extends CustomEvent<{
         baselineEnd: string;
         baselineStart: string;
@@ -473,6 +490,7 @@ export namespace ojGantt {
     };
     // tslint:disable-next-line interface-over-type-literal
     type DependencyTemplateContext<K1, D1> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: D1;
         index: number;
@@ -519,6 +537,7 @@ export namespace ojGantt {
     };
     // tslint:disable-next-line interface-over-type-literal
     type RowAxisLabelTemplateContext<K2 = any, D2 = any, K3 = any, D3 = any> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: D3 | null;
         depth: number;
@@ -595,6 +614,7 @@ export namespace ojGantt {
         svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'normal' | 'milestone' | 'summary' | 'auto';
     };
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute and use the RowMappingTemplateContext instead. */
     // tslint:disable-next-line interface-over-type-literal
     type RowTemplateContext = {
         componentElement: Element;
@@ -636,6 +656,7 @@ export namespace ojGantt {
         itemData: D2;
         rowData: Row<K2, D2, K3, D3>;
     };
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute and use the TaskMappingTemplateContext instead. */
     // tslint:disable-next-line interface-over-type-literal
     type TaskTemplateContext = {
         componentElement: Element;
@@ -648,6 +669,7 @@ export namespace ojGantt {
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K2 = any, D2 = any, K3 = any, D3 = any> = {
         color: string;
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: RowTask<K2, D2>;
         itemData: D2;
@@ -673,12 +695,14 @@ export namespace ojGantt {
     type RenderRowAxisLabelTemplate<K2 = any, D2 = any, K3 = any, D3 = any> = import('ojs/ojvcomponent').TemplateSlot<RowAxisLabelTemplateContext<K2, D2, K3, D3>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowMappingTemplate<K3, D3> = import('ojs/ojvcomponent').TemplateSlot<RowMappingTemplateContext<K3, D3>>;
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute and use the RowMappingTemplateContext instead. */
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowTemplate = import('ojs/ojvcomponent').TemplateSlot<RowTemplateContext>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTaskContentTemplate<K2 = any, D2 = any, K3 = any, D3 = any> = import('ojs/ojvcomponent').TemplateSlot<TaskContentTemplateContext<K2, D2, K3, D3>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTaskMappingTemplate<D2, D3> = import('ojs/ojvcomponent').TemplateSlot<TaskMappingTemplateContext<D2, D3>>;
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute and use the TaskMappingTemplateContext instead. */
     // tslint:disable-next-line interface-over-type-literal
     type RenderTaskTemplate = import('ojs/ojvcomponent').TemplateSlot<TaskTemplateContext>;
     // tslint:disable-next-line interface-over-type-literal
@@ -686,6 +710,8 @@ export namespace ojGantt {
 }
 export interface ojGanttEventMap<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any, K3, D3 extends ojGantt.DataRow |
    any> extends dvtTimeComponentEventMap<ojGanttSettableProperties<K1, K2, D1, D2, K3, D3>> {
+    'ojMajorAxisDrill': ojGantt.ojMajorAxisDrill;
+    'ojMinorAxisDrill': ojGantt.ojMinorAxisDrill;
     'ojMove': ojGantt.ojMove<K2, D2, K3, D3>;
     'ojResize': ojGantt.ojResize<K2, D2, K3, D3>;
     'ojViewportChange': ojGantt.ojViewportChange;
@@ -726,6 +752,7 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
    any> extends dvtTimeComponentSettableProperties {
     animationOnDataChange: 'auto' | 'none';
     animationOnDisplay: 'auto' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as: string;
     axisPosition: 'bottom' | 'top';
     dependencyData?: (DataProvider<K1, D1>);
@@ -744,12 +771,14 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
     };
     majorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
+        drillable?: 'on' | 'off';
         height?: number;
         scale?: (string | DvtTimeComponentScale);
         zoomOrder?: Array<string | DvtTimeComponentScale>;
     };
     minorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
+        drillable?: 'on' | 'off';
         height?: number;
         scale?: (string | DvtTimeComponentScale);
         zoomOrder?: Array<string | DvtTimeComponentScale>;
@@ -779,6 +808,7 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
     selectionMode: 'none' | 'single' | 'multiple';
     start: string;
     taskAggregation: 'on' | 'off';
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute instead. */
     taskData?: (DataProvider<K2, D2>);
     taskDefaults: {
         attribute?: {
@@ -930,6 +960,7 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
         labelResizeBy?: string;
         labelRow?: string;
         labelStart?: string;
+        /** @deprecated since 17.1.0 - This is not supported by the component. */
         rowAxisLabel?: string;
         startFinishDependencyAriaDesc?: string;
         startStartDependencyAriaDesc?: string;
@@ -1137,6 +1168,7 @@ export interface ojGanttTask<K2 = any, D2 = any> extends dvtTimeComponent<ojGant
         svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
     };
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute instead of task-data, and specify task-id instead of this attribute. */
     rowId?: any;
     shortDesc?: (string | ((context: ojGantt.TaskShortDescContext<K2, D2>) => string));
     start?: string;
@@ -1257,6 +1289,7 @@ export interface ojGanttTaskSettableProperties<K2 = any, D2 = any> extends dvtTi
         svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
     };
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute instead of task-data, and specify task-id instead of this attribute. */
     rowId?: any;
     shortDesc?: (string | ((context: ojGantt.TaskShortDescContext<K2, D2>) => string));
     start?: string;
@@ -1274,6 +1307,18 @@ export type GanttReferenceObjectElement = ojGanttReferenceObject;
 export type GanttRowElement<K3 = any, D3 = any> = ojGanttRow<K3>;
 export type GanttTaskElement<K2 = any, D2 = any> = ojGanttTask<K2>;
 export namespace GanttElement {
+    interface ojMajorAxisDrill extends CustomEvent<{
+        intervalEnd: string;
+        intervalStart: string;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojMinorAxisDrill extends CustomEvent<{
+        intervalEnd: string;
+        intervalStart: string;
+        [propName: string]: any;
+    }> {
+    }
     interface ojMove<K2 = any, D2 = any, K3 = any, D3 = any> extends CustomEvent<{
         baselineEnd: string;
         baselineStart: string;
@@ -1501,6 +1546,7 @@ export namespace GanttElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type DependencyTemplateContext<K1, D1> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: D1;
         index: number;
@@ -1547,6 +1593,7 @@ export namespace GanttElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type RowAxisLabelTemplateContext<K2 = any, D2 = any, K3 = any, D3 = any> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: D3 | null;
         depth: number;
@@ -1623,6 +1670,7 @@ export namespace GanttElement {
         svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'normal' | 'milestone' | 'summary' | 'auto';
     };
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute and use the RowMappingTemplateContext instead. */
     // tslint:disable-next-line interface-over-type-literal
     type RowTemplateContext = {
         componentElement: Element;
@@ -1664,6 +1712,7 @@ export namespace GanttElement {
         itemData: D2;
         rowData: ojGantt.Row<K2, D2, K3, D3>;
     };
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute and use the TaskMappingTemplateContext instead. */
     // tslint:disable-next-line interface-over-type-literal
     type TaskTemplateContext = {
         componentElement: Element;
@@ -1676,6 +1725,7 @@ export namespace GanttElement {
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K2 = any, D2 = any, K3 = any, D3 = any> = {
         color: string;
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: ojGantt.RowTask<K2, D2>;
         itemData: D2;
@@ -1701,12 +1751,14 @@ export namespace GanttElement {
     type RenderRowAxisLabelTemplate<K2 = any, D2 = any, K3 = any, D3 = any> = import('ojs/ojvcomponent').TemplateSlot<RowAxisLabelTemplateContext<K2, D2, K3, D3>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowMappingTemplate<K3, D3> = import('ojs/ojvcomponent').TemplateSlot<RowMappingTemplateContext<K3, D3>>;
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute and use the RowMappingTemplateContext instead. */
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowTemplate = import('ojs/ojvcomponent').TemplateSlot<RowTemplateContext>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTaskContentTemplate<K2 = any, D2 = any, K3 = any, D3 = any> = import('ojs/ojvcomponent').TemplateSlot<TaskContentTemplateContext<K2, D2, K3, D3>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTaskMappingTemplate<D2, D3> = import('ojs/ojvcomponent').TemplateSlot<TaskMappingTemplateContext<D2, D3>>;
+    /** @deprecated since 12.0.0 - Set the data using the row-data attribute and use the TaskMappingTemplateContext instead. */
     // tslint:disable-next-line interface-over-type-literal
     type RenderTaskTemplate = import('ojs/ojvcomponent').TemplateSlot<TaskTemplateContext>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1789,12 +1841,14 @@ export namespace GanttTaskElement {
     type typeChanged<K2 = any, D2 = any> = JetElementCustomEvent<ojGanttTask<K2, D2>["type"]>;
 }
 export interface GanttIntrinsicProps extends Partial<Readonly<ojGanttSettableProperties<any, any, any, any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojMajorAxisDrill?: (value: ojGanttEventMap<any, any, any, any, any, any>['ojMajorAxisDrill']) => void;
+    onojMinorAxisDrill?: (value: ojGanttEventMap<any, any, any, any, any, any>['ojMinorAxisDrill']) => void;
     onojMove?: (value: ojGanttEventMap<any, any, any, any, any, any>['ojMove']) => void;
     onojResize?: (value: ojGanttEventMap<any, any, any, any, any, any>['ojResize']) => void;
     onojViewportChange?: (value: ojGanttEventMap<any, any, any, any, any, any>['ojViewportChange']) => void;
     onanimationOnDataChangeChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['animationOnDisplayChanged']) => void;
-    onasChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['asChanged']) => void;
     onaxisPositionChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['axisPositionChanged']) => void;
     ondependencyDataChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['dependencyDataChanged']) => void;
     ondependencyLineShapeChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['dependencyLineShapeChanged']) => void;
@@ -1815,7 +1869,7 @@ export interface GanttIntrinsicProps extends Partial<Readonly<ojGanttSettablePro
     onselectionModeChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['selectionModeChanged']) => void;
     onstartChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['startChanged']) => void;
     ontaskAggregationChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['taskAggregationChanged']) => void;
-    ontaskDataChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['taskDataChanged']) => void;
+    /** @deprecated since 12.0.0 */ ontaskDataChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['taskDataChanged']) => void;
     ontaskDefaultsChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['taskDefaultsChanged']) => void;
     ontimeCursorChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['timeCursorChanged']) => void;
     ontooltipChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['tooltipChanged']) => void;
@@ -1863,7 +1917,7 @@ export interface GanttTaskIntrinsicProps extends Partial<Readonly<ojGanttTaskSet
     onoverlapChanged?: (value: ojGanttTaskEventMap<any>['overlapChanged']) => void;
     onovertimeChanged?: (value: ojGanttTaskEventMap<any>['overtimeChanged']) => void;
     onprogressChanged?: (value: ojGanttTaskEventMap<any>['progressChanged']) => void;
-    onrowIdChanged?: (value: ojGanttTaskEventMap<any>['rowIdChanged']) => void;
+    /** @deprecated since 12.0.0 */ onrowIdChanged?: (value: ojGanttTaskEventMap<any>['rowIdChanged']) => void;
     onshortDescChanged?: (value: ojGanttTaskEventMap<any>['shortDescChanged']) => void;
     onstartChanged?: (value: ojGanttTaskEventMap<any>['startChanged']) => void;
     onsvgClassNameChanged?: (value: ojGanttTaskEventMap<any>['svgClassNameChanged']) => void;

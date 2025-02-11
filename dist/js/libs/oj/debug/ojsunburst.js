@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1795,6 +1795,8 @@ var __oj_sunburst_node_metadata =
        * @ojvalue {string} "touchStart"
        * @ojvalue {string} "auto"
        * @default "auto"
+       * @ojdeprecated {since: '18.0.0', description: 'This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead.'}
+
        */
       touchResponse: 'auto',
 
@@ -1859,7 +1861,7 @@ var __oj_sunburst_node_metadata =
        * @ojshortdesc Triggered immediately before any node in the sunburst is expanded.
        * @memberof oj.ojSunburst
        * @instance
-       * @ojdeprecated {since: '12.1.0', description: 'The oj-before-expand event has been deprecated.  Lazy loading of data can be done through the data provider.'}
+       * @ojdeprecated {since: '12.1.0', description: 'Support for this custom event has been deprecated. Lazy loading of data can be implemented through the data provider.'}
        */
       beforeExpand: null,
       /**
@@ -1877,7 +1879,7 @@ var __oj_sunburst_node_metadata =
        * @ojshortdesc Triggered when a node has been expanded.
        * @memberof oj.ojSunburst
        * @instance
-       * @ojdeprecated {since: '12.1.0', description: 'The oj-expand event has been deprecated.  Use on-expanded-changed instead.'}
+       * @ojdeprecated {since: '12.1.0', description: 'Support for this custom event has been deprecated. Use on-expanded-changed to listen for changes to the "expanded" property instead.'}
        */
       expand: null,
       /**
@@ -1895,7 +1897,7 @@ var __oj_sunburst_node_metadata =
        * @ojshortdesc Triggered immediately before any container node in the sunburst is collapsed.
        * @memberof oj.ojSunburst
        * @instance
-       * @ojdeprecated {since: '12.1.0', description: 'The oj-before-collapse event has been deprecated.  Lazy loading of data can be done through the data provider.'}
+       * @ojdeprecated {since: '12.1.0', description: 'Support for this custom event has been deprecated. Lazy loading of data can be implemented through the data provider.'}
        */
       beforeCollapse: null,
       /**
@@ -1912,7 +1914,7 @@ var __oj_sunburst_node_metadata =
        * @event
        * @memberof oj.ojSunburst
        * @instance
-       * @ojdeprecated {since: '12.1.0', description: 'The oj-collapse event has been deprecated.  Use on-expanded-changed instead.'}
+       * @ojdeprecated {since: '12.1.0', description: 'Support for this custom event has been deprecated. Use on-expanded-changed to listen for changes to the "expanded" property instead.'}
        */
       collapse: null
     },

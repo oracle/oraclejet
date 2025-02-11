@@ -8,6 +8,7 @@ export interface ojTreemap<K, D extends ojTreemap.Node<K> | any> extends dvtBase
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
     animationUpdateColor?: string;
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     colorLabel?: string;
     data: DataProvider<K, D> | null;
@@ -65,6 +66,7 @@ export interface ojTreemap<K, D extends ojTreemap.Node<K> | any> extends dvtBase
             preventDefault: boolean;
         }));
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
     translations: {
         accessibleContainsControls?: string;
@@ -303,6 +305,7 @@ export interface ojTreemapSettableProperties<K, D extends ojTreemap.Node<K> | an
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
     animationUpdateColor?: string;
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     colorLabel?: string;
     data: DataProvider<K, D> | null;
@@ -360,6 +363,7 @@ export interface ojTreemapSettableProperties<K, D extends ojTreemap.Node<K> | an
             preventDefault: boolean;
         }));
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
     translations: {
         accessibleContainsControls?: string;
@@ -709,7 +713,7 @@ export interface TreemapIntrinsicProps extends Partial<Readonly<ojTreemapSettabl
     onanimationOnDataChangeChanged?: (value: ojTreemapEventMap<any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojTreemapEventMap<any, any>['animationOnDisplayChanged']) => void;
     onanimationUpdateColorChanged?: (value: ojTreemapEventMap<any, any>['animationUpdateColorChanged']) => void;
-    onasChanged?: (value: ojTreemapEventMap<any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojTreemapEventMap<any, any>['asChanged']) => void;
     oncolorLabelChanged?: (value: ojTreemapEventMap<any, any>['colorLabelChanged']) => void;
     ondataChanged?: (value: ojTreemapEventMap<any, any>['dataChanged']) => void;
     ondisplayLevelsChanged?: (value: ojTreemapEventMap<any, any>['displayLevelsChanged']) => void;
@@ -732,7 +736,7 @@ export interface TreemapIntrinsicProps extends Partial<Readonly<ojTreemapSettabl
     onsizeLabelChanged?: (value: ojTreemapEventMap<any, any>['sizeLabelChanged']) => void;
     onsortingChanged?: (value: ojTreemapEventMap<any, any>['sortingChanged']) => void;
     ontooltipChanged?: (value: ojTreemapEventMap<any, any>['tooltipChanged']) => void;
-    ontouchResponseChanged?: (value: ojTreemapEventMap<any, any>['touchResponseChanged']) => void;
+    /** @deprecated since 18.0.0 */ ontouchResponseChanged?: (value: ojTreemapEventMap<any, any>['touchResponseChanged']) => void;
     ontrackResizeChanged?: (value: ojTreemapEventMap<any, any>['trackResizeChanged']) => void;
     children?: ComponentChildren;
 }

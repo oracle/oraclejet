@@ -57,6 +57,8 @@ export namespace IntlDateTimeConverter {
         millisecond?: 'numeric';
         minute?: '2-digit' | 'numeric';
         month?: '2-digit' | 'numeric' | 'narrow' | 'short' | 'long';
+        /** @deprecated since 11.0.0 - Applications should not use pattern because it is not locale sensitive. Use other options instead like formatType, dateFormat and timeFormat, and if needed,
+           set the locale to be the preferred locale. */
         pattern?: string;
         second?: '2-digit' | 'numeric';
         timeFormat?: 'short' | 'medium' | 'long' | 'full';

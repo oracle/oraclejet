@@ -15,15 +15,27 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateDynamicSlots = exports.getSlotData = exports.generateSlotsMetadata = void 0;
+exports.generateSlotsMetadata = generateSlotsMetadata;
+exports.getSlotData = getSlotData;
+exports.validateDynamicSlots = validateDynamicSlots;
 const ts = __importStar(require("typescript"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
@@ -99,7 +111,6 @@ function generateSlotsMetadata(memberKey, slotPropDeclaration, metaUtilObj) {
     }
     return isSlot;
 }
-exports.generateSlotsMetadata = generateSlotsMetadata;
 function updateSlotMetadata(slotName, propDeclaration, slotTypeInfo, isTemplateSlot, isDynamicSlot, metaUtilObj) {
     if (!isDynamicSlot) {
         let templateSlotInfo;
@@ -143,7 +154,7 @@ function updateSlotMetadata(slotName, propDeclaration, slotTypeInfo, isTemplateS
                 if (ts.isUnionTypeNode(slotDataNode)) {
                     const typeParamsArr = slotDataNode.types;
                     typeParamsArr.forEach((dataNode) => {
-                        if (!ts.isTypeReferenceNode(dataNode) || MetaUtils.isMappedTypeReference(dataNode)) {
+                        if (!ts.isTypeReferenceNode(dataNode) || !MetaUtils.isSimpleTypeReference(dataNode)) {
                             TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_DYNAMIC_TEMPLATE_SLOTS_TYPE_PARAM, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, _INVALID_DYNAMIC_TEMPLATE_SLOTS_TYPE_PARAM_MSG, dataNode);
                         }
                         const key = TypeUtils.getTypeNameFromTypeReference(dataNode);
@@ -187,7 +198,7 @@ function updateSlotMetadata(slotName, propDeclaration, slotTypeInfo, isTemplateS
                 }
                 else {
                     if (!ts.isTypeReferenceNode(slotDataNode) ||
-                        MetaUtils.isMappedTypeReference(slotDataNode)) {
+                        !MetaUtils.isSimpleTypeReference(slotDataNode)) {
                         TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_DYNAMIC_TEMPLATE_SLOTS_TYPE_PARAM, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, _INVALID_DYNAMIC_TEMPLATE_SLOTS_TYPE_PARAM_MSG, slotDataNode);
                     }
                     const key = TypeUtils.getTypeNameFromTypeReference(slotDataNode);
@@ -323,7 +334,6 @@ function getSlotData(slotDataNode, metaUtilObj) {
     });
     return data;
 }
-exports.getSlotData = getSlotData;
 function validateDynamicSlots(metaUtilObj) {
     if (metaUtilObj.dynamicSlotsInfo.length > 0) {
         const allDynSlotDefs = {};
@@ -376,7 +386,6 @@ function validateDynamicSlots(metaUtilObj) {
         }
     }
 }
-exports.validateDynamicSlots = validateDynamicSlots;
 function populateDynamicSlotDefsMapping(properties, dynSlotDefs) {
     const allProps = Object.keys(properties);
     for (const prop of allProps) {
@@ -470,6 +479,7 @@ function getTemplateSlotInfo(slotName, slotDataNode, metaUtilObj) {
     let templateSlotInfo = {
         slotPropName: slotName
     };
+    let isDataArrayOrTuple = false;
     const checker = metaUtilObj.typeChecker;
     if (ts.isTypeReferenceNode(slotDataNode)) {
         const typeObject = checker.getTypeAtLocation(slotDataNode);
@@ -489,16 +499,27 @@ function getTemplateSlotInfo(slotName, slotDataNode, metaUtilObj) {
                     ts.isInterfaceDeclaration(declaration) ||
                     ts.isClassDeclaration(declaration))) {
                 const slotDataName = declaration.name.getText();
+                if (slotDataName === 'Array') {
+                    isDataArrayOrTuple = true;
+                }
                 const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(typeObject, slotDataNode, metaUtilObj);
                 if (genericsInfo) {
                     templateSlotInfo.slotDataTypeParamsDeclaration = genericsInfo.genericsDeclaration;
                     templateSlotInfo.slotDataNameTypeParams = `${slotDataName}${genericsInfo.genericsTypeParams}`;
                 }
                 else {
-                    templateSlotInfo.slotDataNameTypeParams = slotDataName;
+                    templateSlotInfo.slotDataNameTypeParams = isDataArrayOrTuple
+                        ? slotDataNode.getText()
+                        : slotDataName;
                 }
             }
         }
+    }
+    else if (ts.isArrayTypeNode(slotDataNode) || ts.isTupleTypeNode(slotDataNode)) {
+        isDataArrayOrTuple = true;
+    }
+    if (isDataArrayOrTuple) {
+        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNSUPPORTED_TEMPLATE_SLOT_DATA_OBJ, TransformerError_1.ExceptionType.WARN_IF_DISABLED, metaUtilObj.componentName, `A TemplateSlot must specify an object type for its 'data' context - array and tuple types are not supported.`, slotDataNode);
     }
     return templateSlotInfo;
 }

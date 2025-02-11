@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -167,6 +167,10 @@ class VCellGenerator extends Component {
                             corePackFormComp.props['READONLY'] === undefined) {
                             corePackFormComp.props['readonly'] = props.containerReadonly;
                         }
+                        if (corePackFormComp.props['labelWrapping'] === undefined &&
+                            corePackFormComp.props['LABELWRAPPING'] === undefined) {
+                            corePackFormComp.props['labelWrapping'] = props.labelWrapping;
+                        }
                     }
                 }
             }
@@ -200,6 +204,7 @@ VCellGenerator.defaultProps = {
     totalColumns: 1,
     labelEdge: 'inside',
     labelWidth: '33%',
+    labelWrapping: 'wrap',
     labelText: ''
 };
 
@@ -207,10 +212,10 @@ class VColumnFormGenerator extends Component {
     render(props) {
         this._columns = props.columns > 0 ? props.columns : props.maxColumns;
         const rootClassName = 'oj-form-layout oj-formlayout-max-cols-' + this._columns;
-        const formContent = this._getColumnFormContent(props.formControls, props.columns, props.readonly);
+        const formContent = this._getColumnFormContent(props.formControls, props.columns, props.readonly, props.labelWrapping);
         return jsx("div", { class: rootClassName, children: formContent });
     }
-    _getColumnFormContent(childArray, columns, containerReadonly) {
+    _getColumnFormContent(childArray, columns, containerReadonly, labelWrapping) {
         let formContent = [];
         let rowContent;
         let totalCols = 1;
@@ -225,7 +230,7 @@ class VColumnFormGenerator extends Component {
                 }
                 labelEdge = this._themeDefault.labelEdge;
             }
-            rowContent = (jsx(VCellGenerator, { containerReadonly: containerReadonly, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key, children: content }));
+            rowContent = (jsx(VCellGenerator, { containerReadonly: containerReadonly, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, labelWrapping: labelWrapping, contentType: item.contentType, cellKey: item.key, children: content }));
             formContent.push(jsx("div", { class: "oj-flex", "data-oj-internal": true, children: rowContent }));
         }
         const styling = this._getColumnStyling(columns);
@@ -294,7 +299,7 @@ class VRowFormGenerator extends Component {
     render(props) {
         const cssColumnClasses = props.columns > 0 ? props.columns + NO_MIN_COLUMN_WIDTH : props.maxColumns;
         const rootClassNames = ROOTCLASSNAMES + cssColumnClasses;
-        const formContent = this._getRowFormContent(this.props.formControls, this.props.readonly);
+        const formContent = this._getRowFormContent(this.props.formControls, this.props.readonly, this.props.labelWrapping);
         return (jsx("div", { class: rootClassNames, ref: this.setFormDivRef, children: formContent }));
     }
     componentDidMount() {
@@ -331,7 +336,7 @@ class VRowFormGenerator extends Component {
         }
         return calculatedCols;
     }
-    _getRowFormContent(childArray, containerReadonly) {
+    _getRowFormContent(childArray, containerReadonly, labelWrapping) {
         let formContent = [];
         let rowContent;
         const cols = this._calculateColumns(this.state.availableColumns);
@@ -376,7 +381,7 @@ class VRowFormGenerator extends Component {
                 }
                 labelEdge = this._themeDefault.labelEdge;
             }
-            rowContent.push(jsx(VCellGenerator, { colspan: colspan, containerReadonly: containerReadonly, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key, children: content }));
+            rowContent.push(jsx(VCellGenerator, { colspan: colspan, containerReadonly: containerReadonly, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, labelWrapping: labelWrapping, contentType: item.contentType, cellKey: item.key, children: content }));
             cellCount += colspan;
             if (cellCount % cols !== 0) {
                 this._addColumnGutter(rowContent);

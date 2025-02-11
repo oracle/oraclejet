@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -19,7 +19,7 @@ function(oj, __ValidationFactoryBase, __ConverterNumber, NumberRangeValidator)
  * {@link oj.IntlNumberConverter}.
  *
  * @name oj.NumberConverterFactory
- * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of NumberConverter instead.'}
+ * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of {@link oj.IntlNumberConverter} instead.'}
  * @hideconstructor
  * @ojtsnoexport
  * @ojtsexportastype
@@ -78,7 +78,7 @@ __ValidationFactoryBase.Validation.__registerDefaultConverterFactory(
  * var lrValidator = lrvf.createValidator(options);
  *
  * @name oj.NumberRangeValidatorFactory
- * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of NumberRangeValidator instead.'}
+ * @ojdeprecated {since: '8.0.0', description: 'Directly create new instances of {@link oj.NumberRangeValidator} instead.'}
  * @hideconstructor
  * @ojtsnoexport
  * @ojtsexportastype

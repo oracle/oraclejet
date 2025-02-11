@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -26,6 +26,15 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
      *
      * @ojoracleicon 'oj-ux-ico-toolbar'
      * @ojuxspecs ['toolbar']
+     *
+     * @ojdeprecated [
+     *   {
+     *     type: "maintenance",
+     *     since: "18.0.0",
+     *     value: ["oj-c-toolbar"]
+     *   }
+     * ]
+     *
      *
      * @classdesc
      * <h3 id="toolbarOverview-section">
@@ -140,6 +149,31 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
      * &lt;/oj-toolbar>
      * </code></pre>
      *
+     * <h3 id="migration-section">
+     *   Migration
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+     * </h3>
+     *
+     *<p>
+     * To migrate from oj-toolbar to oj-c-toolbar, you need to revise the import statement and references to oj-c-toolbar in your app. Please note the changes between the two components below.
+     *</p>
+     *
+     *<h5>Children</h5>
+     *<p>
+     * The oj-c-toolbar does not support children as content, and instead uses an items attribute that requires metadata to specify desired content to be place within it.
+     *</p>
+     *
+     *<h5>Styling Classes</h5>
+     *<p>
+     * The oj-c-toolbar will no longer have built-in top and bottom padding.
+     * Instead, <a href="ResponsiveSpacing.html#oj-[size-only]-padding-[multiplier](-edge)" target="_blank">oj-sm-padding-1x-top and oj-sm-padding-1x-bottom</a> can be used.
+     *</p>
+     *
+     *<h5>Chroming</h5>
+     *<p>
+     * The oj-c-toolbar will no longer support the <code class="prettyprint">solid</code> chroming option, and will have no default value.
+     *</p>
+     *
      */
 
     // API doc for inherited methods with no JS in this file:
@@ -174,7 +208,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
      *
      * @ojchild Default
      * @memberof oj.ojToolbar
-     * @ojpreferredcontent ["ButtonElement", "CButtonElement", "ButtonsetManyElement","ButtonsetOneElement","MenuButtonElement", "CMenuButtonElement", "CSplitMenuButtonElement", "CProgressButtonElement"]
+     * @ojpreferredcontent ["ButtonElement", "CButtonElement", "ButtonsetManyElement","ButtonsetOneElement","MenuButtonElement", "CMenuButtonElement", "CSplitMenuButtonElement", "CProgressButtonElement", "CToggleButtonElement"]
      *
      * @example <caption>Initialize the Toolbar with child content specified:</caption>
      * &lt;oj-toolbar>
@@ -299,10 +333,12 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
       const _OJ_C_BUTTON = 'OJ-C-BUTTON';
       const _OJ_C_MENU_BUTTON = 'OJ-C-MENU-BUTTON';
       const _OJ_C_SPLIT_MENU_BUTTON = 'OJ-C-SPLIT-MENU-BUTTON';
+      const _OJ_C_TOGGLE_BUTTON = 'OJ-C-TOGGLE-BUTTON';
+      const _OJ_C_PROGRESS_BUTTON = 'OJ-C-PROGRESS-BUTTON';
       const _ELEM_LIST =
-        'oj-button, oj-menu-button, oj-buttonset-one, oj-buttonset-many, oj-c-button, oj-c-menu-button, oj-c-split-menu-button';
+        'oj-button, oj-menu-button, oj-buttonset-one, oj-buttonset-many, oj-c-button, oj-c-menu-button, oj-c-split-menu-button, oj-c-toggle-button, oj-c-progress-button';
       const _BUTTON_LIST =
-        'oj-button, oj-menu-button, oj-buttonset-one .oj-button, oj-buttonset-many .oj-button, oj-c-button, oj-buttonset-one .oj-c-button, oj-buttonset-many .oj-c-button, oj-c-menu-button, oj-c-split-menu-button';
+        'oj-button, oj-menu-button, oj-buttonset-one .oj-button, oj-buttonset-many .oj-button, oj-c-button, oj-buttonset-one .oj-c-button, oj-buttonset-many .oj-c-button, oj-c-menu-button, oj-c-split-menu-button, oj-c-toggle-button, oj-c-progress-button';
 
       oj.__registerWidget('oj.ojToolbar', $.oj.baseComponent, {
         widgetEventPrefix: 'oj',
@@ -568,7 +604,9 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
             button.tagName === _OJ_C_BUTTON ||
             button.tagName === _OJ_MENU_BUTTON ||
             button.tagName === _OJ_C_MENU_BUTTON ||
-            button.tagName === _OJ_C_SPLIT_MENU_BUTTON
+            button.tagName === _OJ_C_SPLIT_MENU_BUTTON ||
+            button.tagName === _OJ_C_TOGGLE_BUTTON ||
+            button.tagName === _OJ_C_PROGRESS_BUTTON
           ) {
             disabled = button.disabled;
           } else {
@@ -604,6 +642,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
               _OJ_MENU_BUTTON,
               _OJ_C_MENU_BUTTON,
               _OJ_C_SPLIT_MENU_BUTTON,
+              _OJ_C_TOGGLE_BUTTON,
+              _OJ_C_PROGRESS_BUTTON,
               'OJ-BUTTONSET-ONE',
               'OJ-BUTTONSET-MANY',
               'OJ-OPTION'
@@ -977,7 +1017,9 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
                 child.tagName === _OJ_C_BUTTON ||
                 child.tagName === _OJ_MENU_BUTTON ||
                 child.tagName === _OJ_C_MENU_BUTTON ||
-                child.tagName === _OJ_C_SPLIT_MENU_BUTTON
+                child.tagName === _OJ_C_SPLIT_MENU_BUTTON ||
+                child.tagName === _OJ_C_TOGGLE_BUTTON ||
+                child.tagName === _OJ_C_PROGRESS_BUTTON
               ) {
                 // must check to make sure the child button element has been initialized
                 if (Components.__GetWidgetConstructor(this._getButtonFocusElem(child), 'ojButton')) {

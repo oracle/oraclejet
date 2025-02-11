@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8943,6 +8943,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
     },
 
     /**
+     * Processes the initial selection of the nbox
+     * @param {NBox} nbox
+     */
+    processInitialSelections: (nbox) => {
+      DvtNBoxRenderer._renderInitialSelection(nbox);
+    },
+
+    /**
      * Renders the nbox background.
      * @param {NBox} nbox The nbox being rendered.
      * @param {dvt.Container} container The container to render into.
@@ -10307,6 +10315,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
 
       this.UpdateAriaAttributes();
     }
+
+    /**
+     * @override
+     */
+    select(selection) {
+      // Update the options
+      this.Options['selection'] = dvt.JsonUtils.clone(selection);
+
+      // Perform the selection
+      DvtNBoxRenderer.processInitialSelections(this);
+    }
+
     /**
      * Performs cleanup of the previously rendered content.  Note that this doesn't cleanup anything needed for animation.
      * @protected

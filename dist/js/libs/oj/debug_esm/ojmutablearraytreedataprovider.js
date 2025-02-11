@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -390,6 +390,13 @@ import { warn } from 'ojs/ojlogger';
  *                                           </ul>
  *                                           Default is 'global'.
  * @property {string=} childrenAttribute - Optional field name which stores the children of nodes in the data. Dot notation can be used to specify nested attribute. If this is not specified, the default is "children".
+ * @property {string=} enforceKeyStringify - Optionally specify whether keys should be stringified version of keypath from root. Supported values:<br>
+ *                                  <ul>
+ *                                    <li>'off': the key values are returned as it is.
+ *                                    <li>'on': the key values are stringified version of keypath from root.
+ *                                  </ul>
+ *                                Default is 'off'.
+ *                                Key stringify will directly call JSON.stringify on all keys passed out of the DataProvider. Use JSON.parse if you need to convert the key back to a complex type.
  * @ojsignature [
  *  {target: "Type", value: "<D>", for: "genericTypeParameters"},
  *  {target: "Type", value: "ArrayDataProvider.SortComparators<D>", for: "sortComparators"},
@@ -397,6 +404,7 @@ import { warn } from 'ojs/ojlogger';
  *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
  *  {target: "Type", value: "'siblings' | 'global'", for: "keyAttributeScope"},
  *  {target: "Type", value: "string", for: "childrenAttribute"},
+ *  {target: "Type", value: "'off' | 'on'", for: "enforceKeyStringify"}
  * ]
  */
 
@@ -631,6 +639,9 @@ class MutableArrayTreeDataProvider {
             if (options.childrenAttribute) {
                 this._baseDPOptions.childrenAttribute = options.childrenAttribute;
             }
+            if (options.enforceKeyStringify) {
+                this._baseDPOptions.enforceKeyStringify = options.enforceKeyStringify;
+            }
         }
         this._baseDataProvider = new ArrayDataProvider(data, this._baseDPOptions);
         this._childrenAttr =
@@ -653,8 +664,11 @@ class MutableArrayTreeDataProvider {
                     writable: false
                 });
                 if (childDataProvider != null) {
+                    const enforceKeyStringify = this.options?.enforceKeyStringify;
                     const rootDataProvider = this._getRootDataProvider();
-                    childDataProvider._parentNodePath = rootDataProvider._mapKeyToParentNodePath.get(JSON.stringify(parentKey));
+                    const parentKeyString = enforceKeyStringify === 'on' ? parentKey : JSON.stringify(parentKey);
+                    childDataProvider._parentNodePath =
+                        rootDataProvider._mapKeyToParentNodePath.get(parentKeyString);
                 }
                 return childDataProvider;
             }
@@ -746,8 +760,10 @@ class MutableArrayTreeDataProvider {
     _processNode(node, parentKeyPath, treeData) {
         const keyObj = this._createKeyObj(node, parentKeyPath, treeData);
         this._setMapEntry(keyObj.key, node);
+        const enforceKeyStringify = this.options?.enforceKeyStringify;
         const rootDataProvider = this._getRootDataProvider();
-        rootDataProvider._mapKeyToParentNodePath.set(JSON.stringify(keyObj.key), keyObj.keyPath);
+        const keyString = enforceKeyStringify === 'on' ? keyObj.key : JSON.stringify(keyObj.key);
+        rootDataProvider._mapKeyToParentNodePath.set(keyString, keyObj.keyPath);
         if (node) {
             const children = this._getChildren(node);
             if (children) {
@@ -757,8 +773,9 @@ class MutableArrayTreeDataProvider {
         return keyObj;
     }
     _setMapEntry(key, node) {
+        const enforceKeyStringify = this.options?.enforceKeyStringify;
         const rootDataProvider = this._getRootDataProvider();
-        const keyCopy = JSON.stringify(key);
+        const keyCopy = enforceKeyStringify === 'on' ? key : JSON.stringify(key);
         if (rootDataProvider._mapKeyToNode.has(keyCopy)) {
             warn(`Duplicate key ${keyCopy} found in MutableArrayTreeDataProvider.  Keys must be unique when keyAttributes ${this.keyAttribute} is specified`);
         }
@@ -768,9 +785,16 @@ class MutableArrayTreeDataProvider {
     _createKeyObj(node, parentKeyPath, treeData) {
         let key = this._getId(node);
         const keyPath = parentKeyPath ? parentKeyPath.slice() : [];
-        keyPath.push(key);
-        if (this.options && this.options['keyAttributeScope'] === 'siblings') {
-            key = keyPath;
+        const enforceKeyStringify = this.options?.enforceKeyStringify;
+        if (enforceKeyStringify === 'on') {
+            keyPath.push(JSON.parse(key));
+        }
+        else {
+            keyPath.push(key);
+        }
+        if (this.options &&
+            (this.options['keyAttributeScope'] === 'siblings' || enforceKeyStringify === 'on')) {
+            key = enforceKeyStringify === 'on' ? JSON.stringify(keyPath) : keyPath;
         }
         return { key, keyPath };
     }
@@ -797,11 +821,15 @@ class MutableArrayTreeDataProvider {
     _getId(row) {
         let id;
         const keyAttributes = this.keyAttribute;
+        const enforceKeyStringify = this.options?.enforceKeyStringify;
         if (keyAttributes == '@value') {
             id = this._getAllVals(row);
         }
         else {
             id = this._getVal(row, keyAttributes);
+        }
+        if (enforceKeyStringify === 'on') {
+            return JSON.stringify(id);
         }
         return id;
     }
@@ -817,8 +845,10 @@ class MutableArrayTreeDataProvider {
         return { key: this._getKeyForNode(node) };
     }
     _getNodeForKey(key) {
+        const enforceKeyStringify = this.options?.enforceKeyStringify;
+        const keyString = enforceKeyStringify === 'on' ? key : JSON.stringify(key);
         const rootDataProvider = this._getRootDataProvider();
-        let nodeDataJS = rootDataProvider._mapKeyToNode.get(JSON.stringify(key));
+        let nodeDataJS = rootDataProvider._mapKeyToNode.get(keyString);
         return nodeDataJS;
     }
     _getKeyForNode(node) {
@@ -1028,12 +1058,19 @@ class MutableArrayTreeDataProvider {
     _getTreeMetadata(metadata, data) {
         let keyIsPath = false;
         let treeKey = metadata.key;
-        if (this.options && this.options.keyAttributeScope == 'siblings') {
+        if (this.options &&
+            (this.options.keyAttributeScope == 'siblings' || this.options.enforceKeyStringify === 'on')) {
             keyIsPath = true;
         }
         if (keyIsPath) {
             treeKey = this._parentNodePath ? this._parentNodePath.slice() : [];
-            treeKey.push(metadata.key);
+            if (this.options?.enforceKeyStringify === 'on') {
+                treeKey.push(JSON.parse(metadata.key));
+                treeKey = JSON.stringify(treeKey);
+            }
+            else {
+                treeKey.push(metadata.key);
+            }
         }
         metadata = this._getNodeMetadata(this._getNodeForKey(treeKey));
         return metadata;
@@ -1061,8 +1098,10 @@ class MutableArrayTreeDataProvider {
         }
     }
     _deleteMapEntry(key, node) {
+        const enforceKeyStringify = this.options?.enforceKeyStringify;
         const rootDataProvider = this._getRootDataProvider();
-        rootDataProvider._mapKeyToNode.delete(JSON.stringify(key));
+        const keyString = enforceKeyStringify === 'on' ? key : JSON.stringify(key);
+        rootDataProvider._mapKeyToNode.delete(keyString);
         rootDataProvider._mapNodeToKey.delete(node);
     }
     _flushMaps() {

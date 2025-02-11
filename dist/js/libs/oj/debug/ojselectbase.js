@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 'ojs/ojlistview', 'ojs/ojhighlighttext', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojfocusutils', 'ojs/ojdataprovider', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojkeyset', 'ojs/ojcustomelement-utils', 'ojs/ojdataproviderfactory', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojtimerutils'], function (exports, ojeditablevalue, ojpopupcore, ojinputtext, ojlistview, ojhighlighttext, oj, $, DomUtils, Logger, Config, ThemeUtils, FocusUtils, ojdataprovider, Context, ojcomponentcore, ojkeyset, ojcustomelementUtils, ojdataproviderfactory, ListDataProviderView, TreeDataProviderView, TimerUtils) { 'use strict';
+define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 'ojs/ojlistview', 'ojs/ojhighlighttext', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojfocusutils', 'ojs/ojdataprovider', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojkeyset', 'ojs/ojcustomelement-utils', 'ojs/ojdataproviderfactory', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojtimerutils', 'ojs/ojdebouncingdataproviderview'], function (exports, ojeditablevalue, ojpopupcore, ojinputtext, ojlistview, ojhighlighttext, oj, $, DomUtils, Logger, Config, ThemeUtils, FocusUtils, ojdataprovider, Context, ojcomponentcore, ojkeyset, ojcustomelementUtils, ojdataproviderfactory, ListDataProviderView, TreeDataProviderView, TimerUtils, ojdebouncingdataproviderview) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -2811,6 +2811,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
        * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
        * not have its readonly attribute set, the form component's readonly will be true.
        * </p>
+       * {@ojinclude "name":"readonlyMessagesUserAssistanceEditableValue"}
        * @example <caption>Initialize the select with the <code class="prettyprint">readonly</code> attribute:</caption>
        * &lt;oj-some-element readonly>&lt;/oj-some-element>
        *
@@ -3028,7 +3029,9 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
      */
     _GetContentWrapper: function () {
       // return this._getRootElement().querySelector('.oj-text-field-middle');
-      return this._lovMainField.getElement().querySelector('.oj-text-field-middle');
+      return this._lovMainField
+        ? this._lovMainField.getElement().querySelector('.oj-text-field-middle')
+        : this.element;
     },
 
     /**
@@ -3255,7 +3258,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         : this._dropdownElemId;
       var lovMainField = new LovMainField({
         className: className,
-        ariaLabel: OuterWrapper.getAttribute('aria-label'),
+        ariaLabel: this._GetAriaLabelElement().getAttribute('aria-label'),
         ariaControls: mainFieldAriaControls,
         componentId: elemId,
         inputType: inputType,
@@ -3665,7 +3668,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
       //  - oghag missing label for ojselect and ojcombobox
       var labelText;
-      var alabel = this.OuterWrapper.getAttribute('aria-label');
+      var alabel = this._GetAriaLabelElement().getAttribute('aria-label');
       if (alabel) {
         labelText = alabel;
       }
@@ -3673,12 +3676,33 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       lovDropdown.updateLabel(labelId, labelText);
       lovMainField.updateLabel(labelId, labelText);
 
-      if (labelId) {
+      // for labelEdge inside, we want to use labelHint and not labelled-by or aria-label
+      // this has to do with the focus/mouse interaction for truncated labels.  Since the
+      // filter field covers the entire component, and we want mouse hover over the label
+      // to work when the component has focus, we need to render the same label here as the
+      // parent component of the filter field.
+      // The label is rendered, but is set to transparent, so that the user see's the label
+      // rendered by the parent (select single) component.
+      // This is not needed for when the popup is a full screen popup
+      if (options.labelHint && options.labelEdge === 'inside' && !this._fullScreenPopup) {
+        filterInputText.setAttribute('label-hint', options.labelHint);
+        // The attribute value only can be removed by setting it to an empty string
+        filterInputText.setAttribute('labelled-by', '');
+        filterInputText.setAttribute('aria-label', '');
+      } else if (labelId) {
         filterInputText.setAttribute('labelled-by', labelId);
+        // If there is a label remove it. This check is to prevent an infinite rerender condition
+        if (filterInputText.getAttribute('label-hint')) {
+          filterInputText.setAttribute('label-hint', '');
+        }
         // The attribute value only can be removed by setting it to an empty string
         filterInputText.setAttribute('aria-label', '');
       } else if (labelText) {
         filterInputText.setAttribute('aria-label', labelText);
+        // If there is a label remove it. This check is to prevent an infinite rerender condition
+        if (filterInputText.getAttribute('label-hint')) {
+          filterInputText.setAttribute('label-hint', '');
+        }
         // The attribute value only can be removed by setting it to an empty string
         filterInputText.setAttribute('labelled-by', '');
       }
@@ -4544,7 +4568,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
      * @private
      */
     _createFilterInputText: function (className, idSuffix) {
-      var ariaLabel = this.OuterWrapper.getAttribute('aria-label');
+      var ariaLabel = this._GetAriaLabelElement().getAttribute('aria-label');
       var options = this.options;
 
       var filterInputText = document.createElement('oj-input-text');
@@ -4831,6 +4855,12 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
      * @public
      */
     refresh: function () {
+      // JET-71150 - Getting error 'Cannot read properties of null (reading 'getInputElem')' on a select single component
+      // Return immediately if the component is not attached on the DOM. Due to the component processing certain requests
+      // asynchronously, we might end up here after the component is removed from the DOM. In this case, we do not need to
+      // react to those stale requests.
+      if (this._bReleasedResources) return;
+
       // JET-42413: set flag while we're processing a value change so that if an app makes
       // changes to the component from within the change listener, we can defer processing the
       // new change until after we're done processing the current change
@@ -5595,6 +5625,20 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     },
 
     /**
+     * Returns the element on which aria-label can be found.
+     *
+     * @override
+     * @protected
+     * @memberof! oj.ojSelectBase
+     * @return {HTMLElement} The element in which we set the aria-label attribute
+     */
+    _GetAriaLabelElement: function () {
+      // the aria-label element will be the original hidden input element because the attribute
+      // is specifed as a global transfer attr, which will be moved from the custom element
+      return this.element[0];
+    },
+
+    /**
      * save the new wrapper or the original data provider
      * @memberof! oj.ojSelectBase
      * @instance
@@ -5620,6 +5664,17 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
           // dedup: { type: 'iterator' },
           eventFiltering: { type: 'iterator' }
         });
+
+        // JET-70319 - Legacy Select and Search - Debouncing
+        // If the DP is capable of returning fetches immediately, simply use the enhanced DP.
+        // Otherwise wrap the enhanced DP in a debouncing wrapper to help reduce the number of
+        // remote fetch requests that are actually made as the user types.
+        // Note: Currently debouncing is only supported for flat data
+        if (!LovUtils.isTreeDataProvider(dataProvider)) {
+          const filterCapability = wrapper.getCapability('fetchFirst');
+          const isImmediate = filterCapability?.iterationSpeed === 'immediate';
+          wrapper = isImmediate ? wrapper : new ojdebouncingdataproviderview.DebouncingDataProviderView(wrapper);
+        }
 
         wrapper = new FilteringDataProviderView(wrapper);
         // save the data provider or wrapper

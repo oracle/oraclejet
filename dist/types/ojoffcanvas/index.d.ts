@@ -1,3 +1,4 @@
+/** @deprecated since 12.0.0 - Suggested alternative: oj-drawer-layout. */
 export function close(offcanvas: {
     selector: string;
 }): Promise<boolean>;

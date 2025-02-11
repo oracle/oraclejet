@@ -1,17 +1,19 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
 import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter, isComponentInitialized } from 'ojs/ojcomponentcore';
+import 'ojs/ojpopup';
+import { isAncestorOrSelf, isAncestor, isTouchSupported, isHTMLContent, cleanHtml, validateURL, makeFocusable } from 'ojs/ojdomutils';
+import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import Context from 'ojs/ojcontext';
 import $ from 'jquery';
 import 'ojs/ojlabel';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import FocusUtils from 'ojs/ojfocusutils';
-import Context from 'ojs/ojcontext';
 import { error, info, warn } from 'ojs/ojlogger';
 import RequiredValidator from 'ojs/ojvalidator-required';
 import LabelledByUtils from 'ojs/ojlabelledbyutils';
@@ -19,10 +21,8 @@ import { getTranslatedString } from 'ojs/ojtranslation';
 import Message from 'ojs/ojmessaging';
 import ConverterUtils from 'ojs/ojconverterutils';
 import { ConverterError, ValidatorError } from 'ojs/ojvalidation-error';
-import 'ojs/ojpopup';
 import { Press } from 'hammerjs';
 import 'ojs/ojjquery-hammer';
-import { isTouchSupported, isHTMLContent, cleanHtml, validateURL, makeFocusable } from 'ojs/ojdomutils';
 import { startAnimation } from 'ojs/ojanimation';
 
 /**
@@ -80,7 +80,7 @@ BaseInsideLabelStrategy.prototype._CreateLabel = function () {
   this.GenerateIdIfNeeded(element);
 
   this._showUserAssistanceNotInline = component._showUserAssistanceNotInline();
-  let renderRequiredIcon = options.required && this._showUserAssistanceNotInline;
+  const renderRequiredIcon = options.required && this._showUserAssistanceNotInline;
   // for 'inside labels' we do not show help on the label.
   this._createOjLabelElement(
     element,
@@ -91,6 +91,168 @@ BaseInsideLabelStrategy.prototype._CreateLabel = function () {
     options.helpHints,
     this._showUserAssistanceNotInline
   );
+};
+
+/**
+ * Callback for opening the tooltip, used on mouseenter and on focus
+ * @static
+ * @private
+ *
+ * @param {Element} ojlabel - oj-label element
+ * @param {Element} element - component root dom element
+ * @param {*} event - mouse/focus event
+ */
+BaseInsideLabelStrategy._handleTooltipOpenWhenTruncated = function (ojlabel, element, event) {
+  // Filter out 'mouseenter' events if the target isn't ojlabel as they are just internal elements to
+  // ojlabel.  No filtering needed for 'focusin' events.
+  if (event.type === 'focusin' || (event.type === 'mouseenter' && event.target === ojlabel)) {
+    // Wait until the ojlabel is ready before checking for for truncation
+    var busyContext = Context.getContext(ojlabel).getBusyContext();
+    busyContext.whenReady().then(function () {
+      const label = ojlabel ? ojlabel.querySelector('label') : undefined;
+      // For focusin events, check to see if this is the same component or an ancestor component and if so, don't open the tooltip
+      // check the label element to see if the label is truncated and if it isn't, don't open the tooltip.
+      if (
+        !(
+          event.type === 'focusin' &&
+          ((BaseInsideLabelStrategy._tooltipLabel &&
+            isAncestorOrSelf(ojlabel, BaseInsideLabelStrategy._tooltipLabel)) ||
+            (BaseInsideLabelStrategy._tooltipDelayForElement &&
+              isAncestorOrSelf(element, BaseInsideLabelStrategy._tooltipDelayForElement)))
+        ) &&
+        label &&
+        label.offsetWidth < label.scrollWidth
+      ) {
+        // If there is an outstanding open delay timeout, clear it.
+        BaseInsideLabelStrategy._handleClearTimeoutAndTooltipLabel(element, event);
+
+        const tooltipPopup = BaseInsideLabelStrategy._getTruncatedLabelTooltip(element);
+        // if already open, no need to reopen
+        if (!tooltipPopup.classList.contains('oj-complete') || !tooltipPopup.isOpen()) {
+          // We save this so that we don't try to open the same tooltip that is in the process
+          // of opening.
+          BaseInsideLabelStrategy._tooltipDelayForElement = element;
+          BaseInsideLabelStrategy._popupOpenDelayTimeoutId = setTimeout(() => {
+            // check to see if the tooltopPopup is in the document tree and if it isn't, don't
+            // open the tooltip.
+            if (document.contains(tooltipPopup)) {
+              // update the tooltip content before calling open.
+              const content = tooltipPopup.querySelector('.oj-popup-content');
+              if (content) {
+                content.innerHTML = label.innerHTML; // @HTMLUpdateOK
+              }
+              // If there is a tooltip popup open close it.
+              if (BaseInsideLabelStrategy._tooltipPopup) {
+                BaseInsideLabelStrategy._tooltipPopup.close();
+              }
+              tooltipPopup.open(ojlabel);
+              // Save the current open tooltipPopup
+              BaseInsideLabelStrategy._tooltipPopup = tooltipPopup;
+              // Only save the label for focusin
+              if (event.type === 'focusin') {
+                BaseInsideLabelStrategy._tooltipLabel = ojlabel;
+              } else {
+                // it's 'mouseenter', so delete the _tooltiplabel
+                delete BaseInsideLabelStrategy._tooltipLabel;
+              }
+            }
+            // delete these references now that the tooltip is open or isn't in the document tree
+            delete BaseInsideLabelStrategy._tooltipDelayForElement;
+            delete BaseInsideLabelStrategy._popupOpenDelayTimeoutId;
+          }, 1500);
+        }
+      }
+    });
+  }
+};
+
+/**
+ * Callback for clearing the open delay timeout so the tooltip doesn't open
+ * if no longer needed.  Also, clear the tooltipLabel if this is not an intra
+ * component focus.
+ * @static
+ * @private
+ *
+ * @param {Element} element - component root dom element
+ * @param {*} event - mouse event
+ */
+BaseInsideLabelStrategy._handleClearTimeoutAndTooltipLabel = (element, event) => {
+  const delayTimeoutId = BaseInsideLabelStrategy._popupOpenDelayTimeoutId;
+  if (delayTimeoutId) {
+    delete BaseInsideLabelStrategy._popupOpenDelayTimeoutId;
+    clearTimeout(delayTimeoutId);
+  }
+  // on mouseleave, mousedown or keydown, if the popup exists and it is open for this component, close it.
+  if (event.type === 'mouseleave' || event.type === 'mousedown' || event.type === 'keydown') {
+    let tooltipPopup = document.querySelector(`#${element.id}_truncatedlabeltooltip`);
+    if (tooltipPopup === BaseInsideLabelStrategy._tooltipPopup) {
+      BaseInsideLabelStrategy._tooltipPopup.close();
+      delete BaseInsideLabelStrategy._tooltipPopup;
+    }
+  }
+
+  // don't delete _tooltipLabel if the focusout is internal to the current component.
+  if (event.type === 'focusout') {
+    let intraComponentFocus =
+      event.relatedTarget && isAncestor(element, event.relatedTarget);
+    // if the related target is not a descendant element, let's check and see if it's a in a popup that
+    // is a descendant element
+    if (!intraComponentFocus) {
+      const popupParentElem =
+        event.relatedTarget && event.relatedTarget.closest('[data-oj-surrogate-id]');
+      intraComponentFocus =
+        popupParentElem &&
+        isAncestor(
+          element,
+          document.getElementById(popupParentElem.getAttribute('data-oj-surrogate-id'))
+        );
+    }
+    // It really isn't an intraComponentFocus
+    if (!intraComponentFocus) {
+      delete BaseInsideLabelStrategy._tooltipLabel;
+    }
+  }
+};
+
+/**
+ * Instantiate the component popup if needed, and return the popup.
+ * @static
+ * @private
+ * @param {Element} element - root element of the component with the truncated label
+ * @return {Element}
+ */
+BaseInsideLabelStrategy._getTruncatedLabelTooltip = (element) => {
+  const tooltipId = `${element.id}_truncatedlabeltooltip`;
+  // Create the tooltip popup for when an inside label is truncated
+  // If already created, no need to create it, just return the tooltipPopup
+  let tooltipPopup = document.querySelector(`#${tooltipId}`);
+  if (!tooltipPopup) {
+    tooltipPopup = document.createElement('oj-popup');
+    tooltipPopup.id = tooltipId;
+    tooltipPopup.setAttribute('data-oj-binding-provider', 'none');
+    tooltipPopup.initialFocus = 'none';
+    tooltipPopup.autoDismiss = 'focusLoss';
+    tooltipPopup.modality = 'modeless';
+    tooltipPopup.classList.add('oj-form-control-label-tooltip');
+
+    tooltipPopup.position = {
+      my: { horizontal: 'start', vertical: 'bottom' },
+      offset: { x: 0, y: -5 },
+      at: { horizontal: 'start', vertical: 'top' },
+      collision: 'flipfit'
+    };
+    // we don't want any live region messages for this tooltip.  It should act
+    // like it isn't there for AT
+    tooltipPopup.translations = {
+      ariaLiveRegionInitialFocusNone: '',
+      ariaLiveRegionInitialFocusNoneTouch: ''
+    };
+
+    // this tooltip is dynamically created for each component with a truncated label and
+    // we append it to the root element of the component.
+    element.appendChild(tooltipPopup);
+  }
+  return tooltipPopup;
 };
 
 /**
@@ -134,6 +296,7 @@ BaseInsideLabelStrategy.prototype._createOjLabelElement = function (
   ojlabel.appendChild(span);
   this._InsertOjLabel(ojlabel, container, component);
   this._CreateEventHandlers(span, element, ojlabel, component);
+  return ojlabel;
 };
 
 /**
@@ -186,6 +349,22 @@ BaseInsideLabelStrategy.prototype._CreateEventHandlers = function (
     component
   );
   element.addEventListener('helpHintsChanged', this._helpHintsChangedCallback);
+
+  const isRedwood = parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+
+  // truncated label tooltip is only for redwood.  All other themes are deprecated.
+  if (isRedwood) {
+    this._tooltipOpenWhenLabelTruncatedCallback =
+      BaseInsideLabelStrategy._handleTooltipOpenWhenTruncated.bind(this, ojlabel, element);
+    this._clearTimeoutAndTooltipLabelCallback =
+      BaseInsideLabelStrategy._handleClearTimeoutAndTooltipLabel.bind(this, element);
+    ojlabel.addEventListener('mouseenter', this._tooltipOpenWhenLabelTruncatedCallback, true);
+    ojlabel.addEventListener('mouseleave', this._clearTimeoutAndTooltipLabelCallback, true);
+    element.addEventListener('focusin', this._tooltipOpenWhenLabelTruncatedCallback, true);
+    element.addEventListener('focusout', this._clearTimeoutAndTooltipLabelCallback, true);
+    element.addEventListener('keydown', this._clearTimeoutAndTooltipLabelCallback, true);
+    element.addEventListener('mousedown', this._clearTimeoutAndTooltipLabelCallback, true);
+  }
 };
 
 /**
@@ -207,6 +386,9 @@ BaseInsideLabelStrategy.prototype._DestroyLabel = function () {
   // but in the case where we toggle from top to inside, we find the top label
   // that has not yet been destroyed by the oj-form-layout at this point.
   const ojlabel = element.querySelector(`[id='${labelId}']`);
+  // This needs to happen before the ojlabel is removed, as there are conditional event
+  // listeners added to the ojlabel that need to be removed before the ojlabel is gone.
+  this._DeleteEventHandlers(element, ojlabel);
   if (ojlabel) {
     ojlabel.for = ''; // Triggers code to unlink the oj-label from its form component
     // JET-69716 - Regression: Can not refresh values in dynamic form, in stripe 2501
@@ -225,7 +407,6 @@ BaseInsideLabelStrategy.prototype._DestroyLabel = function () {
     ojlabel.remove();
   }
   options.labelledBy = undefined;
-  this._DeleteEventHandlers(element);
 };
 
 /**
@@ -236,13 +417,34 @@ BaseInsideLabelStrategy.prototype._DestroyLabel = function () {
  * @instance
  * @protected
  */
-BaseInsideLabelStrategy.prototype._DeleteEventHandlers = function (element) {
+BaseInsideLabelStrategy.prototype._DeleteEventHandlers = function (element, ojlabel) {
   element.removeEventListener('labelHintChanged', this._labelHintChangedCallback);
   element.removeEventListener('requiredChanged', this._requiredChangedCallback);
   element.removeEventListener('helpHintsChanged', this._helpHintsChangedCallback);
   delete this._helpHintsChangedCallback;
   delete this._labelHintChangedCallback;
   delete this._requiredChangedCallback;
+  // These event listeners are added conditionally for redwood, so we only remove them for redwood.
+  const isRedwood = parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+  if (isRedwood) {
+    // Clear outstanding tooltip delay timeout
+    const delayTimeoutId = BaseInsideLabelStrategy._popupOpenDelayTimeoutId;
+    if (delayTimeoutId) {
+      delete BaseInsideLabelStrategy._popupOpenDelayTimeoutId;
+      clearTimeout(delayTimeoutId);
+    }
+
+    element.removeEventListener('focusin', this._tooltipOpenWhenLabelTruncatedCallback, true);
+    element.removeEventListener('focusout', this._clearTimeoutAndTooltipLabelCallback, true);
+    element.removeEventListener('keydown', this._clearTimeoutAndTooltipLabelCallback, true);
+    element.removeEventListener('mousedown', this._clearTimeoutAndTooltipLabelCallback, true);
+    if (ojlabel) {
+      ojlabel.removeEventListener('mouseenter', this._tooltipOpenWhenLabelTruncatedCallback, true);
+      ojlabel.removeEventListener('mouseleave', this._clearTimeoutAndTooltipLabelCallback, true);
+    }
+    delete this._tooltipOpenWhenLabelTruncatedCallback;
+    delete this._clearTimeoutAndTooltipLabelCallback;
+  }
 };
 
 /**
@@ -1851,8 +2053,10 @@ oj.__registerWidget(
        */
       describedBy: null,
       /**
-       * Whether the component is disabled. The default is false.
-       *
+       * <p>Whether the component is disabled. The default is false.</p>
+       * <p>
+       * A disabled component does not show messages or user assistance text.
+       * </p>
        * <p>
        * When the <code class="prettyprint">disabled</code> property changes due to programmatic
        * intervention, the component may clear messages and run validation in some cases. </br>
@@ -2390,7 +2594,8 @@ oj.__registerWidget(
        * <ul>
        *   <li>after each validator (validators or async-validators) is run (full or deferred)</li>
        *   <li>when messagesCustom is updated,
-       *   since messagesCustom can be added by the app developer any time.</li>
+       *   since messagesCustom can be added by the app developer any time, and error messages
+       *   make the valid state 'invalidShown'.</li>
        *   <li>when showMessages() is called. Since showMessages() moves the
        *   hidden messages into messages shown,
        *   if the valid state was "invalidHidden" then it would become "invalidShown".</li>
@@ -2789,7 +2994,9 @@ oj.__registerWidget(
      * <p>
      * If there were no deferred messages this method simply returns.
      * </p>
-     *
+     * <p>
+     * Messages are shown on an enabled component, but not on a readonly or disabled component.
+     * </p>
      *
      * @example <caption>Display all messages including deferred ones.</caption>
      * myComp.showMessages();
@@ -6897,15 +7104,20 @@ setDefaultOptions({
  * Validation and Messaging
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#validation-section"></a>
  * </h3>
+ * <p>
  * An editable component runs validation (normal or deferred) based on the action performed on it
  * (either by end-user or page author), and the state it was in when the action occurred. Examples
  * of actions are - creating a component, user changing the value of the component by interacting
  * with it, the app setting a value programmatically, the app calling the validate() method etc. At
  * the time the action occurs, the component could already be showing errors, or can have a deferred
  * error or have no errors.
+ * </p>
  * <p>
  * These factors also determine whether validation errors/messages get shown to the user immediately
- * or get deferred. The following sections highlight the kinds of validation that are run and how
+ * or get deferred. Note that messages and user assistance text are shown on an enabled component, but not on a readonly or disabled component.
+ * </p>
+ * <p>
+ * The following sections highlight the kinds of validation that are run and how
  * messages get handled.
  * </p>
  * <h4 id="normal-validation-section">Normal Validation
@@ -7013,6 +7225,7 @@ setDefaultOptions({
  * </h3>
  * <p>
  * User assistive text provides guidance to help the user understand what data to enter or select.
+ * User assistive text is shown on an enabled component, but not on a readonly or disabled component.
  * </p>
  * <p>In the Redwood theme, by default all user assistance text shows inline.
  * For input components, it shows when the field takes focus. In other components
@@ -7090,6 +7303,14 @@ setDefaultOptions({
  * <p>
  *
  * @ojfragment accessibilityPlaceholderEditableValue
+ * @memberof oj.editableValue
+ * @instance
+ */
+/**
+ * <p>A readonly component does not show messages or user assistance text.
+ * </p>
+ *
+ * @ojfragment readonlyMessagesUserAssistanceEditableValue
  * @memberof oj.editableValue
  * @instance
  */
@@ -11280,8 +11501,16 @@ InsideLabelStrategy.prototype._activatePlaceholderStrategyIfNeeded = function (c
     // If the component has a placeholder or if it uses displayOptions+
     // has it set so that converter is shown as a placeholder.
     // Note: the Redwood theme does not use displayOptions.
+    // JET-47854: Previously, the select single filter didn't get the
+    // InsideLabelPlaceholderStrategy because it didn't have a label
+    // (it used aria-labelledby to point at the parent component's label).
+    // Because we needed to add a label to the filterInputText to get the
+    // truncated label tooltip to appear on mouseenter, we now have to take
+    // steps to make sure that it doesn't get the InsideLabelPlaceholderStrategy
+    // by looking at the class list and making sure it isn't a filterInputText.
     let needsInsidePlaceholder =
-      compOptions.placeholder ||
+      (compOptions.placeholder &&
+        !component._getRootElement().classList.contains('oj-searchselect-filter')) ||
       (component._getResolvedUserAssistance() === 'displayOptions' &&
         InsideLabelPlaceholderStrategy.ShowConverterHintAsPlaceholder(component));
     if (needsInsidePlaceholder) {

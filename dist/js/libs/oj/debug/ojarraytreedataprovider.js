@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -285,6 +285,13 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
    *                                           </ul>
    *                                           Default is 'global'.
    * @property {string=} childrenAttribute - Optional field name which stores the children of nodes in the data. Dot notation can be used to specify nested attribute. If this is not specified, the default is "children".
+   * @property {string=} enforceKeyStringify - Optionally specify whether keys should be stringified version of keypath from root. Supported values:<br>
+   *                                  <ul>
+   *                                    <li>'off': the key values are returned as it is.
+   *                                    <li>'on': the key values are stringified version of keypath from root.
+   *                                  </ul>
+   *                                Default is 'off'.
+   *                                Key stringify will directly call JSON.stringify on all keys passed out of the DataProvider. Use JSON.parse if you need to convert the key back to a complex type.
    * @ojsignature [
    *  {target: "Type", value: "<D>", for: "genericTypeParameters"},
    *  {target: "Type", value: "ArrayDataProvider.SortComparators<D>", for: "sortComparators"},
@@ -293,6 +300,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
    *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
    *  {target: "Type", value: "'siblings' | 'global'", for: "keyAttributesScope"},
    *  {target: "Type", value: "string", for: "childrenAttribute"},
+   *  {target: "Type", value: "'off' | 'on'", for: "enforceKeyStringify"}
    * ]
    */
 
@@ -489,7 +497,9 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
               if (children) {
                   const childDataProvider = new ArrayTreeDataProvider(children, this.options, rootDP);
                   if (childDataProvider != null) {
-                      childDataProvider._parentNodePath = rootDP._mapKeyToParentNodePath.get(JSON.stringify(parentKey));
+                      const enforceKeyStringify = this.options?.enforceKeyStringify;
+                      const parentKeyString = enforceKeyStringify === 'on' ? parentKey : JSON.stringify(parentKey);
+                      childDataProvider._parentNodePath = rootDP._mapKeyToParentNodePath.get(parentKeyString);
                       rootDP.addEventListener('refresh', (e) => {
                           childDataProvider._getTreeKeys(children);
                       });
@@ -698,7 +708,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
                   let parentKey;
                   if (this.options &&
                       this.options.keyAttributes &&
-                      this.options.keyAttributesScope !== 'siblings') {
+                      this.options.keyAttributesScope !== 'siblings' &&
+                      this.options.enforceKeyStringify !== 'on') {
                       parentKey = parentKeyPath.length > 0 ? parentKeyPath[parentKeyPath.length - 1] : null;
                   }
                   else {
@@ -818,8 +829,10 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
       _processNode(node, parentKeyPath, treeData) {
           const keyObj = this._createKeyObj(node, parentKeyPath, treeData);
           this._setMapEntry(keyObj.key, node);
+          const enforceKeyStringify = this.options?.enforceKeyStringify;
           const rootDataProvider = this._getRootDataProvider();
-          rootDataProvider._mapKeyToParentNodePath.set(JSON.stringify(keyObj.key), keyObj.keyPath);
+          const keyString = enforceKeyStringify === 'on' ? keyObj.key : JSON.stringify(keyObj.key);
+          rootDataProvider._mapKeyToParentNodePath.set(keyString, keyObj.keyPath);
           const children = this._getChildren(node);
           if (children) {
               this._processTreeArray(children, keyObj.keyPath);
@@ -837,15 +850,22 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
       _createKeyObj(node, parentKeyPath, treeData) {
           let key = this._getId(node);
           const keyPath = parentKeyPath ? parentKeyPath.slice() : [];
+          const enforceKeyStringify = this.options?.enforceKeyStringify;
           if (key == null) {
               this._setUseIndexAsKey(true);
               keyPath.push(this._incrementSequenceNum(treeData));
-              key = keyPath;
+              key = enforceKeyStringify === 'on' ? JSON.stringify(keyPath) : keyPath;
           }
           else {
-              keyPath.push(key);
-              if (this.options && this.options['keyAttributesScope'] === 'siblings') {
-                  key = keyPath;
+              if (enforceKeyStringify === 'on') {
+                  keyPath.push(JSON.parse(key));
+              }
+              else {
+                  keyPath.push(key);
+              }
+              if (this.options &&
+                  (this.options['keyAttributesScope'] === 'siblings' || enforceKeyStringify === 'on')) {
+                  key = enforceKeyStringify === 'on' ? JSON.stringify(keyPath) : keyPath;
               }
           }
           return { key, keyPath };
@@ -853,6 +873,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
       _getId(row) {
           let id;
           const keyAttributes = this.options != null ? this.options['keyAttributes'] : null;
+          const enforceKeyStringify = this.options?.enforceKeyStringify;
           if (keyAttributes != null) {
               if (Array.isArray(keyAttributes)) {
                   id = [];
@@ -865,6 +886,9 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
               }
               else {
                   id = this._getVal(row, keyAttributes);
+              }
+              if (enforceKeyStringify === 'on') {
+                  return JSON.stringify(id);
               }
               return id;
           }
@@ -901,16 +925,19 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
           return { key: this._getKeyForNode(node) };
       }
       _getNodeForKey(key) {
+          const enforceKeyStringify = this.options?.enforceKeyStringify;
+          const keyString = enforceKeyStringify === 'on' ? key : JSON.stringify(key);
           const rootDataProvider = this._getRootDataProvider();
-          return rootDataProvider._mapKeyToNode.get(JSON.stringify(key));
+          return rootDataProvider._mapKeyToNode.get(keyString);
       }
       _getKeyForNode(node) {
           const rootDataProvider = this._getRootDataProvider();
           return rootDataProvider._mapNodeToKey.get(node);
       }
       _setMapEntry(key, node) {
+          const enforceKeyStringify = this.options?.enforceKeyStringify;
           const rootDataProvider = this._getRootDataProvider();
-          const keyCopy = JSON.stringify(key);
+          const keyCopy = enforceKeyStringify === 'on' ? key : JSON.stringify(key);
           if (rootDataProvider._mapKeyToNode.has(keyCopy)) {
               Logger.warn(`Duplicate key ${keyCopy} found in ArrayTreeDataProvider.  Keys must be unique when keyAttributes ${this.options.keyAttributes} is specified`);
           }
@@ -918,8 +945,10 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
           rootDataProvider._mapNodeToKey.set(node, key);
       }
       _deleteMapEntry(key, node) {
+          const enforceKeyStringify = this.options?.enforceKeyStringify;
           const rootDataProvider = this._getRootDataProvider();
-          rootDataProvider._mapKeyToNode.delete(JSON.stringify(key));
+          const keyString = enforceKeyStringify === 'on' ? key : JSON.stringify(key);
+          rootDataProvider._mapKeyToNode.delete(keyString);
           rootDataProvider._mapNodeToKey.delete(node);
       }
       _incrementSequenceNum(treeData) {
@@ -959,12 +988,19 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
               this.options.keyAttributes == undefined ||
               this.options.keyAttributesScope == 'siblings' ||
               this.options.keyAttributes == '@index' ||
-              this._getUseIndexAsKey()) {
+              this._getUseIndexAsKey() ||
+              this.options.enforceKeyStringify === 'on') {
               keyIsPath = true;
           }
           if (keyIsPath) {
               treeKey = this._parentNodePath ? this._parentNodePath.slice() : [];
-              treeKey.push(metadata.key);
+              if (this.options?.enforceKeyStringify === 'on') {
+                  treeKey.push(JSON.parse(metadata.key));
+                  treeKey = JSON.stringify(treeKey);
+              }
+              else {
+                  treeKey.push(metadata.key);
+              }
           }
           metadata = this._getNodeMetadata(this._getNodeForKey(treeKey));
           return metadata;

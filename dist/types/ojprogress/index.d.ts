@@ -1,6 +1,7 @@
 import { GlobalProps } from 'ojs/ojvcomponent';
 import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
+/** @deprecated since 15.0.0 - Suggested alternatives: oj-progress-bar, oj-progress-circle. */
 export interface ojProgress extends baseComponent<ojProgressSettableProperties> {
     max: number;
     type: 'bar' | 'circle';
@@ -40,6 +41,7 @@ export interface ojProgressSettableProperties extends baseComponentSettablePrope
 export interface ojProgressSettablePropertiesLenient extends Partial<ojProgressSettableProperties> {
     [key: string]: any;
 }
+/** @deprecated since 15.0.0 - Suggested alternatives: oj-progress-bar, oj-progress-circle. */
 export type ProgressElement = ojProgress;
 export namespace ProgressElement {
     // tslint:disable-next-line interface-over-type-literal

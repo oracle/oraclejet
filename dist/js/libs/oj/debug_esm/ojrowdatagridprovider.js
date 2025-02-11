@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -91,6 +91,8 @@ class RowDataGridProvider {
         let fetchResult = { results: [], done: false, fetchParameters: null };
         if (rowCount != 0) {
             fetchResult = await this.dataProvider.fetchByOffset({ offset: rowOffset, size: rowCount });
+            this.sortCriteria = fetchResult.fetchParameters?.sortCriteria;
+            this.filterCriteria = fetchResult.fetchParameters?.filterCriterion;
         }
         let totalSize = -1;
         let sameFetchParameters = this.isSameFetchParameters(fetchResult.fetchParameters);
@@ -110,8 +112,6 @@ class RowDataGridProvider {
         }
         this.updateKeyCache(fetchResult, rowOffset);
         this.setupLayout(fetchResult.results);
-        this.sortCriteria = fetchResult.fetchParameters?.sortCriteria;
-        this.filterCriteria = fetchResult.fetchParameters?.filterCriterion;
         const columnOffset = parameters.columnOffset;
         const columnDone = columnOffset + parameters.columnCount >= this.columns.databody.length;
         const columnCount = Math.max(Math.min(parameters.columnCount, this.columns.databody.length - columnOffset), 0);
@@ -196,10 +196,14 @@ class RowDataGridProvider {
         let filterCriterion = fetchParameters?.filterCriterion;
         let currentSortCriterion = this.currentFetchParameters?.sortCriteria;
         let currentFilterCriterion = this.currentFetchParameters?.filterCriterion;
-        if (!oj.Object.compareValues(sortCriterion, currentSortCriterion)) {
+        if (!((sortCriterion == null || currentSortCriterion == null) &&
+            sortCriterion == currentSortCriterion) &&
+            !oj.Object.compareValues(sortCriterion, currentSortCriterion)) {
             return false;
         }
-        if (!oj.Object.compareValues(filterCriterion, currentFilterCriterion)) {
+        if (!((filterCriterion == null || currentSortCriterion == null) &&
+            filterCriterion == currentFilterCriterion) &&
+            !oj.Object.compareValues(filterCriterion, currentFilterCriterion)) {
             return false;
         }
         return true;
@@ -368,8 +372,11 @@ class RowDataGridProvider {
                     }
                     const metadata = { rowItem, expanded, treeDepth };
                     const item = new this.GridHeaderItem(index, 1, j, 1, metadata, value);
-                    if (this.itemMetadata?.rowHeader != null) {
-                        Object.assign(metadata, this.itemMetadata.rowHeader(item));
+                    if (axis === 'rowHeader' && this.itemMetadata?.rowHeader != null) {
+                        Object.assign(item.metadata, this.itemMetadata?.rowHeader(item));
+                    }
+                    else if (axis === 'rowEndHeader' && this.itemMetadata?.rowEndHeader != null) {
+                        Object.assign(item.metadata, this.itemMetadata.rowEndHeader(item));
                     }
                     headers.push(item);
                 }
@@ -428,9 +435,9 @@ class RowDataGridProvider {
                     let metadata;
                     let sortState;
                     let filterState;
-                    const metadataCallback = this.itemMetadata?.columnHeader;
                     if (axis === 'column' && level + depth === levelCount) {
-                        if (this.sortable || (metadataCallback != null && this.sortCriteria?.length)) {
+                        if (this.sortable ||
+                            (this.itemMetadata?.columnHeader != null && this.sortCriteria?.length)) {
                             sortState = this.getSortState(startIndex, axis);
                         }
                         if (this.filterable || this.filterCriteria) {
@@ -442,8 +449,11 @@ class RowDataGridProvider {
                         metadata = {};
                     }
                     const item = new this.GridHeaderItem(startIndex, extent, startLevel, depth, metadata, data);
-                    if (axis === 'column' && metadataCallback != null) {
-                        Object.assign(metadata, metadataCallback(item));
+                    if (axis === 'column' && this.itemMetadata?.columnHeader != null) {
+                        Object.assign(item.metadata, this.itemMetadata?.columnHeader(item));
+                    }
+                    else if (axis === 'columnEnd' && this.itemMetadata?.columnEndHeader != null) {
+                        Object.assign(item.metadata, this.itemMetadata.columnEndHeader(item));
                     }
                     headers.push(item);
                     for (let k = startIndex; k < startIndex + extent; k++) {

@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'ojs/ojhighlighttext', 'ojs/ojprogress-circle', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojset', 'ojs/ojtimerutils', 'ojs/ojthemeutils', 'ojs/ojcontext', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojtranslation', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcomponentcore'], function (ojeditablevalue, ojoptgroup, ojoption, ojhighlighttext, ojprogressCircle, oj, $, DomUtils, ojSet, TimerUtils, ThemeUtils, Context, ListDataProviderView, TreeDataProviderView, Translation, Logger, ojcustomelementUtils, Components) { 'use strict';
+define(['ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'ojs/ojhighlighttext', 'ojs/ojprogress-circle', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojset', 'ojs/ojtimerutils', 'ojs/ojthemeutils', 'ojs/ojcontext', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojdatacollection-common', 'ojs/ojdebouncingdataproviderview', 'ojs/ojtranslation', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcomponentcore'], function (ojeditablevalue, ojoptgroup, ojoption, ojhighlighttext, ojprogressCircle, oj, $, DomUtils, ojSet, TimerUtils, ThemeUtils, Context, ListDataProviderView, TreeDataProviderView, ojdatacollectionCommon, ojdebouncingdataproviderview, Translation, Logger, ojcustomelementUtils, Components) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -2278,6 +2278,19 @@ var __oj_select_many_metadata =
             ? new TreeDataProviderView(dataProvider, { dataMapping: { mapFields: mapFields } })
             : new ListDataProviderView(dataProvider, { dataMapping: { mapFields: mapFields } });
         }
+
+        // JET-70319 - Legacy Select and Search - Debouncing
+        // If the DP is capable of returning fetches immediately, simply use the enhanced DP.
+        // Otherwise wrap the enhanced DP in a debouncing wrapper to help reduce the number of
+        // remote fetch requests that are actually made as the user types.
+        // Note: Currently debouncing is only supported for flat data and select-many component.
+        if (widget.OuterWrapper.nodeName.toLowerCase() === 'oj-select-many' && !isTree) {
+          const filterCapability = (wrapper ?? dataProvider).getCapability('fetchFirst');
+          if (filterCapability?.iterationSpeed !== 'immediate') {
+            wrapper = new ojdebouncingdataproviderview.DebouncingDataProviderView(wrapper ?? dataProvider);
+          }
+        }
+
         // save the data provider or wrapper
         if (wrapper) {
           wOptions._dataProvider = wrapper;
@@ -2935,10 +2948,11 @@ var __oj_select_many_metadata =
     // _ComboUtils
     // Fetch from the data provider and filter the data locally until
     // the end of data or fetch size has reached
-    fetchFilteredData: function (context, fetchSize, maxItems, query, dropdown) {
+    fetchFilteredData: function (context, fetchSize, maxItems, query, dropdown, abortSignal) {
       var dataProvider = _ComboUtils.getDataProvider(context.options);
       var fetchListParms = {
-        size: fetchSize
+        size: fetchSize,
+        signal: abortSignal
       };
 
       // check if data provider support filtering?
@@ -3041,12 +3055,23 @@ var __oj_select_many_metadata =
       // reject the previous promise to avoid out of order request
       if (context._saveRejectFunc) {
         context._saveRejectFunc(_ComboUtils.rejectedError);
+        // JET-70319 - Legacy Select and Search - Debouncing
+        // Abort the existing abort signal to abort the previous fetches
+        if (context._abortController) {
+          context._abortController.abort(ojdatacollectionCommon.getAbortReason());
+        }
       }
 
       // save the current reject function
       var remotePromise = new Promise(function (resolve, reject) {
         context._saveRejectFunc = reject;
       });
+      // JET-70319 - Legacy Select and Search - Debouncing
+      // Create a new abort signal for this fetch and save it. This way, if a new fetch is made
+      // when this fetch is in progress, this one can be aborted before initiating the new one.
+      const controller = new AbortController();
+      // eslint-disable-next-line no-param-reassign
+      context._abortController = controller;
 
       // Clear the initial fetch flag from the options as the initial fetch is triggered
       // eslint-disable-next-line no-param-reassign
@@ -3056,7 +3081,7 @@ var __oj_select_many_metadata =
       // fetch data from dataProvider
       var fs = fetchSize || options.fetchSize || maxItems;
       var fetchPromise = _ComboUtils
-        .fetchFilteredData(context, fs, maxItems, query, widget.dropdown)
+        .fetchFilteredData(context, fs, maxItems, query, widget.dropdown, controller.signal)
         .then(function (fetchResults) {
           //  - search not shown before typing a character
           context._resultCount = fetchResults ? fetchResults.length : 0;
@@ -3085,12 +3110,16 @@ var __oj_select_many_metadata =
           }
         },
         function (error) {
-          // don't remove busy state if the reject coming from Promise.race
-          if (error !== _ComboUtils.rejectedError && context._fetchResolveFunc) {
+          // don't remove busy state if the reject coming from Promise.race or because the fetch is
+          // aborted due to the component initiating a new fetch
+          const isStaleRejection =
+            error === _ComboUtils.rejectedError ||
+            (error instanceof DOMException && error.name === 'AbortError');
+          if (!isStaleRejection && context._fetchResolveFunc) {
             query.callback();
             context._fetchResolveFunc();
             context._fetchResolveFunc = null;
-          } else if (error === _ComboUtils.rejectedError) {
+          } else if (isStaleRejection) {
             // If the fetch promise is rejected because of it being an outdated fetch
             // request to cleanup any operations left over for the previous fetch.
             query.cleanup();
@@ -4088,7 +4117,6 @@ var __oj_select_many_metadata =
                 this.selection.attr('aria-labelledby', ariaLabelledBy);
               }
             }
-            this.selection.attr('aria-readonly', true);
           } else {
             $content.attr('readonly', true);
             // create readonly div if it doesn't exist.
@@ -4115,7 +4143,6 @@ var __oj_select_many_metadata =
             }
             this.selection.removeAttr('tabindex');
             this.selection.removeAttr('aria-labelledby');
-            this.selection.removeAttr('aria-readonly');
           } else {
             $content.removeAttr('readonly', true);
           }
@@ -12199,7 +12226,7 @@ var __oj_select_many_metadata =
        * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
        * not have its readonly attribute set, the form component's readonly will be true.
        * </p>
-       *
+       * {@ojinclude "name":"readonlyMessagesUserAssistanceEditableValue"}
        * @example <caption>Initialize the combobox with the <code class="prettyprint">readonly</code> attribute:</caption>
        * &lt;oj-some-element readonly>&lt;/oj-some-element>
        *
@@ -12235,6 +12262,7 @@ var __oj_select_many_metadata =
        * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
        * not have its readonly attribute set, the form component's readonly will be true.
        * </p>
+       * {@ojinclude "name":"readonlyMessagesUserAssistanceEditableValue"}
        * @example <caption>Initialize the combobox with the <code class="prettyprint">readonly</code> attribute:</caption>
        * &lt;oj-some-element readonly>&lt;/oj-some-element>
        *
@@ -18371,6 +18399,7 @@ var __oj_select_many_metadata =
        * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
        * not have its readonly attribute set, the form component's readonly will be true.
        * </p>
+       * {@ojinclude "name":"readonlyMessagesUserAssistanceEditableValue"}
        * @example <caption>Initialize the select with the <code class="prettyprint">readonly</code> attribute:</caption>
        * &lt;oj-some-element readonly>&lt;/oj-some-element>
        *
@@ -18406,6 +18435,7 @@ var __oj_select_many_metadata =
        * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
        * not have its readonly attribute set, the form component's readonly will be true.
        * </p>
+       * {@ojinclude "name":"readonlyMessagesUserAssistanceEditableValue"}
        * @example <caption>Initialize the select with <code class="prettyprint">readonly</code> attribute:</caption>
        * &lt;oj-some-element readonly>&lt;/oj-some-element>
        *
@@ -18477,7 +18507,7 @@ var __oj_select_many_metadata =
        * @ojvalue {string} "jet" Render the select in jet mode.
        * @ojvalue {string} "native" Render the select in native mode.
        *
-       * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$selectRenderModeOptionDefault" is also deprecated for the same reason.'}
+       * @ojdeprecated {since: '8.0.0', description: 'Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result, the theme variable "$selectRenderModeOptionDefault" is also deprecated.'}
        */
       /**
        * {@ojinclude "name":"selectCommonRenderMode"}
@@ -18500,7 +18530,7 @@ var __oj_select_many_metadata =
        * @ojvalue {string} "jet" Render the select in jet mode.
        * @ojvalue {string} "native" Render the select in native mode.
        *
-       * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$selectRenderModeOptionDefault" is also deprecated for the same reason.'}
+       * @ojdeprecated {since: '8.0.0', description: 'Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result, the theme variable "$selectRenderModeOptionDefault" is also deprecated.'}
        */
       /**
        * The render-mode attribute allows applications to specify whether to render select in JET or as a HTML Select tag.

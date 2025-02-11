@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1952,39 +1952,7 @@ var __oj_list_view_metadata =
 
         this._rootTabIndexSet = false;
         this.SetRootElementTabIndex();
-        var dndContext = this.GetDnDContext();
-        // listens for dnd events if ListViewDndContext is defined
-        if (dndContext) {
-          this.m_dndContext = dndContext;
-
-          this.ojContext._on(this.element, {
-            dragstart: function (event) {
-              return dndContext._handleDragStart(event);
-            },
-            dragenter: function (event) {
-              return dndContext._handleDragEnter(event);
-            },
-            dragover: function (event) {
-              return dndContext._handleDragOver(event);
-            },
-            dragleave: function (event) {
-              return dndContext._handleDragLeave(event);
-            },
-            dragend: function (event) {
-              // mouseup will not be invoked on drag so resetting it to false.
-              self.m_preActive = false;
-              return dndContext._handleDragEnd(event);
-            },
-            drag: function (event) {
-              return dndContext._handleDrag(event);
-            },
-            drop: function (event) {
-              // mouseup will not be invoked on drag so resetting it to false.
-              self.m_preActive = false;
-              return dndContext._handleDrop(event);
-            }
-          });
-        }
+        this.setupDndContext(this.GetOption('dnd'));
         this._touchStartListener = function (event) {
           // convert to jQuery event for downstream code expecting it
           if (!event.originalEvent) {
@@ -2122,6 +2090,47 @@ var __oj_list_view_metadata =
             self._focusOutHandler = focusOutHandler;
           }
         });
+      },
+
+      /**
+       * Set up dnd context, invoked by init or by the options callback method invoked by framework
+       * @param {object} dndOptions the dnd options
+       */
+      setupDndContext: function (dndOptions) {
+        var self = this;
+        var dndContext = this.GetDnDContext(dndOptions);
+        // listens for dnd events if ListViewDndContext is defined
+        if (dndContext) {
+          this.m_dndContext = dndContext;
+
+          this.ojContext._on(this.element, {
+            dragstart: function (event) {
+              return dndContext._handleDragStart(event);
+            },
+            dragenter: function (event) {
+              return dndContext._handleDragEnter(event);
+            },
+            dragover: function (event) {
+              return dndContext._handleDragOver(event);
+            },
+            dragleave: function (event) {
+              return dndContext._handleDragLeave(event);
+            },
+            dragend: function (event) {
+              // mouseup will not be invoked on drag so resetting it to false.
+              self.m_preActive = false;
+              return dndContext._handleDragEnd(event);
+            },
+            drag: function (event) {
+              return dndContext._handleDrag(event);
+            },
+            drop: function (event) {
+              // mouseup will not be invoked on drag so resetting it to false.
+              self.m_preActive = false;
+              return dndContext._handleDrop(event);
+            }
+          });
+        }
       },
 
       /**
@@ -2578,6 +2587,8 @@ var __oj_list_view_metadata =
           // call ContentHandler in case for example fetch is needed
           this.m_contentHandler.notifyAttached();
         }
+
+        this._registerScrollHandler();
       },
 
       /**
@@ -2596,6 +2607,11 @@ var __oj_list_view_metadata =
 
         if (this.m_hoverItem != null) {
           this._unhighlightElem(this.m_hoverItem, 'oj-hover');
+        }
+
+        if (this.m_scroller) {
+          this._unregisterScrollHandler();
+          this.m_scroller = null;
         }
       },
 
@@ -2856,9 +2872,8 @@ var __oj_list_view_metadata =
        * Returns DnD Context, needed to override in navigationlist
        * @protected
        */
-      GetDnDContext: function () {
+      GetDnDContext: function (dndOptions) {
         // if dnd is not enabled, we should not do anything also even if ojlistviewdnd is required
-        var dndOptions = this.GetOption('dnd');
         if (
           dndOptions === null ||
           (dndOptions.drag === null &&
@@ -3073,6 +3088,15 @@ var __oj_list_view_metadata =
           delete options.scrollPosition;
         }
 
+        let shouldRefresh = false;
+
+        // if reorder switch from disabled to enabled, we'll need to make sure the m_dndContext is created
+        // NOTE: don't move this if statement after the next if, because we need to create the m_dndContext before we set the item draggable
+        if (options.dnd?.reorder?.items === 'enabled' && this.m_dndContext === undefined) {
+          this.setupDndContext(options.dnd);
+          shouldRefresh = true;
+        }
+
         // if reorder switch to enabled/disabled, we'll need to make sure any reorder styling classes are added/removed from focused item
         if (
           this._shouldDragSelectedItems() &&
@@ -3087,7 +3111,7 @@ var __oj_list_view_metadata =
           }
         }
 
-        return false;
+        return shouldRefresh;
       },
       /**
        * @private
@@ -3397,8 +3421,6 @@ var __oj_list_view_metadata =
        * @protected
        */
       CreateDataContentHandler: function (data) {
-        this.showStatusText();
-
         var contentHandler;
         if (typeof oj.TableDataSource !== 'undefined' && data instanceof oj.TableDataSource) {
           // TODO: load the adapter as needed
@@ -3522,6 +3544,9 @@ var __oj_list_view_metadata =
           container.append(accInfo); // @HTMLUpdateOK
           this.m_accInfo = accInfo;
 
+          var loadingDesc = this._buildLoadingDesc();
+          container.append(loadingDesc); // @HTMLUpdateOK
+
           this._buildFocusCaptureDiv(container[0]);
         }
       },
@@ -3562,6 +3587,22 @@ var __oj_list_view_metadata =
           'aria-live': 'polite'
         });
         root.attr({ tabIndex: -1 });
+
+        return root;
+      },
+
+      /**
+       * @private
+       */
+      _buildLoadingDesc: function () {
+        var root = $(document.createElement('div'));
+        root.addClass('oj-helper-hidden-accessible').attr({
+          id: this._createSubId('loadingDesc')
+        });
+        root.attr({ tabIndex: -1 });
+
+        var msg = this.ojContext.getTranslatedString('msgFetchingData');
+        root.text(msg);
 
         return root;
       },
@@ -3654,6 +3695,8 @@ var __oj_list_view_metadata =
       updateStatusFetchStart: function () {
         var msg = this.ojContext.getTranslatedString('msgFetchingData');
         this._setAccInfoText(msg);
+        this.element[0].setAttribute('data-oj-loading', true);
+        this.element[0].setAttribute('aria-describedby', this._createSubId('loadingDesc'));
       },
 
       /**
@@ -3662,12 +3705,16 @@ var __oj_list_view_metadata =
        */
       updateStatusFetchEnd: function (count) {
         var msg;
-        if (count === 0) {
-          msg = this.ojContext.getTranslatedString('msgFetchCompleted');
-        } else {
-          msg = this.ojContext.getTranslatedString('msgItemsAppended', { count: count });
+        if (this.element[0].hasAttribute('data-oj-loading')) {
+          if (count === 0) {
+            msg = this.ojContext.getTranslatedString('msgFetchCompleted');
+          } else {
+            msg = this.ojContext.getTranslatedString('msgItemsAppended', { count: count });
+          }
+          this._setAccInfoText(msg);
+          this.element[0].removeAttribute('data-oj-loading');
+          this.element[0].removeAttribute('aria-describedby');
         }
-        this._setAccInfoText(msg);
       },
 
       /**
@@ -3759,6 +3806,7 @@ var __oj_list_view_metadata =
             } else {
               self.showLoadingIcon();
             }
+            self.updateStatusFetchStart();
           }
           self.m_showStatusTimeout = null;
         }, this._getShowStatusDelay());
@@ -3786,6 +3834,7 @@ var __oj_list_view_metadata =
           this.m_showStatusTimeout = null;
         }
         this.m_status.hide();
+        this.updateStatusFetchEnd(0);
 
         var container = this.getListContainer().get(0);
         if (container.hasAttribute('data-oj-min-height')) {
@@ -5251,6 +5300,7 @@ var __oj_list_view_metadata =
               elem[0],
               excludeActiveElement,
               false,
+              false,
               dialogs
             )
           );
@@ -6108,7 +6158,10 @@ var __oj_list_view_metadata =
               var isTouch =
                 this._isTouchSupport() &&
                 (sourceCapabilityTouch ||
-                  (this.touchStartEvent != null && this.touchStartEvent.target === event.target));
+                  (this.touchStartEvent != null &&
+                    (this.touchStartEvent.target === event.target ||
+                      DataCollectionUtils.isIos() ||
+                      DataCollectionUtils.isAndroid())));
 
               var processed = true;
               if (isTouch) {
@@ -6720,6 +6773,10 @@ var __oj_list_view_metadata =
             next = $(items[currentIndex]);
           }
 
+          if (next.get(0).classList.contains('oj-listview-temp-item')) {
+            return;
+          }
+
           if (isExtend) {
             this._extendSelection(next, event);
             this.m_isNavigate = false;
@@ -6749,6 +6806,10 @@ var __oj_list_view_metadata =
               return;
             }
             prev = $(items[currentIndex]);
+          }
+
+          if (prev.get(0).classList.contains('oj-listview-temp-item')) {
+            return;
           }
 
           if (isExtend) {
@@ -8143,6 +8204,10 @@ var __oj_list_view_metadata =
        * @return {Object} the animation effect for the action
        */
       getAnimationEffect: function (action) {
+        // remove add/remove/update animation from card layout
+        if (this.isCardLayout() && (action === 'add' || action === 'remove' || action === 'update')) {
+          return null;
+        }
         var defaultOptions = this._getOptionDefaults();
         var defaultAnimations = defaultOptions.animation;
         return defaultAnimations == null ? null : defaultAnimations[action];
@@ -9990,6 +10055,8 @@ var __oj_list_view_metadata =
    *
    * <p>Finally review the list below for specific API changes and changes to ItemContext typing.</p>
    *
+   * <h5 id="dataprovider-key-type-migration"></h5>
+   *
    * <h5>No static lists</h5>
    * <p>Support for static lists has not been brought forward,
    * purely typographic, non-interactive lists can be created using native HTML and typography API.</p>
@@ -10017,7 +10084,7 @@ var __oj_list_view_metadata =
    * </p>
    *
    * <h5>Styling Class Changes</h5>
-   * <p><code>oj-listview-item-padding-off</code> is no longer relevant, by default padding is no longer added to List items.</p>
+   * <p><code>oj-listview-item-padding-off</code> is not supported, application should use the item.padding attribute to turn on/off padding. Note the default is 'disabled' as oj-c-list-view does not provide paddings by default.</p>
    *
    * <h5>Item Context Changes</h5>
    * <p>The types have changed.</p>
@@ -10081,7 +10148,7 @@ var __oj_list_view_metadata =
    * <h5 id="context-menu-migration"></h5>
    *
    * <h5>current-item attribute</h5>
-   * <p>This is currently a read-only property.</p>
+   * <p>This is now read-only, if you need to update the current item, use the current-item-override attribute instead.</p>
    *
    * <h5>gridlines attribute</h5>
    * <p>The <code>gridlines</code> property shape has changed. It now takes the keys `item`, `top` and `bottom`,
@@ -10093,8 +10160,14 @@ var __oj_list_view_metadata =
    * <h5>item.renderer attribute</h5>
    * <p>This is not supported, everything this attribute did can be accomplished through the template.</p>
    *
+   * <h5>scroll-policy attribute</h5>
+   * <p>This is no longer supported as 'loadMoreOnScroll' is the only supported mode going forward.</p>
+   *
    * <h5>scroll-policy-options.maxCount attribute</h5>
-   * <p>This is no longer supported.</p>
+   * <p>This is no longer supported.  A replacement will be available in a future release.</p>
+   *
+   * <h5>scroll-policy-options.scroller attribute</h5>
+   * <p>Only CSS selector string is supported.</p>
    *
    * <h5>ojBeforeCurrentItem event</h5>
    * <p>
@@ -10131,7 +10204,6 @@ var __oj_list_view_metadata =
    * <ul>
    *   <li>dnd attribute</li>
    *   <li>item.selectable attribute</li>
-   *   <li>scroll-policy attribute (currently only load more on scroll is supported)</li>
    *   <li>scroll-position attribute</li>
    *   <li>scroll-to-key attribute</li>
    *   <li>getContextByNode method</li>

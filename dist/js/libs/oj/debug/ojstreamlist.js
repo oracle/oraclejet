@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -728,8 +728,10 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 }
             }
             this._postRender();
-            if (!oj.Object.compareValues(this.props.scrollPosition, oldProps.scrollPosition) &&
-                !oj.Object.compareValues(this.props.scrollPosition, this.lastInternalScrollPositionUpdate)) {
+            if ((!oj.Object.compareValues(this.props.scrollPosition, oldProps.scrollPosition) &&
+                !oj.Object.compareValues(this.props.scrollPosition, this.lastInternalScrollPositionUpdate)) ||
+                (this.lastInternalScrollPositionUpdate === undefined &&
+                    !oj.Object.compareValues(this.props.scrollPosition, StreamList_1.defaultProps.scrollPosition))) {
                 this._syncScrollTopWithProps();
             }
         }

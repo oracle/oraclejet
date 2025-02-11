@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -177,6 +177,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', '
    * @desc Specifies how to fit components with colspan attribute in the form layout, when there are fewer columns left in the current row
    * than the colspan value specifies.
    * <p>The default value depends on the theme.</p>
+   * @ojdeprecated [{target:'propertyValue', for:"nowrap", since: "18.0.0", description: "This value will be removed in the future. Because this is the default value, please set this property to 'wrap' if this oj-form-layout has column spanning oj-label-value children."}]
    *
    * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">colspan-wrap</code> attribute specified:</caption>
    * &lt;oj-form-layout max-columns="3" colspan-wrap="wrap">
@@ -320,6 +321,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojcore-base', '
    *
    * // setter
    * myFormLayout.labelWrapping = 'wrap';
+   * @ojdeprecated {since: "18.0.0", description: "Label truncation for 'start' and 'top' aligned labels is no longer recommended by the Redwood design system. The default for labelWrapping was 'wrap' and that is now the only suggested pattern by UX design for 'start' and 'top' aligned labels. 'inside' aligned labels are always truncated per UX design and are not affected by this property's value." }
    */
 
   /**

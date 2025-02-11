@@ -18,6 +18,7 @@ export namespace IntlNumberConverter {
         maximumFractionDigits?: number;
         minimumFractionDigits?: number;
         minimumIntegerDigits?: number;
+        /** @deprecated since 11.0.0 - Use other options instead like style */
         pattern?: string;
         roundDuringParse?: boolean;
         roundingMode?: 'HALF_UP' | 'HALF_DOWN' | 'HALF_EVEN' | 'UP' | 'DOWN' | 'CEILING' | 'FLOOR';

@@ -133,17 +133,20 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
         itemMoveInitiatedInstruction?: string;
         itemMoveSelectionInfo?: string;
         itemResizeCancelled?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         itemResizeEndHandle?: string;
         itemResizeEndInitiated?: string;
         itemResizeFinalized?: string;
         itemResizeInitiatedInstruction?: string;
         itemResizeSelectionInfo?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         itemResizeStartHandle?: string;
         itemResizeStartInitiated?: string;
         labelAccNavNextPage?: string;
         labelAccNavPreviousPage?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         labelCountWithTotal?: string;
         labelDataVisualization?: string;
         labelDate?: string;
@@ -157,17 +160,27 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
         labelStart?: string;
         labelTitle?: string;
         navArrowDisabledState?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateCollapsed?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateDrillable?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateExpanded?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateHidden?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateIsolated?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateMaximized?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateMinimized?: string;
         stateSelected?: string;
         stateUnselected?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateVisible?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         tipArrowNextPage?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         tipArrowPreviousPage?: string;
         tooltipZoomIn?: string;
         tooltipZoomOut?: string;
@@ -281,6 +294,7 @@ export namespace ojTimeline {
     type ItemBubbleTemplateContext<K, D> = {
         contentWidth: number | null;
         data: SeriesItem<K>;
+        /** @deprecated since 13.1.0 - Use the contentWidth property instead. */
         durationWidth: number | null;
         itemData: D;
         maxAvailableWidth: number;
@@ -525,17 +539,20 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
         itemMoveInitiatedInstruction?: string;
         itemMoveSelectionInfo?: string;
         itemResizeCancelled?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         itemResizeEndHandle?: string;
         itemResizeEndInitiated?: string;
         itemResizeFinalized?: string;
         itemResizeInitiatedInstruction?: string;
         itemResizeSelectionInfo?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         itemResizeStartHandle?: string;
         itemResizeStartInitiated?: string;
         labelAccNavNextPage?: string;
         labelAccNavPreviousPage?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         labelCountWithTotal?: string;
         labelDataVisualization?: string;
         labelDate?: string;
@@ -549,17 +566,27 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
         labelStart?: string;
         labelTitle?: string;
         navArrowDisabledState?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateCollapsed?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateDrillable?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateExpanded?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateHidden?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateIsolated?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateMaximized?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateMinimized?: string;
         stateSelected?: string;
         stateUnselected?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         stateVisible?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         tipArrowNextPage?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-timeline. */
         tipArrowPreviousPage?: string;
         tooltipZoomIn?: string;
         tooltipZoomOut?: string;
@@ -783,6 +810,7 @@ export namespace TimelineElement {
     type ItemBubbleTemplateContext<K, D> = {
         contentWidth: number | null;
         data: ojTimeline.SeriesItem<K>;
+        /** @deprecated since 13.1.0 - Use the contentWidth property instead. */
         durationWidth: number | null;
         itemData: D;
         maxAvailableWidth: number;

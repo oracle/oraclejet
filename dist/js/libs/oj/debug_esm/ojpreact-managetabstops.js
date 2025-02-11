@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -16,14 +16,38 @@ function ManageTabStops({ children }) {
     let isInitialized = useRef(false);
     const { isTabbable } = useTabbableMode();
     useEffect(() => {
+        let observer;
         if (childRef.current) {
             if (!isInitialized.current || !isTabbable) {
-                disableAllFocusableElements(childRef.current);
+                disableAllFocusableElements(childRef.current, false, false, true);
                 isInitialized.current = true;
             }
             if (isTabbable) {
-                enableAllFocusableElements(childRef.current);
+                enableAllFocusableElements(childRef.current, true);
             }
+            else {
+                observer = new MutationObserver((entries) => {
+                    if (!isTabbable && childRef.current) {
+                        if (!childRef.current.isConnected) {
+                            return;
+                        }
+                        for (const entry of entries) {
+                            const addedNodes = entry.addedNodes;
+                            for (let i = 0; i < addedNodes.length; i++) {
+                                if (addedNodes[i].nodeType === 1) {
+                                    disableAllFocusableElements(addedNodes[i], false, false, true);
+                                }
+                            }
+                        }
+                    }
+                });
+                observer.observe(childRef.current, { subtree: true, childList: true });
+            }
+            return () => {
+                if (observer) {
+                    observer.disconnect();
+                }
+            };
         }
     }, [isTabbable]);
     const childComp = children;

@@ -5,7 +5,9 @@ export interface ojMenu extends baseComponent<ojMenuSettableProperties> {
     disabled: boolean;
     openOptions: ojMenu.OpenOptions;
     translations: {
+        /** @deprecated since 18.0.0 - This resource was introduced as a workaround for an issue that has since been fixed, and is no longer used by oj-menu. */
         ariaFocusSkipLink?: string;
+        /** @deprecated since 18.0.0 - This is not in the Redwood UX specification. */
         labelCancel?: string;
     };
     addEventListener<T extends keyof ojMenuEventMap>(type: T, listener: (this: HTMLElement, ev: ojMenuEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -102,7 +104,9 @@ export interface ojMenuSettableProperties extends baseComponentSettablePropertie
     disabled: boolean;
     openOptions: ojMenu.OpenOptions;
     translations: {
+        /** @deprecated since 18.0.0 - This resource was introduced as a workaround for an issue that has since been fixed, and is no longer used by oj-menu. */
         ariaFocusSkipLink?: string;
+        /** @deprecated since 18.0.0 - This is not in the Redwood UX specification. */
         labelCancel?: string;
     };
 }
@@ -179,8 +183,11 @@ export namespace MenuElement {
     };
 }
 export interface MenuIntrinsicProps extends Partial<Readonly<ojMenuSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 10.0.0 - This event is no longer supported, use the ojMenuAction event instead. */
     onojAction?: (value: ojMenuEventMap['ojAction']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojMenuEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojMenuEventMap['ojAnimateStart']) => void;
     onojBeforeOpen?: (value: ojMenuEventMap['ojBeforeOpen']) => void;
     onojClose?: (value: ojMenuEventMap['ojClose']) => void;

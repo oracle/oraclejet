@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -110,7 +110,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'oj
      * </p>
      * @ojsignature [{target: "Type", value: "<D, BD>", for: "genericTypeParameters"},
      *               {target: "Type", value: "Record<keyof Omit<D, keyof BD>, DataProviderJoinInfo<D, any, any>>", for: "joins"}]
-     * @ojdeprecated {since: '10.1.0', description: 'Use type Options instead of object for options'}
+     * @ojdeprecated {since: '10.1.0', description: 'Use JoiningDataProvider.Options instead.'}
      */
 
     /**

@@ -5,42 +5,57 @@ import { DataProvider } from '../ojdataprovider';
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojLegend<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> extends dvtBaseComponent<ojLegendSettableProperties<K, D>> {
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     data: DataProvider<K, D> | null;
     drilling?: 'on' | 'off';
+    /** @deprecated since 16.0.0 - Collapsible legend sections are not recommended in the Redwood theme. */
     expanded?: KeySet<K> | null;
     halign?: 'center' | 'end' | 'start';
     hiddenCategories?: string[];
     hideAndShowBehavior?: 'on' | 'off';
     highlightedCategories?: string[];
     hoverBehavior?: 'dim' | 'none';
+    /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
     hoverBehaviorDelay?: number;
     orientation?: 'horizontal' | 'vertical';
+    /** @deprecated since 12.1.0 - Setting scrolling to off is not supported in the Redwood theme and it is not recommended. */
     scrolling?: 'off' | 'asNeeded';
     sectionTitleHalign?: 'center' | 'end' | 'start';
     sectionTitleStyle?: Partial<CSSStyleDeclaration>;
     symbolHeight?: number;
     symbolWidth?: number;
     textStyle?: Partial<CSSStyleDeclaration>;
+    /** @deprecated since 15.0.0 - This is no longer needed due to performance enhancements. The default behavior will be used. */
     trackResize: 'on' | 'off';
     valign?: 'middle' | 'bottom' | 'top';
     translations: {
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         labelClearSelection?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         labelCountWithTotal?: string;
         labelDataVisualization?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         labelInvalidData?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         labelNoData?: string;
         stateCollapsed?: string;
         stateDrillable?: string;
         stateExpanded?: string;
         stateHidden?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         stateIsolated?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         stateMaximized?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         stateMinimized?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         stateSelected?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         stateUnselected?: string;
         stateVisible?: string;
         tooltipCollapse?: string;
@@ -104,6 +119,7 @@ export namespace ojLegend {
     type Item<K> = {
         borderColor?: string;
         categories?: string[];
+        /** @deprecated since 14.1.0 - Use hidden-categories attribute of oj-legend instead. */
         categoryVisibility?: 'hidden' | 'visible';
         color?: string;
         drilling?: 'off' | 'on' | 'inherit';
@@ -112,19 +128,24 @@ export namespace ojLegend {
         lineWidth?: number;
         markerColor?: string;
         markerShape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+        /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
         markerSvgClassName?: string;
+        /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
         markerSvgStyle?: Partial<CSSStyleDeclaration>;
         pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
         shortDesc?: string;
         source?: string;
+        /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
         svgClassName?: string;
+        /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         symbolType?: 'image' | 'line' | 'lineWithMarker' | 'marker';
         text: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<K = any, D = any> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: D;
         index: number;
@@ -145,17 +166,23 @@ export namespace ojLegend {
     };
     // tslint:disable-next-line interface-over-type-literal
     type Section<K> = {
+        /** @deprecated since 16.0.0 - Collapsible legend sections are not recommended in the Redwood theme. */
         collapsible?: 'on' | 'off';
+        /** @deprecated since 14.1.0 - Applications should use the expanded API on oj-legend instead. */
         expanded?: 'off' | 'on';
         id?: K;
         items?: Array<Item<K>>;
+        /** @deprecated since 18.0.0 - Use of nested legend sections is not recommended in Redwood theme. As such, this attribute is deprecated. */
         sections?: Array<Section<K>>;
         title?: string;
+        /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in oj-legend to align all section titles. */
         titleHalign?: 'center' | 'end' | 'start';
+        /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in oj-legend to style all section titles. */
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type SectionTemplateContext<K = any, D = any> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: D;
         index: number;
@@ -191,42 +218,57 @@ export interface ojLegendEventMap<K, D extends ojLegend.Item<K> | ojLegend.Secti
     'valignChanged': JetElementCustomEvent<ojLegend<K, D>["valign"]>;
 }
 export interface ojLegendSettableProperties<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> extends dvtBaseComponentSettableProperties {
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     data: DataProvider<K, D> | null;
     drilling?: 'on' | 'off';
+    /** @deprecated since 16.0.0 - Collapsible legend sections are not recommended in the Redwood theme. */
     expanded?: KeySet<K> | null;
     halign?: 'center' | 'end' | 'start';
     hiddenCategories?: string[];
     hideAndShowBehavior?: 'on' | 'off';
     highlightedCategories?: string[];
     hoverBehavior?: 'dim' | 'none';
+    /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
     hoverBehaviorDelay?: number;
     orientation?: 'horizontal' | 'vertical';
+    /** @deprecated since 12.1.0 - Setting scrolling to off is not supported in the Redwood theme and it is not recommended. */
     scrolling?: 'off' | 'asNeeded';
     sectionTitleHalign?: 'center' | 'end' | 'start';
     sectionTitleStyle?: Partial<CSSStyleDeclaration>;
     symbolHeight?: number;
     symbolWidth?: number;
     textStyle?: Partial<CSSStyleDeclaration>;
+    /** @deprecated since 15.0.0 - This is no longer needed due to performance enhancements. The default behavior will be used. */
     trackResize: 'on' | 'off';
     valign?: 'middle' | 'bottom' | 'top';
     translations: {
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         labelClearSelection?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         labelCountWithTotal?: string;
         labelDataVisualization?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         labelInvalidData?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         labelNoData?: string;
         stateCollapsed?: string;
         stateDrillable?: string;
         stateExpanded?: string;
         stateHidden?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         stateIsolated?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         stateMaximized?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         stateMinimized?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         stateSelected?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-legend. */
         stateUnselected?: string;
         stateVisible?: string;
         tooltipCollapse?: string;
@@ -239,6 +281,7 @@ export interface ojLegendSettablePropertiesLenient<K, D extends ojLegend.Item<K>
 export interface ojLegendItem extends JetElement<ojLegendItemSettableProperties> {
     borderColor?: string;
     categories?: string[];
+    /** @deprecated since 14.1.0 - Use hidden-categories on oj-legend instead */
     categoryVisibility?: 'hidden' | 'visible';
     color?: string;
     drilling?: 'on' | 'off' | 'inherit';
@@ -246,13 +289,17 @@ export interface ojLegendItem extends JetElement<ojLegendItemSettableProperties>
     lineWidth?: number;
     markerColor?: string;
     markerShape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+    /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
     markerSvgClassName?: string;
+    /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
     markerSvgStyle?: Partial<CSSStyleDeclaration>;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
     shortDesc?: string;
     source?: string;
+    /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
     svgClassName?: string;
+    /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     symbolType?: 'line' | 'lineWithMarker' | 'image' | 'marker';
     text: string;
@@ -325,6 +372,7 @@ export interface ojLegendItemEventMap extends HTMLElementEventMap {
 export interface ojLegendItemSettableProperties extends JetSettableProperties {
     borderColor?: string;
     categories?: string[];
+    /** @deprecated since 14.1.0 - Use hidden-categories on oj-legend instead */
     categoryVisibility?: 'hidden' | 'visible';
     color?: string;
     drilling?: 'on' | 'off' | 'inherit';
@@ -332,13 +380,17 @@ export interface ojLegendItemSettableProperties extends JetSettableProperties {
     lineWidth?: number;
     markerColor?: string;
     markerShape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+    /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
     markerSvgClassName?: string;
+    /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
     markerSvgStyle?: Partial<CSSStyleDeclaration>;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
     shortDesc?: string;
     source?: string;
+    /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
     svgClassName?: string;
+    /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     symbolType?: 'line' | 'lineWithMarker' | 'image' | 'marker';
     text: string;
@@ -347,9 +399,12 @@ export interface ojLegendItemSettablePropertiesLenient extends Partial<ojLegendI
     [key: string]: any;
 }
 export interface ojLegendSection extends JetElement<ojLegendSectionSettableProperties> {
+    /** @deprecated since 16.0.0 - Collapsible legend sections are not recommended in the Redwood theme. */
     collapsible?: 'on' | 'off';
     text?: string;
+    /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in oj-legend to align all section titles */
     textHalign?: 'center' | 'end' | 'start';
+    /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in oj-legend to style all section titles */
     textStyle?: Partial<CSSStyleDeclaration>;
     addEventListener<T extends keyof ojLegendSectionEventMap>(type: T, listener: (this: HTMLElement, ev: ojLegendSectionEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -376,9 +431,12 @@ export interface ojLegendSectionEventMap extends HTMLElementEventMap {
     'textStyleChanged': JetElementCustomEvent<ojLegendSection["textStyle"]>;
 }
 export interface ojLegendSectionSettableProperties extends JetSettableProperties {
+    /** @deprecated since 16.0.0 - Collapsible legend sections are not recommended in the Redwood theme. */
     collapsible?: 'on' | 'off';
     text?: string;
+    /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in oj-legend to align all section titles */
     textHalign?: 'center' | 'end' | 'start';
+    /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in oj-legend to style all section titles */
     textStyle?: Partial<CSSStyleDeclaration>;
 }
 export interface ojLegendSectionSettablePropertiesLenient extends Partial<ojLegendSectionSettableProperties> {
@@ -435,6 +493,7 @@ export namespace LegendElement {
     type Item<K> = {
         borderColor?: string;
         categories?: string[];
+        /** @deprecated since 14.1.0 - Use hidden-categories attribute of oj-legend instead. */
         categoryVisibility?: 'hidden' | 'visible';
         color?: string;
         drilling?: 'off' | 'on' | 'inherit';
@@ -443,19 +502,24 @@ export namespace LegendElement {
         lineWidth?: number;
         markerColor?: string;
         markerShape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+        /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
         markerSvgClassName?: string;
+        /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
         markerSvgStyle?: Partial<CSSStyleDeclaration>;
         pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
         shortDesc?: string;
         source?: string;
+        /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
         svgClassName?: string;
+        /** @deprecated since 14.1.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         symbolType?: 'image' | 'line' | 'lineWithMarker' | 'marker';
         text: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<K = any, D = any> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: D;
         index: number;
@@ -476,17 +540,23 @@ export namespace LegendElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type Section<K> = {
+        /** @deprecated since 16.0.0 - Collapsible legend sections are not recommended in the Redwood theme. */
         collapsible?: 'on' | 'off';
+        /** @deprecated since 14.1.0 - Applications should use the expanded API on oj-legend instead. */
         expanded?: 'off' | 'on';
         id?: K;
         items?: Array<ojLegend.Item<K>>;
+        /** @deprecated since 18.0.0 - Use of nested legend sections is not recommended in Redwood theme. As such, this attribute is deprecated. */
         sections?: Array<ojLegend.Section<K>>;
         title?: string;
+        /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in oj-legend to align all section titles. */
         titleHalign?: 'center' | 'end' | 'start';
+        /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in oj-legend to style all section titles. */
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type SectionTemplateContext<K = any, D = any> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: D;
         index: number;
@@ -549,53 +619,53 @@ export namespace LegendSectionElement {
 }
 export interface LegendIntrinsicProps extends Partial<Readonly<ojLegendSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojDrill?: (value: ojLegendEventMap<any, any>['ojDrill']) => void;
-    onasChanged?: (value: ojLegendEventMap<any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojLegendEventMap<any, any>['asChanged']) => void;
     ondataChanged?: (value: ojLegendEventMap<any, any>['dataChanged']) => void;
     ondrillingChanged?: (value: ojLegendEventMap<any, any>['drillingChanged']) => void;
-    onexpandedChanged?: (value: ojLegendEventMap<any, any>['expandedChanged']) => void;
+    /** @deprecated since 16.0.0 */ onexpandedChanged?: (value: ojLegendEventMap<any, any>['expandedChanged']) => void;
     onhalignChanged?: (value: ojLegendEventMap<any, any>['halignChanged']) => void;
     onhiddenCategoriesChanged?: (value: ojLegendEventMap<any, any>['hiddenCategoriesChanged']) => void;
     onhideAndShowBehaviorChanged?: (value: ojLegendEventMap<any, any>['hideAndShowBehaviorChanged']) => void;
     onhighlightedCategoriesChanged?: (value: ojLegendEventMap<any, any>['highlightedCategoriesChanged']) => void;
     onhoverBehaviorChanged?: (value: ojLegendEventMap<any, any>['hoverBehaviorChanged']) => void;
-    onhoverBehaviorDelayChanged?: (value: ojLegendEventMap<any, any>['hoverBehaviorDelayChanged']) => void;
+    /** @deprecated since 14.1.0 */ onhoverBehaviorDelayChanged?: (value: ojLegendEventMap<any, any>['hoverBehaviorDelayChanged']) => void;
     onorientationChanged?: (value: ojLegendEventMap<any, any>['orientationChanged']) => void;
-    onscrollingChanged?: (value: ojLegendEventMap<any, any>['scrollingChanged']) => void;
+    /** @deprecated since 12.1.0 */ onscrollingChanged?: (value: ojLegendEventMap<any, any>['scrollingChanged']) => void;
     onsectionTitleHalignChanged?: (value: ojLegendEventMap<any, any>['sectionTitleHalignChanged']) => void;
     onsectionTitleStyleChanged?: (value: ojLegendEventMap<any, any>['sectionTitleStyleChanged']) => void;
     onsymbolHeightChanged?: (value: ojLegendEventMap<any, any>['symbolHeightChanged']) => void;
     onsymbolWidthChanged?: (value: ojLegendEventMap<any, any>['symbolWidthChanged']) => void;
     ontextStyleChanged?: (value: ojLegendEventMap<any, any>['textStyleChanged']) => void;
-    ontrackResizeChanged?: (value: ojLegendEventMap<any, any>['trackResizeChanged']) => void;
+    /** @deprecated since 15.0.0 */ ontrackResizeChanged?: (value: ojLegendEventMap<any, any>['trackResizeChanged']) => void;
     onvalignChanged?: (value: ojLegendEventMap<any, any>['valignChanged']) => void;
     children?: ComponentChildren;
 }
 export interface LegendItemIntrinsicProps extends Partial<Readonly<ojLegendItemSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onborderColorChanged?: (value: ojLegendItemEventMap['borderColorChanged']) => void;
     oncategoriesChanged?: (value: ojLegendItemEventMap['categoriesChanged']) => void;
-    oncategoryVisibilityChanged?: (value: ojLegendItemEventMap['categoryVisibilityChanged']) => void;
+    /** @deprecated since 14.1.0 */ oncategoryVisibilityChanged?: (value: ojLegendItemEventMap['categoryVisibilityChanged']) => void;
     oncolorChanged?: (value: ojLegendItemEventMap['colorChanged']) => void;
     ondrillingChanged?: (value: ojLegendItemEventMap['drillingChanged']) => void;
     onlineStyleChanged?: (value: ojLegendItemEventMap['lineStyleChanged']) => void;
     onlineWidthChanged?: (value: ojLegendItemEventMap['lineWidthChanged']) => void;
     onmarkerColorChanged?: (value: ojLegendItemEventMap['markerColorChanged']) => void;
     onmarkerShapeChanged?: (value: ojLegendItemEventMap['markerShapeChanged']) => void;
-    onmarkerSvgClassNameChanged?: (value: ojLegendItemEventMap['markerSvgClassNameChanged']) => void;
-    onmarkerSvgStyleChanged?: (value: ojLegendItemEventMap['markerSvgStyleChanged']) => void;
+    /** @deprecated since 14.1.0 */ onmarkerSvgClassNameChanged?: (value: ojLegendItemEventMap['markerSvgClassNameChanged']) => void;
+    /** @deprecated since 14.1.0 */ onmarkerSvgStyleChanged?: (value: ojLegendItemEventMap['markerSvgStyleChanged']) => void;
     onpatternChanged?: (value: ojLegendItemEventMap['patternChanged']) => void;
     onshortDescChanged?: (value: ojLegendItemEventMap['shortDescChanged']) => void;
     onsourceChanged?: (value: ojLegendItemEventMap['sourceChanged']) => void;
-    onsvgClassNameChanged?: (value: ojLegendItemEventMap['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojLegendItemEventMap['svgStyleChanged']) => void;
+    /** @deprecated since 14.1.0 */ onsvgClassNameChanged?: (value: ojLegendItemEventMap['svgClassNameChanged']) => void;
+    /** @deprecated since 14.1.0 */ onsvgStyleChanged?: (value: ojLegendItemEventMap['svgStyleChanged']) => void;
     onsymbolTypeChanged?: (value: ojLegendItemEventMap['symbolTypeChanged']) => void;
     ontextChanged?: (value: ojLegendItemEventMap['textChanged']) => void;
     children?: ComponentChildren;
 }
 export interface LegendSectionIntrinsicProps extends Partial<Readonly<ojLegendSectionSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
-    oncollapsibleChanged?: (value: ojLegendSectionEventMap['collapsibleChanged']) => void;
+    /** @deprecated since 16.0.0 */ oncollapsibleChanged?: (value: ojLegendSectionEventMap['collapsibleChanged']) => void;
     ontextChanged?: (value: ojLegendSectionEventMap['textChanged']) => void;
-    ontextHalignChanged?: (value: ojLegendSectionEventMap['textHalignChanged']) => void;
-    ontextStyleChanged?: (value: ojLegendSectionEventMap['textStyleChanged']) => void;
+    /** @deprecated since 15.1.0 */ ontextHalignChanged?: (value: ojLegendSectionEventMap['textHalignChanged']) => void;
+    /** @deprecated since 15.1.0 */ ontextStyleChanged?: (value: ojLegendSectionEventMap['textStyleChanged']) => void;
     children?: ComponentChildren;
 }
 declare global {

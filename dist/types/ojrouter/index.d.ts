@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -9,6 +9,7 @@
 import 'signals';
 import 'knockout';
 import { RouterState } from '../ojrouterstate';
+/** @deprecated since 9.0.0 - Suggested alternative: CoreRouter. */
 declare class Router {
     readonly currentState: (() => RouterState | undefined);
     readonly currentValue: (() => string | undefined);

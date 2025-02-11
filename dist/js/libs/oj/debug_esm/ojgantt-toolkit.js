@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { BaseComponentDefaults, CSSStyle, Agent, Container, ToolkitUtils, Path, Stroke, PathUtils, KeyboardEvent, MouseEvent, Rect, OutputText, IconButton, Displayable, Obj, SelectionEffectUtils, ColorUtils, ResourceUtils, Rectangle, AriaUtils, EventFactory, Point, EventManager, ClipPath, TextUtils, SolidFill, JsonUtils, Line, AnimFadeIn, Easing, AnimFadeOut, CustomAnimation, ParallelPlayable, Playable, Animator, Automation, SvgShapeUtils, SimpleScrollbar, LayoutUtils, Dimension, MarqueeHandler, Matrix, SelectionHandler } from 'ojs/ojdvt-toolkit';
+import { BaseComponentDefaults, CSSStyle, Agent, Container, ToolkitUtils, Path, Stroke, PathUtils, KeyboardEvent, MouseEvent, Rect, OutputText, IconButton, Displayable, Obj, SelectionEffectUtils, ColorUtils, ResourceUtils, TouchEvent, Rectangle, AriaUtils, EventFactory, Point, EventManager, ClipPath, TextUtils, SolidFill, JsonUtils, Line, AnimFadeIn, Easing, AnimFadeOut, CustomAnimation, ParallelPlayable, Playable, Animator, Automation, SvgShapeUtils, SimpleScrollbar, LayoutUtils, Dimension, MarqueeHandler, Matrix, SelectionHandler } from 'ojs/ojdvt-toolkit';
 import { TimeComponent, TimeComponentEventManager, TimeComponentKeyboardHandler } from 'ojs/ojdvt-timecomponent';
-import { TimeAxisUtils, TimeAxis } from 'ojs/ojtimeaxis-toolkit';
+import { TimeAxisUtils as TimeAxisUtils$1, TimeAxis } from 'ojs/ojtimeaxis-toolkit';
 
 /**
  * Style related utility functions for Gantt.
@@ -2533,7 +2533,7 @@ class DvtGanttRowLabelContent {
       }
 
       // If last focused task is on the same row as this label, navigate to it
-      var lastFocusedTask = eventManager.getLastFocusedTask();
+      var lastFocusedTask = eventManager.getLastFocusedItem();
       if (
         lastFocusedTask &&
         Obj.compareValues(
@@ -2550,7 +2550,7 @@ class DvtGanttRowLabelContent {
       var firstTaskObj = rowObj.taskObjs[0];
       dataLayoutManager.ensureInDOM(firstTaskObj, 'task');
       var firstTaskNode = firstTaskObj.node;
-      eventManager.setLastFocusedTask(firstTaskNode);
+      eventManager.setLastFocusedItem(firstTaskNode);
       return firstTaskNode;
     }
 
@@ -3753,9 +3753,9 @@ var DvtGanttTooltipUtils = {
           }
         }
 
-        var row = taskNode.getRowNode();
-        var rowLabel = row.getLabel();
-        if (rowLabel == null) rowLabel = row.getIndex() + 1;
+        var rowObj = taskNode.getLayoutObject()['rowObj'];
+        var rowLabel = rowObj['data']['label'];
+        if (rowLabel == null) rowLabel = rowObj['index'] + 1;
         var rowDesc = ResourceUtils.format(translations.accessibleRowInfo, [rowLabel]);
 
         var desc = rowDesc;
@@ -3820,8 +3820,9 @@ var DvtGanttTooltipUtils = {
       row = taskNode.getRowNode();
     }
 
-    var rowLabel = row.getLabel();
-    if (rowLabel == null) rowLabel = row.getIndex() + 1;
+    var rowObj = row ? row.getLayoutObject() : taskNode.getLayoutObject()['rowObj'];
+    var rowLabel = rowObj['data']['label'];
+    if (rowLabel == null) rowLabel = rowObj['index'] + 1;
     return DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'row', 'Row', rowLabel, isTabular);
   },
 
@@ -4210,6 +4211,609 @@ var DvtGanttTooltipUtils = {
 };
 
 /**
+ * Style related utility functions for TimeAxis.
+ * @class
+ */
+const DvtTimeAxisStyleUtils = {
+  /**
+   * The default Axis border-width.
+   * @const
+   */
+  DEFAULT_BORDER_WIDTH: 1,
+
+  /**
+   * The default Axis separator width.
+   * @const
+   */
+  DEFAULT_SEPARATOR_WIDTH: 1,
+
+  /**
+   * The default Axis interval width.
+   * @const
+   */
+  DEFAULT_INTERVAL_WIDTH: 50,
+
+  /**
+   * The default Axis interval height.
+   * @const
+   */
+  DEFAULT_INTERVAL_HEIGHT: 21,
+
+  /**
+   * The default Axis interval padding.
+   * @const
+   */
+  DEFAULT_INTERVAL_PADDING: 4,
+
+  /**
+   * Gets the axis style.
+   * @param {object} options The object containing data and specifications for the component.
+   * @return {string} The axis style.
+   */
+  getAxisStyle: (options) => {
+    var axisStyles = '';
+    var style = DvtTimeAxisStyleUtils.getBackgroudColor(options);
+    if (style) axisStyles = axisStyles + 'background-color:' + style + ';';
+    style = DvtTimeAxisStyleUtils.getBorderColor(options);
+    if (style) axisStyles = axisStyles + 'border-color:' + style + ';';
+    style = DvtTimeAxisStyleUtils.getBorderWidth();
+    if (style) axisStyles = axisStyles + 'border-width:' + style + ';';
+    return axisStyles;
+  },
+
+  /**
+   * Gets the axis background-color.
+   * @param {object} options The object containing data and specifications for the component.
+   * @return {string} The axis background-color.
+   */
+  getBackgroudColor: (options) => {
+    return options['backgroundColor'];
+  },
+
+  /**
+   * Gets the axis border-color.
+   * @param {object} options The object containing data and specifications for the component.
+   * @return {string} The axis border-color.
+   */
+  getBorderColor: (options) => {
+    return options['borderColor'];
+  },
+
+  /**
+   * Gets the axis border-width.
+   * @return {string} The axis border-width.
+   */
+  getBorderWidth: () => {
+    return DvtTimeAxisStyleUtils.DEFAULT_BORDER_WIDTH;
+  },
+
+  /**
+   * Gets the axis label style.
+   * @param {object} options The object containing data and specifications for the component.
+   * @return {dvt.CSSStyle} The axis label style.
+   */
+  getAxisLabelStyle: (options) => {
+    return options['labelStyle'];
+  },
+
+  /**
+   * Gets the axis separator color.
+   * @param {object} options The object containing data and specifications for the component.
+   * @return {string} The axis separator color.
+   */
+  getSeparatorColor: (options) => {
+    return options['separatorColor'];
+  },
+
+  /**
+   * Gets the axis separator style.
+   * @param {object} options The object containing data and specifications for the component.
+   * @return {string} The axis separator style.
+   */
+  getAxisSeparatorStyle: (options) => {
+    var separatorStyles = '';
+    var style = DvtTimeAxisStyleUtils.getSeparatorColor(options);
+    if (style) separatorStyles = separatorStyles + 'color:' + style + ';';
+    return separatorStyles;
+  },
+
+  /**
+   * Gets the axis class.
+   * @param {object} options The object containing data and specifications for the component.
+   * @return {string|undefined} The axis class.
+   */
+  getAxisClass: (options) => {
+    return options['_resources'] ? options['_resources']['axisClass'] : undefined;
+  },
+
+  /**
+   * Gets the axis label class.
+   * @param {object} options The object containing data and specifications for the component.
+   * @return {string|undefined} The axis label class.
+   */
+  getAxisLabelClass: (options) => {
+    return options['_resources'] ? options['_resources']['axisLabelClass'] : undefined;
+  },
+
+  /**
+   * Gets the axis drillable label class.
+   * @return {string|undefined} The axis drillable label class.
+   */
+  getAxisDrillableLabelClass: () => {
+    return 'oj-timeaxis-label-drillable';
+  },
+
+  /**
+   * Gets the axis separator class.
+   * @param {object} options The object containing data and specifications for the component.
+   * @return {string|undefined} The axis separator class.
+   */
+  getAxisSeparatorClass: (options) => {
+    return options['_resources'] ? options['_resources']['axisSeparatorClass'] : undefined;
+  },
+
+  /**
+   * Gets the hover state class.
+   * @return {string|undefined} The hover state class.
+   */
+  getHoverClass: () => {
+    return 'oj-hover';
+  },
+
+  /**
+   * Gets the focus state class.
+   * @return {string|undefined} The focus state class.
+   */
+  getFocusClass: () => {
+    return 'oj-focus';
+  }
+};
+
+/**
+ * Utility functions for TimeAxis.
+ * @class
+ */
+const TimeAxisUtils = {
+  /**
+   * Returns true if rendering on a touch device.
+   * @return {boolean}
+   */
+  supportsTouch: () => {
+    return Agent.isTouchDevice();
+  },
+
+  /**
+   * Converts time to position given time range and width of the range
+   * @param {number} startTime The start time in millis
+   * @param {number} endTime The end time in millis
+   * @param {number} time The time in question
+   * @param {number} width The width of the time range
+   * @return {number} The position relative to the width of the element
+   */
+  getDatePosition: (startTime, endTime, time, width) => {
+    var number = (time - startTime) * width;
+    var denominator = endTime - startTime;
+    if (number === 0 || denominator === 0) return 0;
+
+    return number / denominator;
+  },
+
+  /**
+   * Converts position to time given the time range and width of the range
+   * @param {number} startTime The start time in millis
+   * @param {number} endTime The end time in millis
+   * @param {number} pos The position in question
+   * @param {number} width The width of the time range
+   * @return {number} time in millis
+   */
+  getPositionDate: (startTime, endTime, pos, width) => {
+    var number = pos * (endTime - startTime);
+    if (number === 0 || width === 0) return startTime;
+
+    return number / width + startTime;
+  },
+
+  /**
+   * Whether interval2 is fully contained in interval1
+   * @param {Array<number>} interval1 [number, number]
+   * @param {Array<number>} interval2 [number, number]
+   */
+  isIntervalContains: (interval1, interval2) => {
+    const [s1, e1] = interval1;
+    const [s2, e2] = interval2;
+    return s1 <= s2 && e2 <= e1;
+  }
+};
+
+/**
+ * Represents a time axis label.
+ * @param {dvt.Context} context
+ * @param {string} textStr
+ * @param {CSSStyle} labelStyle
+ * @param {object} intervalStartDate
+ * @param {object} intervalEndDate
+ * @param {DvtTimeAxis} timeAxis
+ * @param {boolean} isDrillable
+ * @implements {DvtKeyboardNavigable}
+ * @class
+ * @constructor
+ */
+class DvtTimeAxisLabel extends OutputText {
+  constructor(
+    context,
+    textStr,
+    labelStyle,
+    intervalStartDate,
+    intervalEndDate,
+    timeAxis,
+    isDrillable,
+    callback,
+    callbackObj
+  ) {
+    super(context, textStr, 0, 0);
+    this._timeAxis = timeAxis;
+    this._isDrillable = isDrillable;
+    this._callback = callback;
+    this._callbackObj = callbackObj;
+
+    this.intervalStartDate = intervalStartDate;
+    this.intervalEndDate = intervalEndDate;
+    this.nodeType = 'timeAxisLabel';
+
+    this.setCSSStyle(labelStyle);
+    const baseLabelClass = DvtTimeAxisStyleUtils.getAxisLabelClass(timeAxis.Options);
+    const drillLabelClass = isDrillable
+      ? DvtTimeAxisStyleUtils.getAxisDrillableLabelClass(timeAxis.Options)
+      : undefined;
+    const labelClass = [baseLabelClass, drillLabelClass].filter(Boolean).join(' ');
+    if (labelClass) this.getElem().setAttribute('class', labelClass);
+
+    if (isDrillable) {
+      timeAxis.parentComp.getEventManager().associate(this, this);
+      this.setAriaProperty('hidden', 'false');
+      this.setAriaRole('button');
+    }
+    this.setupListeners();
+  }
+
+  /**
+   * Returns whether this label is drillable.
+   * @returns {boolean}
+   */
+  isDrillable() {
+    return this._isDrillable;
+  }
+
+  /**
+   * Gets its time axis type.
+   * @returns {string} 'major' or 'minor'
+   */
+  getAxisType() {
+    return this._timeAxis.axisType;
+  }
+
+  /**
+   * Mouse over handler
+   * @protected
+   * @param {DvtMouseEvent} event The dispatched event to be processed by the object
+   */
+  OnMouseOver() {
+    const hoverClass = DvtTimeAxisStyleUtils.getHoverClass(this._timeAxis.Options);
+    if (hoverClass) this.getElem().classList.add(hoverClass);
+  }
+
+  /**
+   * Mouse out handler
+   * @protected
+   * @param {DvtMouseEvent} event The dispatched event to be processed by the object
+   */
+  OnMouseOut() {
+    const hoverClass = DvtTimeAxisStyleUtils.getHoverClass(this._timeAxis.Options);
+    if (hoverClass) this.getElem().classList.remove(hoverClass);
+  }
+
+  /**
+   * Click handler
+   * @protected
+   * @param {DvtMouseEvent} event The dispatched event to be processed by the object
+   */
+  OnClick(event) {
+    if (this._isDrillable && this._callback) {
+      var eventManager = this._timeAxis.parentComp.getEventManager();
+      const lastFocused = eventManager.getFocus();
+      if (lastFocused) lastFocused.hideKeyboardFocusEffect();
+      this._timeAxis.setLastFocusedLabel(this);
+      this.getCtx().setActiveElement(this);
+      eventManager.setFocus(this);
+
+      this._callback.call(this._callbackObj, this, event);
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Handle keyboard event
+   * @param {DvtKeyboardEvent} event keyboard event
+   */
+  handleKeyboardEvent(event) {
+    const keyCode = event.keyCode;
+    if (keyCode == KeyboardEvent.ENTER && this._isDrillable && this._callback) {
+      this._callback.call(this._callbackObj, this, event);
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Handles setting up listeners.
+   */
+  setupListeners() {
+    if (this._isDrillable) {
+      this.addEvtListener(MouseEvent.MOUSEOVER, this.OnMouseOver, false, this);
+      this.addEvtListener(MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
+      this.addEvtListener(MouseEvent.CLICK, this.OnClick, { capture: false }, this);
+      this.addEvtListener(
+        TouchEvent.TOUCHSTART,
+        this.OnClick,
+        { capture: false, passive: false },
+        this
+      );
+    } else {
+      this.removeEvtListener(MouseEvent.MOUSEOVER, this.OnMouseOver, false, this);
+      this.removeEvtListener(MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
+      this.removeEvtListener(MouseEvent.CLICK, this.OnClick, { capture: false }, this);
+      this.removeEvtListener(
+        TouchEvent.TOUCHSTART,
+        this.OnClick,
+        { capture: false, passive: false },
+        this
+      );
+    }
+  }
+
+  /**
+   * Gets the full text string regardless of truncation status.
+   * @returns {string}
+   */
+  getFullTextString() {
+    return this.isTruncated() ? this.getUntruncatedTextString() : this.getTextString();
+  }
+
+  /**
+   * Returns the current instance of this label in the time axis, which is not necessarily this instance.
+   * Whenever the Gantt scrolls, the time axis is re-rendered (labels removed and recreated), and so
+   * this label reference may be stale.
+   * @returns {DvtTimeAxisLabel}
+   */
+  identity() {
+    return this._timeAxis._labels.find(
+      (label) =>
+        label.intervalStartDate.getTime() === this.intervalStartDate.getTime() &&
+        label.intervalEndDate.getTime() === this.intervalEndDate.getTime()
+    );
+  }
+
+  /**
+   * Gets the aria label
+   * @return {string} the aria label string.
+   */
+  getAriaLabel() {
+    const textStr = this.getFullTextString();
+    const majorAxis = this._timeAxis.parentComp.getMajorAxis();
+    if (majorAxis && this._timeAxis !== majorAxis) {
+      const majorLabel = majorAxis.findAttachedAxisLabelIntervalWithTime(
+        this.intervalStartDate.getTime()
+      );
+      if (majorLabel) {
+        return `${textStr}, ${majorLabel.getFullTextString()}`;
+      }
+    }
+    return textStr;
+  }
+
+  // ---------------------------------------------------------------------//
+  // Keyboard Support: DvtKeyboardNavigable impl                          //
+  // ---------------------------------------------------------------------//
+
+  /**
+   * @override
+   */
+  getNextNavigable(event) {
+    var isRTL = Agent.isRightToLeft(this.getCtx());
+    var eventManager = this._timeAxis.parentComp.getEventManager();
+
+    // Navigating to item
+    if (event.altKey && event.keyCode === KeyboardEvent.DOWN_ARROW) {
+      const lastFocusedItem = eventManager.getLastFocusedItem();
+      const viewport = this._timeAxis.parentComp.getViewPort();
+      const dataLayoutManager = this._timeAxis.parentComp.getDataLayoutManager();
+      const intervalStartTime = this.intervalStartDate.getTime();
+      const intervalEndTime = this.intervalEndDate.getTime();
+
+      // ===== "Primary behavior" from the spec: =====
+      if (lastFocusedItem) {
+        // In the row of the last navigated task, move focus to the chronologically closest visible task to the label's interval
+        const lastRowObj = lastFocusedItem.getLayoutObject().rowObj;
+        const lastRowObjInd = lastRowObj.index;
+        if (lastRowObjInd >= viewport.minRowInd && lastRowObjInd <= viewport.maxRowInd) {
+          const { taskObjs } = dataLayoutManager.getLayoutObjectsInViewBox({
+            minRowInd: lastRowObj.index,
+            maxRowInd: lastRowObj.index,
+            viewStartTime: viewport.viewStartTime,
+            viewEndTime: viewport.viewEndTime
+          });
+          const taskObj = dataLayoutManager.getClosestTaskLayoutObjToTime(
+            taskObjs,
+            intervalStartTime
+          );
+          if (taskObj) return taskObj.node;
+        }
+      }
+
+      const { taskObjs: vTaskObjs } = dataLayoutManager.getLayoutObjectsInViewBox(viewport);
+
+      // ===== "Fallback behavior" from the spec: =====
+      // If there are no visible tasks in the current viewport
+      if (vTaskObjs.length === 0) {
+        // Focus on the previously focused task if available
+        if (lastFocusedItem) return lastFocusedItem;
+
+        // Otherwise, navigate to the default item
+        const defaultNavigable = eventManager.getKeyboardHandler()?.getDefaultNavigable();
+        return defaultNavigable ?? this.identity();
+      }
+
+      // ===== "Secondary behavior" from the spec: =====
+
+      // Of all the tasks in the visible viewport that overlaps the label's interval, focus on the chronologically closest one
+      // Use open comparison rather than closed, to catch only the tasks with non zero overlap.
+      const overlappingTaskObjs = dataLayoutManager.getTaskLayoutObjectsOverlappingRange(
+        vTaskObjs,
+        intervalStartTime,
+        intervalEndTime,
+        false
+      );
+      const overlappingTaskObj = dataLayoutManager.getClosestTaskLayoutObjToTime(
+        overlappingTaskObjs,
+        intervalStartTime
+      );
+      if (overlappingTaskObj) return overlappingTaskObj.node;
+
+      // Of all the tasks in the visible viewport, move focus to the one chronologically closest to the label's interval.
+      const closestTaskObj = dataLayoutManager.getClosestTaskLayoutObjToTime(
+        vTaskObjs,
+        intervalStartTime
+      );
+      return closestTaskObj?.node ?? this.identity();
+    }
+
+    // Navigating to another time axis
+    if (event.keyCode === KeyboardEvent.UP_ARROW) {
+      const targetTimeAxis = this._timeAxis.parentComp.getDrillableAxisAbove(this._timeAxis);
+      if (targetTimeAxis) {
+        const lastFocusedLabel = targetTimeAxis.getLastFocusedLabel();
+        if (
+          lastFocusedLabel &&
+          (TimeAxisUtils.isIntervalContains(
+            [this.intervalStartDate.getTime(), this.intervalEndDate.getTime()],
+            [
+              lastFocusedLabel.intervalStartDate.getTime(),
+              lastFocusedLabel.intervalEndDate.getTime()
+            ]
+          ) ||
+            TimeAxisUtils.isIntervalContains(
+              [
+                lastFocusedLabel.intervalStartDate.getTime(),
+                lastFocusedLabel.intervalEndDate.getTime()
+              ],
+              [this.intervalStartDate.getTime(), this.intervalEndDate.getTime()]
+            ))
+        ) {
+          return lastFocusedLabel.identity();
+        }
+        const label = targetTimeAxis.getAxisLabelIntervalWithTime(this.intervalStartDate.getTime());
+        if (label) return label;
+      }
+    }
+
+    // Navigating to another time axis
+    if (event.keyCode === KeyboardEvent.DOWN_ARROW) {
+      const targetTimeAxis = this._timeAxis.parentComp.getDrillableAxisBelow(this._timeAxis);
+      if (targetTimeAxis) {
+        const lastFocusedLabel = targetTimeAxis.getLastFocusedLabel();
+        if (
+          lastFocusedLabel &&
+          (TimeAxisUtils.isIntervalContains(
+            [this.intervalStartDate.getTime(), this.intervalEndDate.getTime()],
+            [
+              lastFocusedLabel.intervalStartDate.getTime(),
+              lastFocusedLabel.intervalEndDate.getTime()
+            ]
+          ) ||
+            TimeAxisUtils.isIntervalContains(
+              [
+                lastFocusedLabel.intervalStartDate.getTime(),
+                lastFocusedLabel.intervalEndDate.getTime()
+              ],
+              [this.intervalStartDate.getTime(), this.intervalEndDate.getTime()]
+            ))
+        ) {
+          return lastFocusedLabel.identity();
+        }
+        const label = targetTimeAxis.getAxisLabelIntervalWithTime(this.intervalStartDate.getTime());
+        if (label) return label;
+      }
+    }
+
+    // Navigating within time axis
+    if (
+      (!isRTL && event.keyCode === KeyboardEvent.RIGHT_ARROW) ||
+      (isRTL && event.keyCode === KeyboardEvent.LEFT_ARROW)
+    ) {
+      const label = this._timeAxis.getAxisLabelIntervalWithTime(this.intervalEndDate.getTime());
+      if (label) return label;
+    }
+
+    if (
+      (!isRTL && event.keyCode === KeyboardEvent.LEFT_ARROW) ||
+      (isRTL && event.keyCode === KeyboardEvent.RIGHT_ARROW)
+    ) {
+      const label = this._timeAxis.getAxisLabelIntervalWithTime(
+        this.intervalStartDate.getTime() - 1
+      );
+      if (label) return label;
+    }
+
+    // Whenever the Gantt scrolls, the time axis is re-rendered (labels removed and recreated), and so
+    // this label reference may be stale.
+    return this.identity();
+  }
+
+  /**
+   * @override
+   */
+  getTargetElem() {
+    return this.getElem();
+  }
+
+  /**
+   * @override
+   */
+  getKeyboardBoundingBox(targetCoordinateSpace) {
+    return this.getDimensions(targetCoordinateSpace);
+  }
+
+  /**
+   * @override
+   */
+  showKeyboardFocusEffect() {
+    this._isShowingKeyboardFocusEffect = true;
+    const focusClass = DvtTimeAxisStyleUtils.getFocusClass(this._timeAxis.Options);
+    if (focusClass) this.getElem().classList.add(focusClass);
+
+    this._timeAxis.setLastFocusedLabel(this);
+    this.getCtx().setActiveElement(this);
+  }
+
+  /**
+   * @override
+   */
+  hideKeyboardFocusEffect() {
+    const focusClass = DvtTimeAxisStyleUtils.getFocusClass(this._timeAxis.Options);
+    if (focusClass) this.getElem().classList.remove(focusClass);
+    this._isShowingKeyboardFocusEffect = false;
+  }
+
+  /**
+   * @override
+   */
+  isShowingKeyboardFocusEffect() {
+    return this._isShowingKeyboardFocusEffect;
+  }
+}
+
+/**
  * Gantt event manager.
  * @param {Gantt} gantt The owning Gantt.
  * @extends {TimeComponentEventManager}
@@ -4317,16 +4921,22 @@ class DvtGanttEventManager extends TimeComponentEventManager {
 
   /**
    * Returns the last focused task
+   * @return {DvtGanttTaskNode} taskNode
    */
-  getLastFocusedTask() {
-    return this._lastFocusedTask;
+  getLastFocusedItem() {
+    const dataLayoutManager = this._comp.getDataLayoutManager();
+    if (this._lastFocusedTask) {
+      // Ensure the current node is retrieved. It's possible the last stored node is a stale one from the previous render
+      return dataLayoutManager.getTaskObjWithId(this._lastFocusedTask.getLayoutObject().id)?.node;
+    }
+    return null;
   }
 
   /**
    * Returns the last focused task
    * @param {DvtGanttTaskNode} taskNode
    */
-  setLastFocusedTask(taskNode) {
+  setLastFocusedItem(taskNode) {
     this._lastFocusedTask = taskNode;
   }
 
@@ -4694,7 +5304,7 @@ class DvtGanttEventManager extends TimeComponentEventManager {
           (direction === 'forward' && newStart <= ganttMaxTime) ||
           (direction === 'backward' && newEnd >= ganttMinTime)
         ) {
-          previousPos = TimeAxisUtils.getDatePosition(
+          previousPos = TimeAxisUtils$1.getDatePosition(
             ganttMinTime,
             ganttMaxTime,
             this._keyboardDnDFeedbackTime['start'],
@@ -4718,7 +5328,7 @@ class DvtGanttEventManager extends TimeComponentEventManager {
               )
               .getTime();
           }
-          currentPos = TimeAxisUtils.getDatePosition(
+          currentPos = TimeAxisUtils$1.getDatePosition(
             ganttMinTime,
             ganttMaxTime,
             this._keyboardDnDFeedbackTime['start'],
@@ -4732,14 +5342,14 @@ class DvtGanttEventManager extends TimeComponentEventManager {
           (direction === 'forward' && newStart <= sourceEndTime) ||
           (direction === 'backward' && newStart >= ganttMinTime)
         ) {
-          previousPos = TimeAxisUtils.getDatePosition(
+          previousPos = TimeAxisUtils$1.getDatePosition(
             ganttMinTime,
             ganttMaxTime,
             this._keyboardDnDFeedbackTime['start'],
             ganttWidth
           );
           this._keyboardDnDFeedbackTime['start'] = newStart;
-          currentPos = TimeAxisUtils.getDatePosition(
+          currentPos = TimeAxisUtils$1.getDatePosition(
             ganttMinTime,
             ganttMaxTime,
             this._keyboardDnDFeedbackTime['start'],
@@ -4754,14 +5364,14 @@ class DvtGanttEventManager extends TimeComponentEventManager {
           (direction === 'forward' && newEnd <= ganttMaxTime) ||
           (direction === 'backward' && newEnd >= sourceStartTime)
         ) {
-          previousPos = TimeAxisUtils.getDatePosition(
+          previousPos = TimeAxisUtils$1.getDatePosition(
             ganttMinTime,
             ganttMaxTime,
             this._keyboardDnDFeedbackTime['end'],
             ganttWidth
           );
           this._keyboardDnDFeedbackTime['end'] = newEnd;
-          currentPos = TimeAxisUtils.getDatePosition(
+          currentPos = TimeAxisUtils$1.getDatePosition(
             ganttMinTime,
             ganttMaxTime,
             this._keyboardDnDFeedbackTime['end'],
@@ -5268,7 +5878,7 @@ class DvtGanttEventManager extends TimeComponentEventManager {
       var ganttContentLength = this._comp.getContentLength();
       var payload = {
         value: new Date(
-          TimeAxisUtils.getPositionDate(
+          TimeAxisUtils$1.getPositionDate(
             ganttStartTime,
             ganttEndTime,
             isRTL ? ganttContentLength - relPosLocal.x : relPosLocal.x,
@@ -5294,7 +5904,7 @@ class DvtGanttEventManager extends TimeComponentEventManager {
         var dragSourceType = this.getDnDTaskSubType(taskSource);
 
         if (dragSourceType === 'tasks') {
-          payload['start'] = TimeAxisUtils.getPositionDate(
+          payload['start'] = TimeAxisUtils$1.getPositionDate(
             ganttStartTime,
             ganttEndTime,
             isRTL
@@ -5975,7 +6585,7 @@ class DvtGanttEventManager extends TimeComponentEventManager {
         var ganttContentLength = this._comp.getContentLength();
         var stagePos = this._comp.getCtx().pageToStageCoords(event.pageX, event.pageY);
         var localPos = timeCursorContainer.stageToLocal(stagePos);
-        var time = TimeAxisUtils.getPositionDate(
+        var time = TimeAxisUtils$1.getPositionDate(
           ganttStartTime,
           ganttEndTime,
           isRTL ? ganttContentLength - localPos.x : localPos.x,
@@ -6014,6 +6624,23 @@ class DvtGanttEventManager extends TimeComponentEventManager {
       return;
     }
     super.OnClick(event);
+  }
+
+  /**
+   * Processes a drill.
+   * @param {Object} obj The logical object that was drilled.
+   */
+  processDrillEvent(obj) {
+    if (!obj || !obj.isDrillable || !obj.isDrillable()) return;
+
+    if (obj.nodeType === 'timeAxisLabel') {
+      const evt = EventFactory.newGanttTimeAxisDrillEvent(
+        obj.intervalStartDate,
+        obj.intervalEndDate,
+        obj.getAxisType()
+      );
+      this._comp.dispatchEvent(evt);
+    }
   }
 
   /**
@@ -6603,6 +7230,24 @@ class DvtGanttKeyboardHandler extends TimeComponentKeyboardHandler {
   /**
    * @override
    */
+  getDefaultNavigable() {
+    // navigate to the default: the first task of the first nonempty row
+    var rowObjs = this._gantt.getRowLayoutObjs();
+    for (var i = 0; i < rowObjs.length; i++) {
+      var rowObj = rowObjs[i];
+      var taskObjs = rowObj['taskObjs'];
+      if (taskObjs.length > 0) {
+        EventManager.consumeEvent(event);
+        var firstTaskObj = taskObjs[0];
+        this._gantt.getDataLayoutManager().ensureInDOM(firstTaskObj, 'task');
+        return firstTaskObj['node'];
+      }
+    }
+  }
+
+  /**
+   * @override
+   */
   processKeyDown(event) {
     var isRTL = Agent.isRightToLeft(this._gantt.getCtx());
     var keyCode = event.keyCode;
@@ -6612,18 +7257,8 @@ class DvtGanttKeyboardHandler extends TimeComponentKeyboardHandler {
         EventManager.consumeEvent(event);
         return currentNavigable;
       } else {
-        // navigate to the default: the first task of the first nonempty row
-        var rowObjs = this._gantt.getRowLayoutObjs();
-        for (var i = 0; i < rowObjs.length; i++) {
-          var rowObj = rowObjs[i];
-          var taskObjs = rowObj['taskObjs'];
-          if (taskObjs.length > 0) {
-            EventManager.consumeEvent(event);
-            var firstTaskObj = taskObjs[0];
-            this._gantt.getDataLayoutManager().ensureInDOM(firstTaskObj, 'task');
-            return firstTaskObj['node'];
-          }
-        }
+        const defaultNavigable = this.getDefaultNavigable();
+        if (defaultNavigable) return defaultNavigable;
       }
     }
     if (this.isMoveInitiationEvent(event)) {
@@ -7241,8 +7876,8 @@ class DvtGanttTask {
       endPos;
 
     if (!(start == null && end == null)) {
-      startPos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, start, ganttWidth);
-      endPos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, end, ganttWidth);
+      startPos = TimeAxisUtils$1.getDatePosition(ganttMinTime, ganttMaxTime, start, ganttWidth);
+      endPos = TimeAxisUtils$1.getDatePosition(ganttMinTime, ganttMaxTime, end, ganttWidth);
 
       if (isRTL) {
         startPos = ganttWidth - startPos;
@@ -7292,7 +7927,9 @@ class DvtGanttTask {
     if (effectType === 'selected') {
       var taskNode = this._container;
       var rowNode = taskNode.getRowNode();
-      rowNode.showEffect('selected');
+      if (rowNode) {
+        rowNode.showEffect('selected');
+      }
     }
   }
 
@@ -7306,7 +7943,9 @@ class DvtGanttTask {
     if (effectType === 'selected') {
       var taskNode = this._container;
       var rowNode = taskNode.getRowNode();
-      rowNode.removeEffect('selected');
+      if (rowNode) {
+        rowNode.removeEffect('selected');
+      }
     }
   }
 
@@ -10010,7 +10649,7 @@ class DvtGanttTaskNode extends Container {
     var ganttContentLength = this._gantt.getContentLength();
 
     var startPos = isRTL ? ganttContentLength - this.getTranslateX() : this.getTranslateX();
-    var startTime = TimeAxisUtils.getPositionDate(
+    var startTime = TimeAxisUtils$1.getPositionDate(
       ganttStartTime,
       ganttEndTime,
       startPos,
@@ -10018,7 +10657,7 @@ class DvtGanttTaskNode extends Container {
     );
     var endPos = this.getTranslateX() - orientationFactor * width;
     endPos = isRTL ? ganttContentLength - endPos : endPos;
-    var endTime = TimeAxisUtils.getPositionDate(
+    var endTime = TimeAxisUtils$1.getPositionDate(
       ganttStartTime,
       ganttEndTime,
       endPos,
@@ -10154,13 +10793,13 @@ class DvtGanttTaskNode extends Container {
           feedbackEndTimePos = isRTL
             ? ganttContentLength - (referenceFinalLocalX - referenceMainShape.getFinalWidth())
             : referenceFinalLocalX + referenceMainShape.getFinalWidth();
-          feedbackStartTime = TimeAxisUtils.getPositionDate(
+          feedbackStartTime = TimeAxisUtils$1.getPositionDate(
             ganttStartTime,
             ganttEndTime,
             feedbackStartTimePos,
             ganttContentLength
           );
-          feedbackEndTime = TimeAxisUtils.getPositionDate(
+          feedbackEndTime = TimeAxisUtils$1.getPositionDate(
             ganttStartTime,
             ganttEndTime,
             feedbackEndTimePos,
@@ -10204,7 +10843,7 @@ class DvtGanttTaskNode extends Container {
             feedbackEndTimePos = isRTL
               ? ganttContentLength - feedbackEndTimePos
               : feedbackEndTimePos;
-            feedbackEndTime = TimeAxisUtils.getPositionDate(
+            feedbackEndTime = TimeAxisUtils$1.getPositionDate(
               ganttStartTime,
               ganttEndTime,
               feedbackEndTimePos,
@@ -10215,7 +10854,7 @@ class DvtGanttTaskNode extends Container {
             feedbackStartTimePos = isRTL
               ? ganttContentLength - feedbackStartTimePos
               : feedbackStartTimePos;
-            feedbackStartTime = TimeAxisUtils.getPositionDate(
+            feedbackStartTime = TimeAxisUtils$1.getPositionDate(
               ganttStartTime,
               ganttEndTime,
               feedbackStartTimePos,
@@ -10350,7 +10989,7 @@ class DvtGanttTaskNode extends Container {
           dropOutlineFeedback.setY(dropFeedbackY);
         }
 
-        this._mainDragFeedbackStartTimes[i] = TimeAxisUtils.getPositionDate(
+        this._mainDragFeedbackStartTimes[i] = TimeAxisUtils$1.getPositionDate(
           ganttStartTime,
           ganttEndTime,
           isRTL ? ganttContentLength - newFeedbackX : newFeedbackX,
@@ -10581,7 +11220,7 @@ class DvtGanttTaskNode extends Container {
     var dragFeedback, dragFeedbackX, dragOutlineFeedback, dropOutlineFeedback;
 
     if (this._mainDragFeedbacks) {
-      var newReferenceX = TimeAxisUtils.getDatePosition(
+      var newReferenceX = TimeAxisUtils$1.getDatePosition(
         ganttStartTime,
         ganttEndTime,
         this._mainDragFeedbackStartTimes[0],
@@ -10591,7 +11230,7 @@ class DvtGanttTaskNode extends Container {
       for (var i = 0; i < this._mainDragFeedbacks.length; i++) {
         dragFeedback = this._mainDragFeedbacks[i];
         dragOutlineFeedback = this._mainDragOutlineFeedbacks[i];
-        dragFeedbackX = TimeAxisUtils.getDatePosition(
+        dragFeedbackX = TimeAxisUtils$1.getDatePosition(
           ganttStartTime,
           ganttEndTime,
           this._mainDragFeedbackStartTimes[i],
@@ -10624,13 +11263,13 @@ class DvtGanttTaskNode extends Container {
     if (this._mainResizeHandleDragFeedbacks) {
       for (var i = 0; i < this._mainResizeHandleDragFeedbacks; i++) {
         dragFeedback = this._mainResizeHandleDragFeedbacks[i];
-        var dragFeedbackStartX = TimeAxisUtils.getDatePosition(
+        var dragFeedbackStartX = TimeAxisUtils$1.getDatePosition(
           ganttStartTime,
           ganttEndTime,
           this._mainResizeHandleDragFeedbackSources[i].getValue('start'),
           ganttContentLength
         );
-        var dragFeedbackEndX = TimeAxisUtils.getDatePosition(
+        var dragFeedbackEndX = TimeAxisUtils$1.getDatePosition(
           ganttStartTime,
           ganttEndTime,
           this._mainResizeHandleDragFeedbackSources[i].getValue('end'),
@@ -10910,7 +11549,7 @@ class DvtGanttTaskNode extends Container {
 
         // for VoiceOver/Talkback we'll need to include the full detail of the dependency in the task since we can't
         // navigate to the dependency line directly
-        if (TimeAxisUtils.supportsTouch() || Agent.isEnvironmentTest()) {
+        if (TimeAxisUtils$1.supportsTouch() || Agent.isEnvironmentTest()) {
           for (var i = 0; i < predecessorDepObjs.length; i++)
             depDesc = depDesc + ', ' + predecessorDepObjs[i].ariaLabel;
         }
@@ -10922,7 +11561,7 @@ class DvtGanttTaskNode extends Container {
           depDesc +
           ResourceUtils.format(translations.accessibleSuccessorInfo, [successorDepObjs.length]);
 
-        if (TimeAxisUtils.supportsTouch() || Agent.isEnvironmentTest()) {
+        if (TimeAxisUtils$1.supportsTouch() || Agent.isEnvironmentTest()) {
           for (i = 0; i < successorDepObjs.length; i++)
             depDesc = depDesc + ', ' + successorDepObjs[i].ariaLabel;
         }
@@ -11053,8 +11692,6 @@ class DvtGanttTaskNode extends Container {
     }
 
     this.refreshAriaLabel();
-
-    this._gantt.setCurrentRow(this.getRowNode().getId());
 
     const options = this._gantt.getOptions();
     // Update linear dependency line rendering, because the marker styling depends on task selection state
@@ -11213,6 +11850,24 @@ class DvtGanttTaskNode extends Container {
     ) {
       var rowNode = this.getRowNode();
       return rowNode.getRowLabelContent();
+    }
+
+    // Navigating to axis label
+    const axisPosition = this._gantt.getAxisPosition();
+    const minorAxis = this._gantt.getMinorAxis();
+    const majorAxis = this._gantt.getMajorAxis();
+    const isMinorAxisDrillable = this._gantt.isMinorAxisDrillable();
+    const isMajorAxisDrillable = this._gantt.isMajorAxisDrillable();
+    if (
+      ((minorAxis && isMinorAxisDrillable) || (majorAxis && isMajorAxisDrillable)) &&
+      event.altKey &&
+      ((axisPosition === 'top' && event.keyCode === KeyboardEvent.UP_ARROW) ||
+        (axisPosition === 'bottom' && event.keyCode === KeyboardEvent.DOWN_ARROW))
+    ) {
+      const targetTimeAxis = isMinorAxisDrillable ? minorAxis : majorAxis;
+      this.scrollIntoView('start');
+      const startTime = this._taskObj['startTime'];
+      return targetTimeAxis.getAxisLabelIntervalWithTime(startTime);
     }
 
     // The normal navigation keys (up/down/right/left arrows) have different meanings in keyboard DnD mode, and handled separately in keyboardHandler
@@ -12065,6 +12720,22 @@ class DvtGanttDataLayoutManager {
    */
   getNumViewportTasks() {
     return this._numViewportTasks;
+  }
+
+  /**
+   * Gets task layout object with id
+   * @param {any} id
+   * @return {object}
+   */
+  getTaskObjWithId(id) {
+    for (let i = 0; i < this._rowObjs.length; i++) {
+      const taskObjs = this._rowObjs[i].taskObjs;
+      for (let j = 0; j < taskObjs.length; j++) {
+        const taskObj = taskObjs[j];
+        if (Obj.compareValues(this._ctx, id, taskObj.id)) return taskObj;
+      }
+    }
+    return null;
   }
 
   /**
@@ -13812,13 +14483,13 @@ class DvtGanttDataLayoutManager {
     var ganttEndTime = this._gantt.getEndTime();
     var ganttContentLength = this._gantt.getContentLength();
     // In RTL, the bbox right is the start; in LTR the bbox left is the start
-    var bboxStartTime = TimeAxisUtils.getPositionDate(
+    var bboxStartTime = TimeAxisUtils$1.getPositionDate(
       ganttStartTime,
       ganttEndTime,
       isRTL ? ganttContentLength - (bbox.x + bbox.w) : bbox.x,
       ganttContentLength
     );
-    var bboxEndTime = TimeAxisUtils.getPositionDate(
+    var bboxEndTime = TimeAxisUtils$1.getPositionDate(
       ganttStartTime,
       ganttEndTime,
       isRTL ? ganttContentLength - bbox.x : bbox.x + bbox.w,
@@ -13854,6 +14525,61 @@ class DvtGanttDataLayoutManager {
     }
 
     return { rowObjs: relevantRowObjs, taskObjs: relevantTaskObjs };
+  }
+
+  /**
+   * Returns all layout objects within the given view box.
+   * @param {Object} { minRowInd, maxRowInd, viewStartTime, viewEndTime }
+   * @return {Object} An object with 'rowObjs' and 'taskObjs' arrays
+   */
+  getLayoutObjectsInViewBox(viewBox) {
+    const { minRowInd, maxRowInd, viewStartTime, viewEndTime } = viewBox;
+
+    const relevantRowObjs = [];
+    const relevantTaskObjs = [];
+    for (let i = minRowInd; i <= maxRowInd; i++) {
+      const rowObj = this._rowObjs[i];
+      relevantRowObjs.push(rowObj);
+
+      const taskObjs = rowObj.taskObjs;
+      for (let j = 0; j < taskObjs.length; j++) {
+        var taskObj = taskObjs[j];
+        if (
+          this._isIntervalOverlap(taskObj.startTime, taskObj.endTime, viewStartTime, viewEndTime)
+        ) {
+          relevantTaskObjs.push(taskObjs[j]);
+        }
+      }
+    }
+    return { rowObjs: relevantRowObjs, taskObjs: relevantTaskObjs };
+  }
+
+  /**
+   * Returns the task layout objects that overlaps a given range.
+   * @param {Object[]} taskObjs Task layout objects to consider.
+   * @param {number} rangeStartTime The range start time.
+   * @param {number} rangeEndTime The range end time.
+   * @param {boolean=} isClosedComparison True if closed interval comparison, else open. Default True (closed comparison).
+   * @return {Object[]} Array of task layout objects.
+   */
+  getTaskLayoutObjectsOverlappingRange(taskObjs, rangeStartTime, rangeEndTime, isClosedComparison) {
+    return taskObjs.filter(({ startTime, endTime }) =>
+      this._isIntervalOverlap(startTime, endTime, rangeStartTime, rangeEndTime, isClosedComparison)
+    );
+  }
+
+  /**
+   * Returns the closest task layout object to a given time.
+   * Distance is the absolute difference between the task start time and the given time.
+   * @return {Object|undefined}
+   */
+  getClosestTaskLayoutObjToTime(taskObjs, referenceTime) {
+    if (taskObjs.length === 0) return;
+    return taskObjs.reduce((closest, current) => {
+      const closestDiff = Math.abs(closest.startTime - referenceTime);
+      const currentDiff = Math.abs(current.startTime - referenceTime);
+      return currentDiff < closestDiff ? current : closest;
+    });
   }
 
   /**
@@ -14251,7 +14977,7 @@ class DvtGanttDataLayoutManager {
       // and as in the typical usecase when the drop triggers a data change rerender.
       var eventManager = this._gantt.getEventManager();
       var bMobileDnDDragging =
-        TimeAxisUtils.supportsTouch() && eventManager && eventManager.isDnDDragging();
+        TimeAxisUtils$1.supportsTouch() && eventManager && eventManager.isDnDDragging();
 
       // Any previous rows above the current viewport should be removed
       for (
@@ -16683,7 +17409,7 @@ class DvtGanttReferenceObjects extends Container {
     if (this._type === 'line' || this._type === 'timeCursor') {
       this._refObjs.forEach((refObj) => {
         var valueTime = new Date(refObj.value).getTime();
-        var pos = TimeAxisUtils.getDatePosition(minTime, maxTime, valueTime, width) + (offset || 0);
+        var pos = TimeAxisUtils$1.getDatePosition(minTime, maxTime, valueTime, width) + (offset || 0);
         if (isRTL) {
           pos = width - pos;
         }
@@ -16694,8 +17420,8 @@ class DvtGanttReferenceObjects extends Container {
       this._refObjs.forEach((refObj) => {
         var startTime = new Date(refObj.start).getTime();
         var endTime = new Date(refObj.end).getTime();
-        var startPos = TimeAxisUtils.getDatePosition(minTime, maxTime, startTime, width);
-        var endPos = TimeAxisUtils.getDatePosition(minTime, maxTime, endTime, width);
+        var startPos = TimeAxisUtils$1.getDatePosition(minTime, maxTime, startTime, width);
+        var endPos = TimeAxisUtils$1.getDatePosition(minTime, maxTime, endTime, width);
         var leftPos = isRTL ? width - endPos : startPos;
         var rightPos = isRTL ? width - startPos : endPos;
 
@@ -17367,6 +18093,9 @@ const DvtGanttRenderer = {
     var options = gantt.getOptions();
     var referenceObjects = gantt.getReferenceObjects();
 
+    var isMinorAxisDrillable = gantt.isMinorAxisDrillable();
+    var isMajorAxisDrillable = gantt.isMajorAxisDrillable();
+
     if (axisPosition === 'top') {
       var axisStart = 0;
       if (majorAxis) {
@@ -17377,6 +18106,8 @@ const DvtGanttRenderer = {
           axisStart,
           gantt.getAxisHeight(options, 'majorAxis'),
           [],
+          'major',
+          isMajorAxisDrillable,
           throttle
         );
         axisStart += majorAxis.getSize();
@@ -17390,6 +18121,8 @@ const DvtGanttRenderer = {
           axisStart,
           gantt.getAxisHeight(options, 'minorAxis'),
           referenceObjects,
+          'minor',
+          isMinorAxisDrillable,
           throttle
         );
         axisStart += minorAxis.getSize();
@@ -17408,6 +18141,8 @@ const DvtGanttRenderer = {
           null,
           gantt.getAxisHeight(options, 'majorAxis'),
           [],
+          'major',
+          isMajorAxisDrillable,
           throttle
         );
         axisStart -= majorAxis.getSize();
@@ -17423,6 +18158,8 @@ const DvtGanttRenderer = {
           axisStart,
           gantt.getAxisHeight(options, 'minorAxis'),
           referenceObjects,
+          'minor',
+          isMinorAxisDrillable,
           throttle
         );
         axisStart -= minorAxis.getSize();
@@ -17441,15 +18178,28 @@ const DvtGanttRenderer = {
    * @param {number} axisStart The start y position to render.
    * @param {number} axisSize The size of the axis.
    * @param {Array} referenceObjects Array of referenceObjects to render in the axis. Only lines with labels are rendered.
+   * @param {string} type 'major' or 'minor'
+   * @param {boolean=} isDrillable Whether the time axis is drillable.
    * @param {boolean=} throttle Whether to throttle the rendering with requestAnimationFrame.
    *  Improves performance especially during high fire rate events such as scroll. Default false.
    * @private
    */
-  _renderAxis: (gantt, container, timeAxis, axisStart, axisSize, referenceObjects, throttle) => {
+  _renderAxis: (
+    gantt,
+    container,
+    timeAxis,
+    axisStart,
+    axisSize,
+    referenceObjects,
+    type,
+    isDrillable,
+    throttle
+  ) => {
     if (timeAxis.getParent() !== container) container.addChild(timeAxis);
 
     timeAxis.render(
       {
+        _type: type,
         _viewStartTime: gantt._viewStartTime,
         _viewEndTime: gantt._viewEndTime,
         _referenceObjects: {
@@ -17458,7 +18208,8 @@ const DvtGanttRenderer = {
           defaultStroke: null
         },
         _throttle: throttle,
-        _eventManager: gantt.getEventManager()
+        _isDrillable: isDrillable,
+        _parentComp: gantt
       },
       gantt.getContentLength(),
       axisSize
@@ -17678,7 +18429,7 @@ const DvtGanttRenderer = {
         var isRTL = Agent.isRightToLeft(context);
 
         dates.forEach((d, i) => {
-          let pos = TimeAxisUtils.getDatePosition(
+          let pos = TimeAxisUtils$1.getDatePosition(
             ganttMinTime,
             ganttMaxTime,
             d.getTime(),
@@ -18338,6 +19089,8 @@ class Gantt extends TimeComponent {
 
     this._animationManager.triggerAnimations();
 
+    this._updateTimeAxisLabelFocus();
+
     this.UpdateAriaAttributes();
 
     if (!this.Animation)
@@ -18346,6 +19099,74 @@ class Gantt extends TimeComponent {
 
     this._renderState = null;
     this._isInitialRender = false;
+  }
+
+  /**
+   * Updates focus when focus from the previous render is on a time axis label.
+   * For example, the gantt refreshes after a drill via keyboard on a time axis label.
+   * @private
+   */
+  _updateTimeAxisLabelFocus() {
+    var eventManager = this.getEventManager();
+    if (!eventManager) return;
+
+    const lastFocused = eventManager.getFocus();
+    if (!lastFocused || lastFocused.nodeType !== 'timeAxisLabel') return;
+
+    const isMajorAxisDrillable = this.isMajorAxisDrillable() && this._majorAxis;
+    const isMinorAxisDrillable = this.isMinorAxisDrillable() && this._minorAxis;
+    const focusTask = () => {
+      const lastFocusedItem = eventManager.getLastFocusedItem();
+      if (lastFocusedItem) {
+        eventManager.setFocus(lastFocusedItem);
+        return;
+      }
+      const defaultNavigable = eventManager.getDefaultNavigable();
+      if (defaultNavigable) {
+        eventManager.setFocus(defaultNavigable);
+      }
+    };
+
+    // No drillable time axes
+    if (!isMajorAxisDrillable && !isMinorAxisDrillable) {
+      // Focus on a task
+      focusTask();
+      return;
+    }
+
+    const focusLabel = (label, showKeyboardFocusEffect) => {
+      eventManager.setFocus(label);
+      if (showKeyboardFocusEffect) {
+        label.showKeyboardFocusEffect();
+      }
+    };
+    const focusFirstLabelOrTask = (axis, showKeyboardFocusEffect) => {
+      if (axis._labels.length > 0) {
+        focusLabel(axis._labels[0], showKeyboardFocusEffect);
+      } else {
+        focusTask();
+      }
+    };
+
+    const axisType = lastFocused.getAxisType();
+    const showKeyboardFocusEffect = lastFocused.isShowingKeyboardFocusEffect();
+    const isMajor = axisType === 'major';
+    const axis = isMajor ? this._majorAxis : this._minorAxis;
+    const isDrillable = isMajor ? isMajorAxisDrillable : isMinorAxisDrillable;
+    if (isDrillable) {
+      // Axis is still drillable in current render
+      const renderedLabel = lastFocused.identity(axis);
+      if (renderedLabel) {
+        // Focus on the same label that previously had focus.
+        focusLabel(renderedLabel, showKeyboardFocusEffect);
+      } else {
+        // Focus on the first label, or if not possible, try to focus on a task.
+        focusFirstLabelOrTask(axis, showKeyboardFocusEffect);
+      }
+    } else {
+      // Focus on the first label of the other axis, or if not possible, try to focus on a task.
+      focusFirstLabelOrTask(isMajor ? this._minorAxis : this._majorAxis, showKeyboardFocusEffect);
+    }
   }
 
   /**
@@ -19265,22 +20086,6 @@ class Gantt extends TimeComponent {
   }
 
   /**
-   * Gets the current row id
-   * @return {*} the id of the current row
-   */
-  getCurrentRow() {
-    return this._currentRow;
-  }
-
-  /**
-   * Sets the current row id
-   * @param {*} currentRow the id of the current row
-   */
-  setCurrentRow(currentRow) {
-    this._currentRow = currentRow;
-  }
-
-  /**
    * Gets the axis position
    * @return {string} the axis position
    */
@@ -19360,6 +20165,54 @@ class Gantt extends TimeComponent {
       axesHeight += this._minorAxis.getSize();
     }
     return axesHeight;
+  }
+
+  /**
+   * Gets the next drillable time axis above the current one, if any.
+   * @return {(DvtTimeAxis)=}
+   */
+  getDrillableAxisAbove(currTimeAxis) {
+    if (!currTimeAxis) return;
+    if (this._axisPosition === 'top') {
+      if (currTimeAxis === this._majorAxis) return;
+      if (this.isMajorAxisDrillable()) return this._majorAxis;
+    } else {
+      if (currTimeAxis === this._minorAxis) return;
+      if (this.isMinorAxisDrillable()) return this._minorAxis;
+    }
+  }
+
+  /**
+   * Gets the next drillable time axis below the current one, if any.
+   * @return {(DvtTimeAxis)=}
+   */
+  getDrillableAxisBelow(currTimeAxis) {
+    if (!currTimeAxis) return;
+    if (this._axisPosition === 'top') {
+      if (currTimeAxis === this._minorAxis) return;
+      if (this.isMinorAxisDrillable()) return this._minorAxis;
+    } else {
+      if (currTimeAxis === this._majorAxis) return;
+      if (this.isMajorAxisDrillable()) return this._majorAxis;
+    }
+  }
+
+  /**
+   * Gets whether the minor axis is drillable.
+   * @return {boolean}
+   */
+  isMinorAxisDrillable() {
+    const options = this.getOptions();
+    return options.minorAxis.drillable === 'on';
+  }
+
+  /**
+   * Gets whether the major axis is drillable.
+   * @return {boolean}
+   */
+  isMajorAxisDrillable() {
+    const options = this.getOptions();
+    return options.majorAxis.drillable === 'on';
   }
 
   /**
@@ -19472,7 +20325,63 @@ class Gantt extends TimeComponent {
         deltaY = deltaYTopVisible < 0 ? deltaYTopVisible : deltaYBottomVisible; // 'top' wins if just 'top', or both sides, require panning. 'bottom' otherwise.
     }
 
-    this.panBy(deltaX, deltaY, true);
+    this.panBy(deltaX, deltaY, true, true);
+  }
+
+  /**
+   * Scroll a time interval into view
+   * @param {number} intervalStartTime The interval start time.
+   * @param {number} intervalEndTime The interval end time.
+   * @param {string=} xPriority The side in the x direction to prioritize scroll into view, one of 'start', 'end', or 'auto'. Default 'auto'.
+   * @param {string=} yPriority The side in the y direction to prioritize scroll into view, one of 'top', 'bottom', or 'auto'. Default 'auto'.
+   * @param {number=} overShoot The extra amount of space to pan by. Default 0.
+   */
+  scrollTimeIntervalIntoView(intervalStartTime, intervalEndTime, xPriority, yPriority, overShoot) {
+    const isRTL = Agent.isRightToLeft(this.getCtx());
+    const ganttStartTime = this.getStartTime();
+    const ganttEndTime = this.getEndTime();
+    const ganttContentLength = this.getContentLength();
+    const intervalStartPos = TimeAxisUtils$1.getDatePosition(
+      ganttStartTime,
+      ganttEndTime,
+      intervalStartTime,
+      ganttContentLength
+    );
+    const intervalEndPos = TimeAxisUtils$1.getDatePosition(
+      ganttStartTime,
+      ganttEndTime,
+      intervalEndTime,
+      ganttContentLength
+    );
+    const intervalWidth = intervalEndPos - intervalStartPos;
+    this.scrollPosIntervalIntoView(
+      intervalStartPos,
+      intervalWidth,
+      xPriority,
+      yPriority,
+      overShoot
+    );
+  }
+
+  /**
+   * Scroll a position based interval into view
+   * @param {number} intervalX The interval x.
+   * @param {number} intervalWidth The interval width.
+   * @param {string=} xPriority The side in the x direction to prioritize scroll into view, one of 'start', 'end', or 'auto'. Default 'auto'.
+   * @param {string=} yPriority The side in the y direction to prioritize scroll into view, one of 'top', 'bottom', or 'auto'. Default 'auto'.
+   * @param {number=} overShoot The extra amount of space to pan by. Default 0.
+   */
+  scrollPosIntervalIntoView(intervalX, intervalWidth, xPriority, yPriority, overShoot) {
+    const isRTL = Agent.isRightToLeft(this.getCtx());
+    const ganttContentLength = this.getContentLength();
+    const viewportDimensions = this.getViewportDimensions();
+    const region = new Rectangle(
+      isRTL ? ganttContentLength - (intervalX + intervalWidth) : intervalX,
+      viewportDimensions.y,
+      intervalWidth,
+      viewportDimensions.h
+    );
+    this.scrollIntoView(region, xPriority, yPriority, overShoot);
   }
 
   /**
@@ -19534,9 +20443,10 @@ class Gantt extends TimeComponent {
    * @param {number} deltaX The number of pixels to pan in the x direction.
    * @param {number} deltaY The number of pixels to pan in the y direction.
    * @param {boolean=} diagonal true if support diagonal pan, false or undefined otherwise. Default varies by theme.
+   * @param {boolean=} disableTimeAxisThrottleRendering Whether synchronously render the time axis. Default false for performance.
    * @protected
    */
-  panBy(deltaX, deltaY, diagonal) {
+  panBy(deltaX, deltaY, diagonal, disableTimeAxisThrottleRendering) {
     if (deltaX === 0 && deltaY === 0) {
       return;
     }
@@ -19573,7 +20483,11 @@ class Gantt extends TimeComponent {
 
     if (bHorizontal) {
       // Update time axis due to horizontal viewport change
-      DvtGanttRenderer._renderAxes(this, this.getTimeZoomCanvas(), true);
+      DvtGanttRenderer._renderAxes(
+        this,
+        this.getTimeZoomCanvas(),
+        !disableTimeAxisThrottleRendering
+      );
     }
   }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2291,6 +2291,43 @@ const DvtChartDataUtils = {
    */
   isMultiSeriesDrillEnabled: (chart) => {
     return chart.getOptions().multiSeriesDrilling === 'on';
+  },
+
+  /**
+   * Returns the value used to calculate next navigable item.
+   * @param {DvtChart} chart
+   * @param {number} seriesIndex
+   * @param {number} groupIndex
+   * @returns
+   */
+  getValueForNavigation: (chart, seriesIndex, groupIndex) => {
+    if (
+      DvtChartDataUtils.getLowVal(chart, seriesIndex, groupIndex) != null &&
+      DvtChartDataUtils.getHighVal(chart, seriesIndex, groupIndex) != null
+    ) {
+      // if item.low and item.high is defined, it's a range chart.
+      // Use low value as primary value for navigation.
+      return DvtChartDataUtils.getLowVal(chart, seriesIndex, groupIndex);
+    }
+    return DvtChartDataUtils.getVal(chart, seriesIndex, groupIndex);
+  },
+
+  /**
+   * Returns the cumulative value used to calculate next navigable item.
+   * @param {DvtChart} chart
+   * @param {number} seriesIndex
+   * @param {number} groupIndex
+   * @returns
+   */
+  getCumulativeValueForNavigation: (chart, seriesIndex, groupIndex) => {
+    if (
+      DvtChartDataUtils.getLowVal(chart, seriesIndex, groupIndex) != null &&
+      DvtChartDataUtils.getHighVal(chart, seriesIndex, groupIndex) != null
+    ) {
+      // range chart isn't stacked. So this is safe.
+      return DvtChartDataUtils.getLowVal(chart, seriesIndex, groupIndex);
+    }
+    return DvtChartDataUtils.getCumulativeVal(chart, seriesIndex, groupIndex);
   }
 };
 
@@ -5970,17 +6007,21 @@ class DvtChartObjPeer {
   _findNextUpSeries(chart, seriesIndex, groupIndex) {
     var isStacked = DvtChartDataUtils.isStacked(chart);
     var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
-    var currentValue = DvtChartDataUtils.getCumulativeVal(chart, seriesIndex, groupIndex);
+    var currentValue = DvtChartDataUtils.getCumulativeValueForNavigation(
+      chart,
+      seriesIndex,
+      groupIndex
+    );
     var nextValue = null;
     var nextSeriesIndex = null;
     for (var i = 0; i < seriesCount; i++) {
       if (
         !DvtChartDataUtils.isSeriesRendered(chart, i) ||
-        DvtChartDataUtils.getVal(chart, i, groupIndex) == null ||
+        DvtChartDataUtils.getValueForNavigation(chart, i, groupIndex) == null ||
         (isStacked && chart.getObject(i, groupIndex) == null)
       )
         continue;
-      var itemValue = DvtChartDataUtils.getCumulativeVal(chart, i, groupIndex);
+      var itemValue = DvtChartDataUtils.getCumulativeValueForNavigation(chart, i, groupIndex);
       if (itemValue > currentValue || (itemValue == currentValue && i > seriesIndex)) {
         if ((nextValue !== null && itemValue < nextValue) || nextValue == null) {
           nextValue = itemValue;
@@ -6002,17 +6043,22 @@ class DvtChartObjPeer {
   _findNextDownSeries(chart, seriesIndex, groupIndex) {
     var isStacked = DvtChartDataUtils.isStacked(chart);
     var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
-    var currentValue = DvtChartDataUtils.getCumulativeVal(chart, seriesIndex, groupIndex);
+    var currentValue = DvtChartDataUtils.getCumulativeValueForNavigation(
+      chart,
+      seriesIndex,
+      groupIndex
+    );
     var nextValue = null;
     var nextSeriesIndex = null;
+
     for (var i = seriesCount - 1; i >= 0; i--) {
       if (
         !DvtChartDataUtils.isSeriesRendered(chart, i) ||
-        DvtChartDataUtils.getVal(chart, i, groupIndex) == null ||
+        DvtChartDataUtils.getValueForNavigation(chart, i, groupIndex) == null ||
         (isStacked && chart.getObject(i, groupIndex) == null)
       )
         continue;
-      var itemValue = DvtChartDataUtils.getCumulativeVal(chart, i, groupIndex);
+      var itemValue = DvtChartDataUtils.getCumulativeValueForNavigation(chart, i, groupIndex);
       if (itemValue < currentValue || (itemValue == currentValue && i < seriesIndex)) {
         if ((nextValue !== null && itemValue > nextValue) || nextValue == null) {
           nextValue = itemValue;
@@ -30165,6 +30211,8 @@ class DvtChartOverview extends Overview {
    * @override
    */
   render(options, width, height) {
+    const filterPanelColor =
+      options['chart']['_overviewFilterPanelBackgroundColor'] || 'rgba(5,65,135,0.1)';
     // override styles
     options.overview.style = {
       overviewBackgroundColor: 'rgba(0,0,0,0)',
@@ -30173,8 +30221,10 @@ class DvtChartOverview extends Overview {
       windowBorderRightColor: '#333333',
       windowBorderBottomColor: '#333333',
       windowBorderLeftColor: '#333333',
-      leftFilterPanelColor: 'rgba(5,65,135,0.1)',
-      rightFilterPanelColor: 'rgba(5,65,135,0.1)',
+      leftFilterPanelColor: filterPanelColor,
+      leftFilterPanelAlpha: 1,
+      rightFilterPanelColor: filterPanelColor,
+      rightFilterPanelAlpha: 1,
       handleBackgroundClass: options['chart']['_resources']['overviewGrippy'],
       handleSize: 16,
       handleFillColor: 'rgba(0,0,0,0)'
@@ -30209,7 +30259,7 @@ class DvtChartOverview extends Overview {
    * @override
    */
   isBackgroundRendered() {
-    return false;
+    return true;
   }
 
   /**
@@ -33804,14 +33854,22 @@ class Chart extends BaseComponent {
     if (this.xAxis && bounds.xMin != null && bounds.xMax != null) {
       var xMin = this.xAxis.actualToLinear(bounds.xMin);
       var xMax = this.xAxis.actualToLinear(bounds.xMax);
+      var xGlobalMin = this.xAxis.getLinearGlobalMin();
+      var xGlobalMax = this.xAxis.getLinearGlobalMax();
       if (this.overview) this.overview.setViewportRange(xMin, xMax);
-      if (this.xScrollbar) this.xScrollbar.setViewportRange(xMin, xMax);
+      if (this.xScrollbar) {
+        this.xScrollbar.setViewportRange(xMin, xMax, xGlobalMin, xGlobalMax);
+      }
     }
 
     if (this.yAxis && bounds.yMin != null && bounds.yMax != null) {
       var yMin = this.yAxis.actualToLinear(bounds.yMin);
       var yMax = this.yAxis.actualToLinear(bounds.yMax);
-      if (this.yScrollbar) this.yScrollbar.setViewportRange(yMin, yMax);
+      var yGlobalMin = this.yAxis.getLinearGlobalMin();
+      var yGlobalMax = this.yAxis.getLinearGlobalMax();
+      if (this.yScrollbar) {
+        this.yScrollbar.setViewportRange(yMin, yMax, yGlobalMin, yGlobalMax);
+      }
     }
   }
 

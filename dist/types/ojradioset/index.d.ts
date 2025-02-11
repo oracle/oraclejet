@@ -7,6 +7,7 @@ export interface ojRadioset<K, D, V = any> extends editableValue<V, ojRadiosetSe
     disabled: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -22,8 +23,10 @@ export interface ojRadioset<K, D, V = any> extends editableValue<V, ojRadiosetSe
     translations: {
         readonlyNoValue?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -135,6 +138,7 @@ export interface ojRadiosetSettableProperties<K, D, V> extends editableValueSett
     disabled: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -150,8 +154,10 @@ export interface ojRadiosetSettableProperties<K, D, V> extends editableValueSett
     translations: {
         readonlyNoValue?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -232,7 +238,9 @@ export namespace RadiosetElement {
     };
 }
 export interface RadiosetIntrinsicProps extends Partial<Readonly<ojRadiosetSettableProperties<any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojRadiosetEventMap<any, any, any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojRadiosetEventMap<any, any, any>['ojAnimateStart']) => void;
     ondisabledChanged?: (value: ojRadiosetEventMap<any, any, any>['disabledChanged']) => void;
     ondisplayOptionsChanged?: (value: ojRadiosetEventMap<any, any, any>['displayOptionsChanged']) => void;

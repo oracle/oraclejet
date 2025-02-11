@@ -1,8 +1,0 @@
-@import "../../../utilities/_oj.utilities.modules.scss";
-
-@include module-include-once("redwood.variables.formcontrol") {
-
-  :root {
-    --oj-form-control-font-weight-read-only:  normal;
-  }
-}

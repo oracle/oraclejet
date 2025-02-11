@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -171,6 +171,9 @@ define(['knockout', 'ojs/ojkoshared', 'ojs/ojtemplateengine-utils', 'ojs/ojcore'
                 });
             });
             const parentStub = document.createElement('div');
+            if (reportBusy) {
+                parentStub._ojReportBusy = reportBusy;
+            }
             const cachedRow = {
                 currentContext: context.$current,
                 template: templateElement,

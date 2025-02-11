@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1145,6 +1145,7 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
   var /** @const */ OJD_CONTENT = 'oj-dialog-content';
   var /** @const */ OJD_FOOTER = 'oj-dialog-footer';
   var /** @const */ OJD_HEADER = 'oj-dialog-header';
+  var /** @const */ OJD_HEADER_DECORATION = 'oj-dialog-header-decoration';
   var /** @const */ OJD_HEADER_CLOSE = 'oj-dialog-header-close';
   var /** @const */ OJD_HEADER_CLOSE_WRAPPER = 'oj-dialog-header-close-wrapper';
   var /** @const */ OJD_OPTION_DEFAULTS = 'oj-dialog-option-defaults';
@@ -1253,6 +1254,52 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
    *
    *<p>A bottom button bar and semi-transparent modal overlay layer are common options that can be added.</p>
    *
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   *  <p>To migrate from oj-dialog to oj-c-dialog, you need to revise the import statement and references to oj-c-dialog in your app.</p>
+   *  <p>In addition, please note the changes between the two components below.</p>
+   *   <h5>initial-visibility</h5>
+   *  <p>This attribute is replaced with the <code class="prettyprint">opened</code> attribute in oj-c-dialog.</p>
+   *  <h5>position</h5>
+   *  <p>The <code class="prettyprint">position</code> attribute and its subattributes are replaced with a collection of new top-level attributes.
+   *  </p>
+   *  <h5>position.at, position.my</h5>
+   *  <p>These attributes are replaced with the <code class="prettyprint">placement</code> attribute. The placement value defines the relative position of the dialog to its anchor. For example, the following position specification</p>
+   *  <pre class="prettyprint"><code>
+   *     position.at.horizontal="end"
+   *     position.at.vertical="top"
+   *     position.my.horizontal="start"
+   *     position.my.vertical="bottom"
+   *  </code></pre>
+   *  <p>can be specified as</p>
+   *  <pre class="prettyprint"><code>
+   *     placement="end-top-corner"
+   *  </code></pre>
+   *  <h5>position.of</h5>
+   *  <p>This attribute is replaced with the <code class="prettyprint">anchor</code> attribute in oj-c-dialog.</p>
+   *  <h5>position.offset, position.collision</h5>
+   *  <p>These attributes are moved to the top-level as the <code class="prettyprint">offset</code> and <code class="prettyprint">collision</code> attributes.</p>
+   *  <h5>open method</h5>
+   *  <p>The <code class="prettyprint">open</code> method is no longer supported. Visibility of the dialog is controlled using the <code class="prettyprint">opened</code> attribute in oj-c-dialog.</p>
+   *  <h5>close method</h5>
+   *  <p>The <code class="prettyprint">close</code> method is no longer supported. Use <code class="prettyprint">opened="false"</code> to close the popup.</p>
+   *  <h5>isOpen method</h5>
+   *  <p>The <code class="prettyprint">isOpen</code> method is no longer supported. Use the <code class="prettyprint">opened</code> attribute to determine the state of the dialog.</p>
+   *  <h5>oj-dialog-title css class</h5>
+   *  <p>The <code class="prettyprint">oj-dialog-title</code> style class is no longer supported. The user must set the <code class="prettyprint">aria-labelledby</code> attribute explicitly when providing a custom header content in the header slot.</p>
+   *  <h5>oj-dialog-footer-separator css class</h5>
+   *  <p>The <code class="prettyprint">oj-dialog-footer-separator</code> style class is no longer supported.</p>
+   *   <h5>oj-focus-highlight css class</h5>
+   *  <p>The <code class="prettyprint">oj-focus-highlight</code> style class is no longer supported.</p>
+   *  <h5>oj-progress-bar-embedded css class</h5>
+   *  <p>The <code class="prettyprint">oj-progress-bar-embedded</code> css style class is no longer supported.</p>
+   *  <h5>Styling</h5>
+   *  <p>Using CSS style classes on the oj-c-popup element is not supported.
+   *  Apply styles on the content instead. For sizing, use component's sizing attributes.
+   *  See <code class="prettyprint">Dimensions</code> demo for example.
+   *  </p>
    *
    * <h3 id="focus-section">
    *   Focus
@@ -1290,7 +1337,10 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
    * {@ojinclude "name":"keyboardDoc"}
    *
    *<p>
-   *<h3>Sizing</h3>
+   *<h3>
+   *   Sizing
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#sizing"></a>
+   *</h3>
    *
    * <p> Dialog dimensions, including <code class="prettyprint"> height, width, min-width, max-width, min-height</code> and <code class="prettyprint">max-height</code> are defined with css variables. The default dialog dimensions are the following:
    *
@@ -1863,6 +1913,30 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
        * myDialog.dragAffordance = "title-bar";
        */
       dragAffordance: 'title-bar',
+      /**
+       * Determines if the header decoration (a texture strip at the top of the dialog) is displayed.
+       * The default value is <code class="prettyprint">'on'</code>, but the decoration is only seen in the Redwood theme,
+       * <code class="prettyprint">'on'</code> shows no decoration in other themes.
+       *
+       * @expose
+       * @memberof oj.ojDialog
+       * @instance
+       * @type {string}
+       * @default "on"
+       * @ojvalue {string} "off" The header decoration is not displayed.
+       * @ojvalue {string} "on"  The header decoration is visible.
+       *
+       * @example <caption>Turn off the default <code class="prettyprint">headerDecoration</code> property:</caption>
+       * &lt;oj-dialog header-decoration="off" &gt;&lt;/oj-dialog&gt;
+       *
+       * @example <caption>Get or set the <code class="prettyprint">headerDecoration</code> property, after initialization:</caption>
+       * // getter
+       * var headerDecoration = myDialog.headerDecoration;
+       *
+       * // setter
+       * myDialog.headerDecoration = "off";
+       */
+      headerDecoration: 'on',
       /**
        * Set the initial visibility of the dialog.
        *
@@ -2578,6 +2652,8 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
     _createHeaderSlot: function () {
       this._headerSlot = document.createElement('div');
       this._headerSlot.classList.add(OJD_HEADER);
+
+      this._addHeaderDecoration(this._headerSlot);
 
       this._dialogContainer.appendChild(this._headerSlot); // @HTMLUpdateOK
       subtreeAttached(this._headerSlot);
@@ -3508,9 +3584,22 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       });
     },
 
+    // optionally adds header decoration style class (the texture strip) to the element
+    _addHeaderDecoration: function (elem) {
+      if (this.options.headerDecoration === 'off') {
+        return;
+      }
+      var behavior = parseJSONFromFontFamily('oj-theme-json').behavior;
+      if (behavior.includes('redwood')) {
+        elem.classList.add(OJD_HEADER_DECORATION);
+      }
+    },
+
     _createTitlebar: function () {
       this._uiDialogTitlebarDiv = document.createElement('div');
       this._uiDialogTitlebarDiv.classList.add(OJD_HEADER);
+
+      this._addHeaderDecoration(this._uiDialogTitlebarDiv);
 
       // prettier-ignore
       this._dialogContainer.insertBefore( // @HTMLUpdateOK
@@ -3783,6 +3872,20 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
         case 'resizeBehavior':
           if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
             this._makeResizable();
+          }
+          break;
+
+        case 'headerDecoration':
+          var titleDiv;
+          if (this.userDefinedDialogHeader) {
+            titleDiv = this._userDefinedHeaderDiv;
+          } else {
+            titleDiv = this._uiDialogTitlebarDiv;
+          }
+          if (value === 'off') {
+            titleDiv.classList.remove(OJD_HEADER_DECORATION);
+          } else if (value === 'on') {
+            titleDiv.classList.add(OJD_HEADER_DECORATION);
           }
           break;
 
@@ -4156,6 +4259,14 @@ var __oj_dialog_metadata =
         "none",
         "title-bar"
       ]
+    },
+    "headerDecoration": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
     },
     "initialVisibility": {
       "type": "string",

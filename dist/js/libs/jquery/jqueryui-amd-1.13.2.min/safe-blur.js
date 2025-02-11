@@ -1,1 +1,0 @@
-!function(e){"use strict";"function"==typeof define&&define.amd?define(["jquery","./version"],e):"object"==typeof module&&module.exports?(require("./version"),module.exports=e(require("jquery"))):e(jQuery)}((function(e){"use strict";return e.ui.safeBlur=function(r){r&&"body"!==r.nodeName.toLowerCase()&&e(r).trigger("blur")}}));

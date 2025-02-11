@@ -6,6 +6,7 @@ import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropert
 export interface ojTagCloud<K, D extends ojTagCloud.Item<K> | any> extends dvtBaseComponent<ojTagCloudSettableProperties<K, D>> {
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     data: DataProvider<K, D> | null;
     hiddenCategories?: string[];
@@ -17,7 +18,9 @@ export interface ojTagCloud<K, D extends ojTagCloud.Item<K> | any> extends dvtBa
     selectionMode?: 'none' | 'single' | 'multiple';
     styleDefaults?: {
         animationDuration?: number;
+        /** @deprecated since 15.0.0 - This is not recommended in the Redwood design system. The default theme value will be used. */
         hoverBehaviorDelay?: number;
+        /** @deprecated since 15.0.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     tooltip?: {
@@ -27,26 +30,39 @@ export interface ojTagCloud<K, D extends ojTagCloud.Item<K> | any> extends dvtBa
             preventDefault: boolean;
         }));
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
+    /** @deprecated since 15.0.0 - This is no longer needed due to performance enhancements. The default behavior will be used. */
     trackResize: 'on' | 'off';
     translations: {
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         labelCountWithTotal?: string;
         labelDataVisualization?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         labelInvalidData?: string;
         labelNoData?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateCollapsed?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateDrillable?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateExpanded?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateHidden?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateIsolated?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateMaximized?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateMinimized?: string;
         stateSelected?: string;
         stateUnselected?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateVisible?: string;
     };
     addEventListener<T extends keyof ojTagCloudEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTagCloudEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -97,6 +113,7 @@ export namespace ojTagCloud {
         label: string;
         shortDesc?: (string | ((context: ItemShortDescContext<K>) => string));
         svgClassName?: string;
+        /** @deprecated since 15.0.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         url?: string;
         value: number;
@@ -117,6 +134,7 @@ export namespace ojTagCloud {
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<K> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: object;
         index: number;
@@ -130,6 +148,7 @@ export namespace ojTagCloud {
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K> = {
         color: string;
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         id: K;
         label: string;
@@ -170,6 +189,7 @@ export interface ojTagCloudEventMap<K, D extends ojTagCloud.Item<K> | any> exten
 export interface ojTagCloudSettableProperties<K, D extends ojTagCloud.Item<K> | any> extends dvtBaseComponentSettableProperties {
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     data: DataProvider<K, D> | null;
     hiddenCategories?: string[];
@@ -181,7 +201,9 @@ export interface ojTagCloudSettableProperties<K, D extends ojTagCloud.Item<K> | 
     selectionMode?: 'none' | 'single' | 'multiple';
     styleDefaults?: {
         animationDuration?: number;
+        /** @deprecated since 15.0.0 - This is not recommended in the Redwood design system. The default theme value will be used. */
         hoverBehaviorDelay?: number;
+        /** @deprecated since 15.0.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     tooltip?: {
@@ -191,26 +213,39 @@ export interface ojTagCloudSettableProperties<K, D extends ojTagCloud.Item<K> | 
             preventDefault: boolean;
         }));
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
+    /** @deprecated since 15.0.0 - This is no longer needed due to performance enhancements. The default behavior will be used. */
     trackResize: 'on' | 'off';
     translations: {
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         labelCountWithTotal?: string;
         labelDataVisualization?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         labelInvalidData?: string;
         labelNoData?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateCollapsed?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateDrillable?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateExpanded?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateHidden?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateIsolated?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateMaximized?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateMinimized?: string;
         stateSelected?: string;
         stateUnselected?: string;
+        /** @deprecated since 15.0.0 - This resource is not used by oj-tag-cloud. */
         stateVisible?: string;
     };
 }
@@ -223,6 +258,7 @@ export interface ojTagCloudItem<K = any> extends dvtBaseComponent<ojTagCloudItem
     label?: string;
     shortDesc?: (string | ((context: ojTagCloud.ItemShortDescContext<K>) => string));
     svgClassName?: string;
+    /** @deprecated since 15.0.0 - This is not recommended in the Redwood design system. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     url?: string;
     value?: number | null;
@@ -268,6 +304,7 @@ export interface ojTagCloudItemSettableProperties<K = any> extends dvtBaseCompon
     label?: string;
     shortDesc?: (string | ((context: ojTagCloud.ItemShortDescContext<K>) => string));
     svgClassName?: string;
+    /** @deprecated since 15.0.0 - This is not recommended in the Redwood design system. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     url?: string;
     value?: number | null;
@@ -316,6 +353,7 @@ export namespace TagCloudElement {
         label: string;
         shortDesc?: (string | ((context: ojTagCloud.ItemShortDescContext<K>) => string));
         svgClassName?: string;
+        /** @deprecated since 15.0.0 - This is not recommended in the Redwood design system. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         url?: string;
         value: number;
@@ -336,6 +374,7 @@ export namespace TagCloudElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<K> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: object;
         index: number;
@@ -349,6 +388,7 @@ export namespace TagCloudElement {
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K> = {
         color: string;
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         id: K;
         label: string;
@@ -390,7 +430,7 @@ export namespace TagCloudItemElement {
 export interface TagCloudIntrinsicProps extends Partial<Readonly<ojTagCloudSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onanimationOnDataChangeChanged?: (value: ojTagCloudEventMap<any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojTagCloudEventMap<any, any>['animationOnDisplayChanged']) => void;
-    onasChanged?: (value: ojTagCloudEventMap<any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojTagCloudEventMap<any, any>['asChanged']) => void;
     ondataChanged?: (value: ojTagCloudEventMap<any, any>['dataChanged']) => void;
     onhiddenCategoriesChanged?: (value: ojTagCloudEventMap<any, any>['hiddenCategoriesChanged']) => void;
     onhighlightMatchChanged?: (value: ojTagCloudEventMap<any, any>['highlightMatchChanged']) => void;
@@ -401,8 +441,8 @@ export interface TagCloudIntrinsicProps extends Partial<Readonly<ojTagCloudSetta
     onselectionModeChanged?: (value: ojTagCloudEventMap<any, any>['selectionModeChanged']) => void;
     onstyleDefaultsChanged?: (value: ojTagCloudEventMap<any, any>['styleDefaultsChanged']) => void;
     ontooltipChanged?: (value: ojTagCloudEventMap<any, any>['tooltipChanged']) => void;
-    ontouchResponseChanged?: (value: ojTagCloudEventMap<any, any>['touchResponseChanged']) => void;
-    ontrackResizeChanged?: (value: ojTagCloudEventMap<any, any>['trackResizeChanged']) => void;
+    /** @deprecated since 18.0.0 */ ontouchResponseChanged?: (value: ojTagCloudEventMap<any, any>['touchResponseChanged']) => void;
+    /** @deprecated since 15.0.0 */ ontrackResizeChanged?: (value: ojTagCloudEventMap<any, any>['trackResizeChanged']) => void;
     children?: ComponentChildren;
 }
 export interface TagCloudItemIntrinsicProps extends Partial<Readonly<ojTagCloudItemSettableProperties<any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
@@ -411,7 +451,7 @@ export interface TagCloudItemIntrinsicProps extends Partial<Readonly<ojTagCloudI
     onlabelChanged?: (value: ojTagCloudItemEventMap<any>['labelChanged']) => void;
     onshortDescChanged?: (value: ojTagCloudItemEventMap<any>['shortDescChanged']) => void;
     onsvgClassNameChanged?: (value: ojTagCloudItemEventMap<any>['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojTagCloudItemEventMap<any>['svgStyleChanged']) => void;
+    /** @deprecated since 15.0.0 */ onsvgStyleChanged?: (value: ojTagCloudItemEventMap<any>['svgStyleChanged']) => void;
     onurlChanged?: (value: ojTagCloudItemEventMap<any>['urlChanged']) => void;
     onvalueChanged?: (value: ojTagCloudItemEventMap<any>['valueChanged']) => void;
     children?: ComponentChildren;

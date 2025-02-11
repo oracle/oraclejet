@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -77,7 +77,7 @@ import { observable } from 'knockout';
  *                  <a href="ModuleAnimations.html#Animations">an animation type</a> supported by ModuleAnimations
  *                  or an object that implements <a href="oj.ModuleElementAnimation.html">ModuleElementAnimation</a> interface.
  * @ojsignature [
- *    {target: "Type", value: "class ModuleRouterAdapter<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>",
+ *    {target: "Type", value: "class ModuleRouterAdapter<D extends Record<string, any> = Record<string, any>, P = CoreRouter.Parameters>",
  *     genericParameters: [{"name": "D", "description": "Detail object for the router state"},
  *                         {"name": "P", "description": "Parameters object for the router state"}]},
  *    {target:"Type", for: "router", value: "CoreRouter<D,P>"},
@@ -109,7 +109,7 @@ import { observable } from 'knockout';
  *               {target: "Type", value: "P", for: "params"},
  *               {target: "Type", value: "CoreRouter<D, P>", for: "router"},
  *               {target: "Type", value: "CoreRouter.CoreRouterState<D, P>", for: "routerState"},
- *               {target: "Type", value: "<D extends Record<string, any>, P extends Record<string, any>>", for: "genericTypeParameters"}]
+ *               {target: "Type", value: "<D extends Record<string, any>, P = CoreRouter.Parameters>", for: "genericTypeParameters"}]
  * @ojdeprecated [{target: "property", for: "parentRouter", since: "8.1.0", description: "Use router property instead."},
  *                 {target: "property", for: "params", since: "8.1.0", description: "Use CoreRouter.CoreRouterState.params instead."}]
  */

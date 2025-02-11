@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -15221,6 +15221,19 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   };
 
   /**
+   * @param {Date} intervalStartDate The start Date of the axis interval.
+   * @param {Date} intervalEndDate The end Date of the axis interval.
+   * @param {string} axisType 'minor' or 'major'
+   * @return {object}
+   **/
+  EventFactory.newGanttTimeAxisDrillEvent = function (intervalStartDate, intervalEndDate, axisType) {
+    var ret = EventFactory.newEvent(`${axisType}AxisDrill`);
+    ret['intervalStartDate'] = intervalStartDate;
+    ret['intervalEndDate'] = intervalEndDate;
+    return ret;
+  };
+
+  /**
    * @param {string} id The id of the currently isolated node.
    * @return {object}
    */
@@ -20779,6 +20792,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
         this._root.style.left = '0px';
         this._root.style.top = '0px';
         this._root.style.padding = 'inherit';
+        this._root.style.boxSizing = 'border-box';
         this._sizingSvg = document.createElementNS(ToolkitUtils.SVG_NS, 'svg');
         this._sizingSvg.style.width = '100%';
         this._sizingSvg.style.height = '100%';
@@ -20796,6 +20810,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       this._root.style.removeProperty('left');
       this._root.style.removeProperty('top');
       this._root.style.removeProperty('padding');
+      this._root.style.removeProperty('boxSizing');
       this.getContainer().removeChild(this._sizingSvg);
       this._sizingSvg = null;
     }
@@ -23736,7 +23751,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @override
    */
   AnimFadeIn.prototype.InitEndState = function (obj) {
-    this._animator.addProp(Animator.TYPE_NUMBER, obj, obj.getAlpha, obj.setAlpha, 1);
+    var alpha =
+      obj.getFinalAlpha !== undefined && obj.getFinalAlpha() !== undefined ? obj.getFinalAlpha() : 1;
+    this._animator.addProp(Animator.TYPE_NUMBER, obj, obj.getAlpha, obj.setAlpha, alpha);
   };
 
   /**

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -752,7 +752,7 @@ var __oj_thematic_map_marker_metadata =
    * @ojvbmincolumns 6
    *
    * @ojoracleicon 'oj-ux-ico-thematic-map'
-   * @ojuxspecs ['data-visualization-thematic-map']
+   * @ojuxspecs ['thematic-map']
    *
    * @classdesc
    * <h3 id="thematicMapOverview-section">
@@ -2032,6 +2032,8 @@ var __oj_thematic_map_marker_metadata =
        * @ojvalue {string} "touchStart"
        * @ojvalue {string} "auto"
        * @default "auto"
+       * @ojdeprecated {since: '18.0.0', description: 'This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead.'}
+
        *
        * @example <caption>Initialize the thematic map with the
        * <code class="prettyprint">touch-response</code> attribute specified:</caption>

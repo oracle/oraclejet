@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -26,7 +26,7 @@ import { __getTemplateEngine, getDeviceRenderMode } from 'ojs/ojconfig';
 import { applyParameters } from 'ojs/ojtranslation';
 import { _OJ_CONTAINER_ATTR, subtreeDetached, subtreeHidden, subtreeAttached, __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
 import { getCachedCSSVarValues, parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import { getAbortReason, applyRendererContent, disableAllFocusableElements, isMobileTouchDevice, isFetchAborted, WARN_DUPLICATE_KEYS_DETAIL, isRequestIdleCallbackSupported, isBlink, isFirefox, getScrollEventElement, getDefaultScrollBarWidth, isSafari, isIos, getActionableElementsInNode, containsKey, isIterateAfterDoneNotAllowed, getAddEventKeysResult, applyMergedInlineStyles, isEscapeKeyEvent, isEnterKeyEvent, isF2KeyEvent, isTabKeyEvent, isArrowUpKeyEvent, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isHomeKeyEvent, isEndKeyEvent, isSpaceBarKeyEvent, isMac, isMetaKeyEvent, isEventClickthroughDisabled, isFromDefaultSelector, isEdge, getFocusableElementsInNode, enableAllFocusableElements, KEYBOARD_KEYS, areKeySetsEqual, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
+import { getAbortReason, applyRendererContent, disableAllFocusableElements, isMobileTouchDevice, isIos, isFetchAborted, WARN_DUPLICATE_KEYS_DETAIL, isRequestIdleCallbackSupported, isBlink, isFirefox, getScrollEventElement, getDefaultScrollBarWidth, isSafari, getActionableElementsInNode, containsKey, isIterateAfterDoneNotAllowed, getAddEventKeysResult, applyMergedInlineStyles, isEscapeKeyEvent, isEnterKeyEvent, isF2KeyEvent, isTabKeyEvent, isArrowUpKeyEvent, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isHomeKeyEvent, isEndKeyEvent, isSpaceBarKeyEvent, isMac, isMetaKeyEvent, isEventClickthroughDisabled, isFromDefaultSelector, isEdge, getFocusableElementsInNode, enableAllFocusableElements, KEYBOARD_KEYS, areKeySetsEqual, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
 import { startAnimation } from 'ojs/ojanimation';
 import DomScroller from 'ojs/ojdomscroller';
 import { CustomElementUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
@@ -1751,6 +1751,7 @@ Table._OPTION_EDIT_MODE = {
  * @private
  */
 Table._OPTION_FROZEN_EDGE = {
+  _ALL: 'all',
   _END: 'end',
   _START: 'start'
 };
@@ -2259,6 +2260,7 @@ Table.prototype._cleanComponent = function (isDestroy) {
   // cleanup needed for both, 'destroy()' and 'ReleaseResources()' calls
   this._animateOnFetch = null;
   this._isEditPending = null;
+  this._focusoutEditKey = null;
   this._skipScrollOnFocus = null;
   this._active = null;
   this._isTableTab = null;
@@ -2577,7 +2579,6 @@ Table.prototype._refresh = function () {
   this._isAddRowRendered = false;
   this._clearLayoutManager();
   this._clearCachedDom();
-  this._clearCachedStyling();
   this._refreshContextMenu();
   // if status message skeletons are already shown, do not reset them
   if (!this._statusMessageShown || !this._isSkeletonSupport()) {
@@ -2591,16 +2592,12 @@ Table.prototype._refresh = function () {
     this._setTableEditable(false, true);
   }
 
+  // ensure we register 'refresh' update here
+  this._getLayoutManager().notifyTableUpdate(Table._UPDATE._REFRESH);
   if (initFetch) {
     return this._initFetch();
   }
-
-  return this._queueTask(
-    function () {
-      this._getLayoutManager().notifyTableUpdate(Table._UPDATE._REFRESH);
-      return this._invokeDataFetchRows();
-    }.bind(this)
-  );
+  return this._invokeDataFetchRows();
 };
 
 /**
@@ -2630,7 +2627,12 @@ Table.prototype._refreshAll = function (resultObject, startIndex) {
         }
       }
       if (!foundColumn) {
-        this._initFetch(null, true);
+        this._queueTask(
+          function () {
+            this._getLayoutManager().notifyTableUpdate(Table._UPDATE._DATA_SORT);
+            return this._initFetch(null, true);
+          }.bind(this)
+        );
       }
     }
   }
@@ -2970,7 +2972,14 @@ Table.prototype._refreshTableBody = function (resultObject, startIndex, keepVisi
 
   var bodyPromiseArray = [];
   bodyPromiseArray.push(this._refreshAddNewRowPlaceholder(true));
-  bodyPromiseArray.push(this._finalizeTableBody(resultObject, startIndex, tableBody, keepVisible));
+  bodyPromiseArray.push(
+    this._finalizeTableBody(
+      resultObject,
+      startIndex != null ? startIndex : 0,
+      tableBody,
+      keepVisible
+    )
+  );
   return Promise.all(bodyPromiseArray);
 };
 
@@ -3344,7 +3353,7 @@ Table.prototype._finalizeTableBodyCellsRefresh = function (
   isRefresh,
   isSubtreeHidden
 ) {
-  this._handleDefaultSelectorCreation(tableBodyRow, row, rowIdx, selectable);
+  this._applyManagedColumns(tableBodyRow, row, rowIdx, selectable);
 
   // row refresh handling needs to happen as the final task here as it relies on prior reordering
   this._getLayoutManager().handleRowRefresh(rowIdx, tableBodyRow, isRefresh);
@@ -3367,7 +3376,7 @@ Table.prototype._finalizeTableBodyCellsRefresh = function (
 /**
  * @private
  */
-Table.prototype._handleDefaultSelectorCreation = function (tableBodyRow, row, rowIdx, selectable) {
+Table.prototype._applyManagedColumns = function (tableBodyRow, row, rowIdx, selectable) {
   var columns = this._getColumnDefs();
   if (columns.length > 0) {
     if (this._isDefaultSelectorEnabled() && selectable !== Table._CONST_OFF) {
@@ -3438,6 +3447,7 @@ Table.prototype._refreshAddNewRowPlaceholder = function (skipTopUpdate) {
       if (placeHolderRow == null) {
         placeHolderRow = this._createTableBodyRow();
       }
+      placeHolderRow.classList.add(Table.CSS_CLASSES._TABLE_ADD_ROW_PLACEHOLDER_CLASS);
       tableBody.insertBefore(placeHolderRow, tableBody.firstChild);
 
       var addRowCell;
@@ -3455,6 +3465,7 @@ Table.prototype._refreshAddNewRowPlaceholder = function (skipTopUpdate) {
         for (let i = 0; i < nodes.length; i++) {
           var node = nodes[i];
           if (node.tagName === 'TR') {
+            node.classList.add(Table.CSS_CLASSES._TABLE_ADD_ROW_PLACEHOLDER_CLASS);
             placeHolderRow.parentNode.replaceChild(node, placeHolderRow);
             placeHolderRow = node;
             // need to ensure we wait for child busy states of deferred contents to clear properly
@@ -3474,6 +3485,7 @@ Table.prototype._refreshAddNewRowPlaceholder = function (skipTopUpdate) {
               for (let i = 0; i < rowChildren.length; i++) {
                 var child = rowChildren[i];
                 if (child.tagName === 'TR') {
+                  child.classList.add(Table.CSS_CLASSES._TABLE_ADD_ROW_PLACEHOLDER_CLASS);
                   placeHolderRow.parentNode.replaceChild(child, placeHolderRow);
                   // eslint-disable-next-line no-param-reassign
                   placeHolderRow = child;
@@ -3525,8 +3537,6 @@ Table.prototype._refreshAddNewRowPlaceholder = function (skipTopUpdate) {
 };
 
 Table.prototype._finalizePlaceHolderRowSetup = function (placeHolderRow, skipTopUpdate) {
-  placeHolderRow.classList.add(Table.CSS_CLASSES._TABLE_ADD_ROW_PLACEHOLDER_CLASS);
-
   // set the cell attributes and styling.
   let addRowCell;
   let addRowCells = this._getPlaceHolderRowCells(placeHolderRow);
@@ -3541,7 +3551,7 @@ Table.prototype._finalizePlaceHolderRowSetup = function (placeHolderRow, skipTop
     // If multiple selection is enabled add placeholder cell in the selector place
     addRowCell = document.createElement(Table.DOM_ELEMENT._TD); // @HTMLUpdateOK
     placeHolderRow.insertBefore(addRowCell, placeHolderRow.firstChild); // @HTMLUpdateOK
-    addRowCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+    addRowCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_ALL);
     if (this._isVerticalGridEnabled()) {
       addRowCell.classList.add(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
     }
@@ -4392,9 +4402,6 @@ Table.prototype._isTableRefreshNeeded = function (key, value, flags) {
   ) {
     refresh = false;
   } else if (!oj$1.Object.compareValues(value, currentOptions[key])) {
-    if (key === 'verticalGridVisible' || key === 'display') {
-      this._renderedTableHeaderColumns = false;
-    }
     refresh = true;
   } else {
     refresh = false;
@@ -4597,6 +4604,10 @@ Table.prototype._hideTableHeaderColumnSortIcon = function (columnIdx) {
       var sortIcon = this._getSortIcon(tableHeaderColumn);
       if (sortContainer != null && sortIcon != null) {
         sortContainer.setAttribute(Table.DOM_ATTR._TITLE, this.getTranslatedString('labelSortAsc')); // @HTMLUpdateOK
+        if (isIos()) {
+          var sortLabel = this.getTranslatedString('accessibleSortable', { id: '' });
+          sortIcon.setAttribute(Table.DOM_ATTR._ARIA_LABEL, sortLabel); // @HTMLUpdateOK
+        }
         sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS);
         sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
         sortIcon.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_DEFAULT_SORT_ICON_CLASS);
@@ -4649,12 +4660,19 @@ Table.prototype._refreshSortTableHeaderColumn = function (key, ascending) {
     sortIcon.classList.remove(Table.MARKER_STYLE_CLASSES._DISABLED);
   }
 
+  var label;
+  var sortLabel;
   if (ascending && sorted !== Table._COLUMN_SORT_ORDER._ASCENDING) {
     // store sort order on the DOM element
     $(tableHeaderColumn).data('sorted', Table._COLUMN_SORT_ORDER._ASCENDING);
 
     if (sortIcon != null) {
-      sortContainer.setAttribute(Table.DOM_ATTR._TITLE, this.getTranslatedString('labelSortDsc')); // @HTMLUpdateOK
+      label = this.getTranslatedString('labelSortDsc');
+      sortContainer.setAttribute(Table.DOM_ATTR._TITLE, label); // @HTMLUpdateOK
+      if (isIos()) {
+        sortLabel = this.getTranslatedString('accessibleSortAscending', { id: '' });
+        sortIcon.setAttribute(Table.DOM_ATTR._ARIA_LABEL, sortLabel); // @HTMLUpdateOK
+      }
       sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_DEFAULT_SORT_ICON_CLASS);
       sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS);
       sortIcon.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
@@ -4663,7 +4681,12 @@ Table.prototype._refreshSortTableHeaderColumn = function (key, ascending) {
     // store sort order on the DOM element
     $(tableHeaderColumn).data('sorted', Table._COLUMN_SORT_ORDER._DESCENDING);
     if (sortIcon != null) {
-      sortContainer.setAttribute(Table.DOM_ATTR._TITLE, this.getTranslatedString('labelSortAsc')); // @HTMLUpdateOK
+      label = this.getTranslatedString('labelSortAsc');
+      sortContainer.setAttribute(Table.DOM_ATTR._TITLE, label); // @HTMLUpdateOK
+      if (isIos()) {
+        sortLabel = this.getTranslatedString('accessibleSortDescending', { id: '' });
+        sortIcon.setAttribute(Table.DOM_ATTR._ARIA_LABEL, sortLabel); // @HTMLUpdateOK
+      }
       sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_DEFAULT_SORT_ICON_CLASS);
       sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
       sortIcon.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS);
@@ -5718,37 +5741,27 @@ Table.prototype._initFetch = function (options, isSortUpdate) {
     oj$1.DataProviderFeatureChecker.isDataProvider(dataprovider) &&
     (!this._isPagingModelDataProvider() || isSortUpdate)
   ) {
-    return this._queueTask(
-      function () {
-        layoutManager.notifyTableUpdate(
-          isSortUpdate ? Table._UPDATE._DATA_SORT : Table._UPDATE._REFRESH
-        );
-        if (!this._isExternalScrollEnabled()) {
-          // reset the scrollTop when we do an initial fetch
-          this._scrollTop = 0;
-          layoutManager.getScroller().scrollTop = 0;
-        }
-        if (dataprovider instanceof oj$1.TableDataSourceAdapter) {
-          updatedOptions.fetchType = 'init';
-          if (this._isLoadMoreOnScroll()) {
-            updatedOptions[Table._CONST_OFFSET] = 0;
-          }
-        }
-        return this._invokeDataFetchRows(updatedOptions);
-      }.bind(this)
-    );
+    if (!this._isExternalScrollEnabled()) {
+      // reset the scrollTop when we do an initial fetch
+      this._scrollTop = 0;
+      layoutManager.getScroller().scrollTop = 0;
+    }
+    if (dataprovider instanceof oj$1.TableDataSourceAdapter) {
+      updatedOptions.fetchType = 'init';
+      if (this._isLoadMoreOnScroll()) {
+        updatedOptions[Table._CONST_OFFSET] = 0;
+      }
+    }
+    return this._invokeDataFetchRows(updatedOptions);
   } else if (dataprovider == null) {
-    return this._queueTask(function () {
-      layoutManager.notifyTableUpdate(Table._UPDATE._REFRESH);
-      var promiseArray = [];
-      promiseArray.push(this._refreshTableHeader());
-      promiseArray.push(this._refreshTableBody());
-      promiseArray.push(this._refreshTableFooter());
+    var promiseArray = [];
+    promiseArray.push(this._refreshTableHeader());
+    promiseArray.push(this._refreshTableBody());
+    promiseArray.push(this._refreshTableFooter());
 
-      return Promise.all(promiseArray);
-    });
+    return Promise.all(promiseArray);
   }
-  return undefined;
+  return Promise.resolve(undefined);
 };
 
 /**
@@ -6050,7 +6063,12 @@ Table.prototype._invokeDataSort = function (sortField, ascending, event) {
   this._beforeDataRefresh(true);
   // show the Fetching Data... message
   this._showStatusMessage();
-  this._initFetch({ sortCriteria: sortCriteria }, true);
+  this._queueTask(
+    function () {
+      this._getLayoutManager().notifyTableUpdate(Table._UPDATE._DATA_SORT);
+      return this._initFetch({ sortCriteria: sortCriteria }, true);
+    }.bind(this)
+  );
 };
 
 /**
@@ -6127,6 +6145,7 @@ Table.prototype._clearCachedDataMetadata = function () {
   if (this._data != null) {
     this._unregisterDataSourceEventListeners();
   }
+  this._unregisterDomScroller();
   this._data = null;
 };
 
@@ -6216,12 +6235,12 @@ Table.prototype._getRowIdxForRowKey = function (rowKey) {
  * @private
  */
 Table.prototype._getDataSourceRowIndexForRowKey = function (rowKey) {
+  var dataprovider = this._getData();
   var tableBodyRows = this._getTableBodyRows();
-  if (tableBodyRows.length > 0) {
+  if (dataprovider != null && tableBodyRows.length > 0) {
     var tableBodyRowsCount = tableBodyRows.length;
     for (var i = 0; i < tableBodyRowsCount; i++) {
       if (oj$1.KeyUtils.equals(tableBodyRows[i][Table._ROW_ITEM_EXPANDO].key, rowKey)) {
-        var dataprovider = this._getData();
         var offset = 0;
         if (this._isPagingModelDataProvider()) {
           offset = dataprovider.getStartItemIndex();
@@ -6240,9 +6259,9 @@ Table.prototype._getDataSourceRowIndexForRowKey = function (rowKey) {
  * @private
  */
 Table.prototype._getRowKeyForDataSourceRowIndex = function (rowIndex) {
+  var dataprovider = this._getData();
   var tableBodyRows = this._getTableBodyRows();
-  if (tableBodyRows.length > 0) {
-    var dataprovider = this._getData();
+  if (dataprovider != null && tableBodyRows.length > 0) {
     var offset = 0;
     if (this._isPagingModelDataProvider()) {
       offset = dataprovider.getStartItemIndex();
@@ -8222,6 +8241,25 @@ TableLayoutManager.prototype.removeDragOverIndicatorColumn = function () {};
 /**
  * @private
  */
+TableLayoutManager.prototype._getClientX = function (event) {
+  if (event.clientX !== undefined) {
+    // MouseEvent has clientX on event itself
+    return event.clientX;
+  } else if (event.changedTouches !== undefined) {
+    // TouchEvent has clientX on changedTouches, targetTouches, and touches.
+    // For one-finger drag, they contain the same value on all touch events
+    // except for touchend, in which only changedTouches has the point at
+    // which the finger leaves the touch surface.
+    return event.changedTouches[0].clientX;
+  }
+
+  // We shouldn't get here unless event is neither MouseEvent nor TouchEvent
+  return 0;
+};
+
+/**
+ * @private
+ */
 TableLayoutManager.prototype._getPageX = function (event) {
   if (event.pageX !== undefined) {
     // MouseEvent has pageX on event itself
@@ -9311,8 +9349,8 @@ TableLegacyLayoutManager.prototype._setResizeCursor = function (event) {
     if (tableHeaderColumnResizeIndicator != null) {
       var tableScroller = this.getScroller();
       var scrollerRect = tableScroller.getBoundingClientRect();
-      tableHeaderColumnResizeIndicator.style.left =
-        event.originalEvent.clientX - scrollerRect.left + 'px';
+      var clientX = this._getClientX(event);
+      tableHeaderColumnResizeIndicator.style.left = clientX - scrollerRect.left + 'px';
       return true;
     }
   }
@@ -9475,8 +9513,9 @@ TableLegacyLayoutManager.prototype._isHeaderColumnResizeStart = function (event)
   if (headerColumn !== null) {
     var readingDir = this._table._GetReadingDirection();
     var columnRect = headerColumn.getBoundingClientRect();
-    var distFromLeft = Math.abs(event.originalEvent.clientX - columnRect.left);
-    var distFromRight = Math.abs(event.originalEvent.clientX - columnRect.right);
+    var clientX = this._getClientX(event);
+    var distFromLeft = Math.abs(clientX - columnRect.left);
+    var distFromRight = Math.abs(clientX - columnRect.right);
 
     // don't show resize cursor for column dividers at the start and end of the table
     if (distFromLeft <= Table.RESIZE_OFFSET) {
@@ -9737,7 +9776,7 @@ TableStickyLayoutManager.prototype.getColumnScrollLeft = function (columnIndex) 
     let gutterWidth = this._table._getTableGutterWidth('start');
     frozenOffset += gutterWidth;
   }
-  var frozenStartColumns = this._getFrozenStartColumnIndexes();
+  var frozenStartColumns = this._getAllFrozenStartColumnIndexes();
   for (i = 0; i < frozenStartColumns.length; i++) {
     frozenIndex = frozenStartColumns[i];
     if (frozenIndex < columnIndex) {
@@ -9928,7 +9967,7 @@ TableStickyLayoutManager.prototype.getHorizontalOverflowDiff = function (columnC
     let gutterWidth = this._table._getTableGutterWidth('end');
     frozenEndOffset += gutterWidth;
   }
-  var frozenStartColumns = this._getFrozenStartColumnIndexes();
+  var frozenStartColumns = this._getAllFrozenStartColumnIndexes();
   for (i = 0; i < frozenStartColumns.length; i++) {
     frozenIndex = frozenStartColumns[i];
     if (frozenIndex < columnIndex) {
@@ -9937,7 +9976,7 @@ TableStickyLayoutManager.prototype.getHorizontalOverflowDiff = function (columnC
       break;
     }
   }
-  var frozenEndColumns = this._getFrozenEndColumnIndexes();
+  var frozenEndColumns = this._getAllFrozenEndColumnIndexes();
   for (i = frozenEndColumns.length - 1; i > -1; i--) {
     frozenIndex = frozenEndColumns[i];
     if (frozenIndex > columnIndex) {
@@ -10162,12 +10201,14 @@ TableStickyLayoutManager.prototype._updateStickyRowTops = function () {
           frozenEdgeOffset = 1;
         } else if (cell.classList.contains(Table.CSS_CLASSES._TABLE_FROZEN_END)) {
           frozenEdgeOffset = 2;
+        } else if (cell.classList.contains(Table.CSS_CLASSES._TABLE_FROZEN_ALL)) {
+          frozenEdgeOffset = 3;
         } else {
           frozenEdgeOffset = 0;
         }
         cell.style[Table.CSS_PROP._ZINDEX] = isSticky
-          ? (stickyLevel + 1) * 3 + frozenEdgeOffset
-          : (stickyLevel - 2) * 3 + frozenEdgeOffset;
+          ? (stickyLevel + 1) * 4 + frozenEdgeOffset
+          : (stickyLevel - 2) * 4 + frozenEdgeOffset;
       }
       if (isSticky) {
         stickyLevel += 2;
@@ -10364,7 +10405,7 @@ TableStickyLayoutManager.prototype._initializeFrozenColumns = function (
 
   var updateFrozenEdges = false;
   if (this._table._isGutterStartColumnEnabled()) {
-    this._applyFrozenOffset(-1, frozenStartOffset, true, tableBodyRow);
+    this._applyFrozenOffset(-2, frozenStartOffset, true, tableBodyRow);
     let gutterWidth = this._table._getTableGutterWidth('start');
     frozenStartOffset += gutterWidth;
     updateFrozenEdges = true;
@@ -10374,6 +10415,7 @@ TableStickyLayoutManager.prototype._initializeFrozenColumns = function (
     this._applyFrozenOffset(this._appliedColumnWidths.length, frozenEndOffset, false, tableBodyRow);
     let gutterWidth = this._table._getTableGutterWidth('end');
     frozenEndOffset += gutterWidth;
+    updateFrozenEdges = true;
   }
 
   if (this._table._isDefaultSelectorEnabled()) {
@@ -10381,7 +10423,7 @@ TableStickyLayoutManager.prototype._initializeFrozenColumns = function (
     frozenStartOffset += this._selectorColWidth;
     updateFrozenEdges = true;
   }
-  var frozenStartColumns = this._getFrozenStartColumnIndexes();
+  var frozenStartColumns = this._getAllFrozenStartColumnIndexes();
   if (frozenStartColumns.length > 0) {
     updateFrozenEdges = true;
     for (i = 0; i < frozenStartColumns.length; i++) {
@@ -10391,7 +10433,7 @@ TableStickyLayoutManager.prototype._initializeFrozenColumns = function (
     }
   }
 
-  var frozenEndColumns = this._getFrozenEndColumnIndexes();
+  var frozenEndColumns = this._getAllFrozenEndColumnIndexes();
   if (frozenEndColumns.length > 0) {
     updateFrozenEdges = true;
     for (i = frozenEndColumns.length - 1; i > -1; i--) {
@@ -10401,9 +10443,44 @@ TableStickyLayoutManager.prototype._initializeFrozenColumns = function (
     }
   }
 
+  if (this._table._isDefaultSelectorEnabled()) {
+    this._applyFrozenOffset(-1, frozenEndOffset, false, tableBodyRow);
+    frozenEndOffset += this._selectorColWidth;
+    updateFrozenEdges = true;
+  }
+
+  if (this._table._isGutterStartColumnEnabled()) {
+    this._applyFrozenOffset(-2, frozenStartOffset, false, tableBodyRow);
+    let gutterWidth = this._table._getTableGutterWidth('start');
+    frozenEndOffset += gutterWidth;
+    updateFrozenEdges = true;
+  }
+
+  if (this._table._isGutterEndColumnEnabled() && this._appliedColumnWidths != null) {
+    this._applyFrozenOffset(this._appliedColumnWidths.length, frozenEndOffset, true, tableBodyRow);
+    let gutterWidth = this._table._getTableGutterWidth('end');
+    frozenStartOffset += gutterWidth;
+    updateFrozenEdges = true;
+  }
+
   if (updateFrozenEdges) {
     this._updateFrozenEdges(this._scrollLeft, true, tableBodyRow);
   }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._getAllFrozenStartColumnIndexes = function () {
+  var frozenStartColumns = [];
+  var columns = this._table._getColumnDefs();
+  for (var i = 0; i < columns.length; i++) {
+    var edge = columns[i].frozenEdge;
+    if (edge === Table._OPTION_FROZEN_EDGE._ALL || edge === Table._OPTION_FROZEN_EDGE._START) {
+      frozenStartColumns.push(i);
+    }
+  }
+  return frozenStartColumns;
 };
 
 /**
@@ -10418,6 +10495,21 @@ TableStickyLayoutManager.prototype._getFrozenStartColumnIndexes = function () {
     }
   }
   return frozenStartColumns;
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._getAllFrozenEndColumnIndexes = function () {
+  var frozenEndColumns = [];
+  var columns = this._table._getColumnDefs();
+  for (var i = 0; i < columns.length; i++) {
+    var edge = columns[i].frozenEdge;
+    if (edge === Table._OPTION_FROZEN_EDGE._ALL || edge === Table._OPTION_FROZEN_EDGE._END) {
+      frozenEndColumns.push(i);
+    }
+  }
+  return frozenEndColumns;
 };
 
 /**
@@ -10456,10 +10548,11 @@ TableStickyLayoutManager.prototype._applyFrozenOffset = function (
   // check if only a single row is being refreshed
   if (targetRow != null) {
     let targetCell;
-    if (columnIndex === -1) {
+    if (columnIndex === -2) {
       if (this._table._isGutterStartColumnEnabled()) {
         targetCell = this._table._getTableGutterCell('body', 'start', targetRow);
       }
+    } else if (columnIndex === -1) {
       if (this._table._isDefaultSelectorEnabled()) {
         if (targetRow.classList.contains(Table.CSS_CLASSES._TABLE_ADD_ROW_PLACEHOLDER_CLASS)) {
           let index = this._table._isGutterStartColumnEnabled() ? 1 : 0;
@@ -10481,11 +10574,8 @@ TableStickyLayoutManager.prototype._applyFrozenOffset = function (
   const tableBodyRows = this._table._getTableBodyRows();
   const addRow = this._table._getPlaceHolderRow();
   const columnsCount = this._table.options.columns.length;
-  if (
-    (columnIndex === -1 && !this._table._isDefaultSelectorEnabled()) ||
-    columnIndex === columnsCount
-  ) {
-    const gutterEdge = columnIndex === -1 ? 'start' : 'end';
+  if (columnIndex === -2 || columnIndex === columnsCount) {
+    const gutterEdge = columnIndex === -2 ? 'start' : 'end';
     // update header cell
     const headerGutter = this._table._getTableGutterCell('header', gutterEdge);
     if (headerGutter != null) {
@@ -10572,6 +10662,7 @@ TableStickyLayoutManager.prototype._updateFrozenEdges = function (scrollLeft, is
   var i;
   var currIndex;
   var startIndex;
+  var isAllEdge;
   var endIndex;
   var newScrollPosition = this._table._getCurrentHorizontalScrollPosition(scrollLeft);
 
@@ -10580,21 +10671,26 @@ TableStickyLayoutManager.prototype._updateFrozenEdges = function (scrollLeft, is
     startIndex = null;
   } else {
     var currentColumnIndex = newScrollPosition.columnIndex;
-    startIndex =
-      this._table._isDefaultSelectorEnabled() || this._table._isGutterStartColumnEnabled()
-        ? -1
-        : null;
-    var frozenStartColumns = this._getFrozenStartColumnIndexes();
-    for (i = 0; i < frozenStartColumns.length; i++) {
-      currIndex = frozenStartColumns[i];
+    if (this._table._isDefaultSelectorEnabled()) {
+      startIndex = -1;
+      isAllEdge = true;
+    } else if (this._table._isGutterStartColumnEnabled()) {
+      startIndex = -2;
+      isAllEdge = true;
+    }
+    var legacyFrozenStartColumns = this._getFrozenStartColumnIndexes();
+    var allFrozenStartColumns = this._getAllFrozenStartColumnIndexes();
+    for (i = 0; i < allFrozenStartColumns.length; i++) {
+      currIndex = allFrozenStartColumns[i];
       if (currIndex < currentColumnIndex && this._getAppliedColumnWidth(currIndex) > 0) {
         startIndex = currIndex;
+        isAllEdge = !legacyFrozenStartColumns.includes(currIndex);
       } else {
         break;
       }
     }
   }
-  this._updateFrozenEdge(startIndex, true, isForce, targetRow);
+  this._updateFrozenEdge(startIndex, true, isAllEdge, isForce, targetRow);
 
   // update frozen end edge if present
   var scroller = this.getScroller();
@@ -10606,12 +10702,15 @@ TableStickyLayoutManager.prototype._updateFrozenEdges = function (scrollLeft, is
   } else if (this._appliedColumnWidths != null) {
     if (this._table._isGutterEndColumnEnabled()) {
       endIndex = this._appliedColumnWidths.length;
+      isAllEdge = true;
     }
     var colWidths = 0;
-    var frozenEndColumns = this._getFrozenEndColumnIndexes();
+    var legacyFrozenEndColumns = this._getFrozenEndColumnIndexes();
+    var allFrozenEndColumns = this._getAllFrozenEndColumnIndexes();
     for (i = this._appliedColumnWidths.length - 1; i > -1; i--) {
-      if (frozenEndColumns.indexOf(i) !== -1 && this._getAppliedColumnWidth(i) > 0) {
+      if (allFrozenEndColumns.indexOf(i) !== -1 && this._getAppliedColumnWidth(i) > 0) {
         endIndex = i;
+        isAllEdge = !legacyFrozenEndColumns.includes(i);
       } else {
         colWidths += this._getAppliedColumnWidth(i);
         if (colWidths > endOverflow) {
@@ -10620,7 +10719,7 @@ TableStickyLayoutManager.prototype._updateFrozenEdges = function (scrollLeft, is
       }
     }
   }
-  this._updateFrozenEdge(endIndex, false, isForce, targetRow);
+  this._updateFrozenEdge(endIndex, false, isAllEdge, isForce, targetRow);
 };
 
 /**
@@ -10629,6 +10728,7 @@ TableStickyLayoutManager.prototype._updateFrozenEdges = function (scrollLeft, is
 TableStickyLayoutManager.prototype._updateFrozenEdge = function (
   columnIndex,
   isStart,
+  isAllEdge,
   isForce,
   targetRow
 ) {
@@ -10636,44 +10736,50 @@ TableStickyLayoutManager.prototype._updateFrozenEdge = function (
   if (isStart) {
     if (this._frozenStartIndex !== columnIndex) {
       if (this._frozenStartIndex != null) {
-        this._applyFrozenEdge(this._frozenStartIndex, false, targetRow);
+        this._applyFrozenEdge(this._frozenStartIndex, false, isStart, isAllEdge, targetRow);
       }
       if (columnIndex != null) {
-        this._applyFrozenEdge(columnIndex, true, targetRow);
+        this._applyFrozenEdge(columnIndex, true, isStart, isAllEdge, targetRow);
         appliedEdge = true;
       }
       this._frozenStartIndex = columnIndex;
     }
   } else if (this._frozenEndIndex !== columnIndex) {
     if (this._frozenEndIndex != null) {
-      this._applyFrozenEdge(this._frozenEndIndex, false, targetRow);
+      this._applyFrozenEdge(this._frozenEndIndex, false, isStart, isAllEdge, targetRow);
     }
     if (columnIndex != null) {
-      this._applyFrozenEdge(columnIndex, true, targetRow);
+      this._applyFrozenEdge(columnIndex, true, isStart, isAllEdge, targetRow);
       appliedEdge = true;
     }
     this._frozenEndIndex = columnIndex;
   }
   if (isForce && !appliedEdge) {
-    this._applyFrozenEdge(columnIndex, true, targetRow);
+    this._applyFrozenEdge(columnIndex, true, isStart, isAllEdge, targetRow);
   }
 };
 
 /**
  * @private
  */
-TableStickyLayoutManager.prototype._applyFrozenEdge = function (columnIndex, isAdd, targetRow) {
+TableStickyLayoutManager.prototype._applyFrozenEdge = function (
+  columnIndex,
+  isAdd,
+  isStart,
+  isAllEdge,
+  targetRow
+) {
   let i;
-  const modifierFunc = isAdd ? 'add' : 'remove';
   const columnsCount = this._table.options.columns.length;
 
   // check if only a single row is being refreshed
   if (targetRow != null) {
     let targetCell;
-    if (columnIndex === -1) {
+    if (columnIndex === -2) {
       if (this._table._isGutterStartColumnEnabled()) {
         targetCell = this._table._getTableGutterCell('body', 'start', targetRow);
       }
+    } else if (columnIndex === -1) {
       if (this._table._isDefaultSelectorEnabled()) {
         if (targetRow.classList.contains(Table.CSS_CLASSES._TABLE_ADD_ROW_PLACEHOLDER_CLASS)) {
           let index = this._table._isGutterStartColumnEnabled() ? 1 : 0;
@@ -10689,95 +10795,96 @@ TableStickyLayoutManager.prototype._applyFrozenEdge = function (columnIndex, isA
     } else {
       targetCell = this._table._getTableBodyCell(null, columnIndex, targetRow);
     }
-    if (targetCell != null) {
-      targetCell.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-    }
+    this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, targetCell);
     return;
   }
 
   const tableBodyRows = this._table._getTableBodyRows();
   const addRow = this._table._getPlaceHolderRow();
 
-  if (
-    (columnIndex === -1 && !this._table._isDefaultSelectorEnabled()) ||
-    columnIndex === columnsCount
-  ) {
-    const gutterEdge = columnIndex === -1 ? 'start' : 'end';
+  if (columnIndex === -2 || columnIndex === columnsCount) {
+    const gutterEdge = columnIndex === -2 ? 'start' : 'end';
     // update header cell
     const headerGutter = this._table._getTableGutterCell('header', gutterEdge);
-    if (headerGutter != null) {
-      headerGutter.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-    }
+    this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, headerGutter);
+
     // update add row cell
     if (addRow != null) {
       const addRowGutter = this._table._getTableGutterCell('body', gutterEdge, addRow);
-      if (addRowGutter != null) {
-        addRowGutter.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-      }
+      this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, addRowGutter);
     }
     // update table body cells
     for (i = 0; i < tableBodyRows.length; i++) {
       const gutterCell = this._table._getTableGutterCell('body', gutterEdge, tableBodyRows[i]);
-      if (gutterCell != null) {
-        gutterCell.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-      }
+      this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, gutterCell);
     }
     // update footer cell
     const footerGutter = this._table._getTableGutterCell('footer', gutterEdge);
-    if (footerGutter != null) {
-      footerGutter.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-    }
+    this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, footerGutter);
   } else if (columnIndex === -1) {
     // update header cell
     var headerSelector = this._table._getTableSelectorColumn();
-    if (headerSelector != null) {
-      headerSelector.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-    }
+    this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, headerSelector);
+
     // update add row cell
     if (addRow != null) {
       let index = this._table._isGutterStartColumnEnabled() ? 1 : 0;
       var addRowSelectorCell = this._table._getPlaceHolderRowCells(addRow)[index];
-      if (addRowSelectorCell != null) {
-        addRowSelectorCell.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-      }
+      this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, addRowSelectorCell);
     }
     // update table body cells
     for (i = 0; i < tableBodyRows.length; i++) {
       var tableBodyRow = this._table._getTableBodyRow(i);
       var tableBodySelectorCell = this._table._getTableBodySelectorCell(tableBodyRow);
-      if (tableBodySelectorCell != null) {
-        tableBodySelectorCell.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-      }
+      this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, tableBodySelectorCell);
     }
     // update footer cell
     var footerSelector = this._table._getTableFooterSelectorCell();
-    if (footerSelector != null) {
-      footerSelector.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-    }
+    this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, footerSelector);
   } else {
     // update header cell
     var headerCell = this._table._getTableHeaderColumn(columnIndex);
-    if (headerCell != null) {
-      headerCell.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-    }
+    this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, headerCell);
+
     // update add row cell
     if (addRow != null) {
       var addRowCell = this._table._getPlaceHolderRowCell(columnIndex);
-      if (addRowCell != null) {
-        addRowCell.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-      }
+      this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, addRowCell);
     }
     // update table body cells
     for (i = 0; i < tableBodyRows.length; i++) {
       var tableBodyCell = this._table._getTableBodyCell(i, columnIndex);
-      if (tableBodyCell != null) {
-        tableBodyCell.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
-      }
+      this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, tableBodyCell);
     }
     // update footer cell
     var footerCell = this._table._getTableFooterCell(columnIndex);
-    if (footerCell != null) {
-      footerCell.classList[modifierFunc](Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+    this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, footerCell);
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._updateFrozenEdgeStyling = function (
+  isAdd,
+  isStart,
+  isAllEdge,
+  targetCell
+) {
+  if (targetCell != null) {
+    if (!isAdd) {
+      targetCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+      targetCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START_EDGE);
+      targetCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END_EDGE);
+    } else {
+      targetCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+      if (isAllEdge) {
+        targetCell.classList.add(
+          isStart
+            ? Table.CSS_CLASSES._TABLE_FROZEN_START_EDGE
+            : Table.CSS_CLASSES._TABLE_FROZEN_END_EDGE
+        );
+      }
     }
   }
 };
@@ -10815,8 +10922,9 @@ TableStickyLayoutManager.prototype._setResizeCursor = function (event, isSingleC
     var readingDir = this._table._GetReadingDirection();
     var columnsCount = this._table.options.columns.length;
     var columnRect = headerColumn.getBoundingClientRect();
-    var distFromLeft = Math.abs(event.originalEvent.clientX - columnRect.left);
-    var distFromRight = Math.abs(event.originalEvent.clientX - columnRect.right);
+    var clientX = this._getClientX(event);
+    var distFromLeft = Math.abs(clientX - columnRect.left);
+    var distFromRight = Math.abs(clientX - columnRect.right);
 
     if (distFromLeft <= Table.RESIZE_OFFSET || distFromRight <= Table.RESIZE_OFFSET) {
       isResize = true;
@@ -11307,6 +11415,7 @@ TableContentsLayoutManager.prototype._clearColumnSizingCache = function (
   if (includeSamplingCache) {
     this._columnSampledMinWidths = null;
     this._columnPreferredWidths = null;
+    this._selectorColWidth = null;
   }
 };
 
@@ -11724,6 +11833,7 @@ TableFixedLayoutManager.prototype._clearColumnSizingCache = function (
   );
   if (includeSamplingCache) {
     this._columnSampledMinWidths = null;
+    this._selectorColWidth = null;
   }
 };
 
@@ -12804,29 +12914,15 @@ Table.prototype._handleDataRowMutate = function (event) {
     this._pendingFetchStale = true;
     return;
   }
-  if (event.detail.remove != null) {
-    this._handleDataRowRemove(event.detail.remove, event.detail.add);
-  }
-  if (event.detail.add != null) {
-    this._handleDataRowAdd(event.detail.add);
-  }
-  if (event.detail.update != null) {
-    this._handleDataRowChange(event.detail.update);
-  }
-};
-
-/**
- * Callback handler for row removed in the datasource. Remove the row DOM from the
- * table body by searching for the matching rowKey. New rows will have null rowKey.
- * After removing the row, refresh all the remaining row indexes since
- * they will have shifted. Lastly, refresh the table dimensions
- * @param {Object} eventDetail event detail
- * @param {Object=} addEventDetail optional event detail for subsequent add
- * @private
- */
-Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
-  try {
-    this._executeTableBodyRowsRemove(eventDetail, addEventDetail);
+  try{
+    var self = this;
+    this._queueTask(() => {
+      return self._handleDataRowRemove(event.detail.remove, event.detail.add).then((resetFocus) => {
+        return self._handleDataRowAdd(event.detail.add).then(() => {
+          return self._handleDataRowChange(event.detail.update, resetFocus);
+        });
+      });
+    });
   } catch (e) {
     error(e);
   } finally {
@@ -12840,203 +12936,196 @@ Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
  * @param {Object=} addEventDetail optional event detail for subsequent add
  * @private
  */
-Table.prototype._executeTableBodyRowsRemove = function (eventDetail, addEventDetail) {
+Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
   var self = this;
-  var eventDetailKeys = eventDetail[Table._CONST_KEYS];
+  var eventDetailKeys = eventDetail != null ? eventDetail[Table._CONST_KEYS] : null;
   if (eventDetailKeys && eventDetailKeys.size > 0) {
-    this._queueTask(function () {
-      // This function will try to find the row index from the DOM, so it must
-      // be called right before we're ready to update the UI.  If we call it
-      // outside of this queued task, the DOM may have changed from other
-      // data operations, and the row index can be wrong.
-      var rows = self._getRowsFromEventDetailRemove(eventDetail);
-      if (rows.length === 0) {
-        // update selection state based on row removals
-        self._updateSelectionStateFromEventDetailRemove(eventDetail, addEventDetail);
-        return undefined;
+    // This function will try to find the row index from the DOM, so it must
+    // be called right before we're ready to update the UI.  If we call it
+    // outside of this queued task, the DOM may have changed from other
+    // data operations, and the row index can be wrong.
+    var rows = self._getRowsFromEventDetailRemove(eventDetail);
+    if (rows.length === 0) {
+      // update selection state based on row removals
+      self._updateSelectionStateFromEventDetailRemove(eventDetail, addEventDetail);
+      self._updateScrollPositionFromEventDetailRemove(eventDetail);
+      return Promise.resolve(false);
+    }
+    self._getLayoutManager().notifyTableUpdate(Table._UPDATE._ROWS_REMOVED);
+
+    // sort array
+    rows.sort(function (a, b) {
+      return b.rowIdx - a.rowIdx;
+    });
+
+    // first check if we are removing all rows. If so, we can do a removeAll
+    var remainingRowIdxArray = [];
+    var rowIdxArray = [];
+    var removedTableBodyRows = [];
+    var rowsCount = rows.length;
+    var removeAll = false;
+    var tableBodyRow;
+    var tableBodyRows = self._getTableBodyRows();
+    var rowIdx;
+    var i;
+
+    if (tableBodyRows.length > 0) {
+      for (i = 0; i < tableBodyRows.length; i++) {
+        remainingRowIdxArray.push(i);
       }
-      self._getLayoutManager().notifyTableUpdate(Table._UPDATE._ROWS_REMOVED);
-
-      // sort array
-      rows.sort(function (a, b) {
-        return b.rowIdx - a.rowIdx;
-      });
-
-      // first check if we are removing all rows. If so, we can do a removeAll
-      var remainingRowIdxArray = [];
-      var rowIdxArray = [];
-      var removedTableBodyRows = [];
-      var rowsCount = rows.length;
-      var removeAll = false;
-      var tableBodyRow;
-      var tableBodyRows = self._getTableBodyRows();
-      var rowIdx;
-      var i;
-
-      if (tableBodyRows.length > 0) {
-        for (i = 0; i < tableBodyRows.length; i++) {
-          remainingRowIdxArray.push(i);
-        }
-        for (i = 0; i < rowsCount; i++) {
-          rowIdx = rows[i].rowIdx;
-          rowIdxArray.push(rowIdx);
-          for (var j = 0; j < remainingRowIdxArray.length; j++) {
-            if (remainingRowIdxArray[j] === rowIdx) {
-              tableBodyRow = self._getTableBodyRow(rowIdx);
-              removedTableBodyRows.push(tableBodyRow);
-              remainingRowIdxArray.splice(j, 1);
-              break;
-            }
+      for (i = 0; i < rowsCount; i++) {
+        rowIdx = rows[i].rowIdx;
+        rowIdxArray.push(rowIdx);
+        for (var j = 0; j < remainingRowIdxArray.length; j++) {
+          if (remainingRowIdxArray[j] === rowIdx) {
+            tableBodyRow = self._getTableBodyRow(rowIdx);
+            removedTableBodyRows.push(tableBodyRow);
+            remainingRowIdxArray.splice(j, 1);
+            break;
           }
         }
-
-        if (remainingRowIdxArray.length === 0) {
-          removeAll = true;
-        }
       }
 
-      var tableBody = self._getTableBody();
-      var checkFocus = tableBody.contains(document.activeElement);
-      var resetFocus = false;
+      if (remainingRowIdxArray.length === 0) {
+        removeAll = true;
+      }
+    }
 
-      if (removeAll) {
+    var tableBody = self._getTableBody();
+    var checkFocus = tableBody.contains(document.activeElement);
+    var resetFocus = false;
+
+    if (removeAll) {
+      resetFocus = checkFocus;
+      // Clear out all the existing selection state
+      self._clearSelectionState();
+    } else {
+      for (i = 0; i < rowsCount; i++) {
+        rowIdx = rows[i].rowIdx;
+        tableBodyRow = self._getTableBodyRow(rowIdx);
         if (checkFocus) {
-          resetFocus = true;
+          if (tableBodyRow != null && tableBodyRow.contains(document.activeElement)) {
+            resetFocus = true;
+            break;
+          }
         }
-        // Clear out all the existing selection state
-        self._clearSelectionState();
-      } else {
-        for (i = 0; i < rowsCount; i++) {
-          rowIdx = rows[i].rowIdx;
-          tableBodyRow = self._getTableBodyRow(rowIdx);
-          if (checkFocus) {
-            if (tableBodyRow != null && tableBodyRow.contains(document.activeElement)) {
-              resetFocus = true;
+      }
+    }
+
+    // update edit state based on row removals before rows are removed to ensure row context is available
+    if (self._hasEditableRow()) {
+      var editRowKey = self._getEditableRowKey();
+      if (containsKey([...eventDetail[Table._CONST_KEYS]], editRowKey)) {
+        // exit edit mode if editable row is deleted - treat as cancelling the edit
+        self._setTableEditable(false, true);
+      }
+    }
+
+    // eslint-disable-next-line no-inner-declarations
+    function _removeRows() {
+      var ii;
+      var _rowIdx;
+      // logic to buffer unwanted scroll position jumps
+      if (self._getCurrentScrollPosition().y > 0) {
+        var rowToRemove;
+        var stuckRow;
+        var stickyRow;
+        var stickyRows;
+        var totalRowHeight = 0;
+        var tableBodyRowsToRemove = [];
+        for (ii = 0; ii < rowsCount; ii++) {
+          _rowIdx = rows[ii].rowIdx;
+          rowToRemove = self._getTableBodyRow(_rowIdx);
+          if (rowToRemove != null) {
+            totalRowHeight += rowToRemove.offsetHeight;
+            tableBodyRowsToRemove.push(rowToRemove);
+          }
+        }
+        if (self._isStickyRowsEnabled()) {
+          stickyRows = self._getTableBodyStickyRows();
+          for (ii = stickyRows.length - 1; ii >= 0; ii--) {
+            stickyRow = stickyRows[ii];
+            if (stickyRow.classList.contains(Table.CSS_CLASSES._TABLE_STUCK_ROW_CLASS)) {
+              stuckRow = stickyRow;
               break;
             }
           }
         }
-      }
-
-      // update edit state based on row removals before rows are removed to ensure row context is available
-      if (self._hasEditableRow()) {
-        var editRowKey = self._getEditableRowKey();
-        if (containsKey([...eventDetail[Table._CONST_KEYS]], editRowKey)) {
-          // exit edit mode if editable row is deleted - treat as cancelling the edit
-          self._setTableEditable(false, true);
-        }
-      }
-
-      function _removeRows() {
-        var ii;
-        var _rowIdx;
-        // logic to buffer unwanted scroll position jumps
-        if (self._getCurrentScrollPosition().y > 0) {
-          var rowToRemove;
-          var stuckRow;
-          var stickyRow;
-          var stickyRows;
-          var totalRowHeight = 0;
-          var tableBodyRowsToRemove = [];
-          for (ii = 0; ii < rowsCount; ii++) {
-            _rowIdx = rows[ii].rowIdx;
-            rowToRemove = self._getTableBodyRow(_rowIdx);
-            if (rowToRemove != null) {
-              totalRowHeight += rowToRemove.offsetHeight;
-              tableBodyRowsToRemove.push(rowToRemove);
-            }
-          }
-          if (self._isStickyRowsEnabled()) {
-            stickyRows = self._getTableBodyStickyRows();
-            for (ii = stickyRows.length - 1; ii >= 0; ii--) {
-              stickyRow = stickyRows[ii];
-              if (stickyRow.classList.contains(Table.CSS_CLASSES._TABLE_STUCK_ROW_CLASS)) {
-                stuckRow = stickyRow;
-                break;
-              }
-            }
-          }
-          var scrollBuffer = self._createTableBodyScrollBuffer();
-          scrollBuffer.style[Table.CSS_PROP._HEIGHT] = totalRowHeight + Table.CSS_VAL._PX;
-          for (ii = 0; ii < tableBodyRowsToRemove.length; ii++) {
-            rowToRemove = tableBodyRowsToRemove[ii];
-            self._removeTableBodyRow(null, rowToRemove);
-            if (stuckRow != null) {
-              var stickyIndex = stickyRows.indexOf(rowToRemove);
-              if (stickyIndex !== -1) {
-                stickyRows.splice(stickyIndex, 1);
-              }
-            }
-          }
-          // set scroll position to stuck row if necessary
+        var scrollBuffer = self._createTableBodyScrollBuffer();
+        scrollBuffer.style[Table.CSS_PROP._HEIGHT] = totalRowHeight + Table.CSS_VAL._PX;
+        for (ii = 0; ii < tableBodyRowsToRemove.length; ii++) {
+          rowToRemove = tableBodyRowsToRemove[ii];
+          self._removeTableBodyRow(null, rowToRemove);
           if (stuckRow != null) {
-            for (ii = stickyRows.length - 1; ii >= 0; ii--) {
-              stickyRow = stickyRows[ii];
-              if (self._getLayoutManager().getVerticalOverflowDiff(stickyRow).top > 0) {
-                if (stuckRow !== stickyRow) {
-                  self._scrollRowIntoViewport(null, true, stuckRow);
-                }
-                break;
-              }
+            var stickyIndex = stickyRows.indexOf(rowToRemove);
+            if (stickyIndex !== -1) {
+              stickyRows.splice(stickyIndex, 1);
             }
           }
-        } else {
-          for (ii = 0; ii < rowsCount; ii++) {
-            _rowIdx = rows[ii].rowIdx;
-            self._removeTableBodyRow(_rowIdx);
+        }
+        // set scroll position to stuck row if necessary
+        if (stuckRow != null) {
+          for (ii = stickyRows.length - 1; ii >= 0; ii--) {
+            stickyRow = stickyRows[ii];
+            if (self._getLayoutManager().getVerticalOverflowDiff(stickyRow).top > 0) {
+              if (stuckRow !== stickyRow) {
+                self._scrollRowIntoViewport(null, true, stuckRow);
+              }
+              break;
+            }
           }
         }
-      }
-
-      function _syncTableFocus() {
-        // update active element if needed
-        self._syncActiveElement();
-        if (resetFocus) {
-          self._getTable().focus();
+      } else {
+        for (ii = 0; ii < rowsCount; ii++) {
+          _rowIdx = rows[ii].rowIdx;
+          self._removeTableBodyRow(_rowIdx);
         }
       }
+    }
 
-      function _afterRemoveRows() {
-        // update selection state based on row removals
-        if (eventDetail.transient !== true) {
-          self._updateSelectionStateFromEventDetailRemove(eventDetail, addEventDetail);
-        }
-        // row values may have changed so refresh the footer
-        self._refreshTableFooter();
-        tableBodyRows = self._getTableBodyRows();
-        if (tableBodyRows.length === 0) {
-          self._showNoDataMessage();
-          return self._finalizeNonBodyRowRendering([tableBody]).then(function () {
-            _syncTableFocus();
-          });
-        }
-        return Promise.resolve().then(function () {
-          _syncTableFocus();
+    // eslint-disable-next-line no-inner-declarations
+    function _afterRemoveRows() {
+      // update selection state based on row removals
+      if (eventDetail.transient !== true) {
+        self._updateSelectionStateFromEventDetailRemove(eventDetail, addEventDetail);
+      }
+      self._updateScrollPositionFromEventDetailRemove(eventDetail);
+      // row values may have changed so refresh the footer
+      self._refreshTableFooter();
+      tableBodyRows = self._getTableBodyRows();
+      if (tableBodyRows.length === 0) {
+        self._showNoDataMessage();
+        return self._finalizeNonBodyRowRendering([tableBody]).then(function () {
+          return Promise.resolve();
         });
       }
+      return Promise.resolve();
+    }
 
-      if (removeAll) {
-        self._removeAllTableBodyRows();
-        return _afterRemoveRows();
-      }
-      return new Promise(function (resolve) {
-        if (self._IsCustomElement()) {
-          return self
-            ._animateVisibleRows(removedTableBodyRows, rowIdxArray, 'remove')
-            .then(function () {
-              _removeRows();
-              return _afterRemoveRows().then(function () {
-                resolve(true);
-              });
+    if (removeAll) {
+      self._removeAllTableBodyRows();
+      return _afterRemoveRows().then(function () {
+        return Promise.resolve(resetFocus);
+      });
+    }
+    return new Promise(function (resolve) {
+      if (self._IsCustomElement()) {
+        return self
+          ._animateVisibleRows(removedTableBodyRows, rowIdxArray, 'remove')
+          .then(function () {
+            _removeRows();
+            return _afterRemoveRows().then(function () {
+              resolve(resetFocus);
             });
-        }
-        _removeRows();
-        return _afterRemoveRows().then(function () {
-          resolve(true);
-        });
+          });
+      }
+      _removeRows();
+      return _afterRemoveRows().then(function () {
+        resolve(resetFocus);
       });
     });
   }
+  return Promise.resolve(false);
 };
 
 /**
@@ -13060,130 +13149,112 @@ Table.prototype._getRowsFromEventDetailRemove = function (eventDetail) {
 };
 
 /**
- * Callback handler for rows added into the datasource. Add a new tr and refresh the DOM
- * at the row index and refresh the table dimensions to accommodate the new
- * row
- * @param {Object} eventDetail event detail
- * @private
- */
-Table.prototype._handleDataRowAdd = function (eventDetail) {
-  try {
-    this._executeTableBodyRowsAdd(eventDetail);
-  } catch (e) {
-    error(e);
-  } finally {
-    this._clearDataWaitingState();
-  }
-};
-
-/**
  * Add all the rows contained in the event detail.
  * @param {Object} eventDetail Event detail
  * @private
  */
-Table.prototype._executeTableBodyRowsAdd = function (eventDetail) {
-  var eventDetailKeys = eventDetail[Table._CONST_KEYS];
+Table.prototype._handleDataRowAdd = function (eventDetail) {
+  var eventDetailKeys = eventDetail != null ? eventDetail[Table._CONST_KEYS] : null;
   if (eventDetailKeys && eventDetailKeys.size > 0) {
-    this._queueTask(
+    // This function will try to find the row index from the DOM, so it must
+    // be called right before we're ready to update the UI.  If we call it
+    // outside of this queued task, the DOM may have changed from other
+    // data operations, and the row index can be wrong.
+    var rows = this._getRowsFromEventDetailAdd(eventDetail);
+    if (rows.length === 0) {
+      if (this._requiresDomScrollerRefresh) {
+        this._registerDomScroller();
+      }
+      return Promise.resolve();
+    }
+    var layoutManager = this._getLayoutManager();
+    layoutManager.notifyTableUpdate(Table._UPDATE._ROWS_ADDED);
+
+    // see if we should batch add
+    // only batch if we are adding a block of contiguous rows
+    var isContiguous = true;
+    var renderRowPromiseArray = [];
+    var rowIdxArray = [];
+    var i;
+    var docFrag;
+    var docFragArray = [];
+    var docFragIndexArray = [];
+    var tableBody = this._getTableBody();
+
+    var rowsCount = rows.length;
+    for (i = 0; i < rowsCount; i++) {
+      if (i > 0 && rows[i - 1].rowIdx !== rows[i].rowIdx - 1) {
+        isContiguous = false;
+      }
+      rowIdxArray.push(rows[i].rowIdx);
+    }
+
+    if (isContiguous) {
+      docFrag = document.createDocumentFragment();
+      for (i = 0; i < rowsCount; i++) {
+        renderRowPromiseArray.push(this._renderRow(rows[i], docFrag, rows[0].rowIdx));
+      }
+      docFragArray.push(docFrag);
+      docFragIndexArray.push(rows[0].rowIdx);
+    } else {
+      for (i = 0; i < rowsCount; i++) {
+        var rowIndex = rows[i].rowIdx;
+        docFrag = document.createDocumentFragment();
+        renderRowPromiseArray.push(this._renderRow(rows[i], docFrag, rowIndex));
+        docFragArray.push(docFrag);
+        docFragIndexArray.push(rowIndex);
+      }
+    }
+    // row values may have changed so refresh the footer
+    return this._refreshTableFooter().then(
       function () {
-        // This function will try to find the row index from the DOM, so it must
-        // be called right before we're ready to update the UI.  If we call it
-        // outside of this queued task, the DOM may have changed from other
-        // data operations, and the row index can be wrong.
-        var rows = this._getRowsFromEventDetailAdd(eventDetail);
-        if (rows.length === 0) {
-          if (this._requiresDomScrollerRefresh) {
-            this._registerDomScroller();
-          }
-          return undefined;
-        }
-        var layoutManager = this._getLayoutManager();
-        layoutManager.notifyTableUpdate(Table._UPDATE._ROWS_ADDED);
+        return Promise.all(renderRowPromiseArray).then(
+          function (addedTableBodyRows) {
+            this._hideNoDataMessage();
+            for (i = 0; i < docFragArray.length; i++) {
+              this._handleRowAdds(tableBody, docFragArray[i], docFragIndexArray[i]);
+              // table body row cache needs to be cleared after ever docFrag insertion
+              this._clearCachedDomRowData();
+            }
 
-        // see if we should batch add
-        // only batch if we are adding a block of contiguous rows
-        var isContiguous = true;
-        var renderRowPromiseArray = [];
-        var rowIdxArray = [];
-        var i;
-        var docFrag;
-        var docFragArray = [];
-        var docFragIndexArray = [];
-        var tableBody = this._getTableBody();
-
-        var rowsCount = rows.length;
-        for (i = 0; i < rowsCount; i++) {
-          if (i > 0 && rows[i - 1].rowIdx !== rows[i].rowIdx - 1) {
-            isContiguous = false;
-          }
-          rowIdxArray.push(rows[i].rowIdx);
-        }
-
-        if (isContiguous) {
-          docFrag = document.createDocumentFragment();
-          for (i = 0; i < rowsCount; i++) {
-            renderRowPromiseArray.push(this._renderRow(rows[i], docFrag, rows[0].rowIdx));
-          }
-          docFragArray.push(docFrag);
-          docFragIndexArray.push(rows[0].rowIdx);
-        } else {
-          for (i = 0; i < rowsCount; i++) {
-            var rowIndex = rows[i].rowIdx;
-            docFrag = document.createDocumentFragment();
-            renderRowPromiseArray.push(this._renderRow(rows[i], docFrag, rowIndex));
-            docFragArray.push(docFrag);
-            docFragIndexArray.push(rowIndex);
-          }
-        }
-        // row values may have changed so refresh the footer
-        return this._refreshTableFooter().then(
-          function () {
-            return Promise.all(renderRowPromiseArray).then(
-              function (addedTableBodyRows) {
-                this._hideNoDataMessage();
-                for (i = 0; i < docFragArray.length; i++) {
-                  this._handleRowAdds(tableBody, docFragArray[i], docFragIndexArray[i]);
-                  // table body row cache needs to be cleared after ever docFrag insertion
-                  this._clearCachedDomRowData();
+            // If table scrollTop is 0 and row is inserted to first position then update scrollPosition.rowKey
+            if (
+              this._scrollTop === 0 &&
+              ((rows.length === 1 && rows[0].rowIdx === 0) || rowIdxArray.indexOf(0) !== -1)
+            ) {
+              if (this._scrollPosition == null) {
+                var scrollPosition = this.option('scrollPosition');
+                if (scrollPosition != null) {
+                  this._scrollPosition = { ...scrollPosition };
                 }
+              }
+              if (this._scrollPosition != null) {
+                // remove invalid scrollPosition.rowKey and it will be updated in syncScrollPosition
+                this._scrollPosition.rowKey = undefined;
+              }
+            }
 
-                // If table scrollTop is 0 and row is inserted to first position then update scrollPosition.rowKey
-                if (
-                  this._scrollTop === 0 &&
-                  ((rows.length === 1 && rows[0].rowIdx === 0) || rowIdxArray.indexOf(0) !== -1)
-                ) {
-                  var scrollPosition =
-                    this.options.scrollPosition == null ? {} : this.options.scrollPosition;
-                  // remove invalid scrollPosition.rowKey and it will be updated in syncScrollPosition
-                  delete scrollPosition.rowKey;
-                }
-
-                // for high watermark scrolling, we need to reset the domscroller in case there are more rows to fetch
-                if (this._requiresDomScrollerRefresh) {
-                  this._registerDomScroller();
-                }
-                if (this._IsCustomElement()) {
-                  return this._animateVisibleRows(addedTableBodyRows, rowIdxArray, 'add').then(
-                    function () {
-                      // update active element if needed
-                      this._syncActiveElement();
-                      return this._afterRowsRendered(tableBody);
-                    }.bind(this)
-                  );
-                }
-                // update active element if needed
-                this._syncActiveElement();
-                return this._afterRowsRendered(tableBody);
-              }.bind(this)
-            );
-          }.bind(this),
-          function (reason) {
-            return Promise.reject(reason);
-          }
+            // for high watermark scrolling, we need to reset the domscroller in case there are more rows to fetch
+            if (this._requiresDomScrollerRefresh) {
+              this._registerDomScroller();
+            }
+            if (this._IsCustomElement()) {
+              return this._animateVisibleRows(addedTableBodyRows, rowIdxArray, 'add').then(
+                function () {
+                  return this._afterRowsRendered(tableBody);
+                }.bind(this)
+              );
+            }
+            return this._afterRowsRendered(tableBody);
+          }.bind(this)
         );
-      }.bind(this)
+      }.bind(this),
+      function (reason) {
+        return Promise.reject(reason);
+      }
     );
   }
+  return Promise.resolve();
 };
 
 /**
@@ -13301,95 +13372,88 @@ Table.prototype._notifyAddOutOfViewport = function () {
 };
 
 /**
- * Callback handler for row change in the datasource. Refresh the changed
- * row.
- * @param {Object} eventDetail event detail
- * @private
- */
-Table.prototype._handleDataRowChange = function (eventDetail) {
-  try {
-    this._executeTableBodyRowsChange(eventDetail);
-  } catch (e) {
-    error(e);
-  } finally {
-    this._clearDataWaitingState();
-  }
-};
-
-/**
  * Change all the rows contained in the event detail.
  * @param {Object} eventDetail Event detail
  * @private
  */
-Table.prototype._executeTableBodyRowsChange = function (eventDetail) {
-  this._queueTask(
-    function () {
-      var i;
-      // update selection state based on row updates
-      this._updateSelectionStateFromEventDetailChange(eventDetail);
+Table.prototype._handleDataRowChange = function (eventDetail, resetFocus) {
+  var eventDetailKeys = eventDetail != null ? eventDetail[Table._CONST_KEYS] : null;
+  if (eventDetailKeys && eventDetailKeys.size > 0) {
+    var i;
+    // update selection state based on row updates
+    this._updateSelectionStateFromEventDetailChange(eventDetail);
 
-      // This function will try to find the row index from the DOM, so it must
-      // be called right before we're ready to update the UI.  If we call it
-      // outside of this queued task, the DOM may have changed from other
-      // data operations, and the row index can be wrong.
-      var rows = this._getRowsFromEventDetailChange(eventDetail);
-      if (rows.length === 0) {
-        return undefined;
+    // This function will try to find the row index from the DOM, so it must
+    // be called right before we're ready to update the UI.  If we call it
+    // outside of this queued task, the DOM may have changed from other
+    // data operations, and the row index can be wrong.
+    var rows = this._getRowsFromEventDetailChange(eventDetail);
+    if (rows.length === 0) {
+      this._syncActiveElement();
+      if (resetFocus) {
+        this._getTable().focus();
       }
-      this._getLayoutManager().notifyTableUpdate(Table._UPDATE._ROW_REFRESH);
+      return undefined;
+    }
+    this._getLayoutManager().notifyTableUpdate(Table._UPDATE._ROW_REFRESH);
 
-      var rowsCount = rows.length;
-      var rowIdxArray = [];
-      var resetFocus = false;
+    var rowsCount = rows.length;
+    var rowIdxArray = [];
+    var isResetFocus = resetFocus;
 
-      var updatedRowsPromiseArray = [];
-      for (i = 0; i < rowsCount; i++) {
-        var row = rows[i];
+    var updatedRowsPromiseArray = [];
+    for (i = 0; i < rowsCount; i++) {
+      var row = rows[i];
 
-        // if existing (stale) row contains focus, reset focus to overall table element
-        var staleRow = this._getTableBodyRow(row.rowIdx);
-        if (
-          staleRow != null &&
-          staleRow !== document.activeElement &&
-          staleRow.contains(document.activeElement)
-        ) {
-          resetFocus = true;
-        }
-        // if existing (stale) row update its hidden item to updated item
-        if (staleRow) {
-          this._setTableBodyRowAttributes(rows[i].row, staleRow);
-        }
-
-        updatedRowsPromiseArray.push(
-          this._refreshTableBodyRow(row.rowIdx, row.row, null, null, null, true)
-        );
-        rowIdxArray.push(row.rowIdx);
+      // if existing (stale) row contains focus, reset focus to overall table element
+      var staleRow = this._getTableBodyRow(row.rowIdx);
+      if (
+        staleRow != null &&
+        staleRow !== document.activeElement &&
+        staleRow.contains(document.activeElement)
+      ) {
+        isResetFocus = true;
       }
-      // row values may have changed so refresh the footer
-      return this._refreshTableFooter().then(
-        function () {
-          return Promise.all(updatedRowsPromiseArray).then(
-            function (updatedTableBodyRows) {
-              if (resetFocus) {
-                this._getTable().focus();
-              }
-              if (this._IsCustomElement()) {
-                return this._animateVisibleRows(updatedTableBodyRows, rowIdxArray, 'update').then(
-                  function () {
-                    return this._finalizeBodyRowRendering(updatedTableBodyRows);
-                  }.bind(this)
-                );
-              }
-              return this._finalizeBodyRowRendering(updatedTableBodyRows);
-            }.bind(this)
-          );
-        }.bind(this),
-        function (reason) {
-          return Promise.reject(reason);
-        }
+      // if existing (stale) row update its hidden item to updated item
+      if (staleRow) {
+        this._setTableBodyRowAttributes(rows[i].row, staleRow);
+      }
+
+      updatedRowsPromiseArray.push(
+        this._refreshTableBodyRow(row.rowIdx, row.row, null, null, null, true)
       );
-    }.bind(this)
-  );
+      rowIdxArray.push(row.rowIdx);
+    }
+    // row values may have changed so refresh the footer
+    return this._refreshTableFooter().then(
+      function () {
+        return Promise.all(updatedRowsPromiseArray).then(
+          function (updatedTableBodyRows) {
+            this._syncActiveElement();
+            if (isResetFocus) {
+              this._getTable().focus();
+            }
+            if (this._IsCustomElement()) {
+              return this._animateVisibleRows(updatedTableBodyRows, rowIdxArray, 'update').then(
+                function () {
+                  return this._finalizeBodyRowRendering(updatedTableBodyRows);
+                }.bind(this)
+              );
+            }
+            return this._finalizeBodyRowRendering(updatedTableBodyRows);
+          }.bind(this)
+        );
+      }.bind(this),
+      function (reason) {
+        return Promise.reject(reason);
+      }
+    );
+  }
+  this._syncActiveElement();
+  if (resetFocus) {
+    this._getTable().focus();
+  }
+  return undefined;
 };
 
 /**
@@ -14150,7 +14214,7 @@ Table.prototype._createTableBodyDefaultSelector = function (rowKey, tableBodyRow
   selectorCell = document.createElement(Table.DOM_ELEMENT._TD); // @HTMLUpdateOK
   selectorCell.classList.add(Table.CSS_CLASSES._TABLE_SELECTOR_CELL_CLASS);
   if (this._isStickyLayoutEnabled()) {
-    selectorCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+    selectorCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_ALL);
   }
   if (this._isVerticalGridEnabled()) {
     selectorCell.classList.add(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
@@ -14195,7 +14259,7 @@ Table.prototype._createTableHeaderSelectorColumn = function () {
   var headerColumn = document.createElement(Table.DOM_ELEMENT._TH); // @HTMLUpdateOK
   headerColumn.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_SELECTOR_CELL_CLASS);
   if (this._isStickyLayoutEnabled()) {
-    headerColumn.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+    headerColumn.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_ALL);
   }
   if (this._isVerticalGridEnabled()) {
     headerColumn.classList.add(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
@@ -14227,7 +14291,7 @@ Table.prototype._createTableFooterSelectorCell = function () {
   var footerCell = this._createTableFooterCell();
   footerCell.classList.add(Table.CSS_CLASSES._TABLE_FOOTER_SELECTOR_CELL_CLASS);
   if (this._isStickyLayoutEnabled()) {
-    footerCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+    footerCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_ALL);
   }
   if (this._isVerticalGridEnabled()) {
     footerCell.classList.add(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
@@ -14438,15 +14502,24 @@ Table.prototype._createTableContainer = function () {
  * @private
  */
 Table.prototype._createTableScroller = function () {
+  var tableContainer = this.element[0].parentNode;
   var tableScroller = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
   tableScroller.classList.add(Table.CSS_CLASSES._TABLE_SCROLLER_CLASS);
   // browsers like FF make elements with a scrollbar a tab stop, which we do not want
   tableScroller.setAttribute(Table.DOM_ATTR._TABINDEX, '-1'); // @HTMLUpdateOK
-  this.element[0].parentNode.replaceChild(tableScroller, this.element[0]);
-  tableScroller.insertBefore(this.element[0], tableScroller.firstChild); // @HTMLUpdateOK
+  tableContainer.replaceChild(tableScroller, this.element[0]);
 
   // determine default scrollbar size at initial creation time to avoid layout changes later on
   this._getLayoutManager().initializeDefaultScrollBarSize(tableScroller);
+
+  // this shouldn't be necessary, but Safari has a bug where it does not recalculate the outer element size
+  // correctly when the DOM underneath it grows without doing something to force a reflow on the outer elem
+  if (isSafari()) {
+    var dummyDiv = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+    tableContainer.replaceChild(dummyDiv, tableScroller);
+    tableContainer.replaceChild(tableScroller, dummyDiv);
+  }
+  tableScroller.insertBefore(this.element[0], tableScroller.firstChild); // @HTMLUpdateOK
 
   return tableScroller;
 };
@@ -16168,6 +16241,29 @@ Table.prototype._styleTableBody = function (tableBody) {
 };
 
 /**
+ * Add/remove frozenEdge styling to a given cell element
+ */
+Table.prototype._applyFrozenEdgeStyling = function (cellElement, frozenEdge) {
+  if (frozenEdge === Table._OPTION_FROZEN_EDGE._START) {
+    cellElement.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+    cellElement.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_ALL);
+    cellElement.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
+  } else if (frozenEdge === Table._OPTION_FROZEN_EDGE._END) {
+    cellElement.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_END);
+    cellElement.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_ALL);
+    cellElement.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
+  } else if (frozenEdge === Table._OPTION_FROZEN_EDGE._ALL) {
+    cellElement.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_ALL);
+    cellElement.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
+    cellElement.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
+  } else {
+    cellElement.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_ALL);
+    cellElement.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
+    cellElement.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
+  }
+};
+
+/**
  * Style the td element
  * @param {number} columnIdx  column index
  * @param {Element} tableBodyCell  td DOM element
@@ -16206,16 +16302,7 @@ Table.prototype._styleTableBodyCell = function (columnIdx, tableBodyCell, isNew)
   // apply frozen edge classes if specified
   if (this._isStickyLayoutEnabled()) {
     var frozenEdge = column != null ? column.frozenEdge : null;
-    if (frozenEdge === Table._OPTION_FROZEN_EDGE._START) {
-      tableBodyCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
-      tableBodyCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
-    } else if (frozenEdge === Table._OPTION_FROZEN_EDGE._END) {
-      tableBodyCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_END);
-      tableBodyCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
-    } else {
-      tableBodyCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
-      tableBodyCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
-    }
+    this._applyFrozenEdgeStyling(tableBodyCell, frozenEdge);
   }
 };
 
@@ -16227,16 +16314,7 @@ Table.prototype._styleTableAddRowCell = function (columnIndex, addRowCell) {
 
   // apply frozen edge classes if specified
   var frozenEdge = column != null ? column.frozenEdge : null;
-  if (frozenEdge === Table._OPTION_FROZEN_EDGE._START) {
-    addRowCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
-    addRowCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
-  } else if (frozenEdge === Table._OPTION_FROZEN_EDGE._END) {
-    addRowCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_END);
-    addRowCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
-  } else {
-    addRowCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
-    addRowCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
-  }
+  this._applyFrozenEdgeStyling(addRowCell, frozenEdge);
 
   if (this._isVerticalGridEnabled()) {
     addRowCell.classList.add(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
@@ -16372,16 +16450,7 @@ Table.prototype._styleTableFooterCell = function (columnIdx, tableFooterCell) {
 
   // apply frozen edge classes if specified
   if (this._isStickyLayoutEnabled()) {
-    if (column.frozenEdge === Table._OPTION_FROZEN_EDGE._START) {
-      tableFooterCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
-      tableFooterCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
-    } else if (column.frozenEdge === Table._OPTION_FROZEN_EDGE._END) {
-      tableFooterCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_END);
-      tableFooterCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
-    } else {
-      tableFooterCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
-      tableFooterCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
-    }
+    this._applyFrozenEdgeStyling(tableFooterCell, column.frozenEdge);
   }
 };
 
@@ -16449,16 +16518,7 @@ Table.prototype._styleTableHeaderColumn = function (columnIdx, tableHeaderColumn
 
   // apply frozen edge classes if specified
   if (this._isStickyLayoutEnabled()) {
-    if (column.frozenEdge === Table._OPTION_FROZEN_EDGE._START) {
-      tableHeaderColumn.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
-      tableHeaderColumn.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
-    } else if (column.frozenEdge === Table._OPTION_FROZEN_EDGE._END) {
-      tableHeaderColumn.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_END);
-      tableHeaderColumn.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
-    } else {
-      tableHeaderColumn.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
-      tableHeaderColumn.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
-    }
+    this._applyFrozenEdgeStyling(tableHeaderColumn, column.frozenEdge);
   }
 };
 
@@ -17087,11 +17147,8 @@ Table.prototype._createTableGutterCell = function (tablePart, edge) {
         : Table.CSS_CLASSES._TABLE_GUTTER_END_BODY_CELL;
   }
   gutterCell.classList.add(className);
-  if (edge === 'start') {
-    gutterCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
-  } else {
-    gutterCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_END);
-  }
+  gutterCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_ALL);
+
   return gutterCell;
 };
 
@@ -17237,6 +17294,9 @@ Table.CSS_CLASSES = {
   _TABLE_FROZEN_START: 'oj-table-frozen-start',
   _TABLE_FROZEN_END: 'oj-table-frozen-end',
   _TABLE_FROZEN_EDGE: 'oj-table-frozen-edge',
+  _TABLE_FROZEN_ALL: 'oj-table-frozen-all',
+  _TABLE_FROZEN_START_EDGE: 'oj-table-frozen-start-edge',
+  _TABLE_FROZEN_END_EDGE: 'oj-table-frozen-end-edge',
   _TABLE_GUTTER_START_HEADER_CELL: 'oj-table-gutter-start-header-cell',
   _TABLE_GUTTER_END_HEADER_CELL: 'oj-table-gutter-end-header-cell',
   _TABLE_GUTTER_START_BODY_CELL: 'oj-table-gutter-start-body-cell',
@@ -17433,6 +17493,9 @@ Table.prototype._handleFocusout = function (event) {
   }
 
   this._setFocusoutBusyState();
+  var isClearEditMode = this._hasEditableRow();
+  this._focusoutEditKey = this._getEditableRowKey();
+  var isClearActionableMode = this._isTableActionableMode();
 
   // set timeout to stay in editable/actionable mode if focus comes back into the table
   // prettier-ignore
@@ -17446,7 +17509,6 @@ Table.prototype._handleFocusout = function (event) {
       this._clearKeyboardKeys();
       this._unhighlightActive();
       this._getLayoutManager().handleFocusout();
-      this._setTableEditable(false, false, 0, true, event);
       this._cleanAccStatus();
 
       // clear styling on previous editable data cell if necessary
@@ -17454,7 +17516,18 @@ Table.prototype._handleFocusout = function (event) {
         this._focusEditCell.classList.remove(Table.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS);
         this._focusEditCell = null;
       }
-      this._setTableActionableMode(false, true);
+      if (isClearActionableMode) {
+        this._setTableActionableMode(false, true);
+      }
+      if (isClearEditMode) {
+        if (this._focusoutEditKey != null) {
+          // only clear edit mode if it was enabled prior to the focusout trigger AND the editRow has not changed
+          this._setTableEditable(false, false, 0, true, event);
+        } else {
+          // otherwise ensure focus remains in the Table if it has not yet been regained and an editrow update is pending
+          table.focus();
+        }
+      }
       this._clearFocusoutBusyState();
     }.bind(this),
     100
@@ -19918,6 +19991,31 @@ Table.prototype._updateRowStateCellsClass = function (rowIdx, tableBodyRow, stat
 };
 
 /**
+ * Updates the Table's scroll position based on the rows being removed
+ */
+Table.prototype._updateScrollPositionFromEventDetailRemove = function (eventDetail) {
+  if (this._scrollPosition == null) {
+    var scrollPosition = this.option('scrollPosition');
+    if (scrollPosition != null) {
+      this._scrollPosition = { ...scrollPosition };
+    }
+  }
+  if (this._scrollPosition != null) {
+    var scrollPosRowKey = this._scrollPosition.rowKey != null
+      ? this._scrollPosition.rowKey
+      : this._getRowKeyForRowIdx(this._scrollPosition.rowIndex);
+    if (scrollPosRowKey != null) {
+      eventDetail[Table._CONST_KEYS].forEach((key) => {
+        if (oj$1.KeyUtils.equals(key, scrollPosRowKey)) {
+          this._scrollPosition.rowKey = undefined;
+          this._scrollPosition.rowIndex = undefined;
+        }
+      });
+    }
+  }
+};
+
+/**
  * Adjust scrollPosition such that it will scroll to the selection anchor (last selected row)
  * @param {boolean} isSort
  * @private
@@ -20017,6 +20115,10 @@ Table.prototype._findRowElementByKey = function (rowKey) {
  * Returns true if ListView should handle key based scrollPosition, false otherwise.
  */
 Table.prototype._isScrollToKey = function () {
+  var data = this.options.data;
+  if (data == null) {
+    return false;
+  }
   var scrollToKey = this.options.scrollToKey;
   if (scrollToKey === 'never') {
     return false;
@@ -20024,7 +20126,6 @@ Table.prototype._isScrollToKey = function () {
     return true;
   }
 
-  var data = this.options.data;
   if (!oj$1.DataProviderFeatureChecker.isDataProvider(data)) {
     return true;
   } else if (data.getCapability) {
@@ -20434,15 +20535,6 @@ Table.prototype._getCurrentHorizontalScrollPosition = function (newScrollLeft) {
   var scrollPosition = {
     x: scrollLeft == null ? 0 : scrollLeft
   };
-
-  var prevScrollPosition = this.option('scrollPosition');
-  var diff = Math.abs(prevScrollPosition.x - scrollPosition.x);
-  if (diff < 1 && prevScrollPosition.columnKey != null && !isNaN(prevScrollPosition.columnIndex)) {
-    scrollPosition.columnKey = prevScrollPosition.columnKey;
-    scrollPosition.columnIndex = prevScrollPosition.columnIndex;
-    scrollPosition.offsetX = prevScrollPosition.offsetX + diff;
-    return scrollPosition;
-  }
 
   // loop through the cached header values
   var columnLocations = this._getColumnLocations();
@@ -20908,19 +21000,13 @@ Table.prototype._handleEditEndRejected = function (origColumnIdx, rowIdx, isNext
  * @private
  */
 Table.prototype._fireEditRowChangeEvent = function (newValue, event) {
-  // use _queueTask as _isSettingProperty is preventing writeback
-  // as we are updating editRow option which is triggered by application updating it
-  this._queueTask(
-    function () {
-      this.option('editRow', newValue, {
-        _context: {
-          originalEvent: event,
-          internalSet: true,
-          writeback: true
-        }
-      });
-    }.bind(this)
-  );
+  this.option('editRow', newValue, {
+    _context: {
+      originalEvent: event,
+      internalSet: true,
+      writeback: true
+    }
+  });
 };
 
 /**
@@ -21117,9 +21203,6 @@ Table.prototype._setTableEditable = function (
       }
 
       // otherwise, handle fully synchronous editing
-      // update editRow option
-      this._fireEditRowChangeEvent(newEditRowValue, event);
-
       if (editable) {
         // set the editable row index
         this._setTableActionableMode(false, true);
@@ -21128,6 +21211,8 @@ Table.prototype._setTableEditable = function (
         // re-render the newly editable row
         this._queueTask(
           function () {
+            // update editRow option
+            this._fireEditRowChangeEvent(newEditRowValue, event);
             // recalculate the row index as it could have changed due to other tasks
             var editableRowIndex = this._getRowIdxForRowKey(rowKey);
             return this._refreshRow(editableRowIndex, false, !isLegacyDataSource).then(
@@ -21141,6 +21226,12 @@ Table.prototype._setTableEditable = function (
       } else {
         this._focusEditCell = null;
         this._setEditableRowIdx(null);
+        this._queueTask(
+          function () {
+            // update editRow option
+            this._fireEditRowChangeEvent(newEditRowValue, event);
+          }.bind(this)
+        );
       }
       this._queueTask(
         function () {
@@ -21641,6 +21732,9 @@ Table.prototype._handleKeydownEnter = function (event) {
     // ignore in actionable mode but not for new row
     return;
   }
+  // need to prevent default in order to prevent 'click' events on newly focused elements
+  event.preventDefault();
+
   // pressing enter does sort on the focused column header
   var focusedColumnIdx = this._getActiveHeaderIndex();
   if (focusedColumnIdx != null) {
@@ -21861,12 +21955,18 @@ Table.prototype._columnHeaderSortableIconRenderer = function (context, delegateR
   parentElement.appendChild(headerColumnDiv); // @HTMLUpdateOK
 
   var sortContainer = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+  var sortIcon = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
   sortContainer.classList.add(Table.CSS_CLASSES._TABLE_SORT_ICON_CONTAINER_CLASS);
   sortContainer.setAttribute(Table.DOM_ATTR._TITLE, this.getTranslatedString('labelSortAsc')); // @HTMLUpdateOK
-  sortContainer.setAttribute(Table.DOM_ATTR._ARIA_HIDDEN, 'true'); // @HTMLUpdateOK
+  if (!isIos()) {
+    sortContainer.setAttribute(Table.DOM_ATTR._ARIA_HIDDEN, 'true'); // @HTMLUpdateOK
+  } else {
+    sortIcon.setAttribute(Table.DOM_ATTR._ROLE, 'img'); // @HTMLUpdateOK
+    var sortLabel = this.getTranslatedString('accessibleSortable', { id: '' });
+    sortIcon.setAttribute(Table.DOM_ATTR._ARIA_LABEL, sortLabel); // @HTMLUpdateOK
+  }
   this._AddHoverable($(sortContainer));
   headerColumnDiv.appendChild(sortContainer); // @HTMLUpdateOK
-  var sortIcon = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
   sortIcon.classList.add(Table.CSS_CLASSES._WIDGET_ICON_CLASS);
   sortIcon.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_DEFAULT_SORT_ICON_CLASS);
   sortIcon.classList.add(Table.MARKER_STYLE_CLASSES._DISABLED);
@@ -22438,13 +22538,18 @@ Table.prototype._validateInitialSelectionState = function (isOptionUpdate) {
       );
       validateSelectedResult.result.then(
         function (validSelected) {
-          this._enforceSelectionRequired(selected, validSelected, useSelection);
+          this._enforceSelectionRequired(selected, validSelected, useSelection, isOptionUpdate);
           // clear selection-required rowKey validation busy state
           this._clearComponentBusyState(validationResolveFunc);
         }.bind(this)
       );
     } else {
-      this._enforceSelectionRequired(selected, validateSelectedResult.result, useSelection);
+      this._enforceSelectionRequired(
+        selected,
+        validateSelectedResult.result,
+        useSelection,
+        isOptionUpdate
+      );
     }
   } else {
     if (useSelection) {
@@ -22496,7 +22601,13 @@ Table.prototype._isSelectionRequiredSatisfied = function (selected) {
 /**
  * @private
  */
-Table.prototype._enforceSelectionRequired = function (selected, validSelected, useSelection) {
+Table.prototype._enforceSelectionRequired = function (
+  selected,
+  validSelected,
+  useSelection,
+  isOptionUpdate
+) {
+  var selectionSuccessful;
   if (useSelection) {
     if (this._hasSelected(validSelected)) {
       if (validSelected.row === selected.row && validSelected.column === selected.column) {
@@ -22509,13 +22620,21 @@ Table.prototype._enforceSelectionRequired = function (selected, validSelected, u
       }
     } else {
       // selection state does not satisfy selection-required, override to valid state
-      this._selectFirstRowOrColumn();
+      selectionSuccessful = this._selectFirstRowOrColumn();
+      if (isOptionUpdate && !selectionSuccessful) {
+        // sync up selected with selection as best as possible
+        this._setSelected(selected, true);
+      }
     }
   } else if (this._hasSelected(validSelected)) {
     this._setSelected(validSelected);
   } else {
     // selection state does not satisfy selection-required, override to valid state
-    this._selectFirstRowOrColumn();
+    selectionSuccessful = this._selectFirstRowOrColumn();
+    if (isOptionUpdate && !selectionSuccessful) {
+      // sync up selection with selected as best as possible
+      this._setSelected(selected);
+    }
   }
 };
 
@@ -22530,7 +22649,7 @@ Table.prototype._selectFirstRowOrColumn = function () {
     if (key != null) {
       newKeySet = new KeySetImpl([key]);
       this._setSelected({ row: newKeySet, column: new KeySetImpl() });
-      return;
+      return true;
     }
   }
   if (this._isColumnSelectionEnabled()) {
@@ -22538,8 +22657,10 @@ Table.prototype._selectFirstRowOrColumn = function () {
     if (key != null) {
       newKeySet = new KeySetImpl([key]);
       this._setSelected({ row: new KeySetImpl(), column: newKeySet });
+      return true;
     }
   }
+  return false;
 };
 
 /**
@@ -22773,9 +22894,9 @@ Table.prototype._processRowRangeSelection = function (rangeObj, rowKeySet, colum
  * @private
  */
 Table.prototype._getDataSourceLastFetchedRowIndex = function () {
+  var dataprovider = this._getData();
   var tableBodyRows = this._getTableBodyRows();
-  if (tableBodyRows.length > 0) {
-    var dataprovider = this._getData();
+  if (dataprovider != null && tableBodyRows.length > 0) {
     var offset = 0;
     if (this._isPagingModelDataProvider()) {
       offset = dataprovider.getStartItemIndex();
@@ -23799,6 +23920,8 @@ Table.prototype._updateSelectors = function (selected) {
  * you will need to implement the <code>useTabbableMode</code> API contract.<p>
  *
  * <p>Finally review the list below for specific API changes and changes to table type definitions.</p>
+ *
+ * <h5 id="dataprovider-key-type-migration"></h5>
  *
  * <h5>Accessibility changes</h5>
  * <p>oj-c-table is based on the grid role vs the oj-table being role application.</p>
@@ -24934,10 +25057,10 @@ Table.prototype.options = {
     scrollerOffsetBottom: null,
 
     /**
-     * The start offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's frozen 'start' columns (or frozen 'end' columns in RTL) become 'sticky' when the 'scroller' attribute is specified.
+     * The start offset value (in pixels) used for the Table's external scroller. This value is used to specify the start location where the Table's frozen columns become 'sticky' when the 'scroller' attribute is specified.
      * @expose
      * @name scrollPolicyOptions.scrollerOffsetStart
-     * @ojshortdesc The start offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's frozen 'start' columns (or frozen 'end' columns in RTL) become 'sticky' when the 'scroller' attribute is specified.
+     * @ojshortdesc The start offset value (in pixels) used for the Table's external scroller. This value is used to specify the start location where the Table's frozen columns become 'sticky' when the 'scroller' attribute is specified.
      * @memberof! oj.ojTable
      * @instance
      * @type {number|null}
@@ -24948,10 +25071,10 @@ Table.prototype.options = {
     scrollerOffsetStart: null,
 
     /**
-     * The end offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's frozen 'end' columns (or frozen 'start' columns in RTL) become 'sticky' when the 'scroller' attribute is specified.
+     * The end offset value (in pixels) used for the Table's external scroller. This value is used to specify the end location where the Table's frozen columns become 'sticky' when the 'scroller' attribute is specified.
      * @expose
      * @name scrollPolicyOptions.scrollerOffsetEnd
-     * @ojshortdesc The end offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's frozen 'end' columns (or frozen 'start' columns in RTL) become 'sticky' when the 'scroller' attribute is specified.
+     * @ojshortdesc The end offset value (in pixels) used for the Table's external scroller. This value is used to specify the end location where the Table's frozen columns become 'sticky' when the 'scroller' attribute is specified.
      * @memberof! oj.ojTable
      * @instance
      * @type {number|null}
@@ -26071,7 +26194,14 @@ Table.prototype.getSubIdByNode = function (node, ignoreSortIcons) {
  */
 Table.prototype.refresh = function () {
   this._super();
-  this._refresh();
+  this._queueTask(
+    function () {
+      // _refresh clears the layout manager, so do not register 'refresh' update here
+      this._renderedTableHeaderColumns = false;
+      this._clearCachedStyling();
+      return this._refresh();
+    }.bind(this)
+  );
 };
 
 /**
@@ -26185,17 +26315,16 @@ Table.prototype._SetupResources = function () {
   this._registerDataSourceEventListeners();
   // setup selection change listener to support browser selection.
   this._setupSelectionChangedListener();
-  if (this._isInitFetch) {
-    this._initFetch();
-    this._isInitFetch = false;
-  } else {
-    this._queueTask(
-      function () {
-        this._getLayoutManager().notifyTableUpdate(Table._UPDATE._REFRESH);
-        return this._invokeDataFetchRows();
-      }.bind(this)
-    );
-  }
+  this._queueTask(
+    function () {
+      this._getLayoutManager().notifyTableUpdate(Table._UPDATE._REFRESH);
+      if (this._isInitFetch) {
+        this._isInitFetch = false;
+        return this._initFetch();
+      }
+      return this._invokeDataFetchRows();
+    }.bind(this)
+  );
 };
 
 /**
@@ -26499,8 +26628,17 @@ Table.prototype._setOptions = function (options, flags) {
       if (key === 'columns') {
         // an external change in 'columns' must reset any previous column reorder operations
         this._columnsDestMap = null;
+        this._clearCachedMetadata();
         requiresHeaderRefresh = true;
-      } else if (key === 'selectionMode' && value.row !== undefined) {
+      } else if (
+        key === 'selectionMode' &&
+        this._isStickyLayoutEnabled() &&
+        ((value?.row === 'multiple' && this.options.selectionMode?.row !== 'multiple') ||
+          (this.options.selectionMode?.row === 'multiple' && value?.row !== 'multiple'))
+      ) {
+        this._clearCachedMetadata();
+        requiresHeaderRefresh = true;
+      } else if (key === 'verticalGridVisible' || key === 'display') {
         requiresHeaderRefresh = true;
       } else if (key === 'data') {
         requiresDataRefresh = true;
@@ -26508,17 +26646,22 @@ Table.prototype._setOptions = function (options, flags) {
       requiresRefresh = true;
     }
   }
-  this._superApply(arguments);
   if (requiresRefresh) {
-    if (requiresHeaderRefresh) {
-      this._clearCachedMetadata();
-      this._refreshTableHeader();
-    }
-    if (requiresDataRefresh) {
-      this._beforeDataRefresh();
-    }
-    this._refresh();
+    this._queueTask(
+      function () {
+        if (requiresHeaderRefresh) {
+          // clearing the rendered flag triggers a header render as part of _refresh()
+          this._renderedTableHeaderColumns = false;
+        }
+        if (requiresDataRefresh) {
+          this._beforeDataRefresh();
+        }
+        // _refresh clears the layout manager, so do not register 'refresh' update here
+        return this._refresh();
+      }.bind(this)
+    );
   }
+  this._superApply(arguments);
 };
 
 /**
@@ -26527,33 +26670,45 @@ Table.prototype._setOptions = function (options, flags) {
  */
 Table.prototype._setOption = function (key, value, flags) {
   if (key === 'selection') {
-    this._selectionSet = true;
     // update row index/key values in the 'selection' option
     this._syncRangeSelection(value);
     this._superApply(arguments);
-    // after applying the new selection value, sync the selection state
-    this._validateInitialSelectionState(true);
+    this._queueTask(
+      function () {
+        // after applying the new selection value, sync the selection state
+        this._selectionSet = true;
+        this._validateInitialSelectionState(true);
+      }.bind(this)
+    );
   } else if (key === 'selected') {
-    this._selectionSet = false;
     this._superApply(arguments);
-    // after applying the new selected value, sync the selection state
-    this._validateInitialSelectionState(true);
+    this._queueTask(
+      function () {
+        // after applying the new selected value, sync the selection state
+        this._selectionSet = false;
+        this._validateInitialSelectionState(true);
+      }.bind(this)
+    );
   } else if (key === 'currentRow') {
+    this._superApply(arguments);
     this._queueTask(
       function () {
         this._setCurrentRow(value, null, true);
       }.bind(this)
     ).catch(function () {});
-    this._superApply(arguments);
   } else if (key === 'scrollPosition') {
+    this._superApply(arguments);
     this._queueTask(
       function () {
         // syncScrollPosition will update with proper value
         this._syncScrollPosition(value);
       }.bind(this)
     );
-    this._superApply(arguments);
   } else if (key === 'editRow') {
+    if (value != null && (value.rowKey != null || value.rowIndex > -1)) {
+      // clear the pending focusout editkey value if a row is becoming editable
+      this._focusoutEditKey = null;
+    }
     // setEditRow will update with all props within value
     this._setEditRow(value);
   } else if (key === 'scrollPolicyOptions' && flags != null) {
@@ -26569,19 +26724,19 @@ Table.prototype._setOption = function (key, value, flags) {
       }
     }
   } else if (key === 'addRowDisplay') {
+    this._superApply(arguments);
     this._queueTask(
       function () {
         return this._refreshAddRowDisplay();
       }.bind(this)
     );
-    this._superApply(arguments);
   } else if (key === 'selectAllControl') {
+    this._superApply(arguments);
     this._queueTask(
       function () {
         return this._refreshTableHeader();
       }.bind(this)
     );
-    this._superApply(arguments);
   } else {
     this._superApply(arguments);
   }

@@ -1,0 +1,9 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../tooltip/themes/stable/_oj-tooltip.cssvars.scss";
+
+@include module-include-once("stable.variables.formcontrol") {
+
+  :root {
+    --oj-form-control-font-weight-read-only:  normal;
+  }
+}

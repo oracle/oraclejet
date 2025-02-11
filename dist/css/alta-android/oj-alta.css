@@ -300,7 +300,7 @@ template {
 }
 
 .oj-theme-json {
-  font-family: '{"name":"alta","targetPlatform":"android","behavior":"alta","jetReleaseVersion":"v17.1.0"}';
+  font-family: '{"name":"alta","targetPlatform":"android","behavior":"alta","jetReleaseVersion":"v18.0.0"}';
 }
 
 .oj-helper-hidden-accessible {
@@ -9605,6 +9605,7 @@ oj-popup {
 }
 
 .oj-popup {
+  overflow: auto;
   border: 1px solid #c6c7c8;
   border-radius: 0;
   background-color: white;

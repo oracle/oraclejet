@@ -6,6 +6,7 @@ import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropert
 export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseComponent<ojNBoxSettableProperties<K, D>> {
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     cellContent?: 'counts' | 'auto';
     cellMaximize?: 'off' | 'on';
@@ -96,6 +97,7 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
             preventDefault: boolean;
         })) | null;
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
     translations: {
         accessibleContainsControls?: string;
@@ -459,6 +461,7 @@ export interface ojNBoxEventMap<K, D extends ojNBox.Node<K> | any> extends dvtBa
 export interface ojNBoxSettableProperties<K, D extends ojNBox.Node<K> | any> extends dvtBaseComponentSettableProperties {
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     cellContent?: 'counts' | 'auto';
     cellMaximize?: 'off' | 'on';
@@ -549,6 +552,7 @@ export interface ojNBoxSettableProperties<K, D extends ojNBox.Node<K> | any> ext
             preventDefault: boolean;
         })) | null;
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
     translations: {
         accessibleContainsControls?: string;
@@ -1075,7 +1079,7 @@ export interface NBoxIntrinsicProps extends Partial<Readonly<ojNBoxSettablePrope
     onojPasteRequest?: (value: ojNBoxEventMap<any, any>['ojPasteRequest']) => void;
     onanimationOnDataChangeChanged?: (value: ojNBoxEventMap<any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojNBoxEventMap<any, any>['animationOnDisplayChanged']) => void;
-    onasChanged?: (value: ojNBoxEventMap<any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojNBoxEventMap<any, any>['asChanged']) => void;
     oncellContentChanged?: (value: ojNBoxEventMap<any, any>['cellContentChanged']) => void;
     oncellMaximizeChanged?: (value: ojNBoxEventMap<any, any>['cellMaximizeChanged']) => void;
     oncellsChanged?: (value: ojNBoxEventMap<any, any>['cellsChanged']) => void;
@@ -1102,7 +1106,7 @@ export interface NBoxIntrinsicProps extends Partial<Readonly<ojNBoxSettablePrope
     onselectionModeChanged?: (value: ojNBoxEventMap<any, any>['selectionModeChanged']) => void;
     onstyleDefaultsChanged?: (value: ojNBoxEventMap<any, any>['styleDefaultsChanged']) => void;
     ontooltipChanged?: (value: ojNBoxEventMap<any, any>['tooltipChanged']) => void;
-    ontouchResponseChanged?: (value: ojNBoxEventMap<any, any>['touchResponseChanged']) => void;
+    /** @deprecated since 18.0.0 */ ontouchResponseChanged?: (value: ojNBoxEventMap<any, any>['touchResponseChanged']) => void;
     ontrackResizeChanged?: (value: ojNBoxEventMap<any, any>['trackResizeChanged']) => void;
     children?: ComponentChildren;
 }

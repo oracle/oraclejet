@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -162,6 +162,10 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojthemeutils', 'ojs/ojla
                                 corePackFormComp.props['READONLY'] === undefined) {
                                 corePackFormComp.props['readonly'] = props.containerReadonly;
                             }
+                            if (corePackFormComp.props['labelWrapping'] === undefined &&
+                                corePackFormComp.props['LABELWRAPPING'] === undefined) {
+                                corePackFormComp.props['labelWrapping'] = props.labelWrapping;
+                            }
                         }
                     }
                 }
@@ -195,6 +199,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojthemeutils', 'ojs/ojla
         totalColumns: 1,
         labelEdge: 'inside',
         labelWidth: '33%',
+        labelWrapping: 'wrap',
         labelText: ''
     };
 
@@ -202,10 +207,10 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojthemeutils', 'ojs/ojla
         render(props) {
             this._columns = props.columns > 0 ? props.columns : props.maxColumns;
             const rootClassName = 'oj-form-layout oj-formlayout-max-cols-' + this._columns;
-            const formContent = this._getColumnFormContent(props.formControls, props.columns, props.readonly);
+            const formContent = this._getColumnFormContent(props.formControls, props.columns, props.readonly, props.labelWrapping);
             return jsxRuntime.jsx("div", { class: rootClassName, children: formContent });
         }
-        _getColumnFormContent(childArray, columns, containerReadonly) {
+        _getColumnFormContent(childArray, columns, containerReadonly, labelWrapping) {
             let formContent = [];
             let rowContent;
             let totalCols = 1;
@@ -220,7 +225,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojthemeutils', 'ojs/ojla
                     }
                     labelEdge = this._themeDefault.labelEdge;
                 }
-                rowContent = (jsxRuntime.jsx(VCellGenerator, { containerReadonly: containerReadonly, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key, children: content }));
+                rowContent = (jsxRuntime.jsx(VCellGenerator, { containerReadonly: containerReadonly, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, labelWrapping: labelWrapping, contentType: item.contentType, cellKey: item.key, children: content }));
                 formContent.push(jsxRuntime.jsx("div", { class: "oj-flex", "data-oj-internal": true, children: rowContent }));
             }
             const styling = this._getColumnStyling(columns);
@@ -289,7 +294,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojthemeutils', 'ojs/ojla
         render(props) {
             const cssColumnClasses = props.columns > 0 ? props.columns + NO_MIN_COLUMN_WIDTH : props.maxColumns;
             const rootClassNames = ROOTCLASSNAMES + cssColumnClasses;
-            const formContent = this._getRowFormContent(this.props.formControls, this.props.readonly);
+            const formContent = this._getRowFormContent(this.props.formControls, this.props.readonly, this.props.labelWrapping);
             return (jsxRuntime.jsx("div", { class: rootClassNames, ref: this.setFormDivRef, children: formContent }));
         }
         componentDidMount() {
@@ -326,7 +331,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojthemeutils', 'ojs/ojla
             }
             return calculatedCols;
         }
-        _getRowFormContent(childArray, containerReadonly) {
+        _getRowFormContent(childArray, containerReadonly, labelWrapping) {
             let formContent = [];
             let rowContent;
             const cols = this._calculateColumns(this.state.availableColumns);
@@ -371,7 +376,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojthemeutils', 'ojs/ojla
                     }
                     labelEdge = this._themeDefault.labelEdge;
                 }
-                rowContent.push(jsxRuntime.jsx(VCellGenerator, { colspan: colspan, containerReadonly: containerReadonly, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key, children: content }));
+                rowContent.push(jsxRuntime.jsx(VCellGenerator, { colspan: colspan, containerReadonly: containerReadonly, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, labelWrapping: labelWrapping, contentType: item.contentType, cellKey: item.key, children: content }));
                 cellCount += colspan;
                 if (cellCount % cols !== 0) {
                     this._addColumnGutter(rowContent);

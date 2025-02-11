@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1789,6 +1789,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           ? 1.0
           : this._diagram.getOptions()['styleDefaults']['_highlightAlpha'];
         this.setAlpha(highlightAlpha);
+        this._finalAlpha = highlightAlpha;
         this._isHighlighted = bHighlight;
       }
     }
@@ -1928,6 +1929,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @override
      */
     getNextNavigable(event) {
+      if (event.type == dvt.MouseEvent.CLICK) {
+        return this;
+      }
+
       // If there are active elements, then short circuit a keyboard navigation
       if (this.hasActiveInnerElems) {
         return null;
@@ -1967,8 +1972,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         node = this.GetDiagram().getNodeById(nodeId);
         this._diagram.ensureObjInViewport(event, node);
         return node;
-      } else if (event.type == dvt.MouseEvent.CLICK) {
-        return this;
       }
       return null;
     }
@@ -2257,6 +2260,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         new dvt.AnimFadeIn(this.getCtx(), this, animationHandler.getAnimDur()),
         DvtDiagramDataAnimationPhase.INSERT
       );
+    }
+
+    /**
+     * During animation, the alpha is overriden. This function preserves the alpha level.
+     * @returns Alpha of the diagram link
+     */
+    getFinalAlpha() {
+      return this._finalAlpha;
     }
 
     /**
@@ -4179,6 +4190,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
      * @override
      */
     getNextNavigable(event) {
+      if (event.type == dvt.MouseEvent.CLICK) {
+        return this;
+      }
+
       var next = null;
       // If there are active elements, then short circuit a keyboard navigation
       if (this.hasActiveInnerElems) {
@@ -4209,8 +4224,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         //next node up in container hierarchy
         parentNode = this.getGroupId() ? this.GetDiagram().getNodeById(this.getGroupId()) : null;
         next = parentNode ? parentNode : this;
-      } else if (event.type == dvt.MouseEvent.CLICK) {
-        next = this;
       } else {
         // get next navigable node
         var parentNode = this.getGroupId() ? this.GetDiagram().getNodeById(this.getGroupId()) : null;
@@ -4728,6 +4741,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     }
 
     /**
+     * During animation, the alpha is overriden. This function preserves the alpha level.
+     * @returns Alpha of the diagram node
+     */
+    getFinalAlpha() {
+      return this._finalAlpha;
+    }
+
+    /**
      * Retrieves current state for the node
      * @param {number} zoom optional zoom level for the component
      * @return {Object} object that contains current hovered, selected, focused staed and zoom level for the node
@@ -4777,6 +4798,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
         } else {
           // default way - just toggle the value
           this.setAlpha(highlightAlpha);
+          this._finalAlpha = highlightAlpha;
         }
       }
     }
@@ -5788,15 +5810,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       // prettier-ignore
       this._focusoutTimeout = setTimeout( // @HTMLUpdateOK
         function () {
-          var keyboardUtils = this._component.getOptions()._keyboardUtils;
-          if (this._component.activeInnerElemsItemId) {
+          if (this._component.isActionableMode()) {
             const activeItem =
               this._component.getNodeById(this._component.activeInnerElemsItemId) ||
               this._component.getLinkById(this._component.activeInnerElemsItemId);
-            keyboardUtils.disableAllFocusable(activeItem.getElem());
-            activeItem.hasActiveInnerElems = false;
-            this._component.activeInnerElems = null;
-            this._component.activeInnerElemsItemId = null;
+            this._component.exitActionableMode(activeItem, true);
           }
         }.bind(this),
         100
@@ -5812,7 +5830,53 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       if (!isPopupFocusin) {
         this._clearOpenPopupListeners();
+        const target = event.getNativeEvent().target;
+        const navigable = this.GetLogicalObject(event.target);
+        if (
+          navigable &&
+          (navigable instanceof DvtDiagramNode || navigable instanceof DvtDiagramLink) &&
+          target !== navigable.getElem() &&
+          navigable.getElem().contains(target) &&
+          this._component.isActionableElement(target)
+        ) {
+          if (
+            this._component.activeInnerElemsItemId &&
+            !DvtDiagramDataUtils.compareValues(
+              this._component.getCtx(),
+              navigable.getId(),
+              this._component.activeInnerElemsItemId
+            )
+          ) {
+            const prevNavigable =
+              this._component.getNodeById(this._component.activeInnerElemsItemId) ||
+              this._component.getLinkById(this._component.activeInnerElemsItemId);
+            if (prevNavigable) {
+              this._component.exitActionableMode(prevNavigable, true);
+            }
+          }
+          this.setFocus(navigable);
+          this._component.enterActionableMode(navigable, target);
+        }
       }
+    }
+
+    /**
+     * @override
+     */
+    OnClick(event) {
+      const target = event.getNativeEvent().target;
+      const navigable = this.GetLogicalObject(event.target);
+      const currentNavigable = this.getFocus();
+      if (
+        this._component.isActionableMode() &&
+        navigable &&
+        currentNavigable !== navigable &&
+        !this._component.isActionableElement(target)
+      ) {
+        // click on something non-actionable and not the current focus navigable should exit actionable mode
+        this._component.exitActionableMode(currentNavigable, true);
+      }
+      super.OnClick(event);
     }
 
     /**
@@ -5954,9 +6018,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           animator && animator.play();
         }
       } else {
+        const isActionableMode = this._component.isActionableMode();
         if (keyCode == dvt.KeyboardEvent.TAB && focusObj) {
           // If there are activeElems, tab between them
-          var activeInnerSize = this._component.activeInnerElems
+          var activeInnerSize = isActionableMode
             ? this._component.activeInnerElems.length
             : undefined;
           if (activeInnerSize) {
@@ -5980,6 +6045,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           keyboardUtils.disableAllFocusable(this._component.getLinksPane().getElem(), true);
         }
         eventConsumed = super.ProcessKeyboardEvent(event);
+        if (isActionableMode) eventConsumed = true;
       }
       return eventConsumed;
     }
@@ -6444,12 +6510,31 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var diagram = this.GetDiagram();
       var keyboardUtils = diagram.getOptions()._keyboardUtils;
       var currentNavigable = this._eventManager.getFocus();
-      const isActionableMode = diagram.activeInnerElems;
+      const isActionableMode = diagram.isActionableMode();
       // If an element has appeared since the last render, should disable it
       if (!isActionableMode && currentNavigable) {
         keyboardUtils.disableAllFocusable(currentNavigable.getElem());
       }
-      if (keyCode == dvt.KeyboardEvent.TAB) {
+
+      if (isActionableMode) {
+        if (
+          currentNavigable &&
+          (keyCode == dvt.KeyboardEvent.ESCAPE || event.keyCode === dvt.KeyboardEvent.F2)
+        ) {
+          // navigating outside using Esc or F2
+          diagram.exitActionableMode(currentNavigable);
+          this._eventManager.ShowFocusEffect(event, currentNavigable);
+          this._eventManager.ProcessRolloverEvent(event, currentNavigable, true);
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        // Note that actionable mode Tab is handled by DvtDiagramEventManager.ProcessKeyboardEvent()
+        return null;
+      } else if (keyCode == dvt.KeyboardEvent.F2 && currentNavigable) {
+        // navigating inside using F2
+        diagram.enterActionableMode(currentNavigable);
+        return null;
+      } else if (keyCode == dvt.KeyboardEvent.TAB) {
         if (currentNavigable) {
           dvt.EventManager.consumeEvent(event);
           return currentNavigable;
@@ -6463,40 +6548,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             return navigable;
           }
         }
-      } else if (!isActionableMode && keyCode == dvt.KeyboardEvent.F2 && currentNavigable) {
-        // navigating inside using F2
-        this._eventManager.hideTooltip();
-        var enabled = keyboardUtils.enableAllFocusable(currentNavigable.getElem());
-        if (
-          currentNavigable instanceof DvtDiagramNode &&
-          currentNavigable.isDisclosed() &&
-          currentNavigable.GetChildNodePane(true)
-        ) {
-          keyboardUtils.disableAllFocusable(currentNavigable.GetChildNodePane().getElem());
-          enabled = Array.from(enabled);
-          enabled = enabled.filter((item) => item.tabIndex !== -1);
-        }
-        if (enabled.length > 0) {
-          diagram.activeInnerElems = enabled;
-          currentNavigable.hasActiveInnerElems = true;
-          diagram.activeInnerElemsItemId = currentNavigable.getId();
-          enabled[0].focus();
-        }
-      } else if (
-        isActionableMode &&
-        currentNavigable &&
-        (keyCode == dvt.KeyboardEvent.ESCAPE || event.keyCode === dvt.KeyboardEvent.F2)
-      ) {
-        // navigating outside using Esc or F2
-        diagram.activeInnerElems = null;
-        keyboardUtils.disableAllFocusable(currentNavigable.getElem());
-        currentNavigable.hasActiveInnerElems = false;
-
-        diagram._context._parentDiv.focus();
-        this._eventManager.ShowFocusEffect(event, currentNavigable);
-        this._eventManager.ProcessRolloverEvent(event, currentNavigable, true);
-        event.preventDefault();
-        event.stopPropagation();
       }
       return super.processKeyDown(event);
     }
@@ -10067,6 +10118,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       if (this._bRendered) {
         this._currentPanZoomState = this._calcPanZoomState(this.getPanZoomCanvas());
       }
+      // JET-64806 - If the current active element is inside of diagram, then must have been in actionable mode
+      // and diagram should grab focus
+      if (this._bRendered && this.getElem().contains(document.activeElement)) {
+        this._context.getContainer().focus();
+      }
       if (!this.IsResize() && this._bRendered) {
         if (DvtDiagramStyleUtils.getAnimOnDataChange(this) != 'none') {
           this._oldDataAnimState = new DvtDiagramDataAnimationState(this);
@@ -10138,6 +10194,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           }
         } else {
           this.activeInnerElems = null;
+          this.activeInnerElemsItemId = null;
         }
       }
     }
@@ -11909,6 +11966,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           var displayable = this.getNodeById(nodeId).getDisplayable();
           displayable.setAriaRole('group', true);
           displayable.UpdateAriaLabel(true);
+          if (node.isShowingKeyboardFocusEffect()) {
+            displayable.showKeyboardFocusEffect();
+          }
           this.getEventManager().getCtx().setActiveElement(displayable, true);
         }
       }
@@ -11939,12 +11999,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       }
 
       if (triggerEvent) {
+        var node = this.getNodeById(nodeId);
         this.render(this.getOptions(), this.Width, this.Height);
         this.dispatchEvent(new dvt.EventFactory.newEvent('collapse', nodeId));
         // JET-50126 JAWS, Container expand collapse state not read out consistently
         var displayable = this.getNodeById(nodeId).getDisplayable();
         displayable.setAriaRole('img', true);
         displayable.UpdateAriaLabel(true);
+        if (node.isShowingKeyboardFocusEffect()) {
+          displayable.showKeyboardFocusEffect();
+        }
         this.getEventManager().getCtx().setActiveElement(displayable, true);
         var currentItem = this.getOptions().currentItem;
         if (!this.getObjectById(currentItem)) {
@@ -12181,7 +12245,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       var busyContext = oj.Context.getContext(this.getContainerElem()).getBusyContext();
       busyContext.whenReady().then(() => {
         keyboardUtils.disableAllFocusable(this.getElem());
-        if (this.activeInnerElems) {
+        if (this.isActionableMode()) {
           var node = this.getNodeById(this.activeInnerElemsItemId);
           // if neither the old active elem had an ID and elem was successfully focused
           // nor if old custom elem had an ID and was succesfully focused
@@ -12193,10 +12257,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
             )
           ) {
             // Take out actionable mode and just put focus on the nearest node.
-            this.activeInnerElems = null;
-            this._context._parentDiv.focus();
+            this.exitActionableMode(node);
             node.showKeyboardFocusEffect();
-            node.hasActiveInnerElems = false;
           }
           this.EventManager.setFocus(node);
           this._oldActiveElemId = null;
@@ -12228,21 +12290,83 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
     _enableActiveElems(elemId, node) {
       var activeElem = document.getElementById(elemId);
       if (activeElem && node.getElem().contains(activeElem)) {
-        var keyboardUtils = this.Options._keyboardUtils;
-        var enabled = keyboardUtils.enableAllFocusable(node.getElem());
-        if (node instanceof DvtDiagramNode && node.isDisclosed() && node.GetChildNodePane(true)) {
-          keyboardUtils.disableAllFocusable(node.GetChildNodePane().getElem());
-          enabled = Array.from(enabled);
-          enabled = enabled.filter((item) => item.tabIndex !== -1);
-        }
-        if (enabled.length > 0) {
-          activeElem ? activeElem.focus() : enabled[0].focus();
-          this.activeInnerElems = enabled;
-          node.hasActiveInnerElems = true;
-        }
+        this.enterActionableMode(node, activeElem);
         return true;
       }
       return false;
+    }
+
+    /**
+     * Enters actionable mode.
+     * @param {DvtDiagramNode|DvtDiagramLink} navigable
+     * @param {Element=} activeElem Specify the active element to focus on. If not specified, defaults to the first focusable element.
+     */
+    enterActionableMode(navigable, activeElem) {
+      this.getEventManager().hideTooltip();
+      var keyboardUtils = this.Options._keyboardUtils;
+      var enabled = keyboardUtils.enableAllFocusable(navigable.getElem());
+      if (
+        navigable instanceof DvtDiagramNode &&
+        navigable.isDisclosed() &&
+        navigable.GetChildNodePane(true)
+      ) {
+        keyboardUtils.disableAllFocusable(navigable.GetChildNodePane().getElem());
+        enabled = Array.from(enabled);
+        enabled = enabled.filter((item) => item.tabIndex !== -1);
+      }
+      if (enabled.length > 0) {
+        this.activeInnerElems = enabled;
+        navigable.hasActiveInnerElems = true;
+        this.activeInnerElemsItemId = navigable.getId();
+        activeElem ? activeElem.focus() : enabled[0].focus();
+      }
+    }
+
+    /**
+     * Exits actionable mode.
+     * @param {DvtDiagramNode|DvtDiagramLink} navigable
+     * @param {boolean=} doNotforceComponentFocus Whether to explicitly focus on the component root after exiting actionable mode.
+     */
+    exitActionableMode(navigable, doNotforceComponentFocus) {
+      var keyboardUtils = this.Options._keyboardUtils;
+      keyboardUtils.disableAllFocusable(navigable.getElem());
+      navigable.hasActiveInnerElems = false;
+      this.activeInnerElems = null;
+      this.activeInnerElemsItemId = null;
+      if (!doNotforceComponentFocus) {
+        this._context._parentDiv.focus();
+      }
+    }
+
+    /**
+     * Whether currently in actionable mode.
+     * @return {boolean}
+     */
+    isActionableMode() {
+      return !!this.activeInnerElems;
+    }
+
+    /**
+     * Whether the given element is focusable in actionable mode.
+     * In particular, this method is used to check whether focusing on the given element
+     * should cause the component to enter actionable mode.
+     * @param {Element} elem
+     * @returns {boolean}
+     */
+    isActionableElement(elem) {
+      // Matches ListView's isInputOrEditableContentElement, where only input or editable elements
+      // can trigger actionable mode when clicked on. ListView deliberately did not match Table and DataGrid's
+      // behavior to consider any focusable element to be actionable. This is because when oj-list-item-layout
+      // is used, everything becomes a tab stop, and it can become annoying/unintuitive for the user
+      // to enter actionable mode by clicking almost anywhere in the item. Diagram users may also use oj-list-item-layout
+      // inside foreignObjects inside nodes.
+      // If in the future we want to match Table's behavior, use keyboardUtils's isActionableElement().
+      const inputRegExp = /^INPUT|SELECT|OPTION|TEXTAREA/;
+      return (
+        (elem.nodeName.match(inputRegExp) != null ||
+          elem.getAttribute('contenteditable') === 'true') &&
+        !elem.readOnly
+      );
     }
 
     /**

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -48,11 +48,16 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
    * </h3>
    * To migrate from oj-tagcloud to oj-c-tagcloud, you need to revise the import statement and references to oj-tagcloud in your app.
+   * <h5 id="dataprovider-key-type-migration"></h5>
+   * <h5>Default component height</h5>
+   * <p>
+   * The default height of the component will now respond to scaling with the current height equal to when scaling equals 'lg'.
+   * </p>
    * <h5>animaton-on-data-change attribute</h5>
    * <p>
    * For the initial version of oj-c-tagcloud, animaton-on-data-change attribute is not supported. We plan on supporting this use case in a future release.
    * </p>
-   * <h5>animation-on-diaplay attribute</h5>
+   * <h5>animation-on-display attribute</h5>
    * <p>
    * For the initial version of oj-c-tagcloud, animation-on-diaplay attribute is not supported. We plan on supporting this use case in a future release.
    * </p>
@@ -68,10 +73,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * <p>
    * For the initial version of oj-c-tagcloud, touch-response attribute is not supported. We plan on supporting this use case in a future release.
    * </p>
-   * <h5>contextMenu slot</h5>
-   * <p>
-   * For the initial version of oj-c-tag-cloud, contextMenu slot is not supported. We plan on supporting this use case in a future release.
-   * </p>
+   * <h5 id="context-menu-migration"></h5>
    * <h5>getContextByNode method</h5>
    * <p>
    * For the initial version of oj-c-tag-cloud, getContextByNode method is not supported. We plan on supporting this use case in a future release.
@@ -1368,6 +1370,7 @@ var __oj_tag_cloud_item_metadata =
        * @ojvalue {string} "touchStart"
        * @ojvalue {string} "auto"
        * @default "auto"
+       * @ojdeprecated {since: '18.0.0', description: 'This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead.'}
        *
        * @example <caption>Initialize the tag cloud with the
        * <code class="prettyprint">layout</code> attribute specified:</caption>
@@ -1396,7 +1399,7 @@ var __oj_tag_cloud_item_metadata =
        * @ojvalue {string} "on"
        * @ojvalue {string} "off"
        * @default "on"
-       * @ojdeprecated {since: '15.0.0', description: 'This is no longer needed due to performance enhancements. The default behaviour will be used.'}
+       * @ojdeprecated {since: '15.0.0', description: 'This is no longer needed due to performance enhancements. The default behavior will be used.'}
        * @example <caption>Initialize the data visualization element with the
        * <code class="prettyprint">track-resize</code> attribute specified:</caption>
        * &lt;oj-some-dvt track-resize='off'>&lt;/oj-some-dvt>

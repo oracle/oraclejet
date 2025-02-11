@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -51,7 +51,7 @@ var __oj_progress_list_metadata =
  * @interface ProgressItem
  * @memberof oj
  * @since 4.0.0
- * @ojdeprecated {since: '8.0.0', description: '&lt;oj-progress-list> has been deprecated, please use &lt;oj-list-view> instead.'}
+ * @ojdeprecated {since: '8.0.0', value: ['oj-list-view']}
  *
  */
 oj.ProgressItem = function () {};

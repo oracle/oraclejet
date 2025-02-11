@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -95,7 +95,7 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
     };
     function MessageStartIcon({ severity, translations }) {
         const IconComponent = severityIcons[severity];
-        return (jsxRuntime.jsx("div", { class: "oj-messagebanner-start-icon-container", role: "presentation", children: jsxRuntime.jsx("div", { class: "oj-flex oj-sm-align-items-center", height: "100%", children: jsxRuntime.jsx("span", { class: "oj-messagebanner-start-icon", role: "img", title: translations?.[severity], children: jsxRuntime.jsx(IconComponent, {}) }) }) }));
+        return (jsxRuntime.jsx("div", { class: "oj-messagebanner-start-icon-container", role: "presentation", children: jsxRuntime.jsx("div", { class: "oj-flex oj-sm-align-items-center", style: { height: '100%' }, children: jsxRuntime.jsx("span", { class: "oj-messagebanner-start-icon", role: "img", title: translations?.[severity], children: jsxRuntime.jsx(IconComponent, {}) }) }) }));
     }
 
     function MessageSummary({ text }) {

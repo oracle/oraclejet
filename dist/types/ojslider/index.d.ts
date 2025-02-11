@@ -6,6 +6,7 @@ export interface ojRangeSlider extends editableValue<Object | null, ojRangeSlide
     disabled: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -116,6 +117,7 @@ export interface ojRangeSliderSettableProperties extends editableValueSettablePr
     disabled: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -145,6 +147,7 @@ export interface ojRangeSliderSettablePropertiesLenient extends Partial<ojRangeS
 export interface ojSlider extends editableValue<number | null, ojSliderSettableProperties> {
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -254,6 +257,7 @@ export interface ojSliderEventMap extends editableValueEventMap<number | null, o
 export interface ojSliderSettableProperties extends editableValueSettableProperties<number | null> {
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -392,7 +396,9 @@ export namespace SliderElement {
     //------------------------------------------------------------
 }
 export interface RangeSliderIntrinsicProps extends Partial<Readonly<ojRangeSliderSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojRangeSliderEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojRangeSliderEventMap['ojAnimateStart']) => void;
     ondisabledChanged?: (value: ojRangeSliderEventMap['disabledChanged']) => void;
     ondisplayOptionsChanged?: (value: ojRangeSliderEventMap['displayOptionsChanged']) => void;
@@ -414,7 +420,9 @@ export interface RangeSliderIntrinsicProps extends Partial<Readonly<ojRangeSlide
     children?: ComponentChildren;
 }
 export interface SliderIntrinsicProps extends Partial<Readonly<ojSliderSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojSliderEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojSliderEventMap['ojAnimateStart']) => void;
     ondisplayOptionsChanged?: (value: ojSliderEventMap['displayOptionsChanged']) => void;
     onlabelledByChanged?: (value: ojSliderEventMap['labelledByChanged']) => void;

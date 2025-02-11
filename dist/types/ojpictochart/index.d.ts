@@ -7,6 +7,7 @@ export interface ojPictoChart<K, D extends ojPictoChart.Item<K> | any> extends d
     animationDuration?: number;
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'popIn' | 'alphaFade' | 'zoom' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     columnCount?: number | null;
     columnWidth?: number | null;
@@ -148,6 +149,7 @@ export namespace ojPictoChart {
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: object;
         index: number;
@@ -161,6 +163,7 @@ export namespace ojPictoChart {
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K> = {
         color: string;
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         count: number;
         id: K;
@@ -209,6 +212,7 @@ export interface ojPictoChartSettableProperties<K, D extends ojPictoChart.Item<K
     animationDuration?: number;
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'popIn' | 'alphaFade' | 'zoom' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     columnCount?: number | null;
     columnWidth?: number | null;
@@ -451,6 +455,7 @@ export namespace PictoChartElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: object;
         index: number;
@@ -464,6 +469,7 @@ export namespace PictoChartElement {
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K> = {
         color: string;
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         count: number;
         id: K;
@@ -525,7 +531,7 @@ export interface PictoChartIntrinsicProps extends Partial<Readonly<ojPictoChartS
     onanimationDurationChanged?: (value: ojPictoChartEventMap<any, any>['animationDurationChanged']) => void;
     onanimationOnDataChangeChanged?: (value: ojPictoChartEventMap<any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojPictoChartEventMap<any, any>['animationOnDisplayChanged']) => void;
-    onasChanged?: (value: ojPictoChartEventMap<any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojPictoChartEventMap<any, any>['asChanged']) => void;
     oncolumnCountChanged?: (value: ojPictoChartEventMap<any, any>['columnCountChanged']) => void;
     oncolumnWidthChanged?: (value: ojPictoChartEventMap<any, any>['columnWidthChanged']) => void;
     ondataChanged?: (value: ojPictoChartEventMap<any, any>['dataChanged']) => void;

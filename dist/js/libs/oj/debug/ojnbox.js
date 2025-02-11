@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -822,7 +822,7 @@ var __oj_n_box_node_metadata =
    * @ojvbmincolumns 12
    *
    * @ojoracleicon 'oj-ux-ico-chart-nbox'
-   * @ojuxspecs ['data-visualization-nbox']
+   * @ojuxspecs ['nbox']
    *
    * @classdesc
    * <h3 id="nBoxOverview-section">
@@ -2011,6 +2011,8 @@ var __oj_n_box_node_metadata =
        * @ojvalue {string} "touchStart"
        * @ojvalue {string} "auto"
        * @default "auto"
+       * @ojdeprecated {since: '18.0.0', description: 'This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead.'}
+
        */
       touchResponse: 'auto',
       /**

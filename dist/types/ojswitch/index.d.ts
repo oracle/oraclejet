@@ -6,6 +6,7 @@ export interface ojSwitch extends editableValue<boolean, ojSwitchSettablePropert
     disabled: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -97,6 +98,7 @@ export interface ojSwitchSettableProperties extends editableValueSettablePropert
     disabled: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -164,7 +166,9 @@ export namespace SwitchElement {
     //------------------------------------------------------------
 }
 export interface SwitchIntrinsicProps extends Partial<Readonly<ojSwitchSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojSwitchEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojSwitchEventMap['ojAnimateStart']) => void;
     ondisabledChanged?: (value: ojSwitchEventMap['disabledChanged']) => void;
     ondisplayOptionsChanged?: (value: ojSwitchEventMap['displayOptionsChanged']) => void;

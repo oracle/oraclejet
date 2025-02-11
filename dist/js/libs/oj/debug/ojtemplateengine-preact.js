@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -15,7 +15,7 @@ define(['ojs/ojtemplateengine-utils'], function (ojtemplateengineUtils) { 'use s
             const templateAlias = templateElement.getAttribute('data-oj-as');
             const context = ojtemplateengineUtils.TemplateEngineUtils.getContext(null, componentElement, templateElement, properties, alias, templateAlias, provided);
             if (templateElement.render) {
-                return this._executeVDomTemplate(componentElement, templateElement, context, provided);
+                return this._executeVDomTemplate(componentElement, templateElement, reportBusy, context, provided);
             }
             throw new Error(`The render property is expected on the template for component ${componentElement.id}`);
         }
@@ -37,7 +37,7 @@ define(['ojs/ojtemplateengine-utils'], function (ojtemplateengineUtils) { 'use s
         defineTrackableProperty(target, name, value, changeListener) {
             throw new Error('This template engine does not support trackable property');
         }
-        _executeVDomTemplate(componentElement, templateElement, context, provided) {
+        _executeVDomTemplate(componentElement, templateElement, reportBusy, context, provided) {
             const vNode = templateElement.render(context.$current);
             ojtemplateengineUtils.PreactTemplate.extendTemplate(templateElement, ojtemplateengineUtils.PreactTemplate._ROW_CACHE_FACTORY, (renderer) => {
                 templateElement._cachedRows.forEach((rowItem) => {
@@ -46,6 +46,9 @@ define(['ojs/ojtemplateengine-utils'], function (ojtemplateengineUtils) { 'use s
                 });
             });
             const parentStub = document.createElement('div');
+            if (reportBusy) {
+                parentStub._ojReportBusy = reportBusy;
+            }
             const cachedRow = {
                 currentContext: context.$current,
                 template: templateElement,

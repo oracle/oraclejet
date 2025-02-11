@@ -17,6 +17,7 @@ declare class ArrayDataProvider<K, D> implements DataProvider<K, D> {
     removeEventListener(eventType: string, listener: EventListener): void;
 }
 declare namespace ArrayDataProvider {
+    /** @deprecated since 10.1.0 - Use ArrayDataProvider.Options instead. */
     // tslint:disable-next-line interface-over-type-literal
     type DeprecatedOptions<D> = {
         idAttribute?: string | string[];
@@ -28,6 +29,7 @@ declare namespace ArrayDataProvider {
     };
     // tslint:disable-next-line interface-over-type-literal
     type Options<K, D> = {
+        enforceKeyStringify?: 'off' | 'on';
         implicitSort?: Array<SortCriterion<D>>;
         keyAttributes?: string | string[];
         keys?: K[] | (() => K[]);

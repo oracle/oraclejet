@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -163,6 +163,14 @@ var __oj_gantt_metadata =
             }
           }
         },
+        "drillable": {
+          "type": "string",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "value": "off"
+        },
         "height": {
           "type": "number"
         },
@@ -218,6 +226,14 @@ var __oj_gantt_metadata =
               "type": "object"
             }
           }
+        },
+        "drillable": {
+          "type": "string",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "value": "off"
         },
         "height": {
           "type": "number"
@@ -1014,6 +1030,8 @@ var __oj_gantt_metadata =
     "getSubIdByNode": {}
   },
   "events": {
+    "ojMajorAxisDrill": {},
+    "ojMinorAxisDrill": {},
     "ojMove": {},
     "ojResize": {},
     "ojViewportChange": {}
@@ -1347,6 +1365,11 @@ var __oj_gantt_reference_object_metadata =
    *       <td>Display context menu on release.</td>
    *     </tr>
    *     <tr>
+   *       <td>Time Axis Label</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Drill when <code class="prettyprint">major-axis.drillable</code> or <code class="prettyprint">minor-axis.drillable</code> is "on".</td>
+   *     </tr>
+   *     <tr>
    *       <td rowspan="3">Chart Area</td>
    *       <td><kbd>Drag</kbd></td>
    *       <td>Pan.</td>
@@ -1431,6 +1454,8 @@ var __oj_gantt_reference_object_metadata =
    *              the amount of time is set to the scale of the minor axis.
    *              See <kbd>PageUp or PageDown</kbd> for information on changing the amount of time to move by.
    *           </li>
+   *           <li>When focus is on a time axis label, move focus to the next visible label on the left.
+   *           </li>
    *         </ul>
    *       </td>
    *     </tr>
@@ -1448,6 +1473,8 @@ var __oj_gantt_reference_object_metadata =
    *              Upon entering move (or resize) mode, the amount of time is set to the scale of the minor axis.
    *              See <kbd>PageUp or PageDown</kbd> for information on changing the amount of time to move by.
    *           </li>
+   *           <li>When focus is on a time axis label, move focus to the next visible label on the right.
+   *           </li>
    *         </ul>
    *       </td>
    *     </tr>
@@ -1460,6 +1487,20 @@ var __oj_gantt_reference_object_metadata =
    *              move focus to the previous dependency line with the same predecessor/successor.
    *           </li>
    *           <li>If currently in move mode (see <kbd>Ctrl + m</kbd>), move the candidate position to the row above, preserving current time position.</li>
+   *           <li>If focus is on a minor axis label, and <code class="prettyprint">axis-position</code> is set to "top", and there is a major axis with <code class="prettyprint">major-axis.drillable</code> set to "on",
+   *               then move focus to a major axis label. The specific label that gets focus is determined as follows:
+   *               <ul>
+   *                 <li>If a label on a time interval exists on the major axis that contains the start time of the originating minor axis label interval, focus moves to that label.</li>
+   *                 <li>If no such label exists, focus moves to the chronologically closest interval to the start time of the originating minor axis label interval.</li>
+   *               </ul>
+   *           </li>
+   *           <li>If focus is on a major axis label, and <code class="prettyprint">axis-position</code> is set to "bottom", and there is a minor axis with <code class="prettyprint">minor-axis.drillable</code> set to "on",
+   *               then move focus to a minor axis label. The specific label that gets focus is determined as follows:
+   *               <ul>
+   *                 <li>If a label on a time interval exists on the minor axis that contains the start time of the originating major axis label interval, focus moves to that label.</li>
+   *                 <li>If no such label exists, focus moves to the chronologically closest interval to the start time of the originating major axis label interval.</li>
+   *               </ul>
+   *           </li>
    *         </ul>
    *       </td>
    *     </tr>
@@ -1471,6 +1512,20 @@ var __oj_gantt_reference_object_metadata =
    *           <li>When focus is on a dependency line (see <kbd>Alt + &lt;</kbd> and <kbd>Alt + &gt;</kbd>),
    *              move focus to the next dependency line with the same predecessor/successor.</li>
    *           <li>If currently in move mode (see <kbd>Ctrl + m</kbd>), move the candidate position to the row below, preserving current time position.</li>
+   *           <li>If focus is on a major axis label, and <code class="prettyprint">axis-position</code> is set to "top", and there is a minor axis with <code class="prettyprint">minor-axis.drillable</code> set to "on",
+   *               then move focus to a minor axis label. The specific label that gets focus is determined as follows:
+   *               <ul>
+   *                 <li>If a label on a time interval exists on the minor axis that contains the start time of the originating major axis label interval, focus moves to that label.</li>
+   *                 <li>If no such label exists, focus moves to the chronologically closest interval to the start time of the originating major axis label interval.</li>
+   *               </ul>
+   *           </li>
+   *           <li>If focus is on a minor axis label, and <code class="prettyprint">axis-position</code> is set to "bottom", and there is a major axis with <code class="prettyprint">major-axis.drillable</code> set to "on",
+   *               then move focus to a major axis label. The specific label that gets focus is determined as follows:
+   *               <ul>
+   *                 <li>If a label on a time interval exists on the major axis that contains the start time of the originating minor axis label interval, focus moves to that label.</li>
+   *                 <li>If no such label exists, focus moves to the chronologically closest interval to the start time of the originating minor axis label interval.</li>
+   *               </ul>
+   *           </li>
    *         </ul>
    *       </td>
    *     </tr>
@@ -1489,6 +1544,73 @@ var __oj_gantt_reference_object_metadata =
    *     <tr>
    *       <td><kbd>Ctrl + &lt;task navigation shortcut&gt;</kbd></td>
    *       <td>Move focus to a task but do not select.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Alt + UpArrow</kbd></td>
+   *       <td>
+   *         <ul>
+   *           <li>
+   *             When focus is on a task, and <code class="prettyprint">axis-position</code> is set to "top",
+   *             the following rules determine how focus moves to a time axis label if at least one time axis
+   *             has <code class="prettyprint">drillable</code> set to "on":
+   *             <ul>
+   *               <li>Both minor and major axes are drillable: Focus moves to a minor axis label.</li>
+   *               <li>Only major axis is drillable: Focus moves to a major axis label.</li>
+   *             </ul>
+   *             The specific label that gets focus is determined as follows:
+   *             <ul>
+   *               <li>If a label on a time interval exists on the selected axis that contains the start time of the originating task, focus moves to that label.</li>
+   *               <li>If no such label exists, focus moves to the chronologically closest interval to the start time of the originating task.</li>
+   *             </ul>
+   *           </li>
+   *           <li>
+   *             When focus is on a time axis label, and <code class="prettyprint">axis-position</code> is set to "bottom",
+   *             move focus to a task. The rules for determining which task receives focus are identical
+   *             to those described for <kbd>Alt + DownArrow</kbd> when focus is on a time axis label and
+   *             <code class="prettyprint">axis-position</code> is set to "top" (see its documentation for details).
+   *           </li>
+   *         </ul>
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Alt + DownArrow</kbd></td>
+   *       <td>
+   *         <ul>
+   *           <li>
+   *             When focus is on a task, and <code class="prettyprint">axis-position</code> is set to "bottom",
+   *             and at least one time axis has <code class="prettyprint">drillable</code> set to "on",
+   *             then move focus to a time axis label. The rules for determining which label receives focus are identical
+   *             to those described for <kbd>Alt + UpArrow</kbd> when focus is on a task and
+   *             <code class="prettyprint">axis-position</code> is set to "top" (see its documentation for details).
+   *           </li>
+   *           <li>
+   *             When focus is on a time axis label, and <code class="prettyprint">axis-position</code> is set to "top",
+   *             move focus to a task. The task that gets focus is determined as follows. Note that "closest in time"
+   *             refers to the task with the smallest absolute time difference between its start time and the originating
+   *             time axis label's interval start time. "Visible task" means the task is visible in the current viewport:
+   *             <ul>
+   *               <li>
+   *                 In the row of the previously focused task, move focus to the closest visible task in time.
+   *               </li>
+   *               <li>
+   *                 If such a task doesn't exist:
+   *                 <ul>
+   *                   <li>
+   *                     Of all the visible tasks that overlap the time interval of the originating time axis label,
+   *                     move focus to the closest task in time.
+   *                   </li>
+   *                   <li>
+   *                     If there are no such visible task, then move focus to the closest visible task in time.
+   *                   </li>
+   *                 </ul>
+   *               </li>
+   *               <li>
+   *                 If no visible tasks exist, move focus to the previously focused task.
+   *               </li>
+   *             </ul>
+   *           </li>
+   *         </ul>
+   *       </td>
    *     </tr>
    *     <tr>
    *       <td><kbd>Alt + LeftArrow</kbd></td>
@@ -1565,7 +1687,23 @@ var __oj_gantt_reference_object_metadata =
    *     </tr>
    *     <tr>
    *       <td><kbd>Enter</kbd></td>
-   *       <td>Finalize move or resize, if currently in move mode (see <kbd>Ctrl + m</kbd>) or resize mode (see <kbd>Alt + s</kbd> and <kbd>Alt + e</kbd>) respectively.</td>
+   *       <td>
+   *         <ul>
+   *           <li>
+   *             If currently in move mode (see <kbd>Ctrl + m</kbd>) or resize mode (see <kbd>Alt + s</kbd> and <kbd>Alt + e</kbd>), finalize the move or resize respectively.
+   *           </li>
+   *           <li>
+   *             If focus is on a time axis label, and if the time axis has <code class="prettyprint">drillable</code> set to "on", then drill on the label. Afterwards, the focus is determined as follows:
+   *             <ul>
+   *               <li>If the label that was drilled on still exists, then focus continues to remain on that label.</li>
+   *               <li>If the label doesn't exist, move focus to the first visible and drill-able label in the current time axis.</li>
+   *               <li>If such a label doesn't exist, move focus to the first visible and drill-able label in the other time axis.</li>
+   *               <li>If such a label doesn't exist, move focus to the previously focused task.</li>
+   *               <li>If the previously focused task doesn't exist anymore, move focus to the first task of the first row.</li>
+   *             </ul>
+   *           </li>
+   *         </ul>
+   *       </td>
    *     </tr>
    *   </tbody>
    * </table>
@@ -2689,7 +2827,7 @@ var __oj_gantt_reference_object_metadata =
    * @ojvbmincolumns 12
    *
    * @ojoracleicon 'oj-ux-ico-chart-gantt'
-   * @ojuxspecs ['data-visualization-gantt']
+   * @ojuxspecs ['Gantt']
    *
    * @classdesc
    * <h3 id="GanttOverview-section">
@@ -2714,6 +2852,8 @@ var __oj_gantt_reference_object_metadata =
    * </pre>
    *
    * {@ojinclude "name":"a11yKeyboard"}
+   *
+   * <p>If minor axis and/or major axis drilling is enabled, the application should ensure that the effect of the drill is communicated to the user by the screen reader. A best practice is to update a live region upon drill so that the screen reader announces this information.</p>
    *
    * <h3 id="formats-section">
    *   Date and Time Formats
@@ -3201,6 +3341,24 @@ var __oj_gantt_reference_object_metadata =
          */
         converter: undefined,
         /**
+         *
+         * Specifies whether label drilling is enabled.
+         * When a label is drilled, an <a href="#event:minorAxisDrill">ojMinorAxisDrill</a> event is fired.
+         * Note that only visible labels can be drilled.
+         * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
+         * @expose
+         * @name minorAxis.drillable
+         * @ojshortdesc Specifies whether minor axis drilling is enabled.
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "on"
+         * @ojvalue {string} "off"
+         * @default "off"
+         */
+        drillable: 'off',
+        /**
          * Specifies the height of the minor axis in pixels.
          * If not specified or if the height specified is less than the inherent minimum height (which is a function of the axis label sizes),
          * a default value will be used.
@@ -3306,6 +3464,23 @@ var __oj_gantt_reference_object_metadata =
          * @default {"default": null, "seconds": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric'}), "days": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'}), "months": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "quarters": new DateTimeConverter.IntlDateTimeConverter({'month': 'long'}), "years": new DateTimeConverter.IntlDateTimeConverter({'year': 'numeric'})}
          */
         converter: undefined,
+        /**
+         * Specifies whether label drilling is enabled.
+         * When a label is drilled, an <a href="#event:majorAxisDrill">ojMajorAxisDrill</a> event is fired.
+         * Note that only visible labels can be drilled.
+         * <br></br>See the <a href="#majorAxis">major-axis</a> attribute for usage examples.
+         * @expose
+         * @name majorAxis.drillable
+         * @ojshortdesc Specifies whether major axis drilling is enabled.
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "on"
+         * @ojvalue {string} "off"
+         * @default "off"
+         */
+        drillable: 'off',
         /**
          * Specifies the height of the major axis in pixels.
          * If not specified or if the height specified is less than the inherent minimum height (which is a function of the axis label sizes),
@@ -5395,7 +5570,35 @@ var __oj_gantt_reference_object_metadata =
        * @instance
        * @ojbubbles
        */
-      resize: null
+      resize: null,
+      /**
+       * Triggered by a major axis drill gesture.
+       * See also the <a href="#majorAxis.drillable">major-axis.drillable</a> attribute.
+       *
+       * @property {string} intervalStart the start time of the interval in ISO date format.
+       * @property {string} intervalEnd the end time of the interval in ISO date format.
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojGantt
+       * @instance
+       * @ojbubbles
+       */
+      majorAxisDrill: null,
+      /**
+       * Triggered by a minor axis drill gesture.
+       * See also the <a href="#minorAxis.drillable">minor-axis.drillable</a> attribute.
+       *
+       * @property {string} intervalStart the start time of the interval in ISO date format.
+       * @property {string} intervalEnd the end time of the interval in ISO date format.
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojGantt
+       * @instance
+       * @ojbubbles
+       */
+      minorAxisDrill: null
     },
 
     // @inheritdoc
@@ -5938,6 +6141,12 @@ var __oj_gantt_reference_object_metadata =
         this._UserOptionChange('expanded', event.expanded);
         this._Render();
         this._trigger('collapse', null, collapsePayload);
+      } else if (type === 'majorAxisDrill' || type === 'minorAxisDrill') {
+        var drillPayload = {
+          intervalStart: event.intervalStartDate.toISOString(),
+          intervalEnd: event.intervalEndDate.toISOString()
+        };
+        this._trigger(type, null, drillPayload);
       } else {
         this._super(event);
       }

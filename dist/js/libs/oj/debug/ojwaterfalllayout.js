@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -355,11 +355,15 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
         addItem(key, index, data, visible) {
             let x = -1;
             let y = -1;
-            const position = this.getLayout().getPosition(key);
+            let height = -1;
+            const layout = this.getLayout();
+            const bottom = layout.getLastItemPosition();
+            const position = layout.getPosition(key);
             if (position != null) {
                 if (!isNaN(position.left) && !isNaN(position.top)) {
                     x = position.left;
                     y = position.top;
+                    height = position.height;
                 }
             }
             else {
@@ -370,8 +374,12 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
             if (currentItem == null && index == 0) {
                 this.callback.setCurrentItem(key);
             }
+            let isBottom = false;
+            if (y !== -1 && height !== -1) {
+                isBottom = y + height >= bottom;
+            }
             const vnodes = this.renderItem(key, index, data);
-            this.decorateItem(vnodes, key, x, y, initialFetch, visible);
+            this.decorateItem(vnodes, key, x, y, initialFetch, visible, isBottom);
             return vnodes;
         }
         renderItem(key, index, data) {
@@ -393,7 +401,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
             vnode.props.tabIndex = -1;
             this.setStyleClass(vnode, ['oj-waterfalllayout-item-element']);
         }
-        decorateItem(vnodes, key, x, y, initialFetch, visible) {
+        decorateItem(vnodes, key, x, y, initialFetch, visible, isBottom) {
             let vnode = this.findItemVNode(vnodes);
             if (vnode != null) {
                 vnode.key = key;
@@ -405,14 +413,17 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
                 }
                 const styleClasses = this.getItemStyleClass(visible, x, y, this.newItemsTracker.has(key), initialFetch);
                 this.setStyleClass(vnode, styleClasses);
-                const inlineStyle = this.getItemInlineStyle(visible, x, y, initialFetch);
+                const inlineStyle = this.getItemInlineStyle(visible, x, y, initialFetch, isBottom);
                 vnode.props.style = vnode.props.style ? vnode.props.style + ';' + inlineStyle : inlineStyle;
             }
         }
-        getItemInlineStyle(visible, x, y, animate) {
+        getItemInlineStyle(visible, x, y, animate, isBottom) {
             let style = x === -1 || y === -1 ? 'top:0;left:0' : 'top:' + y + 'px;left:' + x + 'px';
             if (visible && x != -1 && y != -1 && !animate) {
                 style = style + ';visibility:visible';
+            }
+            if (isBottom) {
+                style += `; border-bottom: ${this.gutterWidth}px solid transparent`;
             }
             return style;
         }

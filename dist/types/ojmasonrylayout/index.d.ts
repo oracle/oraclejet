@@ -1,6 +1,7 @@
 import { GlobalProps } from 'ojs/ojvcomponent';
 import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
+/** @deprecated since 17.1.0 - The use of this component is not recommended in the Redwood design system. */
 export interface ojMasonryLayout extends baseComponent<ojMasonryLayoutSettableProperties> {
     reorderHandle: string | null;
     translations: {
@@ -110,6 +111,7 @@ export interface ojMasonryLayoutSettableProperties extends baseComponentSettable
 export interface ojMasonryLayoutSettablePropertiesLenient extends Partial<ojMasonryLayoutSettableProperties> {
     [key: string]: any;
 }
+/** @deprecated since 17.1.0 - The use of this component is not recommended in the Redwood design system. */
 export type MasonryLayoutElement = ojMasonryLayout;
 export namespace MasonryLayoutElement {
     interface ojAnimateEnd extends CustomEvent<{
@@ -178,7 +180,9 @@ export namespace MasonryLayoutElement {
     type reorderHandleChanged = JetElementCustomEvent<ojMasonryLayout["reorderHandle"]>;
 }
 export interface MasonryLayoutIntrinsicProps extends Partial<Readonly<ojMasonryLayoutSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojMasonryLayoutEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojMasonryLayoutEventMap['ojAnimateStart']) => void;
     onojBeforeInsert?: (value: ojMasonryLayoutEventMap['ojBeforeInsert']) => void;
     onojBeforeRemove?: (value: ojMasonryLayoutEventMap['ojBeforeRemove']) => void;

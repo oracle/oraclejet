@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -139,6 +139,13 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojarr
      *                                                  generated keys are the same as the item indices.</p>
      *                                                  <p>This option is ignored if the "keys" option is specified.</p>
      * @property {string=} textFilterAttributes - Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
+     * @property {string=} enforceKeyStringify - Optionally specify whether keys need to be converted to strings. Supported values:<br>
+     *                                  <ul>
+     *                                    <li>'off': the key values are returned as it is.
+     *                                    <li>'on': the key values are converted into string.
+     *                                  </ul>
+     *                                Default is 'off'.
+     *                                Key stringify will directly call JSON.stringify on all keys passed out of the DataProvider. Use JSON.parse if you need to convert the key back to a complex type.
      * @ojsignature [
      *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
      *  {target: "Type", value: "ArrayDataProvider.SortComparators<D>", for: "sortComparators"},
@@ -146,6 +153,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojarr
      *  {target: "Type", value: "K[] | (() => K[])", for: "keys"},
      *  {target: "Type", value: "string | string[]", for: "keyAttributes"},
      *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
+     *  {target: "Type", value: "'off' | 'on'", for: "enforceKeyStringify"}
      * ]
      * @ojtsexample <caption>Examples for sortComparator</caption>
      * // Custom comparator for date
@@ -211,7 +219,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojarr
      *  {target: "Type", value: "string|string[]", for: "keyAttributes"},
      *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
      * ]
-     * @ojdeprecated {since: '10.1.0', description: 'Use type Options instead of object for options'}
+     * @ojdeprecated {since: '10.1.0', description: 'Use ArrayDataProvider.Options instead.'}
      */
 
     /**
@@ -336,8 +344,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojarr
             this._subscribeObservableArray(data);
             let keysSpecified = false;
             if (options != null && options.keys != null) {
+                const enforceKeyStringify = options.enforceKeyStringify;
                 keysSpecified = true;
-                this._keys = options.keys;
+                this._keys =
+                    enforceKeyStringify === 'on'
+                        ? options.keys.map((key) => JSON.stringify(key))
+                        : options.keys;
             }
             this._impl = new ojarraydataproviderimpl.ArrayDataProviderImpl({
                 ...options,

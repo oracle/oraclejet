@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -98,15 +98,26 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
       // eslint-disable-next-line no-param-reassign
       delete rootNode._userSelectValue;
     }
+    if (rootNode._dragListener) {
+      rootNode.removeEventListener('drag', rootNode._dragListener, { passive: false });
+      // eslint-disable-next-line no-param-reassign
+      delete rootNode._dragListener;
+    }
   };
 
   /**
    * Utility method to setup context menu gesture detection on a component
    * @param {Element} rootNode the root node of the component
    * @param {function(Event, string)} callback callback to invoke on the component when context menu gesture is detected
+   * @param {HTMLElement} contextMenu context menu element
    * @param {Object} contextMenuOptions options components can pass in to change default gestureUtils behavior.
    */
-  GestureUtils.startDetectContextMenuGesture = function (rootNode, callback, contextMenuOptions) {
+  GestureUtils.startDetectContextMenuGesture = function (
+    rootNode,
+    callback,
+    contextMenu,
+    contextMenuOptions
+  ) {
     // Note: Whether or not we use Hammer to detect press-hold, this code would need to do the following things seen below:
     //
     // (1) Prevent the compatibility mousedown event from triggering Menu's clickAway logic.
@@ -133,6 +144,7 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
     var _touchMoveListener;
     var _isSelectionPending;
     var _getIsSelectionPending;
+    let isMenuOpenedTouching;
 
     // Does 2 things:
     // 1) Prevents native context menu / callout from appearing in Mobile Safari.  E.g. for links, native CM has "Open in New Tab".
@@ -343,9 +355,9 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
           }
           // prettier-ignore
           _iosContextMenuTimeout = setTimeout( // @HTMLUpdateOK
-              _iosLaunch.bind(null, event),
-              timeDelay
-            );
+            _iosLaunch.bind(null, event),
+            timeDelay
+          );
         };
         // eslint-disable-next-line no-param-reassign
         rootNode._touchStartListener = _touchStartListener;
@@ -361,6 +373,13 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
               document.body.style.userSelect = rootNode._userSelectValue;
               _iosOpenedContextMenu = false;
             }, 500);
+
+            // We added this timeout since when there is text selection allowed ios opens a popup and set focus there
+            setTimeout(() => {
+              if (contextMenu) {
+                contextMenu.focus();
+              }
+            }, 1000);
           }
         };
         // eslint-disable-next-line no-param-reassign
@@ -402,9 +421,9 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
             _timeNeededForSelection = Date.now() - _iosStartTime;
             // prettier-ignore
             _iosContextMenuTimeout = setTimeout( // @HTMLUpdateOK
-                _iosLaunch.bind(null, _touchStartEvent),
-                pressHoldThreshold
-              );
+              _iosLaunch.bind(null, _touchStartEvent),
+              pressHoldThreshold
+            );
           }
         };
         // eslint-disable-next-line no-param-reassign
@@ -414,6 +433,23 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
         });
         return;
       }
+    } else {
+      const _touchEndListener = function () {
+        setTimeout(() => {
+          if (isMenuOpenedTouching) {
+            if (contextMenu) {
+              // We check if focus was moved for some reason from menu. Looks like focus is moved when anchor is the last one that has focus after touch end
+              if (!contextMenu.contains(document.activeElement)) {
+                contextMenu.focus();
+              }
+            }
+            isMenuOpenedTouching = false;
+          }
+        }, 1000);
+      };
+      // eslint-disable-next-line no-param-reassign
+      rootNode._touchEndListener = _touchEndListener;
+      document.addEventListener('touchend', _touchEndListener, { passive: false });
     }
     // At least some of the time, the pressHold gesture also fires a click event same as a short tap.  Prevent that here.
     var _clickListener = function (event) {
@@ -451,9 +487,12 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
         touchInProgress = true;
         // prettier-ignore
         contextMenuPressHoldTimer = setTimeout( // @HTMLUpdateOK
-            launch.bind(undefined, event, 'touch', true),
-            pressHoldThreshold
-          );
+          () => {
+            launch.bind(undefined, event, 'touch', true)();
+            isMenuOpenedTouching = true;
+          },
+          pressHoldThreshold
+        );
         // eslint-disable-next-line no-param-reassign
         rootNode._contextMenuPressHoldTimer = contextMenuPressHoldTimer;
       }
@@ -480,6 +519,23 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
     // eslint-disable-next-line no-param-reassign
     rootNode._touchMoveListener = _touchMoveListener;
     rootNode.addEventListener('touchmove', _touchMoveListener, { passive: true });
+
+    const _dragListener = function (event) {
+      // Each time we are dragging, we need to check if the finger has moved. This is because
+      // on phones drag is triggered just holding your finger
+      if (
+        Math.abs(touchPageX - event.pageX) > maxAllowedMovement ||
+        Math.abs(touchPageY - event.pageY) > maxAllowedMovement
+      ) {
+        touchInProgress = false;
+        clearTimeout(contextMenuPressHoldTimer);
+      }
+      return true;
+    };
+
+    // eslint-disable-next-line no-param-reassign
+    rootNode._dragListener = _dragListener;
+    rootNode.addEventListener('drag', _dragListener, { passive: true });
 
     // if the touch moves too much, it's not a pressHold
     // if the touch ends before the 750ms is up, it's not a long enough pressHold to show the CM

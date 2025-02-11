@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -41,7 +41,10 @@ define(['ojs/ojkoshared', 'ojs/ojcustomelement-utils', 'knockout', 'ojs/ojcore-b
    *
    * <p><b>Note,</b> the oj-bind-dom element does not validate HTML input provided by an application for integrity or
    * security violations. It is the application's responsibility to sanitize the input to prevent unsafe content
-   * from being added to the page.</p>
+   * from being added to the page.
+   * Additionally, using &lt;script&gt; elements as part of the view is strongly discouraged. Execution of
+   * inline &lt;script&gt; elements is prohibited by strict Content Security Policies (CSP) and is not guaranteed by
+   * oj-bind-dom even in the absence of such CSP restrictions.</p>
    *
    * @example <caption>Initialize the oj-bind-dom:</caption>
    * &lt;oj-bind-dom config='[[configObj]]'>

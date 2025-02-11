@@ -1,0 +1,1 @@
+!function(e){"use strict";"function"==typeof define&&define.amd?define(["jquery"],e):"object"==typeof module&&module.exports?module.exports=e(require("jquery")):e(jQuery)}((function(e){"use strict";return e.ui=e.ui||{},e.ui.version="1.14.1"}));

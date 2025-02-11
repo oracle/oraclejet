@@ -1,0 +1,109 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.message-banner") {
+oj-message-banner:not(.oj-complete) {
+  visibility: hidden;
+}
+
+.oj-messagebanner-container-gap {
+  gap: var(--oj-core-spacing-1x);
+}
+
+// Style individual messages container & content
+.oj-messagebanner-item {
+  background-color: var(--oj-private-message-banner-background-color);
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--oj-core-divider-color);
+}
+.oj-messagebanner-item:focus-visible {
+  outline-style: dotted;
+  outline-width: 1px;
+  outline-color: var(--oj-core-focus-border-color);
+  outline-offset: -1px;
+}
+
+.oj-messagebanner-item.oj-messagebanner-section {
+  border: 1px solid var(--oj-core-divider-color);
+  border-radius: var(--oj-core-border-radius-lg);
+}
+
+.oj-messagebanner-content {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  padding-top: var(--oj-core-spacing-4x);
+  padding-bottom: var(--oj-core-spacing-4x);
+  padding-inline-start: var(--oj-core-gutter-start, var(--oj-core-spacing-4x));
+  padding-inline-end: var(--oj-core-gutter-start, var(--oj-core-spacing-4x));
+}
+
+.oj-messagebanner-content-gap {
+  gap: var(--oj-core-spacing-2x);
+}
+
+// Style message icon column
+.oj-messagebanner-start-icon-container {
+  color: var(--oj-private-message-banner-start-icon-color);
+  font-size: var(--oj-private-message-banner-start-icon-size);
+  height: var(--oj-private-message-banner-summary-line-height);
+
+  align-self: flex-start;
+  display: flex;
+  margin-inline-end: var(--oj-core-spacing-2x);
+}
+
+.oj-messagebanner-start-icon {
+  height: calc(var(--oj-private-message-banner-summary-text-size) * var(--oj-private-message-banner-summary-line-height));
+  display: flex;
+  align-items: center;
+}
+
+// Style message content column - this contains header and detail
+// Style message header row - this contains the summary text and timestamp
+.oj-messagebanner-header {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  line-height: var(--oj-private-message-banner-summary-line-height);
+}
+@media #{$responsiveQuerySmallOnly} {
+  .oj-messagebanner-header {
+    flex-direction: column;
+  }
+}
+
+.oj-messagebanner-summary {
+  flex: 1;
+  overflow-wrap: anywhere;
+  font-size: var(--oj-private-message-banner-summary-text-size);
+  font-weight: var(--oj-private-message-banner-summary-text-weight);
+  color: var(--oj-private-message-banner-summary-text-color);
+}
+
+.oj-messagebanner-timestamp {
+  flex-shrink: 0;
+  font-size: var(--oj-typography-body-xs-font-size);
+  color: var(--oj-core-text-color-secondary);
+}
+
+// Style message detail row
+.oj-messagebanner-detail {
+  overflow-wrap: anywhere;
+  font-size: var(--oj-typography-body-sm-font-size);
+  color: var(--oj-core-text-color-primary);
+}
+
+// Style message close icon column
+.oj-messagebanner-close-button {
+  align-self: flex-start;
+  display: flex;
+
+  margin-inline-start: var(--oj-core-spacing-1x);
+  margin-inline-end: calc(-1 * var(--oj-core-spacing-2x));
+  margin-top: calc(-1 * var(--oj-core-spacing-2x));
+  margin-bottom: calc(-1 * var(--oj-core-spacing-2x));
+}
+}

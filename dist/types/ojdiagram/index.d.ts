@@ -151,6 +151,7 @@ export interface DvtDiagramLayoutContextNode<K1, D1 extends ojDiagram.Node<K1> |
 export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponent<ojDiagramSettableProperties<K1, K2, D1, D2>> {
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     currentItem?: K1 | K2;
     dnd?: {
@@ -296,6 +297,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
         };
     };
     expanded?: KeySet<K1>;
+    /** @deprecated since 8.0.0 - Use nodeContent.focusRenderer instead. */
     focusRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
@@ -303,6 +305,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
     highlightMatch?: 'any' | 'all';
     highlightedCategories?: string[];
     hoverBehavior?: 'dim' | 'none';
+    /** @deprecated since 8.0.0 - Use nodeContent.hoverRenderer instead. */
     hoverRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
@@ -361,11 +364,13 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
     };
     panning?: 'fixed' | 'centerContent' | 'none' | 'auto';
     promotedLinkBehavior?: 'none' | 'full' | 'lazy';
+    /** @deprecated since 8.0.0 - Use nodeContent.renderer instead. */
     renderer?: ((context: ojDiagram.RendererContext<K1, D1>) => ({
         insert: SVGElement;
     }));
     selection?: Array<K1 | K2>;
     selectionMode?: 'none' | 'single' | 'multiple';
+    /** @deprecated since 8.0.0 - Use nodeContent.selectionRenderer instead. */
     selectionRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
@@ -391,9 +396,13 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
                 pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' |
                    'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
                 shape?: 'circle' | 'rectangle' | 'square' | string;
+                /** @deprecated since 17.0.0 - Node source property has been deprecated. Please use custom renderer instead. */
                 source?: string;
+                /** @deprecated since 17.0.0 - Node sourceHover property has been deprecated. Please use custom renderer instead. */
                 sourceHover?: string;
+                /** @deprecated since 17.0.0 - Node sourceHoverSelected property has been deprecated. Please use custom renderer instead. */
                 sourceHoverSelected?: string;
+                /** @deprecated since 17.0.0 - Node sourceSelected property has been deprecated. Please use custom renderer instead. */
                 sourceSelected?: string;
                 svgClassName?: string;
                 svgStyle?: Partial<CSSStyleDeclaration>;
@@ -418,7 +427,9 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
             preventDefault: boolean;
         }));
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
+    /** @deprecated since 8.0.0 - Use nodeContent.zoomRenderer instead. */
     zoomRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
@@ -588,6 +599,7 @@ export namespace ojDiagram {
     };
     // tslint:disable-next-line interface-over-type-literal
     type LinkContentTemplateContext<K1, K2, D2> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: Link<K2, K1>;
         id: K2;
@@ -650,6 +662,7 @@ export namespace ojDiagram {
     };
     // tslint:disable-next-line interface-over-type-literal
     type LinkTemplateContext = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: object;
         index: number;
@@ -693,6 +706,7 @@ export namespace ojDiagram {
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContentTemplateContext<K1, D1> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         content: {
             element: Element;
@@ -711,8 +725,11 @@ export namespace ojDiagram {
             selected: boolean;
             zoom: number;
         };
+        /** @deprecated since 17.0.0 - Implement the focus effect in the custom template instead. */
         renderDefaultFocus: (() => void);
+        /** @deprecated since 17.0.0 - Implement the hover effect in the custom template instead. */
         renderDefaultHover: (() => void);
+        /** @deprecated since 17.0.0 - Implement the selection effect in the custom template instead. */
         renderDefaultSelection: (() => void);
         rootElement: Element | null;
         state: {
@@ -783,8 +800,11 @@ export namespace ojDiagram {
             selected: boolean;
             zoom: number;
         };
+        /** @deprecated since 17.0.0 - Implement the focus effect in the node custom renderer instead. */
         renderDefaultFocus: (() => void);
+        /** @deprecated since 17.0.0 - Implement the hover effect in the node custom renderer instead. */
         renderDefaultHover: (() => void);
+        /** @deprecated since 17.0.0 - Implement the selection effect in the node custom renderer instead. */
         renderDefaultSelection: (() => void);
         rootElement: Element | null;
         state: {
@@ -799,6 +819,7 @@ export namespace ojDiagram {
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K1, K2, D1, D2> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: Node<K1> | Link<K2, K1> | Link<K2, K1>[];
         id: K1 | K2;
@@ -874,6 +895,7 @@ export interface ojDiagramEventMap<K1, K2, D1 extends ojDiagram.Node<K1> | any, 
 export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponentSettableProperties {
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     currentItem?: K1 | K2;
     dnd?: {
@@ -1019,6 +1041,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
         };
     };
     expanded?: KeySet<K1>;
+    /** @deprecated since 8.0.0 - Use nodeContent.focusRenderer instead. */
     focusRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
@@ -1026,6 +1049,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
     highlightMatch?: 'any' | 'all';
     highlightedCategories?: string[];
     hoverBehavior?: 'dim' | 'none';
+    /** @deprecated since 8.0.0 - Use nodeContent.hoverRenderer instead. */
     hoverRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
@@ -1084,11 +1108,13 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
     };
     panning?: 'fixed' | 'centerContent' | 'none' | 'auto';
     promotedLinkBehavior?: 'none' | 'full' | 'lazy';
+    /** @deprecated since 8.0.0 - Use nodeContent.renderer instead. */
     renderer?: ((context: ojDiagram.RendererContext<K1, D1>) => ({
         insert: SVGElement;
     }));
     selection?: Array<K1 | K2>;
     selectionMode?: 'none' | 'single' | 'multiple';
+    /** @deprecated since 8.0.0 - Use nodeContent.selectionRenderer instead. */
     selectionRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
@@ -1114,9 +1140,13 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
                 pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' |
                    'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
                 shape?: 'circle' | 'rectangle' | 'square' | string;
+                /** @deprecated since 17.0.0 - Node source property has been deprecated. Please use custom renderer instead. */
                 source?: string;
+                /** @deprecated since 17.0.0 - Node sourceHover property has been deprecated. Please use custom renderer instead. */
                 sourceHover?: string;
+                /** @deprecated since 17.0.0 - Node sourceHoverSelected property has been deprecated. Please use custom renderer instead. */
                 sourceHoverSelected?: string;
+                /** @deprecated since 17.0.0 - Node sourceSelected property has been deprecated. Please use custom renderer instead. */
                 sourceSelected?: string;
                 svgClassName?: string;
                 svgStyle?: Partial<CSSStyleDeclaration>;
@@ -1141,7 +1171,9 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
             preventDefault: boolean;
         }));
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
+    /** @deprecated since 8.0.0 - Use nodeContent.zoomRenderer instead. */
     zoomRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
@@ -1287,13 +1319,18 @@ export interface ojDiagramNode<K1 = any, D1 = any> extends dvtBaseComponent<ojDi
         borderWidth?: number;
         color?: string;
         height?: number;
+        /** @deprecated since 17.0.0 - Node opacity has been deprecated. Please use custom renderer or template instead. */
         opacity?: number;
         pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
            'smallDiamond' | 'smallTriangle' | string;
         shape?: 'circle' | 'rectangle' | 'square';
+        /** @deprecated since 17.0.0 - Node source property has been deprecated. Please use custom renderer or template instead. */
         source?: string;
+        /** @deprecated since 17.0.0 - Node sourceHover property has been deprecated. Please use custom renderer or template instead. */
         sourceHover?: string;
+        /** @deprecated since 17.0.0 - Node sourceHoverSelected property has been deprecated. Please use custom renderer or template instead. */
         sourceHoverSelected?: string;
+        /** @deprecated since 17.0.0 - Node sourceSelected property has been deprecated. Please use custom renderer or template instead. */
         sourceSelected?: string;
         svgClassName?: string;
         svgStyle?: Partial<CSSStyleDeclaration>;
@@ -1360,13 +1397,18 @@ export interface ojDiagramNodeSettableProperties<K1 = any, D1 = any> extends dvt
         borderWidth?: number;
         color?: string;
         height?: number;
+        /** @deprecated since 17.0.0 - Node opacity has been deprecated. Please use custom renderer or template instead. */
         opacity?: number;
         pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
            'smallDiamond' | 'smallTriangle' | string;
         shape?: 'circle' | 'rectangle' | 'square';
+        /** @deprecated since 17.0.0 - Node source property has been deprecated. Please use custom renderer or template instead. */
         source?: string;
+        /** @deprecated since 17.0.0 - Node sourceHover property has been deprecated. Please use custom renderer or template instead. */
         sourceHover?: string;
+        /** @deprecated since 17.0.0 - Node sourceHoverSelected property has been deprecated. Please use custom renderer or template instead. */
         sourceHoverSelected?: string;
+        /** @deprecated since 17.0.0 - Node sourceSelected property has been deprecated. Please use custom renderer or template instead. */
         sourceSelected?: string;
         svgClassName?: string;
         svgStyle?: Partial<CSSStyleDeclaration>;
@@ -1524,6 +1566,7 @@ export namespace DiagramElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type LinkContentTemplateContext<K1, K2, D2> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: ojDiagram.Link<K2, K1>;
         id: K2;
@@ -1586,6 +1629,7 @@ export namespace DiagramElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type LinkTemplateContext = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: object;
         index: number;
@@ -1629,6 +1673,7 @@ export namespace DiagramElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContentTemplateContext<K1, D1> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         content: {
             element: Element;
@@ -1647,8 +1692,11 @@ export namespace DiagramElement {
             selected: boolean;
             zoom: number;
         };
+        /** @deprecated since 17.0.0 - Implement the focus effect in the custom template instead. */
         renderDefaultFocus: (() => void);
+        /** @deprecated since 17.0.0 - Implement the hover effect in the custom template instead. */
         renderDefaultHover: (() => void);
+        /** @deprecated since 17.0.0 - Implement the selection effect in the custom template instead. */
         renderDefaultSelection: (() => void);
         rootElement: Element | null;
         state: {
@@ -1719,8 +1767,11 @@ export namespace DiagramElement {
             selected: boolean;
             zoom: number;
         };
+        /** @deprecated since 17.0.0 - Implement the focus effect in the node custom renderer instead. */
         renderDefaultFocus: (() => void);
+        /** @deprecated since 17.0.0 - Implement the hover effect in the node custom renderer instead. */
         renderDefaultHover: (() => void);
+        /** @deprecated since 17.0.0 - Implement the selection effect in the node custom renderer instead. */
         renderDefaultSelection: (() => void);
         rootElement: Element | null;
         state: {
@@ -1735,6 +1786,7 @@ export namespace DiagramElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K1, K2, D1, D2> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: ojDiagram.Node<K1> | ojDiagram.Link<K2, K1> | ojDiagram.Link<K2, K1>[];
         id: K1 | K2;
@@ -1813,23 +1865,27 @@ export namespace DiagramNodeElement {
     type showDisclosureChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["showDisclosure"]>;
 }
 export interface DiagramIntrinsicProps extends Partial<Readonly<ojDiagramSettableProperties<any, any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - Support for this custom event has been deprecated. Lazy loading of data can be implemented through the data provider. */
     onojBeforeCollapse?: (value: ojDiagramEventMap<any, any, any, any>['ojBeforeCollapse']) => void;
+    /** @deprecated since 12.1.0 - Support for this custom event has been deprecated. Lazy loading of data can be implemented through the data provider. */
     onojBeforeExpand?: (value: ojDiagramEventMap<any, any, any, any>['ojBeforeExpand']) => void;
     onojBeforePanZoomReset?: (value: ojDiagramEventMap<any, any, any, any>['ojBeforePanZoomReset']) => void;
+    /** @deprecated since 12.1.0 - Support for this custom event has been deprecated. Use on-expanded-changed to listen for changes to the "expanded" property instead. */
     onojCollapse?: (value: ojDiagramEventMap<any, any, any, any>['ojCollapse']) => void;
+    /** @deprecated since 12.1.0 - Support for this custom event has been deprecated. Use on-expanded-changed to listen for changes to the "expanded" property instead. */
     onojExpand?: (value: ojDiagramEventMap<any, any, any, any>['ojExpand']) => void;
     onanimationOnDataChangeChanged?: (value: ojDiagramEventMap<any, any, any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojDiagramEventMap<any, any, any, any>['animationOnDisplayChanged']) => void;
-    onasChanged?: (value: ojDiagramEventMap<any, any, any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojDiagramEventMap<any, any, any, any>['asChanged']) => void;
     oncurrentItemChanged?: (value: ojDiagramEventMap<any, any, any, any>['currentItemChanged']) => void;
     ondndChanged?: (value: ojDiagramEventMap<any, any, any, any>['dndChanged']) => void;
     onexpandedChanged?: (value: ojDiagramEventMap<any, any, any, any>['expandedChanged']) => void;
-    onfocusRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['focusRendererChanged']) => void;
+    /** @deprecated since 8.0.0 */ onfocusRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['focusRendererChanged']) => void;
     onhiddenCategoriesChanged?: (value: ojDiagramEventMap<any, any, any, any>['hiddenCategoriesChanged']) => void;
     onhighlightMatchChanged?: (value: ojDiagramEventMap<any, any, any, any>['highlightMatchChanged']) => void;
     onhighlightedCategoriesChanged?: (value: ojDiagramEventMap<any, any, any, any>['highlightedCategoriesChanged']) => void;
     onhoverBehaviorChanged?: (value: ojDiagramEventMap<any, any, any, any>['hoverBehaviorChanged']) => void;
-    onhoverRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['hoverRendererChanged']) => void;
+    /** @deprecated since 8.0.0 */ onhoverRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['hoverRendererChanged']) => void;
     onlayoutChanged?: (value: ojDiagramEventMap<any, any, any, any>['layoutChanged']) => void;
     onlinkContentChanged?: (value: ojDiagramEventMap<any, any, any, any>['linkContentChanged']) => void;
     onlinkDataChanged?: (value: ojDiagramEventMap<any, any, any, any>['linkDataChanged']) => void;
@@ -1844,14 +1900,14 @@ export interface DiagramIntrinsicProps extends Partial<Readonly<ojDiagramSettabl
     onpanZoomStateChanged?: (value: ojDiagramEventMap<any, any, any, any>['panZoomStateChanged']) => void;
     onpanningChanged?: (value: ojDiagramEventMap<any, any, any, any>['panningChanged']) => void;
     onpromotedLinkBehaviorChanged?: (value: ojDiagramEventMap<any, any, any, any>['promotedLinkBehaviorChanged']) => void;
-    onrendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['rendererChanged']) => void;
+    /** @deprecated since 8.0.0 */ onrendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['rendererChanged']) => void;
     onselectionChanged?: (value: ojDiagramEventMap<any, any, any, any>['selectionChanged']) => void;
     onselectionModeChanged?: (value: ojDiagramEventMap<any, any, any, any>['selectionModeChanged']) => void;
-    onselectionRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['selectionRendererChanged']) => void;
+    /** @deprecated since 8.0.0 */ onselectionRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['selectionRendererChanged']) => void;
     onstyleDefaultsChanged?: (value: ojDiagramEventMap<any, any, any, any>['styleDefaultsChanged']) => void;
     ontooltipChanged?: (value: ojDiagramEventMap<any, any, any, any>['tooltipChanged']) => void;
-    ontouchResponseChanged?: (value: ojDiagramEventMap<any, any, any, any>['touchResponseChanged']) => void;
-    onzoomRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['zoomRendererChanged']) => void;
+    /** @deprecated since 18.0.0 */ ontouchResponseChanged?: (value: ojDiagramEventMap<any, any, any, any>['touchResponseChanged']) => void;
+    /** @deprecated since 8.0.0 */ onzoomRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['zoomRendererChanged']) => void;
     onzoomingChanged?: (value: ojDiagramEventMap<any, any, any, any>['zoomingChanged']) => void;
     ontrackResizeChanged?: (value: ojDiagramEventMap<any, any, any, any>['trackResizeChanged']) => void;
     children?: ComponentChildren;

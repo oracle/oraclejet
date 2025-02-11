@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1285,8 +1285,10 @@ oj.__registerWidget(
       rawValue: undefined,
       /**
        * Whether the component is readonly. The readonly property sets or returns whether an element is readonly, or not.
+       * <p>
        * A readonly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
        * If you want to prevent the user from interacting with the element, use the disabled property instead.
+       * </p>
        * <p>
        * The default value for readonly is false. However, if the form component is a descendent of
        * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
@@ -1301,6 +1303,7 @@ oj.__registerWidget(
        * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
        * not have its readonly attribute set, the form component's readonly will be true.
        * </p>
+       * {@ojinclude "name":"readonlyMessagesUserAssistanceEditableValue"}
        * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
        * &lt;oj-some-element readonly>&lt;/oj-some-element>
        *
@@ -1620,6 +1623,8 @@ oj.__registerWidget(
       // In android device we need to update rawValue even for composition events
       // Get and store agent info
       this._isAndroidDevice = oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.ANDROID;
+
+      this._isSafariBrowser = oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI;
 
       // update element state using options
       if (typeof readOnly === 'boolean') {
@@ -2133,6 +2138,7 @@ oj.__registerWidget(
         var compositionStartHandler = $.proxy(this._onCompositionStartHandler, this);
         var compositionEndHandler = $.proxy(this._onCompositionEndHandler, this);
         var inputHandler = $.proxy(this._onInputHandler, this);
+        var clickHandler = $.proxy(this._onClickHandler, this);
         var dropHandler = function () {
           this.focus();
         };
@@ -2144,6 +2150,7 @@ oj.__registerWidget(
         this.element.on(this._COMPOSITIONSTART_HANDLER_KEY, compositionStartHandler);
         this.element.on(this._COMPOSITIONEND_HANDLER_KEY, compositionEndHandler);
         this.element.on(this._INPUT_HANDLER_KEY, inputHandler);
+        this.element.on(this._CLICK_HANDLER_KEY, clickHandler);
 
         // other than FF when a drop is dispatched focus is placed back on the element
         // this would cause difference in behavior of the observable change [as set within blur], so in order to provide
@@ -2158,6 +2165,7 @@ oj.__registerWidget(
         this._eventHandlers[this._COMPOSITIONEND_HANDLER_KEY] = compositionEndHandler;
         this._eventHandlers[this._INPUT_HANDLER_KEY] = inputHandler;
         this._eventHandlers[this._DROP_HANDLER_KEY] = dropHandler;
+        this._eventHandlers[this._CLICK_HANDLER_KEY] = clickHandler;
       } else if (this._eventHandlers) {
         // meaning either it is readOnly or is disabled, remove the handlers if they were attached previously
         var eventEntries = [
@@ -2168,7 +2176,8 @@ oj.__registerWidget(
           this._COMPOSITIONSTART_HANDLER_KEY,
           this._COMPOSITIONEND_HANDLER_KEY,
           this._INPUT_HANDLER_KEY,
-          this._DROP_HANDLER_KEY
+          this._DROP_HANDLER_KEY,
+          this._CLICK_HANDLER_KEY
         ];
 
         for (var i = 0, j = eventEntries.length; i < j; i++) {
@@ -2225,7 +2234,6 @@ oj.__registerWidget(
         this._processLengthCounterAttr(this.options.length.counter);
       }
     },
-
     /**
      * Invoked when blur is triggered of the this.element
      *
@@ -2242,6 +2250,16 @@ oj.__registerWidget(
         this._processLengthCounterAttr(this.options.length.counter);
       }
     },
+    /**
+     * Invoked when click is triggered of the this.element
+     *
+     * @ignore
+     * @protected
+     * @memberof! oj.inputBase
+     * @param {Event} event
+     */
+    // eslint-disable-next-line no-unused-vars
+    _onClickHandler: function (event) {},
 
     /**
      * Invoked when keydown is triggered of the this.element
@@ -5649,6 +5667,40 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase, {
     return false;
   },
   /**
+   * Resets the caret color to default.
+   *
+   * This method is used to ensure the caret color is restored after being set to transparent
+   * during certain events (e.g., focus on Safari browsers).
+   *
+   * @ignore
+   * @protected
+   * @memberof! oj.ojTextArea
+   */
+  _restoreCaretColor: function () {
+    const textAreaElement = this._GetContentElement()[0];
+    // Restore the caret color to "auto" for Safari browsers to make the caret visible again.
+    if (textAreaElement && this._isSafariBrowser) {
+      textAreaElement.style.caretColor = 'auto';
+    }
+  },
+  /**
+   * Invoked when the textarea gains focus.
+   * JET-51235
+   * For Safari browsers, temporarily hides the caret color to avoid visual inconsistencies
+   * when the textarea is focused. Ensures a consistent user experience.
+   *
+   * @ignore
+   * @protected
+   * @memberof! oj.ojTextArea
+   */
+  _onFocusHandler: function () {
+    const inputElement = this._GetContentElement()[0];
+    if (this._isSafariBrowser) {
+      inputElement.style.caretColor = 'transparent';
+    }
+    this._super(); // call inputBase's _onFocusHandler()
+  },
+  /**
    * Invoked when keyup is triggered of the this.element
    *
    * When of keyCode is of Enter, oj-text-area should do nothing as
@@ -5661,7 +5713,36 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase, {
    * @param {Event} event
    */
   // eslint-disable-next-line no-unused-vars
-  _onKeyUpHandler: function (event) {},
+  _onKeyUpHandler: function (event) {
+    const textArea = this._GetContentElement()[0];
+    const isTabKeyPressed = event.keyCode === $.ui.keyCode.TAB;
+    const isShiftTabKeyPressed = event.keyCode === $.ui.keyCode.TAB && event.shiftKey;
+
+    // JET-51235 For safari browsers, put the cursor position at the end of the text.
+    // If Tab or Shift + Tab is pressed in Safari, move the cursor to the end of the text.
+    if (this._isSafariBrowser && (isTabKeyPressed || isShiftTabKeyPressed)) {
+      const textAreaContentLength = textArea.value.length;
+      textArea.setSelectionRange(textAreaContentLength, textAreaContentLength);
+    }
+    // Reset the caret color to ensure it is visible after modifications.
+    this._restoreCaretColor();
+  },
+  /**
+   * Invoked when the element is clicked.
+   *
+   * This ensures that the caret color is reset after being set to transparent
+   * during other events, providing a consistent user experience.
+   *
+   * @ignore
+   * @protected
+   * @memberof! oj.ojTextArea
+   * @param {Event} event
+   */
+  // eslint-disable-next-line no-unused-vars
+  _onClickHandler: function (event) {
+    // Reset the caret color to its default when the user clicks on the element.
+    this._restoreCaretColor();
+  },
   /**
    * Invoked when keydown is triggered of the this.element
    *

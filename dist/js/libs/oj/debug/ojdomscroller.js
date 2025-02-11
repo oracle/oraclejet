@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -155,6 +155,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
     if (
       this._asyncIterator &&
       this._element.clientHeight > 0 &&
+      (this._contentElement == null || this._contentElement.offsetHeight > 0) &&
       (forceFetch || !this.isOverflow() || this._isEndReached())
     ) {
       this._checkViewportCount += 1;
@@ -209,7 +210,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
   };
 
   DomScroller.prototype._handleExternalScrollerScrollTop = function (scrollTop, scrollerHeight) {
-    if (!this._fetchPromise && this._asyncIterator) {
+    if (!this._fetchPromise && this._asyncIterator && this._contentElement.offsetHeight > 0) {
       var contentBounds = this._contentElement.getBoundingClientRect();
       var scrollerBottom =
         this._element === document.body || this._element === document.documentElement

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1180,11 +1180,20 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
 
     $elem.remove();
 
+    // if gridline placeholder is the only item, remove it
+    const parentElem = parent.get(0);
+    if (parentElem.childElementCount === 1) {
+      const childElem = parentElem.children[0];
+      if (childElem.classList.contains('oj-listview-gridline-placeholder')) {
+        childElem.remove();
+      }
+    }
+
     // since the items are removed, need to clear cache
     this.m_widget.ClearCache();
 
     // if it's the last item, show empty text
-    if (parent.get(0).childElementCount === 0) {
+    if (parentElem.childElementCount === 0) {
       this.m_widget.renderComplete(true);
       if (restoreFocus) {
         // make sure focus is restore to no data content
@@ -2626,9 +2635,9 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
               var value = values[0];
               var templateEngine = values[1];
 
-              // check if the request was already aborted
+              // check if the request was already aborted or the fetch is outdated
               // ignore to prevent collision with results from the other incoming request
-              if (DataCollectionUtils.isFetchAborted(value)) {
+              if (DataCollectionUtils.isFetchAborted(value) || self.m_lastFetchPromise !== promise) {
                 // since we won't be calling fetchEnd, we'll need to make sure the readiness stack
                 // is updated
                 self.signalTaskEnd();
@@ -3138,7 +3147,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
 
     var scroller = this._getScroller();
     if (scroller !== this.m_widget.getListContainer()[0]) {
-      options.contentElement = this.m_root;
+      options.contentElement = this.m_superRoot != null ? this.m_superRoot : this.m_root;
       if (scroller === document.documentElement) {
         options.isOverflow = this._isLastItemNotInViewport.bind(this);
       }
@@ -3466,6 +3475,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
     });
 
     if (data.length === keys.length) {
+      var currentFetchPromise = this.m_lastFetchPromise;
       this._handleFetchSuccess(
         data,
         keys,
@@ -3480,7 +3490,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
           if (
             this.m_widget == null ||
             skipPostProcessing === null ||
-            this.m_lastFetchedData !== data
+            this.m_lastFetchedData !== data ||
+            currentFetchPromise !== this.m_lastFetchPromise
           ) {
             if (this.m_widget) {
               // for refresh case, we'll still need to reduce readiness stack, which is usually done in fetchEnd
@@ -3731,7 +3742,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
     // if loadMoreOnScroll then check if we have underflow and do a fetch if we do
     var fetchPromise;
     if (this.m_domScroller != null && this.IsReady()) {
-      fetchPromise = this.m_domScroller.checkViewport();
+      fetchPromise = this.m_domScroller.checkViewport(this.getItems(this.m_root).length === 0);
       if (fetchPromise != null) {
         this.signalTaskStart('got promise from checking viewport'); // signal fetchPromise started. Ends in promise resolution below
         fetchPromise.then(function (result) {

@@ -1,0 +1,9 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../tooltip/themes/redwood/_oj-tooltip.cssvars.scss";
+
+@include module-include-once("redwood.variables.formcontrol") {
+
+  :root {
+    --oj-form-control-font-weight-read-only:  normal;
+  }
+}

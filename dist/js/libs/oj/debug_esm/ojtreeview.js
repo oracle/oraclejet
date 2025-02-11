@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -4351,6 +4351,13 @@ class TreeviewSelectionManager {
           this._getRoot().remove();
         }
         this._addDataProviderEventListeners();
+        this.refresh();
+      } else if (key === 'selectionMode') {
+        if (value === 'single') {
+          this.element[0].classList.add(this.constants.OJ_TREEVIEW_SELECT_SINGLE);
+        } else {
+          this.element[0].classList.remove(this.constants.OJ_TREEVIEW_SELECT_SINGLE);
+        }
         this.refresh();
       } else {
         this.refresh();

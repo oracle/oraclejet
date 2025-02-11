@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2968,46 +2968,64 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
       var currentViewportSize = this._cbCommon._getCurrViewportSize();
 
       var contentWidth = this._cbCommon._contentContainer.offsetWidth;
+   
 
       var elementOffLeft = element.offsetLeft;
-      // FIX : in IE, the conveyor items all report offsetLeft=0,
-      // so we need to get the offset from the parent wrapping table cell div
-      // instead
-      if (!this._cbCommon._contentParent && elementOffLeft === 0) {
-        elementOffLeft = element.parentNode.offsetLeft;
-      }
 
       // if RTL, still want to save the start coords in logical, ascending order beginning with 0
       if (this._cbCommon._bRtl) {
         elementOffLeft = contentWidth - (elementOffLeft + element.offsetWidth);
       }
+
       // FIX : in IE, the conveyor items all report offsetTop=0,
       // so we need to get the offset from the parent wrapping table cell div
-      // instead
+      // instead 
       var elementOffTop = element.offsetTop;
       if (!this._cbCommon._contentParent && elementOffTop === 0) {
         elementOffTop = element.parentNode.offsetTop;
       }
+      var elementOffRight = elementOffLeft + element.offsetWidth;
       if (this._cbCommon._isHorizontal()) {
         // horizontal conveyor belt
         // if the element is in the current horizontal view port, then we don't need to scroll
         if (
-          elementOffLeft + element.offsetWidth <= currentScroll + currentViewportSize &&
+          elementOffRight <= currentScroll + currentViewportSize &&
           elementOffLeft >= currentScroll &&
           elementOffLeft > this._cbCommon._getButtonSize()
-        ) {
+         ) {
           return;
+        }
+        // if the element width is bigger than the current view port and it is partially in the view port, then we don't scroll
+        if (
+          element.offsetWidth > currentViewportSize && (
+              (elementOffLeft <= currentScroll &&
+                elementOffRight >= currentScroll + currentViewportSize) ||
+              (elementOffRight <= currentScroll + currentViewportSize &&
+                elementOffRight >= currentScroll)
+          )) {
+            return;
         }
 
         // if vertical conveyor belt and the element is in the current vertical view port, then we don't need to scroll
-      } else if (
-        elementOffTop + element.offsetHeight <= currentScroll + currentViewportSize &&
-        elementOffTop >= currentScroll &&
-        elementOffTop > this._cbCommon._getButtonSize()
-      ) {
-        return;
+      } else {
+        if ( elementOffTop + element.offsetHeight <= currentScroll + currentViewportSize &&
+          elementOffTop >= currentScroll &&
+          elementOffTop > this._cbCommon._getButtonSize()
+        ) {
+          return;
+        }
+        var elementOffBottom = elementOffTop + element.offsetHeight;
+        // if the element width is bigger than the current view port and it is partially in the view port, then we don't scroll
+        if (
+          element.offsetHeight > currentViewportSize && (
+            (elementOffTop <= currentScroll &&
+              elementOffBottom >= currentScroll + currentViewportSize) ||
+            (elementOffBottom <= currentScroll + currentViewportSize &&
+              elementOffBottom >= currentScroll)
+        )) {
+          return;
+        }
       }
-
       var contentContainer = this._cbCommon._contentContainer;
       var cbcClass = ConveyorBeltCommon;
       var elemInnerSize = this._cbCommon._isHorizontal()

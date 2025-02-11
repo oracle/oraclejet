@@ -15,38 +15,82 @@ import Message = require('../ojmessaging');
 import { inputBase, inputBaseEventMap, inputBaseSettableProperties } from '../ojinputtext';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojDatePicker extends ojInputDate<ojDatePickerSettableProperties> {
+    /** @deprecated since 18.0.0 - To highlight the today cell in a different timezone use the new today-time-zone property instead. */
     converter: Converter<any>;
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     describedBy: string | null;
+    /** @deprecated since 17.0.0 - Disabled is not supported by the Date Picker UX specification, use readonly property instead. */
     disabled: boolean;
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     displayOptions: {
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         converterHint?: 'display' | 'none';
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         messages?: 'display' | 'none';
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     help: {
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         instruction?: string;
     };
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     helpHints: {
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         definition?: string;
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         source?: string;
     };
+    /** @deprecated since 17.0.0 - This was never intended for oj-date-picker. */
     keyboardEdit: 'disabled';
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     labelEdge: 'inside' | 'none' | 'provided';
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     labelHint: string;
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     labelledBy: string | null;
     max: string | null;
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     messagesCustom: Message[];
     min: string | null;
+    /** @deprecated since 17.0.0 - Changing the Class or Style property is not recommended, as it leads to an inconsistent UI. */
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    /** @deprecated since 17.0.0 - oj-date-picker doesn't have a text input, so this was never needed. */
     placeholder: string;
+    /** @deprecated since 11.0.0 - This property is deprecated because it was incorrectly exposed on oj-date-picker and not fully implemented. */
     readonly rawValue: string;
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     required: boolean;
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     addEventListener<T extends keyof ojDatePickerEventMap>(type: T, listener: (this: HTMLElement, ev: ojDatePickerEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -127,6 +171,8 @@ export namespace ojDatePicker {
     type dayMetaDataChanged = ojInputDate.dayMetaDataChanged<ojDatePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = ojInputDate.readonlyChanged<ojDatePickerSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type todayTimeZoneChanged = ojInputDate.todayTimeZoneChanged<ojDatePickerSettableProperties>;
     //------------------------------------------------------------
     // End: generated events for inherited properties
     //------------------------------------------------------------
@@ -159,73 +205,152 @@ export interface ojDatePickerEventMap extends ojInputDateEventMap<ojDatePickerSe
     'dayFormatterChanged': JetElementCustomEvent<ojDatePicker["dayFormatter"]>;
     'dayMetaDataChanged': JetElementCustomEvent<ojDatePicker["dayMetaData"]>;
     'readonlyChanged': JetElementCustomEvent<ojDatePicker["readonly"]>;
+    'todayTimeZoneChanged': JetElementCustomEvent<ojDatePicker["todayTimeZone"]>;
 }
 export interface ojDatePickerSettableProperties extends ojInputDateSettableProperties {
+    /** @deprecated since 18.0.0 - To highlight the today cell in a different timezone use the new today-time-zone property instead. */
     converter: Converter<any>;
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     describedBy: string | null;
+    /** @deprecated since 17.0.0 - Disabled is not supported by the Date Picker UX specification, use readonly property instead. */
     disabled: boolean;
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     displayOptions: {
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         converterHint?: 'display' | 'none';
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         messages?: 'display' | 'none';
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     help: {
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         instruction?: string;
     };
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     helpHints: {
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         definition?: string;
+        /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
         source?: string;
     };
+    /** @deprecated since 17.0.0 - This was never intended for oj-date-picker. */
     keyboardEdit: 'disabled';
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     labelEdge: 'inside' | 'none' | 'provided';
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     labelHint: string;
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     labelledBy: string | null;
     max: string | null;
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     messagesCustom: Message[];
     min: string | null;
+    /** @deprecated since 17.0.0 - Changing the Class or Style property is not recommended, as it leads to an inconsistent UI. */
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    /** @deprecated since 17.0.0 - oj-date-picker doesn't have a text input, so this was never needed. */
     placeholder: string;
+    /** @deprecated since 11.0.0 - This property is deprecated because it was incorrectly exposed on oj-date-picker and not fully implemented. */
     readonly rawValue: string;
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     required: boolean;
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
+    /** @deprecated since 17.0.0 - The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component. */
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
 }
 export interface ojDatePickerSettablePropertiesLenient extends Partial<ojDatePickerSettableProperties> {
     [key: string]: any;
 }
+/** @deprecated since 17.0.0 - Suggested alternatives: oj-date-picker, oj-input-date, oj-input-time. The use of oj-date-time-picker is a Redwood anti-pattern. */
 export interface ojDateTimePicker extends ojInputDateTime<ojDateTimePickerSettableProperties> {
+    /** @deprecated since 17.0.0 - This property has been deprecated. */
     converter: Converter<any>;
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     describedBy: string | null;
+    /** @deprecated since 17.0.0 - Disabled is not supported by the Date Picker UX specification, use readonly property instead. */
     disabled: boolean;
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     help: {
+        /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
         instruction?: string;
     };
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     helpHints: {
+        /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
         definition?: string;
+        /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
         source?: string;
     };
+    /** @deprecated since 17.0.0 - This was never intended for the oj-date-time-picker component. */
     keyboardEdit: 'disabled';
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     labelEdge: 'inside' | 'none' | 'provided';
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     labelHint: string;
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     labelledBy: string | null;
     max: string | null;
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     messagesCustom: Message[];
     min: string | null;
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    /** @deprecated since 17.0.0 - oj-date-time-picker doesn't have a text input, so this was never needed. */
     placeholder: string;
+    /** @deprecated since 11.0.0 - This property is deprecated because it was incorrectly exposed on oj-date-time-picker and not fully implemented. */
     readonly rawValue: string;
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     required: boolean;
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     addEventListener<T extends keyof ojDateTimePickerEventMap>(type: T, listener: (this: HTMLElement, ev: ojDateTimePickerEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -343,32 +468,65 @@ export interface ojDateTimePickerEventMap extends ojInputDateTimeEventMap<ojDate
     'validChanged': JetElementCustomEvent<ojDateTimePicker["valid"]>;
 }
 export interface ojDateTimePickerSettableProperties extends ojInputDateTimeSettableProperties {
+    /** @deprecated since 17.0.0 - This property has been deprecated. */
     converter: Converter<any>;
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     describedBy: string | null;
+    /** @deprecated since 17.0.0 - Disabled is not supported by the Date Picker UX specification, use readonly property instead. */
     disabled: boolean;
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     help: {
+        /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
         instruction?: string;
     };
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     helpHints: {
+        /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
         definition?: string;
+        /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+           or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
         source?: string;
     };
+    /** @deprecated since 17.0.0 - This was never intended for the oj-date-time-picker component. */
     keyboardEdit: 'disabled';
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     labelEdge: 'inside' | 'none' | 'provided';
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     labelHint: string;
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     labelledBy: string | null;
     max: string | null;
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     messagesCustom: Message[];
     min: string | null;
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    /** @deprecated since 17.0.0 - oj-date-time-picker doesn't have a text input, so this was never needed. */
     placeholder: string;
+    /** @deprecated since 11.0.0 - This property is deprecated because it was incorrectly exposed on oj-date-time-picker and not fully implemented. */
     readonly rawValue: string;
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     required: boolean;
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
+    /** @deprecated since 17.0.0 - The oj-date-time-picker is used internally by the oj-input-date-time component and is not meant to display messages, be labelled,
+       or be in a form layout by itself. Per the Redwood UX specification, the oj-date-time-picker is not intended to be a form component. */
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
 }
@@ -376,23 +534,37 @@ export interface ojDateTimePickerSettablePropertiesLenient extends Partial<ojDat
     [key: string]: any;
 }
 export interface ojInputDate<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> extends inputBase<string, SP> {
+    /** @deprecated since 17.0.0 - The date field contains mask segments instead of a general input, so autocomplete is not supported. */
     autocomplete: 'on' | 'off' | string;
+    /** @deprecated since 17.0.0 - This is not recommended for accessibility reasons. */
     autofocus: boolean;
+    /** @deprecated since 18.0.0 - It is recommended to either use oj-c-input-date-picker which has a picker but no formatting support,
+       or use oj-c-input-date-text for formatting but has no picker. The property is being deprecated because the oj-input-date component has an implicit date converter that formats dates in the required short format with a four-digit year. Additionally,
+       the new today-time-zone property allows applications to highlight the today cell in a different timezone. Along with the new two-digit-start-year property,
+       which allows applications to specify the earliest date of a 100-year period within which the two-digit year will be interpreted, the explicit converter is unnecessary. */
     converter: Converter<any>;
     datePicker: {
         changeMonth?: string;
         changeYear?: string;
+        /** @deprecated since 17.0.0 - This is required when date-picker.number-of-months > 1, which is now deprecated, so this is no longer needed. */
         currentMonthPos?: number;
         daysOutsideMonth?: string;
+        /** @deprecated since 8.2.0 - This attribute is deprecated and should not be used as it will be ignored in new UX design. */
         footerLayout?: string;
+        /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification for Date Picker. See the Range Picker UX specification. */
         numberOfMonths?: number;
+        /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
         showOn?: string;
+        /** @deprecated since 17.0.0 - This is not in the Redwood UX specification. */
         stepBigMonths?: number;
+        /** @deprecated since 17.0.0 - This is not in the Redwood UX specification. */
         stepMonths?: 'numberOfMonths' | number;
         weekDisplay?: string;
+        /** @deprecated since 17.0.0 - This is not in the Redwood UX specification. The 'min' and 'max' properties should be used instead. */
         yearRange?: string;
     };
     dayFormatter: (param: ojInputDate.DayFormatterInput) => (null | 'all' | ojInputDate.DayFormatterOutput);
+    /** @deprecated since 17.0.0 - Use dayFormatter instead, as it is more flexible. */
     dayMetaData: {
         [key: string]: {
             [key: string]: {
@@ -405,62 +577,96 @@ export interface ojInputDate<SP extends ojInputDateSettableProperties = ojInputD
         };
     };
     displayOptions?: {
+        /** @deprecated since 17.0.0 - Please use help-hints instead. */
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
     keyboardEdit: 'enabled' | 'disabled';
+    /** @deprecated since 17.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     max: string | null;
     min: string | null;
+    /** @deprecated since 17.0.0 - Changing the Class or Style property is not recommended, as it leads to an inconsistent UI. */
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    /** @deprecated since 17.0.0 - The date field contains mask segments instead of a general input, so placeholder is not supported. */
     placeholder: string;
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
+    todayTimeZone: string;
+    twoDigitYearStart: number;
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         accessibleMaxLengthRemaining?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         currentText?: string;
         dateRestriction?: {
+            /** @deprecated since 17.0.0 - Please use help-hints instead. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
             messageSummary?: string;
         };
         dateTimeRange?: {
+            /** @deprecated since 17.0.0 - Please use help-hints instead. */
             hint?: {
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 inRange?: string;
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 max?: string;
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 min?: string;
             };
             messageDetail?: {
                 rangeOverflow?: string;
                 rangeUnderflow?: string;
             };
+            /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
             messageSummary?: {
+                /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
                 rangeOverflow?: string;
+                /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
                 rangeUnderflow?: string;
             };
         };
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         nextText?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         prevText?: string;
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         regexp?: {
+            /** @deprecated since 17.0.0 - This is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 17.0.0 - This is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 17.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendar?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarDisabled?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarTime?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarTimeDisabled?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         weekHeader?: string;
     };
     addEventListener<T extends keyof ojInputDateEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojInputDateEventMap<SP>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -516,6 +722,10 @@ export namespace ojInputDate {
     type placeholderChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["placeholder"]>;
     // tslint:disable-next-line interface-over-type-literal
     type renderModeChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["renderMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type todayTimeZoneChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["todayTimeZone"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type twoDigitYearStartChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["twoDigitYearStart"]>;
     // tslint:disable-next-line interface-over-type-literal
     type validatorsChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["validators"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -581,6 +791,8 @@ export interface ojInputDateEventMap<SP extends ojInputDateSettableProperties = 
     'pickerAttributesChanged': JetElementCustomEvent<ojInputDate<SP>["pickerAttributes"]>;
     'placeholderChanged': JetElementCustomEvent<ojInputDate<SP>["placeholder"]>;
     'renderModeChanged': JetElementCustomEvent<ojInputDate<SP>["renderMode"]>;
+    'todayTimeZoneChanged': JetElementCustomEvent<ojInputDate<SP>["todayTimeZone"]>;
+    'twoDigitYearStartChanged': JetElementCustomEvent<ojInputDate<SP>["twoDigitYearStart"]>;
     'validatorsChanged': JetElementCustomEvent<ojInputDate<SP>["validators"]>;
     'valueChanged': JetElementCustomEvent<ojInputDate<SP>["value"]>;
     'asyncValidatorsChanged': JetElementCustomEvent<ojInputDate<SP>["asyncValidators"]>;
@@ -599,23 +811,37 @@ export interface ojInputDateEventMap<SP extends ojInputDateSettableProperties = 
     'validChanged': JetElementCustomEvent<ojInputDate<SP>["valid"]>;
 }
 export interface ojInputDateSettableProperties extends inputBaseSettableProperties<string> {
+    /** @deprecated since 17.0.0 - The date field contains mask segments instead of a general input, so autocomplete is not supported. */
     autocomplete: 'on' | 'off' | string;
+    /** @deprecated since 17.0.0 - This is not recommended for accessibility reasons. */
     autofocus: boolean;
+    /** @deprecated since 18.0.0 - It is recommended to either use oj-c-input-date-picker which has a picker but no formatting support,
+       or use oj-c-input-date-text for formatting but has no picker. The property is being deprecated because the oj-input-date component has an implicit date converter that formats dates in the required short format with a four-digit year. Additionally,
+       the new today-time-zone property allows applications to highlight the today cell in a different timezone. Along with the new two-digit-start-year property,
+       which allows applications to specify the earliest date of a 100-year period within which the two-digit year will be interpreted, the explicit converter is unnecessary. */
     converter: Converter<any>;
     datePicker: {
         changeMonth?: string;
         changeYear?: string;
+        /** @deprecated since 17.0.0 - This is required when date-picker.number-of-months > 1, which is now deprecated, so this is no longer needed. */
         currentMonthPos?: number;
         daysOutsideMonth?: string;
+        /** @deprecated since 8.2.0 - This attribute is deprecated and should not be used as it will be ignored in new UX design. */
         footerLayout?: string;
+        /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification for Date Picker. See the Range Picker UX specification. */
         numberOfMonths?: number;
+        /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
         showOn?: string;
+        /** @deprecated since 17.0.0 - This is not in the Redwood UX specification. */
         stepBigMonths?: number;
+        /** @deprecated since 17.0.0 - This is not in the Redwood UX specification. */
         stepMonths?: 'numberOfMonths' | number;
         weekDisplay?: string;
+        /** @deprecated since 17.0.0 - This is not in the Redwood UX specification. The 'min' and 'max' properties should be used instead. */
         yearRange?: string;
     };
     dayFormatter: (param: ojInputDate.DayFormatterInput) => (null | 'all' | ojInputDate.DayFormatterOutput);
+    /** @deprecated since 17.0.0 - Use dayFormatter instead, as it is more flexible. */
     dayMetaData: {
         [key: string]: {
             [key: string]: {
@@ -628,62 +854,96 @@ export interface ojInputDateSettableProperties extends inputBaseSettableProperti
         };
     };
     displayOptions?: {
+        /** @deprecated since 17.0.0 - Please use help-hints instead. */
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
     keyboardEdit: 'enabled' | 'disabled';
+    /** @deprecated since 17.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     max: string | null;
     min: string | null;
+    /** @deprecated since 17.0.0 - Changing the Class or Style property is not recommended, as it leads to an inconsistent UI. */
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    /** @deprecated since 17.0.0 - The date field contains mask segments instead of a general input, so placeholder is not supported. */
     placeholder: string;
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
+    todayTimeZone: string;
+    twoDigitYearStart: number;
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         accessibleMaxLengthRemaining?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         currentText?: string;
         dateRestriction?: {
+            /** @deprecated since 17.0.0 - Please use help-hints instead. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
             messageSummary?: string;
         };
         dateTimeRange?: {
+            /** @deprecated since 17.0.0 - Please use help-hints instead. */
             hint?: {
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 inRange?: string;
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 max?: string;
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 min?: string;
             };
             messageDetail?: {
                 rangeOverflow?: string;
                 rangeUnderflow?: string;
             };
+            /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
             messageSummary?: {
+                /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
                 rangeOverflow?: string;
+                /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
                 rangeUnderflow?: string;
             };
         };
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         nextText?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         prevText?: string;
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         regexp?: {
+            /** @deprecated since 17.0.0 - This is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 17.0.0 - This is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 17.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendar?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarDisabled?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarTime?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarTimeDisabled?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         weekHeader?: string;
     };
 }
@@ -694,8 +954,11 @@ export interface ojInputDateTime<SP extends ojInputDateTimeSettableProperties = 
     converter: Converter<any>;
     max: string | null;
     min: string | null;
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
     timePicker: {
+        /** @deprecated since 8.2.0 - This attribute is deprecated and should not be used as it will be ignored in new UX design. */
         footerLayout: '' | 'now';
         showOn?: 'focus' | 'userFocus' | 'image';
         timeIncrement?: string;
@@ -703,47 +966,71 @@ export interface ojInputDateTime<SP extends ojInputDateTimeSettableProperties = 
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         accessibleMaxLengthRemaining?: string;
         cancel?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         currentText?: string;
         dateRestriction?: {
+            /** @deprecated since 17.0.0 - Please use help-hints instead. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
             messageSummary?: string;
         };
         dateTimeRange?: {
+            /** @deprecated since 17.0.0 - Please use help-hints instead. */
             hint?: {
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 inRange?: string;
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 max?: string;
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 min?: string;
             };
             messageDetail?: {
                 rangeOverflow?: string;
                 rangeUnderflow?: string;
             };
+            /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
             messageSummary?: {
+                /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
                 rangeOverflow?: string;
+                /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
                 rangeUnderflow?: string;
             };
         };
         done?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         nextText?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         prevText?: string;
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         regexp?: {
+            /** @deprecated since 17.0.0 - This is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 17.0.0 - This is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 17.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
         time?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendar?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarDisabled?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarTime?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarTimeDisabled?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         weekHeader?: string;
     };
     addEventListener<T extends keyof ojInputDateTimeEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojInputDateTimeEventMap<SP>[T]) => any, options?: (boolean |
@@ -880,8 +1167,11 @@ export interface ojInputDateTimeSettableProperties extends ojInputDateSettablePr
     converter: Converter<any>;
     max: string | null;
     min: string | null;
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
     timePicker: {
+        /** @deprecated since 8.2.0 - This attribute is deprecated and should not be used as it will be ignored in new UX design. */
         footerLayout: '' | 'now';
         showOn?: 'focus' | 'userFocus' | 'image';
         timeIncrement?: string;
@@ -889,47 +1179,71 @@ export interface ojInputDateTimeSettableProperties extends ojInputDateSettablePr
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         accessibleMaxLengthRemaining?: string;
         cancel?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         currentText?: string;
         dateRestriction?: {
+            /** @deprecated since 17.0.0 - Please use help-hints instead. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
             messageSummary?: string;
         };
         dateTimeRange?: {
+            /** @deprecated since 17.0.0 - Please use help-hints instead. */
             hint?: {
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 inRange?: string;
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 max?: string;
+                /** @deprecated since 17.0.0 - Please use help-hints instead. */
                 min?: string;
             };
             messageDetail?: {
                 rangeOverflow?: string;
                 rangeUnderflow?: string;
             };
+            /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
             messageSummary?: {
+                /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
                 rangeOverflow?: string;
+                /** @deprecated since 17.0.0 - This is not supported in the Redwood UX specification. */
                 rangeUnderflow?: string;
             };
         };
         done?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         nextText?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         prevText?: string;
+        /** @deprecated since 17.0.0 - This is not supported by the component. */
         regexp?: {
+            /** @deprecated since 17.0.0 - This is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 17.0.0 - This is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 17.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
         time?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendar?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarDisabled?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarTime?: string;
+        /** @deprecated since 17.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         tooltipCalendarTimeDisabled?: string;
+        /** @deprecated since 17.0.0 - The Redwood UX specification does not allow this to be configurable. */
         weekHeader?: string;
     };
 }
@@ -945,8 +1259,11 @@ export interface ojInputTime extends inputBase<string, ojInputTimeSettableProper
         class?: string;
         style?: string;
     };
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
     timePicker: {
+        /** @deprecated since 8.2.0 - This attribute is deprecated and should not be used as it will be ignored in new UX design. */
         footerLayout: '' | 'now';
         showOn?: 'focus' | 'userFocus' | 'image';
         timeIncrement?: string;
@@ -954,36 +1271,50 @@ export interface ojInputTime extends inputBase<string, ojInputTimeSettableProper
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthRemaining?: string;
         ampmWheelLabel?: string;
         cancelText?: string;
         currentTimeText?: string;
         dateTimeRange?: {
+            /** @deprecated since 18.0.0 - Please use help-hints instead. */
             hint?: {
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 inRange?: string;
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 max?: string;
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 min?: string;
             };
             messageDetail?: {
                 rangeOverflow?: string;
                 rangeUnderflow?: string;
             };
+            /** @deprecated since 18.0.0 - This is not supported in the Redwood UX specification. */
             messageSummary?: {
+                /** @deprecated since 18.0.0 - This is not supported in the Redwood UX specification. */
                 rangeOverflow?: string;
+                /** @deprecated since 18.0.0 - This is not supported in the Redwood UX specification. */
                 rangeUnderflow?: string;
             };
         };
         hourWheelLabel?: string;
         minuteWheelLabel?: string;
         okText?: string;
+        /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
         regexp?: {
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
         tooltipTime?: string;
@@ -1118,8 +1449,11 @@ export interface ojInputTimeSettableProperties extends inputBaseSettableProperti
         class?: string;
         style?: string;
     };
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
     timePicker: {
+        /** @deprecated since 8.2.0 - This attribute is deprecated and should not be used as it will be ignored in new UX design. */
         footerLayout: '' | 'now';
         showOn?: 'focus' | 'userFocus' | 'image';
         timeIncrement?: string;
@@ -1127,36 +1461,50 @@ export interface ojInputTimeSettableProperties extends inputBaseSettableProperti
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
     value: string;
     translations: {
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthRemaining?: string;
         ampmWheelLabel?: string;
         cancelText?: string;
         currentTimeText?: string;
         dateTimeRange?: {
+            /** @deprecated since 18.0.0 - Please use help-hints instead. */
             hint?: {
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 inRange?: string;
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 max?: string;
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 min?: string;
             };
             messageDetail?: {
                 rangeOverflow?: string;
                 rangeUnderflow?: string;
             };
+            /** @deprecated since 18.0.0 - This is not supported in the Redwood UX specification. */
             messageSummary?: {
+                /** @deprecated since 18.0.0 - This is not supported in the Redwood UX specification. */
                 rangeOverflow?: string;
+                /** @deprecated since 18.0.0 - This is not supported in the Redwood UX specification. */
                 rangeUnderflow?: string;
             };
         };
         hourWheelLabel?: string;
         minuteWheelLabel?: string;
         okText?: string;
+        /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
         regexp?: {
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
         tooltipTime?: string;
@@ -1167,6 +1515,7 @@ export interface ojInputTimeSettablePropertiesLenient extends Partial<ojInputTim
     [key: string]: any;
 }
 export type DatePickerElement = ojDatePicker;
+/** @deprecated since 17.0.0 - Suggested alternatives: oj-date-picker, oj-input-date, oj-input-time. The use of oj-date-time-picker is a Redwood anti-pattern. */
 export type DateTimePickerElement = ojDateTimePicker;
 export type InputDateElement<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = ojInputDate<SP>;
 export type InputDateTimeElement<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = ojInputDateTime<SP>;
@@ -1238,6 +1587,8 @@ export namespace DatePickerElement {
     type dayMetaDataChanged = ojInputDate.dayMetaDataChanged<ojDatePickerSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type readonlyChanged = ojInputDate.readonlyChanged<ojDatePickerSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type todayTimeZoneChanged = ojInputDate.todayTimeZoneChanged<ojDatePickerSettableProperties>;
     //------------------------------------------------------------
     // End: generated events for inherited properties
     //------------------------------------------------------------
@@ -1359,6 +1710,10 @@ export namespace InputDateElement {
     type placeholderChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["placeholder"]>;
     // tslint:disable-next-line interface-over-type-literal
     type renderModeChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["renderMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type todayTimeZoneChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["todayTimeZone"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type twoDigitYearStartChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["twoDigitYearStart"]>;
     // tslint:disable-next-line interface-over-type-literal
     type validatorsChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["validators"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1568,61 +1923,66 @@ export namespace InputTimeElement {
     //------------------------------------------------------------
 }
 export interface DatePickerIntrinsicProps extends Partial<Readonly<ojDatePickerSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojDatePickerEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojDatePickerEventMap['ojAnimateStart']) => void;
-    onconverterChanged?: (value: ojDatePickerEventMap['converterChanged']) => void;
-    ondescribedByChanged?: (value: ojDatePickerEventMap['describedByChanged']) => void;
-    ondisabledChanged?: (value: ojDatePickerEventMap['disabledChanged']) => void;
-    ondisplayOptionsChanged?: (value: ojDatePickerEventMap['displayOptionsChanged']) => void;
-    onhelpChanged?: (value: ojDatePickerEventMap['helpChanged']) => void;
-    onhelpHintsChanged?: (value: ojDatePickerEventMap['helpHintsChanged']) => void;
-    onlabelEdgeChanged?: (value: ojDatePickerEventMap['labelEdgeChanged']) => void;
-    onlabelHintChanged?: (value: ojDatePickerEventMap['labelHintChanged']) => void;
-    onlabelledByChanged?: (value: ojDatePickerEventMap['labelledByChanged']) => void;
+    /** @deprecated since 18.0.0 */ onconverterChanged?: (value: ojDatePickerEventMap['converterChanged']) => void;
+    /** @deprecated since 17.0.0 */ ondescribedByChanged?: (value: ojDatePickerEventMap['describedByChanged']) => void;
+    /** @deprecated since 17.0.0 */ ondisabledChanged?: (value: ojDatePickerEventMap['disabledChanged']) => void;
+    /** @deprecated since 17.0.0 */ ondisplayOptionsChanged?: (value: ojDatePickerEventMap['displayOptionsChanged']) => void;
+    /** @deprecated since 17.0.0 */ onhelpChanged?: (value: ojDatePickerEventMap['helpChanged']) => void;
+    /** @deprecated since 17.0.0 */ onhelpHintsChanged?: (value: ojDatePickerEventMap['helpHintsChanged']) => void;
+    /** @deprecated since 17.0.0 */ onlabelEdgeChanged?: (value: ojDatePickerEventMap['labelEdgeChanged']) => void;
+    /** @deprecated since 17.0.0 */ onlabelHintChanged?: (value: ojDatePickerEventMap['labelHintChanged']) => void;
+    /** @deprecated since 17.0.0 */ onlabelledByChanged?: (value: ojDatePickerEventMap['labelledByChanged']) => void;
     onmaxChanged?: (value: ojDatePickerEventMap['maxChanged']) => void;
-    onmessagesCustomChanged?: (value: ojDatePickerEventMap['messagesCustomChanged']) => void;
+    /** @deprecated since 17.0.0 */ onmessagesCustomChanged?: (value: ojDatePickerEventMap['messagesCustomChanged']) => void;
     onminChanged?: (value: ojDatePickerEventMap['minChanged']) => void;
-    onpickerAttributesChanged?: (value: ojDatePickerEventMap['pickerAttributesChanged']) => void;
-    onplaceholderChanged?: (value: ojDatePickerEventMap['placeholderChanged']) => void;
-    onrawValueChanged?: (value: ojDatePickerEventMap['rawValueChanged']) => void;
-    onrequiredChanged?: (value: ojDatePickerEventMap['requiredChanged']) => void;
-    onuserAssistanceDensityChanged?: (value: ojDatePickerEventMap['userAssistanceDensityChanged']) => void;
-    onvalidChanged?: (value: ojDatePickerEventMap['validChanged']) => void;
-    onvalidatorsChanged?: (value: ojDatePickerEventMap['validatorsChanged']) => void;
+    /** @deprecated since 17.0.0 */ onpickerAttributesChanged?: (value: ojDatePickerEventMap['pickerAttributesChanged']) => void;
+    /** @deprecated since 17.0.0 */ onplaceholderChanged?: (value: ojDatePickerEventMap['placeholderChanged']) => void;
+    /** @deprecated since 11.0.0 */ onrawValueChanged?: (value: ojDatePickerEventMap['rawValueChanged']) => void;
+    /** @deprecated since 17.0.0 */ onrequiredChanged?: (value: ojDatePickerEventMap['requiredChanged']) => void;
+    /** @deprecated since 17.0.0 */ onuserAssistanceDensityChanged?: (value: ojDatePickerEventMap['userAssistanceDensityChanged']) => void;
+    /** @deprecated since 17.0.0 */ onvalidChanged?: (value: ojDatePickerEventMap['validChanged']) => void;
+    /** @deprecated since 17.0.0 */ onvalidatorsChanged?: (value: ojDatePickerEventMap['validatorsChanged']) => void;
     onvalueChanged?: (value: ojDatePickerEventMap['valueChanged']) => void;
-    onasyncValidatorsChanged?: (value: ojDatePickerEventMap['asyncValidatorsChanged']) => void;
-    onautofocusChanged?: (value: ojDatePickerEventMap['autofocusChanged']) => void;
+    /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojDatePickerEventMap['asyncValidatorsChanged']) => void;
+    /** @deprecated since 17.0.0 */ onautofocusChanged?: (value: ojDatePickerEventMap['autofocusChanged']) => void;
     ondayFormatterChanged?: (value: ojDatePickerEventMap['dayFormatterChanged']) => void;
-    ondayMetaDataChanged?: (value: ojDatePickerEventMap['dayMetaDataChanged']) => void;
+    /** @deprecated since 17.0.0 */ ondayMetaDataChanged?: (value: ojDatePickerEventMap['dayMetaDataChanged']) => void;
     onreadonlyChanged?: (value: ojDatePickerEventMap['readonlyChanged']) => void;
+    ontodayTimeZoneChanged?: (value: ojDatePickerEventMap['todayTimeZoneChanged']) => void;
     children?: ComponentChildren;
 }
 export interface DateTimePickerIntrinsicProps extends Partial<Readonly<ojDateTimePickerSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojDateTimePickerEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojDateTimePickerEventMap['ojAnimateStart']) => void;
-    onconverterChanged?: (value: ojDateTimePickerEventMap['converterChanged']) => void;
-    ondescribedByChanged?: (value: ojDateTimePickerEventMap['describedByChanged']) => void;
-    ondisabledChanged?: (value: ojDateTimePickerEventMap['disabledChanged']) => void;
-    onhelpChanged?: (value: ojDateTimePickerEventMap['helpChanged']) => void;
-    onhelpHintsChanged?: (value: ojDateTimePickerEventMap['helpHintsChanged']) => void;
-    onlabelEdgeChanged?: (value: ojDateTimePickerEventMap['labelEdgeChanged']) => void;
-    onlabelHintChanged?: (value: ojDateTimePickerEventMap['labelHintChanged']) => void;
-    onlabelledByChanged?: (value: ojDateTimePickerEventMap['labelledByChanged']) => void;
+    /** @deprecated since 17.0.0 */ onconverterChanged?: (value: ojDateTimePickerEventMap['converterChanged']) => void;
+    /** @deprecated since 17.0.0 */ ondescribedByChanged?: (value: ojDateTimePickerEventMap['describedByChanged']) => void;
+    /** @deprecated since 17.0.0 */ ondisabledChanged?: (value: ojDateTimePickerEventMap['disabledChanged']) => void;
+    /** @deprecated since 17.0.0 */ onhelpChanged?: (value: ojDateTimePickerEventMap['helpChanged']) => void;
+    /** @deprecated since 17.0.0 */ onhelpHintsChanged?: (value: ojDateTimePickerEventMap['helpHintsChanged']) => void;
+    /** @deprecated since 17.0.0 */ onlabelEdgeChanged?: (value: ojDateTimePickerEventMap['labelEdgeChanged']) => void;
+    /** @deprecated since 17.0.0 */ onlabelHintChanged?: (value: ojDateTimePickerEventMap['labelHintChanged']) => void;
+    /** @deprecated since 17.0.0 */ onlabelledByChanged?: (value: ojDateTimePickerEventMap['labelledByChanged']) => void;
     onmaxChanged?: (value: ojDateTimePickerEventMap['maxChanged']) => void;
-    onmessagesCustomChanged?: (value: ojDateTimePickerEventMap['messagesCustomChanged']) => void;
+    /** @deprecated since 17.0.0 */ onmessagesCustomChanged?: (value: ojDateTimePickerEventMap['messagesCustomChanged']) => void;
     onminChanged?: (value: ojDateTimePickerEventMap['minChanged']) => void;
     onpickerAttributesChanged?: (value: ojDateTimePickerEventMap['pickerAttributesChanged']) => void;
-    onplaceholderChanged?: (value: ojDateTimePickerEventMap['placeholderChanged']) => void;
-    onrawValueChanged?: (value: ojDateTimePickerEventMap['rawValueChanged']) => void;
-    onrequiredChanged?: (value: ojDateTimePickerEventMap['requiredChanged']) => void;
-    onuserAssistanceDensityChanged?: (value: ojDateTimePickerEventMap['userAssistanceDensityChanged']) => void;
-    onvalidatorsChanged?: (value: ojDateTimePickerEventMap['validatorsChanged']) => void;
+    /** @deprecated since 17.0.0 */ onplaceholderChanged?: (value: ojDateTimePickerEventMap['placeholderChanged']) => void;
+    /** @deprecated since 11.0.0 */ onrawValueChanged?: (value: ojDateTimePickerEventMap['rawValueChanged']) => void;
+    /** @deprecated since 17.0.0 */ onrequiredChanged?: (value: ojDateTimePickerEventMap['requiredChanged']) => void;
+    /** @deprecated since 17.0.0 */ onuserAssistanceDensityChanged?: (value: ojDateTimePickerEventMap['userAssistanceDensityChanged']) => void;
+    /** @deprecated since 17.0.0 */ onvalidatorsChanged?: (value: ojDateTimePickerEventMap['validatorsChanged']) => void;
     onvalueChanged?: (value: ojDateTimePickerEventMap['valueChanged']) => void;
-    onasyncValidatorsChanged?: (value: ojDateTimePickerEventMap['asyncValidatorsChanged']) => void;
-    onautofocusChanged?: (value: ojDateTimePickerEventMap['autofocusChanged']) => void;
+    /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojDateTimePickerEventMap['asyncValidatorsChanged']) => void;
+    /** @deprecated since 17.0.0 */ onautofocusChanged?: (value: ojDateTimePickerEventMap['autofocusChanged']) => void;
     ondatePickerChanged?: (value: ojDateTimePickerEventMap['datePickerChanged']) => void;
     ondayFormatterChanged?: (value: ojDateTimePickerEventMap['dayFormatterChanged']) => void;
-    ondayMetaDataChanged?: (value: ojDateTimePickerEventMap['dayMetaDataChanged']) => void;
+    /** @deprecated since 17.0.0 */ ondayMetaDataChanged?: (value: ojDateTimePickerEventMap['dayMetaDataChanged']) => void;
     ondisplayOptionsChanged?: (value: ojDateTimePickerEventMap['displayOptionsChanged']) => void;
     onreadonlyChanged?: (value: ojDateTimePickerEventMap['readonlyChanged']) => void;
     onreadonlyUserAssistanceShownChanged?: (value: ojDateTimePickerEventMap['readonlyUserAssistanceShownChanged']) => void;
@@ -1630,25 +1990,29 @@ export interface DateTimePickerIntrinsicProps extends Partial<Readonly<ojDateTim
     children?: ComponentChildren;
 }
 export interface InputDateIntrinsicProps extends Partial<Readonly<ojInputDateSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojInputDateEventMap<any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojInputDateEventMap<any>['ojAnimateStart']) => void;
-    onautocompleteChanged?: (value: ojInputDateEventMap<any>['autocompleteChanged']) => void;
-    onautofocusChanged?: (value: ojInputDateEventMap<any>['autofocusChanged']) => void;
-    onconverterChanged?: (value: ojInputDateEventMap<any>['converterChanged']) => void;
+    /** @deprecated since 17.0.0 */ onautocompleteChanged?: (value: ojInputDateEventMap<any>['autocompleteChanged']) => void;
+    /** @deprecated since 17.0.0 */ onautofocusChanged?: (value: ojInputDateEventMap<any>['autofocusChanged']) => void;
+    /** @deprecated since 18.0.0 */ onconverterChanged?: (value: ojInputDateEventMap<any>['converterChanged']) => void;
     ondatePickerChanged?: (value: ojInputDateEventMap<any>['datePickerChanged']) => void;
     ondayFormatterChanged?: (value: ojInputDateEventMap<any>['dayFormatterChanged']) => void;
-    ondayMetaDataChanged?: (value: ojInputDateEventMap<any>['dayMetaDataChanged']) => void;
+    /** @deprecated since 17.0.0 */ ondayMetaDataChanged?: (value: ojInputDateEventMap<any>['dayMetaDataChanged']) => void;
     ondisplayOptionsChanged?: (value: ojInputDateEventMap<any>['displayOptionsChanged']) => void;
-    onkeyboardEditChanged?: (value: ojInputDateEventMap<any>['keyboardEditChanged']) => void;
-    onlabelledByChanged?: (value: ojInputDateEventMap<any>['labelledByChanged']) => void;
+    /** @deprecated since 17.0.0 */ onkeyboardEditChanged?: (value: ojInputDateEventMap<any>['keyboardEditChanged']) => void;
+    /** @deprecated since 17.0.0 */ onlabelledByChanged?: (value: ojInputDateEventMap<any>['labelledByChanged']) => void;
     onmaxChanged?: (value: ojInputDateEventMap<any>['maxChanged']) => void;
     onminChanged?: (value: ojInputDateEventMap<any>['minChanged']) => void;
-    onpickerAttributesChanged?: (value: ojInputDateEventMap<any>['pickerAttributesChanged']) => void;
-    onplaceholderChanged?: (value: ojInputDateEventMap<any>['placeholderChanged']) => void;
-    onrenderModeChanged?: (value: ojInputDateEventMap<any>['renderModeChanged']) => void;
+    /** @deprecated since 17.0.0 */ onpickerAttributesChanged?: (value: ojInputDateEventMap<any>['pickerAttributesChanged']) => void;
+    /** @deprecated since 17.0.0 */ onplaceholderChanged?: (value: ojInputDateEventMap<any>['placeholderChanged']) => void;
+    /** @deprecated since 8.0.0 */ onrenderModeChanged?: (value: ojInputDateEventMap<any>['renderModeChanged']) => void;
+    ontodayTimeZoneChanged?: (value: ojInputDateEventMap<any>['todayTimeZoneChanged']) => void;
+    ontwoDigitYearStartChanged?: (value: ojInputDateEventMap<any>['twoDigitYearStartChanged']) => void;
     onvalidatorsChanged?: (value: ojInputDateEventMap<any>['validatorsChanged']) => void;
     onvalueChanged?: (value: ojInputDateEventMap<any>['valueChanged']) => void;
-    onasyncValidatorsChanged?: (value: ojInputDateEventMap<any>['asyncValidatorsChanged']) => void;
+    /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojInputDateEventMap<any>['asyncValidatorsChanged']) => void;
     ondescribedByChanged?: (value: ojInputDateEventMap<any>['describedByChanged']) => void;
     ondisabledChanged?: (value: ojInputDateEventMap<any>['disabledChanged']) => void;
     onhelpChanged?: (value: ojInputDateEventMap<any>['helpChanged']) => void;
@@ -1665,33 +2029,35 @@ export interface InputDateIntrinsicProps extends Partial<Readonly<ojInputDateSet
     children?: ComponentChildren;
 }
 export interface InputDateTimeIntrinsicProps extends Partial<Readonly<ojInputDateTimeSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojInputDateTimeEventMap<any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojInputDateTimeEventMap<any>['ojAnimateStart']) => void;
     onconverterChanged?: (value: ojInputDateTimeEventMap<any>['converterChanged']) => void;
     onmaxChanged?: (value: ojInputDateTimeEventMap<any>['maxChanged']) => void;
     onminChanged?: (value: ojInputDateTimeEventMap<any>['minChanged']) => void;
-    onrenderModeChanged?: (value: ojInputDateTimeEventMap<any>['renderModeChanged']) => void;
+    /** @deprecated since 8.0.0 */ onrenderModeChanged?: (value: ojInputDateTimeEventMap<any>['renderModeChanged']) => void;
     ontimePickerChanged?: (value: ojInputDateTimeEventMap<any>['timePickerChanged']) => void;
     onvalidatorsChanged?: (value: ojInputDateTimeEventMap<any>['validatorsChanged']) => void;
     onvalueChanged?: (value: ojInputDateTimeEventMap<any>['valueChanged']) => void;
-    onasyncValidatorsChanged?: (value: ojInputDateTimeEventMap<any>['asyncValidatorsChanged']) => void;
-    onautocompleteChanged?: (value: ojInputDateTimeEventMap<any>['autocompleteChanged']) => void;
-    onautofocusChanged?: (value: ojInputDateTimeEventMap<any>['autofocusChanged']) => void;
+    /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojInputDateTimeEventMap<any>['asyncValidatorsChanged']) => void;
+    /** @deprecated since 17.0.0 */ onautocompleteChanged?: (value: ojInputDateTimeEventMap<any>['autocompleteChanged']) => void;
+    /** @deprecated since 17.0.0 */ onautofocusChanged?: (value: ojInputDateTimeEventMap<any>['autofocusChanged']) => void;
     ondatePickerChanged?: (value: ojInputDateTimeEventMap<any>['datePickerChanged']) => void;
     ondayFormatterChanged?: (value: ojInputDateTimeEventMap<any>['dayFormatterChanged']) => void;
-    ondayMetaDataChanged?: (value: ojInputDateTimeEventMap<any>['dayMetaDataChanged']) => void;
+    /** @deprecated since 17.0.0 */ ondayMetaDataChanged?: (value: ojInputDateTimeEventMap<any>['dayMetaDataChanged']) => void;
     ondescribedByChanged?: (value: ojInputDateTimeEventMap<any>['describedByChanged']) => void;
     ondisabledChanged?: (value: ojInputDateTimeEventMap<any>['disabledChanged']) => void;
     ondisplayOptionsChanged?: (value: ojInputDateTimeEventMap<any>['displayOptionsChanged']) => void;
     onhelpChanged?: (value: ojInputDateTimeEventMap<any>['helpChanged']) => void;
     onhelpHintsChanged?: (value: ojInputDateTimeEventMap<any>['helpHintsChanged']) => void;
-    onkeyboardEditChanged?: (value: ojInputDateTimeEventMap<any>['keyboardEditChanged']) => void;
+    /** @deprecated since 17.0.0 */ onkeyboardEditChanged?: (value: ojInputDateTimeEventMap<any>['keyboardEditChanged']) => void;
     onlabelEdgeChanged?: (value: ojInputDateTimeEventMap<any>['labelEdgeChanged']) => void;
     onlabelHintChanged?: (value: ojInputDateTimeEventMap<any>['labelHintChanged']) => void;
-    onlabelledByChanged?: (value: ojInputDateTimeEventMap<any>['labelledByChanged']) => void;
+    /** @deprecated since 17.0.0 */ onlabelledByChanged?: (value: ojInputDateTimeEventMap<any>['labelledByChanged']) => void;
     onmessagesCustomChanged?: (value: ojInputDateTimeEventMap<any>['messagesCustomChanged']) => void;
-    onpickerAttributesChanged?: (value: ojInputDateTimeEventMap<any>['pickerAttributesChanged']) => void;
-    onplaceholderChanged?: (value: ojInputDateTimeEventMap<any>['placeholderChanged']) => void;
+    /** @deprecated since 17.0.0 */ onpickerAttributesChanged?: (value: ojInputDateTimeEventMap<any>['pickerAttributesChanged']) => void;
+    /** @deprecated since 17.0.0 */ onplaceholderChanged?: (value: ojInputDateTimeEventMap<any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojInputDateTimeEventMap<any>['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojInputDateTimeEventMap<any>['readonlyChanged']) => void;
     onreadonlyUserAssistanceShownChanged?: (value: ojInputDateTimeEventMap<any>['readonlyUserAssistanceShownChanged']) => void;
@@ -1701,18 +2067,20 @@ export interface InputDateTimeIntrinsicProps extends Partial<Readonly<ojInputDat
     children?: ComponentChildren;
 }
 export interface InputTimeIntrinsicProps extends Partial<Readonly<ojInputTimeSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojInputTimeEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojInputTimeEventMap['ojAnimateStart']) => void;
     onconverterChanged?: (value: ojInputTimeEventMap['converterChanged']) => void;
     onkeyboardEditChanged?: (value: ojInputTimeEventMap['keyboardEditChanged']) => void;
     onmaxChanged?: (value: ojInputTimeEventMap['maxChanged']) => void;
     onminChanged?: (value: ojInputTimeEventMap['minChanged']) => void;
     onpickerAttributesChanged?: (value: ojInputTimeEventMap['pickerAttributesChanged']) => void;
-    onrenderModeChanged?: (value: ojInputTimeEventMap['renderModeChanged']) => void;
+    /** @deprecated since 8.0.0 */ onrenderModeChanged?: (value: ojInputTimeEventMap['renderModeChanged']) => void;
     ontimePickerChanged?: (value: ojInputTimeEventMap['timePickerChanged']) => void;
     onvalidatorsChanged?: (value: ojInputTimeEventMap['validatorsChanged']) => void;
     onvalueChanged?: (value: ojInputTimeEventMap['valueChanged']) => void;
-    onasyncValidatorsChanged?: (value: ojInputTimeEventMap['asyncValidatorsChanged']) => void;
+    /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojInputTimeEventMap['asyncValidatorsChanged']) => void;
     onautocompleteChanged?: (value: ojInputTimeEventMap['autocompleteChanged']) => void;
     onautofocusChanged?: (value: ojInputTimeEventMap['autofocusChanged']) => void;
     ondescribedByChanged?: (value: ojInputTimeEventMap['describedByChanged']) => void;

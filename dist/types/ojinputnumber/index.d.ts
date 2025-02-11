@@ -12,12 +12,14 @@ import { Validation } from '../ojvalidationfactory-base';
 import { editableValue, editableValueEventMap, editableValueSettableProperties } from '../ojeditablevalue';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojInputNumber extends editableValue<number | null, ojInputNumberSettableProperties, number | null, string> {
+    /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<number>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
     converter: Converter<number>;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -37,10 +39,15 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
     virtualKeyboard: 'auto' | 'number' | 'text';
     translations: {
         numberRange?: {
+            /** @deprecated since 18.0.0 - Please use help-hints instead. */
             hint?: {
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 exact?: string;
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 inRange?: string;
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 max?: string;
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 min?: string;
             };
             messageDetail?: {
@@ -48,17 +55,22 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
                 rangeOverflow?: string;
                 rangeUnderflow?: string;
             };
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: {
                 rangeOverflow?: string;
                 rangeUnderflow?: string;
             };
         };
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
+        /** @deprecated since 14.0.0 - This tooltip text should be consistent across the application, and not configured per component instance. */
         tooltipDecrement?: string;
+        /** @deprecated since 14.0.0 - This tooltip text should be consistent across the application, and not configured per component instance. */
         tooltipIncrement?: string;
     };
     addEventListener<T extends keyof ojInputNumberEventMap>(type: T, listener: (this: HTMLElement, ev: ojInputNumberEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -180,12 +192,14 @@ export interface ojInputNumberEventMap extends editableValueEventMap<number | nu
     'validChanged': JetElementCustomEvent<ojInputNumber["valid"]>;
 }
 export interface ojInputNumberSettableProperties extends editableValueSettableProperties<number | null, number | null, string> {
+    /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<number>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
     converter: Converter<number>;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -205,10 +219,15 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
     virtualKeyboard: 'auto' | 'number' | 'text';
     translations: {
         numberRange?: {
+            /** @deprecated since 18.0.0 - Please use help-hints instead. */
             hint?: {
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 exact?: string;
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 inRange?: string;
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 max?: string;
+                /** @deprecated since 18.0.0 - Please use help-hints instead. */
                 min?: string;
             };
             messageDetail?: {
@@ -216,17 +235,22 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
                 rangeOverflow?: string;
                 rangeUnderflow?: string;
             };
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: {
                 rangeOverflow?: string;
                 rangeUnderflow?: string;
             };
         };
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
+        /** @deprecated since 14.0.0 - This tooltip text should be consistent across the application, and not configured per component instance. */
         tooltipDecrement?: string;
+        /** @deprecated since 14.0.0 - This tooltip text should be consistent across the application, and not configured per component instance. */
         tooltipIncrement?: string;
     };
 }
@@ -310,9 +334,11 @@ export namespace InputNumberElement {
     //------------------------------------------------------------
 }
 export interface InputNumberIntrinsicProps extends Partial<Readonly<ojInputNumberSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojInputNumberEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojInputNumberEventMap['ojAnimateStart']) => void;
-    onasyncValidatorsChanged?: (value: ojInputNumberEventMap['asyncValidatorsChanged']) => void;
+    /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojInputNumberEventMap['asyncValidatorsChanged']) => void;
     onautocompleteChanged?: (value: ojInputNumberEventMap['autocompleteChanged']) => void;
     onautofocusChanged?: (value: ojInputNumberEventMap['autofocusChanged']) => void;
     onconverterChanged?: (value: ojInputNumberEventMap['converterChanged']) => void;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -231,7 +231,7 @@ var __oj_select_single_metadata =
 };
     __oj_select_single_metadata.extension._WIDGET_NAME = 'ojSelectSingle';
     __oj_select_single_metadata.extension._INNER_ELEM = 'input';
-    __oj_select_single_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
+    __oj_select_single_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-label', 'tabindex'];
     __oj_select_single_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
     oj.CustomElementBridge.register('oj-select-single', {
       metadata: oj.CollectionUtils.mergeDeep(__oj_select_single_metadata, {
@@ -1108,6 +1108,16 @@ var __oj_select_single_metadata =
      * @memberof! oj.ojSelectSingle
      */
     _ValidateHelper: function () {
+      // JET-71150 - Getting error 'Cannot read properties of null (reading 'getInputElem')' on a select single component
+      // Return immediately if the component is not attached on the DOM. Due to the component processing certain requests
+      // asynchronously, we might end up here after the component is removed from the DOM. In this case, we do not need to
+      // react to those stale requests.
+      if (this._bReleasedResources) {
+        // we will be optimistic here and resolve to valid here as the component is no longer functional
+        // and we do not want to break any logic.
+        return Promise.resolve('valid');
+      }
+
       // JET-40458 - ISSUES WITH OJ-SELECT-SINGLE INSIDE A EDITABLE TABLE
       // maintain flag so we know we're validating from within _SetValue
       this._isInValidate = true;
@@ -1959,7 +1969,7 @@ var __oj_select_single_metadata =
      *                for: "handleRowAction", jsdocOverride: true},
      *               {target: "Type", value: "<V, D>", for: "genericTypeParameters"}]
      * @ojdeprecated {target: "property", for: "selectedItem", since: "9.0.0",
-     *                description: "The selectedItem property is deprecated in favor of currentRow and handleRowAction properties, which provide additional functionalities."}
+     *                description: "Use the currentRow and handleRowAction properties instead, which provide additional functionalities."}
      */
 
     /**
@@ -2069,18 +2079,43 @@ var __oj_select_single_metadata =
      *     <tr>
      *      <td>Option item</td>
      *       <td><kbd>Enter</kbd></td>
-     *       <td> Select the highlighted choice from the drop down.</td>
+     *       <td> Select the highlighted choice from the drop down and close the dropdown.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Option item</td>
+     *       <td><kbd>Tab</kbd></td>
+     *       <td> Select the highlighted choice from the drop down and transfer focus to the next
+     *         tabbable element on the page.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Input field</td>
+     *       <td><kbd>Esc</kbd></td>
+     *       <td> Collapse the dropdown list. If the dropdown is already closed, do nothing.</td>
      *     </tr>
      *     <tr>
      *       <td>Input field</td>
      *       <td><kbd>Enter</kbd></td>
-     *       <td>Set the input text as the value.</td>
+     *       <td> If the selected value text has been deleted, clear the value and close the dropdown.
+     *         If filtering, select the highlighted choice from the dropdown and close the
+     *         dropdown.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Input field</td>
+     *       <td><kbd>Tab</kbd></td>
+     *       <td> If the selected value text has been deleted, clear the value and transfer focus
+     *         to the next tabbable element on the page. If filtering, select the highlighted choice
+     *         from the dropdown and transfer focus to the next tabbable element on the page.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Input field</td>
+     *       <td><kbd>UpArrow or DownArrow</kbd></td>
+     *       <td> If the dropdown is not open, expand the dropdown list.  Otherwise, transfer
+     *         focus into the dropdown list.</td>
      *     </tr>
      *     <tr>
      *      <td>Drop down</td>
      *       <td><kbd>UpArrow or DownArrow</kbd></td>
-     *       <td> Highlight the option item on the drop down list in the direction of the arrow.
-     *         If the drop down is not open, expand the drop down list.</td>
+     *       <td> Highlight the option item on the drop down list in the direction of the arrow.</td>
      *     </tr>
      *     <tr>
      *      <td>Drop down</td>
@@ -2110,6 +2145,13 @@ var __oj_select_single_metadata =
      * and references to oj-c-select-single in your app. Please note the changes between the two
      * components below.
      * </p>
+     * <h5>Data Provider key type</h5>
+     * <p>
+     * In oj-c-select-single, the type of the data attribute is <code>DataProvider&lt;V, D&gt;</code> where
+     * V can only be of type string or number. This also affects the type of the component value, which is V,
+     * and the value-item, which is <code>ItemContext&lt;V, D&gt;</code>.
+     * </p>
+     *
      * <h5>Global attributes</h5>
      * <p>
      * The following global attributes are no longer supported:
@@ -2219,13 +2261,6 @@ var __oj_select_single_metadata =
      * <h5>Formatted messages</h5>
      * <p>
      * Formatting messages using html tags is not supported in the core pack component.
-     * </p>
-     *
-     * <h5>Data Provider key type</h5>
-     * <p>
-     * In oj-c-select-single, the type of the data attribute is <code>DataProvider&lt;V, D&gt;</code> where
-     * V can only be of type string or number. This also affects the type of the component value, which is V,
-     * and the value-item, which is <code>ItemContext&lt;V, D&gt;</code>.
      * </p>
      *
      * <h5>Collection Template</h5>

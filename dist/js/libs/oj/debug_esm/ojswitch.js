@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -483,7 +483,9 @@ const ARIA_DISABLED = 'aria-disabled';
        * value if it exists, when the attribute is not explicitly set. When neither is set,
        * <code class="prettyprint">disabled </code>
        * defaults to false.
-       *
+       * <p>
+       * A disabled component does not show messages or user assistance text.
+       * </p>
        * @example <caption>Initialize the switch with
        * <code class="prettyprint">disabled</code> attribute:</caption>
        * &lt;oj-switch disabled="true">&lt;/oj-switch>
@@ -562,6 +564,7 @@ const ARIA_DISABLED = 'aria-disabled';
        * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
        * not have its readonly attribute set, the form component's readonly will be true.
        * </p>
+       * {@ojinclude "name":"readonlyMessagesUserAssistanceEditableValue"}
        * @example <caption>Initialize the switch with
        * <code class="prettyprint">readOnly</code> attribute:</caption>
        * &lt;oj-switch readonly="true">&lt;/oj-switch>

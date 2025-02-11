@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1525,11 +1525,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
           mouseleave: handleMouseLeave,
           'mouseleave .oj-menu': handleMouseLeave,
           focus: function (event, keepActiveItem) {
-            if (
-              !keepActiveItem &&
-              event.target !== this.element[0] &&
-              !(this._focusSkipLink && event.target === this._focusSkipLink.getLink()[0])
-            ) {
+            if (!keepActiveItem && event.target !== this.element[0]) {
               // If there's already an active item, keep it active
               // If not, make the first item active
               // TBD: is there a reason that JQUI needed to redundantly call _focus() on this.active when this.active was already set?
@@ -2296,12 +2292,19 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
           // We use requestAnimationFrame to trigger reposition asynchronously when menu is already refreshed correctly. This only applies when menu is already opened
           requestAnimationFrame(() => {
             resolveBusyState();
-            this._reposition();
+            this._reposition(true);
           });
         }
       },
 
-      _reposition: function () {
+      /*
+      Reposition is called on 3 cases. After opening on ios due to some issues with searchbar, on popupservice refresh(events[oj.PopupService.EVENT.POPUP_REFRESH] = this._reposition.bind(this)) and
+      on menu refresh. When menu refresh we need to force repositioning even if menu is larger than viewport. This condition was added
+      due to some issues when using keyboard and menu is scrolled: https://bug.oraclecorp.com/pls/bug/webbug_print.show?c_rptno=28729711
+      Since reposition is called via popupservice refresh on that bug we can keep that condition working as in the past without adding a new bug,
+      just changing condition when reposition is called via menu refresh.
+      */
+      _reposition: function (forceReposition) {
         function isMenuLargerThanViewport(domElement) {
           var rect = domElement.getBoundingClientRect();
           return (
@@ -2313,7 +2316,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
         }
 
         var element = this.element;
-        if (!element.is(':visible') || isMenuLargerThanViewport(element[0])) {
+        if (!element.is(':visible') || (isMenuLargerThanViewport(element[0]) && !forceReposition)) {
           // skip if the menu is hidden or larger than the viewport
           return;
         }
@@ -2956,8 +2959,6 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
         // Remove menu from openPopupMenus list
         var i = _openPopupMenus.indexOf(this);
         _openPopupMenus.splice(i, 1);
-
-        this._destroyVoiceOverAssist();
       },
 
       /**
@@ -3345,8 +3346,10 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
         this.rootHeight = rootElement[0].offsetHeight;
         if (position.of.type === 'click') {
           this.launcherHeight = position.of.clientY;
+          this.launcherTop = position.of.clientY;
         } else {
           this.launcherHeight = context.launcher[0].getBoundingClientRect().bottom;
+          this.launcherTop = context.launcher[0].getBoundingClientRect().top;
         }
         this._updateMenuMaxHeight();
         rootElement.position(position);
@@ -3355,8 +3358,6 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
         this.initialWidth = rootElement.width();
         this.initialHeight = rootElement.height();
 
-        // establish this._focusSkipLink, if iOS or Android
-        this._initVoiceOverAssist(initialFocus);
         if (initialFocus === 'firstItem') {
           // Establish "logical" focus ( aria-activedescendant) before open animation so mouseover
           // is not negated by initial focus after the menu is fully open.
@@ -3414,7 +3415,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
           return;
         }
         // Leave some space between menu and viewport edge
-        var bottomPadding = 25;
+        var padding = 25;
 
         const isSubmenu = elem.parentNode.nodeName === 'OJ-OPTION';
 
@@ -3422,10 +3423,18 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
         const launcherHeight = isSubmenu
           ? elem.parentNode.getBoundingClientRect().bottom
           : this.launcherHeight;
-        var menuHeight = window.innerHeight - launcherHeight - bottomPadding;
-        // MaxHeight will be at least bottomPadding
-        if (menuHeight < bottomPadding) {
-          menuHeight = bottomPadding;
+        let menuHeight;
+        const topSpace = this.launcherTop;
+        const bottomSpace = window.innerHeight - launcherHeight;
+        if (!this.options.openOptions.position.collision.includes(['none', 'fit'])) {
+          menuHeight = Math.max(bottomSpace, topSpace) - padding;
+        } else {
+          menuHeight =
+            this.options.openOptions.position.at.vertical === 'top' ? topSpace : bottomSpace;
+        }
+        // MaxHeight will be at least padding
+        if (menuHeight < padding) {
+          menuHeight = padding;
         }
         elem.style.maxHeight = menuHeight + 'px';
         elem.style.overflowY = 'auto';
@@ -3470,13 +3479,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
 
         if (initialFocus === 'firstItem' || initialFocus === 'menu') {
           var focusElement;
-          if (this._focusSkipLink && initialFocus === 'menu') {
-            // iOS and Android VO support.  Focus is not switched unless the aria-activedescendant
-            // is set (aka 'firstItem') or dom focus is to an anchor tag.
-            focusElement = this._focusSkipLink.getLink();
-          } else {
-            focusElement = this.element;
-          }
+          focusElement = this.element;
 
           // Delay stealing focus "next-tick" so if the event triggering the menu to open has time
           // to finish the normal sequence on the launcher.  Otherwise, a rogue event could be
@@ -3496,61 +3499,6 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
         }
 
         this._trigger('open', event, {});
-      },
-
-      _initVoiceOverAssist: function (initialFocus) {
-        if (initialFocus !== 'menu') {
-          return;
-        }
-
-        var isVOSupported =
-          oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS ||
-          oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.ANDROID;
-        if (!isVOSupported) {
-          return;
-        }
-
-        var firstItem = this._getFirstItem();
-        if (firstItem.length < 1) {
-          // couldn't find a valid menu item
-          return;
-        }
-
-        // get a sub-id
-        var id = this.element.attr('id');
-        if (oj.StringUtils.isEmptyOrUndefined(id)) {
-          id = this.uuid;
-        }
-        var focusSkipLinkId = [id, 'focusSkipLink'].join('_');
-
-        var callback = function () {
-          // force focus to the anchor of the first item in the "next-tick"
-          // to give a sticky double tap long touch hold time to target the
-          // original launcher for the touchend event
-          window.setImmediate(
-            function (self, first) {
-              first.find('a').first().focus();
-              self._focus(null, first);
-            }.bind(this, this, firstItem)
-          );
-        }.bind(this);
-
-        var message = this.options.translations.ariaFocusSkipLink;
-        var options = { insertBefore: true, preventKeyEvents: false };
-        this._focusSkipLink = new ojpopupcore.PopupSkipLink(
-          firstItem,
-          message,
-          callback,
-          focusSkipLinkId,
-          options
-        );
-      },
-
-      _destroyVoiceOverAssist: function () {
-        if (this._focusSkipLink) {
-          this._focusSkipLink.destroy();
-          delete this._focusSkipLink;
-        }
       },
 
       _getFirstItem: function () {

@@ -5,7 +5,10 @@ import NumberRangeValidator = require('../ojvalidator-numberrange');
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojPagingControl extends baseComponent<ojPagingControlSettableProperties> {
     data: PagingModel;
+    /** @deprecated since 7.0.0 - Support for "loadMore" paging mode is deprecated. Use native component high-water mark scrolling APIs instead (see Table, ListView,
+       and DataGrid for details). In addition, "loadMore" is not compatible with the Table, Listview, and DataGrid default scroll-policy "loadMoreOnScroll". */
     loadMoreOptions: {
+        /** @deprecated since 7.0.0 - Support for "loadMore" paging mode is deprecated. Use native component high-water mark scrolling APIs instead (see Table, ListView, and DataGrid for details). */
         maxCount: number;
     };
     mode: 'page' | 'loadMore';
@@ -33,7 +36,9 @@ export interface ojPagingControl extends baseComponent<ojPagingControlSettablePr
         labelAccNavPreviousPage?: string;
         labelAccPageNumber?: string;
         labelAccPaging?: string;
+        /** @deprecated since 7.0.0 - Support for "loadMore" paging mode is deprecated. Use native component high-water mark scrolling APIs instead (see Table, ListView, and DataGrid for details). */
         labelLoadMore?: string;
+        /** @deprecated since 7.0.0 - Support for "loadMore" paging mode is deprecated. Use native component high-water mark scrolling APIs instead (see Table, ListView, and DataGrid for details). */
         labelLoadMoreMaxRows?: string;
         labelNavInputPage?: string;
         labelNavInputPageMax?: string;
@@ -93,7 +98,10 @@ export interface ojPagingControlEventMap extends baseComponentEventMap<ojPagingC
 }
 export interface ojPagingControlSettableProperties extends baseComponentSettableProperties {
     data: PagingModel;
+    /** @deprecated since 7.0.0 - Support for "loadMore" paging mode is deprecated. Use native component high-water mark scrolling APIs instead (see Table, ListView,
+       and DataGrid for details). In addition, "loadMore" is not compatible with the Table, Listview, and DataGrid default scroll-policy "loadMoreOnScroll". */
     loadMoreOptions: {
+        /** @deprecated since 7.0.0 - Support for "loadMore" paging mode is deprecated. Use native component high-water mark scrolling APIs instead (see Table, ListView, and DataGrid for details). */
         maxCount: number;
     };
     mode: 'page' | 'loadMore';
@@ -121,7 +129,9 @@ export interface ojPagingControlSettableProperties extends baseComponentSettable
         labelAccNavPreviousPage?: string;
         labelAccPageNumber?: string;
         labelAccPaging?: string;
+        /** @deprecated since 7.0.0 - Support for "loadMore" paging mode is deprecated. Use native component high-water mark scrolling APIs instead (see Table, ListView, and DataGrid for details). */
         labelLoadMore?: string;
+        /** @deprecated since 7.0.0 - Support for "loadMore" paging mode is deprecated. Use native component high-water mark scrolling APIs instead (see Table, ListView, and DataGrid for details). */
         labelLoadMoreMaxRows?: string;
         labelNavInputPage?: string;
         labelNavInputPageMax?: string;
@@ -163,7 +173,7 @@ export namespace PagingControlElement {
 }
 export interface PagingControlIntrinsicProps extends Partial<Readonly<ojPagingControlSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     ondataChanged?: (value: ojPagingControlEventMap['dataChanged']) => void;
-    onloadMoreOptionsChanged?: (value: ojPagingControlEventMap['loadMoreOptionsChanged']) => void;
+    /** @deprecated since 7.0.0 */ onloadMoreOptionsChanged?: (value: ojPagingControlEventMap['loadMoreOptionsChanged']) => void;
     onmodeChanged?: (value: ojPagingControlEventMap['modeChanged']) => void;
     onoverflowChanged?: (value: ojPagingControlEventMap['overflowChanged']) => void;
     onpageOptionsChanged?: (value: ojPagingControlEventMap['pageOptionsChanged']) => void;

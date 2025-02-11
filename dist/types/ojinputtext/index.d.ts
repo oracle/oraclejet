@@ -16,11 +16,13 @@ import { Validation } from '../ojvalidationfactory-base';
 import { editableValue, editableValueEventMap, editableValueSettableProperties } from '../ojeditablevalue';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface inputBase<V, SP extends inputBaseSettableProperties<V, SV>, SV = V, RV = V> extends editableValue<V, SP, SV, RV> {
+    /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<V>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -33,15 +35,22 @@ export interface inputBase<V, SP extends inputBaseSettableProperties<V, SV>, SV 
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     translations: {
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthRemaining?: string;
+        /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
         regexp?: {
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -145,11 +154,13 @@ export interface inputBaseEventMap<V, SP extends inputBaseSettableProperties<V, 
     'valueChanged': JetElementCustomEvent<inputBase<V, SP, SV, RV>["value"]>;
 }
 export interface inputBaseSettableProperties<V, SV = V, RV = V> extends editableValueSettableProperties<V, SV, RV> {
+    /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<V>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -162,15 +173,22 @@ export interface inputBaseSettableProperties<V, SV = V, RV = V> extends editable
     required: boolean;
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     translations: {
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthRemaining?: string;
+        /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
         regexp?: {
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -182,17 +200,26 @@ export interface ojInputPassword<V = string> extends inputBase<V, ojInputPasswor
     maskIcon: 'hidden' | 'visible';
     value: V | null;
     translations: {
+        /** @deprecated since 18.0.0 - This label text should be consistent across the application, and not configured per component instance. */
         accessibleHidePassword?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthRemaining?: string;
+        /** @deprecated since 18.0.0 - This label text should be consistent across the application, and not configured per component instance. */
         accessibleShowPassword?: string;
+        /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
         regexp?: {
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -299,17 +326,26 @@ export interface ojInputPasswordSettableProperties<V = string> extends inputBase
     maskIcon: 'hidden' | 'visible';
     value: V | null;
     translations: {
+        /** @deprecated since 18.0.0 - This label text should be consistent across the application, and not configured per component instance. */
         accessibleHidePassword?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthRemaining?: string;
+        /** @deprecated since 18.0.0 - This label text should be consistent across the application, and not configured per component instance. */
         accessibleShowPassword?: string;
+        /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
         regexp?: {
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -327,16 +363,24 @@ export interface ojInputText<V = any> extends inputBase<V, ojInputTextSettablePr
     list: string;
     virtualKeyboard: 'auto' | 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
     translations: {
+        /** @deprecated since 18.0.0 - This tooltip text should be consistent across the application, and not configured per component instance. */
         accessibleClearIcon?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthRemaining?: string;
+        /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
         regexp?: {
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -461,16 +505,24 @@ export interface ojInputTextSettableProperties<V = any> extends inputBaseSettabl
     list: string;
     virtualKeyboard: 'auto' | 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
     translations: {
+        /** @deprecated since 18.0.0 - This tooltip text should be consistent across the application, and not configured per component instance. */
         accessibleClearIcon?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthExceeded?: string;
+        /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthRemaining?: string;
+        /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
         regexp?: {
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageDetail?: string;
+            /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
             messageSummary?: string;
         };
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -828,11 +880,13 @@ export namespace TextAreaElement {
     //------------------------------------------------------------
 }
 export interface InputPasswordIntrinsicProps extends Partial<Readonly<ojInputPasswordSettableProperties<any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojInputPasswordEventMap<any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojInputPasswordEventMap<any>['ojAnimateStart']) => void;
     onmaskIconChanged?: (value: ojInputPasswordEventMap<any>['maskIconChanged']) => void;
     onvalueChanged?: (value: ojInputPasswordEventMap<any>['valueChanged']) => void;
-    onasyncValidatorsChanged?: (value: ojInputPasswordEventMap<any>['asyncValidatorsChanged']) => void;
+    /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojInputPasswordEventMap<any>['asyncValidatorsChanged']) => void;
     onautocompleteChanged?: (value: ojInputPasswordEventMap<any>['autocompleteChanged']) => void;
     onautofocusChanged?: (value: ojInputPasswordEventMap<any>['autofocusChanged']) => void;
     ondescribedByChanged?: (value: ojInputPasswordEventMap<any>['describedByChanged']) => void;
@@ -855,14 +909,16 @@ export interface InputPasswordIntrinsicProps extends Partial<Readonly<ojInputPas
     children?: ComponentChildren;
 }
 export interface InputTextIntrinsicProps extends Partial<Readonly<ojInputTextSettableProperties<any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojInputTextEventMap<any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojInputTextEventMap<any>['ojAnimateStart']) => void;
     onclearIconChanged?: (value: ojInputTextEventMap<any>['clearIconChanged']) => void;
     onconverterChanged?: (value: ojInputTextEventMap<any>['converterChanged']) => void;
     onlengthChanged?: (value: ojInputTextEventMap<any>['lengthChanged']) => void;
     onlistChanged?: (value: ojInputTextEventMap<any>['listChanged']) => void;
     onvirtualKeyboardChanged?: (value: ojInputTextEventMap<any>['virtualKeyboardChanged']) => void;
-    onasyncValidatorsChanged?: (value: ojInputTextEventMap<any>['asyncValidatorsChanged']) => void;
+    /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojInputTextEventMap<any>['asyncValidatorsChanged']) => void;
     onautocompleteChanged?: (value: ojInputTextEventMap<any>['autocompleteChanged']) => void;
     onautofocusChanged?: (value: ojInputTextEventMap<any>['autofocusChanged']) => void;
     ondescribedByChanged?: (value: ojInputTextEventMap<any>['describedByChanged']) => void;
@@ -886,14 +942,16 @@ export interface InputTextIntrinsicProps extends Partial<Readonly<ojInputTextSet
     children?: ComponentChildren;
 }
 export interface TextAreaIntrinsicProps extends Partial<Readonly<ojTextAreaSettableProperties<any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojTextAreaEventMap<any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojTextAreaEventMap<any>['ojAnimateStart']) => void;
     onconverterChanged?: (value: ojTextAreaEventMap<any>['converterChanged']) => void;
     onlengthChanged?: (value: ojTextAreaEventMap<any>['lengthChanged']) => void;
     onmaxRowsChanged?: (value: ojTextAreaEventMap<any>['maxRowsChanged']) => void;
     onresizeBehaviorChanged?: (value: ojTextAreaEventMap<any>['resizeBehaviorChanged']) => void;
     onrowsChanged?: (value: ojTextAreaEventMap<any>['rowsChanged']) => void;
-    onasyncValidatorsChanged?: (value: ojTextAreaEventMap<any>['asyncValidatorsChanged']) => void;
+    /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojTextAreaEventMap<any>['asyncValidatorsChanged']) => void;
     onautocompleteChanged?: (value: ojTextAreaEventMap<any>['autocompleteChanged']) => void;
     onautofocusChanged?: (value: ojTextAreaEventMap<any>['autofocusChanged']) => void;
     ondescribedByChanged?: (value: ojTextAreaEventMap<any>['describedByChanged']) => void;

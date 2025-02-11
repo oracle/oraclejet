@@ -71,9 +71,11 @@ export namespace RowDataGridProvider {
                 closed(): boolean;
             };
         };
+        /** @deprecated since 16.1.0 - Applications should instead specify the ItemMetadata.columnHeader callback to pass in filter information. */
         filterable?: boolean;
         headerLabels?: HeaderLabels<R>;
         itemMetadata?: ItemMetadata<D, K, R>;
+        /** @deprecated since 16.1.0 - Applications should instead specify the ItemMetadata.columnHeader callback to pass in sort information. */
         sortable?: boolean;
     };
     // tslint:disable-next-line interface-over-type-literal

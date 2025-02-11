@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -147,12 +147,20 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
      *                                                  of strings for multiple key attributes. Please note that the ids in MutableArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes MutableArrayDataProvider to use index as key and @value will cause MutableArrayDataProvider to
      *                                                  use all attributes as key. @index is the default.
      * @property {string=} textFilterAttributes - Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
+     * @property {string=} enforceKeyStringify - Optionally specify whether keys need to be converted to strings. Supported values:<br>
+     *                                  <ul>
+     *                                    <li>'off': the key values are returned as it is.
+     *                                    <li>'on': the key values are converted into string.
+     *                                  </ul>
+     *                                Default is 'off'.
+     *                                Key stringify will directly call JSON.stringify on all keys passed out of the DataProvider. Use JSON.parse if you need to convert the key back to a complex type.
      * @ojsignature [
      *  {target: "Type", value: "<D>", for: "genericTypeParameters"},
      *  {target: "Type", value: "MutableArrayDataProvider.SortComparators<D>", for: "sortComparators"},
      *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
      *  {target: "Type", value: "string | string[]", for: "keyAttributes"},
      *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
+     *  {target: "Type", value: "'off' | 'on'", for: "enforceKeyStringify"}
      * ]
      * @ojtsexample <caption>Examples for sortComparator</caption>
      * // Custom comparator for date

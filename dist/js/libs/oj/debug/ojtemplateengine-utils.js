@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -55,7 +55,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojcore-base', 'ojs/ojcus
         }
         static clean(node) {
             const row = node[ROW];
-            if (!row.cleaned) {
+            if (row && !row.cleaned) {
                 row.cleaned = true;
                 const reconnectNodes = PreactTemplate._getInsertNodesFunction(row.nodes);
                 preact.render(null, row.parentStub);
@@ -64,6 +64,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojcore-base', 'ojs/ojcus
                 const template = row.template;
                 const index = template._cachedRows.indexOf(row);
                 template._cachedRows.splice(index, 1);
+                node[ROW] = null;
             }
         }
         static findTemplateRoots(node, componentElement) {

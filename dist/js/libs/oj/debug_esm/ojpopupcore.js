@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -551,9 +551,11 @@ PopupServiceImpl.prototype.open = function (options) {
     isCustomElement
   );
 
+  // JET-69585: remove aria-hidden from the container before adding and focusing content (not after)
+  popup.removeAttr('aria-hidden');
+
   var _finalize = function () {
     try {
-      popup.removeAttr('aria-hidden');
       this._assertEventSink();
     } catch (e) {
       error('Error opening popup:\n%o', e);
@@ -568,6 +570,12 @@ PopupServiceImpl.prototype.open = function (options) {
       // preventing a race condition
       var layer = ZOrderUtils.getFirstAncestorLayer(popup);
       oj.Assert.assertPrototype(layer, $);
+
+      // JET-70327: apply aria-hidden now, after focus has been moved
+      if (PopupService.MODALITY.MODAL === modality) {
+        ZOrderUtils._setAriaHiddenOnBackround(layer);
+      }
+
       ZOrderUtils.applyEvents(layer, events);
 
       // if the originating subtree where the popup was defined is removed during
@@ -677,8 +685,8 @@ PopupServiceImpl.prototype.close = function (options) {
   // Unregister events during before close callback
   ZOrderUtils.applyEvents(layer, {});
 
-  // need to set aria-hidden here to prevent screen readers from re-reading during animation
-  popup.attr('aria-hidden', 'true');
+  // JET-70327 - clear aria-hidden before returning focus to the launcher
+  ZOrderUtils._resetAriaHiddenOnBackround(layer);
 
   var _finalize = function () {
     try {
@@ -704,6 +712,8 @@ PopupServiceImpl.prototype.close = function (options) {
       if (afterCloseCallback && $.isFunction(afterCloseCallback)) {
         afterCloseCallback(options);
       }
+      // set aria-hidden on the popup when completely closed
+      popup.attr('aria-hidden', 'true');
     }
   };
   _finalize = _finalize.bind(this);
@@ -1174,6 +1184,11 @@ ZOrderUtils.STATUS = {
 };
 
 /**
+ * Key to annotate the modal overlay.
+ */
+ZOrderUtils.MODAL_OVERLAY = Symbol.for('oj-modal-overlay');
+
+/**
  * Key to store the current operation status of the popup.
  * @const
  * @private
@@ -1518,7 +1533,6 @@ ZOrderUtils.removeFromAncestorLayer = function (popup) {
   ZOrderUtils.preOrderVisit(layer, ZOrderUtils._closeDescendantPopupsCallback);
 
   ZOrderUtils._removeOverlayFromAncestorLayer(layer);
-  ZOrderUtils._resetAriaHiddenOnBackround(layer);
   ZOrderUtils._restoreBodyOverflow();
 
   layer.removeData(ZOrderUtils._EVENTS_DATA);
@@ -1666,7 +1680,6 @@ ZOrderUtils.applyModality = function (layer, popup, modality) {
       ZOrderUtils._addOverlayToAncestorLayer(layer);
       ZOrderUtils._disableBodyOverflow(layer);
       ZOrderUtils._removeFocusWithinFromOverlayedContent();
-      ZOrderUtils._setAriaHiddenOnBackround(layer);
     } else {
       // Note: Calling this is probably not necessary as this is initial opening of a popup
       ZOrderUtils._removeOverlayFromAncestorLayer(layer);
@@ -1676,11 +1689,9 @@ ZOrderUtils.applyModality = function (layer, popup, modality) {
       ZOrderUtils._addOverlayToAncestorLayer(layer);
       ZOrderUtils._disableBodyOverflow(layer);
       ZOrderUtils._removeFocusWithinFromOverlayedContent();
-      ZOrderUtils._setAriaHiddenOnBackround(layer);
     } else {
       ZOrderUtils._removeOverlayFromAncestorLayer(layer);
       ZOrderUtils._restoreBodyOverflow();
-      ZOrderUtils._resetAriaHiddenOnBackround(layer);
     }
   }
   if (modality === PopupService.MODALITY.MODAL) {
@@ -1712,7 +1723,7 @@ ZOrderUtils._setAriaHiddenOnBackround = function (layer) {
   do {
     $hidden = $hidden.add($node.siblings(':not(script):not([aria-hidden="true"])'));
     $node = $node.parent();
-  } while ($node[0].tagName.toLowerCase() !== 'body');
+  } while ($node[0] && $node[0].tagName.toLowerCase() !== 'body');
   $hidden.attr('aria-hidden', true);
   layer.data(ZOrderUtils._ARIA_HIDDEN_ELEMS, $hidden);
 };
@@ -1775,6 +1786,8 @@ ZOrderUtils._addOverlayToAncestorLayer = function (layer) {
   } else {
     overlay.attr('id', [layerId, 'overlay'].join('_'));
   }
+
+  overlay[0][ZOrderUtils.MODAL_OVERLAY] = true;
 
   layer.before(overlay); // @HTMLUpdateOK
 
@@ -4433,7 +4446,9 @@ VLayerUtils._getPopupServiceOptions = (element, launcherElement, level, priority
             ? 'oj-dialog-layer'
             : priority === 'messages'
                 ? 'oj-messages-layer'
-                : 'oj-popup-layer';
+                : priority === 'tooltip'
+                    ? 'oj-tooltip-layer'
+                    : 'oj-popup-layer';
     PSOptions[PSoption.LAYER_LEVEL] = level ?? oj.PopupService.LAYER_LEVEL.NEAREST_ANCESTOR;
     PSOptions[PSoption.CUSTOM_ELEMENT] = false;
     const PSEvent = oj.PopupService.EVENT;

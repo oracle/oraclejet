@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { BaseComponentDefaults, CSSStyle, Agent, Container, ClipPath, Path, PathUtils, ToolkitUtils, Stroke, OutputText, TextUtils, SimpleObjPeer, Line, BaseComponent } from 'ojs/ojdvt-toolkit';
+import { BaseComponentDefaults, CSSStyle, Agent, OutputText, KeyboardEvent, MouseEvent, TouchEvent, Container, ClipPath, Path, PathUtils, ToolkitUtils, Stroke, TextUtils, SimpleObjPeer, Line, BaseComponent } from 'ojs/ojdvt-toolkit';
 
 class DvtTimeAxisCalendar {
   constructor() {
@@ -291,12 +291,36 @@ const DvtTimeAxisStyleUtils = {
   },
 
   /**
+   * Gets the axis drillable label class.
+   * @return {string|undefined} The axis drillable label class.
+   */
+  getAxisDrillableLabelClass: () => {
+    return 'oj-timeaxis-label-drillable';
+  },
+
+  /**
    * Gets the axis separator class.
    * @param {object} options The object containing data and specifications for the component.
    * @return {string|undefined} The axis separator class.
    */
   getAxisSeparatorClass: (options) => {
     return options['_resources'] ? options['_resources']['axisSeparatorClass'] : undefined;
+  },
+
+  /**
+   * Gets the hover state class.
+   * @return {string|undefined} The hover state class.
+   */
+  getHoverClass: () => {
+    return 'oj-hover';
+  },
+
+  /**
+   * Gets the focus state class.
+   * @return {string|undefined} The focus state class.
+   */
+  getFocusClass: () => {
+    return 'oj-focus';
   }
 };
 
@@ -342,8 +366,407 @@ const TimeAxisUtils = {
     if (number === 0 || width === 0) return startTime;
 
     return number / width + startTime;
+  },
+
+  /**
+   * Whether interval2 is fully contained in interval1
+   * @param {Array<number>} interval1 [number, number]
+   * @param {Array<number>} interval2 [number, number]
+   */
+  isIntervalContains: (interval1, interval2) => {
+    const [s1, e1] = interval1;
+    const [s2, e2] = interval2;
+    return s1 <= s2 && e2 <= e1;
   }
 };
+
+/**
+ * Represents a time axis label.
+ * @param {dvt.Context} context
+ * @param {string} textStr
+ * @param {CSSStyle} labelStyle
+ * @param {object} intervalStartDate
+ * @param {object} intervalEndDate
+ * @param {DvtTimeAxis} timeAxis
+ * @param {boolean} isDrillable
+ * @implements {DvtKeyboardNavigable}
+ * @class
+ * @constructor
+ */
+class DvtTimeAxisLabel extends OutputText {
+  constructor(
+    context,
+    textStr,
+    labelStyle,
+    intervalStartDate,
+    intervalEndDate,
+    timeAxis,
+    isDrillable,
+    callback,
+    callbackObj
+  ) {
+    super(context, textStr, 0, 0);
+    this._timeAxis = timeAxis;
+    this._isDrillable = isDrillable;
+    this._callback = callback;
+    this._callbackObj = callbackObj;
+
+    this.intervalStartDate = intervalStartDate;
+    this.intervalEndDate = intervalEndDate;
+    this.nodeType = 'timeAxisLabel';
+
+    this.setCSSStyle(labelStyle);
+    const baseLabelClass = DvtTimeAxisStyleUtils.getAxisLabelClass(timeAxis.Options);
+    const drillLabelClass = isDrillable
+      ? DvtTimeAxisStyleUtils.getAxisDrillableLabelClass(timeAxis.Options)
+      : undefined;
+    const labelClass = [baseLabelClass, drillLabelClass].filter(Boolean).join(' ');
+    if (labelClass) this.getElem().setAttribute('class', labelClass);
+
+    if (isDrillable) {
+      timeAxis.parentComp.getEventManager().associate(this, this);
+      this.setAriaProperty('hidden', 'false');
+      this.setAriaRole('button');
+    }
+    this.setupListeners();
+  }
+
+  /**
+   * Returns whether this label is drillable.
+   * @returns {boolean}
+   */
+  isDrillable() {
+    return this._isDrillable;
+  }
+
+  /**
+   * Gets its time axis type.
+   * @returns {string} 'major' or 'minor'
+   */
+  getAxisType() {
+    return this._timeAxis.axisType;
+  }
+
+  /**
+   * Mouse over handler
+   * @protected
+   * @param {DvtMouseEvent} event The dispatched event to be processed by the object
+   */
+  OnMouseOver() {
+    const hoverClass = DvtTimeAxisStyleUtils.getHoverClass(this._timeAxis.Options);
+    if (hoverClass) this.getElem().classList.add(hoverClass);
+  }
+
+  /**
+   * Mouse out handler
+   * @protected
+   * @param {DvtMouseEvent} event The dispatched event to be processed by the object
+   */
+  OnMouseOut() {
+    const hoverClass = DvtTimeAxisStyleUtils.getHoverClass(this._timeAxis.Options);
+    if (hoverClass) this.getElem().classList.remove(hoverClass);
+  }
+
+  /**
+   * Click handler
+   * @protected
+   * @param {DvtMouseEvent} event The dispatched event to be processed by the object
+   */
+  OnClick(event) {
+    if (this._isDrillable && this._callback) {
+      var eventManager = this._timeAxis.parentComp.getEventManager();
+      const lastFocused = eventManager.getFocus();
+      if (lastFocused) lastFocused.hideKeyboardFocusEffect();
+      this._timeAxis.setLastFocusedLabel(this);
+      this.getCtx().setActiveElement(this);
+      eventManager.setFocus(this);
+
+      this._callback.call(this._callbackObj, this, event);
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Handle keyboard event
+   * @param {DvtKeyboardEvent} event keyboard event
+   */
+  handleKeyboardEvent(event) {
+    const keyCode = event.keyCode;
+    if (keyCode == KeyboardEvent.ENTER && this._isDrillable && this._callback) {
+      this._callback.call(this._callbackObj, this, event);
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Handles setting up listeners.
+   */
+  setupListeners() {
+    if (this._isDrillable) {
+      this.addEvtListener(MouseEvent.MOUSEOVER, this.OnMouseOver, false, this);
+      this.addEvtListener(MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
+      this.addEvtListener(MouseEvent.CLICK, this.OnClick, { capture: false }, this);
+      this.addEvtListener(
+        TouchEvent.TOUCHSTART,
+        this.OnClick,
+        { capture: false, passive: false },
+        this
+      );
+    } else {
+      this.removeEvtListener(MouseEvent.MOUSEOVER, this.OnMouseOver, false, this);
+      this.removeEvtListener(MouseEvent.MOUSEOUT, this.OnMouseOut, false, this);
+      this.removeEvtListener(MouseEvent.CLICK, this.OnClick, { capture: false }, this);
+      this.removeEvtListener(
+        TouchEvent.TOUCHSTART,
+        this.OnClick,
+        { capture: false, passive: false },
+        this
+      );
+    }
+  }
+
+  /**
+   * Gets the full text string regardless of truncation status.
+   * @returns {string}
+   */
+  getFullTextString() {
+    return this.isTruncated() ? this.getUntruncatedTextString() : this.getTextString();
+  }
+
+  /**
+   * Returns the current instance of this label in the time axis, which is not necessarily this instance.
+   * Whenever the Gantt scrolls, the time axis is re-rendered (labels removed and recreated), and so
+   * this label reference may be stale.
+   * @returns {DvtTimeAxisLabel}
+   */
+  identity() {
+    return this._timeAxis._labels.find(
+      (label) =>
+        label.intervalStartDate.getTime() === this.intervalStartDate.getTime() &&
+        label.intervalEndDate.getTime() === this.intervalEndDate.getTime()
+    );
+  }
+
+  /**
+   * Gets the aria label
+   * @return {string} the aria label string.
+   */
+  getAriaLabel() {
+    const textStr = this.getFullTextString();
+    const majorAxis = this._timeAxis.parentComp.getMajorAxis();
+    if (majorAxis && this._timeAxis !== majorAxis) {
+      const majorLabel = majorAxis.findAttachedAxisLabelIntervalWithTime(
+        this.intervalStartDate.getTime()
+      );
+      if (majorLabel) {
+        return `${textStr}, ${majorLabel.getFullTextString()}`;
+      }
+    }
+    return textStr;
+  }
+
+  // ---------------------------------------------------------------------//
+  // Keyboard Support: DvtKeyboardNavigable impl                          //
+  // ---------------------------------------------------------------------//
+
+  /**
+   * @override
+   */
+  getNextNavigable(event) {
+    var isRTL = Agent.isRightToLeft(this.getCtx());
+    var eventManager = this._timeAxis.parentComp.getEventManager();
+
+    // Navigating to item
+    if (event.altKey && event.keyCode === KeyboardEvent.DOWN_ARROW) {
+      const lastFocusedItem = eventManager.getLastFocusedItem();
+      const viewport = this._timeAxis.parentComp.getViewPort();
+      const dataLayoutManager = this._timeAxis.parentComp.getDataLayoutManager();
+      const intervalStartTime = this.intervalStartDate.getTime();
+      const intervalEndTime = this.intervalEndDate.getTime();
+
+      // ===== "Primary behavior" from the spec: =====
+      if (lastFocusedItem) {
+        // In the row of the last navigated task, move focus to the chronologically closest visible task to the label's interval
+        const lastRowObj = lastFocusedItem.getLayoutObject().rowObj;
+        const lastRowObjInd = lastRowObj.index;
+        if (lastRowObjInd >= viewport.minRowInd && lastRowObjInd <= viewport.maxRowInd) {
+          const { taskObjs } = dataLayoutManager.getLayoutObjectsInViewBox({
+            minRowInd: lastRowObj.index,
+            maxRowInd: lastRowObj.index,
+            viewStartTime: viewport.viewStartTime,
+            viewEndTime: viewport.viewEndTime
+          });
+          const taskObj = dataLayoutManager.getClosestTaskLayoutObjToTime(
+            taskObjs,
+            intervalStartTime
+          );
+          if (taskObj) return taskObj.node;
+        }
+      }
+
+      const { taskObjs: vTaskObjs } = dataLayoutManager.getLayoutObjectsInViewBox(viewport);
+
+      // ===== "Fallback behavior" from the spec: =====
+      // If there are no visible tasks in the current viewport
+      if (vTaskObjs.length === 0) {
+        // Focus on the previously focused task if available
+        if (lastFocusedItem) return lastFocusedItem;
+
+        // Otherwise, navigate to the default item
+        const defaultNavigable = eventManager.getKeyboardHandler()?.getDefaultNavigable();
+        return defaultNavigable ?? this.identity();
+      }
+
+      // ===== "Secondary behavior" from the spec: =====
+
+      // Of all the tasks in the visible viewport that overlaps the label's interval, focus on the chronologically closest one
+      // Use open comparison rather than closed, to catch only the tasks with non zero overlap.
+      const overlappingTaskObjs = dataLayoutManager.getTaskLayoutObjectsOverlappingRange(
+        vTaskObjs,
+        intervalStartTime,
+        intervalEndTime,
+        false
+      );
+      const overlappingTaskObj = dataLayoutManager.getClosestTaskLayoutObjToTime(
+        overlappingTaskObjs,
+        intervalStartTime
+      );
+      if (overlappingTaskObj) return overlappingTaskObj.node;
+
+      // Of all the tasks in the visible viewport, move focus to the one chronologically closest to the label's interval.
+      const closestTaskObj = dataLayoutManager.getClosestTaskLayoutObjToTime(
+        vTaskObjs,
+        intervalStartTime
+      );
+      return closestTaskObj?.node ?? this.identity();
+    }
+
+    // Navigating to another time axis
+    if (event.keyCode === KeyboardEvent.UP_ARROW) {
+      const targetTimeAxis = this._timeAxis.parentComp.getDrillableAxisAbove(this._timeAxis);
+      if (targetTimeAxis) {
+        const lastFocusedLabel = targetTimeAxis.getLastFocusedLabel();
+        if (
+          lastFocusedLabel &&
+          (TimeAxisUtils.isIntervalContains(
+            [this.intervalStartDate.getTime(), this.intervalEndDate.getTime()],
+            [
+              lastFocusedLabel.intervalStartDate.getTime(),
+              lastFocusedLabel.intervalEndDate.getTime()
+            ]
+          ) ||
+            TimeAxisUtils.isIntervalContains(
+              [
+                lastFocusedLabel.intervalStartDate.getTime(),
+                lastFocusedLabel.intervalEndDate.getTime()
+              ],
+              [this.intervalStartDate.getTime(), this.intervalEndDate.getTime()]
+            ))
+        ) {
+          return lastFocusedLabel.identity();
+        }
+        const label = targetTimeAxis.getAxisLabelIntervalWithTime(this.intervalStartDate.getTime());
+        if (label) return label;
+      }
+    }
+
+    // Navigating to another time axis
+    if (event.keyCode === KeyboardEvent.DOWN_ARROW) {
+      const targetTimeAxis = this._timeAxis.parentComp.getDrillableAxisBelow(this._timeAxis);
+      if (targetTimeAxis) {
+        const lastFocusedLabel = targetTimeAxis.getLastFocusedLabel();
+        if (
+          lastFocusedLabel &&
+          (TimeAxisUtils.isIntervalContains(
+            [this.intervalStartDate.getTime(), this.intervalEndDate.getTime()],
+            [
+              lastFocusedLabel.intervalStartDate.getTime(),
+              lastFocusedLabel.intervalEndDate.getTime()
+            ]
+          ) ||
+            TimeAxisUtils.isIntervalContains(
+              [
+                lastFocusedLabel.intervalStartDate.getTime(),
+                lastFocusedLabel.intervalEndDate.getTime()
+              ],
+              [this.intervalStartDate.getTime(), this.intervalEndDate.getTime()]
+            ))
+        ) {
+          return lastFocusedLabel.identity();
+        }
+        const label = targetTimeAxis.getAxisLabelIntervalWithTime(this.intervalStartDate.getTime());
+        if (label) return label;
+      }
+    }
+
+    // Navigating within time axis
+    if (
+      (!isRTL && event.keyCode === KeyboardEvent.RIGHT_ARROW) ||
+      (isRTL && event.keyCode === KeyboardEvent.LEFT_ARROW)
+    ) {
+      const label = this._timeAxis.getAxisLabelIntervalWithTime(this.intervalEndDate.getTime());
+      if (label) return label;
+    }
+
+    if (
+      (!isRTL && event.keyCode === KeyboardEvent.LEFT_ARROW) ||
+      (isRTL && event.keyCode === KeyboardEvent.RIGHT_ARROW)
+    ) {
+      const label = this._timeAxis.getAxisLabelIntervalWithTime(
+        this.intervalStartDate.getTime() - 1
+      );
+      if (label) return label;
+    }
+
+    // Whenever the Gantt scrolls, the time axis is re-rendered (labels removed and recreated), and so
+    // this label reference may be stale.
+    return this.identity();
+  }
+
+  /**
+   * @override
+   */
+  getTargetElem() {
+    return this.getElem();
+  }
+
+  /**
+   * @override
+   */
+  getKeyboardBoundingBox(targetCoordinateSpace) {
+    return this.getDimensions(targetCoordinateSpace);
+  }
+
+  /**
+   * @override
+   */
+  showKeyboardFocusEffect() {
+    this._isShowingKeyboardFocusEffect = true;
+    const focusClass = DvtTimeAxisStyleUtils.getFocusClass(this._timeAxis.Options);
+    if (focusClass) this.getElem().classList.add(focusClass);
+
+    this._timeAxis.setLastFocusedLabel(this);
+    this.getCtx().setActiveElement(this);
+  }
+
+  /**
+   * @override
+   */
+  hideKeyboardFocusEffect() {
+    const focusClass = DvtTimeAxisStyleUtils.getFocusClass(this._timeAxis.Options);
+    if (focusClass) this.getElem().classList.remove(focusClass);
+    this._isShowingKeyboardFocusEffect = false;
+  }
+
+  /**
+   * @override
+   */
+  isShowingKeyboardFocusEffect() {
+    return this._isShowingKeyboardFocusEffect;
+  }
+}
 
 /**
  * Renderer for TimeAxis.
@@ -361,12 +784,20 @@ const DvtTimeAxisRenderer = {
    *     and defaultStroke is a dvt.Stroke instance that is applied to the line if given (e.g. for Timeline).
    *     If in the future Timeline reference objects support svgStyle and svgClassName, and directly use CSS classes, then
    *     we may be able to streamline styling and get rid of defaultStyleClass and defaultStroke.
+   * @param {boolean=} isDrillable Whether time axis is drillable.
    * @param {boolean=} throttle Whether to throttle the rendering with requestAnimationFrame. Default false.
    *    Throttling is useful on high fire rate interactions such as scroll.
    *    I notice it's slightly smoother on across Chrome/Safari/Firefox compared to without
    *    On Firefox, if this is not done, mouse wheel zoom bugs out sometimes and scrolls the page, so throttling is a must.
    */
-  renderTimeAxis: (timeAxis, viewStartTime, viewEndTime, referenceObjects, throttle) => {
+  renderTimeAxis: (
+    timeAxis,
+    viewStartTime,
+    viewEndTime,
+    referenceObjects,
+    isDrillable,
+    throttle
+  ) => {
     if (!timeAxis.hasValidOptions()) {
       return;
     }
@@ -374,6 +805,7 @@ const DvtTimeAxisRenderer = {
     const render = () => {
       // Start fresh; possible future improvement is to do efficient diffing
       timeAxis.removeChildren();
+      timeAxis._labels = [];
 
       DvtTimeAxisRenderer._renderBackground(timeAxis);
       const tickLabelsContainer = new Container(timeAxis.getCtx());
@@ -400,8 +832,10 @@ const DvtTimeAxisRenderer = {
         tickLabelsContainer,
         timeAxis,
         datePositions,
-        labelTexts
+        labelTexts,
+        isDrillable
       );
+      timeAxis._labels = labelOutputTexts;
 
       // Add container to DOM before rendering ref objects due to dependence on computedStyles and dimension measurements for collision detection
       timeAxis._axis.addChild(tickLabelsContainer);
@@ -631,10 +1065,11 @@ const DvtTimeAxisRenderer = {
    * @param {TimeAxis} timeAxis The timeAxis being rendered.
    * @param {Array} datePositions Array of objects representing the date and position for each tick, each of shape { date: Date, pos: number }. Length must be >= 2.
    * @param {Array} labelTexts Array of label strings.
+   * @param {boolean=} Whether the labels are drillable.
    * @return {Array} Array of label OutputText
    * @private
    */
-  _renderLabels: (container, timeAxis, datePositions, labelTexts) => {
+  _renderLabels: (container, timeAxis, datePositions, labelTexts, isDrillable) => {
     const context = timeAxis.getCtx();
     const axisStart = timeAxis.isVertical()
       ? timeAxis.getBorderWidth('left')
@@ -642,7 +1077,6 @@ const DvtTimeAxisRenderer = {
     const axisEnd = axisStart + timeAxis.getContentSize();
     const isRTL = Agent.isRightToLeft(context);
     const labelStyle = DvtTimeAxisStyleUtils.getAxisLabelStyle(timeAxis.Options);
-    const labelClass = DvtTimeAxisStyleUtils.getAxisLabelClass(timeAxis.Options) || '';
     const scale = timeAxis.getScale();
     const labelPosition =
       timeAxis.Options._scaleLabelPosition[
@@ -651,15 +1085,27 @@ const DvtTimeAxisRenderer = {
     const labelAlignment =
       timeAxis.Options._labelAlignment[timeAxis.isVertical() ? 'vertical' : 'horizontal'];
 
+    const eventManager = timeAxis.parentComp && timeAxis.parentComp.getEventManager();
+
     const labelOutputTexts = [];
     for (let i = 0; i < datePositions.length - 1; i++) {
-      const currentPos = datePositions[i].pos;
-      const nextPos = datePositions[i + 1].pos;
+      const currentDatePos = datePositions[i];
+      const nextDatePos = datePositions[i + 1];
+      const currentPos = currentDatePos.pos;
+      const nextPos = nextDatePos.pos;
 
-      const label = new OutputText(context, labelTexts[i], 0, 0);
+      const label = new DvtTimeAxisLabel(
+        context,
+        labelTexts[i],
+        labelStyle,
+        currentDatePos.date,
+        nextDatePos.date,
+        timeAxis,
+        isDrillable,
+        eventManager ? eventManager.processDrillEvent : undefined,
+        eventManager
+      );
       labelOutputTexts.push(label);
-      label.setCSSStyle(labelStyle);
-      label.getElem().setAttribute('class', labelClass);
 
       // in vertical mode, leave date positions the same in RTL
       const timeCenterPos = !(isRTL && !timeAxis.isVertical())
@@ -692,7 +1138,7 @@ const DvtTimeAxisRenderer = {
       label.setX(x);
       switch (labelAlignment) {
         case 'top':
-          label.setY(axisStart);
+          label.setY(axisStart + (isDrillable ? 1 : 0)); // If drillable, offset by 1px to allow focus ring top to be visible under clippath.
           break;
         case 'middle':
         default:
@@ -795,12 +1241,9 @@ const DvtTimeAxisRenderer = {
           TextUtils.fitText(label, adjustedMaxLength, maxLabelHeight, container);
         }
       }
-      if (label.isTruncated() && timeAxis.parentCompEventManager) {
+      if (label.isTruncated() && eventManager) {
         const untruncatedTextString = label.getUntruncatedTextString();
-        timeAxis.parentCompEventManager.associate(
-          label,
-          new SimpleObjPeer(untruncatedTextString)
-        );
+        eventManager.associate(label, new SimpleObjPeer(untruncatedTextString));
       }
     }
     return labelOutputTexts;
@@ -1059,7 +1502,6 @@ class TimeAxis extends BaseComponent {
     // Whether this is a standalone component render/resize
     var isComponentRender = options && options._viewStartTime == null;
     var isResizeRender = options == null;
-    this.parentCompEventManager = isResizeRender ? null : options._eventManager;
     this.Width = width;
     this.Height = height;
     this._prepareCanvasViewport();
@@ -1071,16 +1513,20 @@ class TimeAxis extends BaseComponent {
     this.setContentLength(this._canvasLength);
     this._setAxisDimensions();
 
+    this.parentComp = options ? options._parentComp : null;
+    this.axisType = options ? options._type : null;
     var viewStartTime = options && options._viewStartTime ? options._viewStartTime : this._start;
     var viewEndTime = options && options._viewEndTime ? options._viewEndTime : this._end;
     var referenceObjects =
       options && options._referenceObjects ? options._referenceObjects : { referenceObjects: [] };
     var throttle = (options && options._throttle) || false;
+    var isDrillable = !!(((options && options._isDrillable) || false) && this.parentComp);
     DvtTimeAxisRenderer.renderTimeAxis(
       this,
       viewStartTime,
       viewEndTime,
       referenceObjects,
+      isDrillable,
       throttle
     );
 
@@ -1416,6 +1862,81 @@ class TimeAxis extends BaseComponent {
   }
 
   /**
+   * Gets the axis label whose interval contains the given time.
+   * This method only searches the ones currently in the DOM.
+   * Use getAxisLabelIntervalWithTime to ensure the desired label is in the DOM via scrolling.
+   * @param {number} time
+   */
+  findAttachedAxisLabelIntervalWithTime(time) {
+    if (this._labels.length === 0) return;
+    return this._labels.find(
+      (label) => label.intervalStartDate.getTime() <= time && time < label.intervalEndDate.getTime()
+    );
+  }
+
+  /**
+   * Gets the axis label whose interval contains the given time.
+   * This method may scroll the parent component to bring the desired label into the DOM.
+   * @param {number} time
+   */
+  getAxisLabelIntervalWithTime(time) {
+    if (this._labels.length === 0) return null;
+
+    const isVisible = (labelX, labelWidth) => {
+      const { x, w } = this.parentComp.getViewportDimensions();
+      const s1 = x;
+      const e1 = x + w;
+      const s2 = labelX;
+      const e2 = labelX + labelWidth;
+      return TimeAxisUtils.isIntervalContains([s1, e1], [s2, e2]);
+    };
+
+    const findLabel = () => {
+      // Label not in DOM
+      let label = this.findAttachedAxisLabelIntervalWithTime(time);
+      if (!label) return;
+
+      // Label in DOM AND visible
+      const { x, w } = label.getDimensions();
+      if (isVisible(x, w)) return label;
+
+      // Label in DOM but NOT visible. Attempt to scroll to it.
+      this.parentComp.scrollPosIntervalIntoView(x, w);
+      label = this.findAttachedAxisLabelIntervalWithTime(time);
+      if (label && isVisible(x, w)) return label;
+
+      return;
+    };
+    // Find label with interval that includes the time
+    let axisLabel = findLabel();
+    if (axisLabel) return axisLabel;
+
+    // Bail if the interval the time belongs to is out of range
+    const intervalStartDate = this.adjustDate(time);
+    const intervalEndDate = this.getNextDate(time);
+    if (intervalStartDate.getTime() >= this._end || intervalEndDate.getTime() <= this._start)
+      return;
+
+    // It's possible the label is still not in view if the interval is very wide. Try to scroll the interval into view and try again.
+    // To ensure the start of the interval becomes visible, first scroll to the end of the interval and then scroll to the start.
+    this.parentComp.scrollTimeIntervalIntoView(intervalStartDate, intervalEndDate, 'end');
+    this.parentComp.scrollTimeIntervalIntoView(intervalStartDate, intervalEndDate, 'start');
+    axisLabel = findLabel();
+    if (axisLabel) return axisLabel;
+
+    // No good candidate. Just navigate to the closest visible label.
+    return this._labels
+      .toSorted((a, b) => a.intervalStartDate.getTime() - b.intervalStartDate.getTime())
+      .find((label) => {
+        if (label.intervalEndDate.getTime() >= time) {
+          const { x, w } = label.getDimensions();
+          return isVisible(x, w);
+        }
+        return false;
+      });
+  }
+
+  /**
    * Sets the current scale.
    * @param {string} scale The new scale.
    */
@@ -1745,6 +2266,21 @@ class TimeAxis extends BaseComponent {
    */
   setZoomLevelOrder(zoomLevelOrder) {
     this._zoomLevelOrder = zoomLevelOrder;
+  }
+
+  /**
+   * Returns the last focused time axis label
+   */
+  getLastFocusedLabel() {
+    return this._lastFocusedLabel;
+  }
+
+  /**
+   * Returns the last focused time axis label
+   * @param {DvtTimeAxisLabel} label
+   */
+  setLastFocusedLabel(label) {
+    this._lastFocusedLabel = label;
   }
 }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -674,6 +674,9 @@ var __oj_radioset_metadata =
          * Disabled <code class="prettyprint">false</code> enables the component, and leaves the
          * inputs' <code class="prettyprint">disabled</code> property as it is in the dom.
          * <p>
+         * <p>
+         * A disabled component does not show messages or user assistance text.
+         * </p>
          *
          * @example <caption>Initialize component with <code class="prettyprint">disabled</code> attribute:</caption>
          * &lt;oj-radioset disabled>
@@ -698,8 +701,10 @@ var __oj_radioset_metadata =
         disabled: false,
         /**
          * Whether the component is readonly. The readonly property sets or returns whether an element is readonly, or not.
+         * <p>
          * A readonly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
          * If you want to prevent the user from interacting with the element, use the disabled property instead.
+         * </p>
          * <p>
          * The default value for readonly is false. However, if the form component is a descendent of
          * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
@@ -714,6 +719,7 @@ var __oj_radioset_metadata =
          * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
          * not have its readonly attribute set, the form component's readonly will be true.
          * </p>
+         * {@ojinclude "name":"readonlyMessagesUserAssistanceEditableValue"}
          * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
          * &lt;oj-radioset readonly>&lt;/oj-radioset>
          *
@@ -2066,7 +2072,6 @@ var __oj_radioset_metadata =
         const wrapperDom = this.element[0].querySelector('.oj-radioset-wrapper');
         if (this.options.readOnly) {
           wrapperDom.setAttribute('tabindex', this._externalTabIndex);
-          wrapperDom.setAttribute('aria-readonly', 'true');
           this.element.addClass('oj-read-only');
 
           // JET-49107 - reassess accessibility implementation of 'readonly' radioset
@@ -2080,7 +2085,6 @@ var __oj_radioset_metadata =
 
         // remove tabindex and role
         wrapperDom.removeAttribute('tabindex');
-        wrapperDom.removeAttribute('aria-readonly');
         this.element.removeClass('oj-read-only');
 
         // JET-49107 - reassess accessibility implementation of 'readonly' radioset

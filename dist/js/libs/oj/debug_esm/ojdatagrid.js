@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -18,15 +18,15 @@ import oj from 'ojs/ojcore-base';
 import { FormVariantContext } from '@oracle/oraclejet-preact/hooks/UNSAFE_useFormVariantContext';
 import { _OJ_CONTAINER_ATTR, subtreeAttached, __GetWidgetConstructor } from 'ojs/ojcomponentcore';
 import Context from 'ojs/ojcontext';
-import { isIE, isEdge, isMobileTouchDevice, isIos, isMac, isWebkit, applyMergedInlineStyles, applyRendererContent, disableAllFocusableElements, enableAllFocusableElements, getFocusableElementsInNode, getActionableElementsInNode, handleActionableTab, handleActionablePrevTab, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
+import { isIE, isEdge, isMobileTouchDevice, isIos, isMac, isWebkit, applyMergedInlineStyles, applyRendererContent, disableAllFocusableElements, enableAllFocusableElements, getFocusableElementsInNode, isContextMenuKeyEvent, getActionableElementsInNode, handleActionableTab, handleActionablePrevTab, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
 import { setScrollLeft, isTouchSupported, removeResizeListener, addResizeListener, getCSSTimeUnitAsMillis } from 'ojs/ojdomutils';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
-import { getLogicalChildPopup } from 'ojs/ojkeyboardfocus-utils';
+import { getAllLogicalChildPopups } from 'ojs/ojkeyboardfocus-utils';
 import $ from 'jquery';
 import { error } from 'ojs/ojlogger';
 import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { getTranslationBundlePromiseFromLoader } from 'ojs/ojtranslationbundleutils';
+import { loadAllPendingBundles } from 'ojs/ojtranslationbundleutils';
 
 // eslint-disable-next-line wrap-iife
 (function () {
@@ -457,6 +457,9 @@ var __oj_data_grid_metadata =
             "className": {
               "type": "function|string"
             },
+            "description": {
+              "type": "function"
+            },
             "filterable": {
               "type": "function|string",
               "enumValues": [
@@ -475,6 +478,10 @@ var __oj_data_grid_metadata =
             },
             "hidable": {
               "type": "string",
+              "enumValues": [
+                "disable",
+                "enable"
+              ],
               "value": "disable"
             },
             "label": {
@@ -495,6 +502,9 @@ var __oj_data_grid_metadata =
                 },
                 "className": {
                   "type": "function|string"
+                },
+                "description": {
+                  "type": "function"
                 },
                 "renderer": {
                   "type": "function"
@@ -569,6 +579,9 @@ var __oj_data_grid_metadata =
             "className": {
               "type": "function|string"
             },
+            "description": {
+              "type": "function"
+            },
             "label": {
               "type": "object",
               "properties": {
@@ -587,6 +600,9 @@ var __oj_data_grid_metadata =
                 },
                 "className": {
                   "type": "function|string"
+                },
+                "description": {
+                  "type": "function"
                 },
                 "renderer": {
                   "type": "function"
@@ -652,6 +668,9 @@ var __oj_data_grid_metadata =
             "className": {
               "type": "function|string"
             },
+            "description": {
+              "type": "function"
+            },
             "freezable": {
               "type": "string",
               "enumValues": [
@@ -662,6 +681,10 @@ var __oj_data_grid_metadata =
             },
             "hidable": {
               "type": "string",
+              "enumValues": [
+                "disable",
+                "enable"
+              ],
               "value": "disable"
             },
             "label": {
@@ -682,6 +705,9 @@ var __oj_data_grid_metadata =
                 },
                 "className": {
                   "type": "function|string"
+                },
+                "description": {
+                  "type": "function"
                 },
                 "renderer": {
                   "type": "function"
@@ -756,6 +782,9 @@ var __oj_data_grid_metadata =
             "className": {
               "type": "function|string"
             },
+            "description": {
+              "type": "function"
+            },
             "label": {
               "type": "object",
               "properties": {
@@ -774,6 +803,9 @@ var __oj_data_grid_metadata =
                 },
                 "className": {
                   "type": "function|string"
+                },
+                "description": {
+                  "type": "function"
                 },
                 "renderer": {
                   "type": "function"
@@ -2962,8 +2994,15 @@ DvtDataGridOptions.prototype.getHorizontalAlignment = function (axis, contextObj
   return this.getAlignment('horizontal', axis, contextObj, isLabel);
 };
 
-DvtDataGridOptions.prototype.getVeticalAlignment = function (axis, contextObj, isLabel) {
+DvtDataGridOptions.prototype.getVerticalAlignment = function (axis, contextObj, isLabel) {
   return this.getAlignment('vertical', axis, contextObj, isLabel);
+};
+
+DvtDataGridOptions.prototype.getDescription = function (axis, isLabel) {
+  if (isLabel) {
+    return this.extract('header', axis, 'label', 'description');
+  }
+  return this.extract('header', axis, 'description');
 };
 
 /**
@@ -4195,11 +4234,15 @@ DvtDataGrid.prototype._addDomEventListeners = function () {
   if (!this.m_handleRootBlur) {
     this.m_handleRootBlur = this.handleRootBlur.bind(this);
   }
+  if (!this.m_handleContextMenuEvent) {
+    this.m_handleContextMenuEvent = this.handleContextMenuEvent.bind(this);
+  }
 
   this.m_root.addEventListener('keydown', this.m_handleDatabodyKeyDown, false);
   this.m_root.addEventListener('keyup', this.m_handleDatabodyKeyUp, false);
   this.m_root.addEventListener('focus', this.m_handleRootFocus, true);
   this.m_root.addEventListener('blur', this.m_handleRootBlur, true);
+  this.m_root.addEventListener('contextmenu', this.m_handleContextMenuEvent, true);
 };
 
 /**
@@ -4223,6 +4266,9 @@ DvtDataGrid.prototype._removeDomEventListeners = function () {
     }
     if (this.m_handleRootBlur) {
       this.m_root.removeEventListener('blur', this.m_handleRootBlur, true);
+    }
+    if (this.m_handleContextMenuEvent) {
+      this.m_root.removeEventListener('contextmenu', this.m_handleContextMenuEvent, true);
     }
   }
 };
@@ -5095,27 +5141,27 @@ DvtDataGrid.prototype.buildGrid = function (root) {
   // eslint-disable-next-line no-param-reassign
   root.tabIndex = 0;
 
-  var status = this.buildStatus();
-  root.appendChild(status); // @HTMLUpdateOK
-  this.m_status = status;
-
-  var accSummary = this.buildAccSummary();
+  const accSummary = this.buildAccSummary();
   root.appendChild(accSummary); // @HTMLUpdateOK
   this.m_accSummary = accSummary;
 
-  var accInfo = this.buildAccInfo();
+  const status = this.buildStatus();
+  root.appendChild(status); // @HTMLUpdateOK
+  this.m_status = status;
+
+  const accInfo = this.buildAccInfo();
   root.appendChild(accInfo); // @HTMLUpdateOK
   this.m_accInfo = accInfo;
 
-  var stateInfo = this.buildStateInfo();
+  const stateInfo = this.buildStateInfo();
   root.appendChild(stateInfo); // @HTMLUpdateOK
   this.m_stateInfo = stateInfo;
 
-  var contextInfo = this.buildContextInfo();
+  const contextInfo = this.buildContextInfo();
   root.appendChild(contextInfo); // @HTMLUpdateOK
   this.m_contextInfo = contextInfo;
 
-  var placeHolder = this.buildPlaceHolder();
+  const placeHolder = this.buildPlaceHolder();
   root.appendChild(placeHolder); // @HTMLUpdateOK
   this.m_placeHolder = placeHolder;
 
@@ -5125,17 +5171,17 @@ DvtDataGrid.prototype.buildGrid = function (root) {
     // in the event that the empty text was set when there was no datasource
     this.m_empty = null;
 
-    var rtl = this.getResources().isRTLMode();
+    const rtl = this.getResources().isRTLMode();
 
-    var returnObj = this.buildHeaders(
+    let returnObj = this.buildHeaders(
       'column',
       this.getMappedStyle('colheader'),
       this.getMappedStyle('colendheader')
     );
-    var colHeader = returnObj.root;
-    var colEndHeader = returnObj.endRoot;
-    let colHeaderFrozen = returnObj.frozenHeader;
-    let colEndHeaderFrozen = returnObj.frozenEndHeader;
+    const colHeader = returnObj.root;
+    const colEndHeader = returnObj.endRoot;
+    const colHeaderFrozen = returnObj.frozenHeader;
+    const colEndHeaderFrozen = returnObj.frozenEndHeader;
 
     root.insertBefore(colHeader, status); // @HTMLUpdateOK
     root.insertBefore(colEndHeader, status); // @HTMLUpdateOK
@@ -5151,8 +5197,8 @@ DvtDataGrid.prototype.buildGrid = function (root) {
       this.getMappedStyle('rowheader'),
       this.getMappedStyle('rowendheader')
     );
-    var rowHeader = returnObj.root;
-    var rowEndHeader = returnObj.endRoot;
+    const rowHeader = returnObj.root;
+    const rowEndHeader = returnObj.endRoot;
     const rowHeaderFrozen = returnObj.frozenHeader;
     const rowEndHeaderFrozen = returnObj.frozenEndHeader;
 
@@ -5649,10 +5695,17 @@ DvtDataGrid.prototype.resizeGrid = function () {
     rowHeaderWidth = this._getCellDimension(this.m_headerLabels.column[0], 0, null, 'row', 'width');
     this.m_rowHeaderWidth = rowHeaderWidth;
   }
+
   // adjusted to make the databody wrap the databody content, and the scroller to fill the remaing part of the grid
   // this way our scrollbars are always at the edges of our viewport
   var availableHeight = height - colHeaderHeight - colEndHeaderHeight - databodyFrozenRowHeight;
   var availableWidth = width - rowHeaderWidth - rowEndHeaderWidth - databodyFrozenColumnWidth;
+  if (availableHeight < 0) {
+    availableHeight = 0;
+  }
+  if (availableWidth < 0) {
+    availableWidth = 0;
+  }
 
   var scrollbarSize = this.m_utils.getScrollbarSize();
 
@@ -5815,6 +5868,198 @@ DvtDataGrid.prototype.resizeGrid = function () {
 
   // now we do not need to resize
   this.m_resizeRequired = false;
+};
+
+/**
+ * Method that sets aria-flow to's in order to be accessible for voice over.
+ */
+DvtDataGrid.prototype._applyIosAccessibility = function () {
+  // clear flow-tos's that exist already
+  const currentFlowTos = this.m_root.querySelectorAll('[aria-flowto]');
+  currentFlowTos.forEach((element) => {
+    if (
+      this.m_utils.containsCSSClassName(element, this.getMappedStyle('cell')) ||
+      this.m_utils.containsCSSClassName(element, this.getMappedStyle('headercell')) ||
+      this.m_utils.containsCSSClassName(element, this.getMappedStyle('headerlabel'))
+    ) {
+      element.removeAttribute('aria-flowto');
+    }
+  });
+
+  const accSummary = document.getElementById(this.createSubId('summary'));
+  let lastElement = accSummary;
+
+  if (!this._isHeaderLabelCollision()) {
+    lastElement = this._handleRowLabelIosAccessibility(lastElement);
+    lastElement = this._handleRowEndLabelIosAccessibility(lastElement);
+    lastElement = this._handleColumnHeaderIosAccessibility(lastElement);
+  } else {
+    lastElement = this._handleColumnHeaderIosAccessibility(lastElement);
+    lastElement = this._handleRowLabelIosAccessibility(lastElement);
+    lastElement = this._handleRowEndLabelIosAccessibility(lastElement);
+  }
+
+  for (let i = this._getMaxTop(); i <= this._getMaxBottom(); i++) {
+    // handles row headers
+    for (let j = 0; j < this.m_rowHeaderLevelCount; j++) {
+      const header = this._getHeaderByIndex(i, 'row', j);
+      this._applyIosAccessibilityToElement(header, lastElement);
+      if (header.getAttribute('aria-flowto') === null) {
+        this._applyAriaFlowTo(lastElement, header.id);
+        lastElement = header;
+      }
+    }
+    // handles databody rows
+    for (let j = this._getMaxLeft(); j <= this._getMaxRight(); j++) {
+      const cell = this._getCellByIndex(this.createIndex(i, j));
+      this._applyIosAccessibilityToElement(cell, lastElement);
+      if (cell.getAttribute('aria-flowto') === null) {
+        this._applyAriaFlowTo(lastElement, cell.id);
+        lastElement = cell;
+      }
+    }
+    // handles rowEnd headers
+    for (let j = this.m_rowEndHeaderLevelCount - 1; j >= 0; j--) {
+      const header = this._getHeaderByIndex(i, 'rowEnd', j);
+      this._applyIosAccessibilityToElement(header, lastElement);
+      if (header.getAttribute('aria-flowto') === null) {
+        this._applyAriaFlowTo(lastElement, header.id);
+        lastElement = header;
+      }
+    }
+  }
+
+  lastElement = this._handleColumnEndHeaderIosAccessibility(lastElement);
+
+  let lastItem = document.getElementById(this.createSubId('lastitem'));
+  if (!lastItem) {
+    lastItem = document.createElement('div');
+    lastItem.setAttribute('role', 'text');
+    lastItem.id = this.createSubId('lastitem');
+    lastItem.textContent = this.getResources().getTranslatedText('accessibleLastColumn');
+    lastItem.className = this.getMappedStyle('info');
+    this.m_root.appendChild(lastItem); // @HTMLUpdateOK
+  }
+  this._applyAriaFlowTo(lastElement, lastItem.id);
+};
+
+/**
+ * Method that applys role text and labeled by to cell, headers and labels.
+ * @param {Element} element target element
+ */
+DvtDataGrid.prototype._applyIosAccessibilityToElement = function (element, lastElement) {
+  if (element.getAttribute('role') === null) {
+    const previousContext =
+      lastElement.id === this.createSubId('summary') ? null : this._createActiveObject(lastElement);
+    element.setAttribute('role', 'text');
+    element.setAttribute(
+      'aria-labelledby',
+      this.getLabelledBy(this._createActiveObject(element), previousContext, element),
+      true
+    );
+    const currentContext = this._createActiveObject(element);
+    element.setAttribute(
+      'aria-description',
+      this._getActiveContext(currentContext, previousContext)
+    );
+  }
+};
+
+/**
+ * Method that loops row header labels and applys ios accesabilty.
+ * @param {Element} lastElement current previous element with no flowto
+ */
+DvtDataGrid.prototype._handleRowLabelIosAccessibility = function (lastElement) {
+  let newLastElement = lastElement;
+  if (this.m_headerLabels.row.length > 0) {
+    for (let i = 0; i < this.m_rowHeaderLevelCount; i++) {
+      const label = this.m_headerLabels.row[i];
+      if (label) {
+        this._applyIosAccessibilityToElement(label, newLastElement);
+        this._applyAriaFlowTo(newLastElement, label.id);
+        newLastElement = label;
+      }
+    }
+  }
+  return newLastElement;
+};
+
+/**
+ * Method that loops row end header labels and applys ios accesabilty.
+ * @param {Element} lastElement current previous element with no flowto
+ */
+DvtDataGrid.prototype._handleRowEndLabelIosAccessibility = function (lastElement) {
+  let newLastElement = lastElement;
+  if (this.m_headerLabels.rowEnd.length > 0) {
+    for (let i = this.m_rowEndHeaderLevelCount - 1; i >= 0; i--) {
+      const label = this.m_headerLabels.rowEnd[i];
+      if (label) {
+        this._applyIosAccessibilityToElement(label, newLastElement);
+        this._applyAriaFlowTo(newLastElement, label.id);
+        newLastElement = label;
+      }
+    }
+  }
+  return newLastElement;
+};
+
+/**
+ * Method that loops column headers and applys ios accesabilty.
+ * @param {Element} lastElement current previous element with no flowto
+ */
+DvtDataGrid.prototype._handleColumnHeaderIosAccessibility = function (lastElement) {
+  let newLastElement = lastElement;
+  for (let i = 0; i < this.m_columnHeaderLevelCount; i++) {
+    const headers = this._getHeadersByLevel('column', i, false);
+    const label = this.m_headerLabels.column[i];
+    if (label) {
+      this._applyIosAccessibilityToElement(label, newLastElement);
+      this._applyAriaFlowTo(newLastElement, label.id);
+      newLastElement = label;
+    }
+    for (let j = 0; j < headers.length; j++) {
+      const header = headers[j];
+      this._applyIosAccessibilityToElement(header, newLastElement);
+      this._applyAriaFlowTo(newLastElement, header.id);
+      newLastElement = header;
+    }
+  }
+  return newLastElement;
+};
+
+/**
+ * Method that loops columnEnd headers and applys ios accesabilty.
+ * @param {Element} lastElement current previous element with no flowto
+ */
+DvtDataGrid.prototype._handleColumnEndHeaderIosAccessibility = function (lastElement) {
+  let newLastElement = lastElement;
+  for (let i = this.m_columnEndHeaderLevelCount - 1; i >= 0; i--) {
+    const headers = this._getHeadersByLevel('columnEnd', i, false);
+    const label = this.m_headerLabels.columnEnd[i];
+    if (label) {
+      this._applyIosAccessibilityToElement(label, newLastElement);
+      this._applyAriaFlowTo(newLastElement, label.id);
+      newLastElement = label;
+    }
+    for (let j = 0; j < headers.length; j++) {
+      const header = headers[j];
+      this._applyIosAccessibilityToElement(header, newLastElement);
+      this._applyAriaFlowTo(newLastElement, header.id);
+      newLastElement = header;
+    }
+  }
+  return newLastElement;
+};
+
+/**
+ * Helper method to check if flow through is set and will apply if not set.
+ * @param {Element} element target element
+ * @param {string} flowToId id of next element
+ */
+DvtDataGrid.prototype._applyAriaFlowTo = function (element, flowToId) {
+  if (element.getAttribute('aria-flowto') === null) {
+    element.setAttribute('aria-flowto', flowToId);
+  }
 };
 
 /**
@@ -6277,15 +6522,6 @@ DvtDataGrid.prototype.buildCorners = function () {
         this.manageResizeScrollbars();
         return;
       }
-    } else {
-      let isTouchDevice = this.m_utils.isTouchDevice();
-      if (isTouchDevice) {
-        corner.addEventListener('touchstart', this.handleHeaderLabelMouseDown.bind(this), false);
-        corner.addEventListener('touchmove', this.handleHeaderLabelMouseMove.bind(this), false);
-      } else {
-        corner.addEventListener('mousedown', this.handleHeaderLabelMouseDown.bind(this), false);
-        corner.addEventListener('mousemove', this.handleHeaderLabelMouseMove.bind(this), false);
-      }
     }
     this._buildCornerOnHeaderAxisDisabled(
       'row',
@@ -6367,7 +6603,7 @@ DvtDataGrid.prototype.buildCorners = function () {
       this.m_bottomCorner = bottomCorner;
     }
   }
-  // remove bottom corner on resize if not neccessary
+  // remove bottom corner on resize if not necessary
   if (this.m_bottomCorner != null && bottomCorner == null) {
     this.m_root.removeChild(this.m_bottomCorner);
     this.m_bottomCorner = null;
@@ -6376,11 +6612,15 @@ DvtDataGrid.prototype.buildCorners = function () {
 
 DvtDataGrid.prototype._attachEventListenersOnCorner = function (corner) {
   if (this.m_utils.isTouchDevice()) {
-    corner.addEventListener('touchstart', this.handleCornerMouseDown.bind(this), false);
+    corner.addEventListener('touchstart', this.handleCornerMouseDown.bind(this), { passive: true });
+    corner.addEventListener('touchmove', this.handleHeaderLabelMouseMove.bind(this), false);
+    corner.addEventListener('touchend', this.handleCornerMouseDown.bind(this), { passive: true });
   } else {
     corner.addEventListener('mousedown', this.handleCornerMouseDown.bind(this), false);
     corner.addEventListener('mouseover', this.handleCornerMouseOver.bind(this), false);
+    corner.addEventListener('mousemove', this.handleHeaderLabelMouseMove.bind(this), false);
     corner.addEventListener('mouseout', this.handleCornerMouseOut.bind(this), false);
+    corner.addEventListener('dblclick', this.handleHeaderLabelDoubleClick.bind(this), false);
   }
   if (this.m_options._isLabelCutEnabled()) {
     this._attachDndListenersOnLabelSection(corner);
@@ -6955,10 +7195,13 @@ DvtDataGrid.prototype.isDatabodyVerticalScrollbarRequired = function (expectedHe
  * @private
  */
 DvtDataGrid.prototype.buildStatus = function () {
-  var root = document.createElement('div');
+  const root = document.createElement('div');
   root.id = this.createSubId('status');
   root.className = this.getMappedStyle('status');
   root.setAttribute('role', 'status');
+  if (isIos()) {
+    root.setAttribute('aria-hidden', true);
+  }
   return root;
 };
 
@@ -6967,11 +7210,13 @@ DvtDataGrid.prototype.buildStatus = function () {
  * @return {Element} the root of the accessibility info div
  */
 DvtDataGrid.prototype.buildAccInfo = function () {
-  var root = document.createElement('div');
+  const root = document.createElement('div');
   root.id = this.createSubId('info');
   root.className = this.getMappedStyle('info');
   root.setAttribute('role', 'status');
-
+  if (isIos()) {
+    root.setAttribute('aria-hidden', true);
+  }
   return root;
 };
 
@@ -6980,10 +7225,13 @@ DvtDataGrid.prototype.buildAccInfo = function () {
  * @return {Element} the root of the accessibility summary div
  */
 DvtDataGrid.prototype.buildAccSummary = function () {
-  var root = document.createElement('div');
+  const root = document.createElement('div');
   root.id = this.createSubId('summary');
   root.className = this.getMappedStyle('info');
-
+  if (isIos()) {
+    // want acc summary to be first thing voice over users hear
+    root.setAttribute('role', 'text');
+  }
   return root;
 };
 
@@ -6992,10 +7240,12 @@ DvtDataGrid.prototype.buildAccSummary = function () {
  * @return {Element} the root of the accessibility state info div
  */
 DvtDataGrid.prototype.buildStateInfo = function () {
-  var root = document.createElement('div');
+  const root = document.createElement('div');
   root.id = this.createSubId('state');
   root.className = this.getMappedStyle('info');
-
+  if (isIos()) {
+    root.setAttribute('aria-hidden', true);
+  }
   return root;
 };
 
@@ -7004,10 +7254,12 @@ DvtDataGrid.prototype.buildStateInfo = function () {
  * @return {Element} the root of the accessibility context info div
  */
 DvtDataGrid.prototype.buildContextInfo = function () {
-  var root = document.createElement('div');
+  const root = document.createElement('div');
   root.id = this.createSubId('context');
   root.className = this.getMappedStyle('info');
-
+  if (isIos()) {
+    root.setAttribute('aria-hidden', true);
+  }
   return root;
 };
 
@@ -7016,10 +7268,12 @@ DvtDataGrid.prototype.buildContextInfo = function () {
  * @return {Element} the root of the accessibility current cell context info div
  */
 DvtDataGrid.prototype.buildPlaceHolder = function () {
-  var root = document.createElement('div');
+  const root = document.createElement('div');
   root.id = this.createSubId('placeHolder');
   root.className = this.getMappedStyle('info');
-
+  if (isIos()) {
+    root.setAttribute('aria-hidden', true);
+  }
   return root;
 };
 
@@ -7060,7 +7314,7 @@ DvtDataGrid.prototype.SetAccessibleContext = function (context) {
   if (context != null) {
     // got row context info
     if (context.context != null) {
-      // save it for updateContextInfo to consume later
+      // save it for _getContextInfo to consume later
       this.m_accessibleContext = context.context;
     }
 
@@ -7137,7 +7391,7 @@ DvtDataGrid.prototype._updateStateInfo = function (items) {
  * @param {string=} skip whether to skip row or column
  * @private
  */
-DvtDataGrid.prototype._updateContextInfo = function (context, skip) {
+DvtDataGrid.prototype._getContextInfo = function (context, skip) {
   var row;
   var column;
 
@@ -7239,7 +7493,7 @@ DvtDataGrid.prototype._updateContextInfo = function (context, skip) {
     this.m_accessibleContext = null;
   }
 
-  this.m_contextInfo.textContent = info;
+  return info;
 };
 
 /**
@@ -7598,17 +7852,16 @@ DvtDataGrid.prototype.handleHeadersFetchSuccess = function (
   var endRoot = headerRange.endHeader;
   var start = headerRange.start;
 
-  let hiddenCount = axis === 'column' ? this.m_hiddenColumns.length : this.m_hiddenRows.length;
-  // subtracting hidden columns length to render only visible columns
-  var count = this.getDataSource().getCount(axis) - hiddenCount;
+
+  var count = this.getDataSource().getCount(axis);
 
   if (axis === 'column') {
-    if (this.m_frozenColIndex === null) {
+    if (!this.m_initialized && this.m_frozenColIndex === null) {
       this.m_frozenColIndex = this.m_options._getFreezeIndex(axis);
     }
 
     let { headerStart, endHeaderStart, headerFetchCount, endHeaderFetchCount } =
-      this._buildFrozenHeaders(axis, startResults, endResults, headerRange, count);
+      this._buildFrozenHeaders(axis, startResults, endResults, headerRange);
     if (startResults != null && headerFetchCount > 0) {
       start = headerStart;
       let fetchCount = headerFetchCount;
@@ -7662,7 +7915,7 @@ DvtDataGrid.prototype.handleHeadersFetchSuccess = function (
       this._buildHeaderLabels('columnEnd', endResults);
     }
   } else if (axis === 'row') {
-    if (this.m_frozenRowIndex === null) {
+    if (!this.m_initialized && this.m_frozenRowIndex === null) {
       this.m_frozenRowIndex = this.m_options._getFreezeIndex('row');
     }
     let { headerStart, endHeaderStart, headerFetchCount, endHeaderFetchCount } =
@@ -7934,7 +8187,7 @@ DvtDataGrid.prototype._buildHeaderLabels = function (axis, headerSet) {
               labelContext,
               true
             );
-            const verticalAlignment = this.m_options.getVeticalAlignment(axis, labelContext, true);
+            const verticalAlignment = this.m_options.getVerticalAlignment(axis, labelContext, true);
 
             // set alignment before inline stlye to ensure inline styles win
             if (horizontalAlignment !== 'auto') {
@@ -9382,7 +9635,7 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
     }
 
     const horizontalAlignment = this.m_options.getHorizontalAlignment(axis, headerContext);
-    const verticalAlignment = this.m_options.getVeticalAlignment(axis, headerContext);
+    const verticalAlignment = this.m_options.getVerticalAlignment(axis, headerContext);
 
     this._renderContent(
       renderer,
@@ -9439,7 +9692,7 @@ DvtDataGrid.prototype.buildLevelHeaders = function (
               this.m_sortColumnInfo.type = 'header';
             }
           }
-        } else if (this.m_sortColumnInfo == null) {
+        } else if (headerMetadata.sortDirection != null && this.m_sortColumnInfo == null) {
           this.m_sortColumnInfo = {};
           this.m_sortColumnInfo.key = headerMetadata.key;
           this.m_sortColumnInfo.direction = headerMetadata.sortDirection;
@@ -10709,6 +10962,11 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
   // applying visual indicator for default hidden items
   this.deleteAndApplyHiddenIndicators(databodyIndicatorIndex, hiddenIndicatorAxis);
 
+  // apply flowTo for ios
+  if (isIos()) {
+    this._applyIosAccessibility();
+  }
+
   // end fetch
   this._signalTaskEnd();
   // this.dumpRanges();
@@ -11011,7 +11269,7 @@ DvtDataGrid.prototype._addCellsToFragment = function (
   columnCount
 ) {
   var dir = this.getResources().isRTLMode() ? 'right' : 'left';
-
+  const context = this.getResources().getMappedAttribute('context');
   let hiddenItemsInRange = 0;
 
   var renderer = this.getRendererOrTemplate('cell');
@@ -11051,6 +11309,19 @@ DvtDataGrid.prototype._addCellsToFragment = function (
     for (var j = 0; j < columnCount; j += extents.column) {
       var width = 0;
       height = 0;
+      // activeEdit can be set when a row is deleted and the indexes are mutated, which results activeEdit in a dirty state.
+      // This can be reproduced by modifying row 0 and before update is handled, start editing row 1.
+      if (
+        this.m_activeEdit &&
+        i + rowStart === this.m_active.indexes.row &&
+        j + columnStart === this.m_active.indexes.column
+      ) {
+        width = this.getElementWidth(this.m_activeEdit);
+        left = columnAppend ? left + width : left - width;
+        extents = this.m_activeEdit[context].extents;
+        // eslint-disable-next-line no-continue
+        continue;
+      }
       var columnIndex = columnAppend ? columnStart + j : columnStart + (columnCount - 1 - j);
       var cellExtent;
 
@@ -11099,7 +11370,7 @@ DvtDataGrid.prototype._addCellsToFragment = function (
           cell[this.getResources().getMappedAttribute('metadata')] = cellMetadata;
 
           const horizontalAlignment = this.m_options.getHorizontalAlignment('cell', cellContext);
-          const verticalAlignment = this.m_options.getVeticalAlignment('cell', cellContext);
+          const verticalAlignment = this.m_options.getVerticalAlignment('cell', cellContext);
 
           // set alignment before inline stlye to ensure inline styles win
           if (horizontalAlignment !== 'auto') {
@@ -11146,14 +11417,6 @@ DvtDataGrid.prototype._addCellsToFragment = function (
             (this._hasFrozenRows() && tempRowIndex <= this.m_frozenRowIndex)
           ) {
             this.m_utils.addCSSClassName(cell, this.getMappedStyle('frozenCell'));
-          }
-
-          if (isIos()) {
-            cell.setAttribute(
-              'aria-labelledby',
-              this.getLabelledBy(this._createActiveObject(cell), null, cell, true)
-            );
-            cell.setAttribute('role', 'text');
           }
 
           // determine if the newly fetched row should be banded
@@ -11643,6 +11906,7 @@ DvtDataGrid.prototype._modifyAndPushCells = function (
   };
 
   let cells = databody.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
+  cells = [...cells].filter((cell) => !(cell === this.m_activeEdit));
   makeAdjustments(
     cells,
     (item) => item[contextString].indexes[axis],
@@ -12038,6 +12302,7 @@ DvtDataGrid.prototype.handleScroll = function (event) {
   var scroller = event.target;
   var scrollLeft = this.m_utils.getElementScrollLeft(scroller);
   var scrollTop = scroller.scrollTop;
+  this._closeToolTip();
 
   this.scrollTo(scrollLeft, scrollTop);
 };
@@ -13642,10 +13907,11 @@ DvtDataGrid.prototype.handleContextMenuGesture = function (event, eventType, cal
   }
 
   if (eventType === 'touch' && element != null) {
-    index = isHeader ? this.getHeaderCellIndex(element) : this.getCellIndexes(element);
-    let insideSelection = isHeader
-      ? this._isHeaderInsideSelection(index, this.getHeaderCellAxis(element))
-      : this._isContainSelection(index);
+    index = isHeader || isLabel ? this.getHeaderCellIndex(element) : this.getCellIndexes(element);
+    let insideSelection =
+      isHeader || isLabel
+        ? this._isHeaderInsideSelection(index, this.getHeaderCellAxis(element))
+        : this._isContainSelection(index);
     // if right click and inside multiple selection or current active do not change anything
     if (
       !this.isMultipleSelection() ||
@@ -13799,11 +14065,23 @@ DvtDataGrid.prototype._getCellCapability = function (cell) {
     this._populateSelectedHeaderSet(selectedHeaders);
     if (selectedHeaders.size === 0) {
       capabilities.resizeFitToContent = disable;
+    } else {
+      const context = this.getResources().getMappedAttribute('context');
+      selectedHeaders.forEach((header) => {
+        if (
+          (header[context].axis === 'row' &&
+            this.m_options.isResizable('row', 'height') === 'disable') ||
+          (header[context].axis === 'column' &&
+            this.m_options.isResizable('column', 'width') === 'disable')
+        ) {
+          capabilities.resizeFitToContent = disable;
+        }
+      });
     }
   }
 
   let multipleCellsInSelection = false;
-
+  let validFillRange = true;
   if (!this.m_discontiguousSelection && selection && selection.length === 1) {
     const startRow = selection[0].startIndex.row;
     const startColumn = selection[0].startIndex.column;
@@ -13812,8 +14090,12 @@ DvtDataGrid.prototype._getCellCapability = function (cell) {
     if (startRow !== endRow || startColumn !== endColumn) {
       multipleCellsInSelection = true;
     }
+    // single row/column selection to avail fill option via context menu.
+    if (!(startRow === endRow || startColumn === endColumn)) {
+      validFillRange = false;
+    }
   }
-  if (this.m_options.isFloodFillEnabled() && multipleCellsInSelection) {
+  if (this.m_options.isFloodFillEnabled() && multipleCellsInSelection && validFillRange) {
     capabilities.autoFill = enable;
   }
 
@@ -13950,6 +14232,8 @@ DvtDataGrid.prototype._getHeaderOrLabelCapability = function (element) {
       if (element.getAttribute(resizable) === 'true') {
         capabilities.resizeWidth = enable;
         capabilities.resize = enable;
+      } else {
+        capabilities.resizeFitToContent = disable;
       }
       capabilities.resizeHeight = this.m_options.isResizable(axis, 'height');
       if (element.getAttribute(sortable) === 'true' && !isLabel) {
@@ -13998,6 +14282,8 @@ DvtDataGrid.prototype._getHeaderOrLabelCapability = function (element) {
       if (element.getAttribute(resizable) === 'true') {
         capabilities.resize = enable;
         capabilities.resizeHeight = enable;
+      } else {
+        capabilities.resizeFitToContent = disable;
       }
       capabilities.resizeWidth = this.m_options.isResizable(axis, 'width');
       if (element.getAttribute(sortable) === 'true' && !isLabel) {
@@ -14518,7 +14804,7 @@ DvtDataGrid.prototype.handleHeaderLabelMouseDown = function (event) {
   // Disabling resize on mousedown on empty corner cell.
   const label = this.find(event.target, 'headerlabel');
   const context = this.getResources().getMappedAttribute('context');
-  if (event.button === 0) {
+  if (event.button === 0 || event.type === 'touchend') {
     if (this._isSortIcon(event.target) && this._isDOMElementSortable(event.target)) {
       this._handleSortIconMouseDown(event.target, label);
       this._handleHeaderLabelSort(event, label);
@@ -14604,10 +14890,17 @@ DvtDataGrid.prototype.handleHeaderMouseOver = function (event) {
   ) {
     this._setHeaderDraggable(header);
   }
+  if (header) {
+    const description = this._getToolTipDescription(header, false);
+    if (description != null) {
+      this._setToolTipOpenTimeout(event, header, description);
+    }
+  }
 };
 
 DvtDataGrid.prototype.handleHeaderMouseOut = function (event) {
   var target = /** @type {Element} */ (event.target);
+  this._setToolTipCloseTimeout(event);
   this.m_utils.removeCSSClassName(this.findHeader(target), this.getMappedStyle('hover'));
   if (!this.m_isResizing && this.m_resizingElement) {
     this.m_resizingElement.style.cursor = '';
@@ -14681,17 +14974,19 @@ DvtDataGrid.prototype.handleCornerMouseDown = function (event) {
       clearSelection = true;
     }
     this._setActive(label, this._createActiveObject(label), event, clearSelection);
-    if (!this._isSortIcon(event.target)) {
-      this.handleHeaderLabelMouseDown(event);
-    }
+    this.handleHeaderLabelMouseDown(event);
   }
 };
 
 DvtDataGrid.prototype.handleCornerMouseOver = function (event) {
   var target = /** @type {Element} */ (event.target);
   let label = this.findLabel(target);
-  const context = this.getResources().getMappedAttribute('context');
-  if (label && this.m_options._isDragEnabledOnLabel(label[context].axis)) {
+  if (
+    label &&
+    this.m_options._isDragEnabledOnLabel(
+      label[this.getResources().getMappedAttribute('context')].axis
+    )
+  ) {
     this.m_utils.addCSSClassName(label, this.getMappedStyle('draggableItem'));
     label.setAttribute('draggable', true);
   } else if (this._isSelectionEnabled() && this.isMultipleSelection()) {
@@ -14701,14 +14996,18 @@ DvtDataGrid.prototype.handleCornerMouseOver = function (event) {
       this.m_utils.addCSSClassName(this.find(target, 'topcorner'), this.getMappedStyle('hover'));
     }
   }
-
   if (this._isDOMElementSortable(target)) {
     const sortContainer = this._getSortContainer(label);
     if (sortContainer) {
       sortContainer.classList.remove(this.getMappedStyle('iconHidden'));
     }
   }
-
+  if (label) {
+    const description = this._getToolTipDescription(label, true);
+    if (description != null) {
+      this._setToolTipOpenTimeout(event, label, description);
+    }
+  }
   if (!this.m_isResizing && label !== null) {
     // if it is resizing use the mouse move on the document
     this.handleMouseMove(event);
@@ -14725,6 +15024,7 @@ DvtDataGrid.prototype.handleCornerMouseMove = function (event) {
 };
 
 DvtDataGrid.prototype.handleCornerMouseOut = function (event) {
+  this._setToolTipCloseTimeout(event);
   var target = /** @type {Element} */ (event.target);
   let label = this.findLabel(target);
   if (label) {
@@ -14745,7 +15045,9 @@ DvtDataGrid.prototype.handleCornerMouseOut = function (event) {
  * @param {Event} event - click event on the top left corner
  */
 DvtDataGrid.prototype.handleCornerClick = function (event) {
-  this._handleSelectAll(event);
+  if (!this.m_resizing && this.manageHeaderCursor(event, true) === 'default') {
+    this._handleSelectAll(event);
+  }
 };
 
 /**
@@ -14815,6 +15117,21 @@ DvtDataGrid.prototype.handleHeaderDoubleClick = function (event) {
   }
 };
 
+DvtDataGrid.prototype.handleHeaderLabelDoubleClick = function (event) {
+  // checking if the element exists in the dom on refreshing after the first click
+  if (this.isResizeEnabled()) {
+    // setting this.m_cursor as it would have been reset to default in mouseup.
+    this.m_cursor = this.manageHeaderCursor(event, true);
+    let resizeCursor = this.m_cursor === 'col-resize' || this.m_cursor === 'row-resize';
+    if (resizeCursor) {
+      if (!this.m_resizingElement) {
+        this.m_resizingElement = this.findLabel(event.target);
+      }
+      this._getHeadersForResizeFitToContent(event);
+    }
+  }
+};
+
 DvtDataGrid.prototype._getHeadersForResizeFitToContent = function (event) {
   let resizingElementAxis = this.getHeaderCellAxis(this.m_resizingElement);
   const context = this.m_resizingElement[this.getResources().getMappedAttribute('context')];
@@ -14844,10 +15161,24 @@ DvtDataGrid.prototype._getHeadersForResizeFitToContent = function (event) {
   }
   if (isHeader) {
     if (
-      this._isSelectionEnabled() &&
-      this.isMultipleSelection() &&
-      this.m_selection.length !== 0 &&
-      this._isHeaderSelected(context, selectionAxis)
+      (event.type !== 'contextmenu' &&
+        selectionAxis === 'column' &&
+        this.m_cursor === 'row-resize') ||
+      (selectionAxis === 'row' && this.m_cursor === 'col-resize')
+    ) {
+      const level = context.level;
+      resizingElementAxis = context.axis;
+      const cells = this._getHeadersByLevel(resizingElementAxis, level, true);
+      if (cells.length > 0) {
+        this.handleResizeFitToContent(event, cells[0], true, cells);
+      }
+      return;
+    } else if (
+      (this._isSelectionEnabled() &&
+        this.isMultipleSelection() &&
+        this.m_selection.length !== 0 &&
+        this._isHeaderSelected(context, selectionAxis)) ||
+      this._isSelectAllAlongAxis(selectionAxis)
     ) {
       this.m_selection.forEach((selection) => {
         const selectedHeaders = this._getHeadersWithinSelection(
@@ -14857,13 +15188,55 @@ DvtDataGrid.prototype._getHeadersForResizeFitToContent = function (event) {
         );
         selectedHeaders.forEach((header) => headersSet.add(header));
       });
+    } else if (
+      (resizingElementAxis === 'column' &&
+        this.m_columnHeaderLevelCount > 1 &&
+        context.level < this.m_columnHeaderLevelCount) ||
+      (resizingElementAxis === 'row' &&
+        this.m_rowHeaderLevelCount > 1 &&
+        context.level < this.m_rowHeaderLevelCount) ||
+      (resizingElementAxis === 'columnEnd' &&
+        this.m_columnEndHeaderLevelCount > 1 &&
+        context.level < this.m_columnEndHeaderLevelCount) ||
+      (resizingElementAxis === 'rowEnd' &&
+        this.m_rowEndHeaderLevelCount > 1 &&
+        context.level < this.m_rowEndHeaderLevelCount)
+    ) {
+      let level;
+      switch (resizingElementAxis) {
+        case 'column':
+          level = this.m_columnHeaderLevelCount - 1;
+          break;
+        case 'row':
+          level = this.m_rowHeaderLevelCount - 1;
+          break;
+        case 'columnEnd':
+          level = this.m_columnEndHeaderLevelCount - 1;
+          break;
+        default:
+          level = this.m_rowEndHeaderLevelCount - 1;
+      }
+      // case where there is no selection but resize to fit applied at grouping container level.
+      headersSet.add(
+        this._getHeaderByIndex(context.index + context.extent - 1, selectionAxis, level)
+      );
     } else {
       headersSet.add(this.m_resizingElement);
     }
   } else if (isLabel) {
-    const level = context.level;
-    resizingElementAxis = context.axis;
-    const cells = this._getHeadersByLevel(resizingElementAxis, level);
+    resizingElementAxis = this._getSelectionAxis(context.axis);
+    let level;
+    if (event.type === 'contextmenu') {
+      level = context.level;
+    } else {
+      resizingElementAxis = this.m_cursor === 'col-resize' ? 'row' : 'column';
+      if (context.axis === 'column' || context.axis === 'columnEnd') {
+        level = this.m_cursor === 'col-resize' ? this.m_rowHeaderLevelCount - 1 : context.level;
+      } else if (context.axis === 'row' || context.axis === 'rowEnd') {
+        level = this.m_cursor === 'row-resize' ? this.m_columnHeaderLevelCount - 1 : context.level;
+      }
+    }
+    const cells = this._getHeadersByLevel(resizingElementAxis, level, true);
     if (cells.length > 0) {
       this.handleResizeFitToContent(event, cells[0], isLabel, cells);
     }
@@ -14876,6 +15249,15 @@ DvtDataGrid.prototype._getHeadersForResizeFitToContent = function (event) {
   });
 };
 
+DvtDataGrid.prototype._isSelectAllAlongAxis = function (axis) {
+  let selected = false;
+  this.GetSelection().forEach((block) => {
+    if (block.endIndex[axis] === -1) {
+      selected = true;
+    }
+  });
+  return selected;
+};
 /**
  * Based on selection state will add every selected header to set.
  * @return {Set} headerSet
@@ -14905,21 +15287,55 @@ DvtDataGrid.prototype._populateSelectedHeaderSet = function (headersSet) {
 
 /**
  * Method that returns headers by a given level and axis.
- * @return {string} axis - (row, column)
- * @return {number} level
- * @return {Array} headers - click event on the headers
+ * @param {string} axis - (row, column, rowEnd, columnEnd)
+ * @param {number} level - target level of the headers
+ * @param {boolean} includeOppositeAxis - returns headers and end headers
+ * @return {Array} headers - array of headers based on target level
  */
-DvtDataGrid.prototype._getHeadersByLevel = function (axis, level) {
-  const headers =
-    axis === 'column'
-      ? this.m_root.querySelectorAll(
-          `.${this.getMappedStyle('colheadercell')},.${this.getMappedStyle('colendheadercell')}`
-        )
-      : this.m_root.querySelectorAll(
-          `.${this.getMappedStyle('rowheadercell')},.${this.getMappedStyle('rowendheadercell')}`
-        );
+DvtDataGrid.prototype._getHeadersByLevel = function (axis, level, includeOppositeAxis) {
+  const headers = [];
 
-  return [...headers].filter(
+  if (axis === 'column' || (axis === 'columnEnd' && includeOppositeAxis)) {
+    if (this._hasFrozenColumns()) {
+      headers.push(
+        ...this.m_colHeaderFrozen.querySelectorAll(`.${this.getMappedStyle('colheadercell')}`)
+      );
+    }
+    headers.push(...this.m_colHeader.querySelectorAll(`.${this.getMappedStyle('colheadercell')}`));
+  }
+
+  if (axis === 'columnEnd' || (axis === 'column' && includeOppositeAxis)) {
+    if (this._hasFrozenColumns()) {
+      headers.push(
+        ...this.m_colEndHeaderFrozen.querySelectorAll(`.${this.getMappedStyle('colendheadercell')}`)
+      );
+    }
+    headers.push(
+      ...this.m_colEndHeader.querySelectorAll(`.${this.getMappedStyle('colendheadercell')}`)
+    );
+  }
+
+  if (axis === 'row' || (axis === 'rowEnd' && includeOppositeAxis)) {
+    if (this._hasFrozenRows()) {
+      headers.push(
+        ...this.m_rowHeaderFrozen.querySelectorAll(`.${this.getMappedStyle('rowheadercell')}`)
+      );
+    }
+    headers.push(...this.m_rowHeader.querySelectorAll(`.${this.getMappedStyle('rowheadercell')}`));
+  }
+
+  if (axis === 'rowEnd' || (axis === 'row' && includeOppositeAxis)) {
+    if (this._hasFrozenRows()) {
+      headers.push(
+        ...this.m_rowEndHeaderFrozen.querySelectorAll(`.${this.getMappedStyle('rowendheadercell')}`)
+      );
+    }
+    headers.push(
+      ...this.m_rowEndHeader.querySelectorAll(`.${this.getMappedStyle('rowendheadercell')}`)
+    );
+  }
+
+  return headers.filter(
     (header) => header[this.getResources().getMappedAttribute('context')].level === level
   );
 };
@@ -15228,9 +15644,8 @@ DvtDataGrid.prototype.handleDatabodyKeyUp = function (event) {
  * @param {Event} event - keydown event on the databody
  */
 DvtDataGrid.prototype.handleDatabodyKeyDown = function (event) {
-  var action;
-  // var keyCode = event.keyCode;
-  var ctrlKey = this.m_utils.ctrlEquivalent(event);
+  let action;
+  const ctrlKey = this.m_utils.ctrlEquivalent(event);
   // no longer fire keydown, just check if row expander handled the event already
   // also ignore if the component is animating
   if (
@@ -15239,7 +15654,13 @@ DvtDataGrid.prototype.handleDatabodyKeyDown = function (event) {
   ) {
     return;
   }
-  let element = this._getActiveElement();
+
+  const rootId = this.m_root.getAttribute('id');
+  const contextMenu = document.querySelector('#' + rootId + 'contextmenu');
+  const eventKey = event.key || event.keyCode;
+  if (contextMenu && isContextMenuKeyEvent(eventKey, event.shiftKey)) {
+    this.handleContextMenuEvent();
+  }
 
   // check if header is active
   if (this.m_active != null && this.m_active.type === 'header') {
@@ -15253,6 +15674,7 @@ DvtDataGrid.prototype.handleDatabodyKeyDown = function (event) {
   }
 
   if (action != null) {
+    const element = this._getActiveElement();
     if (action.call(this, event, element)) {
       event.preventDefault();
     }
@@ -16251,7 +16673,8 @@ DvtDataGrid.prototype.queueModelEvent = function (event) {
     this.m_processingEventQueue ||
     this.m_animating ||
     this.m_processingModelEvent ||
-    (this._isEditOrEnter() && this._isActiveWithinUpdateRange(event))
+    (this._isEditOrEnter() &&
+      (event.operation === 'refresh' || this._isActiveWithinUpdateRange(event)))
   ) {
     if (this.m_modelEvents == null) {
       this.m_modelEvents = [];
@@ -16266,8 +16689,8 @@ DvtDataGrid.prototype.queueModelEvent = function (event) {
 };
 
 DvtDataGrid.prototype._isActiveWithinUpdateRange = function (event) {
-  const ranges = event.detail.ranges;
-  if (this.m_active != null) {
+  const ranges = event.detail?.ranges; // check needed for refresh event.
+  if (this.m_active != null && ranges.length) {
     const type = this.m_active.type;
     if (type === 'label' || type === 'empty') {
       return false;
@@ -16770,9 +17193,12 @@ DvtDataGrid.prototype._handleInsertRangeEvent = function (eventDetail) {
 DvtDataGrid.prototype._handleUpdateRangeEvent = function (eventDetail) {
   let ranges = eventDetail.ranges;
   if (ranges.length === 0) {
-    this._resetEditableClone();
+    if (!this.m_activeEdit) {
+      this._resetEditableClone();
+    }
     this.applySelection();
     this._resetHeaderHighLight();
+    this.m_activeEdit = null;
     this.m_processingModelEvent = false;
     this._runModelEventQueue(true);
     return;
@@ -16906,8 +17332,8 @@ DvtDataGrid.prototype._handleUpdateEditableHeader = function (props, cellSet, ce
       this._highlightActive();
     }
   };
-
-  this._handleDeleteRangeEvent(eventDetail);
+  this.m_activeEdit = null;
+  this._handleDeleteRangeEvent(eventDetail, true);
   // handleInsertRangeCellFetchSuccess expects { offset, count } as commonProps.range
   delete commonProps.range;
   commonProps.range = { offset, count };
@@ -16932,6 +17358,12 @@ DvtDataGrid.prototype._handleInsertRangeHeaderFetchSuccess = function (
   const headerFragment = commonProps.headerFragment;
   const endHeaderFragment = commonProps.endHeaderFragment;
   const insertDimension = axis === 'row' ? 'top' : dir;
+  // freezeIndex rather than m_frozenIndex as during update post deletion m_frozenIndex would be deducted
+  // while freezeIndex would retain intact.
+  let freezeIndex = this._hasFrozenRows() ? this.m_options._getFreezeIndex('row') : null;
+  if (axis === 'column') {
+    freezeIndex = this._hasFrozenColumns() ? this.m_options._getFreezeIndex('column') : null;
+  }
 
   this.updateHiddenAxisForInsertion(start, count, axis);
 
@@ -16964,13 +17396,23 @@ DvtDataGrid.prototype._handleInsertRangeHeaderFetchSuccess = function (
     // Since the dir value would start from zero for the reference header,
     // we have to handle this special case by checking the dimension on the frozen section.
 
-    if (axis === 'column' && this._hasFrozenColumns() && start === this.m_frozenColIndex + 1) {
+    if (
+      axis === 'column' &&
+      this._hasFrozenColumns() &&
+      !this.m_fetchingForUpdate &&
+      start === freezeIndex
+    ) {
       if (this.m_colHeaderFrozen) {
         insertPixel = this.getElementWidth(this.m_colHeaderFrozen);
       } else if (this.m_colEndHeaderFrozen) {
         insertPixel = this.getElementWidth(this.m_colEndHeaderFrozen);
       }
-    } else if (axis === 'row' && this._hasFrozenRows() && start === this.m_frozenRowIndex + 1) {
+    } else if (
+      axis === 'row' &&
+      this._hasFrozenRows() &&
+      !this.m_fetchingForUpdate &&
+      start === freezeIndex
+    ) {
       if (this.m_rowHeaderFrozen) {
         insertPixel = this.getElementHeight(this.m_rowHeaderFrozen);
       } else if (this.m_rowEndHeaderFrozen) {
@@ -16992,8 +17434,8 @@ DvtDataGrid.prototype._handleInsertRangeHeaderFetchSuccess = function (
 
       index = start + c;
       if (
-        (axis === 'column' && this._hasFrozenColumns() && index <= this.m_frozenColIndex + 1) ||
-        (axis === 'row' && this._hasFrozenRows() && index <= this.m_frozenRowIndex + 1)
+        (axis === 'column' && this._hasFrozenColumns() && index <= freezeIndex) ||
+        (axis === 'row' && this._hasFrozenRows() && index <= freezeIndex)
       ) {
         className = `${className} ${this.getMappedStyle('frozenHeader')}`;
       }
@@ -17096,12 +17538,16 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
   let frozenDatabody = this.m_databodyFrozenRow;
   let frozenHeaderRoot = this.m_rowHeaderFrozen;
   let frozenEndHeaderRoot = this.m_rowEndHeaderFrozen;
+  // freezeIndex rather than m_frozenIndex as during update post deletion m_frozenIndex would be deducted
+  // while freezeIndex would retain intact.
+  let freezeIndex = this._hasFrozenRows() ? this.m_options._getFreezeIndex('row') : null;
   if (axis === 'column') {
     headerRoot = this.m_colHeader;
     endHeaderRoot = this.m_colEndHeader;
     frozenDatabody = this.m_databodyFrozenCol;
     frozenHeaderRoot = this.m_colHeaderFrozen;
     frozenEndHeaderRoot = this.m_colEndHeaderFrozen;
+    freezeIndex = this._hasFrozenColumns() ? this.m_options._getFreezeIndex('column') : null;
   }
 
   this._signalTaskEnd();
@@ -17124,14 +17570,10 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
     if (insertReference) {
       topPixel = axis === 'row' ? this.getElementDir(insertReference, 'top') : this.m_startRowPixel;
       leftPixel = axis === 'row' ? this.m_startColPixel : this.getElementDir(insertReference, dir);
-      if (
-        axis === 'column' &&
-        this._hasFrozenColumns() &&
-        columnStart === this.m_frozenColIndex + 1
-      ) {
+      if (axis === 'column' && this._hasFrozenColumns() && columnStart === freezeIndex) {
         leftPixel = this.getElementWidth(this.m_databodyFrozenCol);
       }
-      if (axis === 'row' && this._hasFrozenRows() && rowStart === this.m_frozenRowIndex + 1) {
+      if (axis === 'row' && this._hasFrozenRows() && rowStart === freezeIndex) {
         topPixel = this.getElementHeight(this.m_databodyFrozenRow);
       }
     } else {
@@ -17141,7 +17583,7 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
 
     if (axis === 'column') {
       // if insert is within frozen section.
-      if (this._hasFrozenColumns() && columnStart <= this.m_frozenColIndex + 1) {
+      if (this._hasFrozenColumns() && columnStart < freezeIndex + 1) {
         if (this.m_databodyFrozenCorner) {
           this._addCellsToFragment(
             newFrozenCornerCellElements,
@@ -17150,11 +17592,11 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
             topPixel,
             columnStart,
             leftPixel,
-            this.m_frozenRowIndex + 1,
+            freezeIndex + 1,
             null
           );
-          rowStart = this.m_frozenRowIndex + 1;
-          rowCount -= this.m_frozenRowIndex + 1;
+          rowStart = freezeIndex + 1;
+          rowCount -= freezeIndex + 1;
         }
         const returnVal = this._addCellsToFragment(
           newFrozenColCellElements,
@@ -17177,11 +17619,11 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
             topPixel,
             columnStart,
             leftPixel,
-            this.m_frozenRowIndex + 1,
+            freezeIndex + 1,
             null
           );
-          rowStart = this.m_frozenRowIndex + 1;
-          rowCount -= this.m_frozenRowIndex + 1;
+          rowStart = freezeIndex + 1;
+          rowCount -= freezeIndex + 1;
         }
         const returnVal = this._addCellsToFragment(
           newCellElements,
@@ -17200,7 +17642,7 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
       }
     } else if (axis === 'row') {
       // if insert is within frozen section.
-      if (this._hasFrozenRows() && rowStart <= this.m_frozenRowIndex + 1) {
+      if (this._hasFrozenRows() && rowStart < freezeIndex + 1) {
         if (this.m_databodyFrozenCorner) {
           this._addCellsToFragment(
             newFrozenCornerCellElements,
@@ -17210,10 +17652,10 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
             columnStart,
             leftPixel,
             null,
-            this.m_frozenColIndex + 1
+            freezeIndex + 1
           );
-          columnStart = this.m_frozenColIndex + 1;
-          columnCount -= this.m_frozenColIndex + 1;
+          columnStart = freezeIndex + 1;
+          columnCount -= freezeIndex + 1;
         }
         const returnVal = this._addCellsToFragment(
           newFrozenRowCellElements,
@@ -17237,10 +17679,10 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
             columnStart,
             leftPixel,
             null,
-            this.m_frozenColIndex + 1
+            freezeIndex + 1
           );
-          columnStart = this.m_frozenColIndex + 1;
-          columnCount -= this.m_frozenColIndex + 1;
+          columnStart = freezeIndex + 1;
+          columnCount -= freezeIndex + 1;
         }
         const returnVal = this._addCellsToFragment(
           newCellElements,
@@ -17287,8 +17729,8 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
   // are available and insert is done at the end of the frozen section.
   if (this._hasFrozenColumns() || this._hasFrozenRows()) {
     if (
-      (axis === 'column' && this._hasFrozenColumns() && offset <= this.m_frozenColIndex + 1) ||
-      (axis === 'row' && this._hasFrozenRows() && offset <= this.m_frozenRowIndex + 1)
+      (axis === 'column' && this._hasFrozenColumns() && offset < freezeIndex + 1) ||
+      (axis === 'row' && this._hasFrozenRows() && offset < freezeIndex + 1)
     ) {
       frozenDimensions = new Array(count).fill(totalDimension / count);
     } else {
@@ -17298,18 +17740,20 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
     dimensions = new Array(count).fill(totalDimension / count);
   }
 
-  let hasData = newCellElements.childNodes.length;
+  let hasData = newCellElements.childNodes.length || newFrozenRowCellElements.childNodes.length;
   let hasHeaders = newHeaderElements.childNodes.length;
   let hasEndHeaders = newEndHeaderElements.childNodes.length;
-  let databodyContent = this.m_databody.firstChild;
+  const databodyContent = this.m_databody.firstChild;
+  let databodyFrozenColContent;
+  let databodyFrozenRowContent;
 
   let frozenIndexes = [];
   // identify frozen section indexes and separate it out from regular indexes.
   for (let i = indexes.length - 1; i >= 0; i--) {
     let index = indexes[i];
     if (
-      (axis === 'column' && this._hasFrozenColumns() && index <= this.m_frozenColIndex + 1) ||
-      (axis === 'row' && this._hasFrozenRows() && index <= this.m_frozenRowIndex + 1)
+      (axis === 'column' && this._hasFrozenColumns() && index < freezeIndex + 1) ||
+      (axis === 'row' && this._hasFrozenRows() && index < freezeIndex + 1)
     ) {
       frozenIndexes.push(index);
       indexes.splice(i, 1);
@@ -17388,13 +17832,13 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
   }
 
   if (newFrozenColCellElements.childNodes.length) {
-    databodyContent = this.m_databodyFrozenCol.firstChild;
-    databodyContent.appendChild(newFrozenColCellElements); // @HTMLUpdateOK
+    databodyFrozenColContent = this.m_databodyFrozenCol.firstChild;
+    databodyFrozenColContent.appendChild(newFrozenColCellElements); // @HTMLUpdateOK
     shouldRefreshDatabodyMap = true;
   }
   if (newFrozenRowCellElements.childNodes.length) {
-    databodyContent = this.m_databodyFrozenRow.firstChild;
-    databodyContent.appendChild(newFrozenRowCellElements); // @HTMLUpdateOK
+    databodyFrozenRowContent = this.m_databodyFrozenRow.firstChild;
+    databodyFrozenRowContent.appendChild(newFrozenRowCellElements); // @HTMLUpdateOK
     shouldRefreshDatabodyMap = true;
   }
   if (newFrozenCornerCellElements.childNodes.length) {
@@ -17409,26 +17853,31 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
 
   this.hideStatusText();
 
+  // check for m_frozenIndex as m_frozenIndex is updated by now.
   if (axis === 'row') {
     if (hasData) {
       this.m_endRow += count;
-      this.m_endRowPixel += totalDimension;
+      if (!this._hasFrozenRows() || (this._hasFrozenRows() && offset > this.m_frozenRowIndex)) {
+        this.m_endRowPixel += totalDimension;
+      }
       this.m_stopRowFetch = false;
     }
     if (hasHeaders) {
       this.m_endRowHeader += count;
-      if (!this._hasFrozenRows() || (this._hasFrozenRows() && offset > this.m_frozenRowIndex + 1)) {
+      if (!this._hasFrozenRows() || (this._hasFrozenRows() && offset > this.m_frozenRowIndex)) {
         this.m_endRowHeaderPixel += totalDimension;
       }
       this.m_stopRowHeaderFetch = false;
     }
     if (hasEndHeaders) {
       this.m_endRowEndHeader += count;
-      this.m_endRowEndHeaderPixel += totalDimension;
+      if (!this._hasFrozenRows() || (this._hasFrozenRows() && offset > this.m_frozenRowIndex)) {
+        this.m_endRowEndHeaderPixel += totalDimension;
+      }
       this.m_stopRowEndHeaderFetch = false;
     }
 
-    if (this._hasFrozenRows() && offset <= this.m_frozenRowIndex + 1) {
+    if (this._hasFrozenRows() && offset < this.m_frozenRowIndex + 1) {
       let frozenDatabodyContentHeight =
         this.getElementHeight(this.m_databodyFrozenRow) + totalDimension;
       this.setElementHeight(this.m_databodyFrozenRow, frozenDatabodyContentHeight);
@@ -17436,21 +17885,32 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
         this.setElementHeight(this.m_databodyFrozenCorner, frozenDatabodyContentHeight);
       }
     } else {
-      let databodyContentHeight = this.getElementHeight(databodyContent) + totalDimension;
+      let databodyContentHeight = databodyFrozenColContent
+        ? this.getElementHeight(databodyFrozenColContent) + totalDimension
+        : this.getElementHeight(databodyContent) + totalDimension;
       this.setElementHeight(databodyContent, databodyContentHeight);
+      if (databodyFrozenColContent) {
+        this.setElementHeight(databodyFrozenColContent.parentElement, databodyContentHeight);
+        this.setElementHeight(databodyFrozenColContent, databodyContentHeight);
+      }
     }
     this.updateRowBanding();
   } else if (axis === 'column') {
     if (hasData) {
       this.m_endCol += count;
-      this.m_endColPixel += totalDimension;
+      if (
+        !this._hasFrozenColumns() ||
+        (this._hasFrozenColumns() && offset > this.m_frozenColIndex)
+      ) {
+        this.m_endColPixel += totalDimension;
+      }
       this.m_stopColumnFetch = false;
     }
     if (hasHeaders) {
       this.m_endColHeader += count;
       if (
         !this._hasFrozenColumns() ||
-        (this._hasFrozenColumns() && offset > this.m_frozenColIndex + 1)
+        (this._hasFrozenColumns() && offset > this.m_frozenColIndex)
       ) {
         this.m_endColHeaderPixel += totalDimension;
       }
@@ -17458,10 +17918,15 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
     }
     if (hasEndHeaders) {
       this.m_endColEndHeader += count;
-      this.m_endColEndHeaderPixel += totalDimension;
+      if (
+        !this._hasFrozenColumns() ||
+        (this._hasFrozenColumns() && offset > this.m_frozenColIndex)
+      ) {
+        this.m_endColEndHeaderPixel += totalDimension;
+      }
       this.m_stopColumnEndHeaderFetch = false;
     }
-    if (this._hasFrozenColumns() && offset <= this.m_frozenColIndex + 1) {
+    if (this._hasFrozenColumns() && offset < this.m_frozenColIndex + 1) {
       let frozenDatabodyContentWidth =
         this.getElementWidth(this.m_databodyFrozenCol) + totalDimension;
       this.setElementWidth(this.m_databodyFrozenCol, frozenDatabodyContentWidth);
@@ -17469,8 +17934,14 @@ DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
         this.setElementWidth(this.m_databodyFrozenCorner, frozenDatabodyContentWidth);
       }
     } else {
-      let databodyContentWidth = this.getElementWidth(databodyContent) + totalDimension;
+      let databodyContentWidth = databodyFrozenRowContent
+        ? this.getElementWidth(databodyFrozenRowContent) + totalDimension
+        : this.getElementWidth(databodyContent) + totalDimension;
       this.setElementWidth(databodyContent, databodyContentWidth);
+      if (databodyFrozenRowContent) {
+        this.setElementWidth(databodyFrozenRowContent.parentElement, databodyContentWidth);
+        this.setElementWidth(databodyFrozenRowContent, databodyContentWidth);
+      }
     }
     this.updateColumnBanding();
   }
@@ -18130,6 +18601,11 @@ DvtDataGrid.prototype._handleCellUpdatesFetchSuccess = function (cellSet, cellRa
   // update the cells in the row
   this._updateCellsInRow(cellSet, rowStart, renderer, this.m_startCol, columnBandingInterval);
 
+  // apply flowTo for ios
+  if (isIos()) {
+    this._applyIosAccessibility();
+  }
+
   // end fetch
   this._signalTaskEnd();
 };
@@ -18250,7 +18726,12 @@ DvtDataGrid.prototype._handleUpdateRangeFetchSuccess = function (commonProps, ce
   const columnEnd = columnStart + columnCount - 1;
 
   const hasBrowserFocus = this.m_root.contains(document.activeElement);
-
+  if (this.m_active?.type === 'cell' && this._isEditOrEnter()) {
+    let element = this._getCellByIndex(this.m_active.indexes);
+    if (element) {
+      this.m_activeEdit = element;
+    }
+  }
   this._splitRange(cellSet, rowStart, rowEnd, columnStart, columnEnd);
   // hide fetching text now that we are done
   this.hideStatusText();
@@ -18258,12 +18739,18 @@ DvtDataGrid.prototype._handleUpdateRangeFetchSuccess = function (commonProps, ce
   if (
     this.m_active != null &&
     this.m_active.type === 'cell' &&
-    this._isActiveWithinUpdateRange({ detail: { ranges: [commonProps.range] } })
+    this._isActiveWithinUpdateRange({ detail: { ranges: [commonProps.range] } }) &&
+    !this.m_activeEdit
   ) {
     if (!hasBrowserFocus) {
       this.m_shouldFocus = false;
     }
     this._highlightActive();
+  }
+
+  // apply flowTo for ios
+  if (isIos()) {
+    this._applyIosAccessibility();
   }
 
   // end fetch
@@ -18397,9 +18884,14 @@ DvtDataGrid.prototype._fetchAndMutateCellsByRange = function (
   const left = this.getElementDir(cells[0], ltr);
   const rowCount = rowEnd - rowStart + 1;
   const colCount = columnEnd - columnStart + 1;
-
+  if (this.m_activeEdit) {
+    cells = [...cells].filter((cell) => !(cell === this.m_activeEdit));
+  }
   // clear the content of the row first
   this._removeFromArray(cells);
+  if (this.m_activeEdit) {
+    this._populateDatabody(container.firstChild, this.m_activeEdit);
+  }
 
   let fragment = document.createDocumentFragment();
   this._addCellsToFragment(fragment, cellSet, rowStart, top, columnStart, left, rowCount, colCount);
@@ -18459,7 +18951,7 @@ DvtDataGrid.prototype._removeAndModifyHeaders = function (
   });
 };
 
-DvtDataGrid.prototype._handleDeleteRangeEvent = function (eventDetail) {
+DvtDataGrid.prototype._handleDeleteRangeEvent = function (eventDetail, isFromUpdate) {
   let ranges = eventDetail.ranges;
   // use set to ensure unique indexes
   let indexSet = new Set();
@@ -18528,24 +19020,29 @@ DvtDataGrid.prototype._handleDeleteRangeEvent = function (eventDetail) {
   // track dimensions in array reverse the order of indexes for future modification of dom
   let dimensions = [];
   let frozenSectionDimensions = [];
-  let element;
+  let editableElement;
+  const context = this.getResources().getMappedAttribute('context');
   if (this._isEditOrEnter()) {
-    element = this._getCellByIndex(this.m_active.indexes);
+    editableElement = this._getCellByIndex(this.m_active.indexes);
   }
-  if (element) {
-    let index = this.getCellIndexes(element);
-    let shouldDelete = false;
-    indexes.forEach((deleteIndex) => {
-      if (
-        (axis === 'row' && deleteIndex === index.row) ||
-        (axis === 'column' && deleteIndex === index.column)
-      ) {
-        shouldDelete = true;
+  if (editableElement) {
+    if (isFromUpdate) {
+      this.m_activeEdit = editableElement;
+    } else {
+      let index = this.getCellIndexes(editableElement);
+      let shouldDelete = false;
+      indexes.forEach((deleteIndex) => {
+        if (
+          (axis === 'row' && deleteIndex === index.row) ||
+          (axis === 'column' && deleteIndex === index.column)
+        ) {
+          shouldDelete = true;
+        }
+      });
+      if (shouldDelete) {
+        this._handleExitEditable(eventDetail, editableElement);
+        this._handleExitEdit(eventDetail, editableElement);
       }
-    });
-    if (shouldDelete) {
-      this._handleExitEditable(eventDetail, element);
-      this._handleExitEdit(eventDetail, element);
     }
   }
   // we don't want to modify cells multiple times
@@ -18575,7 +19072,16 @@ DvtDataGrid.prototype._handleDeleteRangeEvent = function (eventDetail) {
           if (this.m_selectionRange && this.m_selectionRange.length) {
             this.unhighlightFloodFillRange(this.m_selectionRange[0]);
           }
-          this._removeAndModifyCells(cells, axis);
+          let cellsToBeRemoved = cells;
+          if (editableElement) {
+            cellsToBeRemoved = cells.filter((cell) => {
+              return !(
+                cell[context].indexes.row === editableElement[context].indexes.row &&
+                cell[context].indexes.column === editableElement[context].indexes.column
+              );
+            });
+          }
+          this._removeAndModifyCells(cellsToBeRemoved, axis);
         }
 
         let headers = this._getHeadersByIndex(index, axis);
@@ -18812,7 +19318,6 @@ DvtDataGrid.prototype._handleDeleteRangeEvent = function (eventDetail) {
       }
     }
     this.resizeGrid();
-    // this.setHiddenColumnsDisplayAndWidth();
     this.deleteAndApplyHiddenIndicators();
     this.m_resizeRequired = true;
     let self = this;
@@ -18821,6 +19326,10 @@ DvtDataGrid.prototype._handleDeleteRangeEvent = function (eventDetail) {
         self.fillViewport();
       }
     });
+  }
+  // apply flowTo for ios
+  if (isIos()) {
+    this._applyIosAccessibility();
   }
 };
 
@@ -19838,11 +20347,11 @@ DvtDataGrid.prototype._isDatabodyCellActive = function () {
 };
 
 /**
- * Update the context info based on active changess
+ * Update the context info based on active changes
  * @param {Object} activeObject
  * @param {Object} prevActiveObject
  */
-DvtDataGrid.prototype._updateActiveContext = function (activeObject, prevActiveObject) {
+DvtDataGrid.prototype._getActiveContext = function (activeObject, prevActiveObject) {
   var axis;
   var level;
   var skip;
@@ -19922,8 +20431,7 @@ DvtDataGrid.prototype._updateActiveContext = function (activeObject, prevActiveO
         contextObj.columnEndHeader = index;
       }
     }
-    // update context info
-    this._updateContextInfo(contextObj, skip);
+    return this._getContextInfo(contextObj, skip);
   } else if (activeObject.type === 'cell') {
     // check whether the prev and current active cell is in the same row/column so that we can
     // skip row/column header info in aria-labelledby (to make the description more brief)
@@ -19939,8 +20447,7 @@ DvtDataGrid.prototype._updateActiveContext = function (activeObject, prevActiveO
         skip = 'column';
       }
     }
-    // update context info
-    this._updateContextInfo(activeObject, skip);
+    return this._getContextInfo(activeObject, skip);
   } else if (activeObject.type === 'label') {
     axis = activeObject.axis;
     level = activeObject.level;
@@ -19961,9 +20468,9 @@ DvtDataGrid.prototype._updateActiveContext = function (activeObject, prevActiveO
         contextObj.columnEndHeaderLabel = level;
       }
     }
-
-    this._updateContextInfo(contextObj, skip);
+    return this._getContextInfo(contextObj, skip);
   }
+  return null;
 };
 
 /**
@@ -20568,8 +21075,11 @@ DvtDataGrid.prototype._setAriaProperties = function (
   element,
   shouldNotScroll
 ) {
-  var label = this.getLabelledBy(activeObject, prevActiveObject, element);
-  this._updateActiveContext(activeObject, prevActiveObject);
+  var label = this.getLabelledBy(activeObject, prevActiveObject, element, false);
+  const info = this._getActiveContext(activeObject, prevActiveObject);
+  if (info !== null) {
+    this.m_contextInfo.textContent = info;
+  }
 
   element.setAttribute('tabIndex', 0);
   element.setAttribute('aria-labelledby', label);
@@ -20607,7 +21117,7 @@ DvtDataGrid.prototype._unsetAriaProperties = function (element) {
  * @param {Object} activeObject
  * @param {Object} prevActiveObject
  * @param {Element} element
- * @param {boolean | undefined} isIosRender for accessibility in ios on render need header and label info but not state or context
+ * @param {boolean} isIosRender for accessibility in ios on render need header and label info but not context
  * @return {string} the wai-aria labelled by property for the cell
  */
 DvtDataGrid.prototype.getLabelledBy = function (
@@ -20636,10 +21146,15 @@ DvtDataGrid.prototype.getLabelledBy = function (
       );
     }
 
-    label = [
-      this.createSubId('context'),
-      this._getHeaderAndParentIds(element, previousElement)
-    ].join(' ');
+    if (isIosRender) {
+      label = [this._getHeaderAndParentIds(element, previousElement)].join(' ');
+    } else {
+      label = [
+        this.createSubId('context'),
+        this._getHeaderAndParentIds(element, previousElement)
+      ].join(' ');
+    }
+
     var direction = element.getAttribute(this.getResources().getMappedAttribute('sortDir'));
     if (direction === 'ascending') {
       key = 'accessibleSortAscending';
@@ -20769,7 +21284,11 @@ DvtDataGrid.prototype.getLabelledBy = function (
 
     element.setAttribute('tabIndex', 0);
   } else if (activeObject.type === 'label') {
-    label = [this.createSubId('context'), this._getActiveElement().id].join(' ');
+    if (isIosRender) {
+      label = [element.id].join(' ');
+    } else {
+      label = [this.createSubId('context'), element.id].join(' ');
+    }
   } else if (activeObject.type === 'empty') {
     label = this._getActiveElement().id;
   } else {
@@ -20828,7 +21347,7 @@ DvtDataGrid.prototype.getLabelledBy = function (
     }
 
     if (isIosRender) {
-      label = [row, rowEnd, column, columnEnd, element.id].join(' ');
+      label = [row, rowEnd, column, columnEnd, element.id, this.createSubId('state')].join(' ');
     } else {
       label = [
         this.createSubId('context'),
@@ -20840,6 +21359,7 @@ DvtDataGrid.prototype.getLabelledBy = function (
         this.createSubId('state')
       ].join(' ');
     }
+
     // remove double spaces rather than check everytime
     label = label.replace(/ +(?= )/g, '');
   }
@@ -21367,7 +21887,10 @@ DvtDataGrid.prototype.readCurrentContent = function () {
     currentCell = this._getActiveElement();
   }
 
-  this._updateActiveContext(this.m_active, this.m_prevActive);
+  const info = this._getActiveContext(this.m_active, this.m_prevActive);
+  if (info !== null) {
+    this.m_contextInfo.textContent = info;
+  }
 
   // Fill in the placeholder div aria-labelledby with the currentCell label so that it
   // will read out the contents of the current cell when focus is shifted to the
@@ -24637,34 +25160,37 @@ DvtDataGrid.prototype._handleAutofill = function (event, target) {
     this.m_selection.length === 1
   ) {
     let fillDirection = 'down';
-    if (event.type === 'keydown') {
-      fillDirection = event.keyCode === this.keyCodes.D_KEY ? 'down' : 'end';
-    }
     let selectionStart = this.m_selection[0].startIndex;
     let selectionEnd = this.m_selection[0].endIndex;
     let sourceRange = this.createRange(selectionStart, selectionEnd);
     let targetRange = this.createRange(selectionStart, selectionEnd);
     let validKeyDown = false;
-    if (fillDirection === 'down') {
-      sourceRange.endIndex.row = sourceRange.startIndex.row;
-      targetRange.startIndex.row = sourceRange.startIndex.row + 1;
-      if (
-        targetRange.startIndex.row >= sourceRange.startIndex.row &&
-        targetRange.startIndex.row <= targetRange.endIndex.row
-      ) {
-        validKeyDown = true;
+    if (event.type === 'keydown') {
+      fillDirection = event.keyCode === this.keyCodes.D_KEY ? 'down' : 'end';
+      if (fillDirection === 'down') {
+        sourceRange.endIndex.row = sourceRange.startIndex.row;
+        targetRange.startIndex.row = sourceRange.startIndex.row + 1;
+        if (targetRange.startIndex.row <= targetRange.endIndex.row) {
+          validKeyDown = true;
+        }
+      } else {
+        sourceRange.endIndex.column = sourceRange.startIndex.column;
+        targetRange.startIndex.column = sourceRange.startIndex.column + 1;
+        if (targetRange.startIndex.column <= targetRange.endIndex.column) {
+          validKeyDown = true;
+        }
       }
-    } else {
-      sourceRange.endIndex.column = sourceRange.startIndex.column;
-      targetRange.startIndex.column = sourceRange.startIndex.column + 1;
-      if (
-        targetRange.startIndex.column >= sourceRange.startIndex.column &&
-        targetRange.startIndex.column <= targetRange.endIndex.column
-      ) {
-        validKeyDown = true;
+    } else if (event.type === 'contextmenu') {
+      validKeyDown = true;
+      fillDirection = 'down';
+      let index = this.m_active.indexes;
+      sourceRange = this.createRange(index, index);
+      if (index.row >= selectionStart.row && index.row <= selectionEnd.row) {
+        if (index.column < selectionEnd.column || index.column > selectionStart.column) {
+          fillDirection = 'end';
+        }
       }
     }
-
     if (validKeyDown) {
       var details = {
         event: event,
@@ -25190,7 +25716,7 @@ DvtDataGrid.prototype.handleRootFocus = function (event, isPopupFocusin) {
       !this._isEditOrEnter()
     ) {
       if (!this._enteringActionableMode) {
-        let element = this._getOwnedContentFromTarget(target);
+        const element = this._getOwnedContentFromTarget(target);
         if (element) {
           this.m_shouldFocus = false;
           const active = this._createActiveObject(element);
@@ -25201,8 +25727,26 @@ DvtDataGrid.prototype.handleRootFocus = function (event, isPopupFocusin) {
       }
     } else {
       this._exitActionableMode();
+      this._closeToolTip();
+      this._openToolTipOnFocus(target, event);
     }
     this.m_root.tabIndex = -1;
+  }
+};
+
+DvtDataGrid.prototype._openToolTipOnFocus = function (targetElement, event) {
+  this._closeToolTip();
+
+  const element = this.findHeader(targetElement) || this.findLabel(targetElement);
+  if (!element) {
+    return;
+  }
+  const description = this._getToolTipDescription(
+    targetElement,
+    this.findLabel(targetElement) !== null
+  );
+  if (description != null) {
+    this._setToolTipOpenTimeout(event, element, description);
   }
 };
 
@@ -25217,48 +25761,56 @@ DvtDataGrid.prototype._getOwnedContentFromTarget = function (target) {
   return element;
 };
 
-DvtDataGrid.prototype._handlePopupFocusout = function (event) {
-  this.handleRootBlur(event, true);
-};
-
-DvtDataGrid.prototype._handlePopupFocusin = function (event) {
-  this.handleRootFocus(event, true);
+/**
+ * Handles context menu gestures and closes the tooltip.
+ */
+DvtDataGrid.prototype.handleContextMenuEvent = function () {
+  clearTimeout(this.m_toolTipOpenTimeoutId);
+  const toolTip = this._getToolTip();
+  if (toolTip) {
+    this._closeToolTip();
+  }
 };
 
 /**
  * Handles blur on the root and its children by removing focus class on the root
  * @param {Event} event
  */
-// eslint-disable-next-line no-unused-vars
-DvtDataGrid.prototype.handleRootBlur = function (event, isPopupFocusout) {
+DvtDataGrid.prototype.handleRootBlur = function (event) {
   // There is no cross-browser way to tell if the whole grid is out of focus on blur today.
   // document.activeElement returns null in chrome and firefox on blur events.
   // relatedTarget doesn't return a value in firefox and IE though there a tickets to fix.
   // We could implement a non-timeout solution that exiting and re-entering
   // the grid via tab key would not read the summary text upon re-entry (initial would work)
   this._clearFocusoutTimeout();
-  if (!isPopupFocusout) {
-    // Components that open popups (such as ojSelect, ojCombobox, ojInputDate, etc.) will trigger
-    // focusout, but we don't want to change mode in those cases since the user is still editing.
-    this._clearOpenPopupListeners();
-    var openPopup = getLogicalChildPopup(this.m_root);
-    if (openPopup != null) {
-      // setup focus listeners on popup
-      this._openPopup = openPopup;
-      // eslint-disable-next-line no-param-reassign
-      isPopupFocusout = false;
-      this._handlePopupFocusinListener = this._handlePopupFocusin.bind(this);
-      this._handlePopupFocusoutListener = this._handlePopupFocusout.bind(this);
-      openPopup.addEventListener('focusin', this._handlePopupFocusinListener);
-      openPopup.addEventListener('focusout', this._handlePopupFocusoutListener);
-      return;
-    }
+  // Components that open popups (such as ojSelect, ojCombobox, ojInputDate, etc.) will trigger
+  // focusout, but we don't want to change mode in those cases since the user is still editing.
+  this._clearOpenPopupListeners();
+  this._openPopups = getAllLogicalChildPopups(this.m_root);
+  // exclude the popup we own
+  const toolTip = this._getToolTip();
+  if (toolTip) {
+    this._openPopups = this._openPopups.filter((element) => element !== toolTip);
   }
+
+  this._handlePopupFocusinListener = this._handlePopupFocusin.bind(this);
+  this._handlePopupFocusoutListener = this._handlePopupFocusout.bind(this);
+  for (var i = 0; i < this._openPopups.length; i++) {
+    // setup focus listeners on each popup
+    this._openPopups[i].addEventListener('focusin', this._handlePopupFocusinListener);
+    this._openPopups[i].addEventListener('focusout', this._handlePopupFocusoutListener);
+  }
+
   this._setFocusoutBusyState();
+  clearTimeout(this.m_toolTipOpenTimeoutId);
   // prettier-ignore
   this.m_focusoutTimeout = setTimeout( // @HTMLUpdateOK
     function () {
-      if (!this.m_root.contains(document.activeElement) || isPopupFocusout === true) {
+      if (!this.m_root.contains(document.activeElement)) {
+        if (toolTip && toolTip !== document.activeElement) {
+          clearTimeout(this.m_toolTipOpenTimeoutId);
+          this._closeToolTip();
+        }
         this.m_root.tabIndex = 0;
         var active = this._getActiveElement();
         if (active != null) {
@@ -25281,10 +25833,12 @@ DvtDataGrid.prototype.handleRootBlur = function (event, isPopupFocusout) {
 };
 
 DvtDataGrid.prototype._clearOpenPopupListeners = function () {
-  if (this._openPopup != null) {
-    this._openPopup.removeEventListener('focusin', this._handlePopupFocusinListener);
-    this._openPopup.removeEventListener('focusout', this._handlePopupFocusoutListener);
-    this._openPopup = null;
+  if (this._openPopups != null) {
+    for (var i = 0; i < this._openPopups.length; i++) {
+      this._openPopups[i].removeEventListener('focusin', this._handlePopupFocusinListener);
+      this._openPopups[i].removeEventListener('focusout', this._handlePopupFocusoutListener);
+    }
+    this._openPopups = null;
   }
   this._handlePopupFocusinListener = null;
   this._handlePopupFocusoutListener = null;
@@ -25294,7 +25848,7 @@ DvtDataGrid.prototype._clearOpenPopupListeners = function () {
  * @private
  */
 DvtDataGrid.prototype._handlePopupFocusout = function (event) {
-  this.handleRootBlur(event, true);
+  this.handleRootBlur(event);
 };
 
 /**
@@ -26127,7 +26681,7 @@ DvtDataGrid.prototype._handleDataEntry = function (event, element) {
       this.m_utils.removeCSSClassName(element, this.getMappedStyle('cellEdit'));
     }
   } else {
-    this.showReadOnlyPopup(element);
+    this._showToolTip(element, this.getResources().getTranslatedText('msgReadOnly'), true);
   }
   return false;
 };
@@ -26170,56 +26724,17 @@ DvtDataGrid.prototype._handleEdit = function (event, element, shouldSelect) {
     rerender = false;
     this._enterActionableMode(element, null, true);
     if (!this.isActionableMode()) {
-      this.showReadOnlyPopup(element);
+      this._showToolTip(element, this.getResources().getTranslatedText('msgReadOnly'), true);
     }
   }
   return rerender;
-};
-
-DvtDataGrid.prototype.showReadOnlyPopup = function (element) {
-  const rootId = this.m_root.getAttribute('id');
-  let popup = document.getElementById(rootId + 'popup');
-
-  if (popup === null) {
-    popup = document.createElement('oj-popup');
-    popup.id = rootId + 'popup';
-    popup.setAttribute('data-oj-binding-provider', 'none');
-    var popupText = document.createElement('span');
-    let text = this.getResources().getTranslatedText('msgReadOnly');
-    popupText.textContent = text;
-    popup.appendChild(popupText); // @HTMLUpdateOK
-
-    const position = {
-      my: {
-        horizontal: 'center',
-        vertical: 'bottom'
-      },
-      at: {
-        horizontal: 'center',
-        vertical: 'top'
-      },
-      collision: 'none'
-    };
-    popup.setAttribute('position', JSON.stringify(position));
-    popup.setAttribute('tail', 'none');
-    this.m_root.appendChild(popup); // @HTMLUpdateOK
-  }
-
-  if (popup) {
-    const busyContext = Context.getContext(popup).getBusyContext();
-    busyContext.whenReady().then(() => {
-      popup.open(element);
-    });
-  } else {
-    popup.open(element);
-  }
 };
 
 /**
  * Exit edit mode
  * @param {Event} event
  * @param {Element|undefined|null} element
- * @returns {boolean} true if editing left successully
+ * @returns {boolean} true if editing left successfully
  */
 DvtDataGrid.prototype._handleExitEdit = function (event, element) {
   return this._leaveEditing(event, element, false);
@@ -26229,7 +26744,7 @@ DvtDataGrid.prototype._handleExitEdit = function (event, element) {
  * Cancel an edit
  * @param {Event} event
  * @param {Element|undefined|null} element
- * @returns {boolean} true if editing cancelled successully
+ * @returns {boolean} true if editing cancelled successfully
  */
 DvtDataGrid.prototype._handleCancelEdit = function (event, element) {
   if (this._leaveEditing(event, element, true)) {
@@ -27609,9 +28124,16 @@ DvtDataGrid.prototype.resizeColWidth = function (oldElementWidth, newElementWidt
     this.resizeColumnWidthAndShift(widthChange);
     this.deleteAndApplyHiddenIndicators();
     if (!isFrozenSectionResize) {
-      this.m_endColPixel += widthChange;
-      this.m_endColHeaderPixel += widthChange;
-      this.m_endColEndHeaderPixel += widthChange;
+      // check for availability of sections to ensure getMaxRightPixel isnt polluted.
+      if (this.m_endCol !== -1) {
+        this.m_endColPixel += widthChange;
+      }
+      if (this.m_endColHeader !== -1) {
+        this.m_endColHeaderPixel += widthChange;
+      }
+      if (this.m_endColEndHeader !== -1) {
+        this.m_endColEndHeaderPixel += widthChange;
+      }
       if (newScrollerWidth != null) {
         this.m_avgColWidth = newScrollerWidth / this.getDataSource().getCount('column');
       }
@@ -27665,9 +28187,16 @@ DvtDataGrid.prototype.resizeRowHeight = function (oldElementHeight, newElementHe
     this.resizeRowHeightAndShift(heightChange);
     this.deleteAndApplyHiddenIndicators();
     if (!isFrozenSectionResize) {
-      this.m_endRowPixel += heightChange;
-      this.m_endRowHeaderPixel += heightChange;
-      this.m_endRowEndHeaderPixel += heightChange;
+      // check for availability of sections to ensure getMaxBottomPixel isnt polluted.
+      if (this.m_endRow !== -1) {
+        this.m_endRowPixel += heightChange;
+      }
+      if (this.m_endRowHeader !== -1) {
+        this.m_endRowHeaderPixel += heightChange;
+      }
+      if (this.m_endRowEndHeader !== -1) {
+        this.m_endRowEndHeaderPixel += heightChange;
+      }
       if (newScrollerHeight != null) {
         this.m_avgRowHeight = newScrollerHeight / this.getDataSource().getCount('row');
       }
@@ -27682,8 +28211,14 @@ DvtDataGrid.prototype.resizeRowHeight = function (oldElementHeight, newElementHe
  * @param {number} newElementHeight - the column header height after resizing
  * @param {number} heightChange - the change in height
  * @param {boolean} end
+ * @param {boolean} isResizeFitToContent
  */
-DvtDataGrid.prototype.resizeColHeight = function (newElementHeight, heightChange, end) {
+DvtDataGrid.prototype.resizeColHeight = function (
+  newElementHeight,
+  heightChange,
+  end,
+  isResizeFitToContent = false
+) {
   if (heightChange !== 0) {
     var oldHeight;
     var level;
@@ -27758,7 +28293,8 @@ DvtDataGrid.prototype.resizeColHeight = function (newElementHeight, heightChange
                   newHeight,
                   oldHeight,
                   isHeaderLabel,
-                  axis
+                  axis,
+                  isResizeFitToContent
                 );
                 rowHeightChange = dimension.rowHeightChange;
                 colHeight = dimension.colHeight;
@@ -27772,7 +28308,8 @@ DvtDataGrid.prototype.resizeColHeight = function (newElementHeight, heightChange
               newElementHeight,
               oldHeight,
               true,
-              axis
+              axis,
+              isResizeFitToContent
             );
             rowHeightChange = dimension.rowHeightChange;
             colHeight = dimension.colHeight;
@@ -27852,7 +28389,8 @@ DvtDataGrid.prototype._calculateCollisionDimension = function (
   newElementHeight,
   oldHeight,
   isHeaderLabel,
-  axis
+  axis,
+  isResizeFitToContent = false
 ) {
   let dimension = {};
   let rowHeightChange;
@@ -27870,7 +28408,10 @@ DvtDataGrid.prototype._calculateCollisionDimension = function (
     let totalHeight = collisionRowHeight + collisionColumnHeight;
     let columnPercentage = collisionColumnHeight / totalHeight;
     let rowPercentage = collisionRowHeight / totalHeight;
-    if (collisionRowHeight === minHeightValue && collisionColumnHeight === minHeightValue) {
+    if (isResizeFitToContent) {
+      colHeight = Math.floor(newElementHeight * 0.5);
+      rowHeightChange = newElementHeight - colHeight - collisionRowHeight;
+    } else if (collisionRowHeight === minHeightValue && collisionColumnHeight === minHeightValue) {
       rowHeightChange = Math.floor(newElementHeight / 2) - Math.floor(oldHeight / 2);
       colHeight = Math.ceil(newElementHeight / 2);
       this.m_collisionResize = false;
@@ -28397,6 +28938,13 @@ DvtDataGrid.prototype.manageResizeScrollbars = function () {
   // this way our scrollbars are always at the edges of our viewport
   var availableHeight = height - colHeaderHeight - colEndHeaderHeight - databodyFrozenRowHeight;
   var availableWidth = width - rowHeaderWidth - rowEndHeaderWidth - databodyFrozenColumnWidth;
+
+  if (availableHeight < 0) {
+    availableHeight = 0;
+  }
+  if (availableWidth < 0) {
+    availableWidth = 0;
+  }
 
   var scrollbarSize = this.m_utils.getScrollbarSize();
   var dir = this.getResources().isRTLMode() ? 'right' : 'left';
@@ -29818,12 +30366,24 @@ DvtDataGrid.prototype.handleResizeFitToContent = function (
     this.getMappedStyle('endheadercell')
   );
 
+  let resizeDimension;
+  if (isLabel) {
+    resizeDimension = axis === 'column' ? 'height' : 'width';
+  } else if (
+    event.type !== 'contextmenu' &&
+    (this.m_cursor === 'col-resize' || this.m_cursor === 'row-resize')
+  ) {
+    resizeDimension = this.m_cursor === 'col-resize' ? 'width' : 'height';
+  } else {
+    resizeDimension = axis === 'column' ? 'width' : 'height';
+  }
+
   const isColumn = axis === 'column' || axis === 'columnEnd';
   const isRow = axis === 'row' || axis === 'rowEnd';
 
   if (this.isHidden(isColumn ? 'column' : 'row', index)) return;
 
-  let cells;
+  let cells = [];
   if (isLabel) {
     cells = populatedLevelCells;
   } else {
@@ -29838,26 +30398,37 @@ DvtDataGrid.prototype.handleResizeFitToContent = function (
   let newElementWidth = oldElementWidth;
   let newElementHeight = oldElementHeight;
   let size;
+  let isResizable = false;
 
-  if ((isColumn && !isLabel) || (isRow && isLabel)) {
-    newElementWidth = this._calculateResizeFitToContentValue(cells, 'column');
+  if (resizeDimension === 'width') {
+    newElementWidth = this._calculateResizeFitToContentValue(cells, resizeDimension);
     size = newElementWidth;
-    if (isColumn) {
+    if (isColumn && this.m_options.isResizable('column', 'width') === 'enable') {
+      isResizable = true;
       this.resizeColWidth(oldElementWidth, newElementWidth);
-    } else if (isRow) {
+    } else if (isRow && this.m_options.isResizable('row', 'width') === 'enable') {
+      isResizable = true;
       this.resizeRowWidth(newElementWidth, newElementWidth - oldElementWidth, isEndHeader, false);
     }
   } else {
-    newElementHeight = this._calculateResizeFitToContentValue(cells, 'row');
+    newElementHeight = this._calculateResizeFitToContentValue(cells, resizeDimension);
     size = newElementHeight;
-    if (isColumn) {
-      this.resizeColHeight(newElementHeight, newElementHeight - oldElementHeight, isEndHeader);
-    } else if (isRow) {
+    if (isColumn && this.m_options.isResizable('column', 'height') === 'enable') {
+      isResizable = true;
+      this.resizeColHeight(
+        newElementHeight,
+        newElementHeight - oldElementHeight,
+        isEndHeader,
+        true
+      );
+    } else if (isRow && this.m_options.isResizable('row', 'height') === 'enable') {
+      isResizable = true;
       this.resizeRowHeight(oldElementHeight, newElementHeight);
     }
   }
 
-  const fireEvent = oldElementWidth !== newElementWidth || oldElementHeight !== newElementHeight;
+  const fireEvent =
+    isResizable && (oldElementWidth !== newElementWidth || oldElementHeight !== newElementHeight);
 
   if (fireEvent) {
     this._fireResizeEvent(
@@ -29884,57 +30455,39 @@ DvtDataGrid.prototype.handleResizeFitToContent = function (
 /**
  * Calculate resize value according to dimension
  * @param {Array} cells - dimension of cells that needs to be adjusted.
- * @param {string} axis - Axis along which resizing has to happen.
+ * @param {string} dimenison - width|height.
  * @return {number} - adjusted value to be set.
  * @private
  */
 
-DvtDataGrid.prototype._calculateResizeFitToContentValue = function (cells, axis) {
-  let isHeaderLabel = false;
-  let dimension = 'height';
-  let resizeValue;
-  if (axis === 'column') {
-    dimension = 'width';
-  }
-  let minValue = this._getMinValue(dimension, axis, isHeaderLabel);
-  let container = document.createElement('div');
-  if (dimension === 'width') {
-    container.style.display = 'inline-flex';
-    container.style.flexFlow = 'column nowrap';
-    container.style.justifyContent = 'flex-start';
-    container.style.alignItems = 'stretch';
-    for (let i = 0; i < cells.length; i++) {
-      let clone = cells[i].cloneNode(true);
-      clone.classList.remove(...clone.classList);
-      clone.style[dimension] = '';
-      clone.style.whiteSpace = 'nowrap !important';
-      clone.style.overflow = 'hidden';
-      container.appendChild(clone);
-    }
-  } else if (dimension === 'height') {
-    container.style.display = 'flex';
-    for (let i = 0; i < cells.length; i++) {
-      let clone = cells[i].cloneNode(true);
-      clone.style[dimension] = '';
-      clone.style.whiteSpace = 'break-spaces';
-      container.appendChild(clone);
-    }
-  }
+DvtDataGrid.prototype._calculateResizeFitToContentValue = function (cells, dimension) {
+  const minValue = this._getMinValue(dimension, dimension === 'width' ? 'row' : 'column', false);
+  const container = document.createElement('div');
   container.style.visibility = 'hidden';
-  container.style.top = '0px';
   this.m_root.appendChild(container); // @HTMLUpdateOK
-  let maxValue = axis === 'column' ? this.m_databody.offsetWidth : this.m_databody.offsetHeight;
-  let paddingBorder =
-    axis === 'column' ? this._getCellPaddingBorder(dimension, this.m_resizingElement) : 0;
-  let containerElementDimension =
-    axis === 'column'
-      ? Math.ceil(container.firstElementChild.getBoundingClientRect().width)
-      : Math.ceil(container.firstElementChild.getBoundingClientRect().height);
-  resizeValue = containerElementDimension + paddingBorder;
-  resizeValue = resizeValue < minValue ? minValue : resizeValue;
-  resizeValue = resizeValue > maxValue ? maxValue : resizeValue;
+  for (let i = 0; i < cells.length; i++) {
+    const clone = cells[i].cloneNode(true);
+    if (dimension === 'width') {
+      clone.style.width = 'fit-content';
+    } else {
+      clone.style.height = 'fit-content';
+    }
+    container.appendChild(clone);
+  }
+  let greatestSize = 0;
+  [...container.children].forEach((cell) => {
+    const tempGreatestSize = dimension === 'width' ? cell.offsetWidth : cell.offsetHeight;
+    if (tempGreatestSize > greatestSize) {
+      greatestSize = tempGreatestSize;
+    }
+  });
+  const maxValue =
+    dimension === 'width' ? this.m_databody.offsetWidth : this.m_databody.offsetHeight;
+
+  greatestSize = greatestSize < minValue ? minValue : greatestSize;
+  greatestSize = greatestSize > maxValue ? maxValue : greatestSize;
   this.m_root.removeChild(container);
-  return resizeValue;
+  return greatestSize;
 };
 
 /**
@@ -31729,8 +32282,10 @@ DvtDataGrid.prototype._makeSelectionFrontierFocus = function () {
   }
 
   // update context info
-  this._updateContextInfo(this.m_selectionFrontier);
-
+  const info = this._getContextInfo(this.m_selectionFrontier);
+  if (info !== null) {
+    this.m_contextInfo.textContent = info;
+  }
   // focus on the cell (or first cell in the row)
   var cell = this.m_utils.containsCSSClassName(rowOrCell[0], this.getMappedStyle('row'))
     ? rowOrCell[0].firstChild
@@ -32403,10 +32958,9 @@ DvtDataGrid.prototype._handleSortMouseOut = function (event) {
     if (sortContainer) {
       this.m_utils.removeCSSClassName(sortContainer, this.getMappedStyle('hover'));
       this.m_utils.removeCSSClassName(sortContainer, this.getMappedStyle('selected'));
-      const elemContext = elem[this.getResources().getMappedAttribute('context')];
-      if (
-        !this.m_utils.containsCSSClassName(sortIcon, this.getMappedStyle('selected')) &&
-        elemContext.metadata?.sortDirection === 'unsorted'
+      if (sortIcon &&
+        !this.m_utils.containsCSSClassName(sortIcon, this.getMappedStyle('sortdescending')) &&
+        !this.m_utils.containsCSSClassName(sortIcon, this.getMappedStyle('sortascending'))
       ) {
         sortContainer.classList.add(this.getMappedStyle('iconHidden'));
       }
@@ -33280,6 +33834,11 @@ DvtDataGrid.prototype.handleCellsFetchSuccessForSort = function (
       oldRowEndHeaderElements,
       newRowEndHeaderElements
     );
+  }
+
+  // apply flowTo for ios
+  if (isIos()) {
+    this._applyIosAccessibility();
   }
 
   // end fetch
@@ -34772,14 +35331,13 @@ function DataGridProviderDataGridDataSourceKeyMap() {
 
 // Load translation bundles to handle asynchronous loading for oj-c components.
 // JET-63142 -> JET-64242
-let translationBundlePromise;
 async function getPreactTranslationPromise() {
-  if (translationBundlePromise) {
-    return translationBundlePromise;
-  }
-  const { default: loader } = await import('@oracle/oraclejet-preact/translationBundle');
-  translationBundlePromise = getTranslationBundlePromiseFromLoader(loader);
-  return translationBundlePromise;
+  // We will not be caching the promise returned by loadAllPendingBundles()
+  // because a new datagrid instance may be created after some additional components
+  // with different translation bundles have been imported.
+  // Note that the promises for each bundle id are already being cached
+  // by the ojtranslationbundleutils module.
+  return loadAllPendingBundles();
 }
 
 // import { ImmutableSet } from 'ojs/ojkeyset';
@@ -35004,6 +35562,15 @@ async function getPreactTranslationPromise() {
  *   <a class="bookmarkable-link" title="Templating Alignment" href="#templating-section"></a>
  * </h3>
  * <p>The DataGrid cells are horizontal flex boxes. To change the alignment use the classes documented in the flex layout section of the cookbook along with header and cell className attributes.
+ *
+ * <h3 id="binding-section">
+ *   Binding Propagation
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
+ * </h3>
+ * <p>By default, the DataGrid propagates bindings for property defaults to JET form controls used inside of the DataGrid to customize default userAssistanceDensity.
+ * Note when using the oj-data-grid custom element inside of a VDOM application, the default userAssistanceDensity properties will not propagate down to the form control child components that applications may use.
+ * This is because binding propagation is Knockout-based, and VDOM applications are not Knockout-based.
+ * Consider setting userAssistanceDensity to compact on your form controls directly in VDOM.</p>
  *
  * <h3 id="perf-section">
  *   Performance
@@ -35619,20 +36186,20 @@ async function getPreactTranslationPromise() {
  */
 /**
  * @typedef {Object} oj.ojDataGrid.CellTemplateContext
- * @property {GridBodyItem<D>} item True if the current item is a leaf node.
+ * @property {GridBodyItem<D>} item GridBodyItem associated with the cell.
  * @property {DataGridProvider<D>} datasource A reference to the grid data provider object.
  * @property {string} mode The mode of the row containing the cell. It can be "edit" or "navigation".
  * @ojsignature {target:"Type", value:"<D>", for:"genericTypeParameters"}
  */
 /**
  * @typedef {Object} oj.ojDataGrid.HeaderTemplateContext
- * @property {GridHeaderItem<D>} item True if the current item is a leaf node.
+ * @property {GridHeaderItem<D>} item GridHeaderItem associated with the header.
  * @property {DataGridProvider<D>} datasource A reference to the grid data provider object.
  * @ojsignature {target:"Type", value:"<D>", for:"genericTypeParameters"}
  */
 /**
  * @typedef {Object} oj.ojDataGrid.LabelTemplateContext
- * @property {GridItem<D>} item True if the current item is a leaf node.
+ * @property {GridItem<D>} item GridItem associated with the label.
  * @property {DataGridProvider<D>} datasource A reference to the grid data provider object.
  * @ojsignature {target:"Type", value:"<D>", for:"genericTypeParameters"}
  */
@@ -38041,7 +38608,32 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * // setter
            * myDataGrid.header.row.label.sortable = 'auto';
            */
-          sortable: 'disable'
+          sortable: 'disable',
+          /**
+           * A function that returns the description of the row header label, the description is shown in a tooltip. If null is returned the tooltip will not be shown.
+           *
+           * @expose
+           * @name header.row.label.description
+           * @ojshortdesc The description of the row header label. This is used for customizing the tooltip text.
+           * @memberof! oj.ojDataGrid
+           * @instance
+           * @type {function(Object):boolean|null}
+           * @ojsignature {target: "Type",
+           *               value: "?(((context: oj.ojDataGrid.LabelContext<K,D>) => string | null) | null)",
+           *               jsdocOverride: true}
+           * @default null
+           *
+           * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectable</code> attribute specified:</caption>
+           * &lt;oj-data-grid header.row.label.description='{{myDescriptionFunc}}'>&lt;/oj-data-grid>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">selectable</code> property after initialization:</caption>
+           * // getter
+           * var description = myDataGrid.header.row.label.description;
+           *
+           * // setter
+           * myDataGrid.header.row.label.description = myDescriptionFunc;
+           */
+          description: null
         },
 
         /**
@@ -38260,9 +38852,8 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @memberof! oj.ojDataGrid
          * @type {string}
          * @default 'disable'
-         * @ojsignature { target: "Type",
-         *                value: "?string",
-         *                jsDocOverride: true }
+         * @ojvalue {string} "enable" enable hide and unhide on rows
+         * @ojvalue {string} "disable" disable hide and unhide on rows
          * @ojshortdesc Allows hide/unhide on rows.
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">hidable</code> attribute specified:</caption>
          * &lt;!-- Using dot notation -->
@@ -38308,7 +38899,32 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * myDataGrid.setProperty('header.row.freezeable', "enable");
          *
          */
-        freezable: 'disable'
+        freezable: 'disable',
+        /**
+         * A function that returns the description of the row header, the description is shown in a tooltip. If null is returned the tooltip will not be shown.
+         *
+         * @expose
+         * @name header.row.description
+         * @ojshortdesc The description of the row header. This is used for customizing the tooltip text.
+         * @memberof! oj.ojDataGrid
+         * @instance
+         * @type {function(Object):boolean|null}
+         * @ojsignature {target: "Type",
+         *               value: "?(((context: oj.ojDataGrid.HeaderContext<K,D>) => string | null) | null)",
+         *               jsdocOverride: true}
+         * @default null
+         *
+         * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectable</code> attribute specified:</caption>
+         * &lt;oj-data-grid header.row.description='{{myDescriptionFunc}}'>&lt;/oj-data-grid>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">selectable</code> property after initialization:</caption>
+         * // getter
+         * var description = myDataGrid.header.row.description;
+         *
+         * // setter
+         * myDataGrid.header.row.description = myDescriptionFunc;
+         */
+        description: null
       },
 
       /**
@@ -38672,7 +39288,32 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * // setter
            * myDataGrid.header.column.label.sortable = 'auto';
            */
-          sortable: 'disable'
+          sortable: 'disable',
+          /**
+           * A function that returns the description of the column header label, the description is shown in a tooltip. If null is returned the tooltip will not be shown.
+           *
+           * @expose
+           * @name header.column.label.description
+           * @ojshortdesc The description of the column header label. This is used for customizing the tooltip text.
+           * @memberof! oj.ojDataGrid
+           * @instance
+           * @type {function(Object):boolean|null}
+           * @ojsignature {target: "Type",
+           *               value: "?(((context: oj.ojDataGrid.LabelContext<K,D>) => string | null) | null)",
+           *               jsdocOverride: true}
+           * @default null
+           *
+           * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectable</code> attribute specified:</caption>
+           * &lt;oj-data-grid header.column.label.description='{{myDescriptionFunc}}'>&lt;/oj-data-grid>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">selectable</code> property after initialization:</caption>
+           * // getter
+           * var description = myDataGrid.header.column.label.description;
+           *
+           * // setter
+           * myDataGrid.header.column.label.description = myDescriptionFunc;
+           */
+          description: null
         },
 
         /**
@@ -38889,9 +39530,8 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * @memberof! oj.ojDataGrid
          * @type {string}
          * @default 'disable'
-         * @ojsignature { target: "Type",
-         *                value: "?string",
-         *                jsDocOverride: true }
+         * @ojvalue {string} "enable" enable hide and unhide on columns
+         * @ojvalue {string} "disable" disable hide and unhide on columns
          * @ojshortdesc Allows hide/unhide on columns.
          * @example <caption>Initialize the DataGrid with the <code class="prettyprint">hidable</code> attribute specified:</caption>
          * &lt;!-- Using dot notation -->
@@ -38937,7 +39577,32 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * myDataGrid.setProperty('header.column.freezeable', "enable");
          *
          */
-        freezable: 'disable'
+        freezable: 'disable',
+        /**
+         * A function that returns the description of the column header, the description is shown in a tooltip. If null is returned the tooltip will not be shown.
+         *
+         * @expose
+         * @name header.column.description
+         * @ojshortdesc The description of the column header. This is used for customizing the tooltip text.
+         * @memberof! oj.ojDataGrid
+         * @instance
+         * @type {function(Object):boolean|null}
+         * @ojsignature {target: "Type",
+         *               value: "?(((context: oj.ojDataGrid.HeaderContext<K,D>) => string | null) | null)",
+         *               jsdocOverride: true}
+         * @default null
+         *
+         * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectable</code> attribute specified:</caption>
+         * &lt;oj-data-grid header.column.description='{{myDescriptionFunc}}'>&lt;/oj-data-grid>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">selectable</code> property after initialization:</caption>
+         * // getter
+         * var description = myDataGrid.header.column.description;
+         *
+         * // setter
+         * myDataGrid.header.column.description = myDescriptionFunc;
+         */
+        description: null
       },
 
       /**
@@ -39263,7 +39928,32 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * // setter
            * myDataGrid.header.columnEnd.label.sortable = 'auto';
            */
-          sortable: 'disable'
+          sortable: 'disable',
+          /**
+           * A function that returns the description of the column end header label, the description is shown in a tooltip. If null is returned the tooltip will not be shown.
+           *
+           * @expose
+           * @name header.columnEnd.label.description
+           * @ojshortdesc The description of the column end header label. This is used for customizing the tooltip text.
+           * @memberof! oj.ojDataGrid
+           * @instance
+           * @type {function(Object):boolean|null}
+           * @ojsignature {target: "Type",
+           *               value: "?(((context: oj.ojDataGrid.LabelContext<K,D>) => string | null) | null)",
+           *               jsdocOverride: true}
+           * @default null
+           *
+           * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectable</code> attribute specified:</caption>
+           * &lt;oj-data-grid myDataGrid.header.columnEnd.label='{{myDescriptionFunc}}'>&lt;/oj-data-grid>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">selectable</code> property after initialization:</caption>
+           * // getter
+           * var description = myDataGrid.header.columnEnd.label.description;
+           *
+           * // setter
+           * myDataGrid.header.columnEnd.label.description = myDescriptionFunc;
+           */
+          description: null
         },
 
         /**
@@ -39428,7 +40118,32 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * // setter
          * myDataGrid.header.columnEnd.style = 'myStyle';
          */
-        style: null
+        style: null,
+        /**
+         * A function that returns the description of the column end header, the description is shown in a tooltip. If null is returned the tooltip will not be shown.
+         *
+         * @expose
+         * @name header.columnEnd.description
+         * @ojshortdesc The description of the column end header. This is used for customizing the tooltip text.
+         * @memberof! oj.ojDataGrid
+         * @instance
+         * @type {function(Object):boolean|null}
+         * @ojsignature {target: "Type",
+         *               value: "?(((context: oj.ojDataGrid.HeaderContext<K,D>) => string | null) | null)",
+         *               jsdocOverride: true}
+         * @default null
+         *
+         * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectable</code> attribute specified:</caption>
+         * &lt;oj-data-grid header.columnEnd.description='{{myDescriptionFunc}}'>&lt;/oj-data-grid>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">selectable</code> property after initialization:</caption>
+         * // getter
+         * var description = myDataGrid.header.columnEnd.description;
+         *
+         * // setter
+         * myDataGrid.header.columnEnd.description = myDescriptionFunc;
+         */
+        description: null
       },
 
       /**
@@ -39754,7 +40469,32 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
            * // setter
            * myDataGrid.header.rowEnd.label.sortable = 'auto';
            */
-          sortable: 'disable'
+          sortable: 'disable',
+          /**
+           * A function that returns the description of the row end header label,, the description is shown in a tooltip. If null is returned the tooltip will not be shown.
+           *
+           * @expose
+           * @name header.rowEnd.label.description
+           * @ojshortdesc The description of the row end header label. This is used for customizing the tooltip text.
+           * @memberof! oj.ojDataGrid
+           * @instance
+           * @type {function(Object):boolean|null}
+           * @ojsignature {target: "Type",
+           *               value: "?(((context: oj.ojDataGrid.LabelContext<K,D>) => string | null) | null)",
+           *               jsdocOverride: true}
+           * @default null
+           *
+           * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectable</code> attribute specified:</caption>
+           * &lt;oj-data-grid header.rowEnd.label='{{myDescriptionFunc}}'>&lt;/oj-data-grid>
+           *
+           * @example <caption>Get or set the <code class="prettyprint">selectable</code> property after initialization:</caption>
+           * // getter
+           * var description = myDataGrid.header.rowEnd.label.description;
+           *
+           * // setter
+           * myDataGrid.header.rowEnd.label.description = myDescriptionFunc;
+           */
+          description: null
         },
 
         /**
@@ -39920,7 +40660,32 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
          * // setter
          * myDataGrid.header.rowEnd.style = 'myStyle';
          */
-        style: null
+        style: null,
+        /**
+         * A function that returns the description of the row end header, the description is shown in a tooltip. If null is returned the tooltip will not be shown.
+         *
+         * @expose
+         * @name header.rowEnd.description
+         * @ojshortdesc The description of the row end header. This is used for customizing the tooltip text.
+         * @memberof! oj.ojDataGrid
+         * @instance
+         * @type {function(Object):boolean|null}
+         * @ojsignature {target: "Type",
+         *               value: "?(((context: oj.ojDataGrid.HeaderContext<K,D>) => string | null) | null)",
+         *               jsdocOverride: true}
+         * @default null
+         *
+         * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectable</code> attribute specified:</caption>
+         * &lt;oj-data-grid header.rowEnd.description='{{myDescriptionFunc}}'>&lt;/oj-data-grid>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">selectable</code> property after initialization:</caption>
+         * // getter
+         * var description = myDataGrid.header.rowEnd.description;
+         *
+         * // setter
+         * myDataGrid.header.rowEnd.description = myDescriptionFunc;
+         */
+        description: null
       }
     },
 
@@ -39971,7 +40736,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
         /**
          * Specifies horizontal alignment of databody cells. If a string is specified the alignment
          * will be added to all databody cells. If a function is specified it takes a single parameter,
-         * <a href="#context-section">headerContext</a> and must return a string to be set as a alignment.
+         * <a href="#context-section">cellContext</a> and must return a string to be set as a alignment.
          * @expose
          * @name cell.alignment.horizontal
          * @memberof! oj.ojDataGrid
@@ -39997,7 +40762,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
         /**
          * Specifies vertical alignment of databody cells. If a string is specified the alignment
          * will be added to all databody cells. If a function is specified it takes a single parameter,
-         * <a href="#context-section">headerContext</a> and must return a string to be set as a alignment.
+         * <a href="#context-section">cellContext</a> and must return a string to be set as a alignment.
          * @expose
          * @name cell.alignment.vertical
          * @memberof! oj.ojDataGrid
@@ -40152,7 +40917,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
      * @event
      * @memberof oj.ojDataGrid
      * @instance
-     * @ojdeprecated {since: '16.0.0', description: 'Use the <a href="#">event:cellResize</a> event instead.'}
+     * @ojdeprecated {since: '16.0.0', description: 'Use the <a href="#event:cellResize">ojCellResize</a> event instead.'}
      * @property {string|number} header the key of the header which was resized
      * @property {Object} oldDimensions the oldDimensions
      * @property {number} oldDimensions.width the old pixel size (ex: '75px' would be 75)
@@ -41808,20 +42573,30 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     var isCustomElement = this._IsCustomElement();
     var value;
     var dimension;
+    let inputNumber;
     if (isCustomElement) {
-      value = document.getElementById(this.rootId + 'inputNumber').value;
+      inputNumber = document.getElementById(this.rootId + 'inputNumber');
+      // close popup only if valid
+      if (inputNumber.valid === 'valid') {
+        document.getElementById(this.rootId + 'modal').close();
+      }
+      value = inputNumber.value;
       dimension = document.getElementById(this.rootId + 'modal').getAttribute('dimension');
-      document.getElementById(this.rootId + 'modal').close();
     } else {
+      inputNumber = $('#' + this.rootId + 'inputNumber');
       value = $('#' + this.rootId + 'inputNumber').ojInputNumber('option', 'value');
-      $('#' + this.rootId + 'modal').ojDialog('close');
+      if (inputNumber.valid) {
+        $('#' + this.rootId + 'modal').ojDialog('close');
+      }
     }
-    this.grid.handleContextMenuReturn(
-      this.contextMenuEvent,
-      this._getMappedCommand(dimension),
-      value
-    );
-    this.contextMenuEvent.target.focus();
+    if (inputNumber.valid === 'valid') {
+      this.grid.handleContextMenuReturn(
+        this.contextMenuEvent,
+        this._getMappedCommand(dimension),
+        value
+      );
+      this.contextMenuEvent.target.focus();
+    }
   },
 
   /**
@@ -41899,13 +42674,6 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
 
         modalCancelButton.addEventListener('click', cancelActionHandler);
         modalOKButton.addEventListener('click', this._handleResizeDialog.bind(this));
-        inputNumber.addEventListener('validChanged', (event) => {
-          if (event.detail.value === 'valid') {
-            modalOKButton.disabled = false;
-          } else {
-            modalOKButton.disabled = true;
-          }
-        });
 
         const position = {
           my: {
@@ -41962,6 +42730,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
       );
       inputNumber.setAttribute('label-edge', 'inside');
       inputNumber.setAttribute('user-assistance-density', 'efficient');
+      inputNumber.setAttribute('required', true);
       if (dimension === 'width') {
         inputNumber.setAttribute('label-hint', this._getTranslation('columnWidth'));
         modal.setAttribute('dimension', 'resizeWidth');
@@ -42001,6 +42770,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
         inputNumber = document.createElement('input');
         inputNumber.id = this.rootId + 'inputNumber';
         inputNumber.setAttribute('label-edge', 'inside');
+        inputNumber.setAttribute('required', true);
 
         modalCancelButton = document.createElement('oj-button');
         modalCancelButton.id = this.rootId + 'modalcancel';
@@ -42045,9 +42815,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
           inputNumber.setAttribute('label-hint', this._getTranslation('rowHeight'));
           modal.setAttribute('dialog-title', 'resizeHeight');
         }
-        $(inputNumber).on('change', function () {
-          $(modalOKButton).ojButton({ disabled: !$(inputNumber).ojInputNumber('validate') });
-        });
+
         $(modal).ojDialog({
           initialFocus: 'firstFocusable',
           position: {
@@ -42061,6 +42829,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
       } else {
         inputNumber.ojInputNumber('option', 'value', initialSize);
         inputNumber.setAttribute('label-edge', 'inside');
+        inputNumber.setAttribute('required', true);
         modal.find('.' + this._getMappedStyle('dialogTitle'))[0].firstChild.textContent = title;
         modal.ojDialog('open');
       }
@@ -43210,11 +43979,19 @@ DvtDataGrid.prototype.handleDragStart = function (event) {
         selectionAxis,
         hasEndHeaders
       );
-      if (headersWithinSelection && headersWithinSelection[innermostHeaderLevel]) {
-        allHeadersWithinSelection.push(...headersWithinSelection[innermostHeaderLevel]);
+      if (headersWithinSelection) {
+        allHeadersWithinSelection = this._getHeadersAtInnermostLevel(
+          headersWithinSelection,
+          allHeadersWithinSelection,
+          innermostHeaderLevel
+        );
       }
-      if (endHeadersWithinSelection && endHeadersWithinSelection[innermostEndHeaderLevel]) {
-        allHeadersWithinSelection.push(...endHeadersWithinSelection[innermostEndHeaderLevel]);
+      if (endHeadersWithinSelection) {
+        allHeadersWithinSelection = this._getHeadersAtInnermostLevel(
+          endHeadersWithinSelection,
+          allHeadersWithinSelection,
+          innermostEndHeaderLevel
+        );
       }
 
       [cells, cellCountInRow, containerWidth, containerHeight] = this._getCellsForDndContainer(
@@ -43246,11 +44023,13 @@ DvtDataGrid.prototype.handleDragStart = function (event) {
       this._draggedElements = [];
       for (let i = 0; i < selection.length; i++) {
         let elems = this.getElementsInRange(selection[i]);
-        this._draggedElements.push(...elems);
-        for (let j = 0; j < elems.length; j++) {
-          this._highlightElement(elems[j], ['dragSourceOpaque']);
+        if (elems?.length) {
+          this._draggedElements.push(...elems);
+          for (let j = 0; j < elems.length; j++) {
+            this._highlightElement(elems[j], ['dragSourceOpaque']);
+          }
+          this._applyBorderClassesAroundRange(elems, selection[i], false, 'Selected');
         }
-        this._applyBorderClassesAroundRange(elems, selection[i], false, 'Selected');
       }
       const context = [this.getResources().getMappedAttribute('context')];
       const headerContext = header[context];
@@ -43269,6 +44048,28 @@ DvtDataGrid.prototype.handleDragStart = function (event) {
     event.preventDefault();
   }
   return undefined;
+};
+
+DvtDataGrid.prototype._getHeadersAtInnermostLevel = function (
+  headersWithinSelection,
+  allHeadersWithinSelection,
+  innermostHeaderLevel
+) {
+  let levels = Object.keys(headersWithinSelection).length;
+  for (let i = 0; i < levels; i++) {
+    let tmpLevel = Object.keys(headersWithinSelection)[i];
+    if (headersWithinSelection[tmpLevel]) {
+      for (let j = 0; j <= headersWithinSelection[tmpLevel].length - 1; j++) {
+        let tmpHeader = headersWithinSelection[tmpLevel][j];
+        let tmpHeaderDepth = this.getHeaderCellDepth(tmpHeader);
+        let tmpHeaderLevel = this.getHeaderCellLevel(tmpHeader);
+        if (tmpHeader && tmpHeaderDepth - 1 + tmpHeaderLevel === innermostHeaderLevel) {
+          allHeadersWithinSelection.push(tmpHeader);
+        }
+      }
+    }
+  }
+  return allHeadersWithinSelection;
 };
 
 DvtDataGrid.prototype._getHeadersInSelection = function (level, selection, selectionAxis) {
@@ -43650,7 +44451,7 @@ DvtDataGrid.prototype.handleRowDrag = function (event) {
 DvtDataGrid.prototype.handleRowDrop = function (event) {
   if (this.m_pivotInProgress) {
     this._handlePivotDropOnHeader(event);
-  } else if (this._matchDragDataType(event, 'rows')) {
+  } else if (this._matchDragDataType(event, 'rows') || !event.dataTransfer.types.length) {
     let dropRowIndex = this.m_dropRowIndex;
     if (this.m_dropRowIndex === null) {
       dropRowIndex = this._getOverIndex(event, 'row');
@@ -43715,74 +44516,70 @@ DvtDataGrid.prototype.handleColumnDragOver = function (event) {
   let returnValue;
   if (this.m_pivotInProgress) {
     this._handlePivotDragOverOnHeader(event);
+  } else if (this.m_dragFrozenIndicator) {
+    // drag frozen indicator case.
+    let colIndex = this._getOverIndex(event, 'column');
+    let axis = this.m_freezeIndicatorAxis;
+    // frozen row indicator drag over column header
+    if (axis === 'row') {
+      const isEndHeader = this.m_utils.containsCSSClassName(
+        event.target,
+        this.getMappedStyle('endheadercell')
+      );
+      if (!isEndHeader) {
+        colIndex = -1;
+      } else {
+        return returnValue;
+      }
+    }
+    if (
+      colIndex != null &&
+      (this.m_dropTarget == null ||
+        colIndex !== this._getAttribute(this.m_dropTarget, 'dropIndex', true))
+    ) {
+      this.handleFreezeIndicatorDragOver(event, colIndex, axis);
+    } else {
+      event.preventDefault();
+    }
   } else if (this._matchDragDataType(event, 'columns')) {
     let colIndex = this._getOverIndex(event, 'column');
-    if (this.m_dragFrozenIndicator) {
-      let axis = this.m_freezeIndicatorAxis;
-      // frozen row indicator drag over column header
-      if (axis === 'row') {
-        const isEndHeader = this.m_utils.containsCSSClassName(
-          event.target,
-          this.getMappedStyle('endheadercell')
-        );
-        if (!isEndHeader) {
-          colIndex = -1;
-        } else {
-          return returnValue;
-        }
-      }
+    this.m_databodyReorder = true;
+    let axis = 'column';
+    let adjustedColIndex = colIndex === -1 ? 0 : colIndex;
+    let dir = this.getResources().isRTLMode() ? 'right' : 'left';
+    let header = this._getHeaderByIndex(adjustedColIndex, axis, this.m_columnHeaderLevelCount - 1);
+    if (this.m_utils.containsCSSClassName(header, this.getMappedStyle('disabledElement'))) {
+      this._removeDropTargetLine(axis);
+      this._removeDropTargetClass();
+      this.m_dropColumnIndex = null;
+    } else if (colIndex !== undefined && header) {
+      let position = this._getRelativePosition(event, axis, header, true);
+      let dropContext = {
+        axis: 'column',
+        position: position,
+        index: this.m_dropColumnIndex
+      };
+      returnValue = this._invokeDropCallback('columns', 'dragOver', event, dropContext);
       if (
-        colIndex != null &&
+        (returnValue === false || event.defaultPrevented) &&
         (this.m_dropTarget == null ||
           colIndex !== this._getAttribute(this.m_dropTarget, 'dropIndex', true))
       ) {
-        this.handleFreezeIndicatorDragOver(event, colIndex, axis);
-      } else {
-        event.preventDefault();
-      }
-    } else {
-      this.m_databodyReorder = true;
-      let axis = 'column';
-      let adjustedColIndex = colIndex === -1 ? 0 : colIndex;
-      let dir = this.getResources().isRTLMode() ? 'right' : 'left';
-      let header = this._getHeaderByIndex(
-        adjustedColIndex,
-        axis,
-        this.m_columnHeaderLevelCount - 1
-      );
-      if (this.m_utils.containsCSSClassName(header, this.getMappedStyle('disabledElement'))) {
         this._removeDropTargetLine(axis);
         this._removeDropTargetClass();
-        this.m_dropColumnIndex = null;
-      } else if (colIndex !== undefined && header) {
-        let position = this._getRelativePosition(event, axis, header, true);
-        let dropContext = {
-          axis: 'column',
-          position: position,
-          index: this.m_dropColumnIndex
-        };
-        returnValue = this._invokeDropCallback('columns', 'dragOver', event, dropContext);
-        if (
-          (returnValue === false || event.defaultPrevented) &&
-          (this.m_dropTarget == null ||
-            colIndex !== this._getAttribute(this.m_dropTarget, 'dropIndex', true))
-        ) {
-          this._removeDropTargetLine(axis);
-          this._removeDropTargetClass();
-          if (position === 'inside') {
-            this._highlightElement(header, ['dropTarget']);
-            this._highlightCellsAlongAxis(colIndex, axis, 'index', 'add', ['dropTarget']);
-          } else {
-            let dropLinePosition = this.getElementDir(header, dir);
-            dropLinePosition += colIndex === -1 ? 0 : this.getElementWidth(header);
-            if (this._hasFrozenColumns() && colIndex > this.m_frozenColIndex) {
-              dropLinePosition += this.getElementWidth(this.m_databodyFrozenCol);
-            }
-            this._addDropTargetLine(axis, 0, dir, dropLinePosition, adjustedColIndex);
+        if (position === 'inside') {
+          this._highlightElement(header, ['dropTarget']);
+          this._highlightCellsAlongAxis(colIndex, axis, 'index', 'add', ['dropTarget']);
+        } else {
+          let dropLinePosition = this.getElementDir(header, dir);
+          dropLinePosition += colIndex === -1 ? 0 : this.getElementWidth(header);
+          if (this._hasFrozenColumns() && colIndex > this.m_frozenColIndex) {
+            dropLinePosition += this.getElementWidth(this.m_databodyFrozenCol);
           }
+          this._addDropTargetLine(axis, 0, dir, dropLinePosition, adjustedColIndex);
         }
-        return returnValue;
       }
+      return returnValue;
     }
   } else if (this._matchDragDataType(event, 'columnLabels')) {
     this._handlePivotDragOverOnHeader(event);
@@ -43811,7 +44608,7 @@ DvtDataGrid.prototype.handleColumnDrag = function (event) {
 DvtDataGrid.prototype.handleColumnDrop = function (event) {
   if (this.m_pivotInProgress) {
     this._handlePivotDropOnHeader(event);
-  } else if (this._matchDragDataType(event, 'columns')) {
+  } else if (this._matchDragDataType(event, 'columns') || !event.dataTransfer.types.length) {
     let dropColumnIndex = this.m_dropColumnIndex;
     if (this.m_dropColumnIndex === null) {
       dropColumnIndex = this._getOverIndex(event, 'column');
@@ -43964,18 +44761,22 @@ DvtDataGrid.prototype._getCellsForDndContainer = function (
         indexCells = indexCells.slice(0, cellIndexInView + 1);
       }
       cells.push(...indexCells);
-      if (hasEndHeaders) {
+      if (hasEndHeaders && headersWithinSelection?.length) {
         cells.push(headersWithinSelection[Math.ceil(headersWithinSelection.length / 2 + j)]);
       }
       if (axis === 'row' && !containerWidth) {
         containerWidth = this._computeContainerDimension(cells, 'width');
       } else if (axis === 'column') {
-        containerWidth += this.getElementDir(headersWithinSelection[j], 'width');
+        containerWidth += headersWithinSelection[j]
+          ? this.getElementDir(headersWithinSelection[j], 'width')
+          : this.getElementWidth(cells[0]);
       }
       if (axis === 'column' && !containerHeight) {
         containerHeight = this._computeContainerDimension(cells, 'height');
       } else if (axis === 'row') {
-        containerHeight += this.getElementDir(headersWithinSelection[j], 'height');
+        containerHeight += headersWithinSelection[j]
+          ? this.getElementDir(headersWithinSelection[j], 'height')
+          : this.getElementHeight(cells[0]);
       }
       j += 1;
       // eslint-disable-next-line no-param-reassign
@@ -44868,14 +45669,18 @@ DvtDataGrid.prototype._enableChildElements = function () {
 
 DvtDataGrid.prototype._unhighlightDragSource = function () {
   let classArray = ['draggableItem', 'dragSourceOpaque'];
-  if (this._draggedElements?.length) {
-    this._unhighlightElementsByClassName(this._draggedElements, classArray);
+  if (this._cellsDragged?.length) {
+    this._unhighlightElementsByClassName(this._cellsDragged, classArray);
+  }
+
+  if (this._headersDragged?.length) {
+    this._unhighlightElementsByClassName(this._headersDragged, classArray);
   }
 };
 
 DvtDataGrid.prototype._removeDragStyle = function (axis) {
-  let header = axis === 'row' ? this.m_rowHeader : this.m_rowEndHeader;
-  let endHeader = axis === 'row' ? this.m_colHeader : this.m_colEndHeader;
+  let header = axis === 'row' ? this.m_rowHeader : this.m_colHeader;
+  let endHeader = axis === 'row' ? this.m_rowEndHeader : this.m_colEndHeader;
   let activeDragStyle = this.getMappedStyle('dragging');
   let dragHeaderCells = header.firstChild.querySelectorAll(`.${activeDragStyle}`);
   this._unhighlightElementsByClassName(dragHeaderCells, ['dragging']);
@@ -45173,6 +45978,8 @@ DvtDataGrid.prototype._setFrozenContainerDimension = function (
   const colEndHeader = this.m_colEndHeader;
   const rowHeader = this.m_rowHeader;
   const rowEndHeader = this.m_rowEndHeader;
+  const height = this.getHeight();
+  const width = this.getWidth();
 
   const databodyFrozenColumnHeight = availableHeight;
   const databodyFrozenRowWidth = availableWidth;
@@ -45183,6 +45990,10 @@ DvtDataGrid.prototype._setFrozenContainerDimension = function (
 
   if (this._hasFrozenColumns()) {
     databodyFrozenColumnWidth = this.getElementWidth(databodyFrozenCol);
+    // handle cases where frozen columns exceed the viewport range to render endHeaders
+    if (rowHeaderWidth + rowEndHeaderWidth + databodyFrozenColumnWidth > width) {
+      databodyFrozenColumnWidth = width - rowHeaderWidth - rowEndHeaderWidth;
+    }
     if (
       !databodyFrozenColumnWidth &&
       (this.m_endColHeader !== -1 || this.m_endColEndHeader !== -1)
@@ -45197,6 +46008,10 @@ DvtDataGrid.prototype._setFrozenContainerDimension = function (
   }
   if (this._hasFrozenRows()) {
     databodyFrozenRowHeight = this.getElementHeight(databodyFrozenRow);
+    // handle cases where frozen rows exceed the viewport range to render endHeaders
+    if (colHeaderHeight + colEndHeaderHeight + databodyFrozenRowHeight > height) {
+      databodyFrozenRowHeight = height - colHeaderHeight - colEndHeaderHeight;
+    }
     if (!databodyFrozenRowHeight && (this.m_endRowHeader !== -1 || this.m_endRowEndHeader !== -1)) {
       const frozenHeader =
         this.m_endRowHeader !== -1 ? this.m_rowHeaderFrozen : this.m_rowEndHeaderFrozen;
@@ -45208,8 +46023,10 @@ DvtDataGrid.prototype._setFrozenContainerDimension = function (
   }
 
   if (this._hasFrozenColumns() && this._hasFrozenRows()) {
-    databodyFrozenCornerHeight = this.getElementHeight(databodyFrozenCorner);
-    databodyFrozenCornerWidth = this.getElementWidth(databodyFrozenCorner);
+    databodyFrozenCornerHeight =
+      databodyFrozenRowHeight || this.getElementHeight(databodyFrozenCorner);
+    databodyFrozenCornerWidth =
+      databodyFrozenColumnWidth || this.getElementWidth(databodyFrozenCorner);
     if (!databodyFrozenColumnWidth) {
       databodyFrozenColumnWidth = databodyFrozenCornerWidth;
     }
@@ -45231,7 +46048,11 @@ DvtDataGrid.prototype._setFrozenContainerDimension = function (
       databodyFrozenCornerWidth
     );
 
-    frozenColumnDatabodyTop = databodyFrozenCornerHeight + colHeaderHeight;
+    if (height - colHeaderHeight - colEndHeaderHeight <= databodyFrozenCornerHeight) {
+      frozenColumnDatabodyTop = databodyFrozenCornerHeight + colHeaderHeight + colEndHeaderHeight;
+    } else {
+      frozenColumnDatabodyTop = databodyFrozenCornerHeight + colHeaderHeight;
+    }
   }
 
   if (this._hasFrozenColumns()) {
@@ -45257,14 +46078,15 @@ DvtDataGrid.prototype._setFrozenContainerDimension = function (
 
   if (this.m_colEndHeaderFrozen) {
     let frozenColumnEndHeaderHeight = this.getElementHeight(this.m_colEndHeaderFrozen);
-
+    let top = availableHeight + colHeaderHeight + databodyFrozenRowHeight;
     this._setElementDimension(
       this.m_colEndHeaderFrozen,
-      availableHeight + colHeaderHeight + databodyFrozenRowHeight,
+      top,
       rowHeaderWidth,
       frozenColumnEndHeaderHeight,
       databodyFrozenColumnWidth
     );
+    this.setElementDir(colEndHeader, top, 'top');
   }
 
   const frozenColumnIndex = this.m_frozenColIndex;
@@ -45283,6 +46105,12 @@ DvtDataGrid.prototype._setFrozenContainerDimension = function (
   this.setElementDir(colEndHeader, rowHeaderWidth, dir);
   this.setElementHeight(colHeader, colHeaderHeight);
   this.setElementHeight(colEndHeader, colEndHeaderHeight);
+
+  // incase frozen column doesnt exists, then ensure colEndHeaderTop is adjusted based on total Height.
+  if (this.getElementDir(colEndHeader, 'top') + colEndHeaderHeight > this.getHeight()) {
+    let top = this.getHeight() - colEndHeaderHeight;
+    this.setElementDir(colEndHeader, top, 'top');
+  }
 
   if (databodyFrozenRow) {
     this._setElementDimension(
@@ -45307,14 +46135,15 @@ DvtDataGrid.prototype._setFrozenContainerDimension = function (
 
   if (this.m_rowEndHeaderFrozen) {
     let frozenRowEndHeaderWidth = this.getElementWidth(this.m_rowEndHeaderFrozen);
-
+    let dirValue = availableWidth + rowHeaderWidth;
     this._setElementDimension(
       this.m_rowEndHeaderFrozen,
       colHeaderHeight,
-      availableWidth + rowHeaderWidth,
+      dirValue,
       databodyFrozenRowHeight,
       frozenRowEndHeaderWidth
     );
+    this.setElementDir(rowEndHeader, dirValue, dir);
   }
   const frozenRowIndex = this.m_frozenRowIndex;
   if (this._hasFrozenRows()) {
@@ -45441,6 +46270,14 @@ DvtDataGrid.prototype._buildFrozenHeaders = function (axis, startResults, endRes
  */
 DvtDataGrid.prototype._isFreezeFeasible = function (axis, startResults, endResults, index, level) {
   let isFeasible = false;
+  // called when scrolled to fetch new headers
+  // if initialized and identified as not feasible return false
+  if (
+    this.m_initialized &&
+    ((axis === 'row' && !this._hasFrozenRows()) || (axis === 'column' && !this._hasFrozenColumns()))
+  ) {
+    return isFeasible;
+  }
   if (startResults && endResults) {
     // if application tries to freeze an index beyond the fetch count.
     if (
@@ -46009,6 +46846,7 @@ DvtDataGrid.prototype._mutateColumnFrozenContainer = function (header, cell, axi
   } else {
     const cellContext = cell[context];
     let index = cellContext.indexes.column;
+    index = this._calculateIndexFromHeaderExtent(header, index);
     if (this.m_frozenColIndex === null || this.m_frozenColIndex === -1) {
       this._createColumnFrozenSectionAndMutate(axis, index, null);
     } else {
@@ -46085,6 +46923,7 @@ DvtDataGrid.prototype._mutateRowFrozenContainer = function (header, cell, axis) 
   } else {
     const cellContext = cell[context];
     let index = cellContext.indexes.row;
+    index = this._calculateIndexFromHeaderExtent(header, index);
     if (this.m_frozenRowIndex === null || this.m_frozenRowIndex === -1) {
       this._createRowFrozenSectionAndMutate(axis, index, null);
     } else {
@@ -47784,6 +48623,43 @@ DvtDataGrid.prototype._createFrozenIndicatorElement = function (id) {
     this._addFreezeVisualIndicatorEventListener(indicator);
   }
   return indicator;
+};
+
+DvtDataGrid.prototype._calculateIndexFromHeaderExtent = function (header, index) {
+  const context = this.getResources().getMappedAttribute('context');
+  let { headers, endHeaders } = this._getColumnHeadersToFreeze(
+    header,
+    index,
+    index,
+    this.m_frozenColIndex + 1
+  );
+  let headerIndex = 0;
+  let headerExtent;
+  let endHeaderIndex = 0;
+  let endHeaderExtent;
+  if (headers.length) {
+    // eslint-disable-next-line no-param-reassign
+    header = this._getOutermostHeaderFromNestedHeaders(headers[0]);
+    headerIndex = this.getHeaderCellIndex(header);
+    headerExtent = header[context].extent;
+
+    if (headerExtent > 1) {
+      headerIndex += headerExtent - 1;
+    }
+  }
+  if (endHeaders.length) {
+    let endHeader = this._getOutermostHeaderFromNestedHeaders(endHeaders[0]);
+    endHeaderIndex = this.getHeaderCellIndex(endHeader);
+    endHeaderExtent = endHeader[context].extent;
+
+    if (endHeaderExtent > 1) {
+      endHeaderIndex += endHeaderExtent - 1;
+    }
+  }
+  let maxExtentIndex = Math.max(headerIndex, endHeaderIndex);
+  // eslint-disable-next-line no-param-reassign
+  index = index > maxExtentIndex ? index : maxExtentIndex;
+  return index;
 };
 
 /**
@@ -50063,6 +50939,9 @@ DvtDataGrid.prototype.getVisibleCellIndexInDirection = function (axis, index, di
  * @param {String} axis to hide
  */
 DvtDataGrid.prototype._handleHideAxis = function (event, axis) {
+  if (this.isMultipleSelection()) {
+    this._removeTouchSelectionAffordance();
+  }
   let targetHeader = this.findHeader(event.target);
   let targetCell = this.findCell(event.target);
 
@@ -50267,7 +51146,7 @@ DvtDataGrid.prototype._updateHiddenSection = function (updatedHiddenArray, axis)
       ) {
         this.m_shouldFocus = false;
         visibleIndex = this.getVisibleCellIndexInDirection(axis, this.m_active.index, direction);
-        element = this._getHeaderCellByIndex(visibleIndex, axis);
+        element = this._getHeaderByIndex(visibleIndex, axis);
         this._setActive(element, {
           type: 'header',
           index: this.m_active.index,
@@ -50449,200 +51328,201 @@ DvtDataGrid.prototype._handleUnhideAxis = function (event, axis, hiddenIndex) {
 };
 
 DvtDataGrid.prototype.shiftAxisForHidability = function (index, hide, axis) {
-  var dir;
-  let headerCellClass;
-  let endHeaderCellClass;
+  if (this._isAxisIndexInViewport(index, axis) === DvtDataGrid.INSIDE) {
+    var dir;
+    let headerCellClass;
+    let endHeaderCellClass;
 
-  let row;
-  let column;
-  let dimension;
+    let row;
+    let column;
+    let dimension;
 
-  if (axis === 'column') {
-    dir = this.getResources().isRTLMode() ? 'right' : 'left';
-    headerCellClass = this.getMappedStyle('colheadercell');
-    endHeaderCellClass = this.getMappedStyle('colendheadercell');
-    dimension = 'width';
-    row = this.m_startRow;
-    column = index;
-  } else if (axis === 'row') {
-    dir = 'top';
-    headerCellClass = this.getMappedStyle('rowheadercell');
-    endHeaderCellClass = this.getMappedStyle('rowendheadercell');
-    dimension = 'height';
-    row = index;
-    column = this.m_startCol;
-  }
-
-  let cell;
-  let axisKey;
-  let cellContext;
-
-  let cellIndex = this.createIndex(row, column);
-  cell = this._getCellByIndex(cellIndex);
-  cellContext = cell[this.getResources().getMappedAttribute('context')];
-  axisKey = axis === 'column' ? cellContext.keys.column : cellContext.keys.row;
-
-  let currentElementDimension;
-  let newElementDimension;
-  let oldElementDimension;
-  let newScrollerDimension;
-  let dimensionChange;
-
-  currentElementDimension =
-    axis === 'column' ? this.getElementWidth(cell) : this.getElementHeight(cell);
-  oldElementDimension = this.m_sizingManager.getSize(axis, axisKey);
-
-  if (hide) {
-    newElementDimension = 0;
-  } else {
-    newElementDimension = oldElementDimension;
-  }
-
-  dimensionChange = newElementDimension - currentElementDimension;
-
-  let headerRoot;
-  let endHeaderRoot;
-
-  if (dimensionChange !== 0) {
-    let isHideFrozenSection = false;
-    let databodyFrozenSection;
-    let endHeaderToCheck;
-    let hasHeader;
-    let hasEndHeader;
-    let axisIndex;
-    let frozenAxisIndex;
     if (axis === 'column') {
-      databodyFrozenSection = this.m_databodyFrozenCol;
-      endHeaderToCheck = this.m_endRowEndHeader;
-      hasHeader = this.m_hasColHeader;
-      hasEndHeader = this.m_hasColEndHeader;
-      frozenAxisIndex = this.m_frozenColIndex;
-      axisIndex = column;
-      if (this._hasFrozenColumns() && index <= this.m_frozenColIndex) {
-        isHideFrozenSection = true;
-        headerRoot = this.m_colHeaderFrozen;
-        endHeaderRoot = this.m_colEndHeaderFrozen;
-      } else {
-        headerRoot = this.m_colHeader;
-        endHeaderRoot = this.m_colEndHeader;
-      }
+      dir = this.getResources().isRTLMode() ? 'right' : 'left';
+      headerCellClass = this.getMappedStyle('colheadercell');
+      endHeaderCellClass = this.getMappedStyle('colendheadercell');
+      dimension = 'width';
+      row = this.m_startRow;
+      column = index;
     } else if (axis === 'row') {
-      databodyFrozenSection = this.m_databodyFrozenRow;
-      endHeaderToCheck = this.m_endColEndHeader;
-      hasHeader = this.m_hasRowHeader;
-      hasEndHeader = this.m_hasRowEndHeader;
-      frozenAxisIndex = this.m_frozenRowIndex;
-      axisIndex = row;
-      if (this._hasFrozenRows() && index <= this.m_frozenRowIndex) {
-        isHideFrozenSection = true;
-        headerRoot = this.m_rowHeaderFrozen;
-        endHeaderRoot = this.m_rowEndHeaderFrozen;
-      } else {
-        headerRoot = this.m_rowHeader;
-        endHeaderRoot = this.m_rowEndHeader;
-      }
+      dir = 'top';
+      headerCellClass = this.getMappedStyle('rowheadercell');
+      endHeaderCellClass = this.getMappedStyle('rowendheadercell');
+      dimension = 'height';
+      row = index;
+      column = this.m_startCol;
     }
 
-    if (this.m_databody.firstChild != null && !isHideFrozenSection) {
-      let oldScrollerDimension = this.getElementDir(this.m_databody.firstChild, dimension);
-      newScrollerDimension = oldScrollerDimension + dimensionChange;
-      this.setElementDir(this.m_databody.firstChild, newScrollerDimension, dimension);
-      if (this.m_databodyFrozenRow) {
-        this.setElementWidth(this.m_databodyFrozenRow.firstChild, newScrollerDimension);
-      }
-    } else if (isHideFrozenSection && databodyFrozenSection) {
-      let oldScrollerDimension = this.getElementDir(databodyFrozenSection, dimension);
-      let scrollerDir = this.getElementDir(databodyFrozenSection, dir);
-      if (endHeaderToCheck !== -1) {
-        let crossAxisEndHeader = axis === 'column' ? this.m_rowEndHeader : this.m_colEndHeader;
-        let endHeaderDir = this.getElementDir(crossAxisEndHeader, dir);
-        let newDimension = scrollerDir + oldScrollerDimension + dimensionChange;
-        dimensionChange =
-          newDimension > endHeaderDir
-            ? endHeaderDir - (scrollerDir + oldScrollerDimension)
-            : dimensionChange;
-      }
-      newScrollerDimension = oldScrollerDimension + dimensionChange;
-      this.setElementDir(databodyFrozenSection, newScrollerDimension, dimension);
-      if (this.m_databodyFrozenCorner) {
-        this.setElementDir(this.m_databodyFrozenCorner, newScrollerDimension, dimension);
-      }
+    let cell;
+    let axisKey;
+    let cellContext;
+
+    let cellIndex = this.createIndex(row, column);
+    cell = this._getCellByIndex(cellIndex);
+    cellContext = cell[this.getResources().getMappedAttribute('context')];
+    axisKey = axis === 'column' ? cellContext.keys.column : cellContext.keys.row;
+
+    let currentElementDimension;
+    let newElementDimension;
+    let oldElementDimension;
+    let newScrollerDimension;
+    let dimensionChange;
+
+    currentElementDimension =
+        axis === 'column' ? this.getElementWidth(cell) : this.getElementHeight(cell);
+    oldElementDimension = this.m_sizingManager.getSize(axis, axisKey);
+
+    if (hide) {
+      newElementDimension = 0;
+    } else {
+      newElementDimension = oldElementDimension;
     }
 
-    let corner = false;
+    dimensionChange = newElementDimension - currentElementDimension;
 
-    // shifting start/end headers and set display to none for single headers
-    if (hasHeader) {
-      this._shiftHeadersAlongAxisInContainer(
-        headerRoot.firstChild,
-        axisIndex,
-        dimensionChange,
-        dir,
-        headerCellClass,
-        axis,
-        true
-      );
+    let headerRoot;
+    let endHeaderRoot;
+
+    if (dimensionChange !== 0) {
+      let isHideFrozenSection = false;
+      let databodyFrozenSection;
+      let endHeaderToCheck;
+      let hasHeader;
+      let hasEndHeader;
+      let axisIndex;
+      let frozenAxisIndex;
+      if (axis === 'column') {
+        databodyFrozenSection = this.m_databodyFrozenCol;
+        endHeaderToCheck = this.m_endRowEndHeader;
+        hasHeader = this.m_hasColHeader;
+        hasEndHeader = this.m_hasColEndHeader;
+        frozenAxisIndex = this.m_frozenColIndex;
+        axisIndex = column;
+        if (this._hasFrozenColumns() && index <= this.m_frozenColIndex) {
+          isHideFrozenSection = true;
+          headerRoot = this.m_colHeaderFrozen;
+          endHeaderRoot = this.m_colEndHeaderFrozen;
+        } else {
+          headerRoot = this.m_colHeader;
+          endHeaderRoot = this.m_colEndHeader;
+        }
+      } else if (axis === 'row') {
+        databodyFrozenSection = this.m_databodyFrozenRow;
+        endHeaderToCheck = this.m_endColEndHeader;
+        hasHeader = this.m_hasRowHeader;
+        hasEndHeader = this.m_hasRowEndHeader;
+        frozenAxisIndex = this.m_frozenRowIndex;
+        axisIndex = row;
+        if (this._hasFrozenRows() && index <= this.m_frozenRowIndex) {
+          isHideFrozenSection = true;
+          headerRoot = this.m_rowHeaderFrozen;
+          endHeaderRoot = this.m_rowEndHeaderFrozen;
+        } else {
+          headerRoot = this.m_rowHeader;
+          endHeaderRoot = this.m_rowEndHeader;
+        }
+      }
+
+      if (this.m_databody.firstChild != null && !isHideFrozenSection) {
+        let oldScrollerDimension = this.getElementDir(this.m_databody.firstChild, dimension);
+        newScrollerDimension = oldScrollerDimension + dimensionChange;
+        this.setElementDir(this.m_databody.firstChild, newScrollerDimension, dimension);
+        if (this.m_databodyFrozenRow) {
+          this.setElementWidth(this.m_databodyFrozenRow.firstChild, newScrollerDimension);
+        }
+      } else if (isHideFrozenSection && databodyFrozenSection) {
+        let oldScrollerDimension = this.getElementDir(databodyFrozenSection, dimension);
+        let scrollerDir = this.getElementDir(databodyFrozenSection, dir);
+        if (endHeaderToCheck !== -1) {
+          let crossAxisEndHeader = axis === 'column' ? this.m_rowEndHeader : this.m_colEndHeader;
+          let endHeaderDir = this.getElementDir(crossAxisEndHeader, dir);
+          let newDimension = scrollerDir + oldScrollerDimension + dimensionChange;
+          dimensionChange =
+              newDimension > endHeaderDir
+                  ? endHeaderDir - (scrollerDir + oldScrollerDimension)
+                  : dimensionChange;
+        }
+        newScrollerDimension = oldScrollerDimension + dimensionChange;
+        this.setElementDir(databodyFrozenSection, newScrollerDimension, dimension);
+        if (this.m_databodyFrozenCorner) {
+          this.setElementDir(this.m_databodyFrozenCorner, newScrollerDimension, dimension);
+        }
+      }
+
+      let corner = false;
+
+      // shifting start/end headers and set display to none for single headers
+      if (hasHeader) {
+        this._shiftHeadersAlongAxisInContainer(
+            headerRoot.firstChild,
+            axisIndex,
+            dimensionChange,
+            dir,
+            headerCellClass,
+            axis,
+            true
+        );
+        if (!isHideFrozenSection) {
+          // eslint-disable-next-line no-unused-expressions
+          axis === 'column'
+              ? (this.m_endColHeaderPixel += dimensionChange)
+              : (this.m_endRowHeaderPixel += dimensionChange);
+        }
+      }
+      if (hasEndHeader) {
+        this._shiftHeadersAlongAxisInContainer(
+            endHeaderRoot.firstChild,
+            axisIndex,
+            dimensionChange,
+            dir,
+            endHeaderCellClass,
+            axis,
+            true
+        );
+        if (!isHideFrozenSection) {
+          // eslint-disable-next-line no-unused-expressions
+          axis === 'column'
+              ? (this.m_endColEndHeaderPixel += dimensionChange)
+              : (this.m_endRowEndHeaderPixel += dimensionChange);
+        }
+      }
+
+      // shift the cells widths and left/right values in the databody
       if (!isHideFrozenSection) {
+        this._shiftCellsAlongAxis(
+            axis,
+            dimensionChange,
+            axisIndex,
+            false,
+            undefined,
+            undefined,
+            true
+        );
+        if ((axis === 'column' && this.m_databodyFrozenRow) || (axis === 'row' && this.m_databodyFrozenCol)) {
+          this._shiftFrozenCellsAlongAxis(axis, dimensionChange, axisIndex, false, true);
+        }
         // eslint-disable-next-line no-unused-expressions
         axis === 'column'
-          ? (this.m_endColHeaderPixel += dimensionChange)
-          : (this.m_endRowHeaderPixel += dimensionChange);
+            ? (this.m_endColPixel += dimensionChange)
+            : (this.m_endRowPixel += dimensionChange);
+      } else if (
+          (axis === 'column' && this.m_databodyFrozenCol) ||
+          (axis === 'row' && this.m_databodyFrozenRow)
+      ) {
+        corner = true;
+        this._shiftCellsAlongAxis(
+            axis,
+            dimensionChange,
+            axisIndex,
+            null,
+            frozenAxisIndex,
+            corner,
+            true
+        );
       }
     }
-    if (hasEndHeader) {
-      this._shiftHeadersAlongAxisInContainer(
-        endHeaderRoot.firstChild,
-        axisIndex,
-        dimensionChange,
-        dir,
-        endHeaderCellClass,
-        axis,
-        true
-      );
-      if (!isHideFrozenSection) {
-        // eslint-disable-next-line no-unused-expressions
-        axis === 'column'
-          ? (this.m_endColEndHeaderPixel += dimensionChange)
-          : (this.m_endRowEndHeaderPixel += dimensionChange);
-      }
-    }
-
-    // shift the cells widths and left/right values in the databody
-    if (!isHideFrozenSection) {
-      this._shiftCellsAlongAxis(
-        axis,
-        dimensionChange,
-        axisIndex,
-        false,
-        undefined,
-        undefined,
-        true
-      );
-      if (this.m_databodyFrozenRow || this.m_databodyFrozenCol) {
-        this._shiftFrozenCellsAlongAxis(axis, dimensionChange, axisIndex, false, true);
-      }
-      // eslint-disable-next-line no-unused-expressions
-      axis === 'column'
-        ? (this.m_endColPixel += dimensionChange)
-        : (this.m_endRowPixel += dimensionChange);
-    } else if (
-      (axis === 'column' && this.m_databodyFrozenCol) ||
-      (axis === 'row' && this.m_databodyFrozenRow)
-    ) {
-      corner = true;
-      this._shiftCellsAlongAxis(
-        axis,
-        dimensionChange,
-        axisIndex,
-        null,
-        frozenAxisIndex,
-        corner,
-        true
-      );
-    }
-
-    this.manageResizeScrollbars();
   }
+  this.manageResizeScrollbars();
 };
 
 /**
@@ -51293,4 +52173,345 @@ DvtDataGrid.prototype._isFilterIcon = function (target) {
     target.classList.contains(this.getMappedStyle('filtered')) ||
     target.classList.contains(this.getMappedStyle('filterIcon'))
   );
+};
+
+DvtDataGrid.TOOL_TIP_OPEN_DURATION = 1000;
+DvtDataGrid.TOOL_TIP_CLOSE_DURATION = 1000;
+DvtDataGrid.TOOL_TIP_CENTER_POSITION_OFFSET = 4;
+DvtDataGrid.TOOL_TIP_CORNER_POSITION_OFFSET = 8;
+
+/**
+ * Displays a tooltip with the provided message next to the specified target element.
+ *
+ * If the tooltip does not exist, it will be created and appended to the root element.
+ * The tooltip's position is determined based on whether the grid is in read-only mode or not.
+ *
+ * @param {HTMLElement} targetElement The element next to which the tooltip should appear.
+ * @param {string} message The text content of the tooltip.
+ * @param {boolean} isReadOnly Whether the cell is in read-only mode. This affects the tooltip's position and behavior.
+ */
+DvtDataGrid.prototype._showToolTip = function (targetElement, message, isReadOnly) {
+  const rootId = this.m_root.getAttribute('id');
+  const toolTipId = `${rootId}ToolTip`;
+  let toolTip = document.getElementById(toolTipId);
+
+  if (!toolTip) {
+    toolTip = document.createElement('oj-popup');
+    toolTip.setAttribute('id', toolTipId);
+    toolTip.setAttribute('data-oj-binding-provider', 'none');
+    toolTip.style.maxHeight = `25vh`;
+
+    const toolTipTextContainer = document.createElement('span');
+    toolTip.appendChild(toolTipTextContainer); // @HTMLUpdateOK
+
+    toolTip.addEventListener('mouseenter', this._handleMouseEnterToolTip.bind(this), false);
+    toolTip.addEventListener('mouseleave', this._handleMouseLeaveToolTip.bind(this), false);
+
+    this.m_root.appendChild(toolTip); // @HTMLUpdateOK
+  }
+
+  const position = {
+    collision: 'flipfit'
+  };
+
+  if (isReadOnly) {
+    position.at = { horizontal: 'center', vertical: 'top' };
+    position.my = { horizontal: 'center', vertical: 'bottom' };
+    targetElement.addEventListener('mouseout', this._setToolTipCloseTimeout.bind(this), {
+      once: true
+    });
+    toolTip.style.overflow = 'unset';
+    toolTip.style.maxWidth = 'unset';
+  } else {
+    toolTip.style.overflow = 'auto';
+    toolTip.style.maxWidth = '288px';
+
+    const context = targetElement[this.getResources().getMappedAttribute('context')];
+    const isLabel = this.findLabel(targetElement) != null;
+    const isRow = context.axis === 'row' || context.axis === 'rowEnd';
+
+    const { verticalAlignment, horizontalAlignment } = this._getHeaderAlignments(
+      context,
+      isRow,
+      isLabel
+    );
+
+    const { widthOffset, heightOffset } = this._calculateToolTipOffset(
+      isLabel,
+      isRow,
+      verticalAlignment,
+      horizontalAlignment,
+      targetElement,
+      context
+    );
+
+    position.my = {
+      horizontal: this._getOppositeHorizontalAlignment(horizontalAlignment),
+      vertical: this._getOppositeVerticalAlignment(verticalAlignment)
+    };
+
+    position.at = { horizontal: horizontalAlignment, vertical: verticalAlignment };
+
+    position.offset = {
+      y: heightOffset,
+      x: widthOffset
+    };
+
+    if (verticalAlignment === 'top' || verticalAlignment === 'bottom') {
+      if (verticalAlignment === 'top') {
+        position.offset.y += DvtDataGrid.TOOL_TIP_CORNER_POSITION_OFFSET;
+      } else {
+        position.offset.y -= DvtDataGrid.TOOL_TIP_CORNER_POSITION_OFFSET;
+      }
+
+      if (horizontalAlignment === 'start' || horizontalAlignment === 'left') {
+        position.offset.x += DvtDataGrid.TOOL_TIP_CORNER_POSITION_OFFSET;
+      } else if (horizontalAlignment === 'end' || horizontalAlignment === 'right') {
+        position.offset.x -= DvtDataGrid.TOOL_TIP_CORNER_POSITION_OFFSET;
+      }
+    } else if (verticalAlignment === 'center') {
+      if (horizontalAlignment === 'center') {
+        // center center not allowed - special cased
+        position.at.vertical = 'top';
+        position.my.vertical = 'bottom';
+        position.offset.y += DvtDataGrid.TOOL_TIP_CENTER_POSITION_OFFSET;
+      } else if (horizontalAlignment === 'start' || horizontalAlignment === 'left') {
+        position.offset.x += DvtDataGrid.TOOL_TIP_CENTER_POSITION_OFFSET;
+      } else if (horizontalAlignment === 'end' || horizontalAlignment === 'right') {
+        position.offset.x -= DvtDataGrid.TOOL_TIP_CENTER_POSITION_OFFSET;
+      }
+    }
+  }
+
+  const busyContext = Context.getContext(toolTip).getBusyContext();
+  busyContext.whenReady().then(() => {
+    toolTip.querySelector('span').textContent = message;
+    toolTip.open(targetElement, position);
+  });
+};
+/**
+ * Utility function to determine opposite horizontal alignment
+ *
+ * @param {string} horizontalAlignment - current alignment
+ */
+DvtDataGrid.prototype._getOppositeHorizontalAlignment = function (horizontalAlignment) {
+  if (horizontalAlignment === 'start') return 'end';
+  if (horizontalAlignment === 'end') return 'start';
+  if (horizontalAlignment === 'left') return 'right';
+  if (horizontalAlignment === 'right') return 'left';
+  return 'center';
+};
+/**
+ * Utility function to determine opposite vertical alignment
+ *
+ * @param {string} verticalAlignment - current alignment
+ */
+DvtDataGrid.prototype._getOppositeVerticalAlignment = function (verticalAlignment) {
+  if (verticalAlignment === 'top') return 'bottom';
+  if (verticalAlignment === 'bottom') return 'top';
+  return 'center';
+};
+/**
+ * Calculates if an offset is needed when opening a tool tip. Possible the tool tip wants to open somewhere scrolled out of view.
+ *
+ * @param {boolean} isLabel - If the element is a label
+ * @param {boolean} isRow - If the element is on the row axis
+ * @param {boolean} verticalAlignment - vertical alignment of the header.
+ * @param {boolean} horizontalAlignment - horizontal alignment of the header.
+ * @param {Element} targetElement - The target element of the action.
+ * @param {Object} context - The header elements context object
+ */
+DvtDataGrid.prototype._calculateToolTipOffset = function (
+  isLabel,
+  isRow,
+  verticalAlignment,
+  horizontalAlignment,
+  targetElement
+) {
+  let heightOffset = 0;
+  let widthOffset = 0;
+  if (!isLabel) {
+    const isRtl = this.getResources().isRTLMode();
+    let currentPosition;
+    if (isRow) {
+      currentPosition = this.getElementDir(targetElement, 'top');
+    } else {
+      currentPosition = this.getElementDir(targetElement, isRtl ? 'right' : 'left');
+    }
+
+    if (isRow) {
+      if (verticalAlignment === 'center') {
+        currentPosition += targetElement.offsetHeight / 2;
+      } else if (verticalAlignment === 'bottom') {
+        currentPosition += targetElement.offsetHeight;
+      }
+    } else if (!isRow) {
+      if (horizontalAlignment === 'center') {
+        currentPosition += targetElement.offsetWidth / 2;
+      } else if (
+        horizontalAlignment === 'right' ||
+        (horizontalAlignment === 'end' && !isRtl) ||
+        (horizontalAlignment === 'start' && isRtl)
+      ) {
+        currentPosition += targetElement.offsetWidth;
+      }
+    }
+
+    const minPosition = isRow ? this.m_databody.scrollTop : this.m_databody.scrollLeft;
+
+    const maxPosition = isRow
+      ? minPosition + this.m_databody.offsetHeight - this.m_utils.getScrollbarSize()
+      : minPosition + this.m_databody.offsetWidth - this.m_utils.getScrollbarSize();
+
+    if (currentPosition > maxPosition && isRow) {
+      // too low
+      heightOffset = -(currentPosition - maxPosition);
+    } else if (currentPosition < minPosition && isRow) {
+      // too high
+      heightOffset = minPosition - currentPosition;
+    } else if (currentPosition > maxPosition && !isRow) {
+      // too right
+      widthOffset = -(currentPosition - maxPosition);
+    } else if (currentPosition < minPosition && !isRow) {
+      // too left
+      widthOffset = minPosition - currentPosition;
+    }
+  }
+  return { widthOffset, heightOffset };
+};
+/**
+ * Returns the alignments of the element.
+ *
+ * @param {Object} context - The header elements context object
+ * @param {boolean} isRow - If the element is on the row axis
+ * @param {boolean} isLabel - If the element is a label
+ */
+DvtDataGrid.prototype._getHeaderAlignments = function (context, isRow, isLabel) {
+  let horizontalAlignment = this.m_options.getHorizontalAlignment(context.axis, context);
+  let verticalAlignment = this.m_options.getVerticalAlignment(context.axis, context);
+  if (!horizontalAlignment || horizontalAlignment === 'auto') {
+    if (isRow) {
+      horizontalAlignment = 'start';
+    } else {
+      const innerLevel =
+        context.axis === 'column'
+          ? this.m_columnHeaderLevelCount - 1
+          : this.m_columnEndHeaderLevelCount - 1;
+      if (context.level === innerLevel || isLabel) {
+        horizontalAlignment = 'end';
+      } else {
+        horizontalAlignment = 'center';
+      }
+    }
+  }
+
+  if (!verticalAlignment || verticalAlignment === 'auto') {
+    if (!isRow) {
+      verticalAlignment = 'center';
+    } else {
+      const innerLevel =
+        context.axis === 'row' ? this.m_rowHeaderLevelCount - 1 : this.m_rowEndHeaderLevelCount - 1;
+      if (context.level === innerLevel || isLabel) {
+        verticalAlignment = 'center';
+      } else {
+        verticalAlignment = 'top';
+      }
+    }
+  }
+  return { verticalAlignment, horizontalAlignment };
+};
+/**
+ * Handles mouse enter event on the tooltip.
+ *
+ * This method is called when the user moves their mouse pointer over the tooltip.
+ * It clears any existing timeout that was set to automatically close the tooltip after a certain period of inactivity,
+ * allowing the user to interact with the tooltip without interruption.
+ *
+ */
+DvtDataGrid.prototype._handleMouseEnterToolTip = function () {
+  clearTimeout(this.m_toolTipCloseTimeoutId);
+};
+/**
+ * Handles mouse enter event on the tooltip.
+ *
+ * This method is called when the user moves their mouse leaves the tooltip.
+ * It will automatically close the tooltip after a certain period of inactivity.
+ * @param {Event} event - The event object triggered by the user interaction.
+ */
+DvtDataGrid.prototype._handleMouseLeaveToolTip = function (event) {
+  this._setToolTipCloseTimeout(event, true);
+};
+/**
+ * Sets a timeout to open the tooltip after a short delay.
+ * This method schedules the display of a tooltip for the specified element and description after a brief pause,
+ * unless the target element is an icon or no description is provided.
+ *
+ * @param {Event} event - The event object triggered by the user interaction.
+ * @param {HTMLElement} element - The HTML element associated with the tooltip.
+ * @param {string} description - The text content of the tooltip.
+ */
+DvtDataGrid.prototype._setToolTipOpenTimeout = function (event, element, description) {
+  const isIcon = this._isIcon(event.target);
+  if (isIcon) {
+    return;
+  }
+
+  if (element && description) {
+    clearTimeout(this.m_toolTipOpenTimeoutId);
+    this.m_toolTipOpenTimeoutId = setTimeout(() => {
+      this._showToolTip(element, description, null, event);
+    }, DvtDataGrid.TOOL_TIP_OPEN_DURATION);
+  }
+};
+/**
+ * Schedules the closure of the tooltip after a short delay.
+ *
+ * This method cancels any pending tooltip opening and closes the current tooltip
+ * if the event target is either an icon or matches the currently displayed tooltip target.
+ *
+ * @param {Event} event - The event object triggered by the user interaction.
+ */
+DvtDataGrid.prototype._setToolTipCloseTimeout = function (event) {
+  clearTimeout(this.m_toolTipOpenTimeoutId);
+  clearTimeout(this.m_toolTipCloseTimeoutId);
+  this.m_toolTipCloseTimeoutId = setTimeout(() => {
+    this._closeToolTip(event);
+  }, DvtDataGrid.TOOL_TIP_CLOSE_DURATION);
+};
+/**
+ * Checks whether the given element represents an icon.
+ *
+ * This method determines if the provided element has CSS classes indicating it's an icon or an icon container.
+ * @param {HTMLElement} element - The HTML element to check.
+ */
+DvtDataGrid.prototype._isIcon = function (element) {
+  return (
+    this.m_utils.containsCSSClassName(element, this.getMappedStyle('icon')) ||
+    this.m_utils.containsCSSClassName(element, this.getMappedStyle('iconContainer'))
+  );
+};
+/**
+ * Returns oj-pop-up.
+ */
+DvtDataGrid.prototype._getToolTip = function () {
+  const rootId = this.m_root.getAttribute('id');
+  const toolTipId = `${rootId}ToolTip`;
+  return document.getElementById(toolTipId);
+};
+/**
+ * Helper function to get pop up and call close.
+ */
+DvtDataGrid.prototype._closeToolTip = function () {
+  const toolTip = this._getToolTip();
+  if (toolTip) {
+    toolTip.close();
+  }
+};
+/**
+ * Gets a tooltip description.
+ */
+DvtDataGrid.prototype._getToolTipDescription = function (element, isLabel) {
+  const context = element[this.getResources().getMappedAttribute('context')];
+  const descriptionCallback = this.m_options.getDescription(context.axis, isLabel);
+  return descriptionCallback ? descriptionCallback(context) : context.metadata?.description;
 };

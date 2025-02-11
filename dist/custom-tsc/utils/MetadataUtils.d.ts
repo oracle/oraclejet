@@ -11,7 +11,7 @@ export declare function updateFunctionalVCompNode(functionalCompNode: MetaTypes.
 export declare function getPropsInfo(compType: MetaTypes.VCompType, componentName: string, typeRef: ts.TypeReferenceNode, progImportMaps: MetaTypes.VCompImportMaps, checker: ts.TypeChecker): MetaTypes.PropsInfo | null;
 export declare function getIntersectionTypeNodeInfo(intersectionTypeNode: ts.IntersectionTypeNode, progImportMaps: MetaTypes.VCompImportMaps, isInline: boolean, checker: ts.TypeChecker): MetaTypes.IntersectionTypeNodeInfo;
 export declare function getMappedTypesInfo(outerType: ts.Type, checker: ts.TypeChecker, isPropsInfo: boolean, outerTypeNode?: ts.TypeNode): MetaTypes.MappedTypesInfo | null;
-export declare function isMappedTypeReference(typeRefNode: ts.TypeReferenceNode): boolean;
+export declare function isSimpleTypeReference(typeRefNode: ts.TypeReferenceNode): boolean;
 export declare function isPropsMappedType(type: ts.Type, typeNode?: ts.TypeNode): boolean;
 export declare function isAliasToMappedType(type: ts.Type, typeNode: ts.TypeNode): boolean;
 export declare function getWrappedReadonlyType(type: ts.Type, typeNode: ts.TypeNode, componentName: string, checker: ts.TypeChecker): ts.Type | null;

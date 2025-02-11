@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'preact', 'preact/jsx-runtime', 'ojs/ojcontext', 'ojs/ojdataproviderhandler', 'ojs/ojpreact-managetabstops', 'ojs/ojbindpropagation', 'ojs/ojconfig', 'ojs/ojmetadatautils', 'ojs/ojcspexpressionevaluator-internal', 'ojs/ojmonitoring', 'ojs/ojexpparser'], function (exports, Logger, HtmlUtils, ojcustomelementUtils, ojcustomelementRegistry, preact, jsxRuntime, Context, ojdataproviderhandler, ojpreactManagetabstops, ojbindpropagation, ojconfig, ojmetadatautils, ojcspexpressionevaluatorInternal, ojmonitoring, ojexpparser) { 'use strict';
+define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils', 'ojs/ojcustomelement-registry', 'preact', 'preact/jsx-runtime', 'ojs/ojcontext', 'ojs/ojvcomponent', 'ojs/ojdataproviderhandler', 'ojs/ojpreact-managetabstops', 'ojs/ojbindpropagation', 'ojs/ojconfig', 'ojs/ojmetadatautils', 'ojs/ojcspexpressionevaluator-internal', 'ojs/ojmonitoring', 'ojs/ojexpparser'], function (exports, Logger, HtmlUtils, ojcustomelementUtils, ojcustomelementRegistry, preact, jsxRuntime, Context, ojvcomponent, ojdataproviderhandler, ojpreactManagetabstops, ojbindpropagation, ojconfig, ojmetadatautils, ojcspexpressionevaluatorInternal, ojmonitoring, ojexpparser) { 'use strict';
 
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
@@ -15,9 +15,16 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
         constructor(props) {
             super(props);
             this._resolveConfig = (configPromise) => {
-                configPromise.then((result) => {
+                this._registerBusyState();
+                configPromise
+                    .then((result) => {
                     if (configPromise === this.props.config) {
-                        this.setState({ view: this._getFragment(result.view), data: result.data });
+                        this.setState({ view: this._getFragment(result?.view ?? []), data: result?.data });
+                    }
+                })
+                    .finally(() => {
+                    if (configPromise === this.props.config) {
+                        this._resolveBusyState();
                     }
                 });
             };
@@ -28,7 +35,28 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                 });
                 return fragment;
             };
+            this._registerBusyState = () => {
+                if (!this._resolveBusyStateCallback) {
+                    const busyElem = this._busyContextEl?.current
+                        ? this._busyContextEl?.current
+                        : this.props.componentElement;
+                    if (busyElem) {
+                        this._resolveBusyStateCallback = Context.getContext(busyElem)
+                            .getBusyContext()
+                            .addBusyState({
+                            description: `oj-bind-dom is waiting on config Promise resolution on element ${busyElem.tagName}#${busyElem.id}`
+                        });
+                    }
+                }
+            };
+            this._resolveBusyState = () => {
+                if (this._resolveBusyStateCallback) {
+                    this._resolveBusyStateCallback();
+                    this._resolveBusyStateCallback = null;
+                }
+            };
             this.state = { view: null, data: null };
+            this._busyContextEl = null;
         }
         componentDidMount() {
             this._resolveConfig(this.props.config);
@@ -39,9 +67,12 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             }
         }
         render() {
-            return (jsxRuntime.jsx(preact.Fragment, { children: this.state.view && this.props.executeFragment
-                    ? this.props.executeFragment(null, this.state.view, this.state.data, this.forceUpdate.bind(this), this.props.bindingProvider)
-                    : null }));
+            return (jsxRuntime.jsx(preact.Fragment, { children: jsxRuntime.jsx(ojvcomponent.ReportBusyContext.Consumer, { children: (value) => {
+                        this._busyContextEl = value;
+                        return this.state.view && this.props.executeFragment
+                            ? this.props.executeFragment(null, this.state.view, this.state.data, this.forceUpdate.bind(this), this.props.bindingProvider)
+                            : null;
+                    } }) }));
         }
     }
 
@@ -49,7 +80,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
         constructor(props) {
             super(props);
             this._addBusyState = (description) => {
-                const busyContext = Context.getContext(this.props.componentElement).getBusyContext();
+                const busyElem = this._busyContextEl?.current
+                    ? this._busyContextEl?.current
+                    : this.props.componentElement;
+                const busyContext = Context.getContext(busyElem).getBusyContext();
                 return busyContext.addBusyState({ description });
             };
             this.BindForEachWithDP = ojdataproviderhandler.withDataProvider(BindForEachDataUnwrapper, 'data');
@@ -59,7 +93,10 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                 return jsxRuntime.jsx(BindForEachWithArray, { data: props.data, itemRenderer: props.itemRenderer });
             }
             else {
-                return (jsxRuntime.jsx(this.BindForEachWithDP, { addBusyState: this._addBusyState, data: props.data, itemRenderer: props.itemRenderer }));
+                return (jsxRuntime.jsx(ojvcomponent.ReportBusyContext.Consumer, { children: (value) => {
+                        this._busyContextEl = value;
+                        return (jsxRuntime.jsx(this.BindForEachWithDP, { addBusyState: this._addBusyState, data: props.data, itemRenderer: props.itemRenderer }));
+                    } }));
             }
         }
     }
@@ -86,6 +123,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
 
     const BINDING_PROVIDER = Symbol();
     const COMPONENT_ELEMENT = Symbol();
+    const TEMPLATE_ELEMENT = Symbol();
     const UNWRAP_EXTRAS = Symbol();
     const BINDING_CONTEXT = Symbol();
     const PREVIOUS_DOT_PROPS_VALUES = Symbol();
@@ -99,6 +137,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             name: '$context'
         }
     ];
+    const _LITERALS_CACHE = new Map();
     class VTemplateEngine {
         constructor() {
             this._templateAstCache = new WeakMap();
@@ -123,6 +162,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             return this._execute({
                 [BINDING_PROVIDER]: bindingProvider,
                 [COMPONENT_ELEMENT]: componentElement,
+                [TEMPLATE_ELEMENT]: fragment,
                 [BINDING_CONTEXT]: properties
             }, fragment, properties, mutationCallback);
         }
@@ -132,6 +172,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
             return this._execute({
                 [BINDING_PROVIDER]: bindingProvider,
                 [COMPONENT_ELEMENT]: componentElement,
+                [TEMPLATE_ELEMENT]: templateElement,
                 [BINDING_CONTEXT]: context
             }, templateElement, context, mutationCallback);
         }
@@ -416,6 +457,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                 [BINDING_PROVIDER]: engineContext[BINDING_PROVIDER],
                 [BINDING_CONTEXT]: engineContext[BINDING_CONTEXT],
                 [COMPONENT_ELEMENT]: engineContext[COMPONENT_ELEMENT],
+                [TEMPLATE_ELEMENT]: engineContext[TEMPLATE_ELEMENT],
                 [UNWRAP_EXTRAS]: (exp, value) => {
                     if (typeof value === 'function' &&
                         (exp === '$current.observableIndex' || exp === `${templateAlias}.observableIndex`)) {
@@ -569,7 +611,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                 throw new Error("Missing the required 'config' attribute on <oj-bind-dom>");
             }
             const configValue = node.attributes['config'].value;
-            return this._createComponentNode(engineContext, node, BindDom, [
+            const props = [
                 this._createPropertyNode(engineContext, 'config', configValue, (config) => Promise.resolve(config)),
                 {
                     type: ojexpparser.PROPERTY,
@@ -578,10 +620,16 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                 },
                 {
                     type: ojexpparser.PROPERTY,
+                    key: { type: ojexpparser.LITERAL, value: 'componentElement' },
+                    value: { type: ojexpparser.LITERAL, value: engineContext[COMPONENT_ELEMENT] }
+                },
+                {
+                    type: ojexpparser.PROPERTY,
                     key: { type: ojexpparser.LITERAL, value: 'executeFragment' },
                     value: { type: ojexpparser.LITERAL, value: this.executeFragment.bind(this) }
                 }
-            ]);
+            ];
+            return this._createHFunctionCallNode(BindDom, [{ type: ojexpparser.OBJECT_EXP, properties: props }]);
         }
         _createComponentNode(engineContext, node, component, extraProps) {
             let props = node ? this._getElementProps(engineContext, node) : [];
@@ -697,10 +745,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                             });
                         }
                         else {
-                            const propMeta = ojmetadatautils.getPropertyMetadata(propName, ojcustomelementRegistry.getPropertiesForElementTag(node.tagName));
-                            const parsedValue = propMeta
-                                ? ojcustomelementUtils.CustomElementUtils.parseAttrValue(node, name, propName, value, propMeta)
-                                : value;
+                            const parsedValue = this._getLiteralValueViaCache(engineContext, node, name, propName, value);
                             if (propNamePath.length > 1) {
                                 dottedExpressions.push({
                                     subProps: propName,
@@ -756,6 +801,22 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
                 }
             });
             return attrNodes;
+        }
+        _getLiteralValueViaCache(engineContext, node, name, propName, value) {
+            const propMeta = ojmetadatautils.getPropertyMetadata(propName, ojcustomelementRegistry.getPropertiesForElementTag(node.tagName));
+            if (!propMeta) {
+                return value;
+            }
+            const templateId = engineContext[TEMPLATE_ELEMENT]?.id;
+            const key = templateId ? JSON.stringify([templateId, propName, value]) : null;
+            let propertyValue = key ? _LITERALS_CACHE.get(key) : null;
+            if (!propertyValue) {
+                propertyValue = ojcustomelementUtils.CustomElementUtils.parseAttrValue(node, name, propName, value, propMeta);
+                if (key && (typeof propertyValue == 'object' || Array.isArray(propertyValue))) {
+                    _LITERALS_CACHE.set(key, propertyValue);
+                }
+            }
+            return propertyValue;
         }
         _createRefPropertyNodeForNestedProps(engineContext, dottedExpressions) {
             const dottedPropObjectNodes = dottedExpressions.map(({ subProps, expr }) => ({

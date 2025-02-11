@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -860,12 +860,33 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             for (const sortCrt of sortCriteria) {
                 let comparator = ojdataprovider.SortUtils.getNaturalSortComparator();
                 const descendingResult = sortCrt.direction === 'descending' ? -1 : 1;
-                const comparatorResult = comparator(d1[sortCrt.attribute], d2[sortCrt.attribute]) * descendingResult;
+                const comparatorResult = comparator(this._getVal(d1, sortCrt.attribute), this._getVal(d2, sortCrt.attribute)) *
+                    descendingResult;
                 if (comparatorResult !== 0) {
                     return comparatorResult;
                 }
             }
             return 0;
+        }
+        _getVal(val, attr) {
+            if (val === null || typeof val === 'undefined') {
+                return val;
+            }
+            if (typeof attr === 'string') {
+                const dotIndex = attr.indexOf('.');
+                if (dotIndex > 0) {
+                    const startAttr = attr.substring(0, dotIndex);
+                    const endAttr = attr.substring(dotIndex + 1);
+                    const subObj = val[startAttr];
+                    if (subObj) {
+                        return this._getVal(subObj, endAttr);
+                    }
+                }
+            }
+            if (typeof val[attr] === 'function') {
+                return val[attr]();
+            }
+            return val[attr];
         }
         _insertAddEdits(editItems, filterObj, sortCriteria, itemArray, mergedAddKeySet, lastBlock) {
             editItems.forEach(async (editItem, key) => {
@@ -997,81 +1018,78 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 const { submitting, submitted, unsubmitted } = this._getEditBufferCounts();
                 const numUnsubmittedAdds = unsubmitted.numAdds;
                 const numAdds = numUnsubmittedAdds + submitting.numAdds + submitted.numAdds;
-                let results;
-                let baseItemArray = [];
                 let done = false;
                 let unbufferedResultsToIgnore = 0;
+                let underlyingFetchParams;
                 if (this.editBuffer.isEmpty(true)) {
+                    underlyingFetchParams = { ...params };
                     const fetchByOffsetResults = await this.dataProvider.fetchByOffset(params);
                     return resolve(fetchByOffsetResults);
-                }
-                else if (isFetchToEnd || offset + size > numAdds) {
-                    const numRemoves = unsubmitted.numRemoves + submitting.numRemoves;
-                    const numMoveAdds = unsubmitted.numMoveAdds + submitting.numMoveAdds;
-                    const numSubmittedOrSubmittingAdds = submitting.numAdds + submitted.numAdds;
-                    let overrideOffset;
-                    let overrideSize;
-                    if (numRemoves > 0 || numMoveAdds > 0 || numSubmittedOrSubmittingAdds > 0) {
-                        overrideOffset = {
-                            offset: 0
-                        };
-                        if (!isFetchToEnd) {
-                            overrideSize = {
-                                size: offset +
-                                    size +
-                                    numRemoves +
-                                    numMoveAdds +
-                                    numSubmittedOrSubmittingAdds -
-                                    Math.max(numUnsubmittedAdds - offset, 0)
-                            };
-                        }
-                        unbufferedResultsToIgnore = Math.max(offset - numAdds, 0);
-                    }
-                    else if (numUnsubmittedAdds > 0) {
-                        overrideOffset = {
-                            offset: Math.max(offset - numUnsubmittedAdds, 0)
-                        };
-                        if (!isFetchToEnd) {
-                            overrideSize = {
-                                size: size - Math.max(numUnsubmittedAdds - offset, 0)
-                            };
-                        }
-                    }
-                    const underlyingFetchParams = { ...params, ...overrideOffset, ...overrideSize };
-                    results = await this.dataProvider.fetchByOffset(underlyingFetchParams);
-                }
-                if (results) {
-                    baseItemArray = results.results;
-                    done = results.done;
                 }
                 if (offset < numAdds) {
                     mergedItems.push(...this._getAllAdds().slice(offset, isFetchToEnd ? undefined : offset + size));
                 }
-                for (let index = 0; index < baseItemArray.length && (isFetchToEnd || mergedItems.length < size); index++) {
-                    const item = baseItemArray[index];
-                    const key = item.metadata.key;
-                    if (this.editBuffer.isUpdateTransformed(key) ||
-                        this._isItemRemoved(key) ||
-                        this.editBuffer.isSubmittingOrSubmitted(key)) {
-                        continue;
+                if (!isFetchToEnd && offset + size <= numAdds) {
+                    return resolve({ fetchParameters: params, results: mergedItems, done: done });
+                }
+                const numRemoves = unsubmitted.numRemoves + submitting.numRemoves;
+                const numMoveAdds = unsubmitted.numMoveAdds + submitting.numMoveAdds;
+                const numSubmittedOrSubmittingAdds = submitting.numAdds + submitted.numAdds;
+                let overrideOffset = { offset: offset };
+                let overrideSize = { size: size };
+                if (numRemoves > 0 || numMoveAdds > 0 || numSubmittedOrSubmittingAdds > 0) {
+                    overrideOffset = {
+                        offset: 0
+                    };
+                    if (!isFetchToEnd) {
+                        overrideSize = {
+                            size: offset +
+                                size +
+                                numRemoves +
+                                numMoveAdds +
+                                numSubmittedOrSubmittingAdds -
+                                Math.max(numUnsubmittedAdds - offset, 0)
+                        };
                     }
-                    else if (unbufferedResultsToIgnore > 0) {
-                        --unbufferedResultsToIgnore;
-                    }
-                    else {
-                        const updatedItem = this.editBuffer.getItem(key);
-                        mergedItems.push(updatedItem ? updatedItem.item : item);
+                    unbufferedResultsToIgnore = Math.max(offset - numAdds, 0);
+                }
+                else if (numUnsubmittedAdds > 0) {
+                    overrideOffset = {
+                        offset: Math.max(offset - numUnsubmittedAdds, 0)
+                    };
+                    if (!isFetchToEnd) {
+                        overrideSize = {
+                            size: size - Math.max(numUnsubmittedAdds - offset, 0)
+                        };
                     }
                 }
-                if (!done && (isFetchToEnd || mergedItems.length < size)) {
-                    const nextParams = {
-                        ...params,
-                        offset: params.offset + mergedItems.length,
-                        size: isFetchToEnd ? params.size : params.size - mergedItems.length
-                    };
-                    let extraResults = await this._fetchFromOffset(nextParams);
-                    mergedItems.push(...extraResults.results);
-                    done = extraResults.done;
+                while (!done && (isFetchToEnd || mergedItems.length < size)) {
+                    underlyingFetchParams = { ...params, ...overrideOffset, ...overrideSize };
+                    let results = await this.dataProvider.fetchByOffset(underlyingFetchParams);
+                    let resultsArray = results.results;
+                    if (resultsArray.length === 0) {
+                        done = true;
+                        break;
+                    }
+                    for (let index = 0; index < resultsArray.length && (isFetchToEnd || mergedItems.length < size); index++) {
+                        const item = resultsArray[index];
+                        const key = item.metadata.key;
+                        if (this.editBuffer.isUpdateTransformed(key) ||
+                            this._isItemRemoved(key) ||
+                            this.editBuffer.isSubmittingOrSubmitted(key)) {
+                            continue;
+                        }
+                        else if (unbufferedResultsToIgnore > 0) {
+                            --unbufferedResultsToIgnore;
+                        }
+                        else {
+                            const updatedItem = this.editBuffer.getItem(key);
+                            mergedItems.push(updatedItem ? updatedItem.item : item);
+                        }
+                    }
+                    done = results.done;
+                    overrideOffset.offset += resultsArray.length;
+                    overrideSize.size = isFetchToEnd ? size : size - mergedItems.length;
                 }
                 return resolve({ fetchParameters: params, results: mergedItems, done: done });
             };
@@ -1218,35 +1236,33 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         }
         _addToMergedArrays(item, fromBaseDP, addBeforeKeyFromBase = null) {
             let addBeforeKey = null;
-            if (this.lastIterator) {
-                if (fromBaseDP) {
-                    addBeforeKey = this._getNextKey(addBeforeKeyFromBase);
+            if (fromBaseDP) {
+                addBeforeKey = this._getNextKey(addBeforeKeyFromBase);
+            }
+            else if (this.lastIterator) {
+                for (let i = 0; i < this.lastIterator.mergedItemArray.length; i++) {
+                    const key = this.lastIterator.mergedItemArray[i].metadata.key;
+                    if (!this._isItemRemoved(key)) {
+                        addBeforeKey = key;
+                        break;
+                    }
                 }
-                else {
+                let shouldIncrementNextOffset = this.lastIterator.nextOffset !== 0;
+                if (this.editBuffer.isUpdateTransformed(item.metadata.key)) {
                     for (let i = 0; i < this.lastIterator.mergedItemArray.length; i++) {
-                        const key = this.lastIterator.mergedItemArray[i].metadata.key;
-                        if (!this._isItemRemoved(key)) {
-                            addBeforeKey = key;
+                        if (oj.KeyUtils.equals(this.lastIterator.mergedItemArray[i].metadata.key, item.metadata.key)) {
+                            if (shouldIncrementNextOffset) {
+                                shouldIncrementNextOffset = this.lastIterator.nextOffset <= i;
+                            }
+                            this.lastIterator.mergedItemArray.splice(i, 1);
                             break;
                         }
                     }
-                    let shouldIncrementNextOffset = this.lastIterator.nextOffset !== 0;
-                    if (this.editBuffer.isUpdateTransformed(item.metadata.key)) {
-                        for (let i = 0; i < this.lastIterator.mergedItemArray.length; i++) {
-                            if (oj.KeyUtils.equals(this.lastIterator.mergedItemArray[i].metadata.key, item.metadata.key)) {
-                                if (shouldIncrementNextOffset) {
-                                    shouldIncrementNextOffset = this.lastIterator.nextOffset <= i;
-                                }
-                                this.lastIterator.mergedItemArray.splice(i, 1);
-                                break;
-                            }
-                        }
-                    }
-                    this.lastIterator.mergedItemArray.splice(0, 0, item);
-                    this.lastIterator.mergedAddKeySet.add(item.metadata.key);
-                    if (shouldIncrementNextOffset) {
-                        this.lastIterator.nextOffset++;
-                    }
+                }
+                this.lastIterator.mergedItemArray.splice(0, 0, item);
+                this.lastIterator.mergedAddKeySet.add(item.metadata.key);
+                if (shouldIncrementNextOffset) {
+                    this.lastIterator.nextOffset++;
                 }
             }
             return addBeforeKey;
@@ -1558,7 +1574,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 }
                 else {
                     this._initDetails(details, newDetails, true);
-                    this._processAdd(newDetails, details, submittingItems, unsubmittedItems);
+                    this._processAdd(newDetails, details, addBeforeKeys);
                     let skipItem;
                     if (details.remove) {
                         details.remove.keys.forEach((key) => {
@@ -1587,9 +1603,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 return details;
             }
         }
-        _processAdd(newDetails, details, submittingItems, unsubmittedItems) {
+        _processAdd(newDetails, details, addBeforeKeys) {
             if (details.add) {
-                newDetails.add = details.add;
+                newDetails.add = { ...details.add };
+                if (addBeforeKeys != null) {
+                    newDetails.add.addBeforeKeys = addBeforeKeys;
+                }
                 return;
             }
         }
@@ -1627,7 +1646,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         _handleMutateEvent(event) {
             this.dataBeforeUpdated = new Map();
             const detailAdd = event.detail.add;
+            let addBeforeKeys;
             if (detailAdd && detailAdd.metadata && detailAdd.data) {
+                addBeforeKeys = detailAdd.addBeforeKeys ? [...detailAdd.addBeforeKeys] : null;
                 detailAdd.metadata.forEach((metadata, idx) => {
                     let addBeforeKey;
                     if (detailAdd.addBeforeKeys && detailAdd.addBeforeKeys[idx] !== undefined) {
@@ -1640,7 +1661,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                                 });
                             }
                         }
-                        detailAdd.addBeforeKeys[idx] = addBeforeKey;
+                        addBeforeKeys[idx] = addBeforeKey;
                     }
                     else {
                         if (detailAdd.indexes && detailAdd.indexes[idx]) {
@@ -1669,16 +1690,16 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     this._cleanUpSubmittedItem('remove', key);
                 });
             }
-            const addBeforeKeys = [];
             const sortFldUpdateds = [];
             const detailUpdate = event.detail.update;
             if (detailUpdate) {
+                let updateEventAddBeforeKeys = [];
                 detailUpdate.data.forEach((currData, idx) => {
                     sortFldUpdateds[idx] = this._isSortFieldUpdated(detailUpdate.metadata[idx].key, detailUpdate);
                     if (sortFldUpdateds[idx]) {
                         this._removeFromMergedArrays(detailUpdate.metadata[idx].key, true);
-                        addBeforeKeys[idx] = this._addToMergedArrays({ data: currData, metadata: detailUpdate.metadata[idx] }, true);
-                        if (!addBeforeKeys[idx]) {
+                        updateEventAddBeforeKeys[idx] = this._addToMergedArrays({ data: currData, metadata: detailUpdate.metadata[idx] }, true);
+                        if (!updateEventAddBeforeKeys[idx]) {
                             if (this.lastIterator && this.lastIterator.mergedItemArray) {
                                 this.lastIterator.mergedItemArray.splice(this.lastIterator.mergedItemArray.length, 0, {
                                     data: currData,

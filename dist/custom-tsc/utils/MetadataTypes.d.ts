@@ -301,7 +301,6 @@ export type MetaUtilObj = {
     dynamicSlotsInUse: number;
     dynamicSlotsInfo: Array<DynamicSlotItem>;
     excludedTypes: Set<string>;
-    isTypeParamSubstitutionEnabled: boolean;
     propsName?: string;
     reservedGlobalProps?: Set<string>;
     defaultProps?: Record<string, ts.Node>;

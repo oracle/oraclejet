@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -37,12 +37,12 @@ define(['ojs/ojlogger', 'ojs/ojwebdrivertest-proxy'], function (Logger, ojwebdri
      * @global
      * @member {string} version JET version numberr
      */
-    version: '17.1.0',
+    version: '18.0.0',
     /**
      * @global
      * @member {string} revision JET source code revision number
      */
-    revision: '2024-11-01_16-03-48',
+    revision: '2025-02-07_16-29-21',
 
     // This function is only meant to be used outside the library, so quoting the name
     // to avoid renaming is appropriate
@@ -278,7 +278,7 @@ define(['ojs/ojlogger', 'ojs/ojwebdrivertest-proxy'], function (Logger, ojwebdri
       (userAgent.indexOf('macintosh') > -1 && navigator.maxTouchPoints > 0)
     ) {
       os = AgentUtils.OS.IOS;
-    } else if (userAgent.indexOf('mac') > -1) {
+    } else if (userAgent.indexOf('macintosh') > -1) {
       os = AgentUtils.OS.MAC;
     } else if (userAgent.indexOf('sunos') > -1) {
       os = AgentUtils.OS.SOLARIS;
@@ -288,7 +288,7 @@ define(['ojs/ojlogger', 'ojs/ojwebdrivertest-proxy'], function (Logger, ojwebdri
       os = AgentUtils.OS.LINUX;
     } else if (userAgent.indexOf('windows phone') > -1) {
       os = AgentUtils.OS.WINDOWSPHONE;
-    } else if (userAgent.indexOf('win') > -1) {
+    } else if (userAgent.indexOf('windows') > -1) {
       os = AgentUtils.OS.WINDOWS;
     }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -268,8 +268,8 @@ DateTimeRangeValidator.prototype.validate = function (value) {
 };
 
 /**
- * A message to be used as hint.
- *
+ * A message to be used as hint
+ * There exists no hint for range validators in the Redwood UX spec, so the default is to return null.
  * @returns {string|null} a hint message or null if no hint is available in the options
  * @memberof oj.DateTimeRangeValidator
  * @instance
@@ -278,6 +278,7 @@ DateTimeRangeValidator.prototype.validate = function (value) {
  */
 DateTimeRangeValidator.prototype.getHint = function () {
   var hint = null;
+  // this is the hints from the Validator options
   var hints = this._hint;
   var hintInRange = hints.inRange;
   var hintMinimum = hints.min;
@@ -291,28 +292,13 @@ DateTimeRangeValidator.prototype.getHint = function () {
 
   if (min !== null && max !== null) {
     params = { min: minStr, max: maxStr };
-    hint = hintInRange
-      ? translations.applyParameters(hintInRange, params)
-      : translations.getTranslatedString(
-          'oj-validator.range.' + this._translationKey + '.hint.inRange',
-          params
-        );
+    hint = hintInRange ? translations.applyParameters(hintInRange, params) : null;
   } else if (min !== null) {
     params = { min: minStr };
-    hint = hintMinimum
-      ? translations.applyParameters(hintMinimum, params)
-      : translations.getTranslatedString(
-          'oj-validator.range.' + this._translationKey + '.hint.min',
-          params
-        );
+    hint = hintMinimum ? translations.applyParameters(hintMinimum, params) : null;
   } else if (max !== null) {
     params = { max: maxStr };
-    hint = hintMaximum
-      ? translations.applyParameters(hintMaximum, params)
-      : translations.getTranslatedString(
-          'oj-validator.range.' + this._translationKey + '.hint.max',
-          params
-        );
+    hint = hintMaximum ? translations.applyParameters(hintMaximum, params) : null;
   }
 
   return hint;

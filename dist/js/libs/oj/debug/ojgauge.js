@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1211,7 +1211,7 @@ var __oj_status_meter_gauge_metadata =
        * @name label
        * @memberof oj.ojLedGauge
        * @instance
-       * @ojdeprecated {since: '12.1.0', description: 'This attribute is deprecated. Use metric-label instead.'}
+       * @ojdeprecated {since: '12.1.0', description: 'Use metric-label instead.'}
        * @type {Object=}
        */
       label: {
@@ -1510,7 +1510,7 @@ var __oj_status_meter_gauge_metadata =
        * @name visualEffects
        * @memberof oj.ojLedGauge
        * @instance
-       * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended. As such, this attribute is deprecated.'}
+       * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended.'}
        * @type {string=}
        * @ojvalue {string} "none"
        * @ojvalue {string} "auto"
@@ -2259,7 +2259,7 @@ var __oj_status_meter_gauge_metadata =
        * @name visualEffects
        * @memberof oj.ojRatingGauge
        * @instance
-       * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended. As such, this attribute is deprecated.'}
+       * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended.'}
        * @type {string=}
        * @ojvalue {string} "none"
        * @ojvalue {string} "auto"
@@ -2632,7 +2632,7 @@ var __oj_status_meter_gauge_metadata =
        * @name label
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @ojdeprecated {since: '12.1.0', description: 'This attribute is deprecated. Use metric-label instead.'}
+       * @ojdeprecated {since: '12.1.0', description: 'Use metric-label instead.'}
        * @type {Object=}
        */
       label: {
@@ -2744,6 +2744,7 @@ var __oj_status_meter_gauge_metadata =
        * @name metricLabel
        * @memberof oj.ojStatusMeterGauge
        * @instance
+       * @ojdeprecated {since: '18.0.0', description: 'This component is superceded by oj-c-meter-bar and oj-c-meter-circle. Applications with this use case should instead create their own labels that also satisfy accessibility requirements.'}
        * @type {Object=}
        */
       metricLabel: {
@@ -3159,7 +3160,7 @@ var __oj_status_meter_gauge_metadata =
        * @name visualEffects
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended. As such, this attribute is deprecated.'}
+       * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended.'}
        * @type {string=}
        * @ojvalue {string} "none"
        * @ojvalue {string} "auto"
@@ -3418,6 +3419,9 @@ var __oj_status_meter_gauge_metadata =
    * <p>title will no longer be required to make your rating gauge accessible. Use aria-label attribute instead for text to be used by screen readers, and datatip or tooltip for text to be shown on hover or focus.
    * The tooltip attribute is for readonly rating gauge only. If aria-label is not present for readonly rating gauge, tooltip will be used as aria-label. Note the datatip should be used for interactive gauges only and it takes a function.
    * </p>
+   * <h5>thresholds[].shortDesc attribute </h5>
+   * <p>
+   * thresholds[].shortDesc is replaced by thresholds[].accessibleLabel in oj-c-rating-gauge.
    * <h5>thresholds[].max attribute </h5>
    * <p>
    * thresholds[].max is optional in oj-rating-gauge but required in oj-c-rating-gauge.
@@ -3652,10 +3656,6 @@ var __oj_status_meter_gauge_metadata =
    * <p>
    * oj-c-meter-bar and oj-c-meter-circle will not support center attribute. However, oj-c-meter-circle will continue to support centerTemplate. Use this instead.
    * </p>
-   * <h5>metric-label attribute </h5>
-   * <p>
-   * oj-c-meter-bar and oj-c-meter-circle will not support metric-label attribute. Applications will be responsible for providing label(s) outside the component.
-   * </p>
    * <h5>reference-lines[].line-width attribute </h5>
    * <p>
    * oj-c-meter-bar and oj-c-meter-circle will not support reference-lines[].line-width attributes in this release.
@@ -3687,7 +3687,6 @@ var __oj_status_meter_gauge_metadata =
    * <h5>plot-area attribute </h5>
    * <p>
    * The 'auto' enum for plot-area.rendered will not be supported. Use the 'on' or 'off' enum values instead. 'on' is the default value for oj-c-meter-bar and oj-c-meter-circle.
-   * plot-area.rendered attribute also changes the baseline between the min value and zero for orientations, vertical and horizontal. Use baseline API in oj-c-meter-bar instead for this feature.
    * </p>
    * <h5>start-angle attribute </h5>
    * <p>
@@ -3710,6 +3709,18 @@ var __oj_status_meter_gauge_metadata =
    * <h5>min height for vertical meter bar</h5>
    * <p>
    * The vertical oj-c-meter-bar now has a default min-height which is theme driven.
+   * </p>
+   * <h5>animaton-on-data-change attribute</h5>
+   * <p>
+   * For oj-c-meter-bar and oj-c-meter-circle, animaton-on-data-change attribute is not supported. We plan on addressing this use case in a future release.
+   * </p>
+   * <h5>animation-on-display attribute</h5>
+   * <p>
+   * For oj-c-meter-bar and oj-c-meter-circle, animation-on-diaplay attribute is not supported. We plan on addressing this use case in a future release.
+   * </p>
+   * <h5>animation-duration attribute</h5>
+   * <p>
+   * For oj-c-meter-bar and oj-c-meter-circle, animation-duration attribute is not supported. We plan on supporting this use case in a future release.
    * </p>
    * @ojfragment migrationDoc
    * @memberof oj.ojStatusMeterGauge

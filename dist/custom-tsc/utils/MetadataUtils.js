@@ -15,15 +15,67 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.printInColor = exports.findTypeDefByName = exports.createTypeDefinitionFromTypeRefs = exports.removeQuotes = exports.generateStatementsFromText = exports.getMDValueFromNode = exports.getValueNodeFromPropertyAccessExpression = exports.getValueNodeFromIdentifier = exports.getValueNodeFromReference = exports.isValueNodeReference = exports.removeCastExpressions = exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerCompMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isConditionalTypeNodeDetected = exports._INTERSECTION_SPLITTER = exports._UNION_SPLITTER = exports.isIndexedAccessTypeParameters = exports.isTypeTreatedAsAny = exports.isObjectType = exports.isConditionalType = exports.isFunctionType = exports.isRecordType = exports.isMappedType = exports.constructMappedTypeName = exports.getWrappedReadonlyType = exports.isAliasToMappedType = exports.isPropsMappedType = exports.isMappedTypeReference = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.updateFunctionalVCompNode = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.writebackCallbackToProperty = exports.tagNameToElementRoot = exports.tagNameToElementInterfaceName = void 0;
+exports._INTERSECTION_SPLITTER = exports._UNION_SPLITTER = void 0;
+exports.tagNameToElementInterfaceName = tagNameToElementInterfaceName;
+exports.tagNameToElementRoot = tagNameToElementRoot;
+exports.writebackCallbackToProperty = writebackCallbackToProperty;
+exports.getGenericTypeParameters = getGenericTypeParameters;
+exports.getTypeParametersFromType = getTypeParametersFromType;
+exports.getDtMetadata = getDtMetadata;
+exports.addMetadataToClassNode = addMetadataToClassNode;
+exports.updateFunctionalVCompNode = updateFunctionalVCompNode;
+exports.getPropsInfo = getPropsInfo;
+exports.getIntersectionTypeNodeInfo = getIntersectionTypeNodeInfo;
+exports.getMappedTypesInfo = getMappedTypesInfo;
+exports.isSimpleTypeReference = isSimpleTypeReference;
+exports.isPropsMappedType = isPropsMappedType;
+exports.isAliasToMappedType = isAliasToMappedType;
+exports.getWrappedReadonlyType = getWrappedReadonlyType;
+exports.constructMappedTypeName = constructMappedTypeName;
+exports.isMappedType = isMappedType;
+exports.isRecordType = isRecordType;
+exports.isFunctionType = isFunctionType;
+exports.isConditionalType = isConditionalType;
+exports.isObjectType = isObjectType;
+exports.isTypeTreatedAsAny = isTypeTreatedAsAny;
+exports.isIndexedAccessTypeParameters = isIndexedAccessTypeParameters;
+exports.isConditionalTypeNodeDetected = isConditionalTypeNodeDetected;
+exports.walkTypeMembers = walkTypeMembers;
+exports.walkTypeNodeMembers = walkTypeNodeMembers;
+exports.updateCompilerPropsMetadata = updateCompilerPropsMetadata;
+exports.updateCompilerCompMetadata = updateCompilerCompMetadata;
+exports.pruneCompilerMetadata = pruneCompilerMetadata;
+exports.pruneMetadata = pruneMetadata;
+exports.updateRtExtensionMetadata = updateRtExtensionMetadata;
+exports.removeCastExpressions = removeCastExpressions;
+exports.isValueNodeReference = isValueNodeReference;
+exports.getValueNodeFromReference = getValueNodeFromReference;
+exports.getValueNodeFromIdentifier = getValueNodeFromIdentifier;
+exports.getValueNodeFromPropertyAccessExpression = getValueNodeFromPropertyAccessExpression;
+exports.getMDValueFromNode = getMDValueFromNode;
+exports.generateStatementsFromText = generateStatementsFromText;
+exports.removeQuotes = removeQuotes;
+exports.createTypeDefinitionFromTypeRefs = createTypeDefinitionFromTypeRefs;
+exports.findTypeDefByName = findTypeDefByName;
+exports.printInColor = printInColor;
 const ts = __importStar(require("typescript"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
@@ -39,21 +91,18 @@ const _IGNORED_ARRAY_DEFAULT_VALUE_MSG_HEADER = 'Default array values with items
 function tagNameToElementInterfaceName(tagName) {
     return `${tagNameToElementRoot(tagName)}Element`;
 }
-exports.tagNameToElementInterfaceName = tagNameToElementInterfaceName;
 function tagNameToElementRoot(tagName) {
     return tagName
         .toLowerCase()
         .match(/-(?<match>.*)/)[0]
         .replace(/-(.)/g, (match, group1) => group1.toUpperCase());
 }
-exports.tagNameToElementRoot = tagNameToElementRoot;
 function writebackCallbackToProperty(property) {
     if (/^on[A-Z].*Changed$/.test(property)) {
         return property[2].toLowerCase() + property.substring(3, property.length - 7);
     }
     return null;
 }
-exports.writebackCallbackToProperty = writebackCallbackToProperty;
 function getGenericTypeParameters(propsTypeNode) {
     let genericSignature = '<';
     const genericTypeParamsArray = [];
@@ -83,7 +132,6 @@ function getGenericTypeParameters(propsTypeNode) {
         genericTypeParamsArray
     };
 }
-exports.getGenericTypeParameters = getGenericTypeParameters;
 function getTypeParametersFromType(type, checker) {
     let typeParamsSignature;
     let typeArgs;
@@ -111,7 +159,6 @@ function getTypeParametersFromType(type, checker) {
     }
     return typeParamsSignature;
 }
-exports.getTypeParametersFromType = getTypeParametersFromType;
 function getDtMetadata(objWithJsDoc, context, propertyPath, metaUtilObj) {
     const dt = {};
     const tags = ts.getJSDocTags(objWithJsDoc);
@@ -231,7 +278,6 @@ function getDtMetadata(objWithJsDoc, context, propertyPath, metaUtilObj) {
     }
     return dt;
 }
-exports.getDtMetadata = getDtMetadata;
 function addMetadataToClassNode(vcompClassInfo, rtMetadata) {
     const classNode = vcompClassInfo.classNode;
     let additionalPropDecls = [];
@@ -253,7 +299,6 @@ function addMetadataToClassNode(vcompClassInfo, rtMetadata) {
         return ts.factory.updateClassDeclaration(classNode, classNode.modifiers, classNode.name, classNode.typeParameters, classNode.heritageClauses, updatedMembers);
     }
 }
-exports.addMetadataToClassNode = addMetadataToClassNode;
 function updateFunctionalVCompNode(functionalCompNode, vcompFunctionInfo, metaUtilObj) {
     const rtMetadata = metaUtilObj.rtMetadata;
     const needPlaceholderArgs = !!vcompFunctionInfo.translationBundleMapExpression || !!vcompFunctionInfo.contextsExpression;
@@ -306,7 +351,6 @@ function updateFunctionalVCompNode(functionalCompNode, vcompFunctionInfo, metaUt
         return ts.factory.updateExpressionStatement(functionalCompNode, updatedCompRegisterCall);
     }
 }
-exports.updateFunctionalVCompNode = updateFunctionalVCompNode;
 function getPropsInfo(compType, componentName, typeRef, progImportMaps, checker) {
     let rtnInfo = null;
     let rtnObservedGlobalProps = new Set();
@@ -476,7 +520,6 @@ function getPropsInfo(compType, componentName, typeRef, progImportMaps, checker)
     }
     return rtnInfo;
 }
-exports.getPropsInfo = getPropsInfo;
 function getIntersectionTypeNodeInfo(intersectionTypeNode, progImportMaps, isInline, checker) {
     let rtnInfo = {};
     let filteredTypeNodes = [];
@@ -523,7 +566,6 @@ function getIntersectionTypeNodeInfo(intersectionTypeNode, progImportMaps, isInl
     }
     return rtnInfo;
 }
-exports.getIntersectionTypeNodeInfo = getIntersectionTypeNodeInfo;
 const _MAPPED_TYPENAMES = new Set(['Partial', 'Required', 'Readonly', 'Pick', 'Omit']);
 function getMappedTypesInfo(outerType, checker, isPropsInfo, outerTypeNode) {
     let rtnInfo = null;
@@ -570,23 +612,20 @@ function getMappedTypesInfo(outerType, checker, isPropsInfo, outerTypeNode) {
     }
     return rtnInfo;
 }
-exports.getMappedTypesInfo = getMappedTypesInfo;
-function isMappedTypeReference(typeRefNode) {
-    return _MAPPED_TYPENAMES.has(TypeUtils.getTypeNameFromTypeReference(typeRefNode));
+function isSimpleTypeReference(typeRefNode) {
+    const name = TypeUtils.getTypeNameFromTypeReference(typeRefNode);
+    return !(name === 'Array' || _MAPPED_TYPENAMES.has(name));
 }
-exports.isMappedTypeReference = isMappedTypeReference;
 function isPropsMappedType(type, typeNode) {
     return (isMappedType(type) &&
         _MAPPED_TYPENAMES.has(typeNode
             ? TypeUtils.getTypeNameFromTypeReference(typeNode)
             : TypeUtils.getTypeNameFromType(type)));
 }
-exports.isPropsMappedType = isPropsMappedType;
 function isAliasToMappedType(type, typeNode) {
     return (isMappedType(type) &&
         !_MAPPED_TYPENAMES.has(TypeUtils.getTypeNameFromTypeReference(typeNode)));
 }
-exports.isAliasToMappedType = isAliasToMappedType;
 function getWrappedReadonlyType(type, typeNode, componentName, checker) {
     let rtnType = null;
     if (type.aliasSymbol?.name === 'Readonly') {
@@ -613,7 +652,6 @@ function getWrappedReadonlyType(type, typeNode, componentName, checker) {
     }
     return rtnType;
 }
-exports.getWrappedReadonlyType = getWrappedReadonlyType;
 function constructMappedTypeName(mappedTypesInfo, wrappedTypeGenerics) {
     let rtnName = '';
     let paramsStack = [];
@@ -645,12 +683,10 @@ function constructMappedTypeName(mappedTypesInfo, wrappedTypeGenerics) {
     });
     return rtnName;
 }
-exports.constructMappedTypeName = constructMappedTypeName;
 function isMappedType(type) {
     let decl = type.symbol?.declarations?.[0];
     return decl && ts.isMappedTypeNode(decl);
 }
-exports.isMappedType = isMappedType;
 function isRecordType(type) {
     let bRetVal = false;
     if (isMappedType(type)) {
@@ -672,24 +708,19 @@ function isRecordType(type) {
     }
     return bRetVal;
 }
-exports.isRecordType = isRecordType;
 function isFunctionType(type, checker) {
     const callSignatures = type.getCallSignatures();
     return callSignatures.length > 0;
 }
-exports.isFunctionType = isFunctionType;
 function isConditionalType(type) {
     return !!(type['flags'] & ts.TypeFlags.Conditional);
 }
-exports.isConditionalType = isConditionalType;
 function isObjectType(type) {
     return !!(type['flags'] & ts.TypeFlags.Object);
 }
-exports.isObjectType = isObjectType;
 function isTypeTreatedAsAny(type) {
     return !!(type['flags'] & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
 }
-exports.isTypeTreatedAsAny = isTypeTreatedAsAny;
 function isIndexedAccessTypeParameters(type) {
     let isDetected = false;
     if (type['flags'] & ts.TypeFlags.IndexedAccess) {
@@ -703,7 +734,6 @@ function isIndexedAccessTypeParameters(type) {
     }
     return isDetected;
 }
-exports.isIndexedAccessTypeParameters = isIndexedAccessTypeParameters;
 exports._UNION_SPLITTER = /\s*\|\s*/;
 exports._INTERSECTION_SPLITTER = /\s*\&\s*/;
 function isConditionalTypeNodeDetected(typeNode, seen, metaUtilObj) {
@@ -741,7 +771,6 @@ function isConditionalTypeNodeDetected(typeNode, seen, metaUtilObj) {
     }
     return foundIt;
 }
-exports.isConditionalTypeNodeDetected = isConditionalTypeNodeDetected;
 function walkTypeMembers(type, metaUtilObj, callback) {
     const isExcludedType = function (type, metaUtilObj) {
         let rtnValue = false;
@@ -840,12 +869,10 @@ function walkTypeMembers(type, metaUtilObj, callback) {
         processMembers(typeMap[k], checker, callback);
     }
 }
-exports.walkTypeMembers = walkTypeMembers;
 function walkTypeNodeMembers(typeNode, metaUtilObj, callback) {
     const typeAtLoc = metaUtilObj.typeChecker.getTypeAtLocation(typeNode);
     walkTypeMembers(typeAtLoc, metaUtilObj, callback);
 }
-exports.walkTypeNodeMembers = walkTypeNodeMembers;
 function updateCompilerPropsMetadata(readOnlyPropNameNodes, metaUtilObj) {
     metaUtilObj.fullMetadata['readOnlyProps'] =
         readOnlyPropNameNodes?.length > 0 ? readOnlyPropNameNodes.map((item) => item.name) : [];
@@ -853,7 +880,6 @@ function updateCompilerPropsMetadata(readOnlyPropNameNodes, metaUtilObj) {
         metaUtilObj.fullMetadata['templateSlotProps'] = [...metaUtilObj.templateSlotProps];
     }
 }
-exports.updateCompilerPropsMetadata = updateCompilerPropsMetadata;
 function updateCompilerCompMetadata(vcompInfo, metaUtilObj) {
     if (MetaTypes.isClassInfo(vcompInfo)) {
         const classNode = vcompInfo.classNode;
@@ -933,7 +959,6 @@ function updateCompilerCompMetadata(vcompInfo, metaUtilObj) {
         metaUtilObj.fullMetadata['propsClassName'] = propsInfo.propsName;
     }
 }
-exports.updateCompilerCompMetadata = updateCompilerCompMetadata;
 const dummyEventDetail = {
     description: '',
     enumValues: [],
@@ -989,7 +1014,6 @@ function pruneCompilerMetadata(metaUtilObj) {
         _pruneSubPropMetadata(metaUtilObj.fullMetadata.dynamicSlots[dynSlot], validSlotSubProps);
     }
 }
-exports.pruneCompilerMetadata = pruneCompilerMetadata;
 function pruneMetadata(metadata) {
     if (metadata && typeof metadata == 'object') {
         delete metadata['reftype'];
@@ -1008,25 +1032,21 @@ function pruneMetadata(metadata) {
         }
     }
 }
-exports.pruneMetadata = pruneMetadata;
 function updateRtExtensionMetadata(name, value, metaUtilObj) {
     if (!metaUtilObj.rtMetadata.extension) {
         metaUtilObj.rtMetadata.extension = {};
     }
     metaUtilObj.rtMetadata.extension[name] = value;
 }
-exports.updateRtExtensionMetadata = updateRtExtensionMetadata;
 function removeCastExpressions(vNode) {
     while (vNode && ts.isAsExpression(vNode)) {
         vNode = vNode.expression;
     }
     return vNode;
 }
-exports.removeCastExpressions = removeCastExpressions;
 function isValueNodeReference(vNode) {
     return ts.isIdentifier(vNode) || ts.isPropertyAccessExpression(vNode);
 }
-exports.isValueNodeReference = isValueNodeReference;
 function getValueNodeFromReference(refNode, metaUtilObj) {
     let vNode = null;
     if (ts.isIdentifier(refNode)) {
@@ -1037,7 +1057,6 @@ function getValueNodeFromReference(refNode, metaUtilObj) {
     }
     return vNode;
 }
-exports.getValueNodeFromReference = getValueNodeFromReference;
 function getValueNodeFromIdentifier(idNode, metaUtilObj) {
     let rtnNode = idNode;
     const refSymbol = metaUtilObj.typeChecker.getSymbolAtLocation(idNode);
@@ -1059,7 +1078,6 @@ function getValueNodeFromIdentifier(idNode, metaUtilObj) {
     }
     return rtnNode;
 }
-exports.getValueNodeFromIdentifier = getValueNodeFromIdentifier;
 function getValueNodeFromPropertyAccessExpression(propAccessNode, metaUtilObj) {
     let rtnNode = null;
     let targetNode = getValueNodeFromReference(propAccessNode.expression, metaUtilObj);
@@ -1073,7 +1091,6 @@ function getValueNodeFromPropertyAccessExpression(propAccessNode, metaUtilObj) {
     }
     return rtnNode;
 }
-exports.getValueNodeFromPropertyAccessExpression = getValueNodeFromPropertyAccessExpression;
 function getMDValueFromNode(valueNode, prop, metaUtilObj, topLvlProp) {
     let value = undefined;
     if (metaUtilObj) {
@@ -1174,7 +1191,6 @@ function getMDValueFromNode(valueNode, prop, metaUtilObj, topLvlProp) {
     }
     return value;
 }
-exports.getMDValueFromNode = getMDValueFromNode;
 function generateStatementsFromText(text, offset) {
     const tmpNode = ts.createSourceFile('temp.ts', text, ts.ScriptTarget.Latest, false, ts.ScriptKind.TSX);
     const statements = tmpNode.statements.map((stmt) => {
@@ -1183,14 +1199,12 @@ function generateStatementsFromText(text, offset) {
     });
     return statements;
 }
-exports.generateStatementsFromText = generateStatementsFromText;
 function removeQuotes(str) {
     if (str) {
         return str.replace(/^['"]/g, '').replace(/['"]$/g, '');
     }
     return str;
 }
-exports.removeQuotes = removeQuotes;
 function createTypeDefinitionFromTypeRefs(typeRefs, metaUtilObj, seenTypeDefs) {
     let retObj = [];
     typeRefs.forEach((node) => {
@@ -1206,7 +1220,6 @@ function createTypeDefinitionFromTypeRefs(typeRefs, metaUtilObj, seenTypeDefs) {
     });
     return retObj;
 }
-exports.createTypeDefinitionFromTypeRefs = createTypeDefinitionFromTypeRefs;
 function findTypeDefByName(typeDef, metaUtilObj) {
     metaUtilObj.typeDefinitions = metaUtilObj.typeDefinitions || [];
     return metaUtilObj.typeDefinitions.find((td) => {
@@ -1218,7 +1231,6 @@ function findTypeDefByName(typeDef, metaUtilObj) {
         }
     });
 }
-exports.findTypeDefByName = findTypeDefByName;
 function getTypeDefDetails(typeRefNode, metaUtilObj, seenTypeDefs) {
     let md;
     let details;
@@ -1305,7 +1317,6 @@ function printInColor(color, text, metaUtilObj, indent) {
         console.log(color + ' '.repeat(indent) + '%s' + MetadataTypes_1.Color.Reset, text);
     }
 }
-exports.printInColor = printInColor;
 function _offsetTextRange(tr, offset) {
     return { pos: tr.pos + offset, end: tr.end + offset };
 }

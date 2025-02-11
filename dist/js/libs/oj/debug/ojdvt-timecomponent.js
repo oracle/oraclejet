@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1749,6 +1749,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
      * @override
      */
     processKeyDown(event) {
+      const currentNavigable = this._eventManager.getFocus();
+      if (currentNavigable && currentNavigable.handleKeyboardEvent) {
+        currentNavigable.handleKeyboardEvent(event);
+      }
       if (dvt.KeyboardEvent.isPlus(event) || dvt.KeyboardEvent.isEquals(event)) {
         this._eventManager.HandleZoomInClick();
       } else if (dvt.KeyboardEvent.isMinus(event) || dvt.KeyboardEvent.isUnderscore(event)) {

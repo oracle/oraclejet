@@ -36,6 +36,7 @@ export interface ojTreeView<K, D> extends baseComponent<ojTreeViewSettableProper
     };
     expanded: KeySet<K>;
     item: {
+        /** @deprecated since 13.0.0 - Not accessible by screen reader. */
         focusable?: ((itemContext: ojTreeView.ItemContext<K, D>) => boolean);
         renderer?: ((itemContext: ojTreeView.ItemContext<K, D>) => {
             insert: Element | string;
@@ -46,11 +47,13 @@ export interface ojTreeView<K, D> extends baseComponent<ojTreeViewSettableProper
         maxCount: number;
     };
     selected: KeySet<K>;
+    /** @deprecated since 8.0.0 - Use selected attribute instead. */
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple' | 'leafOnly';
     translations: {
         receivedDataAria?: string;
         retrievingDataAria?: string;
+        /** @deprecated since 15.0.0 - This resource was introduced as a workaround for an issue that has since been fixed, and is no longer used by oj-tree-view. */
         treeViewSelectorAria?: string;
     };
     addEventListener<T extends keyof ojTreeViewEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTreeViewEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -208,6 +211,7 @@ export interface ojTreeViewSettableProperties<K, D> extends baseComponentSettabl
     };
     expanded: KeySet<K>;
     item: {
+        /** @deprecated since 13.0.0 - Not accessible by screen reader. */
         focusable?: ((itemContext: ojTreeView.ItemContext<K, D>) => boolean);
         renderer?: ((itemContext: ojTreeView.ItemContext<K, D>) => {
             insert: Element | string;
@@ -218,11 +222,13 @@ export interface ojTreeViewSettableProperties<K, D> extends baseComponentSettabl
         maxCount: number;
     };
     selected: KeySet<K>;
+    /** @deprecated since 8.0.0 - Use selected attribute instead. */
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple' | 'leafOnly';
     translations: {
         receivedDataAria?: string;
         retrievingDataAria?: string;
+        /** @deprecated since 15.0.0 - This resource was introduced as a workaround for an issue that has since been fixed, and is no longer used by oj-tree-view. */
         treeViewSelectorAria?: string;
     };
 }
@@ -327,7 +333,9 @@ export namespace TreeViewElement {
     type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
 }
 export interface TreeViewIntrinsicProps extends Partial<Readonly<ojTreeViewSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojTreeViewEventMap<any, any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojTreeViewEventMap<any, any>['ojAnimateStart']) => void;
     onojBeforeCollapse?: (value: ojTreeViewEventMap<any, any>['ojBeforeCollapse']) => void;
     onojBeforeCurrentItem?: (value: ojTreeViewEventMap<any, any>['ojBeforeCurrentItem']) => void;
@@ -341,7 +349,7 @@ export interface TreeViewIntrinsicProps extends Partial<Readonly<ojTreeViewSetta
     onitemChanged?: (value: ojTreeViewEventMap<any, any>['itemChanged']) => void;
     onscrollPolicyOptionsChanged?: (value: ojTreeViewEventMap<any, any>['scrollPolicyOptionsChanged']) => void;
     onselectedChanged?: (value: ojTreeViewEventMap<any, any>['selectedChanged']) => void;
-    onselectionChanged?: (value: ojTreeViewEventMap<any, any>['selectionChanged']) => void;
+    /** @deprecated since 8.0.0 */ onselectionChanged?: (value: ojTreeViewEventMap<any, any>['selectionChanged']) => void;
     onselectionModeChanged?: (value: ojTreeViewEventMap<any, any>['selectionModeChanged']) => void;
     children?: ComponentChildren;
 }

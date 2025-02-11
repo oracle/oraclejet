@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1087,15 +1087,17 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         var _launcher = this._launcher;
 
         var options = this.options;
-        // eslint-disable-next-line no-param-reassign
-        position = position || options.position;
-        if (!position.of) {
+
+        // JET-68591: create a position param copy to avoid its modification
+        var positionCopy = position ? Object.assign({}, position) : null;
+
+        var _position = positionCopy || options.position;
+        if (!_position.of) {
           this._hasPositionOfLauncherOverride = true;
-          // eslint-disable-next-line no-param-reassign
-          position.of = _launcher;
+          _position.of = _launcher;
         }
 
-        this._setPosition(position);
+        this._setPosition(_position);
 
         this._setAutoDismiss(options.autoDismiss);
 
@@ -1109,7 +1111,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         }
 
         // convert to the jquery ui position format
-        var _position = this._getPositionAsJqUi();
+        _position = this._getPositionAsJqUi();
 
         // build layer class selectors applied to the popup layer
         var rootStyle = this._getRootStyle();

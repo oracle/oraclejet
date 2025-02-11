@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -439,6 +439,7 @@ var __oj_legend_section_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
  * </h3>
  * To migrate from oj-legend to oj-c-legend, you need to revise the import statement and references to oj-legend in your app. Please note the changes between the two components below.
+ * <h5 id="dataprovider-key-type-migration"></h5>
  * <h5>contextMenu slot</h5>
  * <p>
  * For the initial version of oj-c-legend, contextMenu slot is not supported. We plan on supporting this use case in future releases.
@@ -519,10 +520,11 @@ var __oj_legend_section_metadata =
  * @property {string=} title The title of the legend section.
  * @property {"center"|"end"|"start"} [titleHalign="start"] The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
  * @property {Object=} titleStyle The CSS style object defining the style of the section title. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
- * @ojdeprecated {since: '14.1.0', description: 'This attribute is deprecated. Applications should use the expanded API on oj-legend instead.', target: 'property', for: 'expanded' }
+ * @ojdeprecated {since: '14.1.0', description: 'Applications should use the expanded API on oj-legend instead.', target: 'property', for: 'expanded' }
  * @ojdeprecated {since: '15.1.0', description: 'Individual section title alignment is no longer supported. Use section-title-halign in oj-legend to align all section titles.', target: 'property', for: 'titleHalign' }
  * @ojdeprecated {since: '15.1.0', description: 'Individual section title style is no longer supported. Use section-title-style in oj-legend to style all section titles.', target: 'property', for: 'titleStyle' }
- * @ojdeprecated {since: '16.0.0', description: 'Use of legend collapsible section is not recommended in Redwood theme. As such, this attribute is deprecated.', target: 'property', for: 'collapsible' }
+ * @ojdeprecated {since: '16.0.0', description: 'Collapsible legend sections are not recommended in the Redwood theme.', target: 'property', for: 'collapsible' }
+ * @ojdeprecated {since: '18.0.0', description: 'Use of nested legend sections is not recommended in Redwood theme. As such, this attribute is deprecated.', target: 'property', for: 'sections' }
  * @ojsignature [{target: "Type", value: "K", for: "id"},
  *               {target: "Type", value: "Array.<oj.ojLegend.Item<K>>", for: "items", jsdocOverride: true},
  *               {target: "Type", value: "Array.<oj.ojLegend.Section<K>>", for: "sections", jsdocOverride: true},
@@ -556,7 +558,7 @@ var __oj_legend_section_metadata =
  *                {since: '14.1.0', description: 'This is not recommended in the Redwood design system.', target: 'property', for: 'svgClassName'},
  *                {since: '14.1.0', description: 'This is not recommended in the Redwood design system.', target: 'property', for: 'markerSvgClassName'},
  *                {since: '14.1.0', description: 'This is not recommended in the Redwood design system.', target: 'property', for: 'markerSvgStyle'},
- *                {since: '14.1.0', description: 'This api is deprecated. Use hidden-categories in oj-legend instead.', target: 'property', for: 'categoryVisibility'}]
+ *                {since: '14.1.0', description: 'Use hidden-categories attribute of oj-legend instead.', target: 'property', for: 'categoryVisibility'}]
  * @ojsignature [{target: "Type", value: "K", for: "id"},
  *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
  *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "markerSvgStyle", jsdocOverride: true},
@@ -919,7 +921,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent, {
      * @name expanded
      * @memberof oj.ojLegend
      * @ojshortdesc Specifies the key set containing the ids of sections that should be expanded on initial render. See the Help documentation for more information.
-     * @ojdeprecated {since: '16.0.0', description: 'Use of legend collapsible section is not recommended in Redwood theme. As such, this attribute is deprecated.'}
+     * @ojdeprecated {since: '16.0.0', description: 'Collapsible legend sections are not recommended in the Redwood theme.'}
      * @instance
      * @type {(KeySet|null)=}
      * @ojsignature {target:"Type", value:"oj.KeySet<K>|null"}
@@ -1104,7 +1106,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent, {
      * @ojvalue {string} "off" The legend will not be scrollable.
      * @ojvalue {string} "asNeeded" The legend will be scrollable if legend items cannot fit in the available space.
      * @default "asNeeded"
-     * @ojdeprecated {since: '12.1.0', description: 'Setting scrolling to off is not supported in Redwood theme and it is not recommended. As such, this attribute is deprecated.'}
+     * @ojdeprecated {since: '12.1.0', description: 'Setting scrolling to off is not supported in the Redwood theme and it is not recommended.'}
      *
      * @example <caption>Initialize the Legend with the <code class="prettyprint">scrolling</code> attribute specified:</caption>
      * &lt;oj-legend scrolling="off">&lt;/oj-legend>
@@ -1282,7 +1284,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent, {
      * @ojvalue {string} "on"
      * @ojvalue {string} "off"
      * @default "on"
-     * @ojdeprecated {since: '15.0.0', description: 'With the track resize optimized, this API is no longer required. track-resize on will be the default behavior.'}
+     * @ojdeprecated {since: '15.0.0', description: 'This is no longer needed due to performance enhancements. The default behavior will be used.'}
      * @example <caption>Initialize the data visualization element with the
      * <code class="prettyprint">track-resize</code> attribute specified:</caption>
      * &lt;oj-some-dvt track-resize='off'>&lt;/oj-some-dvt>
@@ -1897,7 +1899,7 @@ setDefaultOptions({
  * @ojvalue {string} "hidden" Legend item will have a hollow symbol.
  * @ojvalue {string} "visible" Legend item will be filled.
  * @default "visible"
- * @ojdeprecated {since: '14.1.0', description: 'This attribute is deprecated. Use hidden-categories on oj-legend instead'}
+ * @ojdeprecated {since: '14.1.0', description: 'Use hidden-categories on oj-legend instead'}
  */
 /**
  *  Whether drilling is enabled on the legend item. Drillable objects will show a pointer cursor on hover and fire <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all legend items at once, use the drilling attribute in the top level.
@@ -2009,7 +2011,7 @@ setDefaultOptions({
  * @memberof! oj.ojLegendSection
  * @instance
  * @type {string=}
- * @ojdeprecated {since: '16.0.0', description: 'Use of legend collapsible section is not recommended in Redwood theme. As such, this attribute is deprecated.'}
+ * @ojdeprecated {since: '16.0.0', description: 'Collapsible legend sections are not recommended in the Redwood theme.'}
  * @ojvalue {string} "on" The legend section will be collapsible.
  * @ojvalue {string} "off" The legend section will not be collapsible.
  * @default "off"

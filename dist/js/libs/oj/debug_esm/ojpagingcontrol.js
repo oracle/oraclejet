@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -253,8 +253,8 @@ var __oj_paging_control_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pagingcontrolOverview-section"></a>
  * </h3>
  * <p>Description:</p>
- * <p>A JET PagingControl provides the ability to fetch and display a page of data at a time. The paging control will only fetch the items for the currently displayed page so it should be used for large datasets which can be fetched in pages.
- * The number of items per page is uniform and configurable. The paging control can be used with any DataSource which implements the PagingModel interface, such as PagingTableDataSource and oj.PagingDataGridDataSource. That means that the Paging Control can be used with ojTable, ojDataGrid, and ojListView.</p>
+ * <p>A JET PagingControl allows you to fetch and display a single page of data at a time. This feature is particularly useful for large datasets that can be divided into manageable chunks. By only retrieving the items for the currently displayed page, the PagingControl optimizes performance and reduces data transfer.
+ * The number of items per page is consistent and customizable, giving you flexibility in designing your interface. Currently, the oj-paging-control is specifically designed to work with the oj-film-strip component, providing visual indicators (dots) to represent different pages of data.</p>
  *
  * <pre class="prettyprint"><code>&lt;oj-paging-control
  *   data='{{pagingModel}}'
@@ -726,9 +726,8 @@ var __oj_paging_control_metadata =
        * @instance
        * @memberof! oj.ojPagingControl
        * @type {Object}
-       * @ojdeprecated {since: '7.0.0', description: 'This option is deprecated and will not get feature updates or support going forward.
-       *                         Please use native component high-water mark scrolling API instead (see Table, ListView, DataGrid).
-       *                         In addition, "loadMore" is not compatible with Table, Listview, DataGrid default scroll-policy "loadMoreOnScroll".'}
+       * @ojdeprecated {since: '7.0.0', description: 'Support for "loadMore" paging mode is deprecated. Use native component high-water mark scrolling APIs instead (see Table, ListView, and DataGrid
+       *                         for details). In addition, "loadMore" is not compatible with the Table, Listview, and DataGrid default scroll-policy "loadMoreOnScroll".'}
        *
        * @example <caption>Initialize the PagingControl, overriding load-more-options value:</caption>
        * &lt;!-- Using dot notation -->
@@ -763,8 +762,8 @@ var __oj_paging_control_metadata =
          * @memberof! oj.ojPagingControl
          * @instance
          * @type {number}
-         * @ojdeprecated {since: '7.0.0', description: 'This option is deprecated and will not get feature updates or support going forward.
-         *                         Please use native component high-water mark scrolling API instead (see Table, ListView, DataGrid).'}
+         * @ojdeprecated {since: '7.0.0',
+         *                description: 'Support for "loadMore" paging mode is deprecated. Use native component high-water mark scrolling APIs instead (see Table, ListView, and DataGrid for details).'}
          *
          * @default 500
          * @ojmin 0
@@ -781,9 +780,9 @@ var __oj_paging_control_metadata =
        * @type {string}
        * @ojvalue {string} "page" Display paging control in pagination mode.
        * @ojvalue {string} "loadMore"  Display paging control in high-water mark mode.
-       * @ojdeprecated [ {target:'propertyValue', for:'loadMore', since: '6.0.0', description: 'This option is deprecated and will not get feature updates or support going forward.
-       *                Please use native component high-water mark scrolling API instead (see Table, ListView, DataGrid).
-       *                In addition, "loadMore" is not compatible with Table, Listview, DataGrid default scroll-policy "loadMoreOnScroll".'}]
+       * @ojdeprecated {target: 'propertyValue', for: 'loadMore', since: '6.0.0',
+       *                 description: 'Support for "loadMore" paging mode is deprecated. Use native component high-water mark scrolling APIs instead (see Table, ListView, and DataGrid
+       *                     for details). In addition, "loadMore" is not compatible with the Table, Listview, and DataGrid default scroll-policy "loadMoreOnScroll".'}
        * @default "page"
        *
        * @example <caption>Initialize the PagingControl with the <code class="prettyprint">mode</code> attribute specified:</caption>

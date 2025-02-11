@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -629,6 +629,9 @@ var __oj_input_date_metadata =
       "type": "boolean",
       "value": false
     },
+    "todayTimeZone": {
+      "type": "string"
+    },
     "translations": {
       "type": "object",
       "value": {},
@@ -744,6 +747,9 @@ var __oj_input_date_metadata =
           "type": "string"
         }
       }
+    },
+    "twoDigitYearStart": {
+      "type": "number"
     },
     "userAssistanceDensity": {
       "type": "string",
@@ -1546,7 +1552,115 @@ function formatYear(year, month) {
   if (!yearDisplay) {
     yearDisplay = new IntlDateTimeConverter({ year: 'numeric' });
   }
-  return yearDisplay.format(IntlConverterUtils.dateToLocalIso(new Date(year, month, 1)));
+  return yearDisplay.format(IntlConverterUtils.dateToLocalIso(toJSDateFullYear(year, month, 1)));
+}
+
+/**
+ * This function can add and subtract years/months/days duration to an object with year, month (0-based), and day.
+ * month is 0-based since it is what js Date does, and legacy datepicker code uses javascript's Date, so to avoid confusion, we keep it 0-based.
+ * You can only add/subtract one duration type (years, months, days) at a time.
+ * Note: When adding/subtracting years or months, the end of the month is constrained. Examples:
+ * e.g. if adding 1 month: 1/31/2024 -> 2/29/2024
+ * e.g. if adding 1 year: 2/29/2024 -> 2/28/2025
+ * This code is similar to the code in Preact.
+ * @ignore
+ */
+function addToCalendarDate(calendarDate, duration) {
+  // Destructure the duration object
+  const { years = 0, months = 0, days = 0 } = duration;
+
+  const LOWEST_YEAR_SUPPORTED = 1; // the lowest year we support
+  const TWO_DIGIT_YEAR_BROWSER_OFFSET = new Date(0, 1, 2).getFullYear();
+
+  const newYear = calendarDate.year + years;
+  let jsDateOnFirstOfMonth;
+
+  if (newYear < 100) {
+    const cappedYear = newYear < LOWEST_YEAR_SUPPORTED ? LOWEST_YEAR_SUPPORTED : newYear;
+    jsDateOnFirstOfMonth = new Date(cappedYear, calendarDate.month + months, 1);
+    const diff = jsDateOnFirstOfMonth.getFullYear() - (TWO_DIGIT_YEAR_BROWSER_OFFSET + cappedYear);
+    jsDateOnFirstOfMonth.setFullYear(cappedYear + diff);
+  } else {
+    // javascript's Date automatically adjusts year/month/day if there is overflow as long as the year is >= 100.
+    jsDateOnFirstOfMonth = new Date(newYear, calendarDate.month + months, 1);
+  }
+
+  const adjYear = jsDateOnFirstOfMonth.getFullYear();
+  if (adjYear < LOWEST_YEAR_SUPPORTED) {
+    // return the input unchanged.
+    return calendarDate;
+  }
+
+  const adjMonth = jsDateOnFirstOfMonth.getMonth();
+  const adjDay = Math.min(calendarDate.day, getDaysInMonth(adjYear, adjMonth));
+
+  const adjustedJsDate = new Date(adjYear, adjMonth, adjDay + days);
+  if (adjYear < 100) {
+    const diff = adjustedJsDate.getFullYear() - (TWO_DIGIT_YEAR_BROWSER_OFFSET + adjYear);
+    adjustedJsDate.setFullYear(adjYear + diff);
+  }
+
+  const adjYear2 = adjustedJsDate.getFullYear();
+  if (adjYear2 < LOWEST_YEAR_SUPPORTED) {
+    // return the input unchanged.
+    return calendarDate;
+  }
+
+  // return the adjusted date.
+  return {
+    year: adjustedJsDate.getFullYear(),
+    month: adjustedJsDate.getMonth(),
+    day: adjustedJsDate.getDate()
+  };
+}
+
+/**
+ * Find the number of days in a given month.
+ * @ignore
+ */
+function getDaysInMonth(y, m) {
+  const isLeapYear = (year) => {
+    if (year % 400 === 0) {
+      return true;
+    } else if (year % 100 === 0) {
+      return false;
+    } else if (year % 4 === 0) {
+      return true;
+    }
+    return false;
+  };
+  switch (m) {
+    case 0:
+    case 2:
+    case 4:
+    case 6:
+    case 7:
+    case 9:
+    case 11:
+      return 31;
+    case 1:
+      if (isLeapYear(y)) {
+        return 29;
+      }
+      return 28;
+    default:
+      return 30;
+  }
+}
+
+/**
+ * Create a javascript Date object with the year, month, day.
+ * new Date does not handle when year < 100. This function works around that
+ * limitation by calling setFullYear if the year < 100.
+ * @ignore
+ */
+function toJSDateFullYear(year, month, day) {
+  const date = new Date(year, month, day);
+  if (year < 100) {
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#interpretation_of_two-digit_years
+    date.setFullYear(year);
+  }
+  return date;
 }
 
 /**
@@ -2461,7 +2575,10 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * A datetime converter instance or one that duck types {@link oj.DateTimeConverter}.
      *
      * <p>If the timezone option is provided in the converter, the Today button will highlight the current day based on the timezone specified in the converter.
-     * Otherwise the Today button will highlight the current day in the user's system timezone.
+     * Otherwise the Today button will highlight the current day in the user's system timezone.</p>
+     * <p>The default converter leniently parses 2-digit years, by starting with year 1950. For example, if the user types in 99,
+     * the year will parse to 1999. IntlDateTimeConverter has a "two-digit-year-start" option. If it is set to 2000 and the user
+     * types in 99, it will be 2099. If it is set to 1, and the user types in 99, it will stay 99.</p>
      * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      *
      * @expose
@@ -2483,8 +2600,11 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *                  work again by importing the deprecated ojvalidation-datetime module.'}
      * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<any>>'],
      *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the Promise and then update the converter attribute with the resolved converter instance.'}
+     * @ojdeprecated {since: '18.0.0', value: [''],
+     *                description: 'To highlight the today cell in a different timezone use the new today-time-zone property instead.'}
      * @default new DateTimeConverter({ formatType: 'date', dateFormat: 'short' })
      */
+
     /**
      * A datetime converter instance or one that duck types {@link oj.DateTimeConverter}.
      *
@@ -2507,6 +2627,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * help-hints.source always shows along with the other help or hint.
      * </p>
      *
+     * @name converter
      * @expose
      * @instance
      * @memberof! oj.ojInputDate
@@ -2525,6 +2646,15 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *                  work again by importing the deprecated ojvalidation-datetime module.'}
      * @ojdeprecated {since: '17.0.0', target: 'memberType', value: ['Promise<oj.Converter<any>>'],
      *                description: 'Defining a Promise to a Converter instance has been deprecated. The application should resolve the Promise and then update the converter attribute with the resolved converter instance.'}
+     * @ojdeprecated {since: '18.0.0', value: [''],
+     *                description: 'It is recommended to either use oj-c-input-date-picker which has a picker but no formatting support,
+     *                  or use oj-c-input-date-text for formatting but has no picker. The property is being deprecated because
+     *                  the oj-input-date component has an implicit date converter that formats dates in the required
+     *                  short format with a four-digit year. Additionally, the new today-time-zone property allows
+     *                  applications to highlight the today cell in a different timezone. Along with the new
+     *                  two-digit-start-year property, which allows applications to specify the earliest date of
+     *                  a 100-year period within which the two-digit year will be interpreted, the explicit converter
+     *                  is unnecessary.'}
      * @default new DateTimeConverter({ formatType: 'date', dateFormat: 'short' })
      */
     converter: undefined,
@@ -3140,7 +3270,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *                  its options (aka JSON format) has been deprecated and does nothing. If needed, you can
      *                  make the JSON format work again by importing the deprecated ojvalidation module you need,
      *                  like ojvalidation-base.'}
-     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @ojdeprecated {since: '17.0.0', value: [''], description: "The oj-date-picker is used internally by the input date component and is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
      * @type {Array.<Object>}
      */
 
@@ -3234,7 +3364,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *               {target: "Type", value: "Array<'placeholder'|'notewindow'|'none'>|'placeholder'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
      * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'placeholder'|'notewindow'|'none'>", "'placeholder'", "'notewindow'"],
      *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
-     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @ojdeprecated {since: '17.0.0', value: [''], description: "The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
      * @memberof! oj.ojDatePicker
      * @since 0.7
      */
@@ -3261,7 +3391,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *               {target: "Type", value: "Array<'inline'|'notewindow'|'none'>|'inline'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
      * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'inline'|'notewindow'|'none'>", "'inline'", "'notewindow'"],
      *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
-     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @ojdeprecated {since: '17.0.0', value: [''], description: "The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
      * @memberof! oj.ojDatePicker
      * @since 0.7
      */
@@ -3288,7 +3418,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *               {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'display'|'none'",  consumedBy: 'tsdep'}]
      * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'notewindow'|'none'>", "'notewindow'"],
      *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
-     * @ojdeprecated {since: '17.0.0', description: "The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
+     * @ojdeprecated {since: '17.0.0', value: [''], description: "The oj-date-picker is used internally by the input date component and is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-date-picker is not intended to be a form component."}
      * @memberof! oj.ojDatePicker
      * @since 0.7
      */
@@ -3347,7 +3477,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *               {target: "Type", value: "Array<'placeholder'|'notewindow'|'none'>|'placeholder'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
      * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'placeholder'|'notewindow'|'none'>", "'placeholder'", "'notewindow'"],
      *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
-     * @ojdeprecated {since: '17.0.0', description: "Please use help-hints instead."}
+     * @ojdeprecated {since: '17.0.0', value: [''], description: "Please use help-hints instead."}
      * @memberof! oj.ojInputDate
      * @since 0.7
      */
@@ -3689,15 +3819,14 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     pickerAttributes: null,
     /**
      * <p>The  <code class="prettyprint">rawValue</code> is the read-only property for retrieving
-     * the current value from the input field in string form. The main consumer of
-     * <code class="prettyprint">rawValue</code> is a converter.</p>
+     * the current value from the input field in string form.
      * <p>
      * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event,
      * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed.
      * If the user types in '1,200' into the field, the rawValue will be '1', then '1,', then '1,2',
      * ..., and finally '1,200'. Then when the user blurs or presses
      * Enter the <code class="prettyprint">value</code> property gets converted and validated
-     * (if there is a converter or validators) and then gets updated if valid.
+     * (if there are validators) and then gets updated if valid.
      * </p>
      * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
      * @expose
@@ -3743,7 +3872,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *  not available when the picker is inline, defaults to 'jet' instead.</br></br>
      * @default "jet"
      *
-     * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated for the same reason.'}
+     * @ojdeprecated {since: '8.0.0', description: 'Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result, the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated.'}
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
      * &lt;oj-date-picker render-mode='jet'>&lt;/oj-date-picker>
@@ -3786,7 +3915,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      *  not available when the picker is inline, defaults to 'jet' instead.</br></br>
      * @default "jet"
      *
-     * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated for the same reason.'}
+     * @ojdeprecated {since: '8.0.0', description: 'Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result, the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated.'}
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
      * &lt;oj-input-date render-mode='native'>&lt;/oj-input-date>
@@ -3823,8 +3952,58 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @ojsignature {target: "Type", value: "(param: oj.ojInputDate.DayFormatterInput)=> (null|'all'|oj.ojInputDate.DayFormatterOutput)"}
      * @default null
      */
-    dayFormatter: null
-
+    dayFormatter: null,
+    /**
+     * <p>The today-time-zone attribute is used to compute today's date. It defaults to the user's system timezone.</p>
+     * <p>
+     * The only reason an application would set this property would be if they want the highlighted today cell to be in a different timezone
+     * than the user's system's timezone - for example, if the user has a preferred timezone that is not where they are physically working.
+     * For this use case, this property should be used instead of the converter property.
+     * </p>
+     * <p>If set, this property will take precedence over the converter timezone.</p>
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @memberof oj.ojInputDate
+     * @type {string}
+     * @ojsignature {target: "Type", value: "string"}
+     * @ojshortdesc The today-time-zone attribute is used to compute today's date. It defaults to the user's system timezone.
+     */
+    todayTimeZone: undefined,
+    /**
+     * <p>
+     * The two-digit-year-start attribute defines the starting point of a 100-year period for interpreting two digit years.
+     * This property should be used instead of the converter property for this specific use case.
+     * </p>
+     * <p>
+     * During parsing, two digit years will be placed in the range from two-digit-year-start to two-digit-year-start + 100 years.
+     * The default value is 1950.
+     * </p>
+     * <p style='padding-left: 5px;'>
+     * Example: if two-digit-year-start is 1950, 10 is parsed as 2010<br/><br/>
+     * Example: if two-digit-year-start is 1900, 10 is parsed as 1910<br/><br/>
+     * Example: if two-digit-year-start is 1, 10 is parsed as 10
+     * </p>
+     * <p>
+     * This attribute ensures that when a user types in a two digit year, it is correctly interpreted within the specified 100-year range.
+     * </p>
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @memberof oj.ojInputDate
+     * @type {number}
+     * @ojsignature {target: "Type", value: "number"}
+     * @ojshortdesc The two-digit-year-start attribute defines the starting point of a 100-year period for interpreting two digit years.
+     */
+    twoDigitYearStart: undefined
+    /**
+     * @ignore
+     * @name twoDigitYearStart
+     * @instance
+     * @memberof oj.ojDatePicker
+     */
     /**
      * Additional info to be used when rendering the day
      *
@@ -3992,8 +4171,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     /**
      * The value of the InputDate element which must be an ISOString.
      * <p> The value should be a local date (no time) ISOString
-     * like '2021-03-14'. If value is zulu to begin with, then the timezone specified
-     * on the converter, if there is one, or the local timezone of the browser is used to figure out the day.
+     * like '2021-03-14'. If value is zulu to begin with, then the todayTimeZone or the local timezone of the browser is used to
+     * figure out the day.
      * Once the user interacts with the component, the time portion is lost
      * and the value becomes a local date, no longer a zulu datetime.
      * </p>
@@ -4165,6 +4344,14 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         animation: animation
       })
       .attr('data-oj-internal', ''); // mark internal component, used in Components.getComponentElementByNode;
+
+    // JET-69008 ACC,DATE PICKER POPUP,OATB (Axe-Core Best Practice) RULE ERROR
+    // The dialog elements need to have an accessible label. So, we add an aria-label to the popup element.
+    const label = this.getTranslatedString(
+      this.widgetName === 'ojInputDateTime' ? 'dateTimePicker' : 'datePicker'
+    );
+    this._popUpDpDiv.attr('aria-label', label);
+
     this.element.attr('data-oj-popup-' + this._popUpDpDiv.attr('id') + '-parent', ''); // mark parent of pop up @HTMLUpdateOK
 
     // JET-57860 - Date Picker Pop Up - Last Day not visible in landscape
@@ -5119,7 +5306,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
           handled = true;
           break; // next month/year on page down/+ ctrl
         case kc.END:
-          this._currentDay = this._getDaysInMonth(this._currentYear, this._currentMonth);
+          this._currentDay = getDaysInMonth(this._currentYear, this._currentMonth);
           this._changeCurrentDay();
 
           handled = true;
@@ -5576,6 +5763,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   _getCurrentDate: function (converter = this._GetConverter()) {
     const date = new Date();
     const timeZone = _getConverterTimezone(converter);
+
     if (timeZone) {
       // toISOString,
       // A string representing the given date in the ISO 8601 format according to universal time
@@ -5608,7 +5796,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
   /**
    * Action for current link. Note that this is of today relative to client's locale so this is ok.
-   * If the timezone option is provided in the converter then Today's button will highlight the current day based on the timezone specified in the converter.
+   * If the todayTimeZone option is provided then Today's button will highlight the current day based on the timezone specified.
    *
    * @private
    */
@@ -5687,7 +5875,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
     var converterUtils = IntlConverterUtils;
     var value = this.options.value;
-    var tempDate = new Date(this._currentYear, this._currentMonth, this._currentDay);
+    var tempDate = toJSDateFullYear(this._currentYear, this._currentMonth, this._currentDay);
 
     if (value) {
       // need to preserve the time portion when of ojInputDateTime, so update only year, month, and date
@@ -6170,7 +6358,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     var dateParams = ['date', 'month', 'fullYear'];
     var converter = this._GetConverter();
     var tempDate = this._getCurrentDate(converter);
-    var today = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate()); // clear time
+    var today = toJSDateFullYear(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate()); // clear time
     var isRTL = this._IsRTL();
     var footerLayoutDisplay = this.options.datePicker.footerLayout;
     var numMonths = this._getNumberOfMonths();
@@ -6182,14 +6370,14 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     var maxDateParams;
     var drawMonth = this._drawMonth - currentMonthPos;
     var drawYear = this._drawYear;
-    var compareDate = new Date(this._currentYear, this._currentMonth, this._currentDay);
+    var compareDate = toJSDateFullYear(this._currentYear, this._currentMonth, this._currentDay);
     var valueDateIso = this._calculateValueDateIso(converter);
 
     var valueDateParams = this._validateDatetime(valueDateIso, dateParams, true);
     var selectedYear = valueDateParams.fullYear;
     var selectedDay = valueDateParams.date;
     var selectedMonth = valueDateParams.month;
-    var valueDate = new Date(selectedYear, selectedMonth, selectedDay);
+    var valueDate = toJSDateFullYear(selectedYear, selectedMonth, selectedDay);
     var wDisabled = this._IsDisabled();
     var weekText = this._EscapeXSS(this.getTranslatedString('weekText'));
 
@@ -6232,15 +6420,19 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     }
 
     if (minDateParams) {
-      var minDraw = new Date(minDateParams.fullYear, minDateParams.month, minDateParams.date);
+      var minDraw = toJSDateFullYear(
+        minDateParams.fullYear,
+        minDateParams.month,
+        minDateParams.date
+      );
 
       // tech shouldn't this error out? [previous existing jquery logic so keep, maybe a reason]
       if (maxDateParams && IntlConverterUtils._compareISODates(maxDateIso, minDateIso) < 0) {
         warn(`min property is greater than max property, and should be fixed.
          For now min is set to equal max.`);
-        minDraw = new Date(maxDateParams.fullYear, maxDateParams.month, maxDateParams.date);
+        minDraw = toJSDateFullYear(maxDateParams.fullYear, maxDateParams.month, maxDateParams.date);
       }
-      while (new Date(drawYear, drawMonth, this._getDaysInMonth(drawYear, drawMonth)) < minDraw) {
+      while (toJSDateFullYear(drawYear, drawMonth, getDaysInMonth(drawYear, drawMonth)) < minDraw) {
         drawMonth += 1;
         if (drawMonth > 11) {
           drawMonth = 0;
@@ -6250,7 +6442,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     }
 
     if (maxDateParams) {
-      var maxDraw = new Date(
+      var maxDraw = toJSDateFullYear(
         maxDateParams.fullYear,
         maxDateParams.month - numMonths[0] * numMonths[1] + 1,
         maxDateParams.date
@@ -6260,9 +6452,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       if (minDateParams && IntlConverterUtils._compareISODates(maxDateIso, minDateIso) < 0) {
         warn(`max property is less than min property, and should be fixed.
         For now max is set to equal min.`);
-        maxDraw = new Date(minDateParams.fullYear, minDateParams.month, minDateParams.date);
+        maxDraw = toJSDateFullYear(minDateParams.fullYear, minDateParams.month, minDateParams.date);
       }
-      while (new Date(drawYear, drawMonth, 1) > maxDraw) {
+      while (toJSDateFullYear(drawYear, drawMonth, 1) > maxDraw) {
         drawMonth -= 1;
         if (drawMonth < 0) {
           drawMonth = 11;
@@ -6448,7 +6640,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         }
 
         calender += thead + "</tr></thead><tbody role='presentation'>";
-        var daysInMonth = this._getDaysInMonth(drawYear, drawMonth);
+        var daysInMonth = getDaysInMonth(drawYear, drawMonth);
         // This changes the selectedDay to make sure it is within the days in the month.
         // If the app developer chooses the correct day
         if (drawYear === selectedYear && drawMonth === selectedMonth) {
@@ -6470,7 +6662,14 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         // by the daysOutsideMonth component option.
         // The printDate uses leadDays, and leadDays uses firstDay and firstDay is based on the locale's region.
         // So the printDate would be the first Sunday for en-US, and the first Monday for en-GB
-        var printDate = new Date(drawYear, drawMonth, 1 - leadDays);
+        // anywhere we are adjusting days we need to call addToCalendarDate.
+        // new Date does not adjust for years < 100.
+        const calendarDate = addToCalendarDate(
+          { year: drawYear, month: drawMonth, day: 1 },
+          { years: 0, months: 0, days: 0 - leadDays }
+        );
+        var printDate = toJSDateFullYear(calendarDate.year, calendarDate.month, calendarDate.day);
+
         let mondayDateForWeekDisplay;
         for (var dRow = 0; dRow < numRows; dRow++) {
           // create date picker rows
@@ -6485,7 +6684,21 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
               // This means that some days from one year may be placed into weeks
               // 'belonging' to another year.
               if (!mondayDateForWeekDisplay) {
-                mondayDateForWeekDisplay = new Date(drawYear, drawMonth, 2 - leadDays);
+                mondayDateForWeekDisplay = toJSDateFullYear(
+                  printDate.getFullYear(),
+                  printDate.getMonth(),
+                  printDate.getDate()
+                );
+                const dayNumber = mondayDateForWeekDisplay.getUTCDay();
+
+                // For ISO week, we set the start of the week to Monday.
+                // This calculation assumes dayNumber is 0 (Sunday), 1 (Monday), or 6 (Saturday), which
+                // are the first day of week values from the locales we support.
+                if (dayNumber !== 1) {
+                  mondayDateForWeekDisplay.setUTCDate(
+                    mondayDateForWeekDisplay.getUTCDate() + (dayNumber === 0 ? 1 : 2)
+                  );
+                }
               }
               const mondayLocalIso = converterUtils.dateToLocalIso(mondayDateForWeekDisplay);
               calculatedWeek = this._calculateWeek(mondayLocalIso);
@@ -6728,16 +6941,19 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @private
    */
   _adjustInstDate: function (offset, period) {
-    var year = this._drawYear + (period === 'Y' ? offset : 0);
-    var month = this._drawMonth + (period === 'M' ? offset : 0);
-    var day =
-      Math.min(this._currentDay, this._getDaysInMonth(year, month)) + (period === 'D' ? offset : 0);
-    var date = new Date(year, month, day);
+    const calendarDate = addToCalendarDate(
+      { year: this._drawYear, month: this._drawMonth, day: this._currentDay },
+      {
+        years: period === 'Y' ? offset : 0,
+        months: period === 'M' ? offset : 0,
+        days: period === 'D' ? offset : 0
+      }
+    );
 
-    this._currentDay = date.getDate();
-    this._currentMonth = date.getMonth();
+    this._currentDay = calendarDate.day;
+    this._currentMonth = calendarDate.month;
     this._drawMonth = this._currentMonth;
-    this._currentYear = date.getFullYear();
+    this._currentYear = calendarDate.year;
     this._drawYear = this._currentYear;
   },
 
@@ -6779,7 +6995,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       "'>";
 
     calender += "<tbody role='presentation'>";
-    var printDate = new Date(drawYear, 0, 1);
+    var printDate = toJSDateFullYear(drawYear, 0, 1);
     for (var dRow = 0; dRow < 3; dRow++) {
       // create date picker rows
       calender += "<tr role='row'>";
@@ -6893,7 +7109,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
     var yearRange = this._getYearRange(drawYear, minDateParams, maxDateParams);
     var baseYear = Math.floor(drawYear / 10) * 10;
-    var printDate = new Date(baseYear, drawMonth, 1);
+    var printDate = toJSDateFullYear(baseYear, drawMonth, 1);
     for (var dRow = 0; dRow < 3; dRow++) {
       // create date picker rows
       calender += "<tr role='row'>";
@@ -6991,16 +7207,18 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * This is copied from OraDateTimeConverter.
    * @method _calculateWeek
    * @private
-   * @param {string} date - iso 8601 string. It may be in extended or
-   * non-extended form. http://en.wikipedia.org/wiki/ISO_8601
+   * @param {string} mondayDate - iso 8601 string. It may be in extended or
+   * non-extended form. http://en.wikipedia.org/wiki/ISO_8601. It needs to be a Monday.
    * @return {number}. The current week in the year when provided a date.
    */
   _calculateWeek: function (date) {
+    // We pass in a Monday as our date, so we can assume this date is a Monday in this function.
     var d = OraI18nUtils._IsoStrParts(date);
     var time;
-    var checkDate = new Date(Date.UTC(d[0], d[1] - 1, d[2]));
+    var checkDate = toJSDateFullYear(d[0], d[1] - 1, d[2]);
 
     // Find Thursday of this week starting on Monday
+    // if getUTCDay() returns 0 (Sunday), we use 7 for the calculation, but our code passes in a Monday, so getUTCDay() will be 1.
     checkDate.setUTCDate(checkDate.getUTCDate() + 4 - (checkDate.getUTCDay() || 7));
     time = checkDate.getTime();
     checkDate.setUTCMonth(0); // Compare with Jan 1
@@ -7054,15 +7272,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   },
 
   /**
-   * Find the number of days in a given month.
-   *
-   * @private
-   */
-  _getDaysInMonth: function (year, month) {
-    return 32 - new Date(year, month, 32).getDate();
-  },
-
-  /**
    * Find the day of the week of the first of a month.
    * Returns the day of the week for the specified date according to local time,
    * where 0 represents Sunday, and 6 represents Saturday.
@@ -7071,7 +7280,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @private
    */
   _getFirstDayOfMonth: function (year, month) {
-    return new Date(year, month, 1).getDay();
+    return toJSDateFullYear(year, month, 1).getDay();
   },
 
   /**
@@ -7080,13 +7289,18 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @private
    */
   _canAdjustMonth: function (offset, curYear, curMonth) {
-    var numMonths = this._getNumberOfMonths();
-    var date = new Date(curYear, curMonth + (offset < 0 ? offset : numMonths[0] * numMonths[1]), 1);
+    const numMonths = this._getNumberOfMonths();
+    const calendarDate = addToCalendarDate(
+      { year: curYear, month: curMonth, day: 1 },
+      { years: 0, months: offset < 0 ? offset : numMonths[0] * numMonths[1], days: 0 }
+    );
 
     if (offset < 0) {
-      date.setDate(this._getDaysInMonth(date.getFullYear(), date.getMonth()));
+      calendarDate.day = getDaysInMonth(calendarDate.year, calendarDate.month);
     }
-    return this._isInRange(date);
+    return this._isInRange(
+      toJSDateFullYear(calendarDate.year, calendarDate.month, calendarDate.day)
+    );
   },
 
   /**
@@ -7095,15 +7309,23 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @private
    */
   _canAdjustYear: function (offset, curYear) {
-    var date;
+    let calendarDate;
 
     if (offset < 0) {
-      date = new Date(curYear + offset, 12, 1);
-      date.setDate(this._getDaysInMonth(date.getFullYear(), date.getMonth()));
+      calendarDate = addToCalendarDate(
+        { year: curYear, month: 11, day: 1 }, // Month is 0-based (11 = December)
+        { years: offset, months: 0, days: 0 }
+      );
+      calendarDate.day = getDaysInMonth(calendarDate.year, calendarDate.month);
     } else {
-      date = new Date(curYear + offset, 1, 1);
+      calendarDate = addToCalendarDate(
+        { year: curYear, month: 0, day: 1 }, // Month is 0-based (0 = January)
+        { years: offset, months: 0, days: 0 }
+      );
     }
-    return this._isInRange(date);
+    return this._isInRange(
+      toJSDateFullYear(calendarDate.year, calendarDate.month, calendarDate.day)
+    );
   },
 
   /**
@@ -7112,16 +7334,24 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @private
    */
   _canAdjustDecade: function (offset, curYear) {
-    var date;
-    var baseYear = Math.floor(curYear / 10) * 10;
+    const baseYear = Math.floor(curYear / 10) * 10;
+    let calendarDate;
 
     if (offset < 0) {
-      date = new Date(baseYear + 9 + offset * 10, 12, 1);
-      date.setDate(this._getDaysInMonth(date.getFullYear(), date.getMonth()));
+      calendarDate = addToCalendarDate(
+        { year: baseYear + 9, month: 11, day: 1 }, // Month is 0-based (11 = December)
+        { years: offset * 10, months: 0, days: 0 }
+      );
+      calendarDate.day = getDaysInMonth(calendarDate.year, calendarDate.month);
     } else {
-      date = new Date(baseYear + offset * 10, 1, 1);
+      calendarDate = addToCalendarDate(
+        { year: baseYear, month: 0, day: 1 }, // Month is 0-based (0 = January)
+        { years: offset * 10, months: 0, days: 0 }
+      );
     }
-    return this._isInRange(date);
+    return this._isInRange(
+      toJSDateFullYear(calendarDate.year, calendarDate.month, calendarDate.day)
+    );
   },
 
   /**
@@ -7132,10 +7362,10 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    */
   _outSideMinMaxRange: function (printDate, minDateParams, maxDateParams) {
     var minDate = minDateParams
-      ? new Date(minDateParams.fullYear, minDateParams.month, minDateParams.date)
+      ? toJSDateFullYear(minDateParams.fullYear, minDateParams.month, minDateParams.date)
       : null;
     var maxDate = maxDateParams
-      ? new Date(maxDateParams.fullYear, maxDateParams.month, maxDateParams.date)
+      ? toJSDateFullYear(maxDateParams.fullYear, maxDateParams.month, maxDateParams.date)
       : null;
 
     return (minDate !== null && printDate < minDate) || (maxDate !== null && printDate > maxDate);
@@ -7175,12 +7405,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       // all work by using string manipulation of the isoString
       minDateIso = converter.parse(minDateIso);
       var minDateParams = this._validateDatetime(minDateIso, ['fullYear', 'month', 'date'], true);
-      minDate = new Date(minDateParams.fullYear, minDateParams.month, minDateParams.date);
+      minDate = toJSDateFullYear(minDateParams.fullYear, minDateParams.month, minDateParams.date);
     }
     if (maxDateIso) {
       maxDateIso = converter.parse(maxDateIso);
       var maxDateParams = this._validateDatetime(maxDateIso, ['fullYear', 'month', 'date'], true);
-      maxDate = new Date(maxDateParams.fullYear, maxDateParams.month, maxDateParams.date);
+      maxDate = toJSDateFullYear(maxDateParams.fullYear, maxDateParams.month, maxDateParams.date);
     }
 
     return (
@@ -7439,6 +7669,38 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     // options, and only when the converter has been overridden does it stop. So we need to
     // be sure to cache it in the createDynamicPropertyGetter code in setDefaultOptions.
     if (this.options.converter) {
+      const resolvedOptions = this.options.converter.resolvedOptions?.();
+      const { todayTimeZone, twoDigitYearStart } = this.options;
+      const overrides = {};
+
+      if (todayTimeZone && resolvedOptions && todayTimeZone !== resolvedOptions.timeZone) {
+        // if todayTimeZone is defined and is not equal to the converter's timeZone,
+        // we will create a new converter and override the existing converter's timeZone option
+        overrides.timeZone = todayTimeZone;
+      }
+
+      if (
+        twoDigitYearStart &&
+        resolvedOptions &&
+        twoDigitYearStart !== resolvedOptions.twoDigitYearStart
+      ) {
+        // if twoDigitYearStart is defined and is not equal to the converter's twoDigitYearStart,
+        // we will create a new converter and override the existing converter's twoDigitYearStart option
+        overrides.twoDigitYearStart = twoDigitYearStart;
+      }
+
+      if (Object.keys(overrides).length) {
+        const options = {};
+        $.extend(options, resolvedOptions, overrides);
+        const overrideConverter = new IntlDateTimeConverter(options);
+        this.option('converter', overrideConverter, {
+          _context: {
+            writeback: true,
+            internalSet: true
+          }
+        });
+      }
+
       return this._superApply(arguments);
     }
     // set the default converter when the app dev sets converter to null
@@ -7801,16 +8063,14 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    */
 
   /**
-   * Validates the component's display value using the converter and all validators registered on
+   * Validates the component's display value using all validators registered on
    * the component and updates the <code class="prettyprint">value</code> option by performing the
    * following steps.
    *
    * <p>
    * <ol>
    * <li>All messages are cleared, including custom messages added by the app. </li>
-   * <li>If no converter is present then processing continues to next step. If a converter is
-   * present, the UI value is first converted (i.e., parsed). If there is a parse error then
-   * the messages are shown.</li>
+   * <li>If there is a parse error then the messages are shown.</li>
    * <li>If there are no validators setup for the component the <code class="prettyprint">value</code>
    * option is updated using the display value. Otherwise all
    * validators are run in sequence using the parsed value from the previous step. The implicit
@@ -7832,10 +8092,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    *      submitForm();
    *    }
    *  });
-   * @return {Promise.<string>} Promise resolves to "valid" if there were no converter parse errors and
-   * the component passed all validations.
-   * The Promise resolves to "invalid" if there were converter parse errors or
-   * if there were validation errors.
+   * @return {Promise.<string>} Promise resolves to "valid" if the component passed all validations.
+   * The Promise resolves to "invalid" if there were validation errors.
    * @ojsignature {target: "Type", value: "Promise<'valid'|'invalid'>", for : "returns"}
    *
    * @name validate
@@ -7843,7 +8101,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @access public
    * @expose
    * @memberof oj.ojDatePicker
-   * @ojshortdesc Validates the component's display value using all converters and validators registered on the component. If there are no validation errors. then the value is updated. See the Help documentation for more information.
+   * @ojshortdesc Validates the component's display value using all validators registered on the component. If there are no validation errors. then the value is updated. See the Help documentation for more information.
    * @instance
    * @since 4.0.0
    * @ojdeprecated {since: '17.0.0', description: 'This is not supported in the Redwood UX specification.'}
@@ -10594,7 +10852,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      * @ojvalue {string} 'native' Applications get the functionality of the native picker.</br></br>
      * @default "jet"
      *
-     * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated for the same reason.'}
+     * @ojdeprecated {since: '8.0.0', description: 'Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result, the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated.'}
      *
      * @example <caption>Initialize the InputTime with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
      * &lt;oj-input-time render-mode='native'>&lt;/oj-input-time>
@@ -13186,7 +13444,7 @@ function _getDateTimeDefaultConverter() {
  * The element will decorate its associated label with required and help
  * information, if the <code>required</code> and <code>help</code> attributes are set.
  * </p>
- * @ojdeprecated {since: '17.0.0', description: 'The use of oj-date-time-picker is a Redwood anti-pattern. Please use oj-date-picker, oj-input-date, or oj-input-time instead.'}
+ * @ojdeprecated {since: '17.0.0', value: ['oj-date-picker', 'oj-input-date', 'oj-input-time'], description: 'The use of oj-date-time-picker is a Redwood anti-pattern.'}
  */
 /**
  * @ojcomponent oj.ojInputDateTime
@@ -13461,6 +13719,18 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * @default new DateTimeConverter({ formatType: 'datetime', dateFormat: 'short', timeFormat: 'short' })
      */
     converter: undefined,
+    /**
+     * @ignore
+     * @name todayTimeZone
+     * @instance
+     * @memberof oj.ojInputDateTime
+     */
+    /**
+     * @ignore
+     * @name twoDigitYearStart
+     * @instance
+     * @memberof oj.ojInputDateTime
+     */
     /**
      * The oj-label sets the described-by attribute programmatically on the form component.
      * This attribute is not meant to be set by an application developer directly.
@@ -14091,7 +14361,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      *  not available when the picker is inline, defaults to 'jet' instead.</br></br>
      * @default "jet"
      *
-     * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated for the same reason.'}
+     * @ojdeprecated {since: '8.0.0', description: 'Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result, the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated.'}
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
      * &lt;oj-date-time-picker render-mode='jet'>&lt;/oj-date-time-picker>
@@ -14135,7 +14405,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      *  not available when the picker is inline, defaults to 'jet' instead.</br></br>
      * @default "jet"
      *
-     * @ojdeprecated {since: '8.0.0', description: 'The "native" mode rendering is deprecated because JET is promoting a consistent Oracle UX over native look and feel in Redwood. Since this property takes only two values the property itself is deprecated. The theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated for the same reason.'}
+     * @ojdeprecated {since: '8.0.0', description: 'Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result, the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated.'}
      *
      * @example <caption>Get or set the <code class="prettyprint">renderMode</code> property for
      * an InputDateTime after initialization:</caption>

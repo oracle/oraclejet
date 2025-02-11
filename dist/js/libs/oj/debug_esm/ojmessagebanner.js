@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -104,7 +104,7 @@ const severityIcons = {
 };
 function MessageStartIcon({ severity, translations }) {
     const IconComponent = severityIcons[severity];
-    return (jsx("div", { class: "oj-messagebanner-start-icon-container", role: "presentation", children: jsx("div", { class: "oj-flex oj-sm-align-items-center", height: "100%", children: jsx("span", { class: "oj-messagebanner-start-icon", role: "img", title: translations?.[severity], children: jsx(IconComponent, {}) }) }) }));
+    return (jsx("div", { class: "oj-messagebanner-start-icon-container", role: "presentation", children: jsx("div", { class: "oj-flex oj-sm-align-items-center", style: { height: '100%' }, children: jsx("span", { class: "oj-messagebanner-start-icon", role: "img", title: translations?.[severity], children: jsx(IconComponent, {}) }) }) }));
 }
 
 function MessageSummary({ text }) {

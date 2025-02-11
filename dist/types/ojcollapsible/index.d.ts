@@ -3,6 +3,7 @@ import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojCollapsible extends baseComponent<ojCollapsibleSettableProperties> {
     disabled: boolean;
+    /** @deprecated since 14.0.0 - The expand-area attribute should no longer be used and will be removed in the future. A click anywhere in the header area will toggle the disclosure (current default setting). */
     expandArea: 'header' | 'disclosureIcon';
     expanded: boolean;
     addEventListener<T extends keyof ojCollapsibleEventMap>(type: T, listener: (this: HTMLElement, ev: ojCollapsibleEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -57,6 +58,7 @@ export interface ojCollapsibleEventMap extends baseComponentEventMap<ojCollapsib
 }
 export interface ojCollapsibleSettableProperties extends baseComponentSettableProperties {
     disabled: boolean;
+    /** @deprecated since 14.0.0 - The expand-area attribute should no longer be used and will be removed in the future. A click anywhere in the header area will toggle the disclosure (current default setting). */
     expandArea: 'header' | 'disclosureIcon';
     expanded: boolean;
 }
@@ -102,7 +104,7 @@ export interface CollapsibleIntrinsicProps extends Partial<Readonly<ojCollapsibl
     onojCollapse?: (value: ojCollapsibleEventMap['ojCollapse']) => void;
     onojExpand?: (value: ojCollapsibleEventMap['ojExpand']) => void;
     ondisabledChanged?: (value: ojCollapsibleEventMap['disabledChanged']) => void;
-    onexpandAreaChanged?: (value: ojCollapsibleEventMap['expandAreaChanged']) => void;
+    /** @deprecated since 14.0.0 */ onexpandAreaChanged?: (value: ojCollapsibleEventMap['expandAreaChanged']) => void;
     onexpandedChanged?: (value: ojCollapsibleEventMap['expandedChanged']) => void;
     children?: ComponentChildren;
 }

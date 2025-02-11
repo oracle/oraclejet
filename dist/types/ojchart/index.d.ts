@@ -8,6 +8,7 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
    null> extends dvtBaseComponent<ojChartSettableProperties<K, D, I, C>> {
     animationOnDataChange?: 'slideToLeft' | 'slideToRight' | 'auto' | 'none';
     animationOnDisplay?: 'alphaFade' | 'zoom' | 'auto' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     comboSeriesOrder?: 'data' | 'seriesType';
     coordinateSystem?: 'polar' | 'cartesian';
@@ -51,6 +52,7 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
     tooltip?: {
         renderer: dvtBaseComponent.PreventableDOMRendererFunction<ojChart.TooltipRendererContext<K, D, I>>;
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
     type?: ojChart.ChartType;
     valueFormats?: ojChart.ValueFormats;
@@ -613,6 +615,7 @@ export namespace ojChart {
     };
     // tslint:disable-next-line interface-over-type-literal
     type GroupTemplateContext<D> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         depth: number;
         ids: string[];
@@ -701,6 +704,7 @@ export namespace ojChart {
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<K = any, D = any> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: D;
         index: number;
@@ -719,6 +723,7 @@ export namespace ojChart {
         position?: 'start' | 'end' | 'bottom' | 'top' | 'auto';
         referenceObjectSection?: LegendReferenceObjectSection;
         rendered?: 'on' | 'off' | 'auto';
+        /** @deprecated since 12.1.0 - Setting scrolling to off is not supported in the Redwood theme and it is not recommended. */
         scrolling?: 'off' | 'asNeeded';
         sectionTitleHalign?: 'center' | 'end' | 'start';
         sectionTitleStyle?: Partial<CSSStyleDeclaration>;
@@ -729,13 +734,16 @@ export namespace ojChart {
         symbolWidth?: number;
         textStyle?: Partial<CSSStyleDeclaration>;
         title?: string;
+        /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles */
         titleHalign?: 'center' | 'end' | 'start';
+        /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in legend to style all section titles */
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendItem = {
         borderColor?: string;
         categories?: string[];
+        /** @deprecated since 14.1.0 - Use hidden-categories attribute of oj-chart instead. */
         categoryVisibility?: 'hidden' | 'visible';
         color?: string;
         id?: string;
@@ -759,21 +767,28 @@ export namespace ojChart {
     // tslint:disable-next-line interface-over-type-literal
     type LegendReferenceObjectSection = {
         title?: string;
+        /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles. */
         titleHalign?: 'center' | 'end' | 'start';
+        /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in legend to style all section titles. */
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendSection = {
         items?: LegendItem[];
+        /** @deprecated since 18.0.0 - Use of nested legend sections is not recommended in Redwood theme. As such, this attribute is deprecated. */
         sections?: LegendSection[];
         title?: string;
+        /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles. */
         titleHalign?: 'center' | 'end' | 'start';
+        /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in legend to style all section titles. */
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendSeriesSection = {
         title?: string;
+        /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles. */
         titleHalign?: 'center' | 'end' | 'start';
+        /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in legend to style all section titles. */
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -820,6 +835,7 @@ export namespace ojChart {
     };
     // tslint:disable-next-line interface-over-type-literal
     type PieCenterContext = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         innerBounds: {
             height: number;
@@ -925,6 +941,7 @@ export namespace ojChart {
     };
     // tslint:disable-next-line interface-over-type-literal
     type SeriesTemplateContext<D> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         id: string;
         index: number;
@@ -989,6 +1006,7 @@ export namespace ojChart {
         stockRangeColor?: string;
         stockRisingColor?: string;
         stockVolumeColor?: string;
+        /** @deprecated since 18.0.0 - 3D effect is not supported in Redwood theme and is not recommended. As such, this attribute is deprecated. */
         threeDEffect?: 'on' | 'off';
         tooltipLabelStyle?: Partial<CSSStyleDeclaration>;
         tooltipValueStyle?: Partial<CSSStyleDeclaration>;
@@ -997,6 +1015,7 @@ export namespace ojChart {
     type TooltipContext<K, D, I extends Array<Item<any, null>> | number[] | null> = {
         close: number;
         color: string;
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: Item<K, Array<Item<any, null>> | number[] | null> | number | null;
         group: string | string[];
@@ -1273,6 +1292,7 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
    null> extends dvtBaseComponentSettableProperties {
     animationOnDataChange?: 'slideToLeft' | 'slideToRight' | 'auto' | 'none';
     animationOnDisplay?: 'alphaFade' | 'zoom' | 'auto' | 'none';
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     comboSeriesOrder?: 'data' | 'seriesType';
     coordinateSystem?: 'polar' | 'cartesian';
@@ -1316,6 +1336,7 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
     tooltip?: {
         renderer: dvtBaseComponent.PreventableDOMRendererFunction<ojChart.TooltipRendererContext<K, D, I>>;
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
     type?: ojChart.ChartType;
     valueFormats?: ojChart.ValueFormats;
@@ -1833,6 +1854,7 @@ export interface ojSparkChart<K, D extends ojSparkChart.Item | any> extends dvtB
     areaColor?: string;
     areaSvgClassName?: string;
     areaSvgStyle?: Partial<CSSStyleDeclaration>;
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     barGapRatio?: number;
     baselineScaling?: 'zero' | 'min';
@@ -2035,6 +2057,7 @@ export interface ojSparkChartSettableProperties<K, D extends ojSparkChart.Item |
     areaColor?: string;
     areaSvgClassName?: string;
     areaSvgStyle?: Partial<CSSStyleDeclaration>;
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     barGapRatio?: number;
     baselineScaling?: 'zero' | 'min';
@@ -2609,6 +2632,7 @@ export namespace ChartElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type GroupTemplateContext<D> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         depth: number;
         ids: string[];
@@ -2697,6 +2721,7 @@ export namespace ChartElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<K = any, D = any> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: D;
         index: number;
@@ -2715,6 +2740,7 @@ export namespace ChartElement {
         position?: 'start' | 'end' | 'bottom' | 'top' | 'auto';
         referenceObjectSection?: ojChart.LegendReferenceObjectSection;
         rendered?: 'on' | 'off' | 'auto';
+        /** @deprecated since 12.1.0 - Setting scrolling to off is not supported in the Redwood theme and it is not recommended. */
         scrolling?: 'off' | 'asNeeded';
         sectionTitleHalign?: 'center' | 'end' | 'start';
         sectionTitleStyle?: Partial<CSSStyleDeclaration>;
@@ -2725,13 +2751,16 @@ export namespace ChartElement {
         symbolWidth?: number;
         textStyle?: Partial<CSSStyleDeclaration>;
         title?: string;
+        /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles */
         titleHalign?: 'center' | 'end' | 'start';
+        /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in legend to style all section titles */
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendItem = {
         borderColor?: string;
         categories?: string[];
+        /** @deprecated since 14.1.0 - Use hidden-categories attribute of oj-chart instead. */
         categoryVisibility?: 'hidden' | 'visible';
         color?: string;
         id?: string;
@@ -2755,21 +2784,28 @@ export namespace ChartElement {
     // tslint:disable-next-line interface-over-type-literal
     type LegendReferenceObjectSection = {
         title?: string;
+        /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles. */
         titleHalign?: 'center' | 'end' | 'start';
+        /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in legend to style all section titles. */
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendSection = {
         items?: ojChart.LegendItem[];
+        /** @deprecated since 18.0.0 - Use of nested legend sections is not recommended in Redwood theme. As such, this attribute is deprecated. */
         sections?: ojChart.LegendSection[];
         title?: string;
+        /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles. */
         titleHalign?: 'center' | 'end' | 'start';
+        /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in legend to style all section titles. */
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendSeriesSection = {
         title?: string;
+        /** @deprecated since 15.1.0 - Individual section title alignment is no longer supported. Use section-title-halign in legend to align all section titles. */
         titleHalign?: 'center' | 'end' | 'start';
+        /** @deprecated since 15.1.0 - Individual section title style is no longer supported. Use section-title-style in legend to style all section titles. */
         titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -2816,6 +2852,7 @@ export namespace ChartElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type PieCenterContext = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         innerBounds: {
             height: number;
@@ -2921,6 +2958,7 @@ export namespace ChartElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type SeriesTemplateContext<D> = {
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         id: string;
         index: number;
@@ -2985,6 +3023,7 @@ export namespace ChartElement {
         stockRangeColor?: string;
         stockRisingColor?: string;
         stockVolumeColor?: string;
+        /** @deprecated since 18.0.0 - 3D effect is not supported in Redwood theme and is not recommended. As such, this attribute is deprecated. */
         threeDEffect?: 'on' | 'off';
         tooltipLabelStyle?: Partial<CSSStyleDeclaration>;
         tooltipValueStyle?: Partial<CSSStyleDeclaration>;
@@ -2993,6 +3032,7 @@ export namespace ChartElement {
     type TooltipContext<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
         close: number;
         color: string;
+        /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
         data: ojChart.Item<K, Array<ojChart.Item<any, null>> | number[] | null> | number | null;
         group: string | string[];
@@ -3522,6 +3562,7 @@ export namespace SparkChartItemElement {
     type valueChanged = JetElementCustomEvent<ojSparkChartItem["value"]>;
 }
 export interface ChartIntrinsicProps extends Partial<Readonly<ojChartSettableProperties<any, any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 10.0.0 - No longer recommended. Use separate drill listeners instead - ojItemDrill, ojGroupDrill, ojSeriesDrill, and ojMultiSeriesDrill. */
     onojDrill?: (value: ojChartEventMap<any, any, any, any>['ojDrill']) => void;
     onojGroupDrill?: (value: ojChartEventMap<any, any, any, any>['ojGroupDrill']) => void;
     onojItemDrill?: (value: ojChartEventMap<any, any, any, any>['ojItemDrill']) => void;
@@ -3532,7 +3573,7 @@ export interface ChartIntrinsicProps extends Partial<Readonly<ojChartSettablePro
     onojViewportChangeInput?: (value: ojChartEventMap<any, any, any, any>['ojViewportChangeInput']) => void;
     onanimationOnDataChangeChanged?: (value: ojChartEventMap<any, any, any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojChartEventMap<any, any, any, any>['animationOnDisplayChanged']) => void;
-    onasChanged?: (value: ojChartEventMap<any, any, any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojChartEventMap<any, any, any, any>['asChanged']) => void;
     oncomboSeriesOrderChanged?: (value: ojChartEventMap<any, any, any, any>['comboSeriesOrderChanged']) => void;
     oncoordinateSystemChanged?: (value: ojChartEventMap<any, any, any, any>['coordinateSystemChanged']) => void;
     ondataChanged?: (value: ojChartEventMap<any, any, any, any>['dataChanged']) => void;
@@ -3570,7 +3611,7 @@ export interface ChartIntrinsicProps extends Partial<Readonly<ojChartSettablePro
     onstyleDefaultsChanged?: (value: ojChartEventMap<any, any, any, any>['styleDefaultsChanged']) => void;
     ontimeAxisTypeChanged?: (value: ojChartEventMap<any, any, any, any>['timeAxisTypeChanged']) => void;
     ontooltipChanged?: (value: ojChartEventMap<any, any, any, any>['tooltipChanged']) => void;
-    ontouchResponseChanged?: (value: ojChartEventMap<any, any, any, any>['touchResponseChanged']) => void;
+    /** @deprecated since 18.0.0 */ ontouchResponseChanged?: (value: ojChartEventMap<any, any, any, any>['touchResponseChanged']) => void;
     ontypeChanged?: (value: ojChartEventMap<any, any, any, any>['typeChanged']) => void;
     onvalueFormatsChanged?: (value: ojChartEventMap<any, any, any, any>['valueFormatsChanged']) => void;
     onxAxisChanged?: (value: ojChartEventMap<any, any, any, any>['xAxisChanged']) => void;
@@ -3669,7 +3710,7 @@ export interface SparkChartIntrinsicProps extends Partial<Readonly<ojSparkChartS
     onareaColorChanged?: (value: ojSparkChartEventMap<any, any>['areaColorChanged']) => void;
     onareaSvgClassNameChanged?: (value: ojSparkChartEventMap<any, any>['areaSvgClassNameChanged']) => void;
     onareaSvgStyleChanged?: (value: ojSparkChartEventMap<any, any>['areaSvgStyleChanged']) => void;
-    onasChanged?: (value: ojSparkChartEventMap<any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojSparkChartEventMap<any, any>['asChanged']) => void;
     onbarGapRatioChanged?: (value: ojSparkChartEventMap<any, any>['barGapRatioChanged']) => void;
     onbaselineScalingChanged?: (value: ojSparkChartEventMap<any, any>['baselineScalingChanged']) => void;
     oncolorChanged?: (value: ojSparkChartEventMap<any, any>['colorChanged']) => void;

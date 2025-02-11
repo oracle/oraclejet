@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1192,7 +1192,7 @@ var __oj_timeline_series_metadata =
  * @property {number}  maxAvailableWidth The maximum available width in pixels for content.
  * This value generally maps to the available space inside the item bubble, or in the case of duration-event items,
  * accounts for space inside and outside the item bubble. This value also accounts for a theme-driven max width and overflow breakpoint.
- * @ojdeprecated {target: "property", for: "durationWidth", since:"13.1.0", description: "The durationWidth property is deprecated. Please use the contentWidth property instead."}
+ * @ojdeprecated {target: "property", for: "durationWidth", since:"13.1.0", description: "Use the contentWidth property instead."}
  * @ojsignature [{target: "Type", value: "oj.ojTimeline.SeriesItem<K>", for: "data"},
  *               {target: "Type", value: "oj.ojTimeline.Series<K>", for: "seriesData"},
  *               {target: "Type", value: "D", for: "itemData"},
@@ -1937,6 +1937,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
+       * @ojdeprecated {type: "antiPattern", since: "18.0.0", themes: ["Redwood"]}
        * @default {}
        */
       svgStyle: {},
@@ -2040,6 +2041,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
+       * @ojdeprecated {type: "antiPattern", since: "18.0.0", themes: ["Redwood"]}
        * @default {}
        */
       svgStyle: {}
@@ -2125,6 +2127,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
+       * @ojdeprecated {type: "antiPattern", since: "18.0.0", themes: ["Redwood"]}
        * @default {}
        */
       svgStyle: {}

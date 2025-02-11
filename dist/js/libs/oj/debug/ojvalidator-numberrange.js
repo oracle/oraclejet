@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -265,6 +265,7 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
   };
 
   /**
+   * There exists no hint for range validators in the Redwood UX spec, so the default is to return null.
    * @returns {string|null} a hint message or null if no hint is available in the options.
    * A hint message may be like "Enter a value between {min} and {max}"
    * or "Enter a number greater than or equal to {min}"
@@ -274,6 +275,7 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
    * @method getHint
    */
   NumberRangeValidator.prototype.getHint = function () {
+    // hints from the options
     var hints = this._hint;
     var hintInRange = hints.inRange;
     var hintExact = hints.exact;
@@ -290,40 +292,29 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
       if (min !== null && max !== null) {
         if (min !== max) {
           // if hintInRange is specified (validator's hint.inRange option is set),
-          // use that string, else use the default.
+          // use that string, else use the default which is null.
           hint = hintInRange
             ? translations.applyParameters(hintInRange, { min: minStr, max: maxStr })
-            : translations.getTranslatedString('oj-validator.range.number.hint.inRange', {
-                min: minStr,
-                max: maxStr
-              });
+            : null;
         } else {
           // if hintExact is specified (validator's hint.exact option is set),
           // use that string, else use the default.
-          hint = hintExact
-            ? translations.applyParameters(hintExact, { num: minStr })
-            : translations.getTranslatedString('oj-validator.range.number.hint.exact', {
-                num: minStr
-              });
+          hint = hintExact ? translations.applyParameters(hintExact, { num: minStr }) : null;
         }
       } else if (min !== null) {
         // else if min is specified, the hint may say something like "Enter a value
         // greater than or equal to {min}".
 
         // if hintMinimum is specified (validator's hint.min option is set),
-        // use that string, else use the default.
-        hint = hintMinimum
-          ? translations.applyParameters(hintMinimum, { min: minStr })
-          : translations.getTranslatedString('oj-validator.range.number.hint.min', { min: minStr });
+        // use that string, else use the default which is null.
+        hint = hintMinimum ? translations.applyParameters(hintMinimum, { min: minStr }) : null;
       } else if (max !== null) {
         // else if max is specified, the hint may say something like "Enter a value
         // less than or equal to {max}".
 
         // if hintMaximum is specified (validator's hint.max option is set),
-        // use that string, else use the default.
-        hint = hintMaximum
-          ? translations.applyParameters(hintMaximum, { max: maxStr })
-          : translations.getTranslatedString('oj-validator.range.number.hint.max', { max: maxStr });
+        // use that string, else use the default which is null.
+        hint = hintMaximum ? translations.applyParameters(hintMaximum, { max: maxStr }) : null;
       }
       return hint;
     };

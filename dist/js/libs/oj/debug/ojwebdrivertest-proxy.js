@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -30,6 +30,7 @@ define(['require', 'exports'], function (require, exports) { 'use strict';
     const modules = {
         BusyContext: () => new Promise(function (resolve, reject) { require(['ojs/ojcontext'], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(({ default: Context }) => Context.getPageContext().getBusyContext()),
         Chai: () => new Promise(function (resolve, reject) { require(['chai'], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(({ default: Chai }) => Chai),
+        Core: () => new Promise(function (resolve, reject) { require(['ojs/ojcore-base'], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(({ default: Core }) => Core),
         CspExpressionEvaluator: () => new Promise(function (resolve, reject) { require(['ojs/ojcspexpressionevaluator'], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(({ default: CspExpressionEvaluator }) => CspExpressionEvaluator),
         CustomElementUtils: () => new Promise(function (resolve, reject) { require(['ojs/ojcustomelement-utils'], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(({ CustomElementUtils }) => CustomElementUtils),
         KeySet: () => new Promise(function (resolve, reject) { require(['ojs/ojkeyset'], function (m) { resolve(_interopNamespace(m)); }, reject) }),
@@ -42,12 +43,12 @@ define(['require', 'exports'], function (require, exports) { 'use strict';
             if (!modules[name]) {
                 throw Error(`module "${name}" does not exist in test proxy`);
             }
-            console.log(`getProxy importing ${name}`);
             const cache = cachedModules[name];
             if (cache) {
                 return Promise.resolve(cache);
             }
             else {
+                console.log(`getProxy importing ${name}`);
                 return modules[name]().then((result) => {
                     cachedModules[name] = result;
                     return result;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -13,6 +13,7 @@ import { isTouchSupported, getReadingDirection } from 'ojs/ojdomutils';
 import { NavigationListDndContext } from 'ojs/ojnavigationlistdnd';
 import 'ojs/ojlistview';
 import { disableElement } from 'ojs/ojdatacollection-common';
+import Context from 'ojs/ojcontext';
 import 'ojs/ojmenu';
 import 'ojs/ojbutton';
 
@@ -1942,13 +1943,16 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
       if (this.isTabBar()) {
         beforeDeselect = this._fireBeforeDeselectEvent(event, item, key);
       }
-      return (
-        beforeDeselect &&
-        this.Trigger('beforeSelect', event, {
-          item: item,
-          key: key
-        })
-      );
+
+      var beforeSelect = this.Trigger('beforeSelect', event, {
+        item: item,
+        key: key
+      });
+      if (event) {
+        // eslint-disable-next-line no-param-reassign
+        event.isBeforeSelect = beforeSelect;
+      }
+      return beforeDeselect && beforeSelect;
     },
 
     _fireRemoveEvent: function (event, item) {
@@ -1978,6 +1982,9 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
     },
 
     FireSelectionAction: function (event, item, previousKey) {
+      if (event && event.isBeforeSelect === false) {
+        return;
+      }
       var key = this.GetKey(item[0] || item);
       this.Trigger('selectionAction', event, {
         value: key,
@@ -2143,7 +2150,7 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
         $item.removeClass(this.getItemStyleClass());
         $item.removeAttr('aria-selected');
         $item.children().remove();
-        $item.attr('role', 'separator');
+        $item.attr('role', 'presentation');
         return;
       }
 
@@ -2202,7 +2209,7 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
 
           if (this.ojContext.options.display === 'icons') {
             this.ojContext.element.addClass(this.getIconOnlyStyleClass());
-            var itemLabel = this.getItemLabel($item);
+            let itemLabel = this.getItemLabel($item);
             if (itemLabel !== null || itemLabel.length > 0) {
               icon.attr(_ARIA_LABEL, itemLabel); // @HTMLUpdateOK
               icon.attr('role', 'img');
@@ -2215,7 +2222,10 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
               this.ojContext.element.addClass(this.getStackedIconStyleClass());
               this.isStackedIconClassAdded = true;
             }
-            icon.attr('role', 'img');
+            let itemLabel = this.getItemLabel($item);
+            if (itemLabel == null) {
+              icon.attr('role', 'img');
+            }
           }
           this.element.closest('ul').addClass(self.getHasIconsStyleClass());
         } else {
@@ -3472,7 +3482,7 @@ _ojNavigationListView._CSS_Vars = {
        * @ojvalue {string} "bottom" This renders list items horizontally. Generally used when navlist placed on bottom of content section.
        * @ojvalue {string} "start" This renders list items vertically. Generally used when navlist placed on left/start of content section.
        * @default start
-       * @ojdeprecated {since: '17.0.0', description: 'Horizontal layout in oj-navigation-list is deprecated. Use oj-tab-bar instead. Since <code class="prettyprint">start</code> is the only supported and default value, it need not be specified using <code class="prettyprint">edge</code> attribute.'}
+       * @ojdeprecated {since: '17.0.0', description: 'Support for horizontal layout in oj-navigation-list is deprecated - use oj-tab-bar instead.'}
        * @example <caption>Initialize the Navigation List with the <code class="prettyprint">edge</code> attribute specified:</caption>
        *  &lt;oj-navigation-list edge='start'> ... &lt;/oj-navigation-list>
        *
@@ -3496,7 +3506,7 @@ _ojNavigationListView._CSS_Vars = {
        * @instance
        * @type {number}
        * @default 0
-       * @ojdeprecated {since: "13.0.0", description: "The hierarchyMenuThreshold property is deprecated as it is not supported in the Redwood theme."}
+       * @ojdeprecated {since: "13.0.0", description: "This is not supported in the Redwood theme."}
        *
        * @example <caption>Initialize the Navigation List with the <code class="prettyprint">hierarchy-menu-threshold</code> attribute specified:</caption>
        *  &lt;oj-navigation-list hierarchy-menu-threshold='4'> ... &lt;/oj-navigation-list>
@@ -3682,7 +3692,7 @@ _ojNavigationListView._CSS_Vars = {
        * @ojvalue {string} "popup" Popup menu will be shown with overflowed items.<p> Note that setting <code class="prettyprint">overflow</code> to <code class="prettyprint">popup</code> can trigger browser reflow, so only set it when it is actually required.
        * @ojvalue {string} "hidden" Overflow is clipped, and the rest of the content will be invisible.
        * @default hidden
-       * @ojdeprecated {since: '17.0.0', description: 'Since horizontal layout in oj-navigation-list is deprecated this should not be used any more. Use oj-tab-bar instead.'}
+       * @ojdeprecated {since: '17.0.0', description: 'Support for horizontal layout in oj-navigation-list is deprecated - use oj-tab-bar instead.'}
        * @since 3.0.0
        * @example <caption>Initialize the Navigation List with the <code class="prettyprint">overflow</code> attribute specified:</caption>
        *  &lt;oj-navigation-list overflow='popup'> ... &lt;/oj-navigation-list>
@@ -4378,22 +4388,19 @@ _ojNavigationListView._CSS_Vars = {
  *   Data
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#data-section"></a>
  * </h3>
- * <p>The JET Tab Bar gets its data in two different ways.  The first way is from a DataProvider/TableDataSource.  There are several types of DataProvider/TableDataSource
- * that are available out of the box:</p>
+ * <p>The JET Tab Bar gets its data from a DataProvider.  These are the types of DataProvider that are available out of the box:</p>
  * <ul>
- * <li>oj.ArrayDataProvider</li>
- * <li>oj.CollectionTableDataSource</li>
+ * <li>ArrayDataProvider</li>
+ * <li>RESTDataProvider</li>
  * </ul>
  *
- * <p><b>oj.ArrayDataProvider</b> - Use this when the underlying data is an array object or an observableArray.  In the observableArray case, Tab Bar will automatically react
- * when items are added or removed from the array.  See the documentation for oj.ArrayDataProvider for more details on the available options.</p>
+ * <p><b>ArrayDataProvider</b> - Use this when the underlying data is an array object or an observableArray.  In the observableArray case, Tab Bar will automatically react
+ * when items are added or removed from the array.  See the documentation for ArrayDataProvider for more details on the available options.</p>
  *
- * <p><b>oj.CollectionTableDataSource</b> - Use this when oj.Collection is the model for the underlying data.  Note that the Tab Bar will automatically react to model event from
- * the underlying oj.Collection.  See the documentation for oj.CollectionTableDataSource for more details on the available options.</p>
+ * <p><b>RESTDataProvider</b> - Use this when the underlying data comes from the REST end point. See the documentation for RESTDataProvider for more details on the available options.</p>
  *
- * <p> NOTE: PagingTableDataSource is not supported by Tab Bar.
  * <p>Second way is using static HTML content as data.</p>
- * <p>Note that any manipulation of static HTML content, including manipulating content generated through Knockout (for example, updating observableArray in a foreach binding), is not supported.<p>
+ * <p>Note that any manipulation of static HTML content, including manipulating content generated through Knockout (for example, updating observableArray in a foreach binding), is not supported.</p>
  *
  * <p>Example of static content</p>
  * <pre class="prettyprint">
@@ -4499,53 +4506,81 @@ _ojNavigationListView._CSS_Vars = {
  *
  * <p>These features are not yet available in oj-c-tab-bar, they will be available in a forthcoming version.</p>
  * <ul>
- *    <li>Progressive Truncation</li>
  *    <li>Context Menu Support</li>
  * </ul>
  *
  * <p>The first step is to determine if your tab bar requires any of the not yet released features (see above list).</p>
  *
- * <p>The next step is to determine compatibility with your DataSource.  Here are some changes.</p>
+ * <p>The next step is to determine compatibility with your data source.  Here are some changes.</p>
  * <ul>
- *  <li>DataProvider and array of type TabData<K> are the only currently supported data source</li>
- *  <li>itemTemplate is no longer supported</li>
+ *  <li>DataProvider and array of <a href="oj-c.TabBar.html#TabData">TabData</a> are the only currently supported data source</li>
+ *  <li>Static list of tabs are no longer supported</li>
  * </ul>
  * <p>
  *
  * <p>Finally review the list below for specific API changes.</p>
  *
+ * <h5 id="dataprovider-key-type-migration"></h5>
+ *
+ * <h5>No static list of tabs</h5>
+ * <p>Support for static list of tabs has not been brought forward.  Applications should declare the tabs as an array of TabData instead.
+ * </p>
+ * <strong>An example of a static list of tabs.</strong>
+ * <pre class="prettyprint">
+ * <code>&lt;oj-tab-bar id="tabbar">
+ *   &lt;ul>
+ *     &lt;li>&lt;a id="tab1" href="#">Tab 1&lt;/a>&lt;/li>
+ *     &lt;li>&lt;a id="tab2" href="#">Tab 2&lt;/a>&lt;/li>
+ *     &lt;li>&lt;a id="tab3" href="#">Tab 3&lt;/a>&lt;/li>
+ *   &lt;/ul>
+ * &lt;/oj-tab-bar>
+ * </code></pre>
+ *
  * <h5>Reorder Behavior Change</h5>
  * <p>Use Command + Shift + Arrow Keys to reorder.
  * </p>
  *
+ * <h5>Styling Class Changes</h5>
+ * <ul>
+ * <li><code>oj-focus-highlight</code> is no longer supported.  Applications should not customize styling of focused tab due to accessibility concerns.</li>
+ * <li><code>oj-removable</code> is not supported, instead applications should provide isRemovable field with a value of true as part of the data for the tab.  See <a href="oj-c.TabBar.html#TabData">TabData</a> for details.</li>
+ * <li><code>oj-tabbar-category-divider</code> is no longer supported as it is not a recommended Redwood design.</li>
+ * <li><code>oj-tabbar-item-dividers</code> is no longer supported as it is not a recommended Redwood design.</li>
+ * <li><code>oj-tabbar-item-end</code> is not supported.  The only thing that can be placed at the end of the tab is badge/severity icon/metadata, which applications can do by providing metadata/severity/badge field as part of the data for the tab.  See <a href="oj-c.TabBar.html#TabData">TabData</a> for details.</li>
+ * <li><code>oj-tabbar-item-icon</code> is not supported, instead applications should provide icon field as part of the data for the tab.  See <a href="oj-c.TabBar.html#TabData">TabData</a> for details.</li>
+ * <li><code>oj-tabbar-item-label</code> is not supported, instead applications should provide label field as part of the data for the tab.  See <a href="oj-c.TabBar.html#TabData">TabData</a> for details.</li>
+ * <li><code>oj-tabbar-item-title</code> is not supported, instead applications should provide label field as part of the data for the tab.  See <a href="oj-c.TabBar.html#TabData">TabData</a> for details.</li>
+ * <li><code>oj-tabbar-nofollow-link</code> is not supported, instead applications should provide href field as part of the data for the tab.  See <a href="oj-c.TabBar.html#TabLinkItemData">TabLinkItemData</a> for details.</li>
+ * </ul>
+ *
  * <h5>itemTemplate slot</h5>
- * <p>Support for itemTemplate has not been brought forward as oj-c-tab-bar does not support arbitary content.</p>
+ * <p>Support for itemTemplate has not been brought forward as oj-c-tab-bar does not support arbitrary content.</p>
  *
  * <h5>current-item attribute</h5>
  * <p>This property is not available as it is internal to the component./p>
  *
  * <h5>item.renderer attribute</h5>
- * <p>This is not supported, everything this attribute did can be accomplished using items that will be rendered by the component</p>
+ * <p>Support for item.renderer attribute has not been brought forward as oj-c-tab-bar does not support arbitrary content.</p>
  *
  * <h5>item.selectable attribute</h5>
- * <p>This is not supported, everything this attribute did can be accomplished using selectiom attribute</p>
+ * <p>Support for item.selectable attribute has not been brought forward as disabling selection for certain tabs is an anti-pattern in Redwood.</p>
  *
  * <h5>ojBeforeCurrentItem event</h5>
- * <p> this cancellable event is slated for deprecation.</p>
+ * <p>This event is not brought forward as oj-c-tab-bar no longer expose current-item attribute.</p>
  *
  * <h5>ojBeforeDeselect event</h5>
- * <p> this cancellable event is slated for deprecation.</p>
+ * <p>Application should be able to do the same with the ojBeforeSelect event.</p>
  *
  * <h5>ojBeforeRemove event</h5>
- * <p> this cancellable event is slated for deprecation.</p>
+ * <p>This is no longer needed as in oj-c-tab-bar the ojRemove event is fired before the tab is removed.</p>
  *
  * <h5>ojDeselect event</h5>
- * <p> this cancellable event is slated for deprecation.</p>
+ * <p>Application should be able to do the same with the ojBeforeSelect event.</p>
  *
  * <h5>The following features are not yet supported</h5>
  * <ul>
- *   <li>Progressive Truncation</li>
  *   <li>Custom contextMenu support</li>
+ *   <li>Support for rendering links in overflowing items</li>
  * </ul>
  *
  * <p></p>
@@ -4593,23 +4628,23 @@ _ojNavigationListView._CSS_Vars = {
  *   <tbody>
  *     <tr>
  *       <td><kbd>horizontal add</kbd></td>
- *       <td>When a new item is added to the TableDataSource associated with Horizontal Tab Bar.</td>
+ *       <td>When a new item is added to the DataProvider associated with Horizontal Tab Bar.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>add</kbd></td>
- *       <td>When a new item is added to the TableDataSource associated with Vertical Tab Bar.</td>
+ *       <td>When a new item is added to the DataProvider associated with Vertical Tab Bar.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>horizontal remove</kbd></td>
- *       <td>When an existing item is removed from the TableDataSource associated with Horizontal Tab Bar.</td>
+ *       <td>When an existing item is removed from the DataProvider associated with Horizontal Tab Bar.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>remove</kbd></td>
- *       <td>When an existing item is removed from the TableDataSource associated with Vertical Tab Bar.</td>
+ *       <td>When an existing item is removed from the DataProvider associated with Vertical Tab Bar.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>update</kbd></td>
- *       <td>When an existing item is updated in the TableDataSource associated with TabBar.</td>
+ *       <td>When an existing item is updated in the DataProvider associated with TabBar.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>pointerUp</kbd></td>
@@ -4644,9 +4679,11 @@ _ojNavigationListView._CSS_Vars = {
 /**
  * Use this class to add a horizontal divider line between two categories of items.
  * @ojstyleclass oj-tabbar-category-divider
- * @ojdisplayname CategoryDivider
  * @ojstyleselector "oj-tab-bar li"
+ * @ojdisplayname CategoryDivider
  * @memberof oj.ojTabBar
+ * @ojdeprecated {since: '18.0.0', description: 'It was being used with vertical oj-tab-bar but since we have deprecated it
+ we will no longer support this styling class.'}
  * @ojtsexample
  * &lt;oj-tab-bar>
  *   &lt;ul>
@@ -4703,7 +4740,7 @@ _ojNavigationListView._CSS_Vars = {
  * @ojstyleclass oj-tabbar-item-text-wrap
  * @ojdisplayname Text Wrap
  * @memberof oj.ojTabBar
- * @ojdeprecated {since: '15.0.0', description: 'Since vertical layout of TabBar is deprecated, this should not be used anymore. Use NavigationList instead.'}
+ * @ojdeprecated {since: '15.0.0', description: 'Since vertical layout of TabBar is deprecated, this should not be used     anymore. Use NavigationList instead.'}
  * @ojtsexample
  * &lt;oj-tab-bar class="oj-tabbar-item-text-wrap" >
  *   &lt;ul>
@@ -4720,9 +4757,10 @@ _ojNavigationListView._CSS_Vars = {
 // ---------------- oj-tabbar-item-dividers --------------
 /**
  * Use this class  to render a divider between tab items. Note: On IE11, this is not supported when overflow attribute is set to 'popup'.
- * @ojstyleclass oj-tabbar-item-dividers
- * @ojdisplayname ItemDividers
  * @memberof oj.ojTabBar
+ * @ojstyleclass oj-tabbar-item-dividers
+ * @deprecated {since: '18.0.0', description: 'It is not recommended in the Redwood design system for oj-tab-bar.'}
+ * @ojdisplayname ItemDividers
  * @ojunsupportedthemes ["Redwood"]
  * @ojtsexample
  * &lt;oj-tab-bar class="oj-tabbar-item-dividers">
@@ -4899,6 +4937,7 @@ _ojNavigationListView._CSS_Vars = {
  * @ojdisplayname Focus Styling
  * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
  * @memberof oj.ojTabBar
+ * @ojdeprecated {since: '18.0.0', description: "The Redwood design system does not allow this to be customized."}
  * @ojtsexample
  * &lt;oj-tab-bar class="oj-focus-highlight">
  *   &lt;!-- Content -->
@@ -5117,7 +5156,7 @@ _ojNavigationListView._CSS_Vars = {
  */
 
 /**
- * The data source for the Tab Bar accepts either a TableDataSource or DataProvider.
+ * The data source for the Tab Bar accepts DataProvider.
  * See the data source section in the introduction for out of the box data source types.
  * If the data attribute is not specified, the child elements are used as content.  If there's no
  * content specified, then an empty list is rendered.
@@ -6038,6 +6077,8 @@ CollapsibleNavListHandler.prototype.HandleExpandAndCollapseKeys = function (
 
 const _ARIA_SELECTED = 'aria-selected';
 const _OJ_DEFAULT$1 = 'oj-default';
+const _REDWOOD_LABEL_MIN_WIDTH = 96;
+const _DEFAULT_LABEL_MIN_WIDTH = 48;
 
 /**
  * Handler for Horizontal Navigation List
@@ -6762,15 +6803,27 @@ HorizontalNavListHandler.prototype._launchOverflowMenu = function (event) {
     return; // ignore if overflow menu already launched
   }
 
-  this._getOverflowMenu().ojMenu('open', event, {
-    launcher: self._getOverflowMenuButton(),
-    initialFocus: 'firstItem',
-    position: {
-      my: 'end bottom',
-      at: 'end top',
-      collision: 'flipfit'
-    }
+  const busyContext = Context.getContext(this.m_root[0]).getBusyContext();
+  const resolveBusyState = busyContext.addBusyState({
+    description: 'Waiting for menu to be rendered correctly'
   });
+
+  // We add a little timeout for now since there is no menu animation and there is a initial focus bug on VO that depends on the animation
+  setTimeout(() => {
+    resolveBusyState();
+    // We check if element was destroyed previously (this.m_duringInit set to true inside Destroy)
+    if (!this.m_duringInit) {
+      this._getOverflowMenu().ojMenu('open', event, {
+        launcher: self._getOverflowMenuButton(),
+        initialFocus: 'firstItem',
+        position: {
+          my: 'end bottom',
+          at: 'end top',
+          collision: 'flipfit'
+        }
+      });
+    }
+  }, 50);
 };
 
 HorizontalNavListHandler.prototype._toggleOverflowBtnSelection = function (selectedItem) {
@@ -7040,50 +7093,56 @@ _HorizontalNavListOverflowHandler.prototype._calculateThreshold = function (over
   return index + 1;
 };
 
+_HorizontalNavListOverflowHandler.prototype._getThemeLabelMinWidth = function () {
+  // The minWidth is of format min(100%, var(--oj-tabbar-item-label-min-width)), var varies based on theme for redwood it is 96px and for others it is 48px
+  var isRedWood = parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+  return isRedWood ? _REDWOOD_LABEL_MIN_WIDTH : _DEFAULT_LABEL_MIN_WIDTH;
+};
+
 _HorizontalNavListOverflowHandler.prototype._applyLabelMaxWidth = function (overflowData) {
   var items = this._items;
   var self = this;
-  var minLabelWidth = this._getMinLabelWidth(this._items);
+
+  // Initial maxWidth is based on container size and number of items so it is an average width each label can have
   var labelMaxWidth = overflowData.containerWidth / items.length - overflowData.itemNonTextWidth;
 
-  if (labelMaxWidth < minLabelWidth) {
-    labelMaxWidth = minLabelWidth; // use min width when it reaches threshold minimum
-    // return; //Restore to original width when maxwidth reaches threshold minimum.
-  }
   var surplusWidth = 0;
   var sumOfLongItemsWidth = 0;
+  var minLabelWidth = 0;
+  var themeMinWidth = self._getThemeLabelMinWidth();
   items.each(function (index, item) {
     var $item = $(item);
+    // The actual width of each label's text
     var textWidth = $item.data(self._TEXT_WIDTH_KEY);
+    // If textWidth is less than themeMinWidth then labels retain their original width without truncating
+    if (textWidth < themeMinWidth) {
+      minLabelWidth = textWidth;
+    } else {
+      minLabelWidth = themeMinWidth;
+    }
+
+    if (labelMaxWidth < minLabelWidth) {
+      // The threshold for truncation is minLabelWidth set by the theme or its original width. So when currently calculated labelMaxWidth is lesser than that use minLabelWidth
+      labelMaxWidth = minLabelWidth;
+    }
+
+    // If textWidth is lesser than currently calculated labelMaxWidth then we have additional width which is available else it is a long label.
     if (textWidth < labelMaxWidth) {
       surplusWidth += labelMaxWidth - textWidth;
     } else {
       sumOfLongItemsWidth += textWidth;
     }
-  });
 
-  items.each(function (index, item) {
-    var $item = $(item);
-    var textWidth = $item.data(self._TEXT_WIDTH_KEY);
     var calcWidth = textWidth;
+    // If textWidth is greater currently calculated than currently calculated labelMaxWidth it can be increased by adding surplusWidth that can be dsitributed amongst long labels.
     if (textWidth > labelMaxWidth) {
       calcWidth = labelMaxWidth + (surplusWidth * textWidth) / sumOfLongItemsWidth;
     }
+
     $(item)
       .find('.' + self._getWidget().getItemLabelStyleClass())
       .css({ 'max-width': calcWidth + 'px' });
   });
-};
-
-_HorizontalNavListOverflowHandler.prototype._getMinLabelWidth = function (items) {
-  var computedMinWidth = window
-    .getComputedStyle(items.first().find('.' + this._getWidget().getItemLabelStyleClass())[0], null)
-    .getPropertyValue('min-width');
-  if (computedMinWidth.indexOf('px') > 0) {
-    return parseInt(computedMinWidth.substring(0, computedMinWidth.length - 2), 10);
-  }
-  // This should never happen unless it was overriden intentionally
-  return 0;
 };
 
 const _OJ_FOCUS_ANCESTOR = 'oj-focus-ancestor';

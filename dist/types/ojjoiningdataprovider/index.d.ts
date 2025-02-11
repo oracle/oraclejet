@@ -5,6 +5,7 @@ declare namespace JoiningDataProvider {
         foreignKeyMapping: SingleForeignKey<BD, any, JK> | MultipleForeignKeys<BD, any, JK>;
         joinedDataProvider: DataProvider<JK, JD>;
     }
+    /** @deprecated since 10.1.0 - Use JoiningDataProvider.Options instead. */
     // tslint:disable-next-line interface-over-type-literal
     type DataProviderOptions<D, BD> = {
         joins: Record<keyof Omit<D, keyof BD>, DataProviderJoinInfo<D, any, any>>;

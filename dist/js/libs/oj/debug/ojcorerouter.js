@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -17,7 +17,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * @ojtsimport knockout
    * @ojsignature [{
    *                target: "Type",
-   *                value: "interface CoreRouterState<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>",
+   *                value: "interface CoreRouterState<D extends Record<string, any> = Record<string, any>, P = CoreRouter.Parameters>",
    *                genericParameters: [{"name": "D", "description": "Detail object for the router state"},
    *                                    {"name": "P", "description": "Parameters object for the router state"}]
    *               }
@@ -137,6 +137,11 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
     throw Error(`no path parameter found for segment ${segment}`);
   }
 
+  function getFullUrl(pathname) {
+    const loc = document.location;
+    return `${loc.protocol}//${loc.hostname}${loc.port ? ':' + loc.port : ''}${pathname}`;
+  }
+
   /**
    * An observable which publishes state changes that are about to be set as
    * the current state for the router. Subscribers can choose to listen to
@@ -163,7 +168,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * @memberof CoreRouter
    * @type {object}
    * @ojsignature [{target: 'Type', value: 'CoreRouter.Observable<CoreRouter.VetoableState<D, P>>'},
-   *               {target: 'Type', value: '<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>', for: 'genericTypeParameters'}]
+   *               {target: 'Type', value: '<D extends Record<string, any> = Record<string, any>, P = CoreRouter.Parameters>', for: 'genericTypeParameters'}]
    * @instance
    * @export
    */
@@ -203,7 +208,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * @memberof CoreRouter
    * @type {object}
    * @ojsignature [{target: 'Type', value: 'CoreRouter.Observable<CoreRouter.ActionableState<D, P>>'},
-   *               {target: 'Type', value: '<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>', for: 'genericTypeParameters'}]
+   *               {target: 'Type', value: '<D extends Record<string, any> = Record<string, any>, P = CoreRouter.Parameters>', for: 'genericTypeParameters'}]
    * @instance
    * @export
    */
@@ -348,8 +353,8 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * @ojtsmodule
    * @ojsignature [{target: "Type",
    *               value: "class CoreRouter<
-   *               D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>,
-   *               ParentD extends Record<string, any> = Record<string, any>, ParentP extends Record<string, any> = Record<string, any>>",
+   *               D extends Record<string, any> = Record<string, any>, P = CoreRouter.Parameters,
+   *               ParentD extends Record<string, any> = Record<string, any>, ParentP = CoreRouter.Parameters>",
    *               genericParameters: [{"name": "D", "description": "Detail object for the router state"},
    *                                   {"name": "P", "description": "Parameters object for the router state"},
    *                                   {"name": "ParentD", "description": "Detail object for the parent router state"},
@@ -672,7 +677,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * </pre>
    * </p>
    *
-   * @param {...CoreRouter.Route} route The route(s) to navigate. Pass multiple routes
+   * @param {...CoreRouter.Route} routes The route(s) to navigate. Pass multiple routes
    * as separate arguments.
    * @return {Promise.<CoreRouter.CoreRouterState>} A Promise which will resolve
    * with the state to which the router transitioned, if successful. If the transition
@@ -682,62 +687,88 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * @method
    * @instance
    * @export
-   * @ojsignature [{target: "Type", value: "CoreRouter.Route<P>[]", for: "route"},
+   * @ojsignature [{target: "Type", value: "CoreRouter.Route<P>[]", for: "routes"},
    *               {target: "Type", value: "Promise<CoreRouter.CoreRouterState<D, P>>", for: "returns"}]
    */
-  CoreRouter.prototype.go = function (...transitions) {
-    let goP;
+  CoreRouter.prototype.go = function (...routes) {
+    const path = routes.map((t) => t.path).join('/');
+    Logger.info(`Navigating router(${this._name}) to ${path}`);
 
-    transitions.forEach(function (transition) {
-      var params = transition.params;
+    let newPath;
+    try {
+      newPath = this.getUrlForNavigation(...routes);
+    } catch (ex) {
+      return Promise.reject(ex.message);
+    }
+
+    // Get the current routes for all active routers, and compare that to the
+    // new routes for this transition.
+    const currentPath = getFullUrl(urlAdapter.getUrlForRoutes(getActiveRoutes()));
+    const prevNoHistorySegments = noHistorySegments;
+    if (this._noHistory) {
+      Logger.info(`Navigating non-history tracking router(${this._name}) to ${path}`);
+      // Non-history tracking routers use noHistorySegments in place of URL
+      // to store their transitions. Replace the segments after our index with
+      // the new transitions
+      noHistorySegments = noHistorySegments.slice(0, this._noHistoryOffset).concat(routes);
+    } else {
+      // Cleanup noHistorySegments when navigating any history-tracking routers
+      noHistorySegments = [];
+      if (currentPath !== newPath) {
+        window.history.pushState(null, 'path', newPath);
+      }
+    }
+    return this.sync().catch((ex) => {
+      if (this._noHistory) {
+        noHistorySegments = prevNoHistorySegments;
+      } else {
+        window.history.replaceState(null, 'path', currentPath);
+      }
+      throw ex;
+    });
+  };
+
+  const paramTypesRegex = new RegExp(
+    `^${['bigint', 'boolean', 'number', 'string', 'undefined'].join('$|^')}$`
+  );
+  /**
+   * Create a full URL for the given routes. The parameters are the same as those to {@link CoreRouter#go},
+   * and relative to the current router on which it's called.
+   * @param {...CoreRouter.Route} routes The route(s) from which to generate the URL
+   * @returns The full URL to the given routes, i.e. "https://host[:port]/<routes>..."
+   * @since 18.0.0
+   * @name getUrlForNavigation
+   * @memberof CoreRouter
+   * @method
+   * @instance
+   * @export
+   * @ojsignature [{target: "Type", value: "CoreRouter.Route<P>[]", for: "routes"},
+   *               {target: "Type", value: "string", for: "returns"}]
+   */
+  CoreRouter.prototype.getUrlForNavigation = function (...routes) {
+    routes.forEach(function ({ params }) {
       if (params) {
-        // Only scalar values in params object
+        // Only primitive values in params object
         Object.keys(params).forEach(function (key) {
-          if (typeof params[key] === 'object') {
-            goP = Promise.reject('"params" object may only contain scalar values');
+          if (!paramTypesRegex.test(typeof params[key])) {
+            throw Error(
+              `"params" object may only contain primitive values. "${key}" is ${typeof params[key]}`
+            );
           }
         });
       }
     });
-    if (!goP) {
-      const path = transitions.map((t) => t.path).join('/');
-      Logger.info(`Navigating router(${this._name}) to ${path}`);
 
-      // Get the current routes for all active routers, and compare that to the
-      // new routes for this transition.
-      const currentPath = urlAdapter.getUrlForRoutes(getActiveRoutes());
-      const prevNoHistorySegments = noHistorySegments;
-      if (this._noHistory) {
-        Logger.info(`Navigating non-history tracking router(${this._name}) to ${path}`);
-        // Non-history tracking routers use noHistorySegments in place of URL
-        // to store their transitions. Replace the segments after our index with
-        // the new transitions
-        noHistorySegments = noHistorySegments.slice(0, this._noHistoryOffset).concat(transitions);
-      } else {
-        // Cleanup noHistorySegments when navigating any history-tracking routers
-        noHistorySegments = [];
-        // Insert the new transitions after the current router's route offset
-        const newRoutes = this._getParentRoutes().concat(
-          // only first transition is for this router
-          this._getPendingState(transitions[0]),
-          // remaining are for child routers
-          transitions.slice(1)
-        );
-        const newPath = urlAdapter.getUrlForRoutes(newRoutes);
-        if (currentPath !== newPath) {
-          window.history.pushState(null, 'path', newPath);
-        }
-      }
-      goP = this.sync().catch((ex) => {
-        if (this._noHistory) {
-          noHistorySegments = prevNoHistorySegments;
-        } else {
-          window.history.replaceState(null, 'path', currentPath);
-        }
-        throw ex;
-      });
-    }
-    return goP;
+    // Insert the new transitions after the current router's route offset
+    const newRoutes = this._getParentRoutes()
+      .concat(
+        // only first transition is for this router
+        this._getPendingState(routes[0]),
+        // remaining are for child routers
+        routes.slice(1)
+      )
+      .filter(Boolean);
+    return getFullUrl(urlAdapter.getUrlForRoutes(newRoutes));
   };
 
   /**
@@ -954,7 +985,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * @method
    * @instance
    * @export
-   * @ojsignature [{target:"Type", value:"<ChildD extends Record<string, any> = Record<string, any>, ChildP extends Record<string, any> = Record<string, any>>",
+   * @ojsignature [{target:"Type", value:"<ChildD extends Record<string, any> = Record<string, any>, ChildP = CoreRouter.Parameters>",
    *               for:"genericTypeParameters",
    *               genericParameters: [{"name": "ChildD", "description": "Detail object for the child router state"},
    *                                   {"name": "ChildP", "description": "Parameters object for the child router state"}]},
@@ -1000,6 +1031,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
       this.childRouter.destroy();
     }
 
+    // eslint-disable-next-line no-console
     console.debug(`destroying Router(${this._name})`);
 
     this.beforeStateChange = null;
@@ -1013,6 +1045,12 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
   };
 
   /**
+   * A type describing the parameters that can be passed to CoreRouter's go() method
+   * @typedef {object} CoreRouter.Parameters
+   * @ojsignature [{target: "Type", value: "Record<string, bigint|boolean|number|string|undefined>"}]
+   */
+
+  /**
    * An object describing configuration options during the creation of a root
    * CoreRouter instance.
    * @typedef {object} CoreRouter.CreateOptions
@@ -1023,7 +1061,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * and writing router states from/to the browser URL. If not specified, this will
    * default to {@link UrlPathAdapter}.
    * @ojsignature [{target: "Type", value: "UrlAdapter<P>", for: "urlAdapter"},
-   *               {target: "Type", value: "<P extends Record<string, any> = Record<string, any>>", for: "genericTypeParameters"}]
+   *               {target: "Type", value: "<P = CoreRouter.Parameters>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -1060,7 +1098,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * @ojtsnamespace CoreRouter
    * @ojsignature [{
    *                target: "Type",
-   *                value: "interface Route<P extends Record<string, any> = Record<string, any>>",
+   *                value: "interface Route<P = CoreRouter.Parameters>",
    *                genericParameters: [{"name": "P", "description": "Parameters object for the router state"}]
    *               }]
    */
@@ -1109,7 +1147,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * callback is optional, but allows for the subscriber to delay the completion
    * of the router state transition until its own asynchronous activities are done.
    * @ojsignature [{target: "Type", value: "CoreRouterState<D, P>", for: "state"},
-   *               {target: "Type", value: "<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>", for: "genericTypeParameters"}]
+   *               {target: "Type", value: "<D extends Record<string, any> = Record<string, any>, P = CoreRouter.Parameters>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -1124,7 +1162,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * will veto the state transition; any Promise resolution (or not invoking the
    * callback at all) will accept the transition.
    * @ojsignature [{target: "Type", value: "CoreRouterState<D, P>", for: "state"},
-   *               {target: "Type", value: "<D extends Record<string, any> = Record<string, any>, P extends Record<string, any> = Record<string, any>>", for: "genericTypeParameters"}]
+   *               {target: "Type", value: "<D extends Record<string, any> = Record<string, any>, P = CoreRouter.Parameters>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -1132,7 +1170,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * browser URL.
    * @interface UrlAdapter
    * @ojtsnamespace CoreRouter
-   * @ojsignature {target: "Type", value: "interface UrlAdapter<P extends Record<string, any> = Record<string, any>>"}
+   * @ojsignature {target: "Type", value: "interface UrlAdapter<P = CoreRouter.Parameters>"}
    */
   /**
    * Build all routes for the given URL. The URL is expected to start with the

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -858,6 +858,7 @@ const DvtOverviewRenderer = {
     // sets cursor AFTER adding child since toolkit adds a group and the cursor would be set on group instead
     slidingWindow.setCursor('move');
     overview.addChild(slidingWindow);
+    overview._slidingWindow = slidingWindow;
 
     DvtOverviewRenderer._renderTimeAxisTopBar(overview);
     DvtOverviewRenderer._renderLeftAndRightFilters(overview, handleStart);
@@ -1443,6 +1444,10 @@ const DvtOverviewRenderer = {
   _renderLeftAndRightFilters: (overview, handleStart) => {
     var width = overview.Width;
     var height = overview.Height;
+    overview._leftBackground = undefined;
+    overview._rightBackground = undefined;
+    overview._leftBackgroundResizeHandle = undefined;
+    overview._rightBackgroundResizeHandle = undefined;
 
     if (overview.isLeftAndRightFilterRendered()) {
       if (overview.isVertical()) {
@@ -1454,12 +1459,15 @@ const DvtOverviewRenderer = {
       }
 
       leftBackground.setSolidFill(overview._leftFilterPanelColor, overview._leftFilterPanelAlpha);
-      overview.addChild(leftBackground);
+      overview.addChildAt(leftBackground, 0);
       rightBackground.setSolidFill(
         overview._rightFilterPanelColor,
         overview._rightFilterPanelAlpha
       );
-      overview.addChild(rightBackground);
+      overview.addChildAt(rightBackground, 1);
+
+      overview._leftBackground = leftBackground;
+      overview._rightBackground = rightBackground;
 
       // the left and right background resize handle are needed for touch because the touch area for resize handle goes
       // beyond the handle and into the left and right background area, so we'll need something on top of the background
@@ -1501,9 +1509,12 @@ const DvtOverviewRenderer = {
         }
 
         leftBackgroundResizeHandle.setSolidFill(overview._leftFilterPanelColor, 0);
-        overview.addChild(leftBackgroundResizeHandle);
+        overview.addChildAt(leftBackgroundResizeHandle, 2);
         rightBackgroundResizeHandle.setSolidFill(overview._rightFilterPanelColor, 0);
-        overview.addChild(rightBackgroundResizeHandle);
+        overview.addChildAt(rightBackgroundResizeHandle, 3);
+
+        overview._leftBackgroundResizeHandle = leftBackgroundResizeHandle;
+        overview._rightBackgroundResizeHandle = rightBackgroundResizeHandle;
       }
     }
   },
@@ -1599,8 +1610,10 @@ const DvtOverviewRenderer = {
         label.setX(Math.max(4, overview.Width - dim.w - 4));
       }
     } else {
+      const labelYOffset = overview._labelYOffset;
+      const yOffset = labelYOffset ? 2 : -2;
       if (overview.isOverviewAbove()) var y = 2;
-      else y = height - overview.getTimeAxisHeight() + 2;
+      else y = height - overview.getTimeAxisHeight() + yOffset;
 
       var padding = DvtOverviewStyleUtils._DEFAULT_AXIS_LABEL_PADDING;
       label = new OutputText(overview.getCtx(), text, pos + padding, y, id);
@@ -1769,9 +1782,9 @@ class Overview extends Container {
 
   constructor(context, callback, callbackObj) {
     super(context);
-    this.MIN_WINDOW_SIZE = 10;
+    this.MIN_WINDOW_SIZE = 28;
     this.DEFAULT_VERTICAL_TIMEAXIS_SIZE = 40;
-    this.DEFAULT_HORIZONTAL_TIMEAXIS_SIZE = 20;
+    this.DEFAULT_HORIZONTAL_TIMEAXIS_SIZE = 24;
     this.HANDLE_PADDING_SIZE = 20;
 
     // Create the defaults object
@@ -2149,7 +2162,8 @@ class Overview extends Container {
         this.getOverviewWidth()
       );
       return this._minWinSize;
-    } else return this.MIN_WINDOW_SIZE;
+    }
+    return this.MIN_WINDOW_SIZE;
   }
 
   // returns the minimum height of the sliding window
@@ -2175,7 +2189,7 @@ class Overview extends Container {
   }
 
   getGrippySize() {
-    return 10;
+    return 16;
   }
 
   // return the start of the resize handle
@@ -2255,7 +2269,7 @@ class Overview extends Container {
 
   getTimeAxisHeight() {
     // checks if there is a time axis
-    if (this._timeAxisInfo == null) return 0;
+    if (this._timeAxisInfo == null || this._timeAxisInfo.ticks.length === 0) return 0;
 
     // read from skin?
     if (this._timeAxisHeight == null) {
@@ -2300,7 +2314,7 @@ class Overview extends Container {
   }
 
   getSlidingWindow() {
-    return this.getChildAt(1);
+    return this._slidingWindow;
   }
 
   getSlidingWindowWidth() {
@@ -2342,24 +2356,24 @@ class Overview extends Container {
   }
 
   getLeftBackground() {
-    if (this.isLeftAndRightFilterRendered()) return this.getChildAt(3);
+    if (this.isLeftAndRightFilterRendered()) return this._leftBackground;
     else return null;
   }
 
   getRightBackground() {
-    if (this.isLeftAndRightFilterRendered()) return this.getChildAt(4);
+    if (this.isLeftAndRightFilterRendered()) return this._rightBackground;
     else return null;
   }
 
   getLeftBackgroundHandle() {
     if (this.isLeftAndRightFilterRendered() && !this.isFeatureOff('zoom'))
-      return this.getChildAt(5);
+      return this._leftBackgroundResizeHandle;
     else return null;
   }
 
   getRightBackgroundHandle() {
     if (this.isLeftAndRightFilterRendered() && !this.isFeatureOff('zoom'))
-      return this.getChildAt(6);
+      return this._rightBackgroundResizeHandle;
     else return null;
   }
 

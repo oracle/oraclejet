@@ -15,17 +15,8 @@ js/libs/chai/chai.js                                                   MIT
 js/libs/hammer/hammer.js                                               MIT
 js/libs/js-signals/signals.js                                          MIT
 js/libs/jquery/jquery.js                                               MIT
-js/libs/jquery/jquery-ui-.custom.js                                    MIT
-js/libs/jquery/jqueryui-amd/core.js                                    MIT
-js/libs/jquery/jqueryui-amd/draggable.js                               MIT
-js/libs/jquery/jqueryui-amd/mouse.js                                   MIT
-js/libs/jquery/jqueryui-amd/position.js                                MIT
-js/libs/jquery/jqueryui-amd/sortable.js                                MIT
-js/libs/jquery/jqueryui-amd/widget.js                                  MIT
 js/libs/jquery/jqueryui-amd/disable-selection.js                       MIT
 js/libs/jquery/jqueryui-amd/jquery-var-for-color.js                    MIT
-js/libs/jquery/jqueryui-amd/core.js                                    MIT
-js/libs/jquery/jqueryui-amd/ie.js                                      MIT
 js/libs/jquery/jqueryui-amd/keycode.js                                 MIT
 js/libs/jquery/jqueryui-amd/jquery-patch.js                            MIT
 js/libs/jquery/jqueryui-amd/labels.js                                  MIT
@@ -38,28 +29,58 @@ js/libs/jquery/jqueryui-amd/version.js                                 MIT
 js/libs/jquery/jqueryui-amd/focusable.js                               MIT
 js/libs/jquery/jqueryui-amd/data.js                                    MIT
 js/libs/jquery/jqueryui-amd/effect.js                                  MIT
-js/libs/jquery/jqueryui-amd/safe-blur.js                               MIT
-js/libs/jquery/jqueryui-amd/form.js                                    MIT
-js/libs/jquery/jqueryui-amd/safe-active-element.js                     MIT
+js/libs/jquery/jqueryui-amd/effects/effect-pulsate.js                  MIT
+js/libs/jquery/jqueryui-amd/effects/effect-fade.js                     MIT
+js/libs/jquery/jqueryui-amd/effects/effect-clip.js                     MIT
+js/libs/jquery/jqueryui-amd/effects/effect-fold.js                     MIT
+js/libs/jquery/jqueryui-amd/effects/effect-drop.js                     MIT
+js/libs/jquery/jqueryui-amd/effects/effect-scale.js                    MIT
+js/libs/jquery/jqueryui-amd/effects/effect-explode.js                  MIT
+js/libs/jquery/jqueryui-amd/effects/effect-puff.js                     MIT
+js/libs/jquery/jqueryui-amd/effects/effect-transfer.js                 MIT
+js/libs/jquery/jqueryui-amd/effects/effect-bounce.js                   MIT
+js/libs/jquery/jqueryui-amd/effects/effect-blind.js                    MIT
+js/libs/jquery/jqueryui-amd/effects/effect-slide.js                    MIT
+js/libs/jquery/jqueryui-amd/effects/effect-highlight.js                MIT
+js/libs/jquery/jqueryui-amd/effects/effect-size.js                     MIT
+js/libs/jquery/jqueryui-amd/effects/effect-shake.js                    MIT
 js/libs/jquery/jqueryui-amd/plugin.js                                  MIT
 js/libs/jquery/jqueryui-amd/widgets/sortable.js                        MIT
+js/libs/jquery/jqueryui-amd/widgets/controlgroup.js                    MIT
+js/libs/jquery/jqueryui-amd/widgets/droppable.js                       MIT
 js/libs/jquery/jqueryui-amd/widgets/draggable.js                       MIT
+js/libs/jquery/jqueryui-amd/widgets/checkboxradio.js                   MIT
+js/libs/jquery/jqueryui-amd/widgets/tooltip.js                         MIT
+js/libs/jquery/jqueryui-amd/widgets/dialog.js                          MIT
+js/libs/jquery/jqueryui-amd/widgets/tabs.js                            MIT
+js/libs/jquery/jqueryui-amd/widgets/resizable.js                       MIT
+js/libs/jquery/jqueryui-amd/widgets/spinner.js                         MIT
+js/libs/jquery/jqueryui-amd/widgets/selectable.js                      MIT
+js/libs/jquery/jqueryui-amd/widgets/autocomplete.js                    MIT
+js/libs/jquery/jqueryui-amd/widgets/selectmenu.js                      MIT
+js/libs/jquery/jqueryui-amd/widgets/progressbar.js                     MIT
+js/libs/jquery/jqueryui-amd/widgets/button.js                          MIT
+js/libs/jquery/jqueryui-amd/widgets/menu.js                            MIT
+js/libs/jquery/jqueryui-amd/widgets/slider.js                          MIT
 js/libs/jquery/jqueryui-amd/widgets/mouse.js                           MIT
+js/libs/jquery/jqueryui-amd/widgets/datepicker.js                      MIT
+js/libs/jquery/jqueryui-amd/widgets/accordion.js                       MIT
 js/libs/jquery/jqueryui-amd/vendor/jquery-color/jquery.color.js        MIT
+js/libs/jquery/jqueryui-amd/vendor/jquery-color/LICENSE.txt            MIT
 js/libs/jquery/jqueryui-amd/position.js                                MIT
 js/libs/knockout/knockout.js                                           MIT
-js/libs/oj/v17.1.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
-js/libs/oj/v17.1.0/min/ojexpparser.js (expparser.js)                    MIT
-js/libs/oj/v17.1.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
-js/libs/oj/v17.1.0/min/ojmessagebanner.js (Ramda)                       MIT
-js/libs/oj/v17.1.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
-js/libs/oj/v17.1.0/min/ojtree.js (jsTree.js)                            MIT
-js/libs/oj/v17.1.0/ojL10n.js (requireJS i18n)                           MIT
+js/libs/oj/v18.0.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
+js/libs/oj/v18.0.0/min/ojexpparser.js (expparser.js)                    MIT
+js/libs/oj/v18.0.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
+js/libs/oj/v18.0.0/min/ojmessagebanner.js (Ramda)                       MIT
+js/libs/oj/v18.0.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
+js/libs/oj/v18.0.0/min/ojtree.js (jsTree.js)                            MIT
+js/libs/oj/v18.0.0/ojL10n.js (requireJS i18n)                           MIT
 js/libs/proj4js/dist/proj4.js                                                 MIT
 js/libs/require/require.js                                                    MIT
 js/libs/require/text.js                                                       MIT
 js/libs/require-css/css.min.js (require-css)                                  MIT
-scss/oj/v17.1.0/3rdparty/normalize/normalize.scss                       MIT
+scss/oj/v18.0.0/3rdparty/normalize/normalize.scss                       MIT
 js/libs/touchr/touchr.js                                                      MIT
 js/libs/preact/dist/preact.umd.js                                             MIT
 

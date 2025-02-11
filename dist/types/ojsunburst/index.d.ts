@@ -9,6 +9,7 @@ export interface ojSunburst<K, D extends ojSunburst.Node<K> | any> extends dvtBa
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
     animationUpdateColor?: string;
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     colorLabel?: string;
     data: DataProvider<K, D> | null;
@@ -52,6 +53,7 @@ export interface ojSunburst<K, D extends ojSunburst.Node<K> | any> extends dvtBa
             preventDefault: boolean;
         }));
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
     translations: {
         accessibleContainsControls?: string;
@@ -329,6 +331,7 @@ export interface ojSunburstSettableProperties<K, D extends ojSunburst.Node<K> | 
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
     animationUpdateColor?: string;
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     colorLabel?: string;
     data: DataProvider<K, D> | null;
@@ -372,6 +375,7 @@ export interface ojSunburstSettableProperties<K, D extends ojSunburst.Node<K> | 
             preventDefault: boolean;
         }));
     };
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
     translations: {
         accessibleContainsControls?: string;
@@ -746,18 +750,22 @@ export namespace SunburstNodeElement {
     type valueChanged<K = any, D = any> = JetElementCustomEvent<ojSunburstNode<K, D>["value"]>;
 }
 export interface SunburstIntrinsicProps extends Partial<Readonly<ojSunburstSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - Support for this custom event has been deprecated. Lazy loading of data can be implemented through the data provider. */
     onojBeforeCollapse?: (value: ojSunburstEventMap<any, any>['ojBeforeCollapse']) => void;
     onojBeforeDrill?: (value: ojSunburstEventMap<any, any>['ojBeforeDrill']) => void;
+    /** @deprecated since 12.1.0 - Support for this custom event has been deprecated. Lazy loading of data can be implemented through the data provider. */
     onojBeforeExpand?: (value: ojSunburstEventMap<any, any>['ojBeforeExpand']) => void;
+    /** @deprecated since 12.1.0 - Support for this custom event has been deprecated. Use on-expanded-changed to listen for changes to the "expanded" property instead. */
     onojCollapse?: (value: ojSunburstEventMap<any, any>['ojCollapse']) => void;
     onojDrill?: (value: ojSunburstEventMap<any, any>['ojDrill']) => void;
+    /** @deprecated since 12.1.0 - Support for this custom event has been deprecated. Use on-expanded-changed to listen for changes to the "expanded" property instead. */
     onojExpand?: (value: ojSunburstEventMap<any, any>['ojExpand']) => void;
     onojRotateInput?: (value: ojSunburstEventMap<any, any>['ojRotateInput']) => void;
     onanimationDurationChanged?: (value: ojSunburstEventMap<any, any>['animationDurationChanged']) => void;
     onanimationOnDataChangeChanged?: (value: ojSunburstEventMap<any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojSunburstEventMap<any, any>['animationOnDisplayChanged']) => void;
     onanimationUpdateColorChanged?: (value: ojSunburstEventMap<any, any>['animationUpdateColorChanged']) => void;
-    onasChanged?: (value: ojSunburstEventMap<any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojSunburstEventMap<any, any>['asChanged']) => void;
     oncolorLabelChanged?: (value: ojSunburstEventMap<any, any>['colorLabelChanged']) => void;
     ondataChanged?: (value: ojSunburstEventMap<any, any>['dataChanged']) => void;
     ondisplayLevelsChanged?: (value: ojSunburstEventMap<any, any>['displayLevelsChanged']) => void;
@@ -779,7 +787,7 @@ export interface SunburstIntrinsicProps extends Partial<Readonly<ojSunburstSetta
     onsortingChanged?: (value: ojSunburstEventMap<any, any>['sortingChanged']) => void;
     onstartAngleChanged?: (value: ojSunburstEventMap<any, any>['startAngleChanged']) => void;
     ontooltipChanged?: (value: ojSunburstEventMap<any, any>['tooltipChanged']) => void;
-    ontouchResponseChanged?: (value: ojSunburstEventMap<any, any>['touchResponseChanged']) => void;
+    /** @deprecated since 18.0.0 */ ontouchResponseChanged?: (value: ojSunburstEventMap<any, any>['touchResponseChanged']) => void;
     ontrackResizeChanged?: (value: ojSunburstEventMap<any, any>['trackResizeChanged']) => void;
     children?: ComponentChildren;
 }

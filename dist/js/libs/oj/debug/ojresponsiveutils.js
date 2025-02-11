@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -54,10 +54,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
    * <p>In the jet sass files there are variables for
    * responsive screen widths, these look something like</p>
    *  <ul>
-   *    <li>$screenSmallRange:  0, 767px;</li>
-   *    <li>$screenMediumRange: 768px, 1023px;</li>
-   *    <li>$screenLargeRange:  1024px, 1280px;</li>
-   *    <li>$screenXlargeRange: 1281px, null;</li>
+   *    <li>$screenSmallRange: 0, 599.9px;</li>
+   *    <li>$screenMediumRange: 600px, 1023.9px;</li>
+   *    <li>$screenLargeRange: 1024px, 1439.9px;</li>
+   *    <li>$screenXlargeRange: 1440px, null;</li>
    *  </ul>
    *
    * <p>These constants are used to identify these ranges.</p>

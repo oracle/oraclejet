@@ -1,1 +1,5 @@
-export declare const getTranslationBundlePromiseFromLoader: (loader: (locale: string | null) => Promise<any>) => Promise<any>;
+type Loader = (locale: string | null) => Promise<any>;
+export declare const registerTranslationBundleLoaders: (bundles: Record<string, Loader>) => void;
+export declare const getTranslationBundlePromise: (bundleId: string) => Promise<any>;
+export declare const loadAllPendingBundles: () => Promise<any[]>;
+export {};

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2932,12 +2932,15 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
     this._WIDGET = function (method, prop, value) {
       // Allow property access before widget is created for element binding and dynamic element creation
       if (method === 'option') {
-        oj.BaseCustomElementBridge.__SetProperty(
-          this.GetAliasForProperty.bind(this),
-          widgetOptions,
-          prop,
-          value
-        );
+        if (arguments.length > 2) {
+          // option set case
+          oj.BaseCustomElementBridge.__SetProperty(
+            this.GetAliasForProperty.bind(this),
+            widgetOptions,
+            prop,
+            value
+          );
+        }
         return widgetOptions[prop];
       }
 
@@ -4846,6 +4849,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
           function (event, eventType) {
             self._handleContextMenuGesture(contextMenu, event, eventType);
           },
+          contextMenu,
           contextMenuOptions
         );
       }

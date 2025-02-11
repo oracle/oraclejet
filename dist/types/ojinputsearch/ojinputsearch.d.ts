@@ -15,6 +15,7 @@ type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'id'> & {
     onValueChanged?: PropertyChanged<string | null>;
     onOjValueAction?: Action<ValueDetail<Key, Data>>;
     suggestionItemTemplate?: TemplateSlot<SuggestionItemTemplateContext<Key, Data>>;
+    autocomplete?: 'on' | 'off';
 };
 type State<Key, Data> = {
     dropdownOpen: boolean;
@@ -60,6 +61,7 @@ interface SuggestionItemTemplateContext<Key, Data> {
 }
 export declare class InputSearch<K, D> extends Component<ExtendGlobalProps<Props<K, D>>, State<K, D>> {
     static defaultProps: {
+        autocomplete: string;
         suggestions: any;
         suggestionItemText: string;
         placeholder: string;
@@ -81,6 +83,7 @@ export declare class InputSearch<K, D> extends Component<ExtendGlobalProps<Props
     private _testPromiseResolve;
     private _uniqueId;
     private _dropdownVerticalOffset;
+    private _abortController?;
     constructor(props: Readonly<Props<K, D>>);
     render(props: ExtendGlobalProps<Props<K, D>>, state: State<K, D>): ComponentChild;
     static getDerivedStateFromProps<K, D>(props: Readonly<Props<K, D>>, state: Readonly<State<K, D>>): Partial<State<K, D>> | null;
@@ -174,6 +177,7 @@ export interface InputSearchElement<K, D> extends JetElement<InputSearchElementS
 export namespace InputSearchElement {
     interface ojValueAction<K, D> extends CustomEvent<ValueDetail<K, D> & {}> {
     }
+    type autocompleteChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['autocomplete']>;
     type placeholderChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['placeholder']>;
     type rawValueChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['rawValue']>;
     type suggestionItemTextChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['suggestionItemText']>;
@@ -183,6 +187,7 @@ export namespace InputSearchElement {
 }
 export interface InputSearchElementEventMap<K, D> extends HTMLElementEventMap {
     'ojValueAction': InputSearchElement.ojValueAction<K, D>;
+    'autocompleteChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['autocomplete']>;
     'placeholderChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['placeholder']>;
     'rawValueChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['rawValue']>;
     'suggestionItemTextChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['suggestionItemText']>;
@@ -190,6 +195,7 @@ export interface InputSearchElementEventMap<K, D> extends HTMLElementEventMap {
     'valueChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['value']>;
 }
 export interface InputSearchElementSettableProperties<Key, Data> extends JetSettableProperties {
+    autocomplete?: Props<Key, Data>['autocomplete'];
     placeholder?: Props<Key, Data>['placeholder'];
     suggestionItemText?: Props<Key, Data>['suggestionItemText'];
     suggestions?: Props<Key, Data>['suggestions'];
@@ -202,6 +208,7 @@ export interface InputSearchIntrinsicProps extends Partial<Readonly<InputSearchE
     rawValue?: never;
     children?: import('preact').ComponentChildren;
     onojValueAction?: (value: InputSearchElementEventMap<any, any>['ojValueAction']) => void;
+    onautocompleteChanged?: (value: InputSearchElementEventMap<any, any>['autocompleteChanged']) => void;
     onplaceholderChanged?: (value: InputSearchElementEventMap<any, any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: InputSearchElementEventMap<any, any>['rawValueChanged']) => void;
     onsuggestionItemTextChanged?: (value: InputSearchElementEventMap<any, any>['suggestionItemTextChanged']) => void;

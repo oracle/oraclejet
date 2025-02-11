@@ -1,1 +1,0 @@
-!function(e){"use strict";"function"==typeof define&&define.amd?define(["jquery","./version"],e):"object"==typeof module&&module.exports?(require("./version"),module.exports=e(require("jquery"))):e(jQuery)}((function(e){"use strict";return e.ui.safeActiveElement=function(e){var t;try{t=e.activeElement}catch(r){t=e.body}return t||(t=e.body),t.nodeName||(t=e.body),t}}));

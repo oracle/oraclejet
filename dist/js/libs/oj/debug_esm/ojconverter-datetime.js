@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -914,7 +914,8 @@ const IntlDateTimeConverter = function (options) {
  * The default is 1950.
  * <p style='padding-left: 5px;'>
  * Example: if two-digit-year-start is 1950, 10 is parsed as 2010<br/><br/>
- * Example: if two-digit-year-start is 1900, 10 is parsed as 1910
+ * Example: if two-digit-year-start is 1900, 10 is parsed as 1910<br/><br/>
+ * Example: if two-digit-year-start is 1, 10 is parsed as 10
  * </p>
  *
  * @property {('2-digit'|'numeric'|'narrow'|'short'|'long')=} month - specifies how the month is formatted. Allowed values are
@@ -1105,8 +1106,9 @@ const IntlDateTimeConverter = function (options) {
  *     <tr>
  *       <td>Offset</td>
  *       <td>Etc/GMT-8. The offset is positive if the local time zone is behind UTC and negative if it is ahead.
- *           The offset range is between Etc/GMT-14 and Etc/GMT+12 (UTC-12 and UTC+14). Which means that Etc/GMT-8
- *           is equivalent to UTC+08.</td>
+ *           For example Etc/GMT-8 is equivalent to UTC+8.
+ *           The offset range is between Etc/GMT-14 and Etc/GMT+12 (UTC-12 and UTC+14).
+ *           Etc/GMT only supports +/-hh and not +/-hh:mm.</td>
  *     </tr>
  *   </tbody>
  * </table>

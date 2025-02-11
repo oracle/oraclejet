@@ -15,15 +15,28 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTranslationBundleInfo = exports.getDtMetadataForComponent = exports.getVCompFunctionInfo = exports.getVCompClassInfo = void 0;
+exports.getVCompClassInfo = getVCompClassInfo;
+exports.getVCompFunctionInfo = getVCompFunctionInfo;
+exports.getDtMetadataForComponent = getDtMetadataForComponent;
+exports.getTranslationBundleInfo = getTranslationBundleInfo;
 const ts = __importStar(require("typescript"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
@@ -67,7 +80,6 @@ function getVCompClassInfo(elementName, classNode, progImportMaps, checker, buil
     }
     return rtnInfo;
 }
-exports.getVCompClassInfo = getVCompClassInfo;
 function getVCompFunctionInfo(functionalCompNode, progImportMaps, checker, buildOptions) {
     let rtnInfo = null;
     let propsInfo = null;
@@ -248,7 +260,6 @@ function getVCompFunctionInfo(functionalCompNode, progImportMaps, checker, build
     }
     return rtnInfo;
 }
-exports.getVCompFunctionInfo = getVCompFunctionInfo;
 function getDtMetadataForComponent(vcompInfo, metaUtilObj) {
     const compNode = MetaTypes.isClassInfo(vcompInfo) ? vcompInfo.classNode : vcompInfo.componentNode;
     const vcompInterfaceName = MetaUtils.tagNameToElementInterfaceName(metaUtilObj.fullMetadata['name']);
@@ -264,7 +275,6 @@ function getDtMetadataForComponent(vcompInfo, metaUtilObj) {
     }
     Object.assign(metaUtilObj.fullMetadata, dtMetadata);
 }
-exports.getDtMetadataForComponent = getDtMetadataForComponent;
 function getTranslationBundleInfo(vcompInfo, compilerOptions, buildOptions, metaUtilObj) {
     let rtnTranslationBundleInfo;
     const bundleIds = getTranslationBundleIdsFromDependencies(vcompInfo, buildOptions, metaUtilObj);
@@ -290,7 +300,6 @@ function getTranslationBundleInfo(vcompInfo, compilerOptions, buildOptions, meta
     }
     return rtnTranslationBundleInfo;
 }
-exports.getTranslationBundleInfo = getTranslationBundleInfo;
 function isVCompBaseClassFound(typeRef, progImportMaps, checker) {
     let rtn = false;
     const exportToAlias = progImportMaps.getMap(MetaTypes.IMAP.exportToAlias, typeRef);
@@ -499,6 +508,12 @@ function checkComponentMetadataConsistency(compNode, isInMonoPack, docletTagMeta
                 delete docletTagMetadata['main'];
             }
         }
+    }
+    const nameArray = metaUtilObj.fullMetadata['name'].split('-');
+    const compPrefix = nameArray.shift();
+    const compNameWithoutPrefix = nameArray.join('-');
+    if (compNameWithoutPrefix.match(/^[0-9]/)) {
+        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_COMP_NAME_STARTING_WITH_NUMBER, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `The custom element name after the initial '${compPrefix}' prefix begins with an illegal numeric character:  '${compNameWithoutPrefix}'`, compNode);
     }
 }
 const D_TS_GEN_OK = 0b0000;

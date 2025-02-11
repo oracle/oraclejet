@@ -4,18 +4,22 @@ import { KeySet } from '../ojkeyset';
 import { DataProvider } from '../ojdataprovider';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojNavigationList<K, D> extends baseComponent<ojNavigationListSettableProperties<K, D>> {
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as: string;
     currentItem: K;
     data: DataProvider<K, D> | null;
     display: 'all' | 'icons';
     drillMode: 'none' | 'collapsible' | 'sliding';
+    /** @deprecated since 17.0.0 - Support for horizontal layout in oj-navigation-list is deprecated - use oj-tab-bar instead. */
     edge: 'top' | 'bottom' | 'start';
     expanded: KeySet<K>;
+    /** @deprecated since 13.0.0 - This is not supported in the Redwood theme. */
     hierarchyMenuThreshold: number;
     item: {
         renderer?: (((context: ojNavigationList.ItemContext<K, D>) => void) | null);
         selectable?: (((context: ojNavigationList.ItemContext<K, D>) => boolean) | boolean);
     };
+    /** @deprecated since 17.0.0 - Support for horizontal layout in oj-navigation-list is deprecated - use oj-tab-bar instead. */
     overflow: 'popup' | 'hidden';
     rootLabel: string | null;
     selection: K;
@@ -24,6 +28,7 @@ export interface ojNavigationList<K, D> extends baseComponent<ojNavigationListSe
         defaultRootLabel?: string;
         hierMenuBtnLabel?: string;
         msgFetchingData?: string;
+        /** @deprecated since 17.0.0 - oj-navigation-list no long displays a message when there are no items. */
         msgNoData?: string;
         overflowItemLabel?: string;
         previousIcon?: string;
@@ -179,18 +184,22 @@ export interface ojNavigationListEventMap<K, D> extends baseComponentEventMap<oj
     'selectionChanged': JetElementCustomEvent<ojNavigationList<K, D>["selection"]>;
 }
 export interface ojNavigationListSettableProperties<K, D> extends baseComponentSettableProperties {
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as: string;
     currentItem: K;
     data: DataProvider<K, D> | null;
     display: 'all' | 'icons';
     drillMode: 'none' | 'collapsible' | 'sliding';
+    /** @deprecated since 17.0.0 - Support for horizontal layout in oj-navigation-list is deprecated - use oj-tab-bar instead. */
     edge: 'top' | 'bottom' | 'start';
     expanded: KeySet<K>;
+    /** @deprecated since 13.0.0 - This is not supported in the Redwood theme. */
     hierarchyMenuThreshold: number;
     item: {
         renderer?: (((context: ojNavigationList.ItemContext<K, D>) => void) | null);
         selectable?: (((context: ojNavigationList.ItemContext<K, D>) => boolean) | boolean);
     };
+    /** @deprecated since 17.0.0 - Support for horizontal layout in oj-navigation-list is deprecated - use oj-tab-bar instead. */
     overflow: 'popup' | 'hidden';
     rootLabel: string | null;
     selection: K;
@@ -199,6 +208,7 @@ export interface ojNavigationListSettableProperties<K, D> extends baseComponentS
         defaultRootLabel?: string;
         hierMenuBtnLabel?: string;
         msgFetchingData?: string;
+        /** @deprecated since 17.0.0 - oj-navigation-list no long displays a message when there are no items. */
         msgNoData?: string;
         overflowItemLabel?: string;
         previousIcon?: string;
@@ -209,6 +219,7 @@ export interface ojNavigationListSettablePropertiesLenient<K, D> extends Partial
     [key: string]: any;
 }
 export interface ojTabBar<K, D> extends baseComponent<ojTabBarSettableProperties<K, D>> {
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as: string;
     currentItem: any;
     data: DataProvider<K, D> | null;
@@ -224,17 +235,29 @@ export interface ojTabBar<K, D> extends baseComponent<ojTabBarSettableProperties
     selection: any;
     truncation: 'none' | 'progressive';
     translations: {
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         accessibleReorderAfterItem?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         accessibleReorderBeforeItem?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         accessibleReorderTouchInstructionText?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelCut?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelPasteAfter?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelPasteBefore?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelRemove?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         msgFetchingData?: string;
+        /** @deprecated since 17.0.0 - oj-tab-bar no long displays a message when there are no items. */
         msgNoData?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         overflowItemLabel?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         removeCueText?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         selectedLabel?: string;
     };
     addEventListener<T extends keyof ojTabBarEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTabBarEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -380,6 +403,7 @@ export interface ojTabBarEventMap<K, D> extends baseComponentEventMap<ojTabBarSe
     'truncationChanged': JetElementCustomEvent<ojTabBar<K, D>["truncation"]>;
 }
 export interface ojTabBarSettableProperties<K, D> extends baseComponentSettableProperties {
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as: string;
     currentItem: any;
     data: DataProvider<K, D> | null;
@@ -395,17 +419,29 @@ export interface ojTabBarSettableProperties<K, D> extends baseComponentSettableP
     selection: any;
     truncation: 'none' | 'progressive';
     translations: {
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         accessibleReorderAfterItem?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         accessibleReorderBeforeItem?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         accessibleReorderTouchInstructionText?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelCut?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelPasteAfter?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelPasteBefore?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelRemove?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         msgFetchingData?: string;
+        /** @deprecated since 17.0.0 - oj-tab-bar no long displays a message when there are no items. */
         msgNoData?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         overflowItemLabel?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         removeCueText?: string;
+        /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         selectedLabel?: string;
     };
 }
@@ -640,7 +676,9 @@ export namespace TabBarElement {
     type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
 }
 export interface NavigationListIntrinsicProps extends Partial<Readonly<ojNavigationListSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojNavigationListEventMap<any, any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojNavigationListEventMap<any, any>['ojAnimateStart']) => void;
     onojBeforeCollapse?: (value: ojNavigationListEventMap<any, any>['ojBeforeCollapse']) => void;
     onojBeforeCurrentItem?: (value: ojNavigationListEventMap<any, any>['ojBeforeCurrentItem']) => void;
@@ -649,22 +687,24 @@ export interface NavigationListIntrinsicProps extends Partial<Readonly<ojNavigat
     onojCollapse?: (value: ojNavigationListEventMap<any, any>['ojCollapse']) => void;
     onojExpand?: (value: ojNavigationListEventMap<any, any>['ojExpand']) => void;
     onojSelectionAction?: (value: ojNavigationListEventMap<any, any>['ojSelectionAction']) => void;
-    onasChanged?: (value: ojNavigationListEventMap<any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojNavigationListEventMap<any, any>['asChanged']) => void;
     oncurrentItemChanged?: (value: ojNavigationListEventMap<any, any>['currentItemChanged']) => void;
     ondataChanged?: (value: ojNavigationListEventMap<any, any>['dataChanged']) => void;
     ondisplayChanged?: (value: ojNavigationListEventMap<any, any>['displayChanged']) => void;
     ondrillModeChanged?: (value: ojNavigationListEventMap<any, any>['drillModeChanged']) => void;
-    onedgeChanged?: (value: ojNavigationListEventMap<any, any>['edgeChanged']) => void;
+    /** @deprecated since 17.0.0 */ onedgeChanged?: (value: ojNavigationListEventMap<any, any>['edgeChanged']) => void;
     onexpandedChanged?: (value: ojNavigationListEventMap<any, any>['expandedChanged']) => void;
-    onhierarchyMenuThresholdChanged?: (value: ojNavigationListEventMap<any, any>['hierarchyMenuThresholdChanged']) => void;
+    /** @deprecated since 13.0.0 */ onhierarchyMenuThresholdChanged?: (value: ojNavigationListEventMap<any, any>['hierarchyMenuThresholdChanged']) => void;
     onitemChanged?: (value: ojNavigationListEventMap<any, any>['itemChanged']) => void;
-    onoverflowChanged?: (value: ojNavigationListEventMap<any, any>['overflowChanged']) => void;
+    /** @deprecated since 17.0.0 */ onoverflowChanged?: (value: ojNavigationListEventMap<any, any>['overflowChanged']) => void;
     onrootLabelChanged?: (value: ojNavigationListEventMap<any, any>['rootLabelChanged']) => void;
     onselectionChanged?: (value: ojNavigationListEventMap<any, any>['selectionChanged']) => void;
     children?: ComponentChildren;
 }
 export interface TabBarIntrinsicProps extends Partial<Readonly<ojTabBarSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojTabBarEventMap<any, any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojTabBarEventMap<any, any>['ojAnimateStart']) => void;
     onojBeforeCurrentItem?: (value: ojTabBarEventMap<any, any>['ojBeforeCurrentItem']) => void;
     onojBeforeDeselect?: (value: ojTabBarEventMap<any, any>['ojBeforeDeselect']) => void;
@@ -673,7 +713,7 @@ export interface TabBarIntrinsicProps extends Partial<Readonly<ojTabBarSettableP
     onojDeselect?: (value: ojTabBarEventMap<any, any>['ojDeselect']) => void;
     onojRemove?: (value: ojTabBarEventMap<any, any>['ojRemove']) => void;
     onojReorder?: (value: ojTabBarEventMap<any, any>['ojReorder']) => void;
-    onasChanged?: (value: ojTabBarEventMap<any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojTabBarEventMap<any, any>['asChanged']) => void;
     oncurrentItemChanged?: (value: ojTabBarEventMap<any, any>['currentItemChanged']) => void;
     ondataChanged?: (value: ojTabBarEventMap<any, any>['dataChanged']) => void;
     ondisplayChanged?: (value: ojTabBarEventMap<any, any>['displayChanged']) => void;

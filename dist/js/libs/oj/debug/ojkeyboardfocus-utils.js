@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -76,7 +76,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
     if (parentNode != null) {
       var nodes = getActionableElementsInNode(parentNode);
       for (var i = 0; i < nodes.length; i++) {
-        if (nodes[0] === node) {
+        if (nodes[i] === node) {
           return true;
         }
       }
@@ -88,11 +88,12 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * Finds all the focusable elements in a node
    * @param {Element} node
    * @param {boolean=} skipVisibilityCheck
+   * @param {boolean=} includeSelf
    * @return {Element[]} An array of all of the focusable elements in a node
    * @export
    * @ignore
    */
-  const getFocusableElementsInNode = function (node, skipVisibilityCheck) {
+  const getFocusableElementsInNode = function (node, skipVisibilityCheck, includeSelf) {
     var inputElems = [];
 
     // a nodes without href are not focusable
@@ -104,7 +105,10 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
       }
     }
     if (check) {
-      var nodes = node.querySelectorAll(_FOCUSABLE_ELEMENTS_QUERY);
+      var nodes = [...node.querySelectorAll(_FOCUSABLE_ELEMENTS_QUERY)];
+      if (includeSelf && node.matches(_FOCUSABLE_ELEMENTS_QUERY)) {
+        nodes.push(node);
+      }
       var nodeCount = nodes.length;
       // in IE, each 'option' after 'select' elem will be counted as an input element(and cause duplicate input elems returned)
       // this will cause problem with TAB/Shift-TAB (recognizing whether to go to next cell or to tab within the current cell
@@ -153,7 +157,8 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * @param {Element} element
    * @param {boolean=} excludeActiveElement
    * @param {boolean=} includeReadonly
-   * @param {NodeList=} An array of the dialog elements
+   * @param {boolean=} includeSelf
+   * @param {Element[]} dialogs An array of the dialog elements
    * @return {Element[]} An array of the disabled elements
    * @export
    * @ignore
@@ -162,11 +167,12 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
     element,
     excludeActiveElement,
     includeReadonly,
+    includeSelf,
     dialogs
   ) {
     var disabledElems = [];
     // make all focusable elements non-focusable, since we want to manage tab stops
-    var focusElems = getFocusableElementsInNode(element, true);
+    var focusElems = getFocusableElementsInNode(element, true, includeSelf);
     for (var i = 0; i < focusElems.length; i++) {
       const elem = focusElems[i];
       const isInsideDialog = Array.from(dialogs || []).find((dialog) => dialog.contains(elem));
@@ -186,13 +192,17 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
   /**
    * Enable all focusable elements within the specified element that were previously disabled
    * @param {Element} element
+   * @param {boolean=} includeSelf
    * @return {NodeList} An array of the enabled elements
    * @export
    * @ignore
    */
-  const enableAllFocusableElements = function (element) {
+  const enableAllFocusableElements = function (element, includeSelf) {
     // make all non-focusable elements focusable again
-    var focusElems = element.querySelectorAll('[' + _DATA_OJ_TABMOD + ']');
+    var focusElems = [...element.querySelectorAll('[' + _DATA_OJ_TABMOD + ']')];
+    if (includeSelf && element.matches('[' + _DATA_OJ_TABMOD + ']')) {
+      focusElems.push(element);
+    }
     for (var i = 0; i < focusElems.length; i++) {
       var tabIndex = parseInt(focusElems[i].getAttribute(_DATA_OJ_TABMOD), 10);
       focusElems[i].removeAttribute(_DATA_OJ_TABMOD);

@@ -56,6 +56,7 @@ export namespace RESTDataProvider {
     };
     // tslint:disable-next-line interface-over-type-literal
     type FetchErrorDetail<K, D> = {
+        /** @deprecated since 15.1.0 - Use FetchErrorDetail.error instead. */
         err: TypeError;
         error: TypeError;
         fetchParameters: FetchListParameters<D> | FetchByKeysParameters<K> | FetchByOffsetParameters<D>;
@@ -94,6 +95,7 @@ export namespace RESTDataProvider {
     // tslint:disable-next-line interface-over-type-literal
     type Options<K, D> = {
         capabilities?: Capabilities;
+        enforceKeyStringify?: 'off' | 'on';
         error?: ((response: FetchErrorDetail<K, D> | FetchResponseErrorDetail<K, D>) => void);
         implicitSort?: Array<SortCriterion<D>>;
         iterationLimit?: number;

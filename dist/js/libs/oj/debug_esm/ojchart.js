@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -786,6 +786,11 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
  * </h3>
  * oj-chart is being broken down into multiple core pack chart components (oj-c-line-chart, oj-c-area-chart, oj-c-bar-chart, etc) according to the type of the chart. To migrate from oj-chart to new core pack chart components (oj-c-area-chart, oj-c-line-chart), you need to revise the import statement and references of oj-chart in your app. JET 16.0.0 core pack has support for only oj-c-line-chart and oj-c-area-chart. Oj-c-line-chart is analogous to oj-chart with type set to ‘line’, and oj-c-area-chart is analogous to oj-chart with type set to ‘area’. Support for other chart types will be added in upcoming versions of JET. Please note the changes below.
+ * <h5 id="dataprovider-key-type-migration"></h5>
+ * <h5>Default component height</h5>
+ * <p>
+ * The default height of the component will now respond to scaling with the current height equal to when scaling equals 'lg'.
+ * </p>
  * <h5>animation-on-data-change</h5>
  * <p>
  * For the initial version of oj-c-line-chart and oj-c-area-chart, animaton-on-data-change attribute is not supported. We plan on supporting this use case in a future release.
@@ -794,10 +799,15 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * <p>
  * For the initial version of oj-c-line-chart and oj-c-area-chart, animaton-on-display attribute is not supported. We plan on supporting this use case in a future release.
  * </p>
+ * <h5>style-defaults.animation-duration attribute</h5>
+ * <p>
+ * For the initial version of oj-c-line-chart and oj-c-area-chart, animation-duration attribute is not supported. We plan on supporting this use case in a future release.
+ * </p>
  * <h5>coordinate-system</h5>
  * <p>
  * For the initial version of oj-c-line-chart and oj-c-area-chart, coordinate-system attribute is not supported. We plan on supporting this use case in a future release.
  * </p>
+ * <h5 id="context-menu-migration"></h5>
  * <h5>data-label</h5>
  * <p>
  * For the initial version of oj-c-line-chart and oj-c-area-chart, data-label attribute is not supported. We plan on supporting this use case in a future release.
@@ -2321,6 +2331,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojvalue {string} "touchStart"  Chart will instantly trigger the touch gesture and consume the page pan events if it does not require an internal feature that requires a touch start gesture like panning, zooming, or when marquee selection is initiated.
  * @ojvalue {string} "auto" Chart will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
  * @default "auto"
+ * @ojdeprecated {since: '18.0.0', description: 'This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead.'}
+
  */
 /**
  * A function that returns a custom data label. The function takes a <a href="#DataLabelContext">DataLabelContext</a> argument,
@@ -2419,7 +2431,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @property {string=} source The URI of the image of the legend symbol.
  * @property {"image"|"line"|"lineWithMarker"|"marker"} [symbolType="marker"] The type of legend symbol to display.
  * @property {string} text The legend item text.
- * @ojdeprecated {since: '14.1.0', description: 'This attribute is deprecated. Use hidden-categories on oj-chart instead', for:'categoryVisibility', target: 'property' }
+ * @ojdeprecated {since: '14.1.0', description: 'Use hidden-categories attribute of oj-chart instead.', for:'categoryVisibility', target: 'property' }
  */
 
 /**
@@ -2445,6 +2457,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.LegendSection
  * @type {Array.<Object>=}
+ * @ojdeprecated {since: "18.0.0", description: "Use of nested legend sections is not recommended in Redwood theme. As such, this attribute is deprecated." }
  * @ojsignature {target: "Type", value: "Array.<oj.ojChart.LegendSection>", jsdocOverride: true}
  */
 /**
@@ -2636,7 +2649,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.Legend
  * @type {string=}
- * @ojdeprecated {since: '12.1.0', description: 'Setting scrolling to off is not supported in Redwood theme and it is not recommended. As such, this attribute is deprecated.'}
+ * @ojdeprecated {since: '12.1.0', description: 'Setting scrolling to off is not supported in the Redwood theme and it is not recommended.'}
  * @ojvalue {string} "off" The legend will not be scrollable.
  * @ojvalue {string} "asNeeded" The legend will be scrollable if items do not fit in the specified space.
  * @default "asNeeded"
@@ -2926,6 +2939,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @type {string=}
  * @ojvalue {string} "on" Chart will be displayed with a 3D effect.
  * @ojvalue {string} "off" Chart will not be displayed with a 3D effect.
+ * @ojdeprecated {since: '18.0.0', description: '3D effect is not supported in Redwood theme and is not recommended. As such, this attribute is deprecated.'}
  * @default "off"
  */
 /**
@@ -7327,7 +7341,7 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
  * @ojvbmincolumns 1
  *
  * @ojoracleicon 'oj-ux-ico-chart'
- * @ojuxspecs ['charts-bar-line-area-and-combo', 'data-visualization-range-chart', 'data-visualization-pie', 'data-visualization-polar-chart', 'data-visualization-funnel', 'data-visualization-pyramid', 'data-visualization-stock-chart', 'data-visualization-common']
+ * @ojuxspecs ['dvtChart_BarLineAreaCombo', 'range-chart', 'pie-chart', 'polar-chart', 'funnel-chart', 'pyramid-chart', 'stock-chart', 'data-visualization-common']
  *
  * @classdesc
  * <h3 id="chartOverview-section">
@@ -7578,7 +7592,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent, {
      * @property {Object} itemData  the row data object of the drilled item. This will only be set if a DataProvider is being used.
      * @property {Object|null} seriesData the data for the series of the drilled object
      * @property {Array.<Object>|null} groupData an array of data for the group the drilled object belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the drilled object
-     * @ojdeprecated {since: '10.0.0', description: 'No longer recommended. Use separate drill listeners - ojItemDrill, ojGroupDrill, ojSeriesDrill, and ojMultiSeriesDrill instead.'}
+     * @ojdeprecated {since: '10.0.0', description: 'No longer recommended. Use separate drill listeners instead - ojItemDrill, ojGroupDrill, ojSeriesDrill, and ojMultiSeriesDrill.'}
      * @expose
      * @event
      * @memberof oj.ojChart
@@ -7936,6 +7950,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent, {
     styleClasses['oj-chart-reference-object-area'] = {
       path: '_defaultReferenceObjectAreaColor',
       property: 'color'
+    };
+    styleClasses['oj-chart-overview-filter-panel'] = {
+      path: '_overviewFilterPanelBackgroundColor',
+      property: 'background-color'
     };
 
     // Legend, should be kept in sync with oj-legend

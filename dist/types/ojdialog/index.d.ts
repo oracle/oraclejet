@@ -5,6 +5,7 @@ export interface ojDialog extends baseComponent<ojDialogSettableProperties> {
     cancelBehavior: 'icon' | 'escape' | 'none';
     dialogTitle: string | null;
     dragAffordance: 'title-bar' | 'none';
+    headerDecoration: 'off' | 'on';
     initialVisibility: 'hide' | 'show';
     modality: 'modal' | 'modeless';
     position: ojDialog.Position;
@@ -97,6 +98,8 @@ export namespace ojDialog {
     // tslint:disable-next-line interface-over-type-literal
     type dragAffordanceChanged = JetElementCustomEvent<ojDialog["dragAffordance"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type headerDecorationChanged = JetElementCustomEvent<ojDialog["headerDecoration"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type initialVisibilityChanged = JetElementCustomEvent<ojDialog["initialVisibility"]>;
     // tslint:disable-next-line interface-over-type-literal
     type modalityChanged = JetElementCustomEvent<ojDialog["modality"]>;
@@ -137,6 +140,7 @@ export interface ojDialogEventMap extends baseComponentEventMap<ojDialogSettable
     'cancelBehaviorChanged': JetElementCustomEvent<ojDialog["cancelBehavior"]>;
     'dialogTitleChanged': JetElementCustomEvent<ojDialog["dialogTitle"]>;
     'dragAffordanceChanged': JetElementCustomEvent<ojDialog["dragAffordance"]>;
+    'headerDecorationChanged': JetElementCustomEvent<ojDialog["headerDecoration"]>;
     'initialVisibilityChanged': JetElementCustomEvent<ojDialog["initialVisibility"]>;
     'modalityChanged': JetElementCustomEvent<ojDialog["modality"]>;
     'positionChanged': JetElementCustomEvent<ojDialog["position"]>;
@@ -146,6 +150,7 @@ export interface ojDialogSettableProperties extends baseComponentSettablePropert
     cancelBehavior: 'icon' | 'escape' | 'none';
     dialogTitle: string | null;
     dragAffordance: 'title-bar' | 'none';
+    headerDecoration: 'off' | 'on';
     initialVisibility: 'hide' | 'show';
     modality: 'modal' | 'modeless';
     position: ojDialog.Position;
@@ -231,6 +236,8 @@ export namespace DialogElement {
     // tslint:disable-next-line interface-over-type-literal
     type dragAffordanceChanged = JetElementCustomEvent<ojDialog["dragAffordance"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type headerDecorationChanged = JetElementCustomEvent<ojDialog["headerDecoration"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type initialVisibilityChanged = JetElementCustomEvent<ojDialog["initialVisibility"]>;
     // tslint:disable-next-line interface-over-type-literal
     type modalityChanged = JetElementCustomEvent<ojDialog["modality"]>;
@@ -258,7 +265,9 @@ export namespace DialogElement {
     };
 }
 export interface DialogIntrinsicProps extends Partial<Readonly<ojDialogSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojDialogEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojDialogEventMap['ojAnimateStart']) => void;
     onojBeforeClose?: (value: ojDialogEventMap['ojBeforeClose']) => void;
     onojBeforeOpen?: (value: ojDialogEventMap['ojBeforeOpen']) => void;
@@ -271,6 +280,7 @@ export interface DialogIntrinsicProps extends Partial<Readonly<ojDialogSettableP
     oncancelBehaviorChanged?: (value: ojDialogEventMap['cancelBehaviorChanged']) => void;
     ondialogTitleChanged?: (value: ojDialogEventMap['dialogTitleChanged']) => void;
     ondragAffordanceChanged?: (value: ojDialogEventMap['dragAffordanceChanged']) => void;
+    onheaderDecorationChanged?: (value: ojDialogEventMap['headerDecorationChanged']) => void;
     oninitialVisibilityChanged?: (value: ojDialogEventMap['initialVisibilityChanged']) => void;
     onmodalityChanged?: (value: ojDialogEventMap['modalityChanged']) => void;
     onpositionChanged?: (value: ojDialogEventMap['positionChanged']) => void;

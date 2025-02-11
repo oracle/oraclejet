@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -407,8 +407,19 @@ if (oj.ButtonLegacy) {
    *  To migrate from oj-button to oj-c-button, you need to revise the import statement and references to oj-c-button in your app.  Please note the changes between the two components below.
    *  <h5>Label attribute</h5>
    *  <p>The default slot is no longer supported.  Text labels must be provide using the label attribute.</p>
+   *  <h5>Title attribute</h5>
+   *  <p>The title attribute has changed to tooltip</p>
    *  <h5>Context Menu</h5>
    *   <p>The context menu is no longer supported. </p>
+   *  <h5>oj-button-full-width class</h5>
+   *   <p>The <code>oj-button-full-width</code> style class should no longer be used with oj-c-button. Instead, set <code>edge</code> property to <code>bottom</code></p>
+   *  <h5>oj-button-sm class</h5>
+   *   <p>The <code>oj-button-sm</code> style class should no longer be used with oj-c-button. Instead, set <code>size</code> property to <code>sm</code></p>
+   *  <h5>oj-button-lg class</h5>
+   *   <p>The <code>oj-button-lg</code> style class should no longer be used with oj-c-button. Instead, set <code>size</code> property to <code>lg</code></p>
+   *  <h5>oj-button-width-full class</h5>
+   *   <p>The <code>oj-button-width-full</code> style class should no longer be used with oj-c-button. Instead, set <code>width</code> property to <code>100%</code></p>
+   *
    *
    * <h3 id="perf-section">
    *   Performance
@@ -2744,6 +2755,14 @@ if (oj.ButtonLegacy) {
   /**
    * @ojcomponent oj.ojButtonsetOne
    * @since 0.6.0
+   * @ojdeprecated [
+   *  {
+   *    type: "maintenance",
+   *    since: "17.0.0",
+   *    value: ["oj-c-buttonset-single"]
+   *  }
+   * ]
+   *
    * @augments oj.ojButtonset
    * @ojshortdesc A buttonset one is a grouping of related buttons where only one button may be selected.
    * @ojrole button
@@ -2781,6 +2800,12 @@ if (oj.ButtonLegacy) {
    * &lt;/oj-buttonset-one></code></pre>
    *
    * {@ojinclude "name":"buttonsetCommon"}
+   *
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * {@ojinclude "name":"buttonsetOneMigration"}
    *
    * <pre class="prettyprint">
    * <code>&lt;oj-buttonset-one id="drinkset">
@@ -2846,6 +2871,14 @@ if (oj.ButtonLegacy) {
   /**
    * @ojcomponent oj.ojButtonsetMany
    * @since 0.6.0
+   * @ojdeprecated [
+   *  {
+   *    type: "maintenance",
+   *    since: "17.0.0",
+   *    value: ["oj-c-buttonset-multiple"]
+   *  }
+   * ]
+   *
    * @augments oj.ojButtonset
    * @ojshortdesc A buttonset many is a grouping of related buttons where any number of buttons may be selected.
    * @ojrole button
@@ -2883,6 +2916,12 @@ if (oj.ButtonLegacy) {
    * &lt;/oj-buttonset-many></code></pre>
    *
    * {@ojinclude "name":"buttonsetCommon"}
+   *
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * {@ojinclude "name":"buttonsetManyMigration"}
    *
    * <pre class="prettyprint">
    * <code>&lt;oj-buttonset-many id="drinkset">
@@ -2980,21 +3019,6 @@ if (oj.ButtonLegacy) {
    * <p>The buttonset's focus management should be turned off when placing the buttonset in a [JET Toolbar]{@link oj.ojToolbar}.  See the <code class="prettyprint">focusManagement</code> attribute.
    * In this case, the "Keyboard End User Information" documented above is superseded by the Toolbar's documented keyboard behavior.
    *
-   * <h3 id="migration-section">
-   *   Migration
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
-   * </h3>
-   * <p>
-   * To migrate from oj-buttonset-many to oj-c-buttonset-multiple, or oj-buttonset-one to oj-c-buttonset-single, you need to revise the import statement
-   * and references to oj-c-buttonset-multiple, or oj-c-buttonset-single in your app. Please note the changes between the components below.
-   * Note that oj-c-toggle-button should be used instead of oj-c-buttonset-multiple, as it provide superior speed, though oj-c-buttonset-multiple
-   * with a single button will function properly.
-   * </p>
-   * <strong>oj-c-buttonset-multiple</strong> no longer supports DOM-centric options specified in the default slot.  Instead, the toggles are specified
-   * in the items property.  Sizes, layout widths, widths, max width, and edge behavior are all now done via properties instead of style classes or styling.
-   * Tooltip replaces title.   Solid chroming is no longer supported.   For oj-c-toggle-button, a value and label are used on the button, instead of having
-   * a value on a containing buttonset.
-   *
    * <h3 id="a11y-section">
    *   Accessibility
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
@@ -3043,6 +3067,59 @@ if (oj.ButtonLegacy) {
    * @memberof oj.ojButtonset
    * @instance
    */
+
+  /**
+   * <p>To migrate from oj-buttonset-many to oj-c-buttonset-multiple, you need to revise the import statement
+   * and references to oj-c-buttonset-multiple in your app. Please note the changes between the components below.
+   * </p>
+   * <h5>Options</h5>
+   *  <p><strong>oj-c-buttonset-multiple</strong> no longer supports DOM-centric options specified in the default slot.
+   * Instead, the toggles are specified in the items property.</p>
+   * <h5>Chroming</h5>
+   *  <p>Solid chroming is no longer supported.</p>
+   * <h5>Title attribute</h5>
+   *  <p>The title attribute has changed to tooltip</p>
+   * <h5>Sizes</h5>
+   *   <p>Button sizes are now done via the size property instead of styling classes.</p>
+   * <h5>Button width</h5>
+   *   <p>Button and buttonset width is now done via the width property instead of styling classes</p>
+   * <h5>Single Toggle Button Usage</h5>
+   *   <p>Note that oj-c-toggle-button should be used instead of oj-c-buttonset-multiple for single toggle button patterns,
+   * as it provide superior speed, though oj-c-buttonset-multiple with a single button will function properly.
+   * For oj-c-toggle-button, a value and label are used on the button, instead of having
+   * a value on a containing buttonset.</p>
+   * <h5>Toolbar</h5>
+   *    <p>Please note that oj-c-buttonset-multiple is intended for use in oj-c-toolbar,
+   * and not supported in oj-toolbar.</p>
+   *
+   * @ojfragment buttonsetManyMigration
+   * @memberof oj.ojButtonsetMany
+   * @instance
+   */
+  /**
+   * <p>To migrate from oj-buttonset-one to oj-c-buttonset-single, you need to revise the import statement
+   * and references to oj-c-buttonset-single in your app. Please note the changes between the components below.
+   * </p>
+   * <h5>Options</h5>
+   *  <p><strong>oj-c-buttonset-single</strong> no longer supports DOM-centric options specified in the default slot.
+   * Instead, the toggles are specified in the items property.</p>
+   * <h5>Chroming</h5>
+   *  <p>Solid chroming is no longer supported.</p>
+   * <h5>Title attribute</h5>
+   *  <p>The title attribute has changed to tooltip</p>
+   * <h5>Sizes</h5>
+   *   <p>Button sizes are now done via the size property instead of styling classes.</p>
+   * <h5>Button width</h5>
+   *   <p>Button and buttonset width is now done via the width property instead of styling classes</p>
+   * <h5>Toolbar</h5>
+   *    <p>Please note that oj-c-buttonset-single is intended for use in oj-c-toolbar,
+   * and not supported in oj-toolbar.</p>
+   *
+   * @ojfragment buttonsetOneMigration
+   * @memberof oj.ojButtonsetOne
+   * @instance
+   */
+
   // ---------------------------------- Styling oj-button ------------------------------------
   /**
    * @classdesc The following CSS classes can be applied by the page author as needed.<br/>

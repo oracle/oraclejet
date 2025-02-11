@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -34,12 +34,6 @@ var __oj_color_palette_metadata =
       "properties": {
         "converterHint": {
           "type": "Array<string>|string"
-        },
-        "helpInstruction": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
         },
         "messages": {
           "type": "Array<string>|string"
@@ -110,6 +104,9 @@ var __oj_color_palette_metadata =
     "palette": {
       "type": "Array<Object>"
     },
+    "placeholder": {
+      "type": "string"
+    },
     "swatchSize": {
       "type": "string",
       "enumValues": [
@@ -117,7 +114,7 @@ var __oj_color_palette_metadata =
         "sm",
         "lg"
       ],
-      "value": "lg"
+      "value": "sm"
     },
     "translations": {
       "type": "object",
@@ -213,9 +210,8 @@ var __oj_color_palette_metadata =
    * @ojcomponent oj.ojColorPalette
    * @augments oj.editableValue
    * @since 3.0.0
-   *
+   * @ojtsimport {module: "ojmessaging", type:"AMD", importName: "Message"}
    * @class oj.ojColorPalette
-   * @ojimportmembers oj.ojDisplayOptions
    * @ojtsimport {module: "ojcolor", type: "AMD", importName: "Color"}
    * @ojshortdesc A color palette displays a set of predefined colors from which a specific color can be selected.
    * @ojsignature [{
@@ -229,7 +225,7 @@ var __oj_color_palette_metadata =
    *               }
    *              ]
    *
-   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "layout", "swatchSize", "labelDisplay", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "common", items: ["swatchSize"]}
    * @ojpropertylayout {propertyGroup: "data", items: ["palette", "value"]}
    * @ojvbdefaultcolumns 4
    * @ojvbmincolumns 4
@@ -249,7 +245,6 @@ var __oj_color_palette_metadata =
    * <code>&lt;oj-color-palette palette="[[myPalette]]" value="{{colorValue}}">
    * &lt;/oj-color-palette>
    * </code></pre>
-   * {@ojinclude "name":"validationAndMessagingDoc"}
    *
    * <p>
    * <h3 id="keyboard-section">
@@ -260,15 +255,6 @@ var __oj_color_palette_metadata =
    * {@ojinclude "name":"keyboardDoc"}
    *
    * <p>
-   *
-   *
-   * <h3 id="rtl-section">
-   *   Reading direction
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
-   * </h3>
-   *
-   * <p>As with any JET element, in the unusual case that the directionality (LTR or RTL) changes post-init, the color palette must be
-   * <code class="prettyprint">refresh()</code>ed.
    *
    */
   //-----------------------------------------------------
@@ -355,12 +341,12 @@ var __oj_color_palette_metadata =
    *     <tr>
    *       <td>Swatch</td>
    *       <td><kbd>DownArrow</kbd></td>
-   *       <td>Navigate to the next swatch if in list layout, or to the swatch in the same position in the next row if in grid layout.</td>
+   *       <td>Navigate to the swatch in the same position in the next row.</td>
    *     </tr>
    *     <tr>
    *       <td>Swatch</td>
    *       <td><kbd>UpArrow</kbd></td>
-   *       <td>Navigate to the previous swatch if in list layout, or to the swatch in the same position in the previous row if in grid layout.</td>
+   *       <td>Navigate to the swatch in the same position in the previous row.</td>
    *     </tr>
    *     <tr>
    *       <td>Swatch</td>
@@ -378,6 +364,722 @@ var __oj_color_palette_metadata =
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
    * @memberof oj.ojColorPalette
    */
+
+  /**
+   * The oj-label sets the described-by attribute programmatically on the form component.
+   * This attribute is not meant to be set by an application developer directly.
+   * The described-by is copied to the aria-describedby
+   * attribute on the component's inner dom element, and it is needed
+   * for accessibility.
+   * @example <caption>Initialize component with the <code class="prettyprint">described-by</code> attribute specified:</caption>
+   * &lt;oj-some-element described-by="someId">&lt;/oj-some-element>
+   *
+   * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
+   * // getter
+   * var descById = myComp.describedBy;
+   *
+   * // setter
+   * myComp.describedBy = "someId";
+   *
+   * @ojshortdesc The form component's oj-label automatically sets described-by
+   * to make it accessible. It is not meant to be set by application developer.
+   * @expose
+   * @type {?string}
+   * @public
+   * @instance
+   * @memberof oj.ojColorPalette
+   * @name describedBy
+   * @ojdeprecated {since: '18.0.0', description: 'The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component.'}
+   * @since 4.0.0
+   */
+  /**
+   * Whether the component is disabled. The default is false.
+   *
+   * @ojshortdesc Specifies whether the component is disabled. The default is false.
+   * @expose
+   * @type {boolean}
+   * @default false
+   * @public
+   * @instance
+   * @memberof oj.ojColorPalette
+   * @name disabled
+   * @ojdeprecated {since: '18.0.0', description: "Disabled is not supported by the Color Palette UX specification."}
+   * @since 0.7.0
+   */
+  /**
+   * <p>
+   * The current valid state of the component. It is evaluated on initial render.
+   * It is re-evaluated
+   * <ul>
+   *   <li>after each validator (validators or async-validators) is run (full or deferred)</li>
+   *   <li>when messagesCustom is updated,
+   *   since messagesCustom can be added by the app developer any time.</li>
+   *   <li>when showMessages() is called. Since showMessages() moves the
+   *   hidden messages into messages shown,
+   *   if the valid state was "invalidHidden" then it would become "invalidShown".</li>
+   *   <li>when the required property has changed. If a component is empty and has required
+   *   set, the valid state may be "invalidHidden" (if no invalid messages are being shown as well).
+   *   If required property is removed, the valid state would change to "valid".</li>
+   * </ul>
+   * </p>
+   * <p>
+   *  Note: New valid states may be added to the list of valid values in future releases.
+   *  Any new values will start with "invalid"
+   *  if it is an invalid state, "pending" if it is pending state,
+   *  and "valid" if it is a valid state.
+   * </p>
+   * @ojshortdesc The validity state of the component
+   * @expose
+   * @access public
+   * @instance
+   * @type {string}
+   * @name valid
+   * @ojvalue {string} "valid" The component is valid
+   * @ojvalue {string} "pending" The component is waiting for the validation state to be determined.
+   * The "pending" state is set at the start of the convert/validate process.
+   * @ojvalue {string} "invalidHidden" The component has invalid messages hidden
+   *    and no invalid messages showing. An invalid message is one with severity "error" or higher.
+   * @ojvalue {string} "invalidShown" The component has invalid messages showing.
+   *  An invalid message is one with severity "error" or higher.
+   * @ojwriteback
+   * @readonly
+   * @memberof oj.ojColorPalette
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @since 4.2.0
+   *
+   */
+  /**
+   * <p>A collection of translated resources from the translation bundle, or
+   * <code class="prettyprint">null</code> if this component has no resources. Resources may be
+   * accessed and overridden individually or collectively, as seen in the examples.
+   *
+   * <p>If this component has translations, their documentation immediately follows this doc entry.
+   *
+   * @member
+   * @name translations
+   * @ojshortdesc A collection of translated resources from the translation bundle, or null if this component has no resources.
+   * @memberof! oj.ojColorPalette
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to be validated, display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @instance
+   * @ojtranslatable
+   * @since 5.0.0
+   * @type {Object}
+   *
+   * @example <caption>Initialize the element, overriding some translated resources and leaving the
+   * others intact:</caption>
+   * &lt;!-- Using dot notation -->
+   * &lt;oj-some-element translations.some-key='Some value' translations.some-other-key='Some other value'>&lt;/oj-some-element>
+   *
+   * &lt;!-- Using JSON notation -->
+   * &lt;oj-some-element translations='{"someKey":"Some value", "someOtherKey":"Some other value"}'>&lt;/oj-some-element>
+   *
+   * @example <caption>Get or set the <code class="prettyprint">translations</code> property after
+   * initialization:</caption>
+   * // Get one
+   * var value = myComponent.getProperty("translations.someKey");
+   *
+   * // Set one, leaving the others intact. Always use the setProperty API for
+   * // subproperties rather than setting a subproperty directly.
+   * myComponent.setProperty('translations.someKey', 'some value');
+   *
+   * // Get all
+   * var values = myComponent.translations;
+   *
+   * // Set all.  Must list every resource key, as those not listed are lost.
+   * myComponent.translations = {
+   *     someKey: 'some value',
+   *     someOtherKey: 'some other value'
+   * };
+   *
+   */
+  /**
+   * Takes all deferred messages and shows them.
+   * It then updates the valid property; e.g.,
+   * if the valid state was "invalidHidden"
+   * before showMessages(), the valid state will become "invalidShown" after showMessages().
+   * <p>
+   * If there were no deferred messages this method simply returns.
+   * </p>
+   *
+   * @example <caption>Display all messages including deferred ones.</caption>
+   * myComp.showMessages();
+   *
+   * @name showMessages
+   * @method
+   * @access public
+   * @instance
+   * @return {void}
+   * @expose
+   * @memberof oj.ojColorPalette
+   * @ojshortdesc Takes all deferred messages and shows them.
+   * @since 0.7.0
+   * @ojdeprecated {since: '18.0.0', description: 'This is not supported in the Redwood UX specification.'}
+   */
+  /**
+   * Resets the component by clearing all messages and messages attributes -
+   * <code class="prettyprint">messagesCustom</code> -
+   * and updates the component's display value using the attribute value. User entered values will be
+   * erased when this method is called.
+   *
+   * @example <caption>Reset component</caption>
+   * myComp.reset(); <br/>
+   *
+   * @name reset
+   * @method
+   * @access public
+   * @instance
+   * @expose
+   * @return {void}
+   * @memberof oj.ojColorPalette
+   * @ojshortdesc Resets the component by clearing all messages and messages attributes, and updates the component's display value using the attribute value.
+   * @since 0.7.0
+   * @ojdeprecated {since: '18.0.0', description: 'This is not supported in the Redwood UX specification.'}
+   */
+
+  /**
+   * Refreshes the visual state of the ColorPalette. JET components require a <code class="prettyprint">refresh()</code> after the DOM is
+   * programmatically changed underneath the component.
+   * <p>This method does not accept any arguments.
+   *
+   * @ojshortdesc Refreshes the visual state of the ColorPalette.
+   * @expose
+   * @memberof oj.ojColorPalette
+   * @instance
+   * @name refresh
+   * @return {void}
+   * @method
+   * @ojdeprecated {since: '18.0.0', description: 'This is not supported in the Redwood UX specification.'}
+   * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
+   *  myColorPalette.refresh();
+   */
+  /**
+   * Form component help information.
+   * @expose
+   * @memberof oj.ojColorPalette
+   * @name help
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @instance
+   * @public
+   * @type {Object}
+   * @since 0.7.0
+   */
+  /**
+   * <p>
+   * The helpHints object contains a definition property and a source property.
+   * </p>
+   * <ul>
+   * <li><code class="prettyprint">definition</code> - hint for help definition text.</li>
+   * <li><code class="prettyprint">source</code> - hint for help source URL.</li>
+   * </ul>
+   *
+   * @ojshortdesc Represents hints for an oj-form-layout element to render help information on the label of the editable component.
+   * @expose
+   * @access public
+   * @memberof oj.ojColorPalette
+   * @name helpHints
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @ojtranslatable
+   * @instance
+   * @type {Object}
+   * @since 4.1.0
+   */
+  /**
+   * A type of user assistance text. User assistance text is used to provide
+   * guidance to help the user understand what data to enter or select. help-hints could
+   * come from a help system.
+   * <p>In the Redwood theme for clarity only one user assistance text shows to the user.
+   * The precedence rules are:
+   * <ul>
+   * <li>help.instruction shows;</li>
+   * <li>if no help.instruction, then validator hint shows;</li>
+   * <li>if no help.instruction or validator hint, then help-hints.definition shows;</li>
+   * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
+   * <li>help-hints.source always shows along side the above.</li>
+   * </ul>
+   * </p>
+   * <p>
+   * In the Redwood theme, by default all user assistance text shows inline.
+   * For input components, it shows when the field takes focus. In other components it
+   * shows all the time. See the user-assistance-density property for other ways the user
+   * assistance text can render.
+   * </p>
+   * <p>No formatted text is available for help definition attribute.</p>
+   *
+   * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
+   *
+   * @ojshortdesc Hint for help definition text associated with the label.
+   * @expose
+   * @name helpHints.definition
+   * @memberof! oj.ojColorPalette
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @instance
+   * @type {string}
+   * @ojsignature {target:"Type", value: "?"}
+   * @default ""
+   * @since 4.1.0
+   */
+  /**
+   * Help source URL associated with the component.
+   * <p>In the Redwood theme, the help-hints.source will show as a link inline to the field.
+   * For input components, it shows when the field takes focus. For other components,
+   * it shows all the time.
+   * </p>
+   * <p>
+   * For security reasons we only support urls with protocol 'http:' or 'https:'.
+   * If the url doesn't comply we ignore it and throw an error.
+   * Pass in an encoded URL since we do not encode the URL.</p>
+   *
+   * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
+   *
+   * @ojshortdesc Help source URL associated with the component.
+   * @expose
+   * @name helpHints.source
+   * @memberof! oj.ojColorPalette
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @instance
+   * @type {string}
+   * @ojsignature {target:"Type", value: "?"}
+   * @default ""
+   * @since 4.1.0
+   */
+  /**
+   * A type of user assistance text. User assistance text is used to provide
+   * guidance to help the user understand what data to enter or select.
+   * <p> In the Redwood theme for clarity only one user assistance text shows to the user.
+   *  The precedence rules are:
+   * <ul>
+   * <li>help.instruction shows;</li>
+   * <li>if no help.instruction, then validator hint shows;</li>
+   * <li>if no help.instruction or validator hint, then help-hints.definition shows;</li>
+   * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
+   * <li>help-hints.source always shows along side the above.</li>
+   * </ul>
+   * </p>
+   * <p>In the Redwood theme, by default all user assistance text shows inline.
+   * For input components, it shows when the field takes focus. In other components
+   * it shows all the time. See the user-assistance-density property for other ways
+   * the user assistance text can render.
+   * <p>
+   *  How is help.instruction better than the html 'title' attribute?
+   * The html 'title' attribute only shows up as a tooltip on mouse over, not on keyboard and not in a mobile
+   * device. So the html 'title' would only be for text that is not important enough to show all users, or
+   * for text that you show the users in another way as well, like in the label.
+   * Also you cannot theme the native browser's title window like you can the JET
+   * notewindow, so low vision users may have a hard time seeing the 'title' window.
+   * For these reasons, the JET EditableValue components do not use the HTML's 'title'
+   * attribute and instead use the help.instruction attribute.
+   * </p>
+   *
+   * <p>
+   * To include formatted text in the help.instruction, format the string using html tags.
+   * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+   * For example the
+   * help.instruction might look like:
+   * <pre class="prettyprint"><code>&lt;oj-some-element help.instruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
+   * If you use formatted text, it should be accessible
+   * and make sense to the user if formatting wasn't there.
+   *
+   * @ojshortdesc Represents advisory information for the component, such as would be appropriate for a tooltip.
+   * @expose
+   * @access public
+   * @instance
+   * @name help.instruction
+   * @ojtranslatable
+   * @default ""
+   * @memberof! oj.ojColorPalette
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @type {string=}
+   * @since 4.0.0
+   */
+  /**
+   * Represents a hint for rendering a label on the component.
+   * <p>This is used in combination with the <a href="#labelEdge">label-edge</a> attribute to control how the label should be rendered.</p>
+   *
+   * <p>
+   * When label-edge is "provided", it gives a hint to oj-form-layout parent element to create an oj-label element for the component.
+   * When the <code class="prettyprint">label-hint</code> attribute changes, oj-form-layout element refreshes to
+   * display the updated label information.
+   * </p>
+   * <p>
+   * When label-edge is "inside", it gives a hint to the component itself to render a label.
+   * </p>
+   * <p>
+   * When label-edge is "none", and if the component has no labelled-by, aria-label, or aria-labelledby attribute, the label-hint value will be used as the aria-label.
+   * </p>
+   *
+   * @ojshortdesc Represents a hint for oj-form-layout element to render a label on the editable component.
+   * @expose
+   * @access public
+   * @instance
+   * @name labelHint
+   * @ojtranslatable
+   * @default ""
+   * @memberof! oj.ojColorPalette
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @type {string}
+   * @since 4.1.0
+   */
+  /**
+   * Specifies how the label of the component is created when the <code class="prettyprint">label-hint</code> attribute is set on the component.
+   * <p>The default value varies by theme, and it works well for the theme in most cases.
+   *  If the component is in an oj-form-layout, the label-edge attribute could come from the oj-form-layout's label-edge attribute.
+   * The oj-form-layout component uses the <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+   * <code class="prettyprint">provide</code> property to provide and uses the <a href="MetadataTypes.html#ProvideProperty">MetadataTypes.ProvideProperty</a>
+   * <code class="prettyprint">transform</code> property to transform its <code class="prettyprint">label-edge</code>
+   * attribute to any descendent components that are configured to consume it.
+   * For example, if the oj-form-layout's label-edge attribute is set to "top" or "start", and a descendent form component does
+   * not have its label-edge attribute set, the form component's label-edge will be the transformed value "provided".</p>
+   * @ojshortdesc Defines how the label of a component is created. See the Help documentation for more information.
+   * @access public
+   * @expose
+   * @name labelEdge
+   * @instance
+   * @type {string}
+   * @ojsignature {target: "Type", value: "'inside'|'none'|'provided'",  jsdocOverride: true}
+   * @memberof! oj.ojColorPalette
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @ojvalue {string} "inside" The component creates the label using the <code class="prettyprint">label-hint</code> attribute.
+   * <p>For text input components (such as oj-input-text), the label floats over the input element but moves up on focus or when the component has a value.</p>
+   * <p>For non-text input components (such as oj-checkboxset), the label is created at the top of the component and doesn't move.</p>
+   * @ojvalue {string} "none" The component will not have a label, regardless of whether it's in an oj-form-layout or not.
+   * <p>If the component has a <code class="prettyprint">label-hint</code> attribute but no labelled-by, aria-label, or aria-labelledby attribute, the label-hint value will be used as the aria-label.</p>
+   * <p>Note that if the component already has an external label, "none" should not be specified and "provided" should be used instead.
+   * Otherwise it may end up with conflicting label information.</p>
+   * @ojvalue {string} "provided" Label is provided by the parent if the parent is an oj-form-layout.
+   * <p>oj-form-layout provides the label using the label-hint from the form control and the <a href="oj.ojFormLayout.html#labelEdge">label-edge</a> from oj-form-layout.</p>
+   * <p>If there is no oj-form-layout, use an oj-label.</p>
+   * @since 8.0.0
+   */
+  /**
+   * <p>
+   * Specifies the density of the form component's user assistance presentation.
+   * It can be shown inline with reserved rows to prevent reflow if
+   * a user assistance text shows up, inline without reserved rows that would reflow if
+   * a user assistance text shows up,
+   * or it can be shown compactly in a popup instead.</p>
+   * <p>
+   * The default value is 'reflow' when the form component is not a descendent of an oj-form-layout
+   * component. When the form component is a descendent of an oj-form-layout, the default value comes from the
+   * oj-form-layout's <code class="prettyprint">user-assistance-density</code> attribute value.
+   * </p>
+   * <p>
+   * The oj-form-layout component uses the
+   * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+   * <code class="prettyprint">provide</code> property to provide its
+   * <code class="prettyprint">user-assistance-density</code>
+   * attribute value to be consumed by descendent components.
+   * The form components are configured to consume the
+   * <code class="prettyprint">user-assistance-density</code> property if an
+   * ancestor provides it and it is not explicitly set on the form component.
+   * Example, oj-form-layout defaults user-assistance-density='efficient', so all its
+   * form components descendents will have user-assistance-density='efficient' by default.
+   * </p>
+   * @ojshortdesc Specifies the density of the form component's user assistance presentation.
+   * @access public
+   * @expose
+   * @name userAssistanceDensity
+   * @ojunsupportedthemes ["Alta"]
+   * @default "reflow"
+   * @instance
+   * @type {string}
+   * @ojsignature {target: "Type", value: "'reflow'|'efficient'|'compact'",  jsdocOverride: true}
+   * @memberof oj.ojColorPalette
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @ojvalue {string} "reflow" Messages, help, hints, and required are all shown inline under the field with no reserved space.
+   * @ojvalue {string} "efficient" Messages, help, hints, and required are all shown inline under the field with reserved space.
+   * @ojvalue {string} "compact" Messages, help, hints, and required will not be shown inline; they will show in a mode that keeps the screen more compact, like
+   * a popup for the messages, and a required icon to indicate Required.
+   * @since 9.0.0
+   */
+  /**
+   * List of messages an app would add to the component when it has business/custom validation
+   * errors that it wants the component to show. This allows the app to perform further validation
+   * before sending data to the server. When this option is set the message shows to the
+   * user right away. To clear the custom message, set <code class="prettyprint">messagesCustom</code>
+   * back to an empty array.<br/>
+   * <p>Each message in the array is an object that duck types oj.Message.
+   * See {@link Message} for details.
+   * message detail text can include formatted HTML text, whereas
+   * hints and message summary text cannot. If you use formatted text, it should be accessible
+   * and make sense to the user if formatting wasn't there.
+   * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+   * To format the message detail, you could do this:
+   * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
+   * </p>
+   * <p>
+   * See the <a href="#validation-section">Validation and Messages</a> section
+   * for details on when the component clears <code class="prettyprint">messagesCustom</code>;
+   * for example, when full validation is run.
+   * </p>
+   * <p>In the Redwood theme, the Message summary is not displayed to the user, so make sure to have a Message detail
+   * set in your Message object.
+   * </p>
+   *
+   * @ojshortdesc A list of messages added by an application to the component. See the Help documentation for more information.
+   * @expose
+   * @name messagesCustom
+   * @access public
+   * @instance
+   * @memberof oj.ojColorPalette
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @default []
+   * @type {Array.<Object>}
+   * @ojsignature {target: "Type", value: "Array<oj.Message>"}
+   * @since 0.7.0
+   * @ojwriteback
+   */
+  /**
+   * The placeholder text to set on the element.
+   *
+   * @example <caption>Initialize the component with the <code class="prettyprint">placeholder</code> attribute:</caption>
+   * &lt;oj-some-element placeholder="User Name">&lt;/oj-some-element>
+   *
+   * @example <caption>Get or set the <code class="prettyprint">placeholder</code> property after initialization:</caption>
+   * // getter
+   * var myPh = myComp.placeholder;
+   *
+   * // setter
+   * myComp.placeholder = myPlaceholder;
+   *
+   * If the attribute is not set and if a converter is set then the
+   * converter hint is used. See displayOptions for details.
+   *
+   *
+   * @expose
+   * @access public
+   * @instance
+   * @memberof! oj.ojColorPalette
+   * @name placeholder
+   * @ojdeprecated {since: '18.0.0', description: "oj-color-palette doesn't have a text input, so this was never needed."}
+   * @type {string}
+   * @ojtranslatable
+   */
+  /**
+   * Form component display options.
+   * @expose
+   * @memberof oj.ojColorPalette
+   * @name displayOptions
+   * @ojdeprecated {since: '18.0.0', description: 'The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component.'}
+   * @instance
+   * @public
+   * @type {Object}
+   * @since 0.7.0
+   */
+  /**
+   * Display options for auxiliary converter hint text. The supported attribute values are theme dependent.
+   * <p>
+   * In the Redwood theme, this attribute determines whether or not the converter hint should be displayed.
+   * The supported values are 'display' and 'none'.
+   * If you don't want to show the converter hint, set display-options.converter-hint to 'none'.
+   * It defaults to 'display'.
+   * To control where the hints display, e.g., inline or in a notewindow,
+   * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+   * attribute.
+   * </p>
+   *
+   * @access public
+   * @ojsharedmembers
+   * @expose
+   * @name displayOptions.converterHint
+   * @ojshortdesc Display options for auxiliary converter hint text that determines whether it should be displayed.
+   * @instance
+   * @type {(Array<string> | string)=}
+   * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+   *               {target: "Type", value: "Array<'placeholder'|'notewindow'|'none'>|'placeholder'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
+   * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'placeholder'|'notewindow'|'none'>", "'placeholder'", "'notewindow'"],
+   *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+   * @ojdeprecated {since: '18.0.0', description: 'The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component.'}
+   * @memberof! oj.ojColorPalette
+   * @since 0.7
+   */
+  /**
+   * Display options for auxiliary message text. The supported attribute values are theme dependent.
+   * <p>
+   * In the Redwood theme, this attribute determines whether or not the messages should be displayed.
+   * The supported values are 'display' and 'none'.
+   * If you don't want to show messages, set display-options.messages to 'none'.
+   * It defaults to 'display'.
+   * To control where the messages display, e.g., inline or in a notewindow,
+   * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+   * attribute.
+   * </p>
+   *
+   * @ojshortdesc Display options for auxiliary message text that determines whether it should be displayed.
+   * @access public
+   * @ojsharedmembers
+   * @expose
+   * @name displayOptions.messages
+   * @instance
+   * @type {(Array<string> | string)=}
+   * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+   *               {target: "Type", value: "Array<'inline'|'notewindow'|'none'>|'inline'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
+   * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'inline'|'notewindow'|'none'>", "'inline'", "'notewindow'"],
+   *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+   * @ojdeprecated {since: '18.0.0', description: 'The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component.'}
+   * @memberof! oj.ojColorPalette
+   * @since 0.7
+   */
+  /**
+   * Display options for auxiliary validator hint text. The supported attribute values are theme dependent.
+   * <p>
+   * In the Redwood theme, this attribute determines whether or not the validator hint should be displayed.
+   * The supported values are 'display' and 'none'.
+   * If you don't want to show the validator hint, set display-options.validator-hint to 'none'.
+   * It defaults to 'display'.
+   * To control where the hints display, e.g., inline or in a notewindow,
+   * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+   * attribute.
+   * </p>
+   *
+   * @ojshortdesc Display options for auxiliary validator hint text that determines whether it should be displayed.
+   * @access public
+   * @ojsharedmembers
+   * @expose
+   * @name displayOptions.validatorHint
+   * @instance
+   * @type {(Array<string> | string)=}
+   * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+   *               {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'display'|'none'",  consumedBy: 'tsdep'}]
+   * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'notewindow'|'none'>", "'notewindow'"],
+   *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+   * @ojdeprecated {since: '18.0.0', description: 'The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component.'}
+   * @memberof! oj.ojColorPalette
+   * @since 0.7
+   */
+  /**
+   * <p>
+   * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
+   * This is the default.
+   * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+   * </p>
+   * <p>
+   * In the Redwood theme, by default, a Required text is rendered inline when the field is empty.
+   * If user-assistance-density is 'compact', it will show on the label as an icon.
+   * </p>
+   * <p>The Required error text is based on Redwood UX designs, and it is not recommended that
+   * it be changed.
+   * To override the required error message,
+   * use the <code class="prettyprint">translations.required</code> attribute.
+   * The component's label text is passed in as a token {label} and can be used in the message detail.
+   * </p>
+   * <p>When required is set to true, an implicit
+   * required validator is created, i.e.,
+   * <code class="prettyprint">new RequiredValidator()</code>. The required validator is the only
+   * validator to run during initial render, and its error is not shown to the user at this time;
+   * this is called deferred validation. The required validator also runs during normal validation;
+   * this is when the errors are shown to the user.
+   * See the <a href="#validation-section">Validation and Messaging</a> section for details.
+   * </p>
+   * <p>
+   * When the <code class="prettyprint">required</code> property changes due to programmatic intervention,
+   * the component may clear component messages and run validation, based on the current state it's in. </br>
+   *
+   * <h4>Running Validation when required property changes</h4>
+   * <ul>
+   * <li>if component is valid when required is set to true, then it runs deferred validation on
+   * the value property. If the field is empty, the valid state is invalidHidden. No errors are
+   * shown to the user.
+   * </li>
+   * <li>if component is invalid and has deferred messages when required is set to false, then
+   * component messages are cleared (messages-custom messages are not cleared)
+   * but no deferred validation is run because required is false.
+   * </li>
+   * <li>if component is invalid and currently showing invalid messages when required is set, then
+   * component messages are cleared and normal validation is run using the current display value.
+   * <ul>
+   *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+   *   property is not updated and the error is shown.
+   *   </li>
+   *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+   *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+   *   event on the component to clear custom errors.</li>
+   * </ul>
+   * </li>
+   * </ul>
+   *
+   * <h4>Clearing Messages when required property changes</h4>
+   * <ul>
+   * <li>Only messages created by the component, like validation messages, are cleared when the required property changes.</li>
+   * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
+   * </ul>
+   *
+   * </p>
+   */
+  /**
+   * <p>
+   * The current valid state of the component. It is evaluated on initial render.
+   * It is re-evaluated
+   * <ul>
+   *   <li>after each validator (validators or async-validators) is run (full or deferred)</li>
+   *   <li>when messagesCustom is updated,
+   *   since messagesCustom can be added by the app developer any time, and error messages
+   *   make the valid state 'invalidShown'.</li>
+   *   <li>when showMessages() is called. Since showMessages() moves the
+   *   hidden messages into messages shown,
+   *   if the valid state was "invalidHidden" then it would become "invalidShown".</li>
+   *   <li>when the required property has changed. If a component is empty and has required
+   *   set, the valid state may be "invalidHidden" (if no invalid messages are being shown as well).
+   *   If required property is removed, the valid state would change to "valid".</li>
+   * </ul>
+   * </p>
+   * <p>
+   *  Note: New valid states may be added to the list of valid values in future releases.
+   *  Any new values will start with "invalid"
+   *  if it is an invalid state, "pending" if it is pending state,
+   *  and "valid" if it is a valid state.
+   * </p>
+   * @example <caption>Get <code class="prettyprint">valid</code> attribute, after initialization:</caption>
+   * // Getter:
+   * var valid = myComp.valid;
+   * @example <caption>Set the <code class="prettyprint">on-valid-changed</code>
+   *  listener so you can do work in the ViewModel based on the
+   *  <code class="prettyprint">valid</code> property:</caption>
+   * &lt;oj-some-element id='username' on-valid-changed='[[validChangedListener]]'>
+   * &lt;/oj-some-element>
+   * &lt;oj-some-element id='password' on-valid-changed='[[validChangedListener]]'>
+   * &lt;/oj-some-element>
+   * &lt;oj-button disabled='[[componentDisabled]]' on-click='[[submit]]'>Submit&lt;/oj-button>
+   * -- ViewModel --
+   * self.validChangedListener = function (event) {
+   *   var enableButton;
+   *   var usernameValidState;
+   *   var passwordValidState;
+   *
+   *   // update the button's disabled state.
+   *   usernameValidState = document.getElementById("username").valid;
+   *   passwordValidState = document.getElementById("password").valid;
+   *
+   *   // this updates the Submit button's disabled property's observable based
+   *   // on the valid state of two components, username and password.
+   *   // It is up to the application how it wants to handle the “pending�? state
+   *   // but we think that in general buttons don’t need to be
+   *   // enabled / disabled based on the "pending" state.
+   *   enableButton =
+   *    (usernameValidState !== "invalidShown") &&
+   *    (passwordValidState !== "invalidShown");
+   *   self.componentDisabled(!enableButton);;
+   * };
+   *
+   * @ojshortdesc The validity state of the component
+   * @expose
+   * @access public
+   * @instance
+   * @type {string}
+   * @ojvalue {string} "valid" The component is valid
+   * @ojvalue {string} "pending" The component is waiting for the validation state to be determined.
+   * The "pending" state is set at the start of the convert/validate process.
+   * @ojvalue {string} "invalidHidden" The component has invalid messages hidden
+   *    and no invalid messages showing. An invalid message is one with severity "error" or higher.
+   * @ojvalue {string} "invalidShown" The component has invalid messages showing.
+   *  An invalid message is one with severity "error" or higher.
+   * @ojwriteback
+   * @readonly
+   * @memberof oj.ojColorPalette
+   * @ojdeprecated {since: '18.0.0', description: "The oj-color-palette is not meant to display messages, validate, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
+   * @since 4.2.0
+   *
+   */
+
   //-----------------------------------------------------
   //                   Styling
   //-----------------------------------------------------
@@ -391,6 +1093,7 @@ var __oj_color_palette_metadata =
    * @ojstylevariable oj-color-palette-grid-font-size {description: "Color palette grid font size", formats: ["length"], help: "#css-variables"}
    * @memberof oj.ojColorPalette
    */
+
   oj$1.__registerWidget('oj.ojColorPalette', $.oj.editableValue, {
     widgetEventPrefix: 'oj',
     defaultElement: '<input>',
@@ -418,6 +1121,7 @@ var __oj_color_palette_metadata =
        * @type {?string}
        * @default null
        * @instance
+       * @ojdeprecated {since:"18.0.0", description: "The oj-color-palette is not meant to display messages, be labelled, or be in a form layout by itself. Per the Redwood UX specification, the oj-color-palette is not intended to be a form component."}
        * @memberof oj.ojColorPalette
        */
       labelledBy: null,
@@ -433,6 +1137,8 @@ var __oj_color_palette_metadata =
          * @member
          * @type {Array.<Object>}
          * @ojsignature  {target: "Type", value: "Array<{color: oj.Color, label?: string}>"}
+         * @ojdeprecated {since: "18.0.0", target: "property", for: "label",
+                      description: "The Redwood UX specification does not support labels."}
          * @default null
          * @ojshortdesc Specifies an array of objects defining the palette's color set.
          * @example <caption>Initialize the color palette with the <code class="prettyprint">palette</code> attribute specified:</caption>
@@ -461,27 +1167,29 @@ var __oj_color_palette_metadata =
        * The swatch size.  If the size is <em>'sm'</em> or <em>'xs'</em>, the color <em>label</em> property is used as a tooltip.
        * @member
        * @type {string}
-       * @default "lg"
+       * @default "sm"
        * @ojshortdesc Specifies the swatch size.
        * @ojvalue {string} "xs" {"description": "extra small swatch", "displayName": "Extra Small"}
        * @ojvalue {string} "sm" {"description": "small swatch", "displayName": "Small"}
        * @ojvalue {string} "lg" {"description": "large swatch", "displayName": "Large"}
+       * @ojdeprecated {since: "18.0.0", target: "propertyValue", for: "lg",
+                      description: "The Redwood UX specification does not support large swatch size."}
        * @ojvalueskeeporder
        *
        * @example <caption>Initialize the color palette with the <code class="prettyprint">swatch-size</code> attribute specified:</caption>
-       * &ltoj-color-palette swatch-size="lg">&lt;/oj-color-palette>
+       * &ltoj-color-palette swatch-size="sm">&lt;/oj-color-palette>
        *
        * @example <caption>Get or set the <code class="prettyprint">swatchSize</code> property, after initialization:</caption>
        * // getter
        * var swatchSize = myColorPalette.swatchSize;
        *
        * // setter
-       * myColorPalette.swatchSize = "lg";
+       * myColorPalette.swatchSize = "sm";
        * @expose
        * @instance
        * @memberof oj.ojColorPalette
        */
-      swatchSize: 'lg',
+      swatchSize: 'sm',
 
       /**
        * Specifies whether a text label accompanies the color swatch.
@@ -503,6 +1211,8 @@ var __oj_color_palette_metadata =
        * // setter
        * myColorPalette.labelDisplay = "auto";
        * @expose
+       * @ojdeprecated {since:"18.0.0", description:
+       * "This is deprecated as labels are no longer supported."}
        * @instance
        * @memberof oj.ojColorPalette
        */
@@ -515,6 +1225,8 @@ var __oj_color_palette_metadata =
        * @ojshortdesc Specifies the layout of the color swatches.
        * @ojvalue {string} "grid" Layout the color swatches in a grid
        * @ojvalue {string} "list" Layout the color swatches in a list
+       * @ojdeprecated {since:"18.0.0", description:
+       * "This is deprecated as only grid layout values are now supported."}
        * @expose
        * @example <caption>Initialize the color palette with the <code class="prettyprint">layout</code> attribute specified:</caption>
        * &ltoj-color-palette layout="grid">&lt;/oj-color-palette>

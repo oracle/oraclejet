@@ -19,6 +19,7 @@ declare class MutableArrayDataProvider<K, D> implements DataProvider<K, D> {
 declare namespace MutableArrayDataProvider {
     // tslint:disable-next-line interface-over-type-literal
     type Options<D> = {
+        enforceKeyStringify?: 'off' | 'on';
         implicitSort?: Array<SortCriterion<D>>;
         keyAttributes?: string | string[];
         sortComparators?: SortComparators<D>;

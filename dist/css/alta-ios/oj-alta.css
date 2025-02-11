@@ -300,7 +300,7 @@ template {
 }
 
 .oj-theme-json {
-  font-family: '{"name":"alta","targetPlatform":"ios","behavior":"alta","jetReleaseVersion":"v17.1.0"}';
+  font-family: '{"name":"alta","targetPlatform":"ios","behavior":"alta","jetReleaseVersion":"v18.0.0"}';
 }
 
 .oj-helper-hidden-accessible {
@@ -9535,6 +9535,7 @@ oj-popup {
 }
 
 .oj-popup {
+  overflow: auto;
   border: 1px solid #e0e1e1;
   border-radius: 12px;
   background-color: white;

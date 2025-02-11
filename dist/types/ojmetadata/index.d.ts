@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -225,6 +225,7 @@ export type StyleClass = {
 };
 // tslint:disable-next-line interface-over-type-literal
 export type StyleClassItem = StyleClass | StyleSet | StyleTemplate;
+/** @deprecated since 8.0.0 - Use the StyleClass, StyleSet, and/or StyleTemplate types instead. */
 // tslint:disable-next-line interface-over-type-literal
 export type StyleGroup = {
     description?: string;

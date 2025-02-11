@@ -291,16 +291,23 @@
               }
             },
             "defaultColumns": {
-              "type": "number",
+              "type": ["number", "string"],
               "multipleOf": 1.0,
               "minimum": 1.0,
               "maximum": 12.0
             },
             "minColumns": {
-              "type": "number",
+              "type": ["number", "string"],
               "multipleOf": 1.0,
               "minimum": 1.0,
               "maximum": 12.0
+            },
+            "usedFor": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["pageContent", "page", "formTemplate", "fieldTemplate"]
+              }
             },
             "visibility": {
               "type": "string",
@@ -1535,7 +1542,7 @@
       "type": "array",
       "items": {
         "$comment": "either an @contents@ token string OR a contentItems object",
-        "anyOf": [
+        "oneOf": [
           { "const": "@contents@" },
           { "$ref": "#/definitions/contentItemsDef" }
         ]
@@ -1657,7 +1664,7 @@
       "$ref": "#/definitions/slotsDef"
     },
     "extension": {
-      "anyOf": [
+      "allOf": [
         {"$ref": "#/definitions/extensionComponentDef"},
         {"$ref": "#/definitions/extensionCatalogDef"},
         {"$ref": "#/definitions/extensionWebElementDef"},

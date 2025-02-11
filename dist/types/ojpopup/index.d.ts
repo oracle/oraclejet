@@ -3,6 +3,7 @@ import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojPopup extends baseComponent<ojPopupSettableProperties> {
     autoDismiss: 'none' | 'focusLoss';
+    /** @deprecated since 17.0.0 - This is not recommended in the Redwood design system. */
     chrome: 'default' | 'none';
     initialFocus: 'auto' | 'none' | 'firstFocusable' | 'popup';
     modality: 'modeless' | 'modal';
@@ -110,6 +111,7 @@ export interface ojPopupEventMap extends baseComponentEventMap<ojPopupSettablePr
 }
 export interface ojPopupSettableProperties extends baseComponentSettableProperties {
     autoDismiss: 'none' | 'focusLoss';
+    /** @deprecated since 17.0.0 - This is not recommended in the Redwood design system. */
     chrome: 'default' | 'none';
     initialFocus: 'auto' | 'none' | 'firstFocusable' | 'popup';
     modality: 'modeless' | 'modal';
@@ -194,7 +196,9 @@ export namespace PopupElement {
     };
 }
 export interface PopupIntrinsicProps extends Partial<Readonly<ojPopupSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojPopupEventMap['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojPopupEventMap['ojAnimateStart']) => void;
     onojBeforeClose?: (value: ojPopupEventMap['ojBeforeClose']) => void;
     onojBeforeOpen?: (value: ojPopupEventMap['ojBeforeOpen']) => void;
@@ -202,7 +206,7 @@ export interface PopupIntrinsicProps extends Partial<Readonly<ojPopupSettablePro
     onojFocus?: (value: ojPopupEventMap['ojFocus']) => void;
     onojOpen?: (value: ojPopupEventMap['ojOpen']) => void;
     onautoDismissChanged?: (value: ojPopupEventMap['autoDismissChanged']) => void;
-    onchromeChanged?: (value: ojPopupEventMap['chromeChanged']) => void;
+    /** @deprecated since 17.0.0 */ onchromeChanged?: (value: ojPopupEventMap['chromeChanged']) => void;
     oninitialFocusChanged?: (value: ojPopupEventMap['initialFocusChanged']) => void;
     onmodalityChanged?: (value: ojPopupEventMap['modalityChanged']) => void;
     onpositionChanged?: (value: ojPopupEventMap['positionChanged']) => void;

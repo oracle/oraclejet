@@ -9,6 +9,7 @@ export interface ojThematicMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | a
     animationDuration?: number;
     animationOnDisplay?: 'auto' | 'none';
     areaData?: DataProvider<K1, D1> | null;
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     focusRenderer?: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
@@ -79,6 +80,7 @@ export interface ojThematicMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | a
         }));
     };
     tooltipDisplay?: 'auto' | 'labelAndShortDesc' | 'none' | 'shortDesc';
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
     zooming?: 'auto' | 'none';
     translations: {
@@ -426,6 +428,7 @@ export interface ojThematicMapSettableProperties<K1, K2, K3, D1 extends ojThemat
     animationDuration?: number;
     animationOnDisplay?: 'auto' | 'none';
     areaData?: DataProvider<K1, D1> | null;
+    /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
     focusRenderer?: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
@@ -496,6 +499,7 @@ export interface ojThematicMapSettableProperties<K1, K2, K3, D1 extends ojThemat
         }));
     };
     tooltipDisplay?: 'auto' | 'labelAndShortDesc' | 'none' | 'shortDesc';
+    /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
     zooming?: 'auto' | 'none';
     translations: {
@@ -1201,7 +1205,7 @@ export interface ThematicMapIntrinsicProps extends Partial<Readonly<ojThematicMa
     onanimationDurationChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['animationDurationChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['animationOnDisplayChanged']) => void;
     onareaDataChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['areaDataChanged']) => void;
-    onasChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['asChanged']) => void;
+    /** @deprecated since 6.2.0 */ onasChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['asChanged']) => void;
     onfocusRendererChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['focusRendererChanged']) => void;
     onhiddenCategoriesChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['hiddenCategoriesChanged']) => void;
     onhighlightMatchChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['highlightMatchChanged']) => void;
@@ -1225,7 +1229,7 @@ export interface ThematicMapIntrinsicProps extends Partial<Readonly<ojThematicMa
     onstyleDefaultsChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['styleDefaultsChanged']) => void;
     ontooltipChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['tooltipChanged']) => void;
     ontooltipDisplayChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['tooltipDisplayChanged']) => void;
-    ontouchResponseChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['touchResponseChanged']) => void;
+    /** @deprecated since 18.0.0 */ ontouchResponseChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['touchResponseChanged']) => void;
     onzoomingChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['zoomingChanged']) => void;
     ontrackResizeChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['trackResizeChanged']) => void;
     children?: ComponentChildren;

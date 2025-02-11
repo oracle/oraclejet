@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -19,7 +19,7 @@ import { LayerContext } from '@oracle/oraclejet-preact/UNSAFE_Layer';
 import { getLocale } from 'ojs/ojconfig';
 import { info, warn } from 'ojs/ojlogger';
 import Context from 'ojs/ojcontext';
-import { getTranslationBundlePromiseFromLoader } from 'ojs/ojtranslationbundleutils';
+import { getTranslationBundlePromise, registerTranslationBundleLoaders } from 'ojs/ojtranslationbundleutils';
 
 let _slotIdCount = 0;
 let _originalCreateElementNS;
@@ -155,7 +155,7 @@ class Parking {
         if (!this._lot) {
             const div = document.createElement('div');
             div.__removeChild = div.removeChild;
-            (div.removeChild) = (n) => n;
+            div.removeChild = (n) => n;
             div.style.display = 'none';
             document.body.appendChild(div);
             this._lot = div;
@@ -236,7 +236,7 @@ function setProperty(dom, name, value, oldValue, isSvg) {
         }
     }
     else if (name[0] === 'o' && name[1] === 'n') {
-        useCapture = name !== (name = name.replace(/Capture$/i, ''));
+        useCapture = name !== (name = name.replace(/(PointerCapture)$|Capture$/i, '$1'));
         if (name.toLowerCase() in dom || name === 'onFocusOut' || name === 'onFocusIn')
             name = name.toLowerCase().slice(2);
         else
@@ -259,11 +259,17 @@ function setProperty(dom, name, value, oldValue, isSvg) {
         if (isSvg) {
             name = name.replace(/xlink[H:h]/, 'h').replace(/sName$/, 's');
         }
-        else if (name !== 'href' &&
+        else if (name != 'width' &&
+            name != 'height' &&
+            name !== 'href' &&
             name !== 'list' &&
             name !== 'form' &&
-            name !== 'tabIndex' &&
-            name !== 'download' &&
+            name != 'tabIndex' &&
+            name != 'download' &&
+            name != 'rowSpan' &&
+            name != 'colSpan' &&
+            name != 'role' &&
+            name != 'popover' &&
             name in dom) {
             try {
                 dom[name] = value == null ? '' : value;
@@ -271,10 +277,10 @@ function setProperty(dom, name, value, oldValue, isSvg) {
             }
             catch (e) { }
         }
-        if (typeof value === 'function') {
+        if (typeof value == 'function') {
         }
-        else if (value != null && (value !== false || (name[0] === 'a' && name[1] === 'r'))) {
-            dom.setAttribute(name, value);
+        else if (value != null && (value !== false || name[4] === '-')) {
+            dom.setAttribute(name, name == 'popover' && value == true ? '' : value);
         }
         else {
             dom.removeAttribute(name);
@@ -850,7 +856,7 @@ class IntrinsicElement {
             return true;
         }
         else if (name[0] === 'o' && name[1] === 'n') {
-            const useCapture = name !== (name = name.replace(/Capture$/i, ''));
+            const useCapture = name !== (name = name.replace(/(PointerCapture)$|Capture$/i, '$1'));
             if (name.toLowerCase() in dom || name === 'onFocusOut' || name === 'onFocusIn')
                 name = name.toLowerCase().slice(2);
             else
@@ -1166,6 +1172,45 @@ function _requestAnimationFrame(task) {
     Context.__addPreactPromise(rafPromise, 'Preact requestAnimationFrame');
 }
 options.requestAnimationFrame = _requestAnimationFrame;
+
+const opts = options;
+let isPreactDebugEnabled = opts.__m || opts._hydrationMismatch;
+if (isPreactDebugEnabled) {
+    const componentStack = [];
+    const isPreactMangled = opts._hydrationMismatch ? false : true;
+    const oldRender = isPreactMangled ? opts.__r : opts._render;
+    const oldCatchError = isPreactMangled ? opts.__e : opts._catchError;
+    const oldDiffed = opts.diffed;
+    const removeCompFromStack = (vnode) => {
+        const testComp = componentStack[componentStack.length - 1];
+        const comp = vnode.__c || vnode._component;
+        if (testComp === comp) {
+            componentStack.pop();
+        }
+    };
+    opts._render = opts.__r = (vnode) => {
+        const comp = isPreactMangled ? vnode.__c : vnode._component;
+        componentStack.push(comp);
+        if (oldRender)
+            oldRender(vnode);
+    };
+    opts._hook = opts.__h = (comp, index, type) => {
+        const testComp = componentStack[componentStack.length - 1];
+        if (!comp || testComp !== comp) {
+            throw new Error('Hook can only be invoked from render methods.');
+        }
+    };
+    opts._catchError = opts.__e = (error, vnode, oldVNode, errorInfo) => {
+        removeCompFromStack(vnode);
+        if (oldCatchError)
+            oldCatchError(error, vnode, oldVNode, errorInfo);
+    };
+    opts.diffed = (vnode) => {
+        removeCompFromStack(vnode);
+        if (oldDiffed)
+            oldDiffed(vnode);
+    };
+}
 
 /**
  * Class decorator for VComponent custom elements. Takes the tag name
@@ -3084,11 +3129,7 @@ class VComponentState extends LifecycleElementState {
         const bundleKeys = Object.keys(translationBundleMap);
         const translationBundlePromises = [];
         bundleKeys.forEach((key) => {
-            if (!VComponentState._bundlePromiseCache[key]) {
-                const loader = translationBundleMap[key];
-                VComponentState._bundlePromiseCache[key] = getTranslationBundlePromiseFromLoader(loader);
-            }
-            translationBundlePromises.push(VComponentState._bundlePromiseCache[key]);
+            translationBundlePromises.push(getTranslationBundlePromise(key));
         });
         return Promise.all(translationBundlePromises).then((resolvedBundlesArray) => {
             bundleKeys.forEach((key, index) => {
@@ -3112,7 +3153,6 @@ class VComponentState extends LifecycleElementState {
         return false;
     }
 }
-VComponentState._bundlePromiseCache = {};
 
 const FUNCTIONAL_COMPONENT = Symbol('functional component');
 function customElement(tagName) {
@@ -3190,6 +3230,9 @@ function extendMetadata(metadata) {
     };
 }
 function registerElement(tagName, metadata, constructor, observedProps, observedAttrs, translationBundleMap) {
+    if (translationBundleMap) {
+        registerTranslationBundleLoaders(translationBundleMap);
+    }
     class HTMLPreactElement extends HTMLJetElement {
     }
     HTMLPreactElement.metadata = metadata;
@@ -3311,6 +3354,8 @@ function consumedContexts(contexts) {
     }
 })();
 
+const ReportBusyContext = createContext(null);
+
 const getUniqueId = ElementUtils.getUniqueId.bind(null, null);
 
-export { Root, consumedContexts, customElement, getUniqueId, method, registerCustomElement };
+export { ReportBusyContext, Root, consumedContexts, customElement, getUniqueId, method, registerCustomElement };

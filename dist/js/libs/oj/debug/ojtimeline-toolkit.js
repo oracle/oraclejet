@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1107,7 +1107,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * Gets the overview height.
      * @return {number} The overview height.
      */
-    getOverviewHeight: () => {
+    getOverviewHeight: (hasMajorAxis) => {
+      if (!hasMajorAxis) return 76;
       return 100;
     },
 
@@ -1896,6 +1897,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     getItemType() {
       var itemType = this._data.itemType;
+      var isAlta = this._timeline.getCtx().getThemeBehavior() === 'alta';
+      var isDurationEventUnsupported = this._series.isVertical() || isAlta;
 
       // Default to auto if not specified
       if (!itemType || itemType === 'auto') {
@@ -1903,17 +1906,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           // no end time so use event
           return 'event';
         } else {
-          return DvtTimelineSeriesNode.DURATION_BAR;
+          return isDurationEventUnsupported
+            ? DvtTimelineSeriesNode.DURATION_BAR
+            : DvtTimelineSeriesNode.DURATION_EVENT;
         }
       } else {
         if (!this._endTime) {
           // if no end time, just use event
           return 'event';
         }
-        if (
-          itemType !== 'event' &&
-          (this._series.isVertical() || this._timeline.getCtx().getThemeBehavior() === 'alta')
-        ) {
+        if (itemType !== 'event' && isDurationEventUnsupported) {
           // duration-event not supported in vertical mode or alta
           return DvtTimelineSeriesNode.DURATION_BAR;
         } else {
@@ -2942,7 +2944,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     _renderBubble: (item, series, container, animationElems) => {
       var bubble, innerBubble, contentBubble, endViewportCollision, flipContentBubble;
-      var bubbleArray, innerBubbleArray, contentBubbleArray;
+      var bubbleArray, innerBubbleArray;
       var context = series.getCtx();
       var isRTL = dvt.Agent.isRightToLeft(context);
 
@@ -3182,7 +3184,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       const background = item.getBackground();
       if (contentBubble) {
         contentBubble.setClassName('oj-timeline-item-duration-event-overflow-bubble');
-
         if (background) {
           contentBubble.addClassName('oj-timeline-item-duration-event-overflow-bubble-' + background);
         }
@@ -3643,9 +3644,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     _setupDurationEvent: (item, series) => {
       var contentContainer = item._content.getParent();
+      var xTranslation = item._content.getTranslateX();
+      var yTranslation = item._content.getTranslateY();
       contentContainer.removeChild(item._content);
       // Re-render bubble, e.g. to evaluate whether content should truncate
       item._content = DvtTimelineSeriesItemRenderer._getBubbleContent(item, series);
+      item._content.setTranslate(xTranslation, yTranslation);
       contentContainer.addChild(item._content);
       DvtTimelineSeriesItemRenderer._setupBubble(item, item._content);
     },
@@ -6059,6 +6063,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       }
       var majorAxis = options['majorAxis'];
       if (majorAxis) {
+        ret.hasMajorAxis = !!majorAxis['scale'];
         ret.seriesScale = majorAxis['scale'];
         ret.seriesConverter = majorAxis['converter'];
         ret.seriesCustomFormatScales = majorAxis['_cfs'];
@@ -6179,7 +6184,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._rowKey = props.rowKey;
       this._id = props.id;
       this._seriesId = props.seriesId;
-      this._time = parseInt(props.time);
+      this._startTime = parseInt(props.startTime);
       this._endTime = props.endTime == null ? null : parseInt(props.endTime);
 
       this._shape = dvt.SimpleMarker.CIRCLE;
@@ -6191,11 +6196,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       this._desc = props.desc;
       this._color = props.color;
+      this._itemType = props.itemType;
+      this._background = props.background;
+
       this._gradient = props.gradient;
       if (props.opacity != null) this._opacity = parseFloat(props.opacity);
       if (props.scaleX != null) this._scaleX = parseFloat(props.scaleX);
       if (props.scaleY != null) this._scaleY = parseFloat(props.scaleY);
-      if (props.durationFillColor != null) this._durationFillColor = props.durationFillColor;
     }
 
     getId() {
@@ -6211,7 +6218,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     }
 
     getTime() {
-      return this._time;
+      return this._startTime;
     }
 
     getEndTime() {
@@ -6402,6 +6409,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var ret = this.ParseRootAttributes(options);
       ret.timeAxisInfo = this._parseTimeAxis(options['axisTicks']);
       ret.markers = this._parseDataNode(options['markers'], ret.defaultMarkerStyles);
+      ret._labelYOffset = options['markers'].every((marker) => marker.it === 'duration-bar');
       ret.formattedTimeRanges = options['formattedTimeRanges'];
 
       return ret;
@@ -6424,7 +6432,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       ret.seriesIds = options['sid'];
       ret.animationOnClick = options['_aoc'];
       ret.referenceObjects = options['referenceObjects'];
-
       var defaultMarkerStyles = new Object();
       defaultMarkerStyles.shape = DvtTimelineOverviewStyleUtils.getDefaultMarkerShape(options);
       defaultMarkerStyles.scaleX = DvtTimelineOverviewStyleUtils.getDefaultMarkerScaleX(options);
@@ -6478,13 +6485,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       ret.id = options['tid'];
       ret.seriesId = options['sid'];
       ret.rowKey = options['rk'];
-      ret.time = options['t'];
+      ret.startTime = options['st'];
       ret.endTime = options['et'];
       ret.shape = options['s'];
       if (useSkinningDefaults && ret.shape == null) ret.shape = defaultMarkerStyles.shape;
       ret.desc = options['d'];
       ret.color = options['c'];
       ret.durationFillColor = options['dfc'];
+      ret.itemType = options['it'];
+      ret.background = options['bg'];
       if (useSkinningDefaults && ret.color == null) ret.color = defaultMarkerStyles.color;
       ret.scaleX = options['sx'];
       if (useSkinningDefaults && ret.scaleX == null) ret.scaleX = defaultMarkerStyles.scaleX;
@@ -6535,12 +6544,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (callbackObj != null) {
         this._durationColors = callbackObj.getOptions()['styleDefaults'].series.colors;
       }
-
       this._defColors = colors;
       this._markerBorderFill = dvt.SolidFill.invisibleFill();
 
-      // default marker size
-      this._markerSize = 12;
+      this._MAXIMUM_STACK = 8;
+      this._MINIMUM_WIDTH = 12;
 
       // state
       this.ENABLED_STATE = '_';
@@ -6587,10 +6595,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._selectionMode = props.selectionMode;
       this._markers = props.markers;
       this._seriesIds = props.seriesIds;
-
+      this._labelYOffset = props._labelYOffset;
       this._defaultMarkerStyles = props.defaultMarkerStyles;
       this._borderStyles = DvtTimelineOverviewStyleUtils.getDefaultMarkerBorderStyles(this.Options);
-
       if (props.labelStyle) this._labelStyle = new dvt.CSSStyle(props.labelStyle);
 
       // calculate marker spacing offset value
@@ -6652,7 +6659,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     getItemId(drawable) {
       if (drawable._node) return drawable._node.getId();
-      else return drawable.getId().substr(5);
+      return drawable.getId().substr(5);
     }
 
     getStyle(state, style) {
@@ -6661,12 +6668,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     getX(drawable) {
       if (drawable._node != null) return drawable._node.getX();
-      else return drawable.getMatrix().getTx();
+      return drawable.getMatrix().getTx();
     }
 
     getY(drawable) {
       if (drawable._node != null) return drawable._node.getY();
-      else return drawable.getMatrix().getTy();
+      return drawable.getMatrix().getTy();
     }
 
     getScaleX(node) {
@@ -6690,32 +6697,87 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     renderData(width, height) {
       super.renderData(width, height);
-
+      let allDurationBar = true;
+      let start;
+      let end;
       if (this._markers == null) return;
+      this._overviewWidth = width;
+      this._overviewHeight = height;
 
       if (this.isVertical()) {
-        var start = this._yMin;
-        var end = this._yMax;
+        start = this._yMin;
+        end = this._yMax;
       } else {
         start = this._xMin;
         end = this._xMax;
       }
 
       // find the optimal size of the marker
-      var opt = this.calculateOptimalSize(start, end, width, height, this._markerSize);
+      var opt = this.calculateOptimalSize(start, end, width, height, this._MINIMUM_WIDTH);
+      var markers = [];
       var durationMarkers = [];
-      for (var j = 0; j < this._markers.length; j++) {
-        var marker = this._markers[j];
-        if (marker._endTime == null) this.addMarker(marker, opt);
-        else durationMarkers[durationMarkers.length] = marker;
-      }
-      this.prepareDurations(durationMarkers);
-      this.addDurations(durationMarkers, start, end);
+      var singleEventMarkers = [];
+      // Keeping old overview as is for vertical use case
+      if (this.isVertical()) {
+        for (let j = 0; j < this._markers.length; j++) {
+          let marker = this._markers[j];
+          if (marker._endTime == null) this.addVerticalMarker(marker, opt);
+          else durationMarkers[durationMarkers.length] = marker;
+        }
+        this.prepareDurationBars(durationMarkers);
+        this.addDurationBars(durationMarkers, start, end);
+      } else {
+        // New overview for the horizontal use case
+        for (let j = 0; j < this._markers.length; j++) {
+          let marker = this._markers[j];
+          markers.push(marker);
+          if (marker._itemType !== 'duration-bar') {
+            allDurationBar = false;
+          }
+          if (marker._itemType === 'event') {
+            singleEventMarkers[singleEventMarkers.length] = marker;
+          }
+          if (marker._itemType === 'duration-event' || marker._itemType === 'duration-bar') {
+            durationMarkers[durationMarkers.length] = marker;
+          }
+        }
 
-      this._markerSize = opt;
+        if (allDurationBar) {
+          this.prepareDurationBars(durationMarkers);
+          this.addDurationBars(durationMarkers, start, end);
+        } else {
+          this.prepareDurations(markers, start, end);
+          this.addDurations(durationMarkers, start, end);
+          this.addMarkers(singleEventMarkers, start, end);
+        }
+      }
     }
 
-    prepareDurations(durationMarkers) {
+    prepareDurations(durationMarkers, start, end) {
+      this._maxDurationY = 0;
+      let markerSeries = null;
+      this._durationColorMap = this._durationColorMap || {};
+
+      durationMarkers.forEach((marker) => {
+        let currMarker = marker;
+        const sId = marker.getSeriesId();
+        if (sId !== markerSeries) {
+          this._colorCount = 0;
+          markerSeries = sId;
+        }
+
+        const level = this.calculateDurationY(marker, durationMarkers, start, end);
+        // Calculate and assign the duration level
+        currMarker._durationLevel = level;
+
+        // Update the max level if needed
+        if (level > this._maxDurationY) {
+          this._maxDurationY = level;
+        }
+      });
+    }
+
+    prepareDurationBars(durationMarkers) {
       this._maxDurationY = 0;
       var markerSeries = null;
       if (this._durationColorMap == null) this._durationColorMap = new Object();
@@ -6728,7 +6790,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           this._colorCount = 0;
           markerSeries = sId;
         }
-        marker._durationLevel = this.calculateDurationY(marker, durationMarkers);
+        marker._durationLevel = this.calculateBarDurationY(marker, durationMarkers);
         if (marker._durationFillColor == null) {
           if (this._durationColorMap[id] == null) {
             this._durationColorMap[id] = this._colorCount;
@@ -6746,11 +6808,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     getDurationColorMap() {
       if (this._durationColorMap) return this._durationColorMap;
-      else return null;
+      return null;
     }
 
     calculateOptimalSize(start, end, width, height, size) {
-      var result = new Object();
+      var result = {};
       result.max = 1;
       result.arr = [];
 
@@ -6775,15 +6837,74 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         // the size by determining the size of the stack and use that to calculate the
         // size
         return this.calculateOptimalSize(start, end, width, height, size - 1);
-      } else return size;
+      }
+      return size;
     }
 
-    addMarker(node, sz) {
+    addMarkers(markers, start, end) {
+      const context = this.getCtx();
+      const spacingBetweenMarkers = 4;
+      const textSpacing = this.getTimeAxisHeight();
+      const borderRadius = 2; // Border radius for rectangle
+
+      for (let i = Math.min(this._maxDurationY, this._MAXIMUM_STACK); i > 0; i--) {
+        for (let j = 0; j < markers.length; j++) {
+          let node = markers[j];
+          if (i === node._durationLevel) {
+            var itemId = '_mrk_' + node.getId();
+            var rectHeight = 4;
+            let rectWidth = this.isVertical() ? 5 : this._MINIMUM_WIDTH;
+            let cx;
+            let cy;
+            const durationY = 8 + 4 * node._durationLevel;
+            var scaleX = this.getScaleX(node);
+            const x = ojdvtOverview.OverviewUtils.getDatePosition(start, end, node.getTime(), this.Width);
+
+            if (this.isVertical()) {
+              rectWidth = 2 * scaleX;
+              cx = node.getY() + rectWidth / 2;
+              cy = node.getX() + rectHeight / 2;
+            } else {
+              cx = this.isRTL() ? this.Width - (x + rectWidth) : x;
+              cy =
+                this.Height -
+                textSpacing -
+                durationY -
+                (node._durationLevel - 1) * spacingBetweenMarkers;
+            }
+            var displayable = new dvt.Rect(context, cx, cy, rectWidth, rectHeight, itemId);
+            displayable.setCornerRadius(borderRadius);
+            // associate the node with the marker
+            displayable._node = node;
+
+            if (node._background) {
+              displayable.setClassName(
+                `oj-timeline-overview-marker oj-timeline-item-bubble-bg-${node._background}`
+              );
+            } else {
+              displayable.setClassName(`oj-timeline-overview-marker`);
+            }
+            displayable.setPixelHinting(false);
+            // Do not antialias markers if specified or vertical
+            if (this.isVertical() && this._defaultMarkerStyles.pixelHinting !== 'false') {
+              displayable.setPixelHinting(true);
+            }
+
+            this.addChild(displayable);
+            node._durationY = durationY - 2;
+          }
+        }
+      }
+    }
+
+    // Vertical marker for single event staying the same.
+    addVerticalMarker(node, sz) {
       var itemId = '_mrk_' + node.getId();
       var color = node.getColor();
       var isGradient = node.isGradient();
       var opacity = node.getOpacity();
-      var fill, stroke;
+      var fill;
+      var stroke;
       if (opacity == null) {
         opacity = this._defOpacity;
         // if default opacity is zero but a custom color is specified, override the opacity to 1
@@ -6868,12 +6989,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       // Do not antialias markers if specified or vertical
       if (
-        (this.isVertical() ||
-          marker === dvt.SimpleMarker.RECTANGLE ||
-          marker === dvt.SimpleMarker.DIAMOND ||
-          marker === dvt.SimpleMarker.TRIANGLE_UP ||
-          marker === dvt.SimpleMarker.TRIANGLE_DOWN ||
-          marker === dvt.SimpleMarker.PLUS) &&
+        (this.isVertical() || marker === dvt.SimpleMarker.RECTANGLE) &&
         this._defaultMarkerStyles.pixelHinting !== 'false'
       ) {
         displayable.setPixelHinting(true);
@@ -6882,11 +6998,66 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       return displayable;
     }
 
-    addDurations(durationMarkers, start, end) {
+    // This method applies to horizontal use case because there is no spec for vertical visuals.
+    addDurations(markers, start, end) {
+      const context = this.getCtx();
+      const spacingBetweenMarkers = 4;
+      const textSpacing = this.getTimeAxisHeight();
+      const borderRadius = 2; // Border radius for rectangle
+
+      for (let i = Math.min(this._maxDurationY, this._MAXIMUM_STACK); i > 0; i--) {
+        for (let j = 0; j < markers.length; j++) {
+          let node = markers[j];
+          let duration;
+          if (i === node._durationLevel) {
+            const x = ojdvtOverview.OverviewUtils.getDatePosition(start, end, node.getTime(), this.Width);
+            const x2 = ojdvtOverview.OverviewUtils.getDatePosition(start, end, node.getEndTime(), this.Width);
+            const durationId = `_drn_${node.getId()}`;
+            const durationY = 8 + 4 * node._durationLevel;
+
+            let rectHeight = 4; // Height of the overview marker
+            let rectX;
+            let rectY;
+            const rectWidth = Math.max(x2 - x, this._MINIMUM_WIDTH);
+
+            rectX = this.isRTL() ? this.Width - (x + rectWidth) : x;
+
+            rectY =
+              this.Height -
+              textSpacing -
+              durationY -
+              (node._durationLevel - 1) * spacingBetweenMarkers;
+
+            duration = new dvt.Rect(context, rectX, rectY, rectWidth, rectHeight, durationId);
+            if (node._background) {
+              duration.setClassName(
+                `oj-timeline-overview-marker oj-timeline-item-bubble-bg-${node._background}`
+              );
+            } else {
+              duration.setClassName(`oj-timeline-overview-marker`);
+            }
+            duration.setPixelHinting(false);
+            duration.setCornerRadius(borderRadius);
+            duration._node = node; // Associate node with duration
+
+            this.addChild(duration);
+
+            node._durationBar = duration;
+            node._durationY = durationY - 2;
+          }
+        }
+      }
+
+      // Ensure the time axis top bar is rendered above the duration markers
+      this.removeChild(this._timeAxisTopBar);
+      this.addChild(this._timeAxisTopBar);
+    }
+
+    addDurationBars(markers, start, end) {
       var context = this.getCtx();
       for (var i = this._maxDurationY; i > 0; i--) {
-        for (var j = 0; j < durationMarkers.length; j++) {
-          var node = durationMarkers[j];
+        for (var j = 0; j < markers.length; j++) {
+          var node = markers[j];
           if (i === node._durationLevel) {
             var x = ojdvtOverview.OverviewUtils.getDatePosition(
               start,
@@ -6968,11 +7139,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       // we only need to calculate y for the non-vertical case
       if (!this.isVertical()) {
         var cy = 3;
-        if (this.isOverviewAbove()) cy = cy + this.getTimeAxisHeight();
+        if (this.isOverviewAbove()) cy += this.getTimeAxisHeight();
 
         var maxy = 0;
         var overlappingMarkers = [];
-        for (var i = 0; i < result.arr.length; i++) {
+        for (let i = 0; i < result.arr.length; i++) {
           var prevMarker = result.arr[i];
           var prevX = prevMarker.getX();
           var prevScaleX = this.getScaleX(prevMarker);
@@ -6984,7 +7155,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           // if x does intersect, add it to the set of overlapping markers
           if (xDist < minDist) overlappingMarkers.push(prevMarker);
         }
-        for (i = 0; i < overlappingMarkers.length; i++) {
+        for (let j = 0; j < overlappingMarkers.length; j++) {
           var obj = this.calculateY(
             overlappingMarkers,
             node.getShape(),
@@ -7066,7 +7237,44 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       return { cy, maxy };
     }
 
-    calculateDurationY(item, durationMarkers) {
+    calculateDurationY(item, durationMarkers, start, end) {
+      var index = durationMarkers.length;
+      var initialY = 1;
+
+      var startTime = item.getTime();
+      var y = item._durationLevel;
+      if (y == null) y = initialY;
+      var canvasSize = this.isVertical() ? this._overviewHeight : this._overviewWidth;
+      const startPos = ojdvtOverview.OverviewUtils.getDatePosition(start, end, startTime, canvasSize);
+
+      for (var i = 0; i < index; i++) {
+        var currItem = durationMarkers[i];
+        if (currItem !== item) {
+          var currStartTime = currItem.getTime();
+          const currEndTime = currItem.getEndTime() || currStartTime;
+          const currStartPos = ojdvtOverview.OverviewUtils.getDatePosition(start, end, currStartTime, canvasSize);
+          let currEndPos = ojdvtOverview.OverviewUtils.getDatePosition(start, end, currEndTime, canvasSize);
+          if (currEndPos - currStartPos < this._MINIMUM_WIDTH)
+            currEndPos = currStartPos + this._MINIMUM_WIDTH;
+
+          var curry = currItem._durationLevel;
+          if (curry == null) curry = initialY;
+
+          if (startPos >= currStartPos && startPos <= currEndPos && y === curry) {
+            y = curry + 1;
+            // y changed, do the loop again
+            item._durationLevel = y;
+
+            // calculate again from start since y changed and we might have a conflict again
+            y = this.calculateDurationY(item, durationMarkers, start, end);
+          }
+        }
+      }
+      if (y > this._maxDurationY) this._maxDurationY = y;
+      return y;
+    }
+
+    calculateBarDurationY(item, durationMarkers) {
       var index = durationMarkers.length;
       var initialY = 1;
 
@@ -7233,8 +7441,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           }
         }
       }
-      // draw border
-      this.applyState(drawable, this.HOVER_STATE);
     }
 
     unhighlightMarker(drawable) {
@@ -7247,7 +7453,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           }
         }
       }
-      this.applyState(drawable, this.ENABLED_STATE);
     }
     /************************** end marker highlight *****************************************/
 
@@ -7272,13 +7477,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     addSelectedMarker(drawable) {
       if (this._selectedMarkers == null) this._selectedMarkers = [];
-
-      var lastSelectedMarker = null;
+      let lastSelectedMarker;
       if (this._selectedMarkers.length > 0)
         lastSelectedMarker = this._selectedMarkers[this._selectedMarkers.length - 1];
 
       this._selectedMarkers.push(drawable);
-
       if (lastSelectedMarker != null) this.applyState(lastSelectedMarker, this.SELECTED_STATE);
 
       this.applyState(drawable, this.ACTIVE_SELECTED_STATE);
@@ -7295,10 +7498,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           }
         }
 
-        if (index != -1) {
-          // remove effect from drawable
-          this.applyState(drawable, this.ENABLED_STATE);
-
+        if (index !== -1) {
           // fix the array
           this._selectedMarkers.splice(index, 1);
         }
@@ -7307,11 +7507,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     removeAllSelectedMarkers() {
       if (this._selectedMarkers != null) {
-        for (var i = 0; i < this._selectedMarkers.length; i++) {
-          var drawable = this._selectedMarkers[i];
-          this.applyState(drawable, this.ENABLED_STATE);
-        }
-
         delete this._selectedMarkers;
         this._selectedMarkers = null;
       }
@@ -7705,7 +7900,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (timeline._series) {
         var context = timeline.getCtx();
         var isRTL = dvt.Agent.isRightToLeft(context);
-
         var seriesCount = timeline._series.length;
         var axisSize = timeline.getTimeAxisVisibleSize(seriesCount);
         if (!timeline.isVertical()) {
@@ -7717,16 +7911,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         timeline._seriesSize = (timeline._canvasSize - axisSize) / seriesCount;
         for (var i = 0; i < seriesCount; i++) {
           var series = timeline._series[i];
-
+          var seriesOptions = timeline._seriesOptions[i];
+          var durationBarFlag = seriesOptions.items
+            ? seriesOptions.items.every((item) => item.itemType === 'duration-bar')
+            : false;
+          series._durationBarFlag = durationBarFlag;
           // setup overflow controls
           series.setClipPath(null);
           var cp = new dvt.ClipPath();
+          var width;
+          var height;
+          var posMatrix;
           if (timeline.isVertical()) {
             if (isRTL) var key = Math.abs(i - 1);
             else key = i;
             if (isRTL && timeline._series.length === 1) {
               cp.addRect(axisSize, 0, timeline._seriesSize, timeline.getContentLength());
-              var posMatrix = new dvt.Matrix(1, 0, 0, 1, axisSize, 0);
+              posMatrix = new dvt.Matrix(1, 0, 0, 1, axisSize, 0);
             } else {
               cp.addRect(
                 key * (timeline._seriesSize + axisSize),
@@ -7736,14 +7937,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
               );
               posMatrix = new dvt.Matrix(1, 0, 0, 1, key * (timeline._seriesSize + axisSize), 0);
             }
-            var width = timeline._seriesSize;
-            var height = timeline.getContentLength();
+            width = timeline._seriesSize;
+            height = timeline.getContentLength();
           } else {
             cp.addRect(
               0,
               i * (timeline._seriesSize + axisSize),
               timeline.getContentLength(),
-              timeline._seriesSize
+              durationBarFlag ? timeline._seriesSize : timeline._seriesSize - (1 - i) * axisSize
             );
             posMatrix = new dvt.Matrix(1, 0, 0, 1, 0, i * (timeline._seriesSize + axisSize));
             width = timeline.getContentLength();
@@ -9110,8 +9311,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @private
      */
     _renderBackground: (series, width, height) => {
+      var addBackground;
       if (series._background) {
-        var addBackground = false;
+        addBackground = false;
         series._background.setWidth(width);
         series._background.setHeight(height);
       } else {
@@ -9436,7 +9638,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         return;
       }
 
-      if (DvtTimelineSeriesRenderer._minorTimeAxisScale !== series._callbackObj._timeAxis._scale) {
+      if (series._minorTimeAxisScale !== series._callbackObj._timeAxis._scale) {
         // scale has changed so need to recalc ticks
         series._seriesMinorTicks.removeChildren();
         series._seriesMinorTicksArray = [];
@@ -9492,7 +9694,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var start = series._start;
       var end = series._end;
       var minorTimeAxis = series._callbackObj._timeAxis;
-      DvtTimelineSeriesRenderer._minorTimeAxisScale = minorTimeAxis._scale;
+      series._minorTimeAxisScale = minorTimeAxis._scale;
       dates = [];
       var startDate = ojtimeaxisToolkit.TimeAxisUtils.getPositionDate(start, end, startPos, series._length);
       var currentDate = minorTimeAxis.adjustDate(startDate);
@@ -10395,6 +10597,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       this._viewportNavigationMode = this.Options['viewportNavigationMode'];
       this._hasOverview = props.hasOverview;
+      this._hasMajorAxis = props.hasMajorAxis;
       this._viewStartTime = props.viewStart;
       this._viewEndTime = props.viewEnd;
 
@@ -10665,6 +10868,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           DvtTimelineStyleUtils.convertToCSSStyle(
             this.Options['styleDefaults']['overview']['labelStyle']
           );
+
+        // node style
         this.Options['styleDefaults']['series']['emptyTextStyle'] =
           DvtTimelineStyleUtils.convertToCSSStyle(
             this.Options['styleDefaults']['series']['emptyTextStyle']
@@ -10879,7 +11084,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (this._hasOverview) {
         this._overviewSize = this._isVertical
           ? DvtTimelineStyleUtils.getOverviewWidth()
-          : DvtTimelineStyleUtils.getOverviewHeight();
+          : DvtTimelineStyleUtils.getOverviewHeight(this._hasMajorAxis);
         var overviewOptions = this.Options['overview'];
         var overviewStyle = overviewOptions['svgStyle']
           ? overviewOptions['svgStyle']
@@ -11183,8 +11388,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             itemOption['rk'] = j;
             itemOption['sid'] = i;
             itemOption['tid'] = item.getId();
-            itemOption['t'] = item.getStartTime();
+            itemOption['st'] = item.getStartTime();
             itemOption['_sd'] = item.getMarkerSD();
+            itemOption['it'] = item.getItemType();
+            itemOption['bg'] = item.getBackground();
 
             //begin custom marker handling (for ADF)
             if (!this._isVertical) {
@@ -11323,16 +11530,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._seriesSize = (this._canvasSize - axisSize) / seriesCount;
         for (var i = 0; i < seriesCount; i++) {
           var series = this._series[i];
-
+          var durationBarFlag = series._durationBarFlag;
           // setup overflow controls
           series.setClipPath(null);
           var cp = new dvt.ClipPath();
+          var posMatrix;
+          var width;
+          var height;
           if (this._isVertical) {
             if (this.isRTL()) var key = Math.abs(i - 1);
             else key = i;
             if (this.isRTL() && this._series.length === 1) {
               cp.addRect(axisSize, 0, this._seriesSize, this.getContentLength());
-              var posMatrix = new dvt.Matrix(1, 0, 0, 1, axisSize, 0);
+              posMatrix = new dvt.Matrix(1, 0, 0, 1, axisSize, 0);
             } else {
               cp.addRect(
                 key * (this._seriesSize + axisSize),
@@ -11342,14 +11552,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
               );
               posMatrix = new dvt.Matrix(1, 0, 0, 1, key * (this._seriesSize + axisSize), 0);
             }
-            var width = this._seriesSize;
-            var height = this.getContentLength();
+            width = this._seriesSize;
+            height = this.getContentLength();
           } else {
             cp.addRect(
               0,
               i * (this._seriesSize + axisSize),
               this.getContentLength(),
-              this._seriesSize
+              durationBarFlag ? this._seriesSize : this._seriesSize - (1 - i) * axisSize
             );
             posMatrix = new dvt.Matrix(1, 0, 0, 1, 0, i * (this._seriesSize + axisSize));
             width = this.getContentLength();

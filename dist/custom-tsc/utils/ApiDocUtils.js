@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateDoclets = void 0;
+exports.generateDoclets = generateDoclets;
 const path_1 = __importDefault(require("path"));
 function generateDoclets(metaUtilObj) {
     const classDoclet = getClassDoclet(metaUtilObj);
@@ -38,7 +38,6 @@ function generateDoclets(metaUtilObj) {
         ...context.typeDefs
     ];
 }
-exports.generateDoclets = generateDoclets;
 function getClassDoclet(metaUtilObj) {
     let vcompdoclet = {};
     let custElemName = metaUtilObj.fullMetadata.name;

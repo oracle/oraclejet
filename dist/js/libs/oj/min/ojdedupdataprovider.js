@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,7 +8,7 @@
 define(["ojs/ojcore-base","ojs/ojdataprovider","ojs/ojeventtarget","ojs/ojcachediteratorresultsdataprovider"],function(t,e,a,s){"use strict";t=t&&Object.prototype.hasOwnProperty.call(t,"default")?t.default:t,s=s&&Object.prototype.hasOwnProperty.call(s,"default")?s.default:s;
 /**
      * @license
-     * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+     * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
      * Licensed under The Universal Permissive License (UPL), Version 1.0
      * @ignore
      */

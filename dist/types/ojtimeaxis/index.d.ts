@@ -4,6 +4,7 @@ import { DvtTimeComponentScale } from '../ojdvttimecomponentscale';
 import Converter = require('../ojconverter');
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
+/** @deprecated since 12.0.0 - Suggested alternatives: oj-gantt, oj-timeline. */
 export interface ojTimeAxis extends dvtBaseComponent<ojTimeAxisSettableProperties> {
     converter: ojTimeAxis.Converters | Converter<string>;
     end: string;
@@ -100,6 +101,7 @@ export interface ojTimeAxisSettableProperties extends dvtBaseComponentSettablePr
 export interface ojTimeAxisSettablePropertiesLenient extends Partial<ojTimeAxisSettableProperties> {
     [key: string]: any;
 }
+/** @deprecated since 12.0.0 - Suggested alternatives: oj-gantt, oj-timeline. */
 export type TimeAxisElement = ojTimeAxis;
 export namespace TimeAxisElement {
     // tslint:disable-next-line interface-over-type-literal

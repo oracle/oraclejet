@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -57,7 +57,7 @@ var __oj_progress_metadata =
 
 /**
  * @ojcomponent oj.ojProgress
- * @ojdeprecated {since: '15.0.0', description: 'oj-progress has been deprecated, please use oj-progress-bar or oj-progress-circle instead.'}
+ * @ojdeprecated {since: '15.0.0', value: ['oj-progress-bar', 'oj-progress-circle']}
  * @since 1.0.0
  * @augments oj.baseComponent
  * @ojshortdesc A progress allows the user to visualize the progression of an extended computer operation.

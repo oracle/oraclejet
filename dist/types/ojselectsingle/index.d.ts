@@ -7,24 +7,36 @@ import { ojSelectBase, ojSelectBaseEventMap, ojSelectBaseSettableProperties } fr
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojSelectSingle<V, D> extends ojSelectBase<V, D, ojSelectSingleSettableProperties<V, D>> {
     displayOptions: {
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages: 'display' | 'none';
     };
     value: V | null;
     valueItem: ojcommontypes.ItemContext<V, D>;
     translations: {
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         cancel?: string;
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         labelAccClearValue?: string;
+        /** @deprecated since 10.0.0 - The oj-select-single dropdown arrow should be ignored by screen readers, so a label is not required. */
         labelAccOpenDropdown?: string;
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         multipleMatchesFound?: string;
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         nOrMoreMatchesFound?: string;
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         noMatchesFound?: string;
+        /** @deprecated since 9.0.0 - oj-select-single will no longer show the dropdown when there are no results to show. */
         noResultsLine1?: string;
+        /** @deprecated since 9.0.0 - oj-select-single will no longer show the dropdown when there are no results to show. */
         noResultsLine2?: string;
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         oneMatchFound?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -112,6 +124,7 @@ export namespace ojSelectSingle {
         handleRowAction: ((event: Event, context: ojcommontypes.ItemContext<V, D>) => void);
         searchText: string;
         selected: KeySet<V>;
+        /** @deprecated since 9.0.0 - Use the currentRow and handleRowAction properties instead, which provide additional functionalities. */
         selectedItem: ojcommontypes.ItemContext<V, D>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -159,24 +172,36 @@ export interface ojSelectSingleEventMap<V, D> extends ojSelectBaseEventMap<V, D,
 }
 export interface ojSelectSingleSettableProperties<V, D> extends ojSelectBaseSettableProperties<V, D> {
     displayOptions: {
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages: 'display' | 'none';
     };
     value: V | null;
     valueItem: ojcommontypes.ItemContext<V, D>;
     translations: {
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         cancel?: string;
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         labelAccClearValue?: string;
+        /** @deprecated since 10.0.0 - The oj-select-single dropdown arrow should be ignored by screen readers, so a label is not required. */
         labelAccOpenDropdown?: string;
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         multipleMatchesFound?: string;
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         nOrMoreMatchesFound?: string;
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         noMatchesFound?: string;
+        /** @deprecated since 9.0.0 - oj-select-single will no longer show the dropdown when there are no results to show. */
         noResultsLine1?: string;
+        /** @deprecated since 9.0.0 - oj-select-single will no longer show the dropdown when there are no results to show. */
         noResultsLine2?: string;
+        /** @deprecated since 18.0.0 - This is not configurable per component instance in the Redwood UX specification. */
         oneMatchFound?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -260,6 +285,7 @@ export namespace SelectSingleElement {
         handleRowAction: ((event: Event, context: ojcommontypes.ItemContext<V, D>) => void);
         searchText: string;
         selected: KeySet<V>;
+        /** @deprecated since 9.0.0 - Use the currentRow and handleRowAction properties instead, which provide additional functionalities. */
         selectedItem: ojcommontypes.ItemContext<V, D>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -280,7 +306,9 @@ export namespace SelectSingleElement {
     type RenderItemTemplate<V, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<V, D>>;
 }
 export interface SelectSingleIntrinsicProps extends Partial<Readonly<ojSelectSingleSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojSelectSingleEventMap<any, any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojSelectSingleEventMap<any, any>['ojAnimateStart']) => void;
     onojValueAction?: (value: ojSelectSingleEventMap<any, any>['ojValueAction']) => void;
     ondisplayOptionsChanged?: (value: ojSelectSingleEventMap<any, any>['displayOptionsChanged']) => void;

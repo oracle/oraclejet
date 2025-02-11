@@ -18,6 +18,7 @@ import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropert
 export interface ojCombobox<V, SP extends ojComboboxSettableProperties<V, SV, RV>, SV = V, RV = V> extends editableValue<V, SP, SV, RV> {
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -120,6 +121,7 @@ export interface ojComboboxEventMap<V, SP extends ojComboboxSettableProperties<V
 export interface ojComboboxSettableProperties<V, SV = V, RV = V> extends editableValueSettableProperties<V, SV, RV> {
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -129,6 +131,7 @@ export interface ojComboboxSettablePropertiesLenient<V, SV = V, RV = V> extends 
     [key: string]: any;
 }
 export interface ojComboboxMany<K, D, V = any> extends ojCombobox<V[], ojComboboxManySettableProperties<K, D, V>, V[], string[]> {
+    /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<V[]>>;
     converter: Converter<V> | null;
     labelledBy: string | null;
@@ -159,8 +162,10 @@ export interface ojComboboxMany<K, D, V = any> extends ojCombobox<V[], ojCombobo
         noMoreResults?: string;
         oneMatchesFound?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -280,6 +285,7 @@ export interface ojComboboxManyEventMap<K, D, V = any> extends ojComboboxEventMa
     'validChanged': JetElementCustomEvent<ojComboboxMany<K, D, V>["valid"]>;
 }
 export interface ojComboboxManySettableProperties<K, D, V = any> extends ojComboboxSettableProperties<V[]> {
+    /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<V[]>>;
     converter: Converter<V> | null;
     labelledBy: string | null;
@@ -310,8 +316,10 @@ export interface ojComboboxManySettableProperties<K, D, V = any> extends ojCombo
         noMoreResults?: string;
         oneMatchesFound?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -320,6 +328,7 @@ export interface ojComboboxManySettablePropertiesLenient<K, D, V = any> extends 
     [key: string]: any;
 }
 export interface ojComboboxOne<K, D, V = any> extends ojCombobox<V, ojComboboxOneSettableProperties<K, D, V>, V, string> {
+    /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<V>>;
     converter: Converter<V> | null;
     filterOnOpen: 'none' | 'rawValue';
@@ -350,8 +359,10 @@ export interface ojComboboxOne<K, D, V = any> extends ojCombobox<V, ojComboboxOn
         noMatchesFound?: string;
         oneMatchesFound?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -481,6 +492,7 @@ export interface ojComboboxOneEventMap<K, D, V = any> extends ojComboboxEventMap
     'validChanged': JetElementCustomEvent<ojComboboxOne<K, D, V>["valid"]>;
 }
 export interface ojComboboxOneSettableProperties<K, D, V = any> extends ojComboboxSettableProperties<V> {
+    /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<V>>;
     converter: Converter<V> | null;
     filterOnOpen: 'none' | 'rawValue';
@@ -511,8 +523,10 @@ export interface ojComboboxOneSettableProperties<K, D, V = any> extends ojCombob
         noMatchesFound?: string;
         oneMatchesFound?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -523,6 +537,7 @@ export interface ojComboboxOneSettablePropertiesLenient<K, D, V = any> extends P
 export interface ojSelect<V, SP extends ojSelectSettableProperties<V, SV>, SV = V> extends editableValue<V, SP, SV> {
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -629,6 +644,7 @@ export interface ojSelectEventMap<V, SP extends ojSelectSettableProperties<V, SV
 export interface ojSelectSettableProperties<V, SV = V> extends editableValueSettableProperties<V, SV> {
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -652,6 +668,8 @@ export interface ojSelectMany<K, D, V = any> extends ojSelect<V[], ojSelectManyS
     placeholder: string | null;
     readonly: boolean;
     readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$selectRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
     required: boolean;
     value: V[] | null;
@@ -666,8 +684,10 @@ export interface ojSelectMany<K, D, V = any> extends ojSelect<V[], ojSelectManyS
         noMoreResults?: string;
         oneMatchesFound?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
         searchField?: string;
@@ -792,6 +812,8 @@ export interface ojSelectManySettableProperties<K, D, V = any[]> extends ojSelec
     placeholder: string | null;
     readonly: boolean;
     readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$selectRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
     required: boolean;
     value: V[] | null;
@@ -806,8 +828,10 @@ export interface ojSelectManySettableProperties<K, D, V = any[]> extends ojSelec
         noMoreResults?: string;
         oneMatchesFound?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
         searchField?: string;
@@ -816,6 +840,7 @@ export interface ojSelectManySettableProperties<K, D, V = any[]> extends ojSelec
 export interface ojSelectManySettablePropertiesLenient<K, D, V = any[]> extends Partial<ojSelectManySettableProperties<K, D, V>> {
     [key: string]: any;
 }
+/** @deprecated since 8.1.0 - Suggested alternative: oj-select-single. */
 export interface ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSettableProperties<K, D, V>> {
     labelledBy: string | null;
     maximumResultCount: number;
@@ -830,6 +855,8 @@ export interface ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSetta
     placeholder: string | null;
     readonly: boolean;
     readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$selectRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
     required: boolean;
     value: V | null;
@@ -843,8 +870,10 @@ export interface ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSetta
         noMatchesFound?: string;
         oneMatchesFound?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
         searchField?: string;
@@ -969,6 +998,8 @@ export interface ojSelectOneSettableProperties<K, D, V = any> extends ojSelectSe
     placeholder: string | null;
     readonly: boolean;
     readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
+    /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
+       the theme variable "$selectRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
     required: boolean;
     value: V | null;
@@ -982,8 +1013,10 @@ export interface ojSelectOneSettableProperties<K, D, V = any> extends ojSelectSe
         noMatchesFound?: string;
         oneMatchesFound?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
         searchField?: string;
@@ -1007,6 +1040,7 @@ export type ComboboxManyElement<K, D, V = any> = ojComboboxMany<K, D, V>;
 export type ComboboxOneElement<K, D, V = any> = ojComboboxOne<K, D, V>;
 export type SelectElement<V, SP extends ojSelectSettableProperties<V, SV>, SV = V> = ojSelect<V, SP, SV>;
 export type SelectManyElement<K, D, V = any> = ojSelectMany<K, D, V>;
+/** @deprecated since 8.1.0 - Suggested alternative: oj-select-single. */
 export type SelectOneElement<K, D, V = any> = ojSelectOne<K, D, V>;
 export namespace ComboboxElement {
     interface ojAnimateEnd extends CustomEvent<{
@@ -1445,9 +1479,11 @@ export namespace SelectOneElement {
     //------------------------------------------------------------
 }
 export interface ComboboxManyIntrinsicProps extends Partial<Readonly<ojComboboxManySettableProperties<any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojComboboxManyEventMap<any, any, any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojComboboxManyEventMap<any, any, any>['ojAnimateStart']) => void;
-    onasyncValidatorsChanged?: (value: ojComboboxManyEventMap<any, any, any>['asyncValidatorsChanged']) => void;
+    /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojComboboxManyEventMap<any, any, any>['asyncValidatorsChanged']) => void;
     onconverterChanged?: (value: ojComboboxManyEventMap<any, any, any>['converterChanged']) => void;
     onlabelledByChanged?: (value: ojComboboxManyEventMap<any, any, any>['labelledByChanged']) => void;
     onmaximumResultCountChanged?: (value: ojComboboxManyEventMap<any, any, any>['maximumResultCountChanged']) => void;
@@ -1477,10 +1513,12 @@ export interface ComboboxManyIntrinsicProps extends Partial<Readonly<ojComboboxM
     children?: ComponentChildren;
 }
 export interface ComboboxOneIntrinsicProps extends Partial<Readonly<ojComboboxOneSettableProperties<any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojComboboxOneEventMap<any, any, any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojComboboxOneEventMap<any, any, any>['ojAnimateStart']) => void;
     onojValueUpdated?: (value: ojComboboxOneEventMap<any, any, any>['ojValueUpdated']) => void;
-    onasyncValidatorsChanged?: (value: ojComboboxOneEventMap<any, any, any>['asyncValidatorsChanged']) => void;
+    /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojComboboxOneEventMap<any, any, any>['asyncValidatorsChanged']) => void;
     onconverterChanged?: (value: ojComboboxOneEventMap<any, any, any>['converterChanged']) => void;
     onfilterOnOpenChanged?: (value: ojComboboxOneEventMap<any, any, any>['filterOnOpenChanged']) => void;
     onlabelledByChanged?: (value: ojComboboxOneEventMap<any, any, any>['labelledByChanged']) => void;
@@ -1511,7 +1549,9 @@ export interface ComboboxOneIntrinsicProps extends Partial<Readonly<ojComboboxOn
     children?: ComponentChildren;
 }
 export interface SelectManyIntrinsicProps extends Partial<Readonly<ojSelectManySettableProperties<any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojSelectManyEventMap<any, any, any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojSelectManyEventMap<any, any, any>['ojAnimateStart']) => void;
     onlabelledByChanged?: (value: ojSelectManyEventMap<any, any, any>['labelledByChanged']) => void;
     onmaximumResultCountChanged?: (value: ojSelectManyEventMap<any, any, any>['maximumResultCountChanged']) => void;
@@ -1523,7 +1563,7 @@ export interface SelectManyIntrinsicProps extends Partial<Readonly<ojSelectManyS
     onplaceholderChanged?: (value: ojSelectManyEventMap<any, any, any>['placeholderChanged']) => void;
     onreadonlyChanged?: (value: ojSelectManyEventMap<any, any, any>['readonlyChanged']) => void;
     onreadonlyUserAssistanceShownChanged?: (value: ojSelectManyEventMap<any, any, any>['readonlyUserAssistanceShownChanged']) => void;
-    onrenderModeChanged?: (value: ojSelectManyEventMap<any, any, any>['renderModeChanged']) => void;
+    /** @deprecated since 8.0.0 */ onrenderModeChanged?: (value: ojSelectManyEventMap<any, any, any>['renderModeChanged']) => void;
     onrequiredChanged?: (value: ojSelectManyEventMap<any, any, any>['requiredChanged']) => void;
     onvalueChanged?: (value: ojSelectManyEventMap<any, any, any>['valueChanged']) => void;
     onvalueOptionsChanged?: (value: ojSelectManyEventMap<any, any, any>['valueOptionsChanged']) => void;
@@ -1540,7 +1580,9 @@ export interface SelectManyIntrinsicProps extends Partial<Readonly<ojSelectManyS
     children?: ComponentChildren;
 }
 export interface SelectOneIntrinsicProps extends Partial<Readonly<ojSelectOneSettableProperties<any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojSelectOneEventMap<any, any, any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojSelectOneEventMap<any, any, any>['ojAnimateStart']) => void;
     onlabelledByChanged?: (value: ojSelectOneEventMap<any, any, any>['labelledByChanged']) => void;
     onmaximumResultCountChanged?: (value: ojSelectOneEventMap<any, any, any>['maximumResultCountChanged']) => void;
@@ -1552,7 +1594,7 @@ export interface SelectOneIntrinsicProps extends Partial<Readonly<ojSelectOneSet
     onplaceholderChanged?: (value: ojSelectOneEventMap<any, any, any>['placeholderChanged']) => void;
     onreadonlyChanged?: (value: ojSelectOneEventMap<any, any, any>['readonlyChanged']) => void;
     onreadonlyUserAssistanceShownChanged?: (value: ojSelectOneEventMap<any, any, any>['readonlyUserAssistanceShownChanged']) => void;
-    onrenderModeChanged?: (value: ojSelectOneEventMap<any, any, any>['renderModeChanged']) => void;
+    /** @deprecated since 8.0.0 */ onrenderModeChanged?: (value: ojSelectOneEventMap<any, any, any>['renderModeChanged']) => void;
     onrequiredChanged?: (value: ojSelectOneEventMap<any, any, any>['requiredChanged']) => void;
     onvalueChanged?: (value: ojSelectOneEventMap<any, any, any>['valueChanged']) => void;
     onvalueOptionChanged?: (value: ojSelectOneEventMap<any, any, any>['valueOptionChanged']) => void;

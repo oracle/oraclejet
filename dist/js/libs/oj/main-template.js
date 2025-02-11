@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -15,13 +15,13 @@
   requirejs.config({
     // Path mappings for the logical module names
     paths: {
-      'ojs': 'libs/oj/17.1.0/min@insertESLevelPath@',
-      'ojL10n': 'libs/oj/17.1.0/ojL10n',
-      'ojtranslations': 'libs/oj/17.1.0/resources',
+      'ojs': 'libs/oj/18.0.0/min@insertESLevelPath@',
+      'ojL10n': 'libs/oj/18.0.0/ojL10n',
+      'ojtranslations': 'libs/oj/18.0.0/resources',
       
   'knockout': 'libs/knockout/knockout-3.5.1',
-  'jquery': 'libs/jquery/jquery-3.6.4.min',
-  'jqueryui-amd': 'libs/jquery/jqueryui-amd-1.13.2.min',
+  'jquery': 'libs/jquery/jquery-3.7.1.min',
+  'jqueryui-amd': 'libs/jquery/jqueryui-amd-1.14.1.min',
   'text': 'libs/require/text',
   'hammerjs': 'libs/hammer/hammer-2.0.8.min',
   'signals': 'libs/js-signals/signals.min',

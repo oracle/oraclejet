@@ -23,6 +23,7 @@ export namespace MutableArrayTreeDataProvider {
     // tslint:disable-next-line interface-over-type-literal
     type Options<D> = {
         childrenAttribute?: string;
+        enforceKeyStringify?: 'off' | 'on';
         implicitSort?: Array<SortCriterion<D>>;
         keyAttributeScope?: 'siblings' | 'global';
         sortComparators?: ArrayDataProvider.SortComparators<D>;

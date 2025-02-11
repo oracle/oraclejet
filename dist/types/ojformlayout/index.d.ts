@@ -7,6 +7,7 @@ export interface ojFormLayout extends JetElement<ojFormLayoutSettableProperties>
     direction: 'column' | 'row';
     labelEdge: 'inside' | 'start' | 'top';
     labelWidth: string;
+    /** @deprecated since 18.0.0 - Label truncation for 'start' and 'top' aligned labels is no longer recommended by the Redwood design system. The default for labelWrapping was 'wrap' and that is now the only suggested pattern by UX design for 'start' and 'top' aligned labels. 'inside' aligned labels are always truncated per UX design and are not affected by this property's value. */
     labelWrapping: 'truncate' | 'wrap';
     maxColumns: number;
     readonly: boolean;
@@ -57,6 +58,7 @@ export interface ojFormLayoutSettableProperties extends JetSettableProperties {
     direction: 'column' | 'row';
     labelEdge: 'inside' | 'start' | 'top';
     labelWidth: string;
+    /** @deprecated since 18.0.0 - Label truncation for 'start' and 'top' aligned labels is no longer recommended by the Redwood design system. The default for labelWrapping was 'wrap' and that is now the only suggested pattern by UX design for 'start' and 'top' aligned labels. 'inside' aligned labels are always truncated per UX design and are not affected by this property's value. */
     labelWrapping: 'truncate' | 'wrap';
     maxColumns: number;
     readonly: boolean;
@@ -92,7 +94,7 @@ export interface FormLayoutIntrinsicProps extends Partial<Readonly<ojFormLayoutS
     ondirectionChanged?: (value: ojFormLayoutEventMap['directionChanged']) => void;
     onlabelEdgeChanged?: (value: ojFormLayoutEventMap['labelEdgeChanged']) => void;
     onlabelWidthChanged?: (value: ojFormLayoutEventMap['labelWidthChanged']) => void;
-    onlabelWrappingChanged?: (value: ojFormLayoutEventMap['labelWrappingChanged']) => void;
+    /** @deprecated since 18.0.0 */ onlabelWrappingChanged?: (value: ojFormLayoutEventMap['labelWrappingChanged']) => void;
     onmaxColumnsChanged?: (value: ojFormLayoutEventMap['maxColumnsChanged']) => void;
     onreadonlyChanged?: (value: ojFormLayoutEventMap['readonlyChanged']) => void;
     onuserAssistanceDensityChanged?: (value: ojFormLayoutEventMap['userAssistanceDensityChanged']) => void;

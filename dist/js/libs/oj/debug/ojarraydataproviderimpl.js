@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -25,6 +25,10 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                 }
             }
         };
+    };
+    const markNoProxy = (obj) => {
+        Object.defineProperty(obj, Symbol.for('oj-vb-no-object-proxy'), { value: true });
+        return obj;
     };
     const getCapability = (capabilityName) => {
         if (capabilityName === 'sort') {
@@ -202,14 +206,14 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
         return new ojMap();
     };
     const createItem = (key, data) => {
-        return {
-            metadata: { key },
-            data
-        };
+        return markNoProxy({
+            metadata: markNoProxy({ key }),
+            data,
+        });
     };
     const keyArrayToMetadataArray = (keys) => {
         return keys.map((key) => {
-            return { key };
+            return markNoProxy({ key });
         });
     };
     const indexOfKey = (searchKey, keys) => {
@@ -307,10 +311,10 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                         results.add(key);
                     }
                 });
-                return Promise.resolve({
+                return Promise.resolve(markNoProxy({
                     containsParameters,
                     results
-                });
+                }));
             });
         }
         fetchByKeys(fetchParameters) {
@@ -340,10 +344,10 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                             results.set(searchKey, createItem(searchKey, row));
                         }
                     });
-                    return resolve({
+                    return resolve(markNoProxy({
                         fetchParameters,
                         results
-                    });
+                    }));
                 }
                 else {
                     return reject('Keys are a required parameter');
@@ -383,11 +387,11 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                     resultsArray = data.map((value, index) => {
                         return createItem(keys[index], value);
                     });
-                    return resolve(Object.assign({
+                    return resolve(Object.assign(markNoProxy({
                         fetchParameters: params,
                         results: resultsArray,
                         done
-                    }, params?.includeFilteredRowCount === 'enabled'
+                    }), params?.includeFilteredRowCount === 'enabled'
                         ? { totalFilteredRowCount: this._getTotalFilteredRowCount(params) }
                         : null));
                 }
@@ -434,6 +438,7 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
         getId(row) {
             let id;
             const keyAttributes = this.options?.keyAttributes;
+            const enforceKeyStringify = this.options?.enforceKeyStringify;
             if (keyAttributes != null) {
                 if (Array.isArray(keyAttributes)) {
                     let i;
@@ -448,6 +453,9 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                 else {
                     id = getVal(row, keyAttributes);
                 }
+                if (enforceKeyStringify === 'on') {
+                    return JSON.stringify(id);
+                }
                 return id;
             }
             else {
@@ -456,12 +464,14 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
         }
         generateKeys() {
             const keyAttributes = this.options?.keyAttributes;
+            const enforceKeyStringify = this.options?.enforceKeyStringify;
             const keys = [];
             const rowData = this.implOptions.getData();
             for (let i = 0; i < rowData.length; i++) {
                 let id = this.getId(rowData[i]);
                 if (id == null || keyAttributes === '@index') {
-                    id = this._sequenceNum++;
+                    id =
+                        enforceKeyStringify === 'on' ? JSON.stringify(this._sequenceNum++) : this._sequenceNum++;
                 }
                 keys.push(id);
             }
@@ -524,17 +534,17 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                 return row;
             });
             const resultMetadata = keyArrayToMetadataArray(resultKeys);
-            const result = {
+            const result = markNoProxy({
                 fetchParameters: params,
                 data: filteredResultData,
                 metadata: resultMetadata
-            };
+            });
             const done = !(useHasMore ? hasMore : result.data.length > 0);
             return {
-                result: {
+                result: markNoProxy({
                     value: result,
                     done
-                },
+                }),
                 offset: updatedOffset
             };
         }
@@ -631,12 +641,12 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                     }
                 }
                 if (keyArray.length > 0) {
-                    operationUpdateEventDetail = {
+                    operationUpdateEventDetail = markNoProxy({
                         keys: new ojSet(keyArray),
                         metadata: keyArrayToMetadataArray(keyArray),
                         data: dataArray,
                         indexes: indexArray
-                    };
+                    });
                 }
             }
             dataArray = [];
@@ -662,12 +672,12 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                     });
                 }
                 if (keyArray.length > 0) {
-                    operationRemoveEventDetail = {
+                    operationRemoveEventDetail = markNoProxy({
                         keys: new ojSet(keyArray),
                         metadata: keyArrayToMetadataArray(keyArray),
                         data: dataArray,
                         indexes: indexArray
-                    };
+                    });
                 }
             }
             dataArray = [];
@@ -713,22 +723,22 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                     }
                 }
                 if (keyArray.length > 0) {
-                    operationAddEventDetail = {
+                    operationAddEventDetail = markNoProxy({
                         keys: new ojSet(keyArray),
                         afterKeys: new ojSet(afterKeyArray),
                         addBeforeKeys: afterKeyArray,
                         metadata: keyArrayToMetadataArray(keyArray),
                         data: dataArray,
                         indexes: indexArray
-                    };
+                    });
                 }
             }
             this._adjustIteratorOffset(operationRemoveEventDetail, operationAddEventDetail);
-            return new ojdataprovider.DataProviderMutationEvent({
+            return new ojdataprovider.DataProviderMutationEvent(markNoProxy({
                 add: operationAddEventDetail,
                 remove: operationRemoveEventDetail,
                 update: operationUpdateEventDetail
-            });
+            }));
         }
         resetTotalFilteredRowCount() {
             this._resetTotalFilteredRowCount = true;

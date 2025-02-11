@@ -22,6 +22,7 @@ declare namespace ArrayTreeDataProvider {
     // tslint:disable-next-line interface-over-type-literal
     type Options<D> = {
         childrenAttribute?: string;
+        enforceKeyStringify?: 'off' | 'on';
         implicitSort?: Array<SortCriterion<D>>;
         keyAttributes?: string | string[];
         keyAttributesScope?: 'siblings' | 'global';

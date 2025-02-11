@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -52,12 +52,12 @@ module.exports = {
     alias: {
       // path mappings go here
       'knockout': path.resolve(__dirname, './web/js/libs/knockout/knockout-3.5.1.debug'),
-      'jquery': path.resolve(__dirname, './web/js/libs/jquery/jquery-3.6.4'),
-      'jqueryui-amd': path.resolve(__dirname, './web/js/libs/jquery/jqueryui-amd-1.13.2'),
+      'jquery': path.resolve(__dirname, './web/js/libs/jquery/jquery-3.7.1'),
+      'jqueryui-amd': path.resolve(__dirname, './web/js/libs/jquery/jqueryui-amd-1.14.1'),
       'hammerjs': path.resolve(__dirname, './web/js/libs/hammer/hammer-2.0.8'),
       'ojdnd': path.resolve(__dirname, './web/js/libs/dnd-polyfill/dnd-polyfill-1.0.2'),
-      'ojs': path.resolve(__dirname, './web/js/libs/oj/17.1.0/debug'),
-      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/17.1.0/resources'),
+      'ojs': path.resolve(__dirname, './web/js/libs/oj/18.0.0/debug'),
+      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/18.0.0/resources'),
       'oj-c': '@oracle/oraclejet-core-pack/oj-c',
       // Webpack 5 will discover oraclejet-preact's exports and map the name
       // "@oracle/oraclejet-preact" to "@oracle/oraclejet-preact/cjs". We redirect
@@ -103,7 +103,7 @@ module.exports = {
           }
         },
         // Point this setting to the root folder for the associated JET distribution (could be a CDN). Used by the oj.Config.getResourceUri() call
-        baseResourceUrl: "./web/js/libs/oj/17.1.0"
+        baseResourceUrl: "./web/js/libs/oj/18.0.0"
       }
     )
 

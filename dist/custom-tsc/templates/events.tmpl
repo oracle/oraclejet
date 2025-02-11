@@ -8,7 +8,11 @@ for (let event in events){
   let eventInterfaceName = event;
   if (detailTypeNameWithTypeParams) {
     // if we have generics use that in the interface name
-    if (detailTypeNameWithTypeParams.indexOf('<') > -1 && detailTypeNameWithTypeParams.indexOf('>') > 1){
+    if (
+      detailTypeNameWithTypeParams.indexOf('<') > -1 &&
+      detailTypeNameWithTypeParams.indexOf('>') > 1 &&
+      detailTypeWithTypeParamsDeclaration
+    ) {
       eventInterfaceName = `${event}${detailTypeWithTypeParamsDeclaration}`;
     }?>
   interface <?js= eventInterfaceName ?> extends CustomEvent<<?js= detailTypeNameWithTypeParams?> & {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2016,6 +2016,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       _ComponentCreate: function () {
         this._super();
         this._renderCount = 0;
+        this._isSubtreeDetached = false;
         this._numDeferredObjs = 0;
         this._optionsCopy = null;
         this._dataValuePromise = {};
@@ -2418,7 +2419,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
         if (options.selection !== undefined) {
           this._component.select(options.selection);
         }
-        if (options.dataCursorPosition !== undefined && this._component.positionDataCursor) {
+        if (options.dataCursorPosition !== undefined && this._component.positionDataCursor && !this._isSubtreeDetached) {
           this._component.positionDataCursor(options.dataCursorPosition);
         }
         if (options.scrollPosition !== undefined) {
@@ -2693,6 +2694,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
         if (this._renderNeeded) {
           this._Render();
         }
+        this._isSubtreeDetached = false;
       },
 
       /**
@@ -2704,7 +2706,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
        */
       _notifyHiddenDetached: function () {
         this._context.hideTooltips();
-
+        this._isSubtreeDetached = true;
         // Remove any pending busy states
         this._MakeReady();
       },

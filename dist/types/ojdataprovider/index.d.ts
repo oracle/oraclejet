@@ -25,6 +25,7 @@ export namespace AttributeFilterDef {
     type AttributeExpression = "*";
     type AttributeOperator = "$co" | "$eq" | "$ew" | "$pr" | "$gt" | "$ge" | "$lt" | "$le" | "$ne" | "$regex" | "$sw";
 }
+/** @deprecated since 7.0.0 - Suggested alternative: AttributeFilter. */
 export interface AttributeFilterOperator<D> {
     attribute: string;
     op: AttributeFilterOperator.AttributeOperator;
@@ -46,6 +47,7 @@ export interface CompoundFilterDef<D> {
 export namespace CompoundFilterDef {
     type CompoundOperator = "$and" | "$or";
 }
+/** @deprecated since 7.0.0 - Suggested alternative: CompoundFilter. */
 export interface CompoundFilterOperator<D> {
     criteria: Array<FilterOperator<D>>;
     op: CompoundFilterOperator.CompoundOperator;
@@ -223,6 +225,7 @@ export interface FetchByOffsetResults<K, D> {
     results: Array<Item<K, D>>;
     totalFilteredRowCount?: number;
 }
+/** @deprecated since 10.0.0 - Suggested alternatives: FetchByKeysCapability, FetchByOffsetCapability, FetchFirstCapability. Use specialized fetch capability interfaces instead. */
 export interface FetchCapability {
     attributeFilter?: AttributeFilterCapability;
     caching?: 'all' | 'none' | 'visitedByCurrentIterator';
@@ -266,6 +269,7 @@ export class FilterFactory<D> {
         filterOptions?: any;
     }): DataFilter.Filter<any>;
 }
+/** @deprecated since 7.0.0 - Suggested alternatives: AttributeFilter, CompoundFilter. */
 export interface FilterOperator<D> {
     op: AttributeFilterOperator.AttributeOperator | CompoundFilterOperator.CompoundOperator;
     filter(data: any[]): any[];
@@ -314,7 +318,7 @@ export interface SortCapability {
 }
 export interface SortCriterion<D> {
     attribute: keyof D;
-    direction: string;
+    direction: 'ascending' | 'descending' | string;
 }
 // tslint:disable-next-line no-unnecessary-class
 export interface SuggestionMetadata {

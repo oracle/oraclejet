@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -480,7 +480,6 @@ function _getNumberDefaultConverter() {
    * </p>
    * <p>
    * oj-c-input-number uses NumberConverter as its default converter whereas oj-input-number uses IntlNumberConverter as its default converter.
-   * The default converter used by oj-c-input-number does not currently respect user preferences.
    * </p>
    *
    * <h5>Validators</h5>
@@ -1338,8 +1337,10 @@ function _getNumberDefaultConverter() {
       rawValue: undefined,
       /**
        * Whether the component is readonly. The readonly property sets or returns whether an element is readonly, or not.
+       * <p>
        * A readonly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
        * If you want to prevent the user from interacting with the element, use the disabled property instead.
+       * </p>
        * <p>
        * The default value for readonly is false. However, if the form component is a descendent of
        * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
@@ -1354,6 +1355,7 @@ function _getNumberDefaultConverter() {
        * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
        * not have its readonly attribute set, the form component's readonly will be true.
        * </p>
+       * {@ojinclude "name":"readonlyMessagesUserAssistanceEditableValue"}
        * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
        * &lt;oj-input-number readonly>&lt;/oj-input-number>
        *
@@ -2744,7 +2746,8 @@ function _getNumberDefaultConverter() {
         this.element[0].readOnly = this.options.readOnly;
       }
       this._refreshStateTheming('readOnly', this.options.readOnly);
-      this._refreshRoleSpinbutton(needsButtonset);
+      const needsSpinbutton = this._needsSpinbuttonAriaProps();
+      this._refreshRoleSpinbutton(needsSpinbutton);
       this._refreshRequired(this.options.required);
     },
     // Mark internal JET components for automation support. The automation
@@ -2834,7 +2837,10 @@ function _getNumberDefaultConverter() {
       }
       // when there is no step, we remove the 'spinbutton' role and aria-value attributes.
       // when there is a step, we add the 'spinbutton' role and aria-value attributes.
-      this._refreshRoleSpinbutton(needsButtonset);
+      // Due to the voiceover bug with 'spinbutton' on an input, when there is a step and we are on ios, we remove the
+      // 'spinbutton' role and aria-value attributes.
+      const needsSpinbutton = this._needsSpinbuttonAriaProps();
+      this._refreshRoleSpinbutton(needsSpinbutton);
       this._refreshAriaMinMax();
       this._toggleAriaValueNowText();
     },
@@ -2891,6 +2897,22 @@ function _getNumberDefaultConverter() {
       }
     },
     /**
+     * Returns true if we need role='spinbutton' and the aria attributes that go with it.
+     * We need spinbutton when we need a buttonset and it is not ios. This is to work
+     * around a voiceover bug.
+     * JET-64874: We change the segment's role to "textbox" on iOS to work around a VoiceOver bug. (for inputdatemask)
+     * JET-66484 ACCESSIBILITY[PWA]: IOS: ISSUE WITH OJ-INPUT-NUMBER INCREMENT/DECREMENT COMPONENT. (for inputnumber)
+     * @private
+     * @memberof oj.ojInputNumber
+     */
+    _needsSpinbuttonAriaProps: function () {
+      const isIos = oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS;
+      const isSafari = oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI;
+      const isSafariOnIos = isSafari && isIos;
+      return this._needsButtonset() && !isSafariOnIos;
+    },
+    /**
+     * Returns true if we need a buttonset. We need a buttonset on enabled fields with step > 0.
      * @private
      * @memberof oj.ojInputNumber
      */
@@ -3636,7 +3658,7 @@ function _getNumberDefaultConverter() {
       // According to the wai-aria rules you cannot have aria-value
       // attributes without role='spinbutton', and we only have role='spinbutton'
       // when we can increment/decrement the number with the spin buttons or arrows.
-      if (this._needsButtonset()) {
+      if (this._needsSpinbuttonAriaProps()) {
         this._setAttr('aria-valuemin', this.options.min);
         this._setAttr('aria-valuemax', this.options.max);
       } else {
@@ -3661,7 +3683,7 @@ function _getNumberDefaultConverter() {
      * @memberof oj.ojInputNumber
      */
     _refreshAriaValueNowText: function (valuenow) {
-      if (this._needsButtonset()) {
+      if (this._needsSpinbuttonAriaProps()) {
         this._setAttr('aria-valuenow', valuenow);
         this._refreshAriaText(valuenow);
       }
@@ -3676,7 +3698,7 @@ function _getNumberDefaultConverter() {
     _toggleAriaValueNowText: function () {
       const valuenow = this.options.value || 0;
       // aria-value attributes are valid only when role='spinbutton'.
-      if (this._needsButtonset()) {
+      if (this._needsSpinbuttonAriaProps()) {
         this._setAttr('aria-valuenow', valuenow);
         this._refreshAriaText(valuenow);
       } else {
@@ -3693,7 +3715,11 @@ function _getNumberDefaultConverter() {
     _refreshAriaText: function (valuenow) {
       var valuetext = this.element.val();
 
-      if (valuetext !== '' && !this._CompareOptionValues('value', '' + valuenow, valuetext)) {
+      if (
+        this._needsSpinbuttonAriaProps() &&
+        valuetext !== '' &&
+        !this._CompareOptionValues('value', '' + valuenow, valuetext)
+      ) {
         this._setAttr('aria-valuetext', valuetext);
       } else {
         this._setAttr('aria-valuetext', null);

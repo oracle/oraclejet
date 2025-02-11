@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1350,7 +1350,7 @@ var __oj_range_slider_metadata =
          * attribute is used as its initial value if it exists, when the attribute is not explicitly
          * set. When neither is set, <code class="prettyprint">readOnly </code>
          * defaults to false.
-         *
+         * {@ojinclude "name":"readonlyMessagesUserAssistanceEditableValue"}
          * @example <caption>Initialize component with <code class="prettyprint">readOnly</code>
          * attribute:</caption>
          * &lt;oj-range-slider readOnly="true">&lt;/oj-range-slider>
@@ -1409,7 +1409,9 @@ var __oj_range_slider_metadata =
          * value if it exists, when the attribute is not explicitly set. When neither is set,
          * <code class="prettyprint">disabled </code>
          * defaults to false.
-         *
+         * <p>
+         * A disabled component does not show messages or user assistance text.
+         * </p>
          * @example <caption>Initialize the slider with
          * <code class="prettyprint">disabled</code> attribute:</caption>
          * &lt;oj-slider disabled="true">&lt;/oj-slider>
@@ -1434,7 +1436,9 @@ var __oj_range_slider_metadata =
          * value if it exists, when the attribute is not explicitly set. When neither is set,
          * <code class="prettyprint">disabled </code>
          * defaults to false.
-         *
+         * <p>
+         * A disabled component does not show messages or user assistance text.
+         * </p>
          * @example <caption>Initialize the slider with
          * <code class="prettyprint">disabled</code> attribute:</caption>
          * &lt;oj-range-slider disabled="true">&lt;/oj-range-slider>

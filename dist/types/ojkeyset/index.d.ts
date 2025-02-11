@@ -17,6 +17,7 @@ export class AllKeySetImpl<K> extends KeySet<K> implements ImmutableKeySet<K> {
     has(key: K): boolean;
     isAddAll(): boolean;
 }
+/** @deprecated since 7.0.0 - Suggested alternative: AllKeySetImpl. */
 export class ExpandAllKeySet<K> extends KeySet<K> {
     constructor();
     add(keys: Set<K> | K[]): ExpandAllKeySet<K>;
@@ -27,6 +28,7 @@ export class ExpandAllKeySet<K> extends KeySet<K> {
     has(key: K): boolean;
     isAddAll(): boolean;
 }
+/** @deprecated since 7.0.0 - Suggested alternative: KeySetImpl. */
 export class ExpandedKeySet<K> extends KeySet<K> {
     constructor(keys?: Set<K> | K[]);
     add(keys: Set<K> | K[]): ExpandedKeySet<K>;

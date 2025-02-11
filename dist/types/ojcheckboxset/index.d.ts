@@ -7,6 +7,7 @@ export interface ojCheckboxset<K, D, V = any> extends editableValue<V[], ojCheck
     disabled: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -22,8 +23,10 @@ export interface ojCheckboxset<K, D, V = any> extends editableValue<V[], ojCheck
     translations: {
         readonlyNoValue?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -135,6 +138,7 @@ export interface ojCheckboxsetSettableProperties<K, D, V> extends editableValueS
     disabled: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
@@ -150,8 +154,10 @@ export interface ojCheckboxsetSettableProperties<K, D, V> extends editableValueS
     translations: {
         readonlyNoValue?: string;
         required?: {
+            /** @deprecated since 18.0.0 - Setting a required validator hint is not recommended in the Redwood design system. */
             hint?: string;
             messageDetail?: string;
+            /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
     };
@@ -232,7 +238,9 @@ export namespace CheckboxsetElement {
     };
 }
 export interface CheckboxsetIntrinsicProps extends Partial<Readonly<ojCheckboxsetSettableProperties<any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateEnd?: (value: ojCheckboxsetEventMap<any, any, any>['ojAnimateEnd']) => void;
+    /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojCheckboxsetEventMap<any, any, any>['ojAnimateStart']) => void;
     ondisabledChanged?: (value: ojCheckboxsetEventMap<any, any, any>['disabledChanged']) => void;
     ondisplayOptionsChanged?: (value: ojCheckboxsetEventMap<any, any, any>['displayOptionsChanged']) => void;
