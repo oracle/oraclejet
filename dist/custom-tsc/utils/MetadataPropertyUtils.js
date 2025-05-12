@@ -405,6 +405,7 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeS
 }
 function updateDefaultValue(md, propertyName, propNode, metaUtilObj) {
     let defMDValueNode = MetaUtils.removeCastExpressions(propNode.initializer);
+    let value;
     if (defMDValueNode) {
         if (ts.isBindingElement(propNode) &&
             (ts.isObjectLiteralExpression(defMDValueNode) || ts.isArrayLiteralExpression(defMDValueNode))) {
@@ -417,22 +418,24 @@ function updateDefaultValue(md, propertyName, propNode, metaUtilObj) {
         }
         if (defMDValueNode) {
             if (!ts.isIdentifier(defMDValueNode)) {
-                const value = MetaUtils.getMDValueFromNode(defMDValueNode, propertyName, metaUtilObj);
-                if (value !== undefined) {
-                    if (!md.properties || value === null) {
-                        md.value = value;
-                    }
-                    else if (isAnObject(value)) {
-                        updateComplexPropertyValues(md.properties, value, propertyName, defMDValueNode, metaUtilObj);
-                    }
-                    else {
-                        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.PROP_DEFAULT_NONOBJECT_VALUE, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Non-object default value '${value}' specified for object property '${propertyName}'.`, defMDValueNode);
-                    }
-                }
+                value = MetaUtils.getMDValueFromNode(defMDValueNode, propertyName, metaUtilObj);
             }
-            metaUtilObj.defaultProps = metaUtilObj.defaultProps || {};
-            metaUtilObj.defaultProps[propertyName] = defMDValueNode;
         }
+    }
+    if (value !== undefined) {
+        if (!md.properties || value === null) {
+            md.value = value;
+        }
+        else if (isAnObject(value)) {
+            updateComplexPropertyValues(md.properties, value, propertyName, defMDValueNode, metaUtilObj);
+        }
+        else {
+            TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.PROP_DEFAULT_NONOBJECT_VALUE, TransformerError_1.ExceptionType.THROW_ERROR, metaUtilObj.componentName, `Non-object default value '${value}' specified for object property '${propertyName}'.`, defMDValueNode);
+        }
+    }
+    if (defMDValueNode) {
+        metaUtilObj.defaultProps = metaUtilObj.defaultProps || {};
+        metaUtilObj.defaultProps[propertyName] = defMDValueNode;
     }
 }
 function updateComplexPropertyValues(md, values, propName, valueNode, metaUtilObj) {

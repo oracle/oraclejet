@@ -630,7 +630,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             let indexInArrays = 0;
             detail.keys.forEach((key) => {
                 let givenIndex = detail.indexes?.[indexInArrays];
-                let keyCacheIndex = this.keyCache.indexOf(key);
+                let keyCacheIndex = this._getKeyCacheIndexByKey(key);
                 if (keyCacheIndex != -1) {
                     itemsToModify.push({ index: keyCacheIndex, key: key });
                 }
@@ -670,7 +670,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             let fullRefresh = true;
             let detail;
             if (event?.detail?.disregardAfterKey != null) {
-                const keyCacheIndex = this.keyCache.indexOf(event.detail.disregardAfterKey);
+                const keyCacheIndex = this._getKeyCacheIndexByKey(event.detail.disregardAfterKey);
                 if (keyCacheIndex !== -1) {
                     detail = { disregardAfterRowOffset: keyCacheIndex };
                     this.keyCache.length = keyCacheIndex + 1;
@@ -687,6 +687,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             }
             const refreshEvent = new ojdatagridprovider.DataGridProviderRefreshEvent(detail);
             this.dispatchEvent(refreshEvent);
+        }
+        _getKeyCacheIndexByKey(searchKey) {
+            return this.keyCache.findIndex((keyCacheKey) => {
+                return oj.Object.compareValues(keyCacheKey, searchKey);
+            });
         }
         resetInternal() {
             this._clearKeyCache();

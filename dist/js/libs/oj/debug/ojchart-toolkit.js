@@ -5838,7 +5838,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       else if (
         DvtChartTypeUtils.isLineArea(chart) ||
         DvtChartDataUtils.isStacked(chart) ||
-        DvtChartTypeUtils.isPolar(chart)
+        DvtChartTypeUtils.isPolar(chart) ||
+        DvtChartTypeUtils.isStock(chart)
       ) {
         next = this._findNextNavigable(event);
       } else if (DvtChartTypeUtils.isFunnel(chart) && isUpDown) {
@@ -5962,13 +5963,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
       var isStacked = DvtChartDataUtils.isStacked(chart);
       var isBar = DvtChartTypeUtils.isBar(chart);
+      var isStock = DvtChartTypeUtils.isStock(chart);
       var nextObj;
+      // if stock chart has items as first series, and volume as second series.
+      // use up, down to navigate between them. left, right navigates within these series.
       if (isUp) {
         nextGroupIndex = groupIndex;
-        nextSeriesIndex = this._findNextUpSeries(chart, seriesIndex, groupIndex);
+        nextSeriesIndex = isStock
+          ? Math.max(0, seriesIndex - 1)
+          : this._findNextUpSeries(chart, seriesIndex, groupIndex);
       } else if (isDown) {
         nextGroupIndex = groupIndex;
-        nextSeriesIndex = this._findNextDownSeries(chart, seriesIndex, groupIndex);
+        nextSeriesIndex = isStock
+          ? Math.min(DvtChartDataUtils.getSeriesCount(chart) - 1, seriesIndex + 1)
+          : this._findNextDownSeries(chart, seriesIndex, groupIndex);
       } else if (isRight || isLeft) {
         nextSeriesIndex = seriesIndex;
         nextGroupIndex = groupIndex;
@@ -18213,12 +18221,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      */
     HandleTouchHoverEndInternal(event) {
       this.endDrag();
-
-      var obj = this.GetLogicalObject(event.target);
-      if (!obj) return;
-
-      // Only drill if not selectable. If selectable, drill using double click.
-      if (!(obj.isSelectable && obj.isSelectable())) this.processDrillEvent(obj);
     }
 
     /**
@@ -27093,7 +27095,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
             if (DvtChartDataUtils.isRangeSeries(chart, seriesIndex)) yCoord--;
             else if (!isStacked || DvtChartDataUtils.isOutermostBar(chart, seriesIndex, groupIndex)) {
               bInvisible = true;
-              if (yCoord > baseCoord || (bHoriz && !isR2L && yCoord == baseCoord))
+              const globalMax = bAssignedToY2
+                ? chart.y2Axis.getInfo().getGlobalMax()
+                : chart.yAxis.getInfo().getGlobalMax(); // JET-42766: Make sure the small bar should render inside the plot area.
+              if (yCoord > baseCoord || (bHoriz && !isR2L && yCoord == baseCoord) || globalMax <= 0)
                 // if horizontal, R2L must be considered to draw bar on positive side of baseline
                 yCoord = baseCoord + 3;
               else yCoord = baseCoord - 3;
@@ -34653,11 +34658,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
      * @override
      */
     UpdateAriaAttributes() {
+      var isNoData = DvtChartDataUtils.hasInvalidData(this.__getChart());
+      var translations = this.Options.translations;
+
       var desc = dvt.Displayable.generateAriaLabel(
         dvt.AriaUtils.processAriaLabel(this.GetComponentDescription()),
-        this.Options['shortDesc'] ? [this.Options['shortDesc']] : null
+        [
+          this.Options['shortDesc'] ? this.Options['shortDesc'] : null,
+          isNoData ? translations.labelNoData : null
+        ]
       );
-      var translations = this.Options.translations;
+
       if (this.IsParentRoot()) {
         this.getCtx().setAriaRole('img');
         this.getCtx().setAriaLabel(

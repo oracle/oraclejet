@@ -300,7 +300,7 @@ template {
 }
 
 .oj-theme-json {
-  font-family: '{"name":"alta","targetPlatform":"windows","behavior":"alta","jetReleaseVersion":"v18.0.0"}';
+  font-family: '{"name":"alta","targetPlatform":"windows","behavior":"alta","jetReleaseVersion":"v18.1.0"}';
 }
 
 .oj-helper-hidden-accessible {
@@ -9517,12 +9517,15 @@ oj-popup {
 }
 
 .oj-popup {
-  overflow: auto;
   border: 2px solid #c6c7c8;
   border-radius: 0;
   background-color: white;
   box-shadow: 0 0 5px 0 hsla(0, 0%, 0%,0.2);
   will-change: top, left;
+}
+
+.oj-popup:not(.oj-popup-tail-simple) {
+  overflow: auto;
 }
 
 .oj-popup.oj-popup-tail-simple {
@@ -18624,6 +18627,11 @@ html[dir="rtl"] .oj-datepicker-prev-icon {
   right: 2px;
 }
 
+.oj-datepicker-next-icon {
+  top: 0;
+  bottom: 0;
+}
+
 html:not([dir="rtl"]) .oj-datepicker-next-icon {
   right: 2px;
 }
@@ -18637,6 +18645,9 @@ html[dir="rtl"] .oj-datepicker-next-icon {
   height: 35px;
   line-height: 35px;
   text-align: center;
+  display: flex;
+  column-gap: 20px;
+  justify-content: center;
 }
 
 .oj-datepicker-title select {
@@ -18666,14 +18677,9 @@ html[dir="rtl"] .oj-datepicker-next-icon {
   width: 100%;
 }
 
-.oj-datepicker-month {
-  margin-right: 20px;
-}
-
 .oj-datepicker-month,
 .oj-datepicker-year {
   font-size: 18px;
-  width: 48%;
   min-width: 0;
 }
 

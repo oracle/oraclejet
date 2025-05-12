@@ -235,11 +235,11 @@ export namespace ojThematicMap {
         y: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type AreaTemplateContext = {
+    type AreaTemplateContext<K1, D1> = {
         componentElement: Element;
-        data: object;
+        data: D1;
         index: number;
-        key: any;
+        key: K1;
     };
     // tslint:disable-next-line interface-over-type-literal
     type DataContext = {
@@ -279,11 +279,11 @@ export namespace ojThematicMap {
         label: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type LinkTemplateContext = {
+    type LinkTemplateContext<K2, D2> = {
         componentElement: Element;
-        data: object;
+        data: D2;
         index: number;
-        key: any;
+        key: K2;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Marker<K3, D3 = any> = {
@@ -326,11 +326,11 @@ export namespace ojThematicMap {
         y: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type MarkerTemplateContext = {
+    type MarkerTemplateContext<K3, D3> = {
         componentElement: Element;
-        data: object;
+        data: D3;
         index: number;
-        key: any;
+        key: K3;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
@@ -380,13 +380,13 @@ export namespace ojThematicMap {
         y: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type RenderAreaTemplate = import('ojs/ojvcomponent').TemplateSlot<AreaTemplateContext>;
+    type RenderAreaTemplate<K1, D1> = import('ojs/ojvcomponent').TemplateSlot<AreaTemplateContext<K1, D1>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderLinkTemplate = import('ojs/ojvcomponent').TemplateSlot<LinkTemplateContext>;
+    type RenderLinkTemplate<K2, D2> = import('ojs/ojvcomponent').TemplateSlot<LinkTemplateContext<K2, D2>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderMarkerContentTemplate<K1, K2, K3, D1, D2, D3> = import('ojs/ojvcomponent').TemplateSlot<RendererContext<K1, K2, K3, D1, D2, D3>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderMarkerTemplate = import('ojs/ojvcomponent').TemplateSlot<MarkerTemplateContext>;
+    type RenderMarkerTemplate<K3, D3> = import('ojs/ojvcomponent').TemplateSlot<MarkerTemplateContext<K3, D3>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K1, K2, K3, D1, D2, D3> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K1, K2, K3, D1, D2, D3>>;
 }
@@ -952,11 +952,11 @@ export namespace ThematicMapElement {
         y: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type AreaTemplateContext = {
+    type AreaTemplateContext<K1, D1> = {
         componentElement: Element;
-        data: object;
+        data: D1;
         index: number;
-        key: any;
+        key: K1;
     };
     // tslint:disable-next-line interface-over-type-literal
     type DataContext = {
@@ -996,11 +996,11 @@ export namespace ThematicMapElement {
         label: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type LinkTemplateContext = {
+    type LinkTemplateContext<K2, D2> = {
         componentElement: Element;
-        data: object;
+        data: D2;
         index: number;
-        key: any;
+        key: K2;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Marker<K3, D3 = any> = {
@@ -1043,11 +1043,11 @@ export namespace ThematicMapElement {
         y: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type MarkerTemplateContext = {
+    type MarkerTemplateContext<K3, D3> = {
         componentElement: Element;
-        data: object;
+        data: D3;
         index: number;
-        key: any;
+        key: K3;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
@@ -1097,13 +1097,13 @@ export namespace ThematicMapElement {
         y: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type RenderAreaTemplate = import('ojs/ojvcomponent').TemplateSlot<AreaTemplateContext>;
+    type RenderAreaTemplate<K1, D1> = import('ojs/ojvcomponent').TemplateSlot<AreaTemplateContext<K1, D1>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderLinkTemplate = import('ojs/ojvcomponent').TemplateSlot<LinkTemplateContext>;
+    type RenderLinkTemplate<K2, D2> = import('ojs/ojvcomponent').TemplateSlot<LinkTemplateContext<K2, D2>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderMarkerContentTemplate<K1, K2, K3, D1, D2, D3> = import('ojs/ojvcomponent').TemplateSlot<RendererContext<K1, K2, K3, D1, D2, D3>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderMarkerTemplate = import('ojs/ojvcomponent').TemplateSlot<MarkerTemplateContext>;
+    type RenderMarkerTemplate<K3, D3> = import('ojs/ojvcomponent').TemplateSlot<MarkerTemplateContext<K3, D3>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K1, K2, K3, D1, D2, D3> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K1, K2, K3, D1, D2, D3>>;
 }

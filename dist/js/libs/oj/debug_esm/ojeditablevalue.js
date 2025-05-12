@@ -184,7 +184,9 @@ BaseInsideLabelStrategy._handleClearTimeoutAndTooltipLabel = (element, event) =>
   }
   // on mouseleave, mousedown or keydown, if the popup exists and it is open for this component, close it.
   if (event.type === 'mouseleave' || event.type === 'mousedown' || event.type === 'keydown') {
-    let tooltipPopup = document.querySelector(`#${element.id}_truncatedlabeltooltip`);
+    // JET-72293 We need to escape the id because querySelector() will throw an error if
+    // the id is not a valid CSS identifier.
+    let tooltipPopup = document.querySelector(`#${CSS.escape(element.id)}_truncatedlabeltooltip`);
     if (tooltipPopup === BaseInsideLabelStrategy._tooltipPopup) {
       BaseInsideLabelStrategy._tooltipPopup.close();
       delete BaseInsideLabelStrategy._tooltipPopup;
@@ -225,7 +227,9 @@ BaseInsideLabelStrategy._getTruncatedLabelTooltip = (element) => {
   const tooltipId = `${element.id}_truncatedlabeltooltip`;
   // Create the tooltip popup for when an inside label is truncated
   // If already created, no need to create it, just return the tooltipPopup
-  let tooltipPopup = document.querySelector(`#${tooltipId}`);
+  // JET-72293 We need to escape the id because querySelector() will throw an error if
+  // the id is not a valid CSS identifier.
+  let tooltipPopup = document.querySelector(`#${CSS.escape(tooltipId)}`);
   if (!tooltipPopup) {
     tooltipPopup = document.createElement('oj-popup');
     tooltipPopup.id = tooltipId;

@@ -3786,7 +3786,8 @@ class DvtNBoxNode extends Container {
       );
       var cell = DvtNBoxUtils.getDisplayable(this._nbox, cellData);
       var lastNode = DvtNBoxDataUtils.getLastNavigableNode(cell.getChildContainer());
-      if (lastNode.nboxType === 'overflow') return lastNode;
+      // If cell is minimized, there will be no nodes
+      if (lastNode !== null && lastNode.nboxType === 'overflow') return lastNode;
 
       // return the group node if there is one
       var drawer = this._getParentDrawer();
@@ -4137,7 +4138,7 @@ const DvtNBoxCellRenderer = {
     DvtNBoxUtils.setDisplayable(nbox, cellData, keyboardEffect, 'focusEffect');
     DvtNBoxUtils.setDisplayable(nbox, cellData, keyboardEffect, 'dragEffect');
 
-    DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, false);
+    DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, false, cellIndex);
 
     var cellMaximized = DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex);
     var headerSize = cellMaximized ? cellLayout['maximizedHeaderSize'] : cellLayout['headerSize'];
@@ -4194,9 +4195,10 @@ const DvtNBoxCellRenderer = {
    * @param {object} cellData The cell data
    * @param {DvtNBoxCell} cellContainer The container to render into.
    * @param {boolean} noCount Indicates whether the count label should be suppressed
+   * @param {number} cIndex Index of the cell
    * @return {boolean} true if a header was rendered, false otherwise
    */
-  renderHeader: (nbox, cellData, cellContainer, noCount) => {
+  renderHeader: (nbox, cellData, cellContainer, noCount, cIndex) => {
     var oldLabel = DvtNBoxUtils.getDisplayable(nbox, cellData, 'label');
     if (oldLabel) {
       oldLabel.getParent().removeChild(oldLabel);
@@ -4441,7 +4443,13 @@ const DvtNBoxCellRenderer = {
         }
       }
     }
-    DvtNBoxCellRenderer._addAccessibilityAttr(nbox, cellData, cellContainer);
+    var cellMinimized = DvtNBoxDataUtils.isCellMinimized(nbox, cIndex);
+    DvtNBoxCellRenderer._addAccessibilityAttr(
+      nbox,
+      cellData,
+      cellContainer,
+      cellMinimized ? 'button' : 'group'
+    );
     return addedHeader;
   },
 
@@ -4588,13 +4596,15 @@ const DvtNBoxCellRenderer = {
 
       maximizedLabels[u].setFontSize(maximizedFontSize);
       if (TextUtils.fitText(maximizedLabels[u], childArea.w, childArea.h, cellContainer)) {
-        if (!removeHeaders) DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true);
+        if (!removeHeaders)
+          DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true, cellIndex);
         DvtNBoxUtils.positionText(
           maximizedLabels[u],
           childArea.x + childArea.w / 2,
           childArea.y + childArea.h / 2
         );
       }
+      DvtNBoxCellRenderer._addAccessibilityAttr(nbox, cellData, cellContainer, 'button');
     }
     for (var t = 0; t < minimizedCellIndices.length; t++) {
       cellIndex = minimizedCellIndices[t];
@@ -4604,13 +4614,15 @@ const DvtNBoxCellRenderer = {
 
       minimizedLabels[t].setFontSize(minimizedFontSize);
       if (TextUtils.fitText(minimizedLabels[t], childArea.w, childArea.h, cellContainer)) {
-        if (!removeHeaders) DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true);
+        if (!removeHeaders)
+          DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true, cellIndex);
         DvtNBoxUtils.positionText(
           minimizedLabels[t],
           childArea.x + childArea.w / 2,
           childArea.y + childArea.h / 2
         );
       }
+      DvtNBoxCellRenderer._addAccessibilityAttr(nbox, cellData, cellContainer, 'button');
     }
   },
 
@@ -5201,12 +5213,13 @@ const DvtNBoxCellRenderer = {
    * @param {NBox} nbox The nbox component
    * @param {object} cellData the cell data
    * @param {DvtNBoxCell} cellContainer the object that should be updated with accessibility attributes
+   * @param {string} role role attribute
    */
-  _addAccessibilityAttr: (nbox, cellData, cellContainer) => {
+  _addAccessibilityAttr: (nbox, cellData, cellContainer, role) => {
     var object = Agent.isTouchDevice()
       ? DvtNBoxUtils.getDisplayable(nbox, cellData, 'background')
       : cellContainer;
-    object.setAriaRole('group');
+    object.setAriaRole(role);
     if (!Agent.deferAriaCreation()) {
       var desc = cellContainer.getAriaLabel();
       if (desc) object.setAriaProperty('label', desc);

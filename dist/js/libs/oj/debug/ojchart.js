@@ -503,6 +503,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @memberof! oj.ojChart.DndDragConfig
    * @type {function(Event)=}
    * @default null
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: T) => void)", jsdocOverride: true}
    */
   /**
    * An optional callback function that receives the "dragend" event as argument.
@@ -512,6 +513,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @memberof! oj.ojChart.DndDragConfig
    * @type {function(Event)=}
    * @default null
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: T) => void)", jsdocOverride: true}
    */
   /**
    * An optional callback function that receives the "dragstart" event and context information as arguments. The context information is as follows: <ul> <li> element {Array.(Object)}: An array of dataContexts of the dragged elements. The dataContext is the same as what we use for "tooltip" and "dataLabels" properties. </li> </ul> This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.
@@ -521,7 +523,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @memberof! oj.ojChart.DndDragConfig
    * @ojshortdesc An optional callback function that receives the "dragstart" event and context information as arguments. See the Help documentation for more information.
    * @type {function(Event, Object)=}
-   * @ojsignature {target: "Type", value: "((event: Event, context: T) => void)", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: T) => void)", jsdocOverride: true}
    * @default null
    */
 
@@ -558,7 +560,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @memberof! oj.ojChart.DndDropConfig
    * @ojshortdesc An optional callback function that receives the "dragenter" event and context information as arguments. See the Help documentation for more information.
    * @type {function(Event, Object)=}
-   * @ojsignature {target: "Type", value: "((event: Event, context: oj.ojChart.DndDrop) => void)", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: oj.ojChart.DndDrop) => void)", jsdocOverride: true}
    * @default null
    */
   /**
@@ -569,7 +571,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @memberof! oj.ojChart.DndDropConfig
    * @ojshortdesc An optional callback function that receives the "dragover" event and context information as arguments. See the Help documentation for more information.
    * @type {function(Event, Object)=}
-   * @ojsignature {target: "Type", value: "((event: Event, context: oj.ojChart.DndDrop) => void)", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: oj.ojChart.DndDrop) => void)", jsdocOverride: true}
    * @default null
    */
   /**
@@ -580,7 +582,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @memberof! oj.ojChart.DndDropConfig
    * @ojshortdesc An optional callback function that receives the "dragleave" event and context information as arguments. See the Help documentation for more information.
    * @type {function(Event, Object)=}
-   * @ojsignature {target: "Type", value: "((event: Event, context: oj.ojChart.DndDrop) => void)", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: oj.ojChart.DndDrop) => void)", jsdocOverride: true}
    * @default null
    */
   /**
@@ -591,7 +593,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @memberof! oj.ojChart.DndDropConfig
    * @ojshortdesc An optional callback function that receives the "drop" event and context information as arguments. See the Help documentation for more information.
    * @type {function(Event, Object)=}
-   * @ojsignature {target: "Type", value: "((event: Event, context: oj.ojChart.DndDrop) => void)", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "((event: DragEvent, context: oj.ojChart.DndDrop) => void)", jsdocOverride: true}
    * @default null
    */
 
@@ -861,6 +863,8 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * </p>
    * <h5> track-resize </h5>
    * <p> For the initial version of oj-c-line-chart and oj-c-area-chart, track-resize attribute is not supported. The component will itself resize on change in dimension. </p>
+   * <h5> tooltip attribute and tooltipTemplate slot </h5>
+   * <p> For the initial version of oj-c-line-chart and oj-c-area-chart, tooltip attribute and the tooltipTemplate slot are not supported. We plan on supporting this use case in a future release. </p>
    * @ojfragment migrationDoc
    * @memberof oj.ojChart
    */
@@ -3570,7 +3574,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    *
-   * <p>The application is responsible for populating the <i>title</i> attribute on the element with meaningful descriptors as the oj-spark-chart element does not provide a default descriptor.</p>
+   * <p>The application is responsible for providing a meaningful tooltip using <i>tooltip.renderer</i> function on the element as the oj-spark-chart element does not provide a default tooltip and also ensuring that an accessible label is included that matches the tooltip's content.</p>
    *
    * @ojfragment a11y
    * @memberof oj.ojSparkChart
@@ -3607,6 +3611,8 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @property {Object=} svgStyle The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute. Only SVG CSS style properties are supported.
    * @property {number=} value The value of the data item.
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true}
+   * @ojdeprecated {target:"property", for: "svgStyle", since: "18.1.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
+   * @ojdeprecated {target:"property", for: "svgClassName", since: "18.1.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
    */
 
   // Slots
@@ -3678,6 +3684,8 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @property {("area"|"line")=} type="line" The type of reference object being shown.
    * @property {number=} value The value of a reference line.
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true}
+   * @ojdeprecated {target:"property", for: "svgStyle", since: "18.1.0", description: "The svgStyle property is deprecated. This deprecation is in support of moving away from technology specific APIs for future Corepack and Preact components." }
+   * @ojdeprecated {target:"property", for: "svgClassName", since: "18.1.0", description: "The svgClassName property is deprecated. This deprecation is in support of moving away from technology specific APIs for future Corepack and Preact components." }
    */
 
   /**
@@ -3888,6 +3896,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @type {Object=}
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
+   * @ojdeprecated {since: "18.1.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    *
    * @example <caption>Initialize the spark chart item with the
    * <code class="prettyprint">svg-style</code> attribute specified:</caption>
@@ -3906,7 +3915,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @instance
    * @type {string=}
    * @default ''
-   *
+   * @ojdeprecated {since: "18.1.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
    * @example <caption>Initialize the spark chart item with the
    * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
    * &lt;oj-spark-chart data='[[dataProvider]]'>
@@ -8778,7 +8787,7 @@ var __oj_spark_chart_item_metadata =
        * @instance
        * @type {string=}
        * @default ""
-       *
+       * @ojdeprecated {since: "18.1.0", description: "The areaSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
        * @example <caption>Initialize the spark chart with the <code class="prettyprint">area-svg-class-name</code> attribute specified:</caption>
        * &lt;oj-spark-chart type='lineWithArea' area-svg-class-name='svgClassName'>&lt;/oj-spark-chart>
        *
@@ -8802,7 +8811,7 @@ var __oj_spark_chart_item_metadata =
        * @type {Object=}
        * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
        * @default {}
-       *
+       * @ojdeprecated {since: "18.1.0", description: "The areaSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
        * @example <caption>Initialize the spark chart with the <code class="prettyprint">area-svg-style</code> attribute specified:</caption>
        * &lt;oj-spark-chart type='lineWithArea' area-svg-style='{"fill":"url(someURL#filterId)"}'>&lt;/oj-spark-chart>
        *

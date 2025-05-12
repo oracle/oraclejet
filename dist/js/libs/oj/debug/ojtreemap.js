@@ -1851,8 +1851,9 @@ var __oj_treemap_node_metadata =
    *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "header.labelStyle", jsdocOverride: true},
    *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "labelStyle", jsdocOverride: true},
    *               {target: "Type", value: "?(string | ((context: oj.ojTreemap.NodeShortDescContext<K,D>) => string))", jsdocOverride: true, for: "shortDesc"},
-   *               {target: "Type", value: "<K,D=any>", for: "genericTypeParameters"}] */
-
+   *               {target: "Type", value: "<K,D=any>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "svgStyle", since: "18.1.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
+   */
   /**
    * @typedef {Object} oj.ojTreemap.NodeContentContext
    * @property {object} bounds Object containing information on the node area. The x and y coordinates are relative to the top, left corner of the element.
@@ -1961,6 +1962,11 @@ var __oj_treemap_node_metadata =
    * @property {any} key The key of the current node
    * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
    * @property {any} parentKey  The key of the parent node
+   * @ojsignature [{target: "Type", value: "D", for: "data"},
+   *               {target: "Type", value: "K", for: "key"},
+   *               {target: "Type", value: "D[]", for: "parentData"},
+   *               {target: "Type", value: "K", for: "parentKey"},
+   *               {target: "Type", value: "<K,D>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -2155,6 +2161,7 @@ var __oj_treemap_node_metadata =
    * @type {Object=}
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
+   * @ojdeprecated {since: "18.1.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    */
   /**
    * The label for this node.

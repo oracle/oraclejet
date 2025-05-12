@@ -869,6 +869,20 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     // the dateStyleShortYear option to the NativeDateTimeConverter.
     const mo = ojconverterPreferences.getMergedDateTimePreferencesWithOptions(mappedOptions);
 
+    if (
+      mo &&
+      mo.isoStrFormat === 'local' &&
+      mo.twoDigitYearStart === 1 &&
+      mo.timeZone !== undefined &&
+      mo.timeStyle === undefined
+    ) {
+      // This is to fix an issue with our input-date component with year < 100 and User Preferences with timeZone.
+      // If we have a timeZone then our getOffset calculation is off with year < 100, causes our dates to be off by 1 day.
+      // To fix this, we remove the explicitly set timezone.
+      // See JET-60050, years < 100.
+      delete mo.timeZone;
+    }
+
     // if no options, then use the default options.
     const optionsAreEmpty = Object.keys(mo).length === 0;
     const defaultOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };

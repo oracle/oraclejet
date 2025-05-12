@@ -37,12 +37,12 @@ define(['ojs/ojlogger', 'ojs/ojwebdrivertest-proxy'], function (Logger, ojwebdri
      * @global
      * @member {string} version JET version numberr
      */
-    version: '18.0.0',
+    version: '18.1.0',
     /**
      * @global
      * @member {string} revision JET source code revision number
      */
-    revision: '2025-02-07_16-29-21',
+    revision: '2025-05-09_09-09-03',
 
     // This function is only meant to be used outside the library, so quoting the name
     // to avoid renaming is appropriate

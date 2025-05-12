@@ -173,6 +173,8 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      *  <p>This property is replaced with the <code class="prettyprint">anchor</code> attribute in oj-c-popup.</p>
      *  <h5>position.offset, position.collision</h5>
      *  <p>These properties are moved to the top-level as the <code class="prettyprint">offset</code> and <code class="prettyprint">collision</code> attributes.</p>
+     *  <h5>chrome</h5>
+     *  <p>This property is replaced with the <code class="prettyprint">variant</code> attribute in oj-c-popup.</p>
      *  <h5>open method</h5>
      *  <p>The <code class="prettyprint">open</code> method is no longer supported. Visibility of the popup is controlled using the <code class="prettyprint">opened</code> property in oj-c-popup.
      *     The <code class="prettyprint">launcher</code> parameter is replaced with the new <code class="prettyprint">launcher</code> attribute.

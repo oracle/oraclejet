@@ -1032,17 +1032,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     /**
      * @override
      */
-    HandleTouchHoverEndInternal(event) {
-      var obj = this.GetLogicalObject(event.target);
-      if (!obj) return;
-
-      // Only drill if not selectable. If selectable, drill using double click.
-      if (!(obj.isSelectable && obj.isSelectable())) this.processDrillEvent(obj);
-    }
-
-    /**
-     * @override
-     */
     HandleTouchClickInternal(event) {
       var obj = this.GetLogicalObject(event.target);
       if (!obj) return;

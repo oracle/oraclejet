@@ -536,9 +536,9 @@ export namespace ojChart {
     // tslint:disable-next-line interface-over-type-literal
     type DndDragConfig<T> = {
         dataTypes?: string | string[];
-        drag?: ((param0: Event) => void);
-        dragEnd?: ((param0: Event) => void);
-        dragStart?: ((event: Event, context: T) => void);
+        drag?: ((event: DragEvent, context: T) => void);
+        dragEnd?: ((event: DragEvent, context: T) => void);
+        dragStart?: ((event: DragEvent, context: T) => void);
     };
     // tslint:disable-next-line interface-over-type-literal
     type DndDragConfigs<K, D, I extends Array<Item<any, null>> | number[] | null> = {
@@ -555,10 +555,10 @@ export namespace ojChart {
     // tslint:disable-next-line interface-over-type-literal
     type DndDropConfig = {
         dataTypes?: string | string[];
-        dragEnter?: ((event: Event, context: DndDrop) => void);
-        dragLeave?: ((event: Event, context: DndDrop) => void);
-        dragOver?: ((event: Event, context: DndDrop) => void);
-        drop?: ((event: Event, context: DndDrop) => void);
+        dragEnter?: ((event: DragEvent, context: DndDrop) => void);
+        dragLeave?: ((event: DragEvent, context: DndDrop) => void);
+        dragOver?: ((event: DragEvent, context: DndDrop) => void);
+        drop?: ((event: DragEvent, context: DndDrop) => void);
     };
     // tslint:disable-next-line interface-over-type-literal
     type DndDropConfigs = {
@@ -1852,7 +1852,9 @@ export interface ojSparkChart<K, D extends ojSparkChart.Item | any> extends dvtB
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
     areaColor?: string;
+    /** @deprecated since 18.1.0 - The areaSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     areaSvgClassName?: string;
+    /** @deprecated since 18.1.0 - The areaSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     areaSvgStyle?: Partial<CSSStyleDeclaration>;
     /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
@@ -1977,7 +1979,9 @@ export namespace ojSparkChart {
         markerDisplayed?: 'on' | 'off';
         markerShape?: 'square' | 'circle' | 'diamond' | 'plus' | 'triangleDown' | 'triangleUp' | 'human' | 'star' | 'auto' | string;
         markerSize?: number;
+        /** @deprecated since 18.1.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
     };
@@ -2005,7 +2009,9 @@ export namespace ojSparkChart {
         lineWidth?: number;
         location?: 'front' | 'back';
         low?: number;
+        /** @deprecated since 18.1.0 - The svgClassName property is deprecated. This deprecation is in support of moving away from technology specific APIs for future Corepack and Preact components. */
         svgClassName?: string;
+        /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This deprecation is in support of moving away from technology specific APIs for future Corepack and Preact components. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'area' | 'line';
         value?: number;
@@ -2055,7 +2061,9 @@ export interface ojSparkChartSettableProperties<K, D extends ojSparkChart.Item |
     animationOnDataChange?: 'auto' | 'none';
     animationOnDisplay?: 'auto' | 'none';
     areaColor?: string;
+    /** @deprecated since 18.1.0 - The areaSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     areaSvgClassName?: string;
+    /** @deprecated since 18.1.0 - The areaSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     areaSvgStyle?: Partial<CSSStyleDeclaration>;
     /** @deprecated since 6.2.0 - Set the alias directly on the template element using the data-oj-as attribute instead. */
     as?: string;
@@ -2117,7 +2125,9 @@ export interface ojSparkChartItem extends JetElement<ojSparkChartItemSettablePro
     markerDisplayed?: 'off' | 'on';
     markerShape?: 'auto' | 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
     markerSize?: number;
+    /** @deprecated since 18.1.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     value?: number | null;
     addEventListener<T extends keyof ojSparkChartItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojSparkChartItemEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -2174,7 +2184,9 @@ export interface ojSparkChartItemSettableProperties extends JetSettablePropertie
     markerDisplayed?: 'off' | 'on';
     markerShape?: 'auto' | 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
     markerSize?: number;
+    /** @deprecated since 18.1.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     value?: number | null;
 }
@@ -2553,9 +2565,9 @@ export namespace ChartElement {
     // tslint:disable-next-line interface-over-type-literal
     type DndDragConfig<T> = {
         dataTypes?: string | string[];
-        drag?: ((param0: Event) => void);
-        dragEnd?: ((param0: Event) => void);
-        dragStart?: ((event: Event, context: T) => void);
+        drag?: ((event: DragEvent, context: T) => void);
+        dragEnd?: ((event: DragEvent, context: T) => void);
+        dragStart?: ((event: DragEvent, context: T) => void);
     };
     // tslint:disable-next-line interface-over-type-literal
     type DndDragConfigs<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
@@ -2572,10 +2584,10 @@ export namespace ChartElement {
     // tslint:disable-next-line interface-over-type-literal
     type DndDropConfig = {
         dataTypes?: string | string[];
-        dragEnter?: ((event: Event, context: ojChart.DndDrop) => void);
-        dragLeave?: ((event: Event, context: ojChart.DndDrop) => void);
-        dragOver?: ((event: Event, context: ojChart.DndDrop) => void);
-        drop?: ((event: Event, context: ojChart.DndDrop) => void);
+        dragEnter?: ((event: DragEvent, context: ojChart.DndDrop) => void);
+        dragLeave?: ((event: DragEvent, context: ojChart.DndDrop) => void);
+        dragOver?: ((event: DragEvent, context: ojChart.DndDrop) => void);
+        drop?: ((event: DragEvent, context: ojChart.DndDrop) => void);
     };
     // tslint:disable-next-line interface-over-type-literal
     type DndDropConfigs = {
@@ -3493,7 +3505,9 @@ export namespace SparkChartElement {
         markerDisplayed?: 'on' | 'off';
         markerShape?: 'square' | 'circle' | 'diamond' | 'plus' | 'triangleDown' | 'triangleUp' | 'human' | 'star' | 'auto' | string;
         markerSize?: number;
+        /** @deprecated since 18.1.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
     };
@@ -3521,7 +3535,9 @@ export namespace SparkChartElement {
         lineWidth?: number;
         location?: 'front' | 'back';
         low?: number;
+        /** @deprecated since 18.1.0 - The svgClassName property is deprecated. This deprecation is in support of moving away from technology specific APIs for future Corepack and Preact components. */
         svgClassName?: string;
+        /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This deprecation is in support of moving away from technology specific APIs for future Corepack and Preact components. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'area' | 'line';
         value?: number;
@@ -3708,8 +3724,8 @@ export interface SparkChartIntrinsicProps extends Partial<Readonly<ojSparkChartS
     onanimationOnDataChangeChanged?: (value: ojSparkChartEventMap<any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojSparkChartEventMap<any, any>['animationOnDisplayChanged']) => void;
     onareaColorChanged?: (value: ojSparkChartEventMap<any, any>['areaColorChanged']) => void;
-    onareaSvgClassNameChanged?: (value: ojSparkChartEventMap<any, any>['areaSvgClassNameChanged']) => void;
-    onareaSvgStyleChanged?: (value: ojSparkChartEventMap<any, any>['areaSvgStyleChanged']) => void;
+    /** @deprecated since 18.1.0 */ onareaSvgClassNameChanged?: (value: ojSparkChartEventMap<any, any>['areaSvgClassNameChanged']) => void;
+    /** @deprecated since 18.1.0 */ onareaSvgStyleChanged?: (value: ojSparkChartEventMap<any, any>['areaSvgStyleChanged']) => void;
     /** @deprecated since 6.2.0 */ onasChanged?: (value: ojSparkChartEventMap<any, any>['asChanged']) => void;
     onbarGapRatioChanged?: (value: ojSparkChartEventMap<any, any>['barGapRatioChanged']) => void;
     onbaselineScalingChanged?: (value: ojSparkChartEventMap<any, any>['baselineScalingChanged']) => void;
@@ -3742,8 +3758,8 @@ export interface SparkChartItemIntrinsicProps extends Partial<Readonly<ojSparkCh
     onmarkerDisplayedChanged?: (value: ojSparkChartItemEventMap['markerDisplayedChanged']) => void;
     onmarkerShapeChanged?: (value: ojSparkChartItemEventMap['markerShapeChanged']) => void;
     onmarkerSizeChanged?: (value: ojSparkChartItemEventMap['markerSizeChanged']) => void;
-    onsvgClassNameChanged?: (value: ojSparkChartItemEventMap['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojSparkChartItemEventMap['svgStyleChanged']) => void;
+    /** @deprecated since 18.1.0 */ onsvgClassNameChanged?: (value: ojSparkChartItemEventMap['svgClassNameChanged']) => void;
+    /** @deprecated since 18.1.0 */ onsvgStyleChanged?: (value: ojSparkChartItemEventMap['svgStyleChanged']) => void;
     onvalueChanged?: (value: ojSparkChartItemEventMap['valueChanged']) => void;
     children?: ComponentChildren;
 }

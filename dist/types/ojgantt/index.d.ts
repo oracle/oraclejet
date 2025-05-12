@@ -42,6 +42,7 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
         scale?: (string | DvtTimeComponentScale);
         zoomOrder?: Array<string | DvtTimeComponentScale>;
     };
+    parentRowPosition: 'static' | 'sticky';
     referenceObjects: ojGantt.ReferenceObject[];
     rowAxis: {
         label?: {
@@ -352,6 +353,9 @@ export namespace ojGantt {
     // tslint:disable-next-line interface-over-type-literal
     type minorAxisChanged<K1, K2, D1 extends Dependency<K1, K2> | any, D2 extends DataTask | any, K3, D3 extends DataRow | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2, K3, D3>["minorAxis"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type parentRowPositionChanged<K1, K2, D1 extends Dependency<K1, K2> | any, D2 extends DataTask | any, K3, D3 extends DataRow | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2, K3,
+       D3>["parentRowPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type referenceObjectsChanged<K1, K2, D1 extends Dependency<K1, K2> | any, D2 extends DataTask | any, K3, D3 extends DataRow | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2, K3,
        D3>["referenceObjects"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -508,10 +512,10 @@ export namespace ojGantt {
         value?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ReferenceObjectMappingTemplateContext = {
+    type ReferenceObjectMappingTemplateContext<D3> = {
         data: object;
         index: number;
-        rowData: object;
+        rowData: D3;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Row<K2 = any, D2 = any, K3 = any, D3 = any> = {
@@ -690,7 +694,7 @@ export namespace ojGantt {
     // tslint:disable-next-line interface-over-type-literal
     type RenderDependencyTemplate<K1, D1> = import('ojs/ojvcomponent').TemplateSlot<DependencyTemplateContext<K1, D1>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderReferenceObjectMappingTemplate = import('ojs/ojvcomponent').TemplateSlot<ReferenceObjectMappingTemplateContext>;
+    type RenderReferenceObjectMappingTemplate<D3> = import('ojs/ojvcomponent').TemplateSlot<ReferenceObjectMappingTemplateContext<D3>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowAxisLabelTemplate<K2 = any, D2 = any, K3 = any, D3 = any> = import('ojs/ojvcomponent').TemplateSlot<RowAxisLabelTemplateContext<K2, D2, K3, D3>>;
     // tslint:disable-next-line interface-over-type-literal
@@ -728,6 +732,7 @@ export interface ojGanttEventMap<K1, K2, D1 extends ojGantt.Dependency<K1, K2> |
     'gridlinesChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2, K3, D3>["gridlines"]>;
     'majorAxisChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2, K3, D3>["majorAxis"]>;
     'minorAxisChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2, K3, D3>["minorAxis"]>;
+    'parentRowPositionChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2, K3, D3>["parentRowPosition"]>;
     'referenceObjectsChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2, K3, D3>["referenceObjects"]>;
     'rowAxisChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2, K3, D3>["rowAxis"]>;
     'rowDataChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2, K3, D3>["rowData"]>;
@@ -783,6 +788,7 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
         scale?: (string | DvtTimeComponentScale);
         zoomOrder?: Array<string | DvtTimeComponentScale>;
     };
+    parentRowPosition: 'static' | 'sticky';
     referenceObjects: ojGantt.ReferenceObject[];
     rowAxis: {
         label?: {
@@ -1400,6 +1406,9 @@ export namespace GanttElement {
     type minorAxisChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any, K3, D3 extends ojGantt.DataRow | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2,
        K3, D3>["minorAxis"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type parentRowPositionChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any, K3, D3 extends ojGantt.DataRow | any> = JetElementCustomEvent<ojGantt<K1, K2,
+       D1, D2, K3, D3>["parentRowPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type referenceObjectsChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any, K3, D3 extends ojGantt.DataRow | any> = JetElementCustomEvent<ojGantt<K1, K2,
        D1, D2, K3, D3>["referenceObjects"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1564,10 +1573,10 @@ export namespace GanttElement {
         value?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ReferenceObjectMappingTemplateContext = {
+    type ReferenceObjectMappingTemplateContext<D3> = {
         data: object;
         index: number;
-        rowData: object;
+        rowData: D3;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Row<K2 = any, D2 = any, K3 = any, D3 = any> = {
@@ -1746,7 +1755,7 @@ export namespace GanttElement {
     // tslint:disable-next-line interface-over-type-literal
     type RenderDependencyTemplate<K1, D1> = import('ojs/ojvcomponent').TemplateSlot<DependencyTemplateContext<K1, D1>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderReferenceObjectMappingTemplate = import('ojs/ojvcomponent').TemplateSlot<ReferenceObjectMappingTemplateContext>;
+    type RenderReferenceObjectMappingTemplate<D3> = import('ojs/ojvcomponent').TemplateSlot<ReferenceObjectMappingTemplateContext<D3>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowAxisLabelTemplate<K2 = any, D2 = any, K3 = any, D3 = any> = import('ojs/ojvcomponent').TemplateSlot<RowAxisLabelTemplateContext<K2, D2, K3, D3>>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1859,6 +1868,7 @@ export interface GanttIntrinsicProps extends Partial<Readonly<ojGanttSettablePro
     ongridlinesChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['gridlinesChanged']) => void;
     onmajorAxisChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['majorAxisChanged']) => void;
     onminorAxisChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['minorAxisChanged']) => void;
+    onparentRowPositionChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['parentRowPositionChanged']) => void;
     onreferenceObjectsChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['referenceObjectsChanged']) => void;
     onrowAxisChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['rowAxisChanged']) => void;
     onrowDataChanged?: (value: ojGanttEventMap<any, any, any, any, any, any>['rowDataChanged']) => void;

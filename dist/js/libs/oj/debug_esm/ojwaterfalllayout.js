@@ -1059,7 +1059,9 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
     _handleTouchOrClickEvent(event) {
         const target = event.target;
         const item = target.closest('.' + this.getItemStyleClass());
-        this._updateCurrentItem(item);
+        if (item) {
+            this._updateCurrentItem(item);
+        }
     }
     _resetFocus(elem) {
         const item = this._findFocusItem(elem);

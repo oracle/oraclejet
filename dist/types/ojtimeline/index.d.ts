@@ -317,11 +317,11 @@ export namespace ojTimeline {
         seriesData: Series<K>;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext = {
+    type ItemTemplateContext<K, D> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
+        key: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
@@ -358,14 +358,14 @@ export namespace ojTimeline {
         title?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type SeriesTemplateContext = {
+    type SeriesTemplateContext<K, D> = {
         componentElement: Element;
-        id: any;
+        id: string;
         index: number;
         items: Array<{
-            data: object;
+            data: D;
             index: number;
-            key: any;
+            key: K;
         }>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -380,9 +380,9 @@ export namespace ojTimeline {
     // tslint:disable-next-line interface-over-type-literal
     type RenderItemBubbleContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemBubbleTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
+    type RenderItemTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderSeriesTemplate = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext>;
+    type RenderSeriesTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
 }
@@ -833,11 +833,11 @@ export namespace TimelineElement {
         seriesData: ojTimeline.Series<K>;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext = {
+    type ItemTemplateContext<K, D> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
+        key: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
@@ -874,14 +874,14 @@ export namespace TimelineElement {
         title?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type SeriesTemplateContext = {
+    type SeriesTemplateContext<K, D> = {
         componentElement: Element;
-        id: any;
+        id: string;
         index: number;
         items: Array<{
-            data: object;
+            data: D;
             index: number;
-            key: any;
+            key: K;
         }>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -896,9 +896,9 @@ export namespace TimelineElement {
     // tslint:disable-next-line interface-over-type-literal
     type RenderItemBubbleContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemBubbleTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
+    type RenderItemTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderSeriesTemplate = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext>;
+    type RenderSeriesTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
 }

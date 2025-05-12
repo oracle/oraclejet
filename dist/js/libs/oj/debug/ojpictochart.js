@@ -1065,6 +1065,7 @@ var __oj_picto_chart_item_metadata =
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"},
    *               {target: "Type", value: "?(string | ((context: oj.ojPictoChart.ItemShortDescContext<K>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride:true}]
+   * @ojdeprecated {target:"property", for: "svgStyle", since: "18.1.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    */
 
   /**
@@ -1106,6 +1107,9 @@ var __oj_picto_chart_item_metadata =
    * @property {Object} data The data object for the current item.
    * @property {number} index The zero-based index of the current item.
    * @property {any} key The key of the current item.
+   * @ojsignature [{target: "Type", value: "D", for: "data"},
+   *               {target: "Type", value: "K", for: "key"},
+   *               {target: "Type", value: "<K,D>", for: "genericTypeParameters"}]
    * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
 
@@ -1551,6 +1555,7 @@ var __oj_picto_chart_item_metadata =
    * @type {Object=}
    * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}]
    * @default {}
+   * @ojdeprecated {since: "18.1.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    *
    * @example <caption>Initialize the picto chart item with the
    * <code class="prettyprint">svg-style</code> attribute specified:</caption>

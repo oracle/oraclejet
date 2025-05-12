@@ -3634,6 +3634,9 @@ var __oj_thematic_map_marker_metadata =
    * @property {Object} data The data object for the current area
    * @property {number} index The zero-based index of the current area
    * @property {any} key The key of the current area
+   * @ojsignature [{target: "Type", value: "D1", for: "data"},
+   *               {target: "Type", value: "K1", for: "key"},
+   *               {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -3680,6 +3683,9 @@ var __oj_thematic_map_marker_metadata =
    * @property {Object} data The data object for the current marker
    * @property {number} index The zero-based index of the current marker
    * @property {any} key The key of the current marker
+   * @ojsignature [{target: "Type", value: "D3", for: "data"},
+   *               {target: "Type", value: "K3", for: "key"},
+   *               {target: "Type", value: "<K3,D3>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -3751,6 +3757,9 @@ var __oj_thematic_map_marker_metadata =
    * @property {Object} data The data object for the current link
    * @property {number} index The zero-based index of the current link
    * @property {any} key The key of the current link
+   * @ojsignature [{target: "Type", value: "D2", for: "data"},
+   *               {target: "Type", value: "K2", for: "key"},
+   *               {target: "Type", value: "<K2,D2>", for: "genericTypeParameters"}]
    */
 
   /**

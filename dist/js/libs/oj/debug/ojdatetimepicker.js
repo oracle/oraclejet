@@ -1432,7 +1432,22 @@ var __oj_input_date_time_metadata =
    * @ignore
    */
   function _getDateDefaultConverter() {
+    // If user preferences are applied, this will have those options merged in
+    // because we merge in user preferences when dateFormat: 'short'
     return new ojconverterDatetime.IntlDateTimeConverter({ formatType: 'date', dateFormat: 'short' });
+  }
+
+  /**
+   * Returns true if the os is ios and the browser is Safari. If this is true,
+   * then the user could be using voiceover.  We only support Safari on iOS.
+   * This is used in the fix for JET-66606.
+   * @static
+   * @ignore
+   */
+  function _isSafariOnIos() {
+    const isIos = oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS;
+    const isSafari = oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI;
+    return isSafari && isIos;
   }
 
   /**
@@ -1535,6 +1550,11 @@ var __oj_input_date_time_metadata =
   var yearDisplay;
 
   function formatYear(year, month) {
+    // JET-60050, do not format year 0,
+    // else we get a javascript error when the TimeZone from user preferences are merged in to the year converter.
+    if (year === 0) {
+      return 0;
+    }
     if (!yearDisplay) {
       yearDisplay = new ojconverterDatetime.IntlDateTimeConverter({ year: 'numeric' });
     }
@@ -5119,6 +5139,7 @@ var __oj_input_date_time_metadata =
               clearIconBtn.className =
                 'oj-inputdatetime-clear-icon-btn oj-component-icon oj-clickable-icon-nocontext';
               clearIconBtn.setAttribute('tabindex', '-1');
+              clearIconBtn.setAttribute('role', 'button');
               clearIconBtn.setAttribute(
                 'aria-label',
                 this.getTranslatedString(this._INPUTDATE_CLEAR_ICON_LABEL_KEY)
@@ -5157,6 +5178,8 @@ var __oj_input_date_time_metadata =
      * This function will create the necessary calendar trigger container [i.e. image to launch the calendar]
      * and perform any attachment to events.
      * Since the user cannot tab to this icon, it does not need the aria attributes on it.
+     * However, for iOS Safari, VoiceOver still navigates to this icon, so we need to add aria
+     * attributes for this case (JET-66606).
      * If showOn is image, then a keyboard or screenreader user would use the up or down arrow key
      * on the input to open the picker.
      *
@@ -5167,9 +5190,16 @@ var __oj_input_date_time_metadata =
       var triggerContainer = document.createElement('span');
       triggerContainer.className = this._TRIGGER_CLASS;
 
+      const calendarTitle = this._GetCalendarTitle();
+      // We want a voiceover user to be able to get to the trigger and hear the description.
+      if (_isSafariOnIos()) {
+        triggerContainer.setAttribute('aria-label', calendarTitle);
+        triggerContainer.setAttribute('role', 'button');
+        triggerContainer.setAttribute('aria-haspopup', 'dialog');
+      }
       // pop-up date picker when button clicked
       var triggerCalendar = document.createElement('span');
-      triggerCalendar.setAttribute('title', this._GetCalendarTitle());
+      triggerCalendar.setAttribute('title', calendarTitle);
       triggerCalendar.className =
         this._TRIGGER_CALENDAR_CLASS + ' oj-clickable-icon-nocontext oj-component-icon';
 
@@ -6216,8 +6246,6 @@ var __oj_input_date_time_metadata =
      * @private
      */
     _generateHeader: function (drawMonth, drawYear, monthControl, enablePrev, enableNext) {
-      var isRTL = this._IsRTL();
-
       var prevText = this._EscapeXSS(this.getTranslatedString('prevText'));
 
       var prev = enablePrev
@@ -6253,22 +6281,14 @@ var __oj_input_date_time_metadata =
         "' data-oj-dropdownnofocuschange >";
 
       if (/all|left/.test(monthControl)) {
-        if (isRTL) {
-          header += next;
-        } else {
-          header += prev;
-        }
-      }
-
-      if (/all|right/.test(monthControl)) {
-        if (isRTL) {
-          header += prev;
-        } else {
-          header += next;
-        }
+        header += prev;
       }
 
       header += this._generateMonthYearHeader(drawMonth, drawYear);
+
+      if (/all|right/.test(monthControl)) {
+        header += next;
+      }
 
       header += '</div>';
 
@@ -7429,9 +7449,11 @@ var __oj_input_date_time_metadata =
     _disableEnable: function (val) {
       if (this._triggerNode) {
         disableEnableSpan(this._triggerNode[0].children, val);
-        this._triggerNode
-          .find('.' + this._TRIGGER_CALENDAR_CLASS)
-          .attr('title', this._GetCalendarTitle());
+        const calendarTitle = this._GetCalendarTitle();
+        this._triggerNode.find('.' + this._TRIGGER_CALENDAR_CLASS).attr('title', calendarTitle);
+        if (_isSafariOnIos()) {
+          this._triggerNode.attr('aria-label', calendarTitle);
+        }
       }
 
       if (val) {
@@ -8103,9 +8125,12 @@ var __oj_input_date_time_metadata =
      */
     refresh: function () {
       if (this._triggerNode) {
-        this._triggerNode
-          .find('.' + this._TRIGGER_CALENDAR_CLASS)
-          .attr('title', this._GetCalendarTitle());
+        const calendarTitle = this._GetCalendarTitle();
+
+        this._triggerNode.find('.' + this._TRIGGER_CALENDAR_CLASS).attr('title', calendarTitle);
+        if (_isSafariOnIos()) {
+          this._triggerNode.attr('aria-label', calendarTitle);
+        }
       }
       return this._superApply(arguments) || this;
     },
@@ -15340,6 +15365,11 @@ var __oj_input_date_time_metadata =
       var elem = document.createElement('div');
       elem.className =
         'oj-inputdatetime-time-icon oj-clickable-icon-nocontext oj-component-icon oj-enabled oj-default';
+      // We want a voiceover user to be able to get to the toggle icon and hear the description.
+      if (_isSafariOnIos()) {
+        elem.setAttribute('aria-label', this.getTranslatedString('setTime'));
+        elem.setAttribute('role', 'button');
+      }
       childDiv.appendChild(elem);
 
       elem = document.createElement('a');
@@ -15428,7 +15458,24 @@ var __oj_input_date_time_metadata =
         }
       }
 
-      $('.oj-datetimepicker-switcher-text', this._switcherDiv).text(switcherText);
+      const switcherTextElement = $('.oj-datetimepicker-switcher-text', this._switcherDiv).text(
+        switcherText
+      );
+      // For IOS, we want to use an aria-label so the user knows that clicking on the value will switch to
+      // the date/time picker.
+      if (_isSafariOnIos()) {
+        if (this._isShowingDatePickerSwitcher()) {
+          switcherTextElement.attr(
+            'aria-label',
+            `${switcherText}, ${this.getTranslatedString('setDate')}`
+          );
+        } else {
+          switcherTextElement.attr(
+            'aria-label',
+            `${switcherText}, ${this.getTranslatedString('setTime')}`
+          );
+        }
+      }
     },
 
     /**
@@ -15451,15 +15498,18 @@ var __oj_input_date_time_metadata =
       if (timePickerShown) {
         addCss = 'oj-inputdatetime-calendar-icon';
         removeCss = 'oj-inputdatetime-time-icon';
-        newText = 'Set Date';
+        newText = this.getTranslatedString('setDate');
       } else {
         addCss = 'oj-inputdatetime-time-icon';
         removeCss = 'oj-inputdatetime-calendar-icon';
-        newText = 'Set Time';
+        newText = this.getTranslatedString('setTime');
       }
 
       var children = $(switcher.children()[0]).children();
       $(children[0]).removeClass(removeCss).addClass(addCss);
+      if (_isSafariOnIos()) {
+        $(children[0]).attr('aria-label', newText);
+      }
       $(children[1]).text(newText);
 
       children = $('.oj-popup-content', this._popUpDpDiv.ojPopup('widget')).children();

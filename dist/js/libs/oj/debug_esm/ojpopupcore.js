@@ -4442,13 +4442,7 @@ VLayerUtils._getPopupServiceOptions = (element, launcherElement, level, priority
     PSOptions[PSoption.POPUP] = element;
     PSOptions[PSoption.LAUNCHER] = launcherElement;
     PSOptions[PSoption.LAYER_SELECTORS] =
-        priority === 'dialog'
-            ? 'oj-dialog-layer'
-            : priority === 'messages'
-                ? 'oj-messages-layer'
-                : priority === 'tooltip'
-                    ? 'oj-tooltip-layer'
-                    : 'oj-popup-layer';
+        priority === 'messages' ? 'oj-messages-layer' : 'oj-popup-layer';
     PSOptions[PSoption.LAYER_LEVEL] = level ?? oj.PopupService.LAYER_LEVEL.NEAREST_ANCESTOR;
     PSOptions[PSoption.CUSTOM_ELEMENT] = false;
     const PSEvent = oj.PopupService.EVENT;

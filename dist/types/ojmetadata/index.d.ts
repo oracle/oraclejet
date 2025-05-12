@@ -39,6 +39,7 @@ export type ComponentMetadata = {
         [key: string]: ComponentMetadataProperties;
     };
     propertyLayout?: PropertyLayoutGroup[];
+    requirements?: Requirement[];
     since?: string;
     slots?: {
         [key: string]: ComponentMetadataSlots;
@@ -195,6 +196,13 @@ export type ProvideProperty = {
     default?: string | number | boolean | null;
     name: string;
     transform?: Record<string, string | number | boolean | null>;
+};
+// tslint:disable-next-line interface-over-type-literal
+export type Requirement = {
+    description?: string;
+    properties?: string[];
+    slots?: string[];
+    type: 'anyOf';
 };
 // tslint:disable-next-line interface-over-type-literal
 export type SlotDataVariable = {

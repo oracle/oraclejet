@@ -1199,6 +1199,8 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
 
     // remove the oj-message from DOM. Note that we are not calling 'oj.Components.subtreeHidden'
     //  because it is not required if we use jquery remove() as per the doc there
+    // To prevent a memory leak, we need to call ko.cleanNode before removing the dom element. (JET-73819)
+    ko.cleanNode(closeMessageElement);
     $(closeMessageElement).remove();
 
     // if we do not have any "default" slot children, then the message being closed is the last one,

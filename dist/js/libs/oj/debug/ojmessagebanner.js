@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojsoundutils', 'ojs/ojanimation', 'ojs/ojtranslation', 'ojs/ojcontext', 'ojs/ojdataproviderhandler', 'ojs/ojvcomponent', 'ojs/ojbutton'], function (exports, jsxRuntime, hooks, preact, ojconfig, oj, Logger, ojsoundutils, AnimationUtils, Translations, Context, ojdataproviderhandler, ojvcomponent, ojbutton) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojsoundutils', 'ojs/ojanimation', 'ojs/ojtranslation', 'ojs/ojcontext', 'ojs/ojdataproviderhandler', 'ojs/ojvcomponent', 'ojs/ojbutton'], function (exports, jsxRuntime, hooks, preact, Config, oj, Logger, ojsoundutils, AnimationUtils, Translations, Context, ojdataproviderhandler, ojvcomponent, ojbutton) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -40,7 +40,7 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
             today.getUTCDate() === provided.getUTCDate());
     }
     function getDateTimeFormatter(isToday) {
-        const locale = ojconfig.getLocale();
+        const locale = Config.getLocale();
         const { DateTimeFormat } = Intl;
         if (isToday) {
             return new DateTimeFormat(locale, DATE_FORMAT_OPTIONS.TODAY);
@@ -607,6 +607,20 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
         };
     }
 
+    const getLiveRegionTextByDevice = (context, translations) => {
+        const deviceType = Config.getDeviceType() === 'others' ? 'keyboard' : 'touch';
+        const keys = {
+            toMessages: {
+                touch: 'navigationToTouch',
+                keyboard: 'navigationToMessagesRegion'
+            },
+            fromMessages: {
+                touch: '',
+                keyboard: 'navigationFromMessagesRegion'
+            }
+        };
+        return translations?.[keys[context][deviceType]] || '';
+    };
     function MessageBanner({ detailRendererKey, data, onClose, renderers, translations, type = 'section' }) {
         const messagesRef = hooks.useRef(new Map());
         const containerDivRef = hooks.useRef(null);
@@ -644,7 +658,7 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
         }), [data]);
         const { controller, handlers } = useMessageFocusManager(focusHandleRef, {
             onFocus: hooks.useCallback(() => {
-                setLiveRegionText(translations?.navigationFromMessagesRegion);
+                setLiveRegionText(getLiveRegionTextByDevice('fromMessages', translations));
             }, [setLiveRegionText, translations])
         });
         const handleClose = hooks.useCallback((item) => {
@@ -670,7 +684,7 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
             if (data.length) {
                 setShouldRender(true);
                 if (data.length > prevDataLengthRef.current) {
-                    setLiveRegionText(translations?.navigationToMessagesRegion);
+                    setLiveRegionText(getLiveRegionTextByDevice('toMessages', translations));
                 }
                 controller.prioritize();
             }
@@ -729,6 +743,7 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
                             close: Translations.getTranslatedString('oj-ojMessageBanner.close'),
                             navigationFromMessagesRegion: Translations.getTranslatedString('oj-ojMessageBanner.navigationFromMessagesRegion'),
                             navigationToMessagesRegion: Translations.getTranslatedString('oj-ojMessageBanner.navigationToMessagesRegion'),
+                            navigationToTouch: Translations.getTranslatedString('oj-ojMessageBanner.navigationToTouch'),
                             error: Translations.getTranslatedString('oj-ojMessageBanner.error'),
                             warning: Translations.getTranslatedString('oj-ojMessageBanner.warning'),
                             info: Translations.getTranslatedString('oj-ojMessageBanner.info'),

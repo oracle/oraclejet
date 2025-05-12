@@ -388,11 +388,11 @@ export namespace ojNBox {
         secondaryLabel: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type NodeTemplateContext = {
+    type NodeTemplateContext<K, D> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
+        key: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type PasteCell = {
@@ -418,7 +418,7 @@ export namespace ojNBox {
         secondaryLabel: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    type RenderNodeTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
 }
@@ -1003,11 +1003,11 @@ export namespace NBoxElement {
         secondaryLabel: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type NodeTemplateContext = {
+    type NodeTemplateContext<K, D> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
+        key: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type PasteCell = {
@@ -1033,7 +1033,7 @@ export namespace NBoxElement {
         secondaryLabel: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    type RenderNodeTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
 }

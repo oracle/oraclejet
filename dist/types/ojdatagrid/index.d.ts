@@ -134,7 +134,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
             description?: (((context: ojDataGrid.HeaderContext<K, D>) => string | null) | null);
             filterable?: ((context: ojDataGrid.HeaderContext<K, D>) => 'auto' | 'disable') | 'auto' | 'disable';
             freezable?: 'enable' | 'disable';
-            hidable: 'enable' | 'disable';
+            hidable?: 'enable' | 'disable';
             label?: {
                 alignment?: {
                     horizontal?: ((context: ojDataGrid.HeaderContext<K, D>) => ojDataGrid.HorizontalAlignment) | ojDataGrid.HorizontalAlignment;
@@ -203,7 +203,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
             description?: (((context: ojDataGrid.HeaderContext<K, D>) => string | null) | null);
             freezable?: 'enable' | 'disable';
-            hidable: 'enable' | 'disable';
+            hidable?: 'enable' | 'disable';
             label?: {
                 alignment?: {
                     horizontal?: ((context: ojDataGrid.HeaderContext<K, D>) => ojDataGrid.HorizontalAlignment) | ojDataGrid.HorizontalAlignment;
@@ -899,7 +899,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
             description?: (((context: ojDataGrid.HeaderContext<K, D>) => string | null) | null);
             filterable?: ((context: ojDataGrid.HeaderContext<K, D>) => 'auto' | 'disable') | 'auto' | 'disable';
             freezable?: 'enable' | 'disable';
-            hidable: 'enable' | 'disable';
+            hidable?: 'enable' | 'disable';
             label?: {
                 alignment?: {
                     horizontal?: ((context: ojDataGrid.HeaderContext<K, D>) => ojDataGrid.HorizontalAlignment) | ojDataGrid.HorizontalAlignment;
@@ -968,7 +968,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
             className?: ((context: ojDataGrid.HeaderContext<K, D>) => string | void | null) | string | null;
             description?: (((context: ojDataGrid.HeaderContext<K, D>) => string | null) | null);
             freezable?: 'enable' | 'disable';
-            hidable: 'enable' | 'disable';
+            hidable?: 'enable' | 'disable';
             label?: {
                 alignment?: {
                     horizontal?: ((context: ojDataGrid.HeaderContext<K, D>) => ojDataGrid.HorizontalAlignment) | ojDataGrid.HorizontalAlignment;

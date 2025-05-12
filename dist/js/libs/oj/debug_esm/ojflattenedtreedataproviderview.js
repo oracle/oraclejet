@@ -983,7 +983,7 @@ class FlattenedTreeDataProviderView {
         return true;
     }
     _filterCompare(cachedFilter, newFilter, prop) {
-        if (cachedFilter[prop] && newFilter[prop] && cachedFilter[prop] === newFilter[prop]) {
+        if (cachedFilter[prop] === newFilter[prop]) {
             return true;
         }
         return false;

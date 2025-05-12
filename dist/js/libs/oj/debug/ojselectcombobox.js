@@ -4175,13 +4175,21 @@ var __oj_select_many_metadata =
       // aria-label will be set on the content element
       // sync it with the dropdown
       var alabel = this._contentElement.attr('aria-label');
+      // JET-71536 - If the dropdown container element has role='dialog' (oj-select-many), set aria-labelledby for the dialog as well, per OATB rules.
+      const dropdownWithDialogRole = this.results.closest('.oj-listbox-drop[role="dialog"]');
 
       if (alabel) {
         // Update dropdown
         this.results.attr('aria-label', alabel);
+        if (dropdownWithDialogRole.length) {
+          dropdownWithDialogRole.attr('aria-label', alabel);
+        }
       } else {
         // Update dropdown
         this.results.removeAttr('aria-label');
+        if (dropdownWithDialogRole.length) {
+          dropdownWithDialogRole.removeAttr('aria-label');
+        }
       }
     },
 
@@ -4196,11 +4204,20 @@ var __oj_select_many_metadata =
      * @ignore
      */
     updateAriaLabelledByIfNeeded: function (ariaLabelledBy) {
+      // JET-71536 - If the dropdown container element has role='dialog' (oj-select-many), set aria-labelledby for the dialog as well, per OATB rules.
+      const dropdownWithDialogRole = this.results.closest('.oj-listbox-drop[role="dialog"]');
+
       // Update the aria attributes of the dropdown.
       if (ariaLabelledBy) {
         this.results.attr('aria-labelledby', ariaLabelledBy);
+        if (dropdownWithDialogRole.length) {
+          dropdownWithDialogRole.attr('aria-labelledby', ariaLabelledBy);
+        }
       } else {
         this.results.removeAttr('aria-labelledby');
+        if (dropdownWithDialogRole.length) {
+          dropdownWithDialogRole.removeAttr('aria-labelledby');
+        }
       }
     },
 
@@ -5529,9 +5546,7 @@ var __oj_select_many_metadata =
       // force clear the aria attributes related to dropdown
       this._updateMatchesCount('', true);
 
-      if (this._elemNm === 'ojcombobox') {
-        this._getActiveContainer().removeAttr('aria-activedescendant');
-      }
+      this._getActiveContainer().removeAttr('aria-activedescendant');
 
       //  - press escape after search in select causes select to become unresponsive
       $.removeData(this.container, this._classNm + '-last-term');
@@ -5667,8 +5682,6 @@ var __oj_select_many_metadata =
         if (!curSelected.length) {
           curSelected = choices.children('.oj-hover').closest('.oj-listbox-result');
         }
-        //  - acc: screenreader not reading ojselect items
-        this._updateMatchesCount(curSelected.text());
         return choices.get().indexOf(curSelected[0]);
       }
 
@@ -5698,8 +5711,6 @@ var __oj_select_many_metadata =
           highlightElement.addClass('oj-focus-highlight');
         }
       }
-      //  - acc: screenreader not reading ojselect items
-      this._updateMatchesCount(highlightElement.text());
 
       // ensure assistive technology can determine the active choice
       // /select: accessibility
@@ -7531,9 +7542,16 @@ var __oj_select_many_metadata =
         } else if (keyCode === _ComboUtils.KEY.RIGHT) {
           selectedChoice = next.length ? next : null;
         } else if (keyCode === _ComboUtils.KEY.BACKSPACE) {
+          var selectedIdx = this._getSelectedItemIndex(selected);
           this._unselect(selected.first(), e);
           this._resetSearchWidth();
-          selectedChoice = prev.length ? prev : next;
+          // Fix JET-72750: NOT ABLE TO DELETE THE REMAINING ITEMS AFTER DELETING THE FIRST SELECTED ITEM IN 'OJ-SELECT-MANY'
+          // The prev and next elements needs to be refreshed after this._unselect removes the selected item.
+          // The old prev and next becomes invalid and does not points to the actual dom object after selected is removed.
+          // prev object will be present at one index before the selected item index and next item will be present at the selected item index since the selected item index value has been removed.
+          prev = this._getSelectedItemByIndex(selectedIdx - 1);
+          next = this._getSelectedItemByIndex(selectedIdx);
+          selectedChoice = prev && prev.length ? prev : next;
         } else if (keyCode === _ComboUtils.KEY.DELETE) {
           this._unselect(selected.first(), e);
           this._resetSearchWidth();
@@ -7598,8 +7616,14 @@ var __oj_select_many_metadata =
           this.close(e);
           return;
         case _ComboUtils.KEY.ESC:
+          if (this._opened()) {
+            // JET-48033 - ESC on focused combobox, select-many inside Dialog doesn't close Dialog
+            // We prevent the default behavior of the ESC key
+            e.preventDefault();
+          }
+          // _cancel() does more than just closing the dropdown if it's open, so we still need to do this
+          // even if the dropdown isn't open.
           this._cancel(e);
-          e.preventDefault();
           return;
         default:
           break;
@@ -7607,6 +7631,36 @@ var __oj_select_many_metadata =
 
       // ojselect: used by select
       this._userTyping = true;
+    },
+
+    /**
+     * When a specific index is passed, it returns the jQuery object located at that index.
+     * @param {Integer} index Index of the selected item
+     * @returns Jquery object present at the index.
+     * @private
+     */
+    _getSelectedItemByIndex: function (index) {
+      var items = this.selection.find(
+        '.' + this._classNm + '-selected-choice:not(.' + this._classNm + '-locked)'
+      );
+      if (index >= 0 && index < items.length) {
+        return items.eq(index);
+      }
+      return null;
+    },
+
+    /**
+     * When a specific jQuery object from the list of all selected items is passed, it returns its index
+     * @param {Object} selectedItem Jquery object of the selected item
+     * @returns The index where the selectedItem is located within the array of all selected items.
+     * @private
+     */
+    _getSelectedItemIndex(selectedItem) {
+      if (!selectedItem) return -1;
+      var items = this.selection.find(
+        '.' + this._classNm + '-selected-choice:not(.' + this._classNm + '-locked)'
+      );
+      return items.index(selectedItem);
     },
 
     _isBackNavAllowed: function () {

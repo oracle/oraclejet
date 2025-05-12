@@ -8,6 +8,7 @@
 import { jsx } from 'preact/jsx-runtime';
 import { Component } from 'preact';
 import { Root, customElement } from 'ojs/ojvcomponent';
+import oj from 'ojs/ojcore-base';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -30,6 +31,9 @@ let HighlightText = class HighlightText extends Component {
             const highlightedText = unhighlightedText.replace(new RegExp(escapedMatchText, 'gi'), this._HIGHLIGHT_TOKEN + '$&' + this._HIGHLIGHT_TOKEN);
             const tokens = highlightedText.split(this._HIGHLIGHT_TOKEN);
             const nodes = tokens.map((current, index) => index % 2 == 0 ? current : jsx("span", { class: "oj-highlighttext-highlighter", children: current }));
+            if (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS) {
+                return jsx("span", { role: "text", children: nodes });
+            }
             return jsx("span", { children: nodes });
         }
         return jsx("span", { children: unhighlightedText });

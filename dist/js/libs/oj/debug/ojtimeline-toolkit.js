@@ -2852,6 +2852,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             overflowOffset,
             frAnimationElems
           );
+      } else if (container.feelers && item.getFeeler()) {
+        container.feelers.removeChild(item.getFeeler());
+        item.setFeeler(null);
       }
     },
 
@@ -6697,7 +6700,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     renderData(width, height) {
       super.renderData(width, height);
-      let allDurationBar = true;
+      let allDurationBar = this._callbackObj?.getOptionsCache()?.getFromCache('durationBarFlag');
       let start;
       let end;
       if (this._markers == null) return;
@@ -6731,9 +6734,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         for (let j = 0; j < this._markers.length; j++) {
           let marker = this._markers[j];
           markers.push(marker);
-          if (marker._itemType !== 'duration-bar') {
-            allDurationBar = false;
-          }
           if (marker._itemType === 'event') {
             singleEventMarkers[singleEventMarkers.length] = marker;
           }
@@ -7896,58 +7896,68 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @private
      */
     _renderSeries: (timeline, container) => {
-      var timeAxis = timeline.getTimeAxis();
       if (timeline._series) {
+        var timeAxis = timeline.getTimeAxis();
         var context = timeline.getCtx();
         var isRTL = dvt.Agent.isRightToLeft(context);
         var seriesCount = timeline._series.length;
         var axisSize = timeline.getTimeAxisVisibleSize(seriesCount);
-        if (!timeline.isVertical()) {
-          if (seriesCount > 1 && timeline._canvasSize % 2 != axisSize % 2) {
+        var isVertical = timeline.isVertical();
+        var canvasSize = timeline._canvasSize;
+        var contentLength = timeline.getContentLength();
+        if (!isVertical) {
+          if (seriesCount > 1 && canvasSize % 2 != axisSize % 2) {
             timeAxis.setContentSize(timeAxis.getContentSize() + 1);
             axisSize = timeline.getTimeAxisVisibleSize(seriesCount);
           }
         }
-        timeline._seriesSize = (timeline._canvasSize - axisSize) / seriesCount;
+        timeline._seriesSize = (canvasSize - axisSize) / seriesCount;
         for (var i = 0; i < seriesCount; i++) {
           var series = timeline._series[i];
           var seriesOptions = timeline._seriesOptions[i];
-          var durationBarFlag = seriesOptions.items
-            ? seriesOptions.items.every((item) => item.itemType === 'duration-bar')
-            : false;
-          series._durationBarFlag = durationBarFlag;
+          var durationBarFlag = false;
+          if (seriesOptions.items && seriesOptions.items.length > 0) {
+            for (var j = 0; j < seriesOptions.items.length; j++) {
+              if (seriesOptions.items[j].itemType !== 'duration-bar') {
+                durationBarFlag = false;
+                break;
+              }
+              durationBarFlag = true;
+            }
+          }
+          timeline._optionsCache.putToCache('durationBarFlag', durationBarFlag);
           // setup overflow controls
           series.setClipPath(null);
           var cp = new dvt.ClipPath();
           var width;
           var height;
           var posMatrix;
-          if (timeline.isVertical()) {
+          if (isVertical) {
             if (isRTL) var key = Math.abs(i - 1);
             else key = i;
             if (isRTL && timeline._series.length === 1) {
-              cp.addRect(axisSize, 0, timeline._seriesSize, timeline.getContentLength());
+              cp.addRect(axisSize, 0, timeline._seriesSize, contentLength);
               posMatrix = new dvt.Matrix(1, 0, 0, 1, axisSize, 0);
             } else {
               cp.addRect(
                 key * (timeline._seriesSize + axisSize),
                 0,
                 timeline._seriesSize,
-                timeline.getContentLength()
+                contentLength
               );
               posMatrix = new dvt.Matrix(1, 0, 0, 1, key * (timeline._seriesSize + axisSize), 0);
             }
             width = timeline._seriesSize;
-            height = timeline.getContentLength();
+            height = contentLength;
           } else {
             cp.addRect(
               0,
               i * (timeline._seriesSize + axisSize),
-              timeline.getContentLength(),
-              durationBarFlag ? timeline._seriesSize : timeline._seriesSize - (1 - i) * axisSize
+              contentLength,
+              durationBarFlag || !timeline._hasMajorAxis ? timeline._seriesSize : timeline._seriesSize - (1 - i) * axisSize
             );
             posMatrix = new dvt.Matrix(1, 0, 0, 1, 0, i * (timeline._seriesSize + axisSize));
-            width = timeline.getContentLength();
+            width = contentLength;
             height = timeline._seriesSize;
           }
           series.setClipPath(cp);
@@ -7966,10 +7976,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     _renderSeriesLabels: (timeline) => {
       var dim, posMatrix;
+      var context = timeline.getCtx();
+      var isRTL = dvt.Agent.isRightToLeft(context);
       if (timeline._series) {
-        var context = timeline.getCtx();
-        var isRTL = dvt.Agent.isRightToLeft(context);
-
         if (timeline._seriesLabels) {
           for (var j = 0; j < timeline._seriesLabels.length; j++) {
             timeline.removeChild(timeline._seriesLabels[j]);
@@ -11530,7 +11539,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._seriesSize = (this._canvasSize - axisSize) / seriesCount;
         for (var i = 0; i < seriesCount; i++) {
           var series = this._series[i];
-          var durationBarFlag = series._durationBarFlag;
+          var durationBarFlag = this.getOptionsCache().getFromCache('durationBarFlag');
           // setup overflow controls
           series.setClipPath(null);
           var cp = new dvt.ClipPath();
@@ -11559,7 +11568,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
               0,
               i * (this._seriesSize + axisSize),
               this.getContentLength(),
-              durationBarFlag ? this._seriesSize : this._seriesSize - (1 - i) * axisSize
+              durationBarFlag || !this._hasMajorAxis ? this._seriesSize : this._seriesSize - (1 - i) * axisSize
             );
             posMatrix = new dvt.Matrix(1, 0, 0, 1, 0, i * (this._seriesSize + axisSize));
             width = this.getContentLength();

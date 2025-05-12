@@ -1080,13 +1080,19 @@ function getValueNodeFromIdentifier(idNode, metaUtilObj) {
 }
 function getValueNodeFromPropertyAccessExpression(propAccessNode, metaUtilObj) {
     let rtnNode = null;
-    let targetNode = getValueNodeFromReference(propAccessNode.expression, metaUtilObj);
-    targetNode = removeCastExpressions(targetNode);
-    if (targetNode && ts.isObjectLiteralExpression(targetNode)) {
-        const propName = ts.idText(propAccessNode.name);
-        const accessedProp = targetNode.properties.find((prop) => prop.name?.getText() === propName);
-        if (accessedProp && ts.isPropertyAssignment(accessedProp)) {
-            rtnNode = accessedProp.initializer;
+    const propAccessSymbol = metaUtilObj.typeChecker.getSymbolAtLocation(propAccessNode);
+    if (propAccessSymbol?.valueDeclaration && ts.isEnumMember(propAccessSymbol.valueDeclaration)) {
+        rtnNode = propAccessNode;
+    }
+    else {
+        let targetNode = getValueNodeFromReference(propAccessNode.expression, metaUtilObj);
+        targetNode = removeCastExpressions(targetNode);
+        if (targetNode && ts.isObjectLiteralExpression(targetNode)) {
+            const propName = ts.idText(propAccessNode.name);
+            const accessedProp = targetNode.properties.find((prop) => prop.name?.getText() === propName);
+            if (accessedProp && ts.isPropertyAssignment(accessedProp)) {
+                rtnNode = accessedProp.initializer;
+            }
         }
     }
     return rtnNode;
@@ -1094,6 +1100,14 @@ function getValueNodeFromPropertyAccessExpression(propAccessNode, metaUtilObj) {
 function getMDValueFromNode(valueNode, prop, metaUtilObj, topLvlProp) {
     let value = undefined;
     if (metaUtilObj) {
+        const checker = metaUtilObj.typeChecker;
+        const valueSymbol = checker.getSymbolAtLocation(valueNode);
+        if (valueSymbol) {
+            const valueType = checker.getTypeOfSymbol(valueSymbol);
+            if (valueType.isLiteral()) {
+                return valueType.value;
+            }
+        }
         valueNode = getValueNodeFromReference(valueNode, metaUtilObj) ?? valueNode;
     }
     if (!isValueNodeReference(valueNode)) {

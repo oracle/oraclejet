@@ -53,14 +53,15 @@
     .oj-popup {
       @extend .oj-component-popup;
 
-      overflow: auto;
-
         border: $popupBorderWidth solid $popupBorderColor;
         @include oj-border-radius($popupBorderRadius);
         background-color: $popupBgColor;
         @include oj-box-shadow($popupBoxShadow);
 
       will-change: top, left;
+    }
+    .oj-popup:not(.oj-popup-tail-simple) {
+      overflow: auto;
     }
     .oj-popup.oj-popup-tail-simple {
 

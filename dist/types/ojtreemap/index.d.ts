@@ -211,6 +211,7 @@ export namespace ojTreemap {
         selectable?: 'auto' | 'off';
         shortDesc?: (string | ((context: NodeShortDescContext<K, D>) => string));
         svgClassName?: string;
+        /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         value: number;
     };
@@ -241,13 +242,13 @@ export namespace ojTreemap {
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type NodeTemplateContext = {
+    type NodeTemplateContext<K, D> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
-        parentData: any[];
-        parentKey: any;
+        key: K;
+        parentData: D[];
+        parentKey: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K, D> = {
@@ -263,7 +264,7 @@ export namespace ojTreemap {
     // tslint:disable-next-line interface-over-type-literal
     type RenderNodeContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeContentContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    type RenderNodeTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
 }
@@ -416,6 +417,7 @@ export interface ojTreemapNode<K = any, D = any> extends dvtBaseComponent<ojTree
     selectable?: 'off' | 'auto';
     shortDesc?: (string | ((context: ojTreemap.NodeShortDescContext<K, D>) => string));
     svgClassName?: string;
+    /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     value: number;
     addEventListener<T extends keyof ojTreemapNodeEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTreemapNodeEventMap<K, D>[T]) => any, options?: (boolean |
@@ -500,6 +502,7 @@ export interface ojTreemapNodeSettableProperties<K = any, D = any> extends dvtBa
     selectable?: 'off' | 'auto';
     shortDesc?: (string | ((context: ojTreemap.NodeShortDescContext<K, D>) => string));
     svgClassName?: string;
+    /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     value: number;
 }
@@ -616,6 +619,7 @@ export namespace TreemapElement {
         selectable?: 'auto' | 'off';
         shortDesc?: (string | ((context: ojTreemap.NodeShortDescContext<K, D>) => string));
         svgClassName?: string;
+        /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         value: number;
     };
@@ -646,13 +650,13 @@ export namespace TreemapElement {
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type NodeTemplateContext = {
+    type NodeTemplateContext<K, D> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
-        parentData: any[];
-        parentKey: any;
+        key: K;
+        parentData: D[];
+        parentKey: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K, D> = {
@@ -668,7 +672,7 @@ export namespace TreemapElement {
     // tslint:disable-next-line interface-over-type-literal
     type RenderNodeContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeContentContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
-    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    type RenderNodeTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
 }
@@ -755,7 +759,7 @@ export interface TreemapNodeIntrinsicProps extends Partial<Readonly<ojTreemapNod
     onselectableChanged?: (value: ojTreemapNodeEventMap<any, any>['selectableChanged']) => void;
     onshortDescChanged?: (value: ojTreemapNodeEventMap<any, any>['shortDescChanged']) => void;
     onsvgClassNameChanged?: (value: ojTreemapNodeEventMap<any, any>['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojTreemapNodeEventMap<any, any>['svgStyleChanged']) => void;
+    /** @deprecated since 18.1.0 */ onsvgStyleChanged?: (value: ojTreemapNodeEventMap<any, any>['svgStyleChanged']) => void;
     onvalueChanged?: (value: ojTreemapNodeEventMap<any, any>['valueChanged']) => void;
     children?: ComponentChildren;
 }

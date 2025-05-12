@@ -4733,13 +4733,25 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           ) {
             for (i = 0; i < data.length; i++) {
               var parentKey = parentKeys[i];
-              var index = this._getInsertIndex(metadata[i].key, parentKey, finalKeys);
+
+              let parentItem;
+              if (!this._isDefined(parentKey)) {
+                parentItem = this.element[0];
+              } else {
+                parentItem = this._getItemByKey(parentKey);
+              }
+
+              var index = this._getInsertIndex(
+                parentItem,
+                addEvent.indexes[i],
+                metadata[i].key,
+                finalKeys
+              );
               if (index === null) {
                 // cannot find index, skip this iteration
                 // eslint-disable-next-line no-continue
                 continue;
               }
-              var parentItem = this._getItemByKey(parentKey);
               var subtree;
               if (parentKey == null) {
                 subtree = this._getRoot();
@@ -4755,23 +4767,36 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           addEventBusyResolve();
         });
       },
-      _getInsertIndex: function (key, parentKey, finalKeys) {
-        let parent;
-        if (!parentKey) {
-          parent = this.element[0];
-        } else {
-          parent = this._getItemByKey(parentKey);
-        }
+      _isDefined: function (value) {
+        return value !== null && value !== undefined;
+      },
+      //  A helper function to get the index for insertion.
+      //  If the index exists (i.e. the index provided by the add event detail), return this index,
+      //  except when the children DOM elements don't exist (i.e. when the parent never expanded), return 0.
+      //  If the index doesn't exist, iterate through the children DOM elements
+      //  to find out the index.
+      _getInsertIndex: function (parentItem, index, key, finalKeys) {
         // bad parent key or do not have parentKey yet
         // potentially parent added out of order real gross
-        if (!parent) {
+        if (!parentItem) {
           return null;
         }
+
+        if (!this._isDefined(index)) {
+          // parentItem should be valid here
+          return this._calcInsertIndex(parentItem, key, finalKeys);
+        }
+
+        const subtree = parentItem.querySelector('.' + this.constants.OJ_TREEVIEW_LIST);
+        return subtree ? index : 0;
+      },
+      // A helper function that iterates through the children DOM elements to find out the index for insertion
+      _calcInsertIndex: function (parentItem, key, finalKeys) {
         let finalKeysIndex = finalKeys.indexOf(key);
         if (finalKeysIndex === -1) {
           return null;
         }
-        let childItems = this._getChildItems(parent);
+        let childItems = this._getChildItems(parentItem);
         // assume insert at end
         let index = childItems.length;
         for (let i = 0; i < childItems.length; i++) {

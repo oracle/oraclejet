@@ -9358,6 +9358,13 @@ class DvtDiagramOverview extends Overview {
 
     return overviewClone;
   }
+
+  /**
+   * @override
+   */
+  flipOnRtl() {
+    return false;
+  }
 }
 
 /**

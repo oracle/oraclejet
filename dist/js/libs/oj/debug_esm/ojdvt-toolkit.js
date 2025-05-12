@@ -15833,6 +15833,22 @@ MultilineText.prototype.setTextString = function (textString) {
 };
 
 /**
+ * Sets the aria property of the multiline text.
+ */
+MultilineText.prototype.setAriaProperty = function (property, value, bForce) {
+  MultilineText.superclass.setAriaProperty.call(this, property, value, bForce);
+
+  // JET-73110: aria properties are stored in _textInstance.
+  // maybe do this for all properties later if needed.
+  if (this._textInstance && property === 'hidden') {
+    this._textInstance.setAriaProperty(property, value, bForce);
+    this._additionalLines.forEach((text) => {
+      text.setAriaProperty(property, value, bForce);
+    });
+  }
+};
+
+/**
  * Returns an array with pointers to all the lines in this MultilineText object
  * @return {Array} the lines in this object.
  * @private

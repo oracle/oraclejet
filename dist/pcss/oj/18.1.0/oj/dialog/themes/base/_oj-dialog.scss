@@ -17,7 +17,7 @@
   .oj-dialog-container {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: auto;
     width: 100%;
     height: 100%;
     max-height: inherit;
@@ -39,6 +39,7 @@
     width: 600px;
     min-width: 200px;
     max-width: calc(100vw - 3rem);
+    min-height: 200px;
     max-height: calc(100vh - 3rem);
     height: auto;
     // note: min-height overrides height auto, so do not
@@ -177,6 +178,10 @@
     -webkit-overflow-scrolling: touch;
     // configure the dialog content to grow and shrink on resize
     flex: 1 1 auto;
+  }
+
+  .oj-dialog.oj-dialog-small-height .oj-dialog-content {
+    flex: 1 0 auto;
   }
 
   .oj-dialog-body-wrapper {

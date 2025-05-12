@@ -201,6 +201,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
    *               {target: "Type", value: "?(string | ((context: oj.ojSunburst.NodeShortDescContext<K,D>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "<K,D=any>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "svgStyle", since: "18.1.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    */
 
   /**
@@ -281,6 +282,11 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @property {any} key The key of the current node
    * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
    * @property {any} parentKey  The key of the parent node
+   * @ojsignature [{target: "Type", value: "D", for: "data"},
+   *               {target: "Type", value: "K", for: "key"},
+   *               {target: "Type", value: "D[]", for:"parentData"},
+   *               {target: "Type", value: "K", for:"parentKey"},
+   *               {target: "Type", value: "<K,D>", for: "genericTypeParameters"}]
    */
 
   // Slots
@@ -532,6 +538,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @type {Object=}
    * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}]
    * @default {}
+   * @ojdeprecated {since: "18.1.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    */
   /**
    * The label for this node.

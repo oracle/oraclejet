@@ -73,9 +73,17 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
         this.autoDismissHandler = (event) => {
             const focusables = DrawerUtils.getFocusables(this.rootRef.current);
             const zorderLayer = this.rootRef.current.parentNode;
+            const zorderLayerParent = zorderLayer.parentElement;
             const isTargetWithin = this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings(zorderLayer, event.target);
-            if (this.props.autoDismiss === 'focus-loss' && !isTargetWithin) {
-                this.selfClose();
+            const isTargetWithinLayerParent = zorderLayerParent.contains(event.target);
+            const isTargetWithinLauncher = this.drawerOpener !== document.body && this.drawerOpener.contains(event.target);
+            if (this.props.autoDismiss === 'focus-loss') {
+                if (this.props.modality === 'modal' && !isTargetWithinLayerParent) {
+                    return;
+                }
+                else if (!(isTargetWithin || isTargetWithinLauncher)) {
+                    this.selfClose();
+                }
             }
             else if (this.props.autoDismiss === 'none' &&
                 this.props.modality === 'modal' &&

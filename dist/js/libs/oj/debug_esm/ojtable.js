@@ -2068,26 +2068,16 @@ Table.prototype._checkViewportRejected = function () {
  * @private
  */
 Table.prototype._clearDataWaitingState = function (ignoreStatusMessage) {
-  if (this._pendingFetchStale) {
-    this._pendingFetchStale = false;
-    this._queueTask(
-      function () {
-        this._getLayoutManager().notifyTableUpdate(Table._UPDATE._DATA_REFRESH);
-        this._beforeDataRefresh();
-        return this._invokeDataFetchRows(this._pendingFetchOptions);
-      }.bind(this)
-    );
-  } else {
-    if (!ignoreStatusMessage) {
-      this._hideStatusMessage();
-    }
-    this._dataFetching = false;
-    this._pendingFetchStale = false;
+  if (!ignoreStatusMessage) {
+    this._hideStatusMessage();
+  }
+  this._dataFetching = false;
+  if (!this._hasRefreshInQueue) {
     this._pendingFetchOptions = null;
-    if (this._dataResolveFunc) {
-      this._dataResolveFunc();
-      this._dataResolveFunc = null;
-    }
+  }
+  if (this._dataResolveFunc) {
+    this._dataResolveFunc();
+    this._dataResolveFunc = null;
   }
 };
 
@@ -2242,8 +2232,6 @@ Table.prototype._clearScrollPosBusyState = function () {
  */
 Table.prototype._clearAllComponentBusyStates = function () {
   this._clearBusyStateStack();
-  // clear any pending fetch state to ensure clearing data waiting state below does not queue addition fetches
-  this._pendingFetchStale = false;
   this._clearDataWaitingState();
   this._clearFocusoutBusyState();
   this._clearIdleRenderBusyState();
@@ -2260,7 +2248,8 @@ Table.prototype._cleanComponent = function (isDestroy) {
   // cleanup needed for both, 'destroy()' and 'ReleaseResources()' calls
   this._animateOnFetch = null;
   this._isEditPending = null;
-  this._focusoutEditKey = null;
+  this._isApplyingEdit = null;
+  this._deferredEditInfo = null;
   this._skipScrollOnFocus = null;
   this._active = null;
   this._isTableTab = null;
@@ -2587,17 +2576,15 @@ Table.prototype._refresh = function () {
   this._clearIdleCallback();
 
   // update edit state based on row removals before rows are removed to ensure row context is available
-  if (this._hasEditableRow()) {
-    // exit edit mode if editable row is deleted - treat as cancelling the edit
-    this._setTableEditable(false, true);
-  }
+  var beforeFetchPromise = this._hasEditableRow()
+    ? this._setTableEditable(false, true)
+    : Promise.resolve();
 
   // ensure we register 'refresh' update here
   this._getLayoutManager().notifyTableUpdate(Table._UPDATE._REFRESH);
-  if (initFetch) {
-    return this._initFetch();
-  }
-  return this._invokeDataFetchRows();
+  return beforeFetchPromise.then(() => {
+    return initFetch ? this._initFetch() : this._invokeDataFetchRows();
+  });
 };
 
 /**
@@ -4507,21 +4494,34 @@ Table.prototype._handleSortTableHeaderColumn = function (columnIdx, ascending, e
  * @private
  */
 Table.prototype._processFetchSort = function (result) {
-  try {
-    var fetchParameters = result.fetchParameters;
-    var sortCriteria = fetchParameters[Table._CONST_SORTCRITERIA];
-    if (sortCriteria != null && sortCriteria.length > 0) {
-      var sortAttribute = sortCriteria[0].attribute;
-      var sortDirection = sortCriteria[0].direction === Table._COLUMN_SORT_ORDER._ASCENDING;
-      this._refreshSortTableHeaderColumn(sortAttribute, sortDirection);
-      // set the current row
-      this._setCurrentRow(this.options.currentRow);
-    } else {
-      this._clearSortedHeaderColumn();
-    }
-  } catch (e) {
-    error(e);
-  }
+  return new Promise(
+    function (resolve) {
+      try {
+        var fetchParameters = result.fetchParameters;
+        var sortCriteria = fetchParameters[Table._CONST_SORTCRITERIA];
+        if (sortCriteria != null && sortCriteria.length > 0) {
+          var sortAttribute = sortCriteria[0].attribute;
+          var sortDirection = sortCriteria[0].direction === Table._COLUMN_SORT_ORDER._ASCENDING;
+          this._refreshSortTableHeaderColumn(sortAttribute, sortDirection);
+          // set the current row
+          var currentStatus = this._setCurrentRow(this.options.currentRow);
+          if (currentStatus instanceof Promise) {
+            currentStatus.then(() => {
+              resolve();
+            });
+          } else {
+            resolve();
+          }
+        } else {
+          this._clearSortedHeaderColumn();
+          resolve();
+        }
+      } catch (e) {
+        error(e);
+        resolve();
+      }
+    }.bind(this)
+  );
 };
 
 /**
@@ -4983,7 +4983,7 @@ Table.prototype._registerDomScroller = function () {
   // eslint-disable-next-line no-unused-vars
   this._domScrollerErrorFunc = function (reason) {
     // only clear data waiting state on abort if fetch is stale (mutation / refresh events)
-    if (controller && controller.signal.aborted && this._pendingFetchStale) {
+    if (controller && controller.signal.aborted && this._hasRefreshInQueue) {
       this._clearDataWaitingState();
     }
     this._clearScrollBuffer();
@@ -5976,11 +5976,12 @@ Table.prototype._invokeDataFetchRows = function (options) {
               ).then(
                 function () {
                   this._clearDataWaitingState();
-                  this._processFetchSort(value);
-                  if (this._isLoadMoreOnScroll()) {
-                    this._registerDomScroller();
-                  }
-                  resolve(result);
+                  this._processFetchSort(value).then(() => {
+                    if (this._isLoadMoreOnScroll()) {
+                      this._registerDomScroller();
+                    }
+                    resolve(result);
+                  });
                 }.bind(this),
                 // eslint-disable-next-line no-unused-vars
                 function (reason) {
@@ -6060,15 +6061,14 @@ Table.prototype._invokeDataSort = function (sortField, ascending, event) {
     header: sortCriteria[0][Table._CONST_ATTRIBUTE],
     direction: sortCriteria[0].direction
   });
-  this._beforeDataRefresh(true);
   // show the Fetching Data... message
   this._showStatusMessage();
-  this._queueTask(
-    function () {
-      this._getLayoutManager().notifyTableUpdate(Table._UPDATE._DATA_SORT);
+  this._queueTask(() => {
+    this._getLayoutManager().notifyTableUpdate(Table._UPDATE._DATA_SORT);
+    return this._beforeDataRefresh(true).then(() => {
       return this._initFetch({ sortCriteria: sortCriteria }, true);
-    }.bind(this)
-  );
+    });
+  });
 };
 
 /**
@@ -6548,7 +6548,9 @@ TableDndContext.prototype._cloneTableContainer = function (tableContainer) {
           rowClone,
           Table.CSS_CLASSES._TABLE_DATA_ROW_SELECTOR_CLASS
         )[0];
-        selector.selectedKeys = this.component.options.selected.row;
+        selector.selectedKeys = this.component._getRowKeySetFromSelected(
+          this.component.options.selected
+        );
         selector.rowKey = this.component._getRowKey(row);
       }
 
@@ -10342,6 +10344,14 @@ TableStickyLayoutManager.prototype._removeHeaderColumnAndCellColumnWidths = func
   if (selectorCol != null) {
     selectorCol.style[Table.CSS_PROP._WIDTH] = '';
   }
+  var gutterStartCol = this._table._getTableGutterStartCol();
+  if (gutterStartCol != null) {
+    gutterStartCol.style[Table.CSS_PROP._WIDTH] = '';
+  }
+  var gutterEndCol = this._table._getTableGutterEndCol();
+  if (gutterEndCol != null) {
+    gutterEndCol.style[Table.CSS_PROP._WIDTH] = '';
+  }
   var colElements = this._table._getTableCols();
   for (var i = 0; i < colElements.length; i++) {
     var tableCol = colElements[i];
@@ -11603,13 +11613,15 @@ TableContentsLayoutManager.prototype._setAllColumnWidths = function (
   var newColumnWidths = []; // pending widths of all data columns
   this._appliedColumnWidths = []; // pending (and eventually applied) widths of all data columns
 
+  let gutterStartWidth;
+  let gutterEndWidth;
   var totalWidth = this._selectorColWidth != null ? this._selectorColWidth : 0;
   if (this._table._isGutterStartColumnEnabled()) {
-    const gutterStartWidth = this._table._getTableGutterWidth('start');
+    gutterStartWidth = this._table._getTableGutterWidth('start');
     totalWidth += gutterStartWidth;
   }
   if (this._table._isGutterEndColumnEnabled()) {
-    const gutterEndWidth = this._table._getTableGutterWidth('end');
+    gutterEndWidth = this._table._getTableGutterWidth('end');
     totalWidth += gutterEndWidth;
   }
 
@@ -11690,6 +11702,18 @@ TableContentsLayoutManager.prototype._setAllColumnWidths = function (
     var selectorCol = this._table._getTableSelectorCol();
     if (selectorCol != null) {
       selectorCol.style[Table.CSS_PROP._WIDTH] = this._selectorColWidth + Table.CSS_VAL._PX;
+    }
+  }
+  if (this._table._isGutterStartColumnEnabled()) {
+    var gutterStartCol = this._table._getTableGutterStartCol();
+    if (gutterStartCol != null) {
+      gutterStartCol.style[Table.CSS_PROP._WIDTH] = gutterStartWidth + Table.CSS_VAL._PX;
+    }
+  }
+  if (this._table._isGutterEndColumnEnabled()) {
+    var gutterEndCol = this._table._getTableGutterEndCol();
+    if (gutterEndCol != null) {
+      gutterEndCol.style[Table.CSS_PROP._WIDTH] = gutterEndWidth + Table.CSS_VAL._PX;
     }
   }
   for (i = 0; i < columnsCount; i++) {
@@ -12007,13 +12031,15 @@ TableFixedLayoutManager.prototype._setAllColumnWidths = function (
   var newColumnWidths = []; // pending widths of all data columns
   this._appliedColumnWidths = []; // pending (and eventually applied) widths of all data columns
 
+  let gutterStartWidth;
+  let gutterEndWidth;
   var totalWidth = this._selectorColWidth != null ? this._selectorColWidth : 0;
   if (this._table._isGutterStartColumnEnabled()) {
-    const gutterStartWidth = this._table._getTableGutterWidth('start');
+    gutterStartWidth = this._table._getTableGutterWidth('start');
     totalWidth += gutterStartWidth;
   }
   if (this._table._isGutterEndColumnEnabled()) {
-    const gutterEndWidth = this._table._getTableGutterWidth('end');
+    gutterEndWidth = this._table._getTableGutterWidth('end');
     totalWidth += gutterEndWidth;
   }
 
@@ -12075,6 +12101,18 @@ TableFixedLayoutManager.prototype._setAllColumnWidths = function (
     var selectorCol = this._table._getTableSelectorCol();
     if (selectorCol != null) {
       selectorCol.style[Table.CSS_PROP._WIDTH] = this._selectorColWidth + Table.CSS_VAL._PX;
+    }
+  }
+  if (this._table._isGutterStartColumnEnabled()) {
+    var gutterStartCol = this._table._getTableGutterStartCol();
+    if (gutterStartCol != null) {
+      gutterStartCol.style[Table.CSS_PROP._WIDTH] = gutterStartWidth + Table.CSS_VAL._PX;
+    }
+  }
+  if (this._table._isGutterEndColumnEnabled()) {
+    var gutterEndCol = this._table._getTableGutterEndCol();
+    if (gutterEndCol != null) {
+      gutterEndCol.style[Table.CSS_PROP._WIDTH] = gutterEndWidth + Table.CSS_VAL._PX;
     }
   }
   for (i = 0; i < columnsCount; i++) {
@@ -12776,6 +12814,22 @@ Table.prototype._unregisterDataSourceEventListeners = function () {
 };
 
 /**
+ * Helper method to handle mutation events while a pending fetch is already in progress
+ */
+Table.prototype._handleStaleDataMutation = function (options) {
+  if (this._controller) {
+    this._controller.abort(getAbortReason(this.OuterWrapper));
+  }
+  this._hasRefreshInQueue = true;
+  this._queueTask(() => {
+    this._getLayoutManager().notifyTableUpdate(Table._UPDATE._DATA_REFRESH);
+    return this._beforeDataRefresh().then(() => {
+      return this._invokeDataFetchRows(options);
+    });
+  });
+};
+
+/**
  * Callback handler for refresh in the datasource. Refresh entire
  * table body DOM and refresh the table dimensions.
  * @param {Object} event
@@ -12789,11 +12843,7 @@ Table.prototype._handleDataRefresh = function (event) {
     }
     // if already handling a fetch, mark pending fetch result as stale (to ensure new fetch is triggered), abort, and return
     if (this._dataFetching) {
-      if (this._controller) {
-        this._controller.abort(getAbortReason(this.OuterWrapper));
-      }
-      this._pendingFetchStale = true;
-      this._pendingFetchOptions = null;
+      this._handleStaleDataMutation();
       return;
     }
     if (event.detail && event.detail.disregardAfterKey !== undefined) {
@@ -12802,24 +12852,24 @@ Table.prototype._handleDataRefresh = function (event) {
           this._getLayoutManager().notifyTableUpdate(Table._UPDATE._ROWS_REMOVED);
           // reset active row to ensure active row index is not stale after refresh
           this._clearActiveRow(null, true);
-          this._removeRowsAfterLastValidRow(event.detail.disregardAfterKey);
-          if (!this._hasMoreToFetch()) {
-            this._registerDomScroller();
-          }
-          this._animateOnFetch = true;
+          return this._removeRowsAfterLastValidRow(event.detail.disregardAfterKey).then(() => {
+            if (!this._hasMoreToFetch()) {
+              this._registerDomScroller();
+            }
+            this._animateOnFetch = true;
+          });
         }.bind(this)
       );
     } else {
       this._hasRefreshInQueue = true;
-      this._queueTask(
-        function () {
-          this._getLayoutManager().notifyTableUpdate(Table._UPDATE._DATA_REFRESH);
-          // reset active row to ensure active row index is not stale after refresh
-          this._clearActiveRow(null, true);
-          this._beforeDataRefresh();
+      this._queueTask(() => {
+        this._getLayoutManager().notifyTableUpdate(Table._UPDATE._DATA_REFRESH);
+        // reset active row to ensure active row index is not stale after refresh
+        this._clearActiveRow(null, true);
+        return this._beforeDataRefresh().then(() => {
           return this._invokeDataFetchRows();
-        }.bind(this)
-      );
+        });
+      });
     }
   } catch (e) {
     error(e);
@@ -12838,13 +12888,12 @@ Table.prototype._beforeDataRefresh = function (isSort) {
   if (this._lastSelectedRowIdxArray != null) {
     this._lastSelectedRowIdxArray = [];
   }
-  // update edit state based on row removals before rows are removed to ensure row context is available
-  if (this._hasEditableRow()) {
-    // exit edit mode if editable row is deleted - treat as cancelling the edit
-    this._setTableEditable(false, true);
-  }
   // reset selection validation state if data refreshed or changed
   this._initialSelectionStateValidated = false;
+
+  // update edit state based on row removals before rows are removed to ensure row context is available
+  // exit edit mode if editable row is deleted - treat as cancelling the edit
+  return this._hasEditableRow() ? this._setTableEditable(false, true) : Promise.resolve();
 };
 
 /**
@@ -12853,24 +12902,33 @@ Table.prototype._beforeDataRefresh = function (isSort) {
  * @private
  */
 Table.prototype._removeRowsAfterLastValidRow = function (lastValidKey) {
-  if (this._getCurrentScrollPosition().y > 0) {
-    this._bufferScrollerForLastRow(lastValidKey);
-  }
-  var lastValidItemIdx = this._getRowIdxForRowKey(lastValidKey);
-  if (lastValidItemIdx >= 0) {
-    // update edit state based on row removals before rows are removed to ensure row context is available
-    if (this._hasEditableRow()) {
-      if (this._getEditableRowIdx() > lastValidItemIdx) {
-        // exit edit mode if editable row is deleted - treat as cancelling the edit
-        this._setTableEditable(false, true);
+  return new Promise(
+    function (resolve) {
+      if (this._getCurrentScrollPosition().y > 0) {
+        this._bufferScrollerForLastRow(lastValidKey);
       }
-    }
-    var tableBodyRows = this._getTableBodyRows();
-    var tableBodyRowsCount = tableBodyRows.length;
-    for (var i = tableBodyRowsCount - 1; i > lastValidItemIdx; i--) {
-      this._removeTableBodyRow(i);
-    }
-  }
+      var lastValidItemIdx = this._getRowIdxForRowKey(lastValidKey);
+      if (lastValidItemIdx >= 0) {
+        // update edit state based on row removals before rows are removed to ensure row context is available
+        // exit edit mode if editable row is deleted - treat as cancelling the edit
+        var updateEditable =
+          this._hasEditableRow() && this._getEditableRowIdx() > lastValidItemIdx
+            ? this._setTableEditable(false, true)
+            : Promise.resolve();
+
+        updateEditable.then(() => {
+          var tableBodyRows = this._getTableBodyRows();
+          var tableBodyRowsCount = tableBodyRows.length;
+          for (var i = tableBodyRowsCount - 1; i > lastValidItemIdx; i--) {
+            this._removeTableBodyRow(i);
+          }
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+    }.bind(this)
+  );
 };
 
 /**
@@ -12907,14 +12965,15 @@ Table.prototype._bufferScrollerForLastRow = function (lastValidKey) {
  * @private
  */
 Table.prototype._handleDataRowMutate = function (event) {
-  if (this._dataFetching) {
-    if (this._controller) {
-      this._controller.abort(getAbortReason(this.OuterWrapper));
+  try {
+    // if a refresh is already in the queue, but a fetch hasn't started, just return
+    if (this._hasRefreshInQueue) {
+      return;
     }
-    this._pendingFetchStale = true;
-    return;
-  }
-  try{
+    if (this._dataFetching) {
+      this._handleStaleDataMutation(this._pendingFetchOptions);
+      return;
+    }
     var self = this;
     this._queueTask(() => {
       return self._handleDataRowRemove(event.detail.remove, event.detail.add).then((resetFocus) => {
@@ -13012,15 +13071,6 @@ Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
       }
     }
 
-    // update edit state based on row removals before rows are removed to ensure row context is available
-    if (self._hasEditableRow()) {
-      var editRowKey = self._getEditableRowKey();
-      if (containsKey([...eventDetail[Table._CONST_KEYS]], editRowKey)) {
-        // exit edit mode if editable row is deleted - treat as cancelling the edit
-        self._setTableEditable(false, true);
-      }
-    }
-
     // eslint-disable-next-line no-inner-declarations
     function _removeRows() {
       var ii;
@@ -13102,26 +13152,33 @@ Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
       return Promise.resolve();
     }
 
-    if (removeAll) {
-      self._removeAllTableBodyRows();
-      return _afterRemoveRows().then(function () {
-        return Promise.resolve(resetFocus);
-      });
-    }
     return new Promise(function (resolve) {
-      if (self._IsCustomElement()) {
-        return self
-          ._animateVisibleRows(removedTableBodyRows, rowIdxArray, 'remove')
-          .then(function () {
+      // update edit state based on row removals before rows are removed to ensure row context is available
+      // exit edit mode if editable row is deleted - treat as cancelling the edit
+      var updateEditable =
+        self._hasEditableRow() &&
+        containsKey(eventDetailKeys, self._getEditableRowKey())
+          ? self._setTableEditable(false, true)
+          : Promise.resolve();
+
+      updateEditable.then(() => {
+        if (removeAll) {
+          self._removeAllTableBodyRows();
+          _afterRemoveRows().then(() => {
+            resolve(resetFocus);
+          });
+        } else {
+          var handleAnimation = self._IsCustomElement()
+            ? self._animateVisibleRows(removedTableBodyRows, rowIdxArray, 'remove')
+            : Promise.resolve();
+
+          handleAnimation.then(() => {
             _removeRows();
-            return _afterRemoveRows().then(function () {
+            _afterRemoveRows().then(() => {
               resolve(resetFocus);
             });
           });
-      }
-      _removeRows();
-      return _afterRemoveRows().then(function () {
-        resolve(resetFocus);
+        }
       });
     });
   }
@@ -14223,8 +14280,8 @@ Table.prototype._createTableBodyDefaultSelector = function (rowKey, tableBodyRow
 
   var selector = document.createElement('oj-selector');
   selector.id = this._getTableUID() + '_table_selector_' + rowKey;
-  let rowSelected = this.options.selected.row;
-  if (rowSelected.has(rowKey)) {
+  var rowKeySet = this._getRowKeySetFromSelected(this.options.selected);
+  if (rowKeySet.has(rowKey)) {
     selector.selectedKeys = new KeySetImpl([rowKey]);
   } else {
     selector.selectedKeys = new KeySetImpl();
@@ -14268,7 +14325,7 @@ Table.prototype._createTableHeaderSelectorColumn = function () {
 
   if (this._isSelectAllControlVisible()) {
     var selector = document.createElement('oj-selector');
-    selector.selectedKeys = this.options.selected.row;
+    selector.selectedKeys = this._getRowKeySetFromSelected(this.options.selected);
     selector.setAttribute(Table._DATA_OJ_BINDING_PROVIDER, 'none'); // @HTMLUpdateOK
     selector.classList.add(Table.CSS_CLASSES._TABLE_HEADER_SELECTOR_CLASS);
     selector.setAttribute('selection-mode', 'all');
@@ -15427,6 +15484,35 @@ Table.prototype._getTableSelectorCol = function () {
       if (children[i].classList.contains(Table.CSS_CLASSES._TABLE_COL_SELECTOR_CLASS)) {
         return children[i];
       }
+    }
+  }
+  return null;
+};
+
+Table.prototype._getTableGutterStartCol = function () {
+  var tableColGroup = this._getTableColGroup();
+  if (
+    tableColGroup != null &&
+    tableColGroup.children != null &&
+    tableColGroup.children.length > 0 &&
+    tableColGroup.children[0].classList.contains(Table.CSS_CLASSES._TABLE_COL_GUTTER_CLASS)
+  ) {
+    return tableColGroup.children[0];
+  }
+  return null;
+};
+
+Table.prototype._getTableGutterEndCol = function () {
+  var tableColGroup = this._getTableColGroup();
+  if (tableColGroup != null && tableColGroup.children != null) {
+    var childCount = tableColGroup.children.length;
+    if (
+      childCount > 0 &&
+      tableColGroup.children[childCount - 1].classList.contains(
+        Table.CSS_CLASSES._TABLE_COL_GUTTER_CLASS
+      )
+    ) {
+      return tableColGroup.children[childCount - 1];
     }
   }
   return null;
@@ -17494,7 +17580,6 @@ Table.prototype._handleFocusout = function (event) {
 
   this._setFocusoutBusyState();
   var isClearEditMode = this._hasEditableRow();
-  this._focusoutEditKey = this._getEditableRowKey();
   var isClearActionableMode = this._isTableActionableMode();
 
   // set timeout to stay in editable/actionable mode if focus comes back into the table
@@ -17520,13 +17605,10 @@ Table.prototype._handleFocusout = function (event) {
         this._setTableActionableMode(false, true);
       }
       if (isClearEditMode) {
-        if (this._focusoutEditKey != null) {
-          // only clear edit mode if it was enabled prior to the focusout trigger AND the editRow has not changed
-          this._setTableEditable(false, false, 0, true, event);
-        } else {
-          // otherwise ensure focus remains in the Table if it has not yet been regained and an editrow update is pending
-          table.focus();
-        }
+        this._deferredEditInfo = { editRow: { rowKey: null, rowIndex: -1 }, event };
+        this._queueTask(() => {
+          return this._setEditRow();
+        });
       }
       this._clearFocusoutBusyState();
     }.bind(this),
@@ -17722,13 +17804,17 @@ Table.prototype._events = {
     // ignore key event on the footer or target is editable
     var keyboardCode1 = this._getKeyboardKeys()[0];
 
+    if (this._isPendingEdit()) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (
-      this._isEditPending ||
-      (!isEscapeKeyEvent(keyboardCode1) &&
-        !isEnterKeyEvent(keyboardCode1) &&
-        !isF2KeyEvent(keyboardCode1) &&
-        !isTabKeyEvent(keyboardCode1) &&
-        this._isNodeEditable(event.target))
+      !isEscapeKeyEvent(keyboardCode1) &&
+      !isEnterKeyEvent(keyboardCode1) &&
+      !isF2KeyEvent(keyboardCode1) &&
+      !isTabKeyEvent(keyboardCode1) &&
+      this._isNodeEditable(event.target)
     ) {
       return;
     }
@@ -17832,7 +17918,7 @@ Table.prototype._events = {
     if (
       isEventClickthroughDisabled(event, this._getTable()) ||
       (isFromDefaultSelector(event) && !isShift) ||
-      this._isEditPending
+      this._isPendingEdit()
     ) {
       return;
     }
@@ -17918,7 +18004,7 @@ Table.prototype._events = {
   'mousedown .oj-table-column-header-cell': function (event) {
     if (
       isEventClickthroughDisabled(event, this._getTable()) ||
-      this._isEditPending
+      this._isPendingEdit()
     ) {
       return;
     }
@@ -17935,7 +18021,7 @@ Table.prototype._events = {
   'mousedown .oj-table-footer-cell': function (event) {
     if (
       isEventClickthroughDisabled(event, this._getTable()) ||
-      this._isEditPending
+      this._isPendingEdit()
     ) {
       return;
     }
@@ -18003,7 +18089,7 @@ Table.prototype._events = {
   'mousedown .oj-table-data-cell': function (event) {
     if (
       isEventClickthroughDisabled(event, this._getTable()) ||
-      this._isEditPending
+      this._isPendingEdit()
     ) {
       return;
     }
@@ -18032,7 +18118,7 @@ Table.prototype._events = {
    * invoke a sort on the column data when the mouse clicks the sort icon
    */
   'click .oj-table-sort-icon-container': function (event) {
-    if (this._isEditPending) {
+    if (this._isPendingEdit()) {
       return;
     }
     var columnIdx = this._getElementColumnIdx(event.target);
@@ -18061,7 +18147,7 @@ Table.prototype._events = {
   'click .oj-table-body-row': function (event) {
     if (
       isEventClickthroughDisabled(event, this._getTable()) ||
-      this._isEditPending ||
+      this._isPendingEdit() ||
       !this._shouldAllowSelection()
     ) {
       return;
@@ -18166,7 +18252,13 @@ Table.prototype._events = {
           columnIdx = this._getElementColumnIdx(event.target);
         }
         const rowIdx = this._getElementRowIdx(event.target);
-        this._setEditRow({ rowIndex: rowIdx }, columnIdx);
+        if (rowIdx != null) {
+          const rowKey = this._getRowKeyForRowIdx(rowIdx);
+          this._deferredEditInfo = { editRow: { rowKey }, columnIdx, isNext: true, event };
+          this._queueTask(() => {
+            return this._setEditRow();
+          });
+        }
       }
       this._currentPointerTarget = null;
       this._previousPointerTarget = null;
@@ -18178,7 +18270,7 @@ Table.prototype._events = {
   'contextmenu .oj-table-data-cell': function (event) {
     if (
       isEventClickthroughDisabled(event, this._getTable()) ||
-      this._isEditPending
+      this._isPendingEdit()
     ) {
       return;
     }
@@ -18194,7 +18286,7 @@ Table.prototype._events = {
   'click .oj-table-column-header-cell': function (event) {
     if (
       isEventClickthroughDisabled(event, this._getTable()) ||
-      this._isEditPending ||
+      this._isPendingEdit() ||
       !this._shouldAllowSelection()
     ) {
       return;
@@ -18243,7 +18335,7 @@ Table.prototype._events = {
   'click .oj-table-footer-cell': function (event) {
     if (
       isEventClickthroughDisabled(event, this._getTable()) ||
-      this._isEditPending ||
+      this._isPendingEdit() ||
       !this._shouldAllowSelection()
     ) {
       return;
@@ -18288,7 +18380,7 @@ Table.prototype._events = {
   'click .oj-table-add-row-placeholder': function (event) {
     if (
       isEventClickthroughDisabled(event, this._getTable()) ||
-      this._isEditPending
+      this._isPendingEdit()
     ) {
       return;
     }
@@ -18299,7 +18391,7 @@ Table.prototype._events = {
    * Set dragstart handler for column DnD.
    */
   'dragstart .oj-table-column-header-cell': function (event) {
-    if (this._isEditPending) {
+    if (this._isPendingEdit()) {
       return undefined;
     }
     var eventTarget = this._getEventTargetElement(event);
@@ -18348,7 +18440,7 @@ Table.prototype._events = {
    * handle the dragstart event on rows and invoke event callback.
    */
   'dragstart .oj-table-body-row': function (event) {
-    if (this._isEditPending) {
+    if (this._isPendingEdit()) {
       return undefined;
     }
     return this._getTableDndContext().handleRowDragStart(event);
@@ -18553,9 +18645,16 @@ Table.prototype._registerTouchEvents = function () {
         function (event) {
           return function () {
             var eventTarget = this._getEventTargetElement(event);
-            var columnIdx = this._getElementColumnIdx(eventTarget);
-            this._setTableEditable(true, false, columnIdx, true, event);
-            event.preventDefault();
+            const rowIdx = this._getElementRowIdx(eventTarget);
+            if (rowIdx != null) {
+              const rowKey = this._getRowKeyForRowIdx(rowIdx);
+              var columnIdx = this._getElementColumnIdx(eventTarget);
+              this._deferredEditInfo = { editRow: { rowKey }, columnIdx, isNext: true, event };
+              this._queueTask(() => {
+                return this._setEditRow();
+              });
+              event.preventDefault();
+            }
           }.bind(this);
         }.bind(this)(evt)
       );
@@ -19432,36 +19531,30 @@ Table.prototype._setCurrentRow = function (currentRow, event, optionChange) {
         (updatedCurrentRow == null ||
           !oj$1.KeyUtils.equals(existingCurrentRowKey, updatedCurrentRow.rowKey))
       ) {
-        var updateEditable = this._setTableEditable(false, false, 0, true, event);
-        if (updateEditable instanceof Promise) {
-          return updateEditable.then(
-            function (value) {
-              if (value === false) {
-                this._resetCurrentRow(existingCurrentRow, existingCurrentRowIdx, event);
-                return Table._CURRENT_ROW_STATUS._IGNORED;
-              }
-              var existingBodyRow = this._getTableBodyRow(existingCurrentRowIdx);
-              if (existingBodyRow != null) {
-                existingBodyRow.classList.remove(Table.CSS_CLASSES._TABLE_DATA_CURRENT_ROW_CLASS);
-              }
-              this._currentRow = updatedCurrentRow;
-
-              this._updateCurrentRow(isClearCurrentRow, localRowIndex, event);
-              if (event == null) {
-                // only scroll to the new current row and highlight it if the Table has focus
-                this._setActiveRow(localRowIndex, event, false, !this._hasFocus());
-              }
-              return Table._CURRENT_ROW_STATUS._UPDATED;
-            }.bind(this),
-            function () {
+        return this._setTableEditable(false, false, 0, true, event).then(
+          (value) => {
+            if (value === false) {
               this._resetCurrentRow(existingCurrentRow, existingCurrentRowIdx, event);
               return Table._CURRENT_ROW_STATUS._VETOED;
-            }.bind(this)
-          );
-        } else if (updateEditable === false) {
-          this._resetCurrentRow(existingCurrentRow, existingCurrentRowIdx, event);
-          return Table._CURRENT_ROW_STATUS._VETOED;
-        }
+            }
+            var existingBodyRow = this._getTableBodyRow(existingCurrentRowIdx);
+            if (existingBodyRow != null) {
+              existingBodyRow.classList.remove(Table.CSS_CLASSES._TABLE_DATA_CURRENT_ROW_CLASS);
+            }
+            this._currentRow = updatedCurrentRow;
+
+            this._updateCurrentRow(isClearCurrentRow, localRowIndex, event);
+            if (event == null) {
+              // only scroll to the new current row and highlight it if the Table has focus
+              this._setActiveRow(localRowIndex, event, false, !this._hasFocus());
+            }
+            return Table._CURRENT_ROW_STATUS._UPDATED;
+          },
+          () => {
+            this._resetCurrentRow(existingCurrentRow, existingCurrentRowIdx, event);
+            return Table._CURRENT_ROW_STATUS._VETOED;
+          }
+        );
       }
       var existingBodyRow = this._getTableBodyRow(existingCurrentRowIdx);
       if (existingBodyRow != null) {
@@ -19484,32 +19577,10 @@ Table.prototype._setCurrentRow = function (currentRow, event, optionChange) {
  */
 Table.prototype._resetCurrentRow = function (existingCurrentRow, existingCurrentRowIdx, event) {
   this._currentRow = existingCurrentRow;
-  var currentFocusElement = document.activeElement;
   var accessibleContext = this._getAccessibleContext();
-  var columnIdx = this._getElementColumnIdx(currentFocusElement);
-  this._queueTask(
-    function () {
-      var focusRowIdx = existingCurrentRowIdx;
-      var focusColumnIdx = columnIdx;
-      if (focusRowIdx != null && focusColumnIdx != null) {
-        // prettier-ignore
-        setTimeout( // @HTMLUpdateOK
-          function () {
-            this._setCellFocus(focusRowIdx, focusColumnIdx);
-          }.bind(this),
-          0
-        );
-      } else if (focusRowIdx != null) {
-        // prettier-ignore
-        setTimeout( // @HTMLUpdateOK
-          function () {
-            this._setActiveRow(focusRowIdx, event);
-          }.bind(this),
-          0
-        );
-      }
-    }.bind(this)
-  );
+  if (existingCurrentRowIdx != null) {
+    this._setActiveRow(existingCurrentRowIdx, event);
+  }
   // restore previous accessible row context if current row is not changing
   this._setAccessibleContext(accessibleContext);
   // do not update the currentRow to the new value if updateEditable returned false
@@ -19775,16 +19846,19 @@ Table.prototype._setActive = function (
       // update the current row if we are making a row active
       if (active.type === Table.ACTIVE_ELEMENT_TYPES._DATA_ROW) {
         if (updateCurrent) {
-          const updated = this._setCurrentRow({ rowKey: active.key }, event);
-          if (updated instanceof Promise) {
-            return updated.then((value) => {
-              if (value !== Table._CURRENT_ROW_STATUS._UPDATED) {
-                return false;
-              }
-              this._updateActive(true, active, skipScroll, skipFocus, scrollStuckRow);
-              return true;
+          const currentStatus = this._setCurrentRow({ rowKey: active.key }, event);
+          if (currentStatus instanceof Promise) {
+            this._queueTask(() => {
+              return currentStatus.then((value) => {
+                if (value !== Table._CURRENT_ROW_STATUS._UPDATED) {
+                  return false;
+                }
+                this._updateActive(true, active, skipScroll, skipFocus, scrollStuckRow);
+                return true;
+              });
             });
-          } else if (updated !== Table._CURRENT_ROW_STATUS._UPDATED) {
+            return true;
+          } else if (currentStatus !== Table._CURRENT_ROW_STATUS._UPDATED) {
             return false;
           }
         }
@@ -19799,17 +19873,20 @@ Table.prototype._setActive = function (
     // update the current row if we are clearing an active row
     if (this._hasActiveRow()) {
       if (updateCurrent) {
-        const updated = this._setCurrentRow(null, event);
-        if (updated instanceof Promise) {
-          return updated.then((value) => {
-            if (value !== Table._CURRENT_ROW_STATUS._UPDATED) {
-              return false;
-            }
-            this._unhighlightActive();
-            this._active = null;
-            return true;
+        const currentStatus = this._setCurrentRow(null, event);
+        if (currentStatus instanceof Promise) {
+          this._queueTask(() => {
+            return currentStatus.then((value) => {
+              if (value !== Table._CURRENT_ROW_STATUS._UPDATED) {
+                return false;
+              }
+              this._unhighlightActive();
+              this._active = null;
+              return true;
+            });
           });
-        } else if (updated !== Table._CURRENT_ROW_STATUS._UPDATED) {
+          return true;
+        } else if (currentStatus !== Table._CURRENT_ROW_STATUS._UPDATED) {
           return false;
         }
       }
@@ -20001,9 +20078,10 @@ Table.prototype._updateScrollPositionFromEventDetailRemove = function (eventDeta
     }
   }
   if (this._scrollPosition != null) {
-    var scrollPosRowKey = this._scrollPosition.rowKey != null
-      ? this._scrollPosition.rowKey
-      : this._getRowKeyForRowIdx(this._scrollPosition.rowIndex);
+    var scrollPosRowKey =
+      this._scrollPosition.rowKey != null
+        ? this._scrollPosition.rowKey
+        : this._getRowKeyForRowIdx(this._scrollPosition.rowIndex);
     if (scrollPosRowKey != null) {
       eventDetail[Table._CONST_KEYS].forEach((key) => {
         if (oj$1.KeyUtils.equals(key, scrollPosRowKey)) {
@@ -20831,67 +20909,161 @@ Table.prototype._hasEditableRow = function () {
  * Sets a row to be editable
  * @private
  */
-Table.prototype._setEditRow = function (editRow, columnIdx = 0) {
-  if (!this._isTableEditMode()) {
-    return;
-  }
-  if (this._isEditPending !== true) {
-    this._delayed_edit = null;
-    var rowKey = editRow.rowKey;
-    var rowIndex = editRow.rowIndex;
-    if (rowKey != null || rowIndex > -1) {
-      // an editable row has to be current also
-      var changed = this._setCurrentRow({ rowKey: rowKey, rowIndex: rowIndex });
-      if (changed instanceof Promise) {
-        changed.then(
-          function (value) {
-            if (value === Table._CURRENT_ROW_STATUS._UPDATED) {
-              this._setEditableHelper(columnIdx);
-            } else if (value === Table._CURRENT_ROW_STATUS._IGNORED) {
-              this._scrollToRowHelper(editRow, columnIdx);
-            }
-          }.bind(this)
-        );
-      } else if (changed === Table._CURRENT_ROW_STATUS._UPDATED) {
-        this._setEditableHelper(columnIdx);
-      } else if (changed === Table._CURRENT_ROW_STATUS._IGNORED) {
-        this._scrollToRowHelper(editRow, columnIdx);
+Table.prototype._setEditRow = function () {
+  return new Promise(
+    function (resolve) {
+      if (!this._isTableEditMode()) {
+        resolve();
       }
-    } else {
-      this._setTableEditable(false, false, 0, true, null);
-    }
-  } else {
-    this._delayed_edit = { editRow: editRow, columnIdx: columnIdx };
-  }
+      this._isEditPending = true;
+
+      if (this._deferredEditInfo != null) {
+        var editRow = this._deferredEditInfo.editRow;
+        var columnIdx = this._deferredEditInfo.columnIdx || 0;
+        var isNext = this._deferredEditInfo.isNext;
+        var isCancel = this._deferredEditInfo.isCancel;
+        var event = this._deferredEditInfo.event;
+        this._deferredEditInfo = null;
+
+        var rowKey = editRow.rowKey;
+        var rowIndex = editRow.rowIndex;
+        if (rowKey != null || (rowIndex != null && rowIndex > -1)) {
+          var localRowIndex = rowIndex;
+          // an editable row has to be current also
+          var currentStatus = this._setCurrentRow({ rowKey: rowKey, rowIndex: rowIndex }, event);
+          if (currentStatus instanceof Promise) {
+            currentStatus.then(
+              (value) => {
+                if (value === Table._CURRENT_ROW_STATUS._UPDATED) {
+                  if (rowKey != null) {
+                    localRowIndex = this._getRowIdxForRowKey(rowKey);
+                  }
+                  if (localRowIndex != null) {
+                    this._setActiveRow(localRowIndex, event, true, false, true);
+                    this._scrollRowIntoViewport(localRowIndex, true);
+                  }
+                  this._setTableEditable(true, false, columnIdx, isNext, event).then(
+                    () => {
+                      this._isEditPending = false;
+                      resolve();
+                    },
+                    () => {
+                      this._isEditPending = false;
+                      resolve();
+                    }
+                  );
+                } else if (value === Table._CURRENT_ROW_STATUS._IGNORED) {
+                  this._scrollToRowHelper(editRow, columnIdx, isNext, event, resolve);
+                } else {
+                  this._isEditPending = false;
+                  resolve();
+                }
+              },
+              () => {
+                this._isEditPending = false;
+                resolve();
+              }
+            );
+          } else if (currentStatus === Table._CURRENT_ROW_STATUS._UPDATED) {
+            if (rowKey != null) {
+              localRowIndex = this._getRowIdxForRowKey(rowKey);
+            }
+            if (localRowIndex != null) {
+              this._setActiveRow(localRowIndex, event, true, false, true);
+              this._scrollRowIntoViewport(localRowIndex, true);
+            }
+            this._setTableEditable(true, false, columnIdx, isNext, event).then(
+              () => {
+                this._isEditPending = false;
+                resolve();
+              },
+              () => {
+                this._isEditPending = false;
+                resolve();
+              }
+            );
+          } else if (currentStatus === Table._CURRENT_ROW_STATUS._IGNORED) {
+            this._scrollToRowHelper(editRow, columnIdx, isNext, event, resolve);
+          } else {
+            this._isEditPending = false;
+            resolve();
+          }
+        } else {
+          this._setTableEditable(false, isCancel, 0, true, event).then(
+            () => {
+              this._isEditPending = false;
+              resolve();
+            },
+            () => {
+              this._isEditPending = false;
+              resolve();
+            }
+          );
+        }
+      } else {
+        this._isEditPending = false;
+        resolve();
+      }
+    }.bind(this)
+  );
 };
 
-/**
- * Helper method to set table editable
- * @private
- */
-Table.prototype._setEditableHelper = function (columnIdx) {
-  if (this._delayed_edit != null) {
-    return;
-  }
-  this._setTableEditable(true, false, columnIdx, true, null);
+Table.prototype._isPendingEdit = function () {
+  return this._isEditPending || this._deferredEditInfo != null || this._isApplyingEdit;
 };
 
 /**
  * Helper method to scroll to row and invoke _setEditRow
  * @private
  */
-Table.prototype._scrollToRowHelper = function (editRow, columnIdx) {
+Table.prototype._scrollToRowHelper = function (editRow, columnIdx, isNext, event, resolve) {
   // try to scroll to editRow.rowKey
-  const _scrollTop = this._scrollTop;
-  if (!this._syncScrollPosition({ rowKey: editRow.rowKey, rowIndex: editRow.rowIndex })) {
-    // this will be invoked after scroll and fetch is done
-    this._editRowCallback = function () {
-      // try again after scroll and fetch
-      if (this._scrollTop !== _scrollTop) {
-        this._setEditRow(editRow, columnIdx);
-      }
-    }.bind(this);
+  const scrollTop = this._scrollTop;
+  if (editRow.rowKey != null) {
+    var validationPromise = this._validateKeyForScroll(editRow.rowKey);
+    if (validationPromise != null) {
+      validationPromise.then(
+        (valid) => {
+          if (valid) {
+            this._setupEditRowCallback(editRow, columnIdx, isNext, scrollTop, event);
+            this._syncScrollPosition({ rowKey: editRow.rowKey }, true);
+          }
+          this._isEditPending = false;
+          resolve();
+        },
+        () => {
+          this._isEditPending = false;
+          resolve();
+        }
+      );
+    } else {
+      this._isEditPending = false;
+      resolve();
+    }
+  } else {
+    if (!this._syncScrollPosition({ rowIndex: editRow.rowIndex })) {
+      this._setupEditRowCallback(editRow, columnIdx, isNext, scrollTop, event);
+    }
+    this._isEditPending = false;
+    resolve();
   }
+};
+
+/**
+ * Helper method to setup a scroll callback for honoring an edit row setting.
+ */
+Table.prototype._setupEditRowCallback = function (editRow, columnIdx, isNext, scrollTop, event) {
+  // this will be invoked after scroll and fetch is done
+  this._editRowCallback = function () {
+    // try again after scroll and fetch
+    var currentScrollTop = this._getLayoutManager().getScroller().scrollTop;
+    if (currentScrollTop !== scrollTop && this._deferredEditInfo == null) {
+      this._deferredEditInfo = { editRow, columnIdx, isNext, event };
+      this._queueTask(() => {
+        return this._setEditRow();
+      });
+    }
+  }.bind(this);
 };
 
 /**
@@ -20924,46 +21096,20 @@ Table.prototype._setEditableRowIdx = function (rowIdx) {
  * Set the next or previous row as editable
  * @private
  */
-Table.prototype._setAdjacentRowEditable = function (columnIdx, origColumnIdx, isNext, event) {
-  var editableRowIdx = this._getEditableRowIdx();
-  var updateEditable = this._setTableEditable(false, false, columnIdx, isNext, event);
-  if (updateEditable instanceof Promise) {
-    updateEditable.then(
-      function () {
-        this._queueTask(
-          function () {
-            this._handleAdjacentEditEndSuccessful(columnIdx, editableRowIdx, isNext, event);
-          }.bind(this)
-        );
-      }.bind(this),
-      function () {
-        this._queueTask(
-          function () {
-            this._handleEditEndRejected(origColumnIdx, editableRowIdx, !isNext);
-          }.bind(this)
-        );
-      }.bind(this)
-    );
-  } else if (updateEditable === false) {
-    this._handleEditEndRejected(origColumnIdx, editableRowIdx, !isNext);
-  } else {
-    this._handleAdjacentEditEndSuccessful(columnIdx, editableRowIdx, isNext, event);
-  }
-};
-
-/**
- * Helper method when attempting to set the adjacent row as editable
- * @private
- */
-Table.prototype._handleAdjacentEditEndSuccessful = function (columnIdx, rowIdx, isNext, event) {
+Table.prototype._setAdjacentRowEditable = function (focusedRowIdx, columnIdx, isNext, event) {
   var tableBodyRows = this._getTableBodyRows();
-  var newRowIdx = this._findAdjacentEditableRow(rowIdx, tableBodyRows, isNext);
+  var newRowIdx = this._findAdjacentEditableRow(focusedRowIdx, tableBodyRows, isNext);
   if (newRowIdx !== null) {
-    this._setActiveRow(newRowIdx, event, true, false, true);
-    this._setTableEditable(true, false, columnIdx, isNext, event);
+    var rowKey = this._getRowKeyForRowIdx(newRowIdx);
+    if (rowKey != null) {
+      this._deferredEditInfo = { editRow: { rowKey }, columnIdx, isNext, event };
+    }
   } else {
-    this._getTable().focus();
+    this._deferredEditInfo = { editRow: { rowKey: null, rowIndex: -1 }, event };
   }
+  this._queueTask(() => {
+    return this._setEditRow();
+  });
 };
 
 /**
@@ -20986,13 +21132,6 @@ Table.prototype._findAdjacentEditableRow = function (rowIdx, tableBodyRows, isNe
     }
   }
   return null;
-};
-
-/**
- * @private
- */
-Table.prototype._handleEditEndRejected = function (origColumnIdx, rowIdx, isNext) {
-  this._setCellInRowFocus(rowIdx, origColumnIdx, isNext);
 };
 
 /**
@@ -21026,238 +21165,282 @@ Table.prototype._setTableEditable = function (
   forwardSearch,
   event
 ) {
-  if (!this._isTableEditMode() || this._isEditPending) {
-    return undefined;
-  }
-  var isLegacyDataSource = this._getData() instanceof oj$1.TableDataSourceAdapter;
-  var currentRow = this._getCurrentRow();
-  if (currentRow != null) {
-    const rowElementToBeEdited = this._getRowToBeEdited(currentRow);
-    if (
-      rowElementToBeEdited &&
-      rowElementToBeEdited[Table._DATA_OJ_EDITABLE] !== Table._CONST_OFF
-    ) {
-      var rowKey = currentRow.rowKey;
-      var rowIdx = this._getRowIdxForRowKey(rowKey);
-      var tableBodyRow;
-      var rowContext;
-      var updateEditMode;
-      var newEditRowValue;
-      var editAcceptPromiseArray = [];
-      let updatedItemPromise;
+  return new Promise(
+    function (resolve) {
+      if (!this._isTableEditMode()) {
+        resolve();
+        return;
+      }
 
-      // save the old editable row info
-      var prevEditableRowKey = this._getEditableRowKey();
+      var isLegacyDataSource = this._getData() instanceof oj$1.TableDataSourceAdapter;
+      var currentRow = this._getCurrentRow();
+      if (currentRow != null) {
+        this._isApplyingEdit = true;
+        const rowElementToBeEdited = this._getRowToBeEdited(currentRow);
+        if (
+          rowElementToBeEdited &&
+          rowElementToBeEdited[Table._DATA_OJ_EDITABLE] !== Table._CONST_OFF
+        ) {
+          var rowKey = currentRow.rowKey;
+          var rowIdx = this._getRowIdxForRowKey(rowKey);
+          var tableBodyRow;
+          var rowContext;
+          var updateEditMode;
+          var newEditRowValue;
+          var editAcceptPromiseArray = [];
+          let updatedItemPromise;
 
-      try {
-        if (editable && !this._hasEditableRow()) {
-          // fire the beforeEdit event if there are no existing editable rows
-          // and we are starting edit on a row
-          tableBodyRow = this._getTableBodyRow(rowIdx);
-          rowContext = this._getRendererContextObject(tableBodyRow, {
-            row: {
-              key: rowKey,
-              index: currentRow.rowIndex
-            },
-            isCurrentRow: true
-          });
-          rowContext.item = tableBodyRow[Table._ROW_ITEM_EXPANDO];
-          updateEditMode = this._trigger('beforeRowEdit', event, {
-            accept: function (acceptPromise) {
-              editAcceptPromiseArray.push(acceptPromise);
-            },
-            rowContext: rowContext
-          });
-          if (updateEditMode) {
-            newEditRowValue = { rowKey: rowKey, rowIndex: rowIdx };
+          // save the old editable row info
+          var prevEditableRowKey = this._getEditableRowKey();
+
+          try {
+            if (editable && !this._hasEditableRow()) {
+              // fire the beforeEdit event if there are no existing editable rows
+              // and we are starting edit on a row
+              tableBodyRow = this._getTableBodyRow(rowIdx);
+              rowContext = this._getRendererContextObject(tableBodyRow, {
+                row: {
+                  key: rowKey,
+                  index: currentRow.rowIndex
+                },
+                isCurrentRow: true
+              });
+              rowContext.item = tableBodyRow[Table._ROW_ITEM_EXPANDO];
+              updateEditMode = this._trigger('beforeRowEdit', event, {
+                accept: function (acceptPromise) {
+                  editAcceptPromiseArray.push(acceptPromise);
+                },
+                rowContext: rowContext
+              });
+              if (updateEditMode) {
+                newEditRowValue = { rowKey: rowKey, rowIndex: rowIdx };
+              }
+            } else if (!editable && this._hasEditableRow()) {
+              // only trigger the beforeRowEditEnd if we are actually ending an edit
+              // fire on the edited row
+              tableBodyRow = this._getTableBodyRow(this._getEditableRowIdx());
+              rowKey = this._getRowKeyForRowIdx(this._getEditableRowIdx());
+              rowContext = this._getRendererContextObject(tableBodyRow, {
+                row: {
+                  key: rowKey,
+                  index: this._getDataSourceRowIndexForRowKey(rowKey)
+                },
+                isCurrentRow: true
+              });
+              rowContext.item = tableBodyRow[Table._ROW_ITEM_EXPANDO];
+              updateEditMode = this._trigger('beforeRowEditEnd', event, {
+                accept: function (acceptPromise) {
+                  editAcceptPromiseArray.push(acceptPromise);
+                },
+                setUpdatedItem: function (updatedPromise) {
+                  updatedItemPromise = updatedPromise;
+                },
+                cancelEdit: cancelled,
+                rowContext: rowContext
+              });
+
+              if (updateEditMode) {
+                newEditRowValue = { rowKey: null, rowIndex: -1 };
+              }
+            } else {
+              // No updates so just exit
+              this._isApplyingEdit = false;
+              resolve();
+              return;
+            }
+          } catch (err) {
+            this._isApplyingEdit = false;
+            resolve(false);
+            return;
           }
-        } else if (!editable && this._hasEditableRow()) {
-          // only trigger the beforeRowEditEnd if we are actually ending an edit
-          // fire on the edited row
-          tableBodyRow = this._getTableBodyRow(this._getEditableRowIdx());
-          rowKey = this._getRowKeyForRowIdx(this._getEditableRowIdx());
-          rowContext = this._getRendererContextObject(tableBodyRow, {
-            row: {
-              key: rowKey,
-              index: this._getDataSourceRowIndexForRowKey(rowKey)
-            },
-            isCurrentRow: true
-          });
-          rowContext.item = tableBodyRow[Table._ROW_ITEM_EXPANDO];
-          updateEditMode = this._trigger('beforeRowEditEnd', event, {
-            accept: function (acceptPromise) {
-              editAcceptPromiseArray.push(acceptPromise);
-            },
-            setUpdatedItem: function (updatedPromise) {
-              updatedItemPromise = updatedPromise;
-            },
-            cancelEdit: cancelled,
-            rowContext: rowContext
-          });
-
-          if (updateEditMode) {
-            newEditRowValue = { rowKey: null, rowIndex: -1 };
+          if (!updateEditMode) {
+            this._syncActiveElement();
+            this._isApplyingEdit = false;
+            resolve(false);
+            return;
           }
-        } else {
-          // No updates so just exit
-          return undefined;
-        }
-      } catch (err) {
-        return false;
-      }
-      if (!updateEditMode) {
-        this._syncActiveElement();
-        return false;
-      }
-      var table = this._getTable();
+          var table = this._getTable();
 
-      // shift focus to the overall table if the target row contains focus - otherwise, the overall
-      // focusout handler may kick in, or tooltips or other ihteractive elements may cause issues
-      if (tableBodyRow.contains(document.activeElement)) {
-        // flag used to skip scrolling 'focused' things while the Table
-        // is actively updating focus due to editing requirements
-        this._isSkipScrollOnFocus = !cancelled;
-        table.focus();
-      }
+          // shift focus to the overall table if the target row contains focus - otherwise, the overall
+          // focusout handler may kick in, or tooltips or other ihteractive elements may cause issues
+          if (tableBodyRow.contains(document.activeElement)) {
+            // flag used to skip scrolling 'focused' things while the Table
+            // is actively updating focus due to editing requirements
+            this._isSkipScrollOnFocus = !cancelled;
+            table.focus();
+          }
 
-      var _handleAsyncEdit = function (updatedItemObj) {
-        this._removeSkeletonRow(tableBodyRow);
-        // recalculate the row index as it could have changed due to other tasks
-        var editableRowIndex = this._getRowIdxForRowKey(rowKey);
-        if (editable && rowIdx !== editableRowIndex) {
-          newEditRowValue.rowIndex = editableRowIndex;
-        }
-        // update editRow option
-        this._fireEditRowChangeEvent(newEditRowValue, event);
+          var _handleAsyncEdit = function (updatedItemObj) {
+            this._removeSkeletonRow(tableBodyRow);
+            // recalculate the row index as it could have changed due to other tasks
+            var editableRowIndex = this._getRowIdxForRowKey(rowKey);
+            if (editable && rowIdx !== editableRowIndex) {
+              newEditRowValue.rowIndex = editableRowIndex;
+            }
+            // update editRow option
+            this._fireEditRowChangeEvent(newEditRowValue, event);
 
-        if (editable) {
-          // set the editable row index
-          this._setTableActionableMode(false, true);
-          this._setEditableRowIdx(editableRowIndex);
-          table.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
-          // re-render the newly editable row
-          return this._refreshRow(editableRowIndex, false, !isLegacyDataSource).then(
-            function () {
-              this._setCellInRowFocus(editableRowIndex, columnIdx, forwardSearch);
-              // clear out the old editable row
-              return this._refreshPrevEditableRow(prevEditableRowKey, updatedItemObj, false);
-            }.bind(this)
-          );
-        }
-        this._focusEditCell = null;
-        this._setEditableRowIdx(null);
+            if (editable) {
+              // set the editable row index
+              this._setTableActionableMode(false, true);
+              this._setEditableRowIdx(editableRowIndex);
+              table.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
+              // re-render the newly editable row
+              return this._refreshRow(editableRowIndex, false, !isLegacyDataSource).then(() => {
+                this._setCellInRowFocus(editableRowIndex, columnIdx, forwardSearch);
+                // clear out the old editable row
+                return this._refreshPrevEditableRow(prevEditableRowKey, updatedItemObj, false);
+              });
+            }
+            this._focusEditCell = null;
+            this._setEditableRowIdx(null);
 
-        // clear out the old editable row
-        return this._refreshPrevEditableRow(prevEditableRowKey, updatedItemObj, cancelled);
-      }.bind(this);
+            // clear out the old editable row
+            return this._refreshPrevEditableRow(prevEditableRowKey, updatedItemObj, cancelled);
+          }.bind(this);
 
-      // handle asynchronous editing if an accept promise was provided
-      if (editAcceptPromiseArray.length !== 0) {
-        this._prepareAsyncRowEdit(tableBodyRow);
-        return this._queueTask(
-          function () {
-            this._editPromise = Promise.all(editAcceptPromiseArray).then(
-              function () {
+          // handle asynchronous editing if an accept promise was provided
+          if (editAcceptPromiseArray.length !== 0) {
+            this._prepareAsyncRowEdit(tableBodyRow);
+            Promise.all(editAcceptPromiseArray).then(
+              () => {
                 if (updatedItemPromise != null) {
-                  return updatedItemPromise.then(
-                    function (updatedItemObj) {
-                      return _handleAsyncEdit(updatedItemObj);
+                  updatedItemPromise.then(
+                    (updatedItemObj) => {
+                      _handleAsyncEdit(updatedItemObj).then(
+                        () => {
+                          this._isApplyingEdit = false;
+                          resolve();
+                        },
+                        () => {
+                          this._isApplyingEdit = false;
+                          resolve();
+                        }
+                      );
                     },
-                    function () {
-                      return _handleAsyncEdit();
+                    () => {
+                      _handleAsyncEdit().then(
+                        () => {
+                          this._isApplyingEdit = false;
+                          resolve();
+                        },
+                        () => {
+                          this._isApplyingEdit = false;
+                          resolve();
+                        }
+                      );
+                    }
+                  );
+                } else {
+                  _handleAsyncEdit().then(
+                    () => {
+                      this._isApplyingEdit = false;
+                      resolve();
+                    },
+                    () => {
+                      this._isApplyingEdit = false;
+                      resolve();
                     }
                   );
                 }
-                return _handleAsyncEdit();
               },
-              function () {
+              () => {
                 this._removeSkeletonRow(tableBodyRow);
                 if (editable && prevEditableRowKey == null) {
                   this._syncActiveElement();
                 }
-                this._clearEditPending();
-                return false;
-              }.bind(this)
-            );
-            return this._editPromise;
-          }.bind(this)
-        );
-      }
-
-      // check if an updated item promise was provided for otherwise synchronous editing
-      if (updatedItemPromise != null) {
-        this._prepareAsyncRowEdit(tableBodyRow);
-        return this._queueTask(
-          function () {
-            this._editPromise = updatedItemPromise.then(
-              function (updatedItemObj) {
-                return _handleAsyncEdit(updatedItemObj);
-              },
-              function () {
-                return _handleAsyncEdit();
+                this._isSkipScrollOnFocus = false;
+                this._isApplyingEdit = false;
+                resolve(false);
               }
             );
-            return this._editPromise;
-          }.bind(this)
-        );
-      }
+            return;
+          }
 
-      // otherwise, handle fully synchronous editing
-      if (editable) {
-        // set the editable row index
-        this._setTableActionableMode(false, true);
-        this._setEditableRowIdx(rowIdx);
-        table.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
-        // re-render the newly editable row
-        this._queueTask(
-          function () {
+          // check if an updated item promise was provided for otherwise synchronous editing
+          if (updatedItemPromise != null) {
+            this._prepareAsyncRowEdit(tableBodyRow);
+            updatedItemPromise.then(
+              (updatedItemObj) => {
+                _handleAsyncEdit(updatedItemObj).then(
+                  () => {
+                    this._isApplyingEdit = false;
+                    resolve();
+                  },
+                  () => {
+                    this._isApplyingEdit = false;
+                    resolve();
+                  }
+                );
+              },
+              () => {
+                _handleAsyncEdit().then(
+                  () => {
+                    this._isApplyingEdit = false;
+                    resolve();
+                  },
+                  () => {
+                    this._isApplyingEdit = false;
+                    resolve();
+                  }
+                );
+              }
+            );
+            return;
+          }
+
+          // otherwise, handle fully synchronous editing
+          if (editable) {
+            // set the editable row index
+            this._setTableActionableMode(false, true);
+            this._setEditableRowIdx(rowIdx);
+            table.setAttribute(Table.DOM_ATTR._ARIA_LABELLEDBY, ''); // @HTMLUpdateOK
+            // re-render the newly editable row
             // update editRow option
             this._fireEditRowChangeEvent(newEditRowValue, event);
             // recalculate the row index as it could have changed due to other tasks
             var editableRowIndex = this._getRowIdxForRowKey(rowKey);
-            return this._refreshRow(editableRowIndex, false, !isLegacyDataSource).then(
-              function () {
+            this._refreshRow(editableRowIndex, false, !isLegacyDataSource).then(
+              () => {
                 // set focus on the column in the row
                 this._setCellInRowFocus(editableRowIndex, columnIdx, forwardSearch);
-              }.bind(this)
+                this._refreshPrevEditableRow(prevEditableRowKey, null, cancelled).then(() => {
+                  this._isApplyingEdit = false;
+                  resolve();
+                });
+              },
+              () => {
+                this._isApplyingEdit = false;
+                resolve();
+              }
             );
-          }.bind(this)
-        );
-      } else {
-        this._focusEditCell = null;
-        this._setEditableRowIdx(null);
-        this._queueTask(
-          function () {
-            // update editRow option
-            this._fireEditRowChangeEvent(newEditRowValue, event);
-          }.bind(this)
-        );
+            return;
+          }
+          this._focusEditCell = null;
+          this._setEditableRowIdx(null);
+          // update editRow option
+          this._fireEditRowChangeEvent(newEditRowValue, event);
+          this._refreshPrevEditableRow(prevEditableRowKey, null, cancelled).then(
+            () => {
+              this._isApplyingEdit = false;
+              resolve();
+            },
+            () => {
+              this._isApplyingEdit = false;
+              resolve();
+            }
+          );
+          return;
+        }
       }
-      this._queueTask(
-        function () {
-          return this._refreshPrevEditableRow(prevEditableRowKey, null, cancelled);
-        }.bind(this)
-      );
-    }
-  }
-  return undefined;
+      resolve();
+    }.bind(this)
+  );
 };
 
 Table.prototype._prepareAsyncRowEdit = function (tableBodyRow) {
-  this._isEditPending = true;
   this._insertSkeletonRow(tableBodyRow);
   this._syncScrollPosition();
-};
-
-Table.prototype._clearEditPending = function () {
-  this._isEditPending = false;
-  this._isSkipScrollOnFocus = false;
-  this._editPromise = null;
-  if (this._delayed_edit != null) {
-    this._queueTask(() => {
-      this._setEditRow(this._delayed_edit.editRow, this._delayed_edit.columnIdx);
-    });
-  }
 };
 
 Table.prototype._refreshPrevEditableRow = function (prevEditableRowKey, updatedItemObj, cancelled) {
@@ -21270,11 +21453,12 @@ Table.prototype._refreshPrevEditableRow = function (prevEditableRowKey, updatedI
     }
     // re-render the previously editable row, which will be read-only now
     return this._refreshRow(prevEditableRowIdx, false, cancelled, rowItem).then(() => {
-      this._clearEditPending();
+      this._skipScrollOnFocus = false;
     });
   }
-  this._clearEditPending();
-  return Promise.resolve();
+  return Promise.resolve().then(() => {
+    this._skipScrollOnFocus = false;
+  });
 };
 
 /**
@@ -21623,17 +21807,15 @@ Table.prototype._handleKeydownTab = function (event) {
     var rowElementTabIndex = $(tabbableElementsInRow).index(currentFocusElement);
 
     var maxIndex = Math.max(this._getColumnDefs().length - 1, 0);
-    if (
-      rowElementTabIndex === tabbableElementsInRowCount - 1 &&
-      !event[Table._KEYBOARD_CODES._MODIFIER_SHIFT]
-    ) {
+    var isNext = !event[Table._KEYBOARD_CODES._MODIFIER_SHIFT];
+    if (rowElementTabIndex === tabbableElementsInRowCount - 1 && isNext) {
       // last tabbable element in row so go to the next row
-      this._setAdjacentRowEditable(-1, maxIndex, true, event);
+      this._setAdjacentRowEditable(focusedRowIdx, -1, isNext, event);
       event.preventDefault();
       event.stopPropagation();
-    } else if (rowElementTabIndex === 0 && event[Table._KEYBOARD_CODES._MODIFIER_SHIFT]) {
-      // first tabbable element in row and Shift+Tab so go to the previous row
-      this._setAdjacentRowEditable(maxIndex, 0, false, event);
+    } else if (rowElementTabIndex === 0 && !isNext) {
+      // first tabbable element in row so go to the previous row
+      this._setAdjacentRowEditable(focusedRowIdx, maxIndex, isNext, event);
       event.preventDefault();
       event.stopPropagation();
     }
@@ -21756,18 +21938,17 @@ Table.prototype._handleKeydownEnter = function (event) {
     var currentRow = this._getCurrentRow();
     currentRow = currentRow || {};
     var currentRowIdx = currentRow.rowIndex != null ? currentRow.rowIndex : -1;
-    if (currentRowIdx >= 0) {
+    if (currentRowIdx >= 0 && currentRow.rowKey != null) {
       if (this._isTableEditMode()) {
         if (!this._hasEditableRow()) {
-          this._setTableEditable(true, false, -1, true, event);
-          return;
-        }
-        var columnIdx = this._getElementColumnIdx(event.target);
-
-        if (!event[Table._KEYBOARD_CODES._MODIFIER_SHIFT]) {
-          this._setAdjacentRowEditable(columnIdx, columnIdx, true, event);
+          this._deferredEditInfo = { editRow: { rowKey: currentRow.rowKey }, isNext: true, event };
+          this._queueTask(() => {
+            return this._setEditRow();
+          });
         } else {
-          this._setAdjacentRowEditable(columnIdx, columnIdx, false, event);
+          var columnIdx = this._getElementColumnIdx(event.target);
+          var isNext = !event[Table._KEYBOARD_CODES._MODIFIER_SHIFT];
+          this._setAdjacentRowEditable(currentRowIdx, columnIdx, isNext, event);
         }
       } else {
         this._fireActionEvent(currentRowIdx, event, false);
@@ -21826,14 +22007,16 @@ Table.prototype._handleKeydownF2 = function (event) {
   if (!this._isStickyLayoutEnabled()) {
     if (this._isTableEditMode()) {
       // pressing F2 toggles between editable modes.
-      if (!this._hasEditableRow()) {
-        this._setTableEditable(true, false, 0, true, event);
+      this._queueTask(() => {
         if (!this._hasEditableRow()) {
-          this._toggleTableActionableMode();
+          return this._setTableEditable(true, false, 0, true, event).then(() => {
+            if (!this._hasEditableRow()) {
+              this._toggleTableActionableMode();
+            }
+          });
         }
-      } else {
-        this._setTableEditable(false, false, 0, true, event);
-      }
+        return this._setTableEditable(false, false, 0, true, event);
+      });
     } else {
       this._toggleTableActionableMode();
     }
@@ -21850,13 +22033,16 @@ Table.prototype._handleKeydownF2 = function (event) {
 Table.prototype._handleKeydownEsc = function (event) {
   // pressing Esc always returns focus back to the table.
   if (this._hasEditableRow()) {
+    this._deferredEditInfo = { editRow: { rowKey: null, rowIndex: -1 }, isCancel: true, event };
+    this._queueTask(() => {
+      return this._setEditRow();
+    });
     event.preventDefault();
     event.stopPropagation();
-    this._setTableEditable(false, true, 0, true, event);
   } else if (this._isTableActionableMode()) {
+    this._setTableActionableMode(false);
     event.preventDefault();
     event.stopPropagation();
-    this._setTableActionableMode(false);
   }
   this._getLayoutManager().handleKeyDownEsc();
 };
@@ -22421,27 +22607,25 @@ Table.prototype._updateSelectionStateFromEventDetailRemove = function (
   addEventDetail
 ) {
   var selected = this.option('selected');
-  var rowKeySet = selected.row;
-  if (rowKeySet) {
-    eventDetail[Table._CONST_KEYS].forEach(function (key) {
-      if (addEventDetail == null || !addEventDetail[Table._CONST_KEYS].has(key)) {
-        // remove rowKey reference from the existing selection state
-        if (!rowKeySet.isAddAll()) {
-          rowKeySet = rowKeySet.delete([key]);
-        } else if (!rowKeySet.has(key)) {
-          rowKeySet = rowKeySet.add([key]);
-        }
+  var rowKeySet = this._getRowKeySetFromSelected(selected);
+  eventDetail[Table._CONST_KEYS].forEach(function (key) {
+    if (addEventDetail == null || !addEventDetail[Table._CONST_KEYS].has(key)) {
+      // remove rowKey reference from the existing selection state
+      if (!rowKeySet.isAddAll()) {
+        rowKeySet = rowKeySet.delete([key]);
+      } else if (!rowKeySet.has(key)) {
+        rowKeySet = rowKeySet.add([key]);
       }
-    });
-    // only update selection if this led to a new selection state
-    if (selected.row !== rowKeySet) {
-      selected = { row: rowKeySet, column: selected.column };
-      // ensure selectionRequired is satisfied
-      if (!this._isSelectionRequiredSatisfied(selected)) {
-        this._selectFirstRowOrColumn();
-      } else {
-        this._setSelected(selected);
-      }
+    }
+  });
+  // only update selection if this led to a new selection state
+  if (selected.row !== rowKeySet) {
+    selected = { row: rowKeySet, column: this._getColumnKeySetFromSelected(selected) };
+    // ensure selectionRequired is satisfied
+    if (!this._isSelectionRequiredSatisfied(selected)) {
+      this._selectFirstRowOrColumn();
+    } else {
+      this._setSelected(selected);
     }
   }
 };
@@ -22491,7 +22675,7 @@ Table.prototype._updateSelectionStateFromEventDetailChange = function (eventDeta
  */
 Table.prototype._updateSelectionStylingFromColumnReorder = function () {
   var selected = this.option('selected');
-  var columnKeySet = selected.column;
+  var columnKeySet = this._getColumnKeySetFromSelected(selected);
 
   var headers = this._getTableHeaderColumns();
   headers.forEach(function (header, index) {
@@ -22512,8 +22696,8 @@ Table.prototype._validateInitialSelectionState = function (isOptionUpdate) {
   var validateSelectedResult;
   var selection = this.option('selection');
   var selected = this.option('selected');
-  var rowKeySet = selected.row;
-  var columnKeySet = selected.column;
+  var rowKeySet = this._getRowKeySetFromSelected(selected);
+  var columnKeySet = this._getColumnKeySetFromSelected(selected);
   this._validatedSelectedRowKeyData = null;
 
   // generate new selected value from existing selection value if required
@@ -22577,8 +22761,8 @@ Table.prototype._hasSelected = function (selected) {
     // eslint-disable-next-line no-param-reassign
     selected = this.option('selected');
   }
-  var rowKeySet = selected.row;
-  var columnKeySet = selected.column;
+  var rowKeySet = this._getRowKeySetFromSelected(selected);
+  var columnKeySet = this._getColumnKeySetFromSelected(selected);
   return (
     rowKeySet.isAddAll() ||
     rowKeySet.values().size > 0 ||
@@ -22668,7 +22852,7 @@ Table.prototype._selectFirstRowOrColumn = function () {
  * @private
  */
 Table.prototype._validateSelected = function (selected) {
-  var columnKeySet = selected.column;
+  var columnKeySet = this._getColumnKeySetFromSelected(selected);
   var validatedColumnKeySet = columnKeySet;
   if (!columnKeySet.isAddAll()) {
     var columnKeys = this._getColumnKeys();
@@ -22684,7 +22868,7 @@ Table.prototype._validateSelected = function (selected) {
     }
   }
 
-  var rowKeySet = selected.row;
+  var rowKeySet = this._getRowKeySetFromSelected(selected);
   var validatedRowKeySet = rowKeySet;
   if (!rowKeySet.isAddAll()) {
     var localRowKeys = this._getLocalRowKeys();
@@ -23028,6 +23212,8 @@ Table.prototype._setSelected = function (selected, skipSelectionUpdate) {
     if (this._selectionSet) {
       // when selection is set, we need to check if selected key sets are equivalent
       if (
+        currentSelected.row == null ||
+        currentSelected.column == null ||
         !areKeySetsEqual(currentSelected.row, selected.row) ||
         !areKeySetsEqual(currentSelected.column, selected.column)
       ) {
@@ -23178,12 +23364,14 @@ Table.prototype._getSelectedEquivalent = function (selection) {
  * @private
  */
 Table.prototype._getSelectionEquivalent = function (selected) {
-  var selection = this._getRowSelectionFromKeySet(selected.row);
+  var rowKeySet = this._getRowKeySetFromSelected(selected);
+  var selection = this._getRowSelectionFromKeySet(rowKeySet);
   // if there is a row selection, return that selection as it takes precedence over column selection
   if (selection.length > 0 || selection.inverted) {
     return selection;
   }
-  selection = this._getColumnSelectionFromKeySet(selected.column);
+  var columnKeySet = this._getColumnKeySetFromSelected(selected);
+  selection = this._getColumnSelectionFromKeySet(columnKeySet);
   // otherwise, if there is a column selection, return that selection
   if (selection.length > 0 || selection.inverted) {
     return selection;
@@ -23238,8 +23426,8 @@ Table.prototype._getColumnSelectionFromKeySet = function (keySet) {
  * @private
  */
 Table.prototype._applySelected = function (selected) {
-  var rowKeySet = selected.row;
-  var columnKeySet = selected.column;
+  var rowKeySet = this._getRowKeySetFromSelected(selected);
+  var columnKeySet = this._getColumnKeySetFromSelected(selected);
 
   // remove selection state from previously selected rows that are no longer selected
   var prevSelectedRows = this._getSelectedRowIdxs();
@@ -23420,8 +23608,8 @@ Table.prototype._setLastHeaderColumnSelection = function (columnIdx, selected) {
 Table.prototype._handleSelectionGesture = function (index, isRow, isMultiSelectGesture) {
   var isSelect;
   var selected = this.option('selected');
-  var rowKeySet = selected.row;
-  var columnKeySet = selected.column;
+  var rowKeySet = this._getRowKeySetFromSelected(selected);
+  var columnKeySet = this._getColumnKeySetFromSelected(selected);
   if (isRow) {
     columnKeySet = columnKeySet.clear();
     const row = this._getTableBodyRow(index);
@@ -23515,8 +23703,8 @@ Table.prototype._handleSelectionGesture = function (index, isRow, isMultiSelectG
  */
 Table.prototype._handleSelectAllGesture = function () {
   var selected = this.option('selected');
-  var rowKeySet = selected.row;
-  var columnKeySet = selected.column;
+  var rowKeySet = this._getRowKeySetFromSelected(selected);
+  var columnKeySet = this._getColumnKeySetFromSelected(selected);
   columnKeySet = columnKeySet.clear();
   if (rowKeySet.isAddAll()) {
     rowKeySet = new KeySetImpl();
@@ -23573,8 +23761,8 @@ Table.prototype._handleMouseEnterSelection = function (element, isTouchAffordanc
  */
 Table.prototype._selectRange = function (firstSelectedIndex, lastSelectedIndex, isRow) {
   var selected = this.option('selected');
-  var rowKeySet = selected.row;
-  var columnKeySet = selected.column;
+  var rowKeySet = this._getRowKeySetFromSelected(selected);
+  var columnKeySet = this._getColumnKeySetFromSelected(selected);
 
   var i;
   if (isRow) {
@@ -23706,10 +23894,11 @@ Table.prototype._getSelectedFooterColumnIdxs = function () {
 Table.prototype._clearSelectedRows = function () {
   this._selectionAnchorIdx = null;
   this._lastSelectedRowIdx = null;
-  var rowKeySet = this.option('selected.row');
+  var selected = this.options.selected;
+  var rowKeySet = this._getRowKeySetFromSelected(selected);
   var newRowKeySet = rowKeySet.clear();
   if (newRowKeySet !== rowKeySet) {
-    var selected = { row: newRowKeySet, column: this.option('selected.column') };
+    selected = { row: newRowKeySet, column: this._getColumnKeySetFromSelected(selected) };
     this._setSelected(selected);
   }
 };
@@ -23737,7 +23926,7 @@ Table.prototype._selectedKeysChangedListener = function (event) {
     if (event.detail.value.isAddAll()) {
       this._setSelected({ row: event.detail.value, column: new KeySetImpl() }, false, true);
     } else {
-      let rowSelectedKeySet = this.option('selected').row;
+      let rowSelectedKeySet = this._getRowKeySetFromSelected(this.options.selected);
       // header selector
       if (event.target.rowKey == null) {
         this._setSelected({ row: new KeySetImpl(), column: new KeySetImpl() }, false, true);
@@ -23802,6 +23991,20 @@ Table.prototype._updateSelectors = function (selected) {
       selector.selectedKeys = new KeySetImpl([]);
     }
   }
+};
+
+/**
+ * Returns a valid row key set from a 'selected' object
+ */
+Table.prototype._getRowKeySetFromSelected = function (selected) {
+  return selected.row || new KeySetImpl();
+};
+
+/**
+ * Returns a valid column key set from a 'selected' object
+ */
+Table.prototype._getColumnKeySetFromSelected = function (selected) {
+  return selected.column || new KeySetImpl();
 };
 
 /**
@@ -26647,19 +26850,20 @@ Table.prototype._setOptions = function (options, flags) {
     }
   }
   if (requiresRefresh) {
-    this._queueTask(
-      function () {
-        if (requiresHeaderRefresh) {
-          // clearing the rendered flag triggers a header render as part of _refresh()
-          this._renderedTableHeaderColumns = false;
-        }
-        if (requiresDataRefresh) {
-          this._beforeDataRefresh();
-        }
+    this._queueTask(() => {
+      if (requiresHeaderRefresh) {
+        // clearing the rendered flag triggers a header render as part of _refresh()
+        this._renderedTableHeaderColumns = false;
+      }
+      var beforeRefreshPromise = requiresDataRefresh
+        ? this._beforeDataRefresh()
+        : Promise.resolve();
+
+      return beforeRefreshPromise.then(() => {
         // _refresh clears the layout manager, so do not register 'refresh' update here
         return this._refresh();
-      }.bind(this)
-    );
+      });
+    });
   }
   this._superApply(arguments);
 };
@@ -26673,44 +26877,39 @@ Table.prototype._setOption = function (key, value, flags) {
     // update row index/key values in the 'selection' option
     this._syncRangeSelection(value);
     this._superApply(arguments);
-    this._queueTask(
-      function () {
-        // after applying the new selection value, sync the selection state
-        this._selectionSet = true;
-        this._validateInitialSelectionState(true);
-      }.bind(this)
-    );
+    this._queueTask(() => {
+      // after applying the new selection value, sync the selection state
+      this._selectionSet = true;
+      this._validateInitialSelectionState(true);
+    });
   } else if (key === 'selected') {
     this._superApply(arguments);
-    this._queueTask(
-      function () {
-        // after applying the new selected value, sync the selection state
-        this._selectionSet = false;
-        this._validateInitialSelectionState(true);
-      }.bind(this)
-    );
+    this._queueTask(() => {
+      // after applying the new selected value, sync the selection state
+      this._selectionSet = false;
+      this._validateInitialSelectionState(true);
+    });
   } else if (key === 'currentRow') {
     this._superApply(arguments);
-    this._queueTask(
-      function () {
-        this._setCurrentRow(value, null, true);
-      }.bind(this)
-    ).catch(function () {});
+    this._queueTask(() => {
+      var currentStatus = this._setCurrentRow(value, null, true);
+      if (currentStatus instanceof Promise) {
+        return currentStatus;
+      }
+      return Promise.resolve();
+    }).catch(function () {});
   } else if (key === 'scrollPosition') {
     this._superApply(arguments);
-    this._queueTask(
-      function () {
-        // syncScrollPosition will update with proper value
-        this._syncScrollPosition(value);
-      }.bind(this)
-    );
+    this._queueTask(() => {
+      // syncScrollPosition will update with proper value
+      this._syncScrollPosition(value);
+    });
   } else if (key === 'editRow') {
-    if (value != null && (value.rowKey != null || value.rowIndex > -1)) {
-      // clear the pending focusout editkey value if a row is becoming editable
-      this._focusoutEditKey = null;
-    }
-    // setEditRow will update with all props within value
-    this._setEditRow(value);
+    this._deferredEditInfo = { editRow: value, isNext: true };
+    this._queueTask(() => {
+      // setEditRow will update with all props within value
+      return this._setEditRow();
+    });
   } else if (key === 'scrollPolicyOptions' && flags != null) {
     this._superApply(arguments);
     if (this._isStickyLayoutEnabled()) {
@@ -26725,18 +26924,14 @@ Table.prototype._setOption = function (key, value, flags) {
     }
   } else if (key === 'addRowDisplay') {
     this._superApply(arguments);
-    this._queueTask(
-      function () {
-        return this._refreshAddRowDisplay();
-      }.bind(this)
-    );
+    this._queueTask(() => {
+      return this._refreshAddRowDisplay();
+    });
   } else if (key === 'selectAllControl') {
     this._superApply(arguments);
-    this._queueTask(
-      function () {
-        return this._refreshTableHeader();
-      }.bind(this)
-    );
+    this._queueTask(() => {
+      return this._refreshTableHeader();
+    });
   } else {
     this._superApply(arguments);
   }

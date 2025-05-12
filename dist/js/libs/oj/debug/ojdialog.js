@@ -3191,6 +3191,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           this.element[0].classList.add('oj-dialog-full');
         }
 
+        this._setupContentScrollBehavior();
+
         rootElement.position(position);
 
         // note the initial dialog width/height
@@ -3309,6 +3311,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        */
       _handleResize: function () {
         if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+          this._setupContentScrollBehavior();
           this._adjustPosition();
         }
       },
@@ -3776,6 +3779,15 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           this._positionDescendents();
         } else {
           this._position();
+        }
+      },
+      _setupContentScrollBehavior: function () {
+        var elem = this.element[0];
+        var elemHeight = elem.offsetHeight;
+        if (elemHeight <= 400) {
+          elem.classList.add('oj-dialog-small-height');
+        } else {
+          elem.classList.remove('oj-dialog-small-height');
         }
       },
       _isSheetDisplay: function () {

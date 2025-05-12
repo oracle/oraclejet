@@ -1047,7 +1047,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    * @memberof oj.dvtBaseComponent
    */
   DataProviderHandler.prototype._addDPEventListeners = function (dataProvider, dataProperty) {
-    if (this._dataProviderEventListeners[dataProperty] === dataProvider) {
+    if (this._dataProviderEventListeners[dataProperty] && this._dataProviderEventListeners[dataProperty].dataProvider === dataProvider) {
       return;
     }
 

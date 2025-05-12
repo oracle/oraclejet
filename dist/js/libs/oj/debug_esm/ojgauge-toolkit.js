@@ -666,7 +666,7 @@ class DvtGaugeKeyboardHandler extends KeyboardHandler {
     var keyCode = event.keyCode;
     var isR2L = Agent.isRightToLeft(this._gauge.getCtx());
     var value = this._gauge.getOptions()['value'];
-    if (!this._gauge.getOptions()['readOnly']) {
+    if (!this._gauge.getOptions()['readOnly'] && !this._gauge.getOptions()['disabled']) {
       if (
         (keyCode === KeyboardEvent.ENTER || keyCode === KeyboardEvent.TAB) &&
         this._oldValue !== value
@@ -960,6 +960,7 @@ class DvtGauge extends BaseComponent {
 
     if (this.Options['disabled']) {
       parentContainer.setAttribute('aria-disabled', true);
+      parentContainer.setAttribute('tabindex', '-1');
     }
   }
 

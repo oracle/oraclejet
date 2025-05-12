@@ -671,16 +671,36 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojcomponentcore'], fun
     // Fetch all the option data
     // eslint-disable-next-line no-param-reassign
     this._optionsDataArray = [];
+    // JET-71219 - RadioSet renders duplicate options
+    // We will use a local variable to construct the optionsDataArray. Once all the data is fetched
+    // and loaded in this local array, and we are still processing the latest fetch, we will update
+    // the instance level this._optionsDataArray with the results before proceeding to the next step.
+    // Instead, if we are on a stale fetch request, we will not do anything and ignore this step.
+    const optionsDataArray = [];
+
     var i;
     var asyncIterator = dataProvider.fetchFirst({ clientId: this._clientId })[Symbol.asyncIterator]();
     var self = this;
+
+    // JET-71219 - RadioSet renders duplicate options
+    // The data provider assigned to the component can be changed when a fetch is being performed
+    // using the current data provider. This will trigger another fetch using the new data provider.
+    // In this case, we need to ignore the results of the previous fetch and only use the latest fetch results.
+    // To achieve this, we will store the latest instance of the asyncIterator generated above.
+    // Then we will use that to verify whether the results are for the latest fetch when they resolve.
+    // When the results are resolved and the references of these two variables are still the same,
+    // then we are processing the results for the latest fetch. If the references do not match, then we are
+    // currently at the stale fetch request.
+    this._currentAsyncIterator = asyncIterator;
+
     var processResults = function (iterResult) {
       var nextPromise;
 
-      if (iterResult && iterResult.value) {
+      // Proceed only if the fetch we are processing is still the latest fetch.
+      if (asyncIterator === self._currentAsyncIterator && iterResult && iterResult.value) {
         var fetchListResult = iterResult.value;
         for (i = 0; i < fetchListResult.data.length; i++) {
-          self._optionsDataArray.push(fetchListResult.data[i]);
+          optionsDataArray.push(fetchListResult.data[i]);
         }
 
         // fetch the next batch if we're not done
@@ -696,9 +716,16 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojcomponentcore'], fun
 
     fetchPromise.then(
       function () {
-        RadioCheckboxUtils.renderOptions.call(self);
-        // Add back DataProvider listeners after the options are rendered
-        RadioCheckboxUtils.addDataListener.call(self);
+        // JET-71219 - RadioSet renders duplicate options
+        // Only proceed if we are processing the latest fetch, otherwise resolve the busyState and return.
+        if (asyncIterator === self._currentAsyncIterator) {
+          // we are processing the latest fetch, so update the optionsDataArray with the results
+          self._optionsDataArray = optionsDataArray;
+          // Render the latest options
+          RadioCheckboxUtils.renderOptions.call(self);
+          // Add back DataProvider listeners after the options are rendered
+          RadioCheckboxUtils.addDataListener.call(self);
+        }
         // Resolve busy state
         resolveFunc();
       },

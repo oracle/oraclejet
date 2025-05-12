@@ -2200,7 +2200,7 @@ const _ojListView = _ListViewUtils.clazz(
       this.ojContext.document.off('.ojlistview');
 
       this.DestroyContentHandler(true);
-      this._unregisterResizeListener(this.getListContainer());
+      this._unregisterResizeListener(this.getListContainer()[0]);
       this._unregisterScrollHandler();
       this._clearSelectionChangedListener();
       this.SetRootElementTabIndex();
@@ -2437,7 +2437,7 @@ const _ojListView = _ListViewUtils.clazz(
     destroy: function () {
       this.element.removeClass(this.GetStyleClass() + ' oj-component-initnode');
 
-      this._unregisterResizeListener(this.getListContainer());
+      this._unregisterResizeListener(this.getListContainer()[0]);
       this._resetInternal();
 
       //  - DomUtils.unwrap() will avoid unwrapping if the node is being destroyed by Knockout
@@ -3539,6 +3539,7 @@ const _ojListView = _ListViewUtils.clazz(
 
         var loadingDesc = this._buildLoadingDesc();
         container.append(loadingDesc); // @HTMLUpdateOK
+        this.m_loadingDesc = loadingDesc;
 
         this._buildFocusCaptureDiv(container[0]);
       }
@@ -3682,12 +3683,23 @@ const _ojListView = _ListViewUtils.clazz(
     },
 
     /**
+     * Sets the accessible text info for progressive loading
+     * @private
+     */
+    _setLoadingDescText: function (text) {
+      if (this.m_loadingDesc) {
+        this.m_loadingDesc.text(text);
+      }
+    },
+
+    /**
      * Update role status text to reflect that it is fetching data
      * @private
      */
     updateStatusFetchStart: function () {
       var msg = this.ojContext.getTranslatedString('msgFetchingData');
       this._setAccInfoText(msg);
+      this._setLoadingDescText(msg);
       this.element[0].setAttribute('data-oj-loading', true);
       this.element[0].setAttribute('aria-describedby', this._createSubId('loadingDesc'));
     },
@@ -3697,11 +3709,11 @@ const _ojListView = _ListViewUtils.clazz(
      * @private
      */
     updateStatusFetchEnd: function (count) {
-      var msg;
+      var msg = this.ojContext.getTranslatedString('msgFetchCompleted');
+      this._setLoadingDescText(msg);
+
       if (this.element[0].hasAttribute('data-oj-loading')) {
-        if (count === 0) {
-          msg = this.ojContext.getTranslatedString('msgFetchCompleted');
-        } else {
+        if (count !== 0) {
           msg = this.ojContext.getTranslatedString('msgItemsAppended', { count: count });
         }
         this._setAccInfoText(msg);

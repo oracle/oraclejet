@@ -665,7 +665,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
       var keyCode = event.keyCode;
       var isR2L = dvt.Agent.isRightToLeft(this._gauge.getCtx());
       var value = this._gauge.getOptions()['value'];
-      if (!this._gauge.getOptions()['readOnly']) {
+      if (!this._gauge.getOptions()['readOnly'] && !this._gauge.getOptions()['disabled']) {
         if (
           (keyCode === dvt.KeyboardEvent.ENTER || keyCode === dvt.KeyboardEvent.TAB) &&
           this._oldValue !== value
@@ -959,6 +959,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
 
       if (this.Options['disabled']) {
         parentContainer.setAttribute('aria-disabled', true);
+        parentContainer.setAttribute('tabindex', '-1');
       }
     }
 

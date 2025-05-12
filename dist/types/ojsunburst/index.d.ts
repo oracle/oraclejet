@@ -226,6 +226,7 @@ export namespace ojSunburst {
         shortDesc?: (string | ((context: NodeShortDescContext<K, D>) => string));
         showDisclosure?: 'inherit' | 'off' | 'on';
         svgClassName?: string;
+        /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         value: number;
     };
@@ -243,13 +244,13 @@ export namespace ojSunburst {
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type NodeTemplateContext = {
+    type NodeTemplateContext<K, D> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
-        parentData: any[];
-        parentKey: any;
+        key: K;
+        parentData: D[];
+        parentKey: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type RootNodeContext<K, D> = {
@@ -283,7 +284,7 @@ export namespace ojSunburst {
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    type RenderNodeTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRootNodeContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<RootNodeContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
@@ -424,6 +425,7 @@ export interface ojSunburstNode<K = any, D = any> extends dvtBaseComponent<ojSun
     shortDesc?: (string | ((context: ojSunburst.NodeShortDescContext<K, D>) => string));
     showDisclosure?: 'on' | 'off' | 'inherit';
     svgClassName?: string;
+    /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     value: number;
     addEventListener<T extends keyof ojSunburstNodeEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojSunburstNodeEventMap<K, D>[T]) => any, options?: (boolean |
@@ -507,6 +509,7 @@ export interface ojSunburstNodeSettableProperties<K = any, D = any> extends dvtB
     shortDesc?: (string | ((context: ojSunburst.NodeShortDescContext<K, D>) => string));
     showDisclosure?: 'on' | 'off' | 'inherit';
     svgClassName?: string;
+    /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     value: number;
 }
@@ -650,6 +653,7 @@ export namespace SunburstElement {
         shortDesc?: (string | ((context: ojSunburst.NodeShortDescContext<K, D>) => string));
         showDisclosure?: 'inherit' | 'off' | 'on';
         svgClassName?: string;
+        /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         value: number;
     };
@@ -667,13 +671,13 @@ export namespace SunburstElement {
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type NodeTemplateContext = {
+    type NodeTemplateContext<K, D> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
-        parentData: any[];
-        parentKey: any;
+        key: K;
+        parentData: D[];
+        parentKey: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type RootNodeContext<K, D> = {
@@ -707,7 +711,7 @@ export namespace SunburstElement {
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type RenderNodeTemplate = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext>;
+    type RenderNodeTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRootNodeContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<RootNodeContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
@@ -807,7 +811,7 @@ export interface SunburstNodeIntrinsicProps extends Partial<Readonly<ojSunburstN
     onshortDescChanged?: (value: ojSunburstNodeEventMap<any, any>['shortDescChanged']) => void;
     onshowDisclosureChanged?: (value: ojSunburstNodeEventMap<any, any>['showDisclosureChanged']) => void;
     onsvgClassNameChanged?: (value: ojSunburstNodeEventMap<any, any>['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojSunburstNodeEventMap<any, any>['svgStyleChanged']) => void;
+    /** @deprecated since 18.1.0 */ onsvgStyleChanged?: (value: ojSunburstNodeEventMap<any, any>['svgStyleChanged']) => void;
     onvalueChanged?: (value: ojSunburstNodeEventMap<any, any>['valueChanged']) => void;
     children?: ComponentChildren;
 }

@@ -185,7 +185,13 @@
   //**************************
   .oj-datepicker-popup{
     min-width: 17.5rem;
-    min-height: 21.5rem;
+    .oj-datepicker-popup {
+      min-width: 17.5rem;
+      // JET-70656: Using the min() function to ensure that the min-height is never larger than the viewport height.
+      // The unquote() function is used to bypass a limitation in older versions of SASS, which don't recognize 'vh' units and throw a parse error. 
+      // unquote() effectively bypasses SASS parsing, allowing the value to be used as-is.
+      min-height: unquote("min(21.5rem,100vh)");
+    }
   } 
   
   // JET-57860 - Date Picker Pop Up - Last Day not visible in landscape
@@ -276,7 +282,6 @@
     }
   }
   .oj-datepicker-next-icon {
-    order: 3;
     @include oj-ltr() {
       right: 2px;
     }
@@ -289,6 +294,9 @@
     //decreased the margin slightly for chrome on mac
     margin: auto 2.2em;
     text-align: center;
+    display: flex;
+    column-gap: 0.3125rem;
+    justify-content: center;
   }
 
   .oj-datepicker-title select {
@@ -321,9 +329,6 @@
     width: 100%;
   }
 
-  .oj-datepicker-month {
-    margin-right: 0.3125rem;
-  }
 
   .oj-datepicker-header a.oj-enabled:not(.oj-disabled) {
     cursor: pointer;
@@ -332,7 +337,6 @@
   .oj-datepicker-month,
   .oj-datepicker-year {
     font-size: var(--oj-typography-body-lg-font-size);
-    width: 48%;
     min-width: 0;
   }
 
@@ -757,7 +761,7 @@
     font-size: 2.25rem;
     font-weight: 300;
     height: 2.5rem;
-    opacity: 0.3;
+    opacity: 0.7;
   }
 
   // common to wheel items position2 and position-2
@@ -766,7 +770,7 @@
     font-size: 2.25rem;
     font-weight: 300;
     height: 1.875rem;
-    opacity: 0.1;
+    opacity: 0.5;
   }
 
   // common to wheel items: position 3, 4, 5, 6, 7

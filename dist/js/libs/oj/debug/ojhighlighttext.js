@@ -5,7 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent'], function (exports, jsxRuntime, preact, ojvcomponent) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojcore-base'], function (exports, jsxRuntime, preact, ojvcomponent, oj) { 'use strict';
+
+    oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
     var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -28,6 +30,9 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent'], function
                 const highlightedText = unhighlightedText.replace(new RegExp(escapedMatchText, 'gi'), this._HIGHLIGHT_TOKEN + '$&' + this._HIGHLIGHT_TOKEN);
                 const tokens = highlightedText.split(this._HIGHLIGHT_TOKEN);
                 const nodes = tokens.map((current, index) => index % 2 == 0 ? current : jsxRuntime.jsx("span", { class: "oj-highlighttext-highlighter", children: current }));
+                if (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS) {
+                    return jsxRuntime.jsx("span", { role: "text", children: nodes });
+                }
                 return jsxRuntime.jsx("span", { children: nodes });
             }
             return jsxRuntime.jsx("span", { children: unhighlightedText });

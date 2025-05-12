@@ -75,6 +75,7 @@ const _DT_METADATA_VALIDATION_MAP = new Map([
     ['paths', { baseType: 'object', isArray: false, context: MetaTypes.MDContext.COMP }],
     ['preferredParent', { baseType: 'object', isArray: true, context: MetaTypes.MDContext.COMP }],
     ['propertyLayout', { baseType: 'object', isArray: true, context: MetaTypes.MDContext.COMP }],
+    ['requirements', { baseType: 'object', isArray: true, context: MetaTypes.MDContext.COMP }],
     ['since', { baseType: 'string', isArray: false, context: MetaTypes.MDContext.COMP }],
     ['styleClasses', { baseType: 'object', isArray: true, context: MetaTypes.MDContext.COMP }],
     ['styleVariables', { baseType: 'object', isArray: true, context: MetaTypes.MDContext.COMP }],

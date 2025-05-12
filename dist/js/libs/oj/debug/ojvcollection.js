@@ -19,6 +19,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojlogg
             this.validKeyTypes = ['string', 'number'];
             this.fetching = 0;
             this.getKey = function (element) {
+                if (!element)
+                    return null;
                 return element.key
                     ? element.key
                     : element.dataset.ojKeyType === 'number'

@@ -9354,6 +9354,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       return overviewClone;
     }
+
+    /**
+     * @override
+     */
+    flipOnRtl() {
+      return false;
+    }
   }
 
   /**

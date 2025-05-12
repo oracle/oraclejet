@@ -374,7 +374,7 @@
 }
 
 .oj-theme-json {
-  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v18.0.0"}' !important;
+  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v18.1.0"}' !important;
 }
 
 .oj-helper-hidden-accessible {
@@ -11211,12 +11211,15 @@ oj-popup {
 .oj-popup {
   max-width: calc(100vw - 3rem);
   max-height: calc(100vh - 3rem);
-  overflow: auto;
   border: 1px solid var(--oj-popup-border-color);
   border-radius: var(--oj-popup-border-radius);
   background-color: var(--oj-popup-bg-color);
   box-shadow: var(--oj-popup-box-shadow);
   will-change: top, left;
+}
+
+.oj-popup:not(.oj-popup-tail-simple) {
+  overflow: auto;
 }
 
 .oj-popup.oj-popup-tail-simple {
@@ -16738,7 +16741,11 @@ a.oj-inputdatetime-clear-icon-btn:active {
 
 .oj-datepicker-popup {
   min-width: 17.5rem;
-  min-height: 21.5rem;
+}
+
+.oj-datepicker-popup .oj-datepicker-popup {
+  min-width: 17.5rem;
+  min-height: min(21.5rem,100vh);
 }
 
 .oj-datepicker-sheet {
@@ -16822,10 +16829,6 @@ html[dir="rtl"] .oj-datepicker-prev-icon {
   right: 2px;
 }
 
-.oj-datepicker-next-icon {
-  order: 3;
-}
-
 html:not([dir="rtl"]) .oj-datepicker-next-icon {
   right: 2px;
 }
@@ -16837,6 +16840,9 @@ html[dir="rtl"] .oj-datepicker-next-icon {
 .oj-datepicker-title {
   margin: auto 2.2em;
   text-align: center;
+  display: flex;
+  column-gap: 0.3125rem;
+  justify-content: center;
 }
 
 .oj-datepicker-title select {
@@ -16869,10 +16875,6 @@ html[dir="rtl"] .oj-datepicker-next-icon {
   width: 100%;
 }
 
-.oj-datepicker-month {
-  margin-right: 0.3125rem;
-}
-
 .oj-datepicker-header a.oj-enabled:not(.oj-disabled) {
   cursor: pointer;
 }
@@ -16880,7 +16882,6 @@ html[dir="rtl"] .oj-datepicker-next-icon {
 .oj-datepicker-month,
 .oj-datepicker-year {
   font-size: var(--oj-typography-body-lg-font-size);
-  width: 48%;
   min-width: 0;
 }
 
@@ -17302,7 +17303,7 @@ html[dir="rtl"] .oj-timepicker-ok-button {
   font-size: 2.25rem;
   font-weight: 300;
   height: 2.5rem;
-  opacity: 0.3;
+  opacity: 0.7;
 }
 
 .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position2,
@@ -17310,7 +17311,7 @@ html[dir="rtl"] .oj-timepicker-ok-button {
   font-size: 2.25rem;
   font-weight: 300;
   height: 1.875rem;
-  opacity: 0.1;
+  opacity: 0.5;
 }
 
 .oj-timepicker-wheel-item {
@@ -17875,7 +17876,7 @@ oj-dialog {
 .oj-dialog-container {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
   width: 100%;
   height: 100%;
   max-height: inherit;
@@ -17894,6 +17895,7 @@ oj-dialog {
   width: 600px;
   min-width: 200px;
   max-width: calc(100vw - 3rem);
+  min-height: 200px;
   max-height: calc(100vh - 3rem);
   height: auto;
   box-sizing: border-box;
@@ -17999,6 +18001,10 @@ oj-dialog {
   position: relative;
   -webkit-overflow-scrolling: touch;
   flex: 1 1 auto;
+}
+
+.oj-dialog.oj-dialog-small-height .oj-dialog-content {
+  flex: 1 0 auto;
 }
 
 .oj-dialog-body-wrapper {
@@ -21681,6 +21687,10 @@ html[dir="rtl"] .oj-messages-inline .oj-message-container.oj-message-no-icon:not
 .oj-messages-general .oj-message-header,
 .oj-messages-notification .oj-message-header {
   padding: 0.5rem 1rem 0 1rem;
+}
+
+.oj-messages-notification .oj-message-header {
+  z-index: 1;
 }
 
 .oj-messages-general .oj-message-container.oj-message-no-icon.oj-message-no-detail .oj-message-header,
@@ -27636,7 +27646,8 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge, html[dir="rtl"]
 
 .oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-all,
 .oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all,
-.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-all .oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell.oj-table-frozen-all {
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell.oj-table-frozen-all {
   z-index: 12;
 }
 
@@ -27665,13 +27676,15 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge, html[dir="rtl"]
 
 .oj-table-sticky .oj-table-data-cell.oj-table-frozen-all,
 .oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all,
-.oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all .oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all {
+.oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all {
   z-index: 5;
 }
 
 .oj-table-sticky .oj-table-data-cell.oj-table-frozen-all.oj-table-frozen-edge,
 .oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all.oj-table-frozen-edge .oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge {
   z-index: 6;
 }
 

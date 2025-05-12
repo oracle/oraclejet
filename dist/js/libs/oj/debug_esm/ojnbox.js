@@ -3180,6 +3180,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent, {
  * @property {Object} data The data object for the current node.
  * @property {number} index The zero-based index of the current node.
  * @property {any} key The key of the current node.
+ * @ojsignature [{target: "Type", value: "D", for: "data"},
+ *               {target: "Type", value: "K", for: "key"},
+ *               {target: "Type", value: "<K,D>", for: "genericTypeParameters"}]
  */
 
 /**

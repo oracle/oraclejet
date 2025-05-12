@@ -1838,7 +1838,8 @@ class Overview extends Container {
 
         var width = Math.max(x2Pos - x1Pos, this.getMinimumWindowWidth());
         var slidingWindow = this.getSlidingWindow();
-        if (this.isRTL()) this.setSlidingWindowPosX(slidingWindow, this.Width - (x1Pos + width));
+        if (this.isRTL() && this.flipOnRtl())
+          this.setSlidingWindowPosX(slidingWindow, this.Width - (x1Pos + width));
         else this.setSlidingWindowPosX(slidingWindow, x1Pos);
 
         DvtOverviewRenderer._setSlidingWindowWidth(this, slidingWindow, width);
@@ -1861,6 +1862,13 @@ class Overview extends Container {
       }
     }
     DvtOverviewRenderer._updateBorderAroundSlidingWindow(this);
+  }
+
+  /**
+   * Returns true if the coordinate system should be flipped on rtl
+   */
+  flipOnRtl() {
+    return true;
   }
 
   /**
@@ -3255,7 +3263,7 @@ class Overview extends Container {
       var newY1;
       var newY2;
       if (this.isHorizontalScrollingEnabled()) {
-        if (this.isRTL()) {
+        if (this.isRTL() && this.flipOnRtl()) {
           newX1 = this.getXPositionDate(this.Width - (posX + width));
           newX2 = this.getXPositionDate(this.Width - posX);
         } else {

@@ -32,6 +32,7 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/utils/UNSAFE_matchT
         const promises = Array.from(_loaders.keys(), (bundleId) => getTranslationBundlePromise(bundleId));
         return Promise.all(promises);
     };
+    const matchTranslationBundle = (locale, supportedLocales) => UNSAFE_matchTranslationBundle.matchTranslationBundle([locale], supportedLocales);
     const getTranslationBundleLocale = (() => {
         let translationBundleLocale;
         return (bundleId) => {
@@ -44,6 +45,7 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/utils/UNSAFE_matchT
 
     exports.getTranslationBundlePromise = getTranslationBundlePromise;
     exports.loadAllPendingBundles = loadAllPendingBundles;
+    exports.matchTranslationBundle = matchTranslationBundle;
     exports.registerTranslationBundleLoaders = registerTranslationBundleLoaders;
 
     Object.defineProperty(exports, '__esModule', { value: true });

@@ -1052,18 +1052,20 @@ var __oj_form_layout_metadata =
 
       // Compute the actual number of columns and save them for later.  This depends on the style
       // classes set above, and is used by the code below, so it has to happen here.
-      let oldColumns = calculatedColumns;
       calculatedColumns = _calculateColumns();
-      // Any time we recalculate the number of columns, we need to adjust this style class.
-      if (calculatedColumns !== oldColumns) {
-        var newClass = 'oj-formlayout-max-cols-' + calculatedColumns;
-        var cName = element.className;
-        if (cName.indexOf('oj-formlayout-max-cols-') !== -1) {
-          // This will replace the old class name with the new one
-          element.className = cName.replace(/oj-formlayout-max-cols-[\d+]/, newClass);
-        } else {
-          element.classList.add(newClass); // First time, just add it.
+
+      // The oj-formlayout-max-cols-* class name may change if columns or maxColumns changes
+      let calculatedMaxCols = element.columns > 0 ? element.columns : element.maxColumns;
+      var newClass = 'oj-formlayout-max-cols-' + calculatedMaxCols;
+      var cName = element.className;
+      if (cName.indexOf('oj-formlayout-max-cols-') !== -1) {
+        // This will replace the old class name with the new class if it changed.
+        let newCName = cName.replace(/oj-formlayout-max-cols-[\d+]/, newClass);
+        if (newCName !== cName) {
+          element.className = newCName; // update with the new className as it has changed.
         }
+      } else {
+        element.classList.add(newClass); // First time, just add it.
       }
 
       // When direction === "row", we need to set the columns to 1, as we use the
@@ -2052,7 +2054,12 @@ var __oj_form_layout_metadata =
           break;
         }
         // If an attribute we care about changes on a child, we don't ignore the mutation
-        if (mutation.type === 'attributes' && dontIgnoreAttribute.includes(mutation.attributeName)) {
+        // JET-72366 we should ignore all mutations of type 'attributes' if the target has data-oj-internal.
+        if (
+          mutation.type === 'attributes' &&
+          dontIgnoreAttribute.includes(mutation.attributeName) &&
+          !mutation.target.hasAttribute('data-oj-internal')
+        ) {
           ignore = false;
           break;
         }

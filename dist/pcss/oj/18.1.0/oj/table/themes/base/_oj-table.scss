@@ -606,7 +606,7 @@
 
   .oj-table-sticky .oj-table-sticky-row td.oj-table-frozen-all,
   .oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all,
-  .oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-all
+  .oj-table-sticky .oj-table-sticky-row .oj-table-gutter-start-body-cell.oj-table-frozen-all,
   .oj-table-sticky .oj-table-sticky-row .oj-table-gutter-end-body-cell.oj-table-frozen-all {
     z-index: 12;
   }
@@ -636,14 +636,14 @@
 
   .oj-table-sticky .oj-table-data-cell.oj-table-frozen-all,
   .oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all,
-  .oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all
+  .oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all,
   .oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all {
     z-index: 5;
   }
 
   .oj-table-sticky .oj-table-data-cell.oj-table-frozen-all.oj-table-frozen-edge,
   .oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all.oj-table-frozen-edge,
-  .oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all.oj-table-frozen-edge
+  .oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all.oj-table-frozen-edge,
   .oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge  {
     z-index: 6;
   }

@@ -7,7 +7,7 @@
  */
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
-import { pureComputed } from 'knockout';
+import { cleanNode, pureComputed } from 'knockout';
 import * as AnimationUtils from 'ojs/ojanimation';
 import Context from 'ojs/ojcontext';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
@@ -1210,6 +1210,8 @@ MessagesViewModel.prototype._handleClose = function (event) {
 
   // remove the oj-message from DOM. Note that we are not calling 'oj.Components.subtreeHidden'
   //  because it is not required if we use jquery remove() as per the doc there
+  // To prevent a memory leak, we need to call ko.cleanNode before removing the dom element. (JET-73819)
+  cleanNode(closeMessageElement);
   $(closeMessageElement).remove();
 
   // if we do not have any "default" slot children, then the message being closed is the last one,

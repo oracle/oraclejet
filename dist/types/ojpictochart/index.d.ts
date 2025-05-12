@@ -130,6 +130,7 @@ export namespace ojPictoChart {
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
+        /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -148,12 +149,12 @@ export namespace ojPictoChart {
         name: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext = {
+    type ItemTemplateContext<K, D> = {
         /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
+        key: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
@@ -180,7 +181,7 @@ export namespace ojPictoChart {
         parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
+    type RenderItemTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
 }
@@ -277,6 +278,7 @@ export interface ojPictoChartItem<K = any> extends dvtBaseComponent<ojPictoChart
     sourceHoverSelected?: string;
     sourceSelected?: string;
     svgClassName?: string;
+    /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     addEventListener<T extends keyof ojPictoChartItemEventMap<K>>(type: T, listener: (this: HTMLElement, ev: ojPictoChartItemEventMap<K>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
@@ -359,6 +361,7 @@ export interface ojPictoChartItemSettableProperties<K = any> extends dvtBaseComp
     sourceHoverSelected?: string;
     sourceSelected?: string;
     svgClassName?: string;
+    /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
 }
 export interface ojPictoChartItemSettablePropertiesLenient<K = any> extends Partial<ojPictoChartItemSettableProperties<K>> {
@@ -436,6 +439,7 @@ export namespace PictoChartElement {
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
+        /** @deprecated since 18.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -454,12 +458,12 @@ export namespace PictoChartElement {
         name: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext = {
+    type ItemTemplateContext<K, D> = {
         /** @deprecated since 16.0.0 - The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component. */
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
+        key: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
@@ -486,7 +490,7 @@ export namespace PictoChartElement {
         parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type RenderItemTemplate = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext>;
+    type RenderItemTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
 }
@@ -568,7 +572,7 @@ export interface PictoChartItemIntrinsicProps extends Partial<Readonly<ojPictoCh
     onsourceHoverSelectedChanged?: (value: ojPictoChartItemEventMap<any>['sourceHoverSelectedChanged']) => void;
     onsourceSelectedChanged?: (value: ojPictoChartItemEventMap<any>['sourceSelectedChanged']) => void;
     onsvgClassNameChanged?: (value: ojPictoChartItemEventMap<any>['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojPictoChartItemEventMap<any>['svgStyleChanged']) => void;
+    /** @deprecated since 18.1.0 */ onsvgStyleChanged?: (value: ojPictoChartItemEventMap<any>['svgStyleChanged']) => void;
     children?: ComponentChildren;
 }
 declare global {

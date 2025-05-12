@@ -470,6 +470,8 @@
       }
     }
     .oj-datepicker-next-icon {
+      top : 0;
+      bottom: 0;
       @include oj-ltr() {
         right: 2px;
       }
@@ -486,6 +488,9 @@
         line-height: calc((#{$dateTimePickerWidth} - 2 * #{$dateTimePickerPadding}) / 7);         
 
       text-align: center;
+      display: flex;
+      column-gap: 20px;
+      justify-content: center;
     }
 
     .oj-datepicker-title select { 
@@ -523,14 +528,9 @@
       width: 100%;
     }
 
-    .oj-datepicker-month {
-      margin-right: 20px;
-    }
-
     .oj-datepicker-month,
     .oj-datepicker-year {
       font-size: 18px;
-      width: 48%;
       min-width: 0;
     }
 

@@ -1408,6 +1408,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event))=}
          * @default null
+         * @ojsignature {target: "Type", value: "?((event: DragEvent) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragend" event as argument.
@@ -1418,6 +1419,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event))=}
          * @default null
+         * @ojsignature {target: "Type", value: "?((event: DragEvent) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragstart" event and context information as arguments.
@@ -1433,7 +1435,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {nodes: oj.ojDiagram.DndNodeContext<K1,D1>[]}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {nodes: oj.ojDiagram.DndNodeContext<K1,D1>[]}) => void)", jsdocOverride: true}
          */
         /**
          * If this object is specified, the diagram will initiate link creation when the user starts dragging from a port.
@@ -1500,6 +1502,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event))=}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: DragEvent) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragend" event as argument.
@@ -1510,6 +1513,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event))=}
          * @default null
+         * @ojsignature {target: "Type", value: "((event: DragEvent) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragstart" event and context information as arguments.
@@ -1529,7 +1533,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {ports: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {ports: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}}) => void)", jsdocOverride: true}
          */
         /**
          * An object that describes drop functionality.
@@ -1569,7 +1573,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragover" event and context information as arguments.
@@ -1582,7 +1586,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragleave" event and context information as arguments.
@@ -1594,7 +1598,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number}) => void)", jsdocOverride: true}
          */
         /**
          * A callback function that receives the "drop" event and context information as arguments.
@@ -1607,7 +1611,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number}) => void)", jsdocOverride: true}
          */
         /**
          * Allows dropping on diagram nodes.
@@ -1638,7 +1642,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragover" event and context information as arguments.
@@ -1651,7 +1655,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragleave" event and context information as arguments.
@@ -1663,7 +1667,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
          */
         /**
          * A callback function that receives the "drop" event and context information as arguments.
@@ -1676,7 +1680,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
          */
         /**
          * Allows dropping on diagram links.
@@ -1709,7 +1713,7 @@ var __oj_diagram_link_metadata =
          * @default null
          * @ojsignature {
          *  target: "Type",
-         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+         *  value: "((event: DragEvent, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
          *  jsdocOverride: true}
          */
         /**
@@ -1725,7 +1729,7 @@ var __oj_diagram_link_metadata =
          * @default null
          * @ojsignature {
          *  target: "Type",
-         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+         *  value: "((event: DragEvent, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
          *  jsdocOverride: true}
          */
         /**
@@ -1740,7 +1744,7 @@ var __oj_diagram_link_metadata =
          * @default null
          * @ojsignature {
          *  target: "Type",
-         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+         *  value: "((event: DragEvent, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
          *  jsdocOverride: true}
          */
         /**
@@ -1756,7 +1760,7 @@ var __oj_diagram_link_metadata =
          * @default null
          * @ojsignature {
          *  target: "Type",
-         *  value: "((event: Event, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
+         *  value: "((event: DragEvent, context: {x: number, y: number, linkContext: oj.ojDiagram.LinkItemContext<K1,K2,D2> | oj.ojDiagram.PromotedLinkItemContext<K1,K2,D2>}) => void)",
          *  jsdocOverride: true}
          */
         /**
@@ -1798,7 +1802,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragover" event and context information as arguments.
@@ -1811,7 +1815,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
          */
         /**
          * An optional callback function that receives the "dragleave" event and context information as arguments.
@@ -1823,7 +1827,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
          */
         /**
          * A callback function that receives the "drop" event and context information as arguments.
@@ -1836,7 +1840,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {(function(Event, Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((event: DragEvent, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
          */
       },
 
@@ -4939,6 +4943,9 @@ var __oj_diagram_link_metadata =
    * @property {Object} data The data object for the current link.
    * @property {number} index The zero-based index of the current link.
    * @property {any} key The key of the current link.
+   * @ojsignature [{target: "Type", value: "D2", for: "data"},
+   *            {target: "Type", value: "K2", for: "key"},
+   *            {target: "Type", value: "<K2,D2>", for: "genericTypeParameters"}]
    * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
    */
   /**
@@ -4948,6 +4955,11 @@ var __oj_diagram_link_metadata =
    * @property {any} key The key of the current node.
    * @property {array} parentData  An array of data for the leaf and its parents. Eg: parentData[0] is the outermost parent and parentData[1] is the second outermost parent of the leaf.
    * @property {any} parentKey The key of the parent item. The parent key is null for root nodes.
+   * @ojsignature [{target: "Type", value: "D1", for: "data"},
+   *            {target: "Type", value: "K1", for: "key"},
+   *            {target: "Type", value: "D1[]", for: "parentData"},
+   *            {target: "Type", value: "K1", for: "parentKey"},
+   *            {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
    */
 
   // KEEP FOR WIDGET SYNTAX

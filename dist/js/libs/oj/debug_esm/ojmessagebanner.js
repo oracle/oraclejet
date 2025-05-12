@@ -8,7 +8,7 @@
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import { useCallback, useEffect, useState, useContext, useRef, useLayoutEffect, useMemo, useImperativeHandle } from 'preact/hooks';
 import { Fragment, Component, createContext, cloneElement, createRef } from 'preact';
-import { getLocale } from 'ojs/ojconfig';
+import { getLocale, getDeviceType } from 'ojs/ojconfig';
 import oj from 'ojs/ojcore-base';
 import { error, warn, info, log } from 'ojs/ojlogger';
 import { SoundUtils } from 'ojs/ojsoundutils';
@@ -616,6 +616,20 @@ function useMessageFocusManager(ref, callbacks, options) {
     };
 }
 
+const getLiveRegionTextByDevice = (context, translations) => {
+    const deviceType = getDeviceType() === 'others' ? 'keyboard' : 'touch';
+    const keys = {
+        toMessages: {
+            touch: 'navigationToTouch',
+            keyboard: 'navigationToMessagesRegion'
+        },
+        fromMessages: {
+            touch: '',
+            keyboard: 'navigationFromMessagesRegion'
+        }
+    };
+    return translations?.[keys[context][deviceType]] || '';
+};
 function MessageBanner({ detailRendererKey, data, onClose, renderers, translations, type = 'section' }) {
     const messagesRef = useRef(new Map());
     const containerDivRef = useRef(null);
@@ -653,7 +667,7 @@ function MessageBanner({ detailRendererKey, data, onClose, renderers, translatio
     }), [data]);
     const { controller, handlers } = useMessageFocusManager(focusHandleRef, {
         onFocus: useCallback(() => {
-            setLiveRegionText(translations?.navigationFromMessagesRegion);
+            setLiveRegionText(getLiveRegionTextByDevice('fromMessages', translations));
         }, [setLiveRegionText, translations])
     });
     const handleClose = useCallback((item) => {
@@ -679,7 +693,7 @@ function MessageBanner({ detailRendererKey, data, onClose, renderers, translatio
         if (data.length) {
             setShouldRender(true);
             if (data.length > prevDataLengthRef.current) {
-                setLiveRegionText(translations?.navigationToMessagesRegion);
+                setLiveRegionText(getLiveRegionTextByDevice('toMessages', translations));
             }
             controller.prioritize();
         }
@@ -738,6 +752,7 @@ let MessageBanner$1 = class MessageBanner$1 extends Component {
                         close: getTranslatedString('oj-ojMessageBanner.close'),
                         navigationFromMessagesRegion: getTranslatedString('oj-ojMessageBanner.navigationFromMessagesRegion'),
                         navigationToMessagesRegion: getTranslatedString('oj-ojMessageBanner.navigationToMessagesRegion'),
+                        navigationToTouch: getTranslatedString('oj-ojMessageBanner.navigationToTouch'),
                         error: getTranslatedString('oj-ojMessageBanner.error'),
                         warning: getTranslatedString('oj-ojMessageBanner.warning'),
                         info: getTranslatedString('oj-ojMessageBanner.info'),

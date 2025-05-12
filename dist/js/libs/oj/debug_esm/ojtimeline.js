@@ -1161,11 +1161,14 @@ var __oj_timeline_series_metadata =
  * @typedef {Object} oj.ojTimeline.SeriesTemplateContext
  * @property {Element} componentElement The &lt;oj-timeline> custom element
  * @property {number} index The series index
- * @property {any} id The series id
+ * @property {string} id The series id
  * @property {Array<Object>} items The array of objects which are timeline items that belong to this series. The objects will have the following properties
  * @property {Object} items.data The data object for the item
  * @property {number} items.index The zero-based index of the item
  * @property {any} items.key The key of the item
+ * @ojsignature [{target: "Type", value: "D", for: "items.data"},
+ *               {target: "Type", value: "K", for: "items.key"},
+ *               {target: "Type", value: "<K,D>", for: "genericTypeParameters"}]
  */
 /**
  * @typedef {Object} oj.ojTimeline.ItemTemplateContext
@@ -1173,6 +1176,9 @@ var __oj_timeline_series_metadata =
  * @property {Object} data The data object for the current item
  * @property {number} index The zero-based index of the current item
  * @property {any} key The key of the current item
+ * @ojsignature [{target: "Type", value: "D", for: "data"},
+ *               {target: "Type", value: "K", for: "key"},
+ *               {target: "Type", value: "<K,D>", for: "genericTypeParameters"}]
  */
 /**
  * @typedef {Object} oj.ojTimeline.ItemBubbleTemplateContext

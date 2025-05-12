@@ -6,7 +6,7 @@
  * @ignore
  */
 import { getLocale } from 'ojs/ojconfig';
-import { matchTranslationBundle } from '@oracle/oraclejet-preact/utils/UNSAFE_matchTranslationBundle';
+import { matchTranslationBundle as matchTranslationBundle$1 } from '@oracle/oraclejet-preact/utils/UNSAFE_matchTranslationBundle';
 import supportedLocales from '@oracle/oraclejet-preact/resources/nls/supportedLocales';
 
 const SUPPORTED_LOCALES = new Set(supportedLocales);
@@ -32,14 +32,15 @@ const loadAllPendingBundles = () => {
     const promises = Array.from(_loaders.keys(), (bundleId) => getTranslationBundlePromise(bundleId));
     return Promise.all(promises);
 };
+const matchTranslationBundle = (locale, supportedLocales) => matchTranslationBundle$1([locale], supportedLocales);
 const getTranslationBundleLocale = (() => {
     let translationBundleLocale;
     return (bundleId) => {
         if (translationBundleLocale === undefined) {
-            translationBundleLocale = matchTranslationBundle([getLocale()], SUPPORTED_LOCALES);
+            translationBundleLocale = matchTranslationBundle$1([getLocale()], SUPPORTED_LOCALES);
         }
         return translationBundleLocale;
     };
 })();
 
-export { getTranslationBundlePromise, loadAllPendingBundles, registerTranslationBundleLoaders };
+export { getTranslationBundlePromise, loadAllPendingBundles, matchTranslationBundle, registerTranslationBundleLoaders };

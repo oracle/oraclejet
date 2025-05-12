@@ -55,8 +55,6 @@
     max-width: calc(100vw - 3rem);
     max-height: calc(100vh - 3rem);
 
-    overflow: auto;
-    
     border: 1px solid var(--oj-popup-border-color);
     border-radius: var(--oj-popup-border-radius);
     background-color: var(--oj-popup-bg-color);
@@ -64,6 +62,11 @@
 
     will-change: top, left;
   }
+  
+  .oj-popup:not(.oj-popup-tail-simple) {
+    overflow: auto;
+  }
+
   .oj-popup.oj-popup-tail-simple {
     border-width: 1px;
     border-color: var(--oj-popup-border-color);

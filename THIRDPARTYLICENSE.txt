@@ -69,18 +69,18 @@ js/libs/jquery/jqueryui-amd/vendor/jquery-color/jquery.color.js        MIT
 js/libs/jquery/jqueryui-amd/vendor/jquery-color/LICENSE.txt            MIT
 js/libs/jquery/jqueryui-amd/position.js                                MIT
 js/libs/knockout/knockout.js                                           MIT
-js/libs/oj/v18.0.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
-js/libs/oj/v18.0.0/min/ojexpparser.js (expparser.js)                    MIT
-js/libs/oj/v18.0.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
-js/libs/oj/v18.0.0/min/ojmessagebanner.js (Ramda)                       MIT
-js/libs/oj/v18.0.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
-js/libs/oj/v18.0.0/min/ojtree.js (jsTree.js)                            MIT
-js/libs/oj/v18.0.0/ojL10n.js (requireJS i18n)                           MIT
+js/libs/oj/v18.1.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
+js/libs/oj/v18.1.0/min/ojexpparser.js (expparser.js)                    MIT
+js/libs/oj/v18.1.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
+js/libs/oj/v18.1.0/min/ojmessagebanner.js (Ramda)                       MIT
+js/libs/oj/v18.1.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
+js/libs/oj/v18.1.0/min/ojtree.js (jsTree.js)                            MIT
+js/libs/oj/v18.1.0/ojL10n.js (requireJS i18n)                           MIT
 js/libs/proj4js/dist/proj4.js                                                 MIT
 js/libs/require/require.js                                                    MIT
 js/libs/require/text.js                                                       MIT
 js/libs/require-css/css.min.js (require-css)                                  MIT
-scss/oj/v18.0.0/3rdparty/normalize/normalize.scss                       MIT
+scss/oj/v18.1.0/3rdparty/normalize/normalize.scss                       MIT
 js/libs/touchr/touchr.js                                                      MIT
 js/libs/preact/dist/preact.umd.js                                             MIT
 

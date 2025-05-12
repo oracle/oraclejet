@@ -264,6 +264,14 @@ var __oj_gantt_metadata =
         }
       }
     },
+    "parentRowPosition": {
+      "type": "string",
+      "enumValues": [
+        "static",
+        "sticky"
+      ],
+      "value": "static"
+    },
     "referenceObjects": {
       "type": "Array<Object>",
       "value": []
@@ -1998,6 +2006,8 @@ var __oj_gantt_reference_object_metadata =
  * @property {Object} data The data object for the current reference object.
  * @property {number} index The index of the current reference object.
  * @property {Object} rowData The data object for the row the reference object belongs to.
+ * @ojsignature [{target: "Type", value: "D3", for: "rowData"},
+ *               {target: "Type", value: "<D3>", for: "genericTypeParameters"}]
  */
 /**
  * @typedef {Object} oj.ojGantt.TaskContentTemplateContext
@@ -3543,6 +3553,30 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
        */
       zoomOrder: null
     },
+    /**
+     * Specifies how parent rows behave when scrolling within the Gantt.
+     * @expose
+     * @name parentRowPosition
+     * @ojshortdesc Specifies how parent rows behave when scrolling within the Gantt.
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "static" Parent rows scroll normally along with other rows.
+     * @ojvalue {string} "sticky" Top-level parent rows remain fixed at the top of the Gantt chart as the user scrolls, while their child rows and deeper-level parent rows scroll normally.
+     * Note that if any dependency lines are present in the Gantt, this will take on the "static" behavior, and no rows will remain sticky.
+     * @default "static"
+     *
+     * @example <caption>Initialize the Gantt with the <code class="prettyprint">parent-row-position</code> attribute specified:</caption>
+     * &lt;oj-gantt parent-row-position='sticky'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">parentRowPosition</code> property after initialization:</caption>
+     * // getter
+     * var value = myGantt.parentRowPosition;
+     *
+     * // setter
+     * myGantt.parentRowPosition = 'sticky';
+     */
+    parentRowPosition: 'static',
     /**
      * The array of reference objects associated with the gantt.
      * For each reference object, a line is rendered at the specified value.

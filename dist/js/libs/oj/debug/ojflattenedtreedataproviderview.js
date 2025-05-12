@@ -981,7 +981,7 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojobservable',
             return true;
         }
         _filterCompare(cachedFilter, newFilter, prop) {
-            if (cachedFilter[prop] && newFilter[prop] && cachedFilter[prop] === newFilter[prop]) {
+            if (cachedFilter[prop] === newFilter[prop]) {
                 return true;
             }
             return false;

@@ -4562,6 +4562,20 @@ var __oj_data_grid_metadata =
   };
 
   /**
+   * Method to update the max row/column count known yet
+   */
+  DvtDataGrid.prototype.updateMaxYet = function () {
+    let maxBottom = this._getMaxBottom();
+    let maxRight = this._getMaxRight();
+    if (this.m_maxRowYet < maxBottom) {
+      this.m_maxRowYet = maxBottom;
+    }
+    if (this.m_maxColYet < maxRight) {
+      this.m_maxColYet = maxRight;
+    }
+  };
+
+  /**
    * Checks whether header fetching is completed
    * @return {boolean} true if header fetching completed, else false
    */
@@ -4801,7 +4815,9 @@ var __oj_data_grid_metadata =
     this.m_startRow = null;
     this.m_startCol = null;
     this.m_endRow = null;
+    this.m_maxRowYet = null;
     this.m_endCol = null;
+    this.m_maxColYet = null;
     this.m_startRowPixel = null;
     this.m_startColPixel = null;
     this.m_endRowPixel = null;
@@ -4957,7 +4973,9 @@ var __oj_data_grid_metadata =
     this.m_startRow = 0;
     this.m_startCol = 0;
     this.m_endRow = -1;
+    this.m_maxRowYet = -1;
     this.m_endCol = -1;
+    this.m_maxColYet = -1;
     this.m_startRowPixel = 0;
     this.m_startColPixel = 0;
     this.m_endRowPixel = 0;
@@ -5706,10 +5724,10 @@ var __oj_data_grid_metadata =
         emptyWidth = this.getElementWidth(empty);
         databodyScroller = databody.firstChild;
         if (emptyHeight > this.getElementHeight(databodyScroller)) {
-          this.setElementHeight(databodyScroller, Math.max(emptyHeight, availableHeight));
+          this._setAllScrollableRegions('height', Math.max(emptyHeight, availableHeight));
         }
         if (emptyWidth > this.getElementWidth(databodyScroller)) {
-          this.setElementWidth(databodyScroller, Math.max(emptyWidth, availableWidth));
+          this._setAllScrollableRegions('width', Math.max(emptyWidth, availableWidth));
         }
         this.m_databody.firstChild.appendChild(empty); // @HTMLUpdateOK
       } else {
@@ -6066,22 +6084,60 @@ var __oj_data_grid_metadata =
     }
 
     this._setScrollerDimension(scroller, endRowPixel, endColPixel);
+  };
 
-    if (this.m_initialized) {
-      this.m_scrollWidth =
-        this.getElementWidth(scroller) -
-        Math.min(
-          this.getElementWidth(scroller),
-          this.getElementWidth(databody) -
-            (this.m_hasVerticalScroller ? this.m_utils.getScrollbarSize() : 0)
-        );
-      this.m_scrollHeight =
-        this.getElementHeight(scroller) -
-        Math.min(
-          this.getElementHeight(scroller),
-          this.getElementHeight(databody) -
-            (this.m_hasHorizontalScroller ? this.m_utils.getScrollbarSize() : 0)
-        );
+  /**
+   * Helper function that sets databodyScroller and syncs other scrollable regions
+   * @private
+   */
+  DvtDataGrid.prototype._setAllScrollableRegions = function (dimension, newValue) {
+    const databodyScroller = this.m_databody.firstElementChild;
+    if (dimension === 'height') {
+      this.setElementHeight(databodyScroller, newValue);
+      if (this.m_hasRowHeader) {
+        const rowScroller = this.m_rowHeader.firstElementChild;
+        this.setElementHeight(rowScroller, newValue);
+      }
+      if (this.m_hasRowEndHeader) {
+        const rowEndScroller = this.m_rowEndHeader.firstElementChild;
+        this.setElementHeight(rowEndScroller, newValue);
+      }
+      if (this._hasFrozenColumns()) {
+        const frozenColScroller = this.m_databodyFrozenCol.firstElementChild;
+        this.setElementHeight(frozenColScroller, newValue);
+      }
+      if (this.m_initialized) {
+        this.m_scrollHeight =
+          this.getElementHeight(databodyScroller) -
+          Math.min(
+            this.getElementHeight(databodyScroller),
+            this.getElementHeight(this.m_databody) -
+              (this.m_hasHorizontalScroller ? this.m_utils.getScrollbarSize() : 0)
+          );
+      }
+    } else if (dimension === 'width') {
+      this.setElementWidth(databodyScroller, newValue);
+      if (this.m_hasColHeader) {
+        const colScroller = this.m_colHeader.firstElementChild;
+        this.setElementWidth(colScroller, newValue);
+      }
+      if (this.m_hasColEndHeader) {
+        const colEndScroller = this.m_colEndHeader.firstElementChild;
+        this.setElementWidth(colEndScroller, newValue);
+      }
+      if (this._hasFrozenRows()) {
+        const frozenRowScroller = this.m_databodyFrozenRow.firstElementChild;
+        this.setElementWidth(frozenRowScroller, newValue);
+      }
+      if (this.m_initialized) {
+        this.m_scrollWidth =
+          this.getElementWidth(databodyScroller) -
+          Math.min(
+            this.getElementWidth(databodyScroller),
+            this.getElementWidth(this.m_databody) -
+              (this.m_hasVerticalScroller ? this.m_utils.getScrollbarSize() : 0)
+          );
+      }
     }
   };
 
@@ -6089,16 +6145,33 @@ var __oj_data_grid_metadata =
     let isHWS = this._isHighWatermarkScrolling();
     let maxHeight = this.m_utils._getMaxDivHeightForScrolling();
     let maxWidth = this.m_utils._getMaxDivWidthForScrolling();
-    let rowCount = this.getDataSource().getCount('row');
-    let colCount = this.getDataSource().getCount('column');
+    let rowCount = this.getDataSource().getCount('row') - this.m_hiddenRows.length;
+    let colCount = this.getDataSource().getCount('column') - this.m_hiddenColumns.length;
+    let maxRowKnownCount =
+      this.m_maxRowYet - this._getHiddenCountBeforeIndex(this.m_maxRowYet, 'row');
+    let maxColKnownCount =
+      this.m_maxColYet - this._getHiddenCountBeforeIndex(this.m_maxColYet, 'column');
     let totalHeight = 0;
     let totalWidth = 0;
 
-    totalHeight = rowCount !== -1 && !isHWS ? rowCount * this.m_avgRowHeight : endRowPixel;
-    totalWidth = colCount !== -1 && !isHWS ? colCount * this.m_avgColWidth : endColPixel;
+    if (!this._isCountUnknown('row') && !isHWS) {
+      totalHeight = rowCount * this.m_avgRowHeight; // Known row count & virtual scrolling
+    } else if (this._isCountUnknown('column') && !isHWS) {
+      totalHeight = maxRowKnownCount * this.m_avgRowHeight; // Unknown row count & virtual scrolling
+    } else {
+      totalHeight = endRowPixel; // HWS
+    }
 
-    this.setElementHeight(scroller, Math.min(maxHeight, totalHeight));
-    this.setElementWidth(scroller, Math.min(maxWidth, totalWidth));
+    if (!this._isCountUnknown('column') && !isHWS) {
+      totalWidth = colCount * this.m_avgColWidth; // Known column count & virtual scrolling
+    } else if (this._isCountUnknown('column') && !isHWS) {
+      totalWidth = maxColKnownCount * this.m_avgColWidth; // Unknown column count & virtual scrolling
+    } else {
+      totalWidth = endColPixel; // HWS
+    }
+
+    this._setAllScrollableRegions('height', Math.min(maxHeight, totalHeight));
+    this._setAllScrollableRegions('width', Math.min(maxWidth, totalWidth));
   };
 
   /**
@@ -7114,7 +7187,8 @@ var __oj_data_grid_metadata =
       } else if (isHighWatermark) {
         newScrollPos = max;
       } else if (indexFromKey != null) {
-        newScrollPos = average * indexFromKey + offset;
+        let hiddenCount = this._getHiddenCountBeforeIndex(indexFromKey, axis);
+        newScrollPos = average * (indexFromKey - hiddenCount) + offset;
       }
 
       if (newScrollPos != null) {
@@ -7131,7 +7205,8 @@ var __oj_data_grid_metadata =
       } else if (isHighWatermark) {
         newScrollPos = max;
       } else {
-        newScrollPos = average * index;
+        let count = this._getHiddenCountBeforeIndex(index, axis);
+        newScrollPos = average * (index - count);
       }
     } else if (pos != null) {
       newScrollPos = pos;
@@ -7835,7 +7910,6 @@ var __oj_data_grid_metadata =
     var endRoot = headerRange.endHeader;
     var start = headerRange.start;
 
-
     var count = this.getDataSource().getCount(axis);
 
     if (axis === 'column') {
@@ -7956,6 +8030,7 @@ var __oj_data_grid_metadata =
         this._buildHeaderLabels('rowEnd', endResults);
       }
     }
+    this.updateMaxYet();
 
     if (this.isFetchComplete()) {
       this.hideStatusText();
@@ -8458,7 +8533,10 @@ var __oj_data_grid_metadata =
     }
 
     if (!this.m_initialized && this.m_startColHeader > 0) {
-      var newStartEstimate = Math.round(this.m_avgColWidth * this.m_startColHeader);
+      let hiddenTillIndexCount = this._getHiddenCountBeforeIndex(this.m_startColHeader, 'column');
+      var newStartEstimate = Math.round(
+        this.m_avgColWidth * (this.m_startColHeader - hiddenTillIndexCount)
+      );
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
         this.m_startColHeader,
@@ -8599,7 +8677,13 @@ var __oj_data_grid_metadata =
     }
 
     if (!this.m_initialized && this.m_startColEndHeader > 0) {
-      var newStartEstimate = Math.round(this.m_avgColWidth * this.m_startColEndHeader);
+      let hiddenTillIndexCount = this._getHiddenCountBeforeIndex(
+        this.m_startColEndHeader,
+        'columnEnd'
+      );
+      var newStartEstimate = Math.round(
+        this.m_avgColWidth * (this.m_startColEndHeader - hiddenTillIndexCount)
+      );
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
         this.m_startColEndHeader,
@@ -8762,7 +8846,10 @@ var __oj_data_grid_metadata =
     }
 
     if (!this.m_initialized && this.m_startRowHeader > 0) {
-      var newStartEstimate = Math.round(this.m_avgRowHeight * this.m_startRowHeader);
+      let hiddenTillIndexCount = this._getHiddenCountBeforeIndex(this.m_startRowHeader, 'row');
+      var newStartEstimate = Math.round(
+        this.m_avgRowHeight * (this.m_startRowHeader - hiddenTillIndexCount)
+      );
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
         this.m_startRowHeader,
@@ -8931,7 +9018,10 @@ var __oj_data_grid_metadata =
     }
 
     if (!this.m_initialized && this.m_startRowEndHeader > 0) {
-      var newStartEstimate = Math.round(this.m_avgRowHeight * this.m_startRowEndHeader);
+      let hiddenTillIndexCount = this._getHiddenCountBeforeIndex(this.m_startRowEndHeader, 'rowEnd');
+      var newStartEstimate = Math.round(
+        this.m_avgRowHeight * (this.m_startRowEndHeader - hiddenTillIndexCount)
+      );
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
         this.m_startRowEndHeader,
@@ -9907,10 +9997,25 @@ var __oj_data_grid_metadata =
    * @returns {Element|null}
    * @private
    */
+  // JET-72564 - mutation cases, find container based on index, extent when header is deleted.
   DvtDataGrid.prototype._getHeaderContainer = function (index, level, root, totalLevels) {
-    const header = this._getHeaderByIndexFromRoot(index, level, root, totalLevels, 0);
-    if (header) {
-      return header.parentNode;
+    const allGroupingContainers = root.querySelectorAll(
+      `.${this.getMappedStyle('groupingcontainer')}`
+    );
+
+    for (let i = 0; i < allGroupingContainers.length; i++) {
+      const headerIndex = this._getAttribute(allGroupingContainers[i], 'start', true);
+      const headerExtent = this._getAttribute(allGroupingContainers[i], 'extent', true);
+      const headerLevel = this._getAttribute(allGroupingContainers[i], 'level', true);
+      const headerDepth = this._getAttribute(allGroupingContainers[i].firstChild, 'depth', true);
+      if (index >= headerIndex && index < headerIndex + headerExtent) {
+        if (
+          (level >= headerLevel && level < headerLevel + headerDepth) ||
+          (level === totalLevels - 1 && level === headerLevel + headerDepth)
+        ) {
+          return allGroupingContainers[i];
+        }
+      }
     }
     return null;
   };
@@ -10210,6 +10315,24 @@ var __oj_data_grid_metadata =
     return root;
   };
 
+  DvtDataGrid.prototype._getIndexFromPosition = function (axis, position) {
+    let dimension;
+    let direction;
+    if (axis === 'row') {
+      dimension = this.getDefaultRowHeight();
+      direction = { down: true };
+    } else {
+      dimension = this.getDefaultColumnWidth();
+      direction = { right: true };
+    }
+    // estimated index at the scroll position
+    let estimatedIndex = Math.round(position / dimension);
+    // adjust index to account for hidden columns before estimated index
+    estimatedIndex += this._getHiddenCountBeforeIndex(estimatedIndex, axis);
+    // if updated estimatedIndex is hidden, get the next visible index
+    return this.getVisibleCellIndexInDirection(axis, estimatedIndex, direction);
+  };
+
   DvtDataGrid.prototype._getIndexFromKeyPromise = function (rowKey, columnKey) {
     var self = this;
     return new Promise(function (resolve) {
@@ -10229,23 +10352,34 @@ var __oj_data_grid_metadata =
     var columnKey = scrollPosition.columnKey;
     var indexFromKeyPromise = this._getIndexFromKeyPromise(rowKey, columnKey);
     return indexFromKeyPromise.then(function (indexesFromKey) {
+      // NOTE: For all cases, if the index is hidden, we get the next visible index to scroll to, to reduce num of fetches
       var returnObj = {};
       if (indexesFromKey.rowIndexFromKey != null && indexesFromKey.rowIndexFromKey > 0) {
-        returnObj.row = indexesFromKey.rowIndexFromKey;
+        returnObj.row = self.getVisibleCellIndexInDirection('row', indexesFromKey.rowIndexFromKey, {
+          down: true
+        });
       } else if (scrollPosition.rowIndex != null) {
-        returnObj.row = scrollPosition.rowIndex;
+        returnObj.row = self.getVisibleCellIndexInDirection('row', scrollPosition.rowIndex, {
+          down: true
+        });
       } else if (scrollPosition.y != null) {
-        returnObj.row = Math.round(scrollPosition.y / self.getDefaultRowHeight());
+        returnObj.row = self._getIndexFromPosition('row', scrollPosition.y);
       } else {
         returnObj.row = 0;
       }
 
       if (indexesFromKey.columnIndexFromKey != null && indexesFromKey.columnIndexFromKey > 0) {
-        returnObj.column = indexesFromKey.columnIndexFromKey;
+        returnObj.column = self.getVisibleCellIndexInDirection(
+          'column',
+          indexesFromKey.columnIndexFromKey,
+          { right: true }
+        );
       } else if (scrollPosition.columnIndex != null) {
-        returnObj.column = scrollPosition.columnIndex;
+        returnObj.column = self.getVisibleCellIndexInDirection('column', scrollPosition.columnIndex, {
+          right: true
+        });
       } else if (scrollPosition.x != null) {
-        returnObj.column = Math.round(scrollPosition.x / self.getDefaultColumnWidth());
+        returnObj.column = self._getIndexFromPosition('column', scrollPosition.x);
       } else {
         returnObj.column = 0;
       }
@@ -10777,6 +10911,7 @@ var __oj_data_grid_metadata =
         this.m_endColPixel += totalColumnWidth;
       }
     }
+    this.updateMaxYet();
 
     this._sizeDatabodyScroller();
 
@@ -10801,7 +10936,8 @@ var __oj_data_grid_metadata =
 
     var newStartEstimate;
     if (!this.m_initialized && this.m_startCol > 0) {
-      newStartEstimate = Math.round(this.m_avgColWidth * this.m_startCol);
+      let hiddenTillIndexCount = this._getHiddenCountBeforeIndex(this.m_startCol, 'column');
+      newStartEstimate = Math.round(this.m_avgColWidth * (this.m_startCol - hiddenTillIndexCount));
       this._shiftCellsAlongAxis(
         'column',
         newStartEstimate - this.m_startColPixel,
@@ -10812,7 +10948,8 @@ var __oj_data_grid_metadata =
       this.m_startColPixel = newStartEstimate;
     }
     if (!this.m_initialized && this.m_startRow > 0) {
-      newStartEstimate = Math.round(this.m_avgRowHeight * this.m_startRow);
+      let hiddenTillIndexCount = this._getHiddenCountBeforeIndex(this.m_startRow, 'row');
+      newStartEstimate = Math.round(this.m_avgRowHeight * (this.m_startRow - hiddenTillIndexCount));
       this._shiftCellsAlongAxis(
         'row',
         newStartEstimate - this.m_startRowPixel,
@@ -11145,6 +11282,7 @@ var __oj_data_grid_metadata =
 
     // need to resize first in order to ensure visible region is big enough to handle new rows
     this.m_endRow += rowCount;
+    this.m_maxRowYet += rowCount;
     this.m_endRowPixel += totalRowHeight;
     if (rowHeaderSupport) {
       this.m_endRowHeader += rowHeaderFragment.childNodes.length;
@@ -11172,7 +11310,7 @@ var __oj_data_grid_metadata =
         rowEndHeaderContent.insertBefore(rowEndHeaderFragment, referenceRowEndHeader.nextSibling); // @HTMLUpdateOK
       }
     }
-    this.setElementHeight(databodyContent, this.getElementHeight(databodyContent) + totalRowHeight);
+    this._setAllScrollableRegions('height', this.getElementHeight(databodyContent) + totalRowHeight);
     this.resizeGrid();
     this.updateRowBanding();
     this._refreshDatabodyMap();
@@ -12732,8 +12870,8 @@ var __oj_data_grid_metadata =
         !this._isCountUnknown('row') &&
         this._getMaxBottom() > -1)
     ) {
-      this.setElementHeight(
-        scrollerContent,
+      this._setAllScrollableRegions(
+        'height',
         Math.max(this._getMaxBottomPixel(), emptyBodyContentHeight)
       );
     }
@@ -12746,8 +12884,8 @@ var __oj_data_grid_metadata =
         !this._isCountUnknown('column') &&
         this._getMaxRight() > -1)
     ) {
-      this.setElementWidth(
-        scrollerContent,
+      this._setAllScrollableRegions(
+        'width',
         Math.max(this._getMaxRightPixel(), emptyBodyContentWidth)
       );
     }
@@ -12769,6 +12907,8 @@ var __oj_data_grid_metadata =
     var start;
     var startPixel;
     var total;
+    var hiddenItems;
+    let direction;
 
     // totals must be 0 or higher for long scroll
     if (prevScrollDir !== scrollDir) {
@@ -12777,29 +12917,67 @@ var __oj_data_grid_metadata =
         maxDimension = this.m_utils._getMaxDivHeightForScrolling();
         maxScroll = this._getMaxScrollHeight();
         avgDimension = this.m_avgRowHeight;
+        hiddenItems = this.m_hiddenRows;
         scrollbarSize = this.m_hasHorizontalScroller ? this.m_utils.getScrollbarSize() : 0;
-        total = Math.max(Math.max(this.getDataSource().getCount(axis), this.m_endRow), 0);
+        total = Math.max(
+          this.getDataSource().getCount(axis) - hiddenItems.length,
+          this.m_endRow,
+          this.m_maxRowYet,
+          0
+        );
+        direction = { down: true };
       } else if (axis === 'column') {
         scrollerDimension = this.getElementWidth(this.m_databody.firstChild);
         maxDimension = this.m_utils._getMaxDivWidthForScrolling();
         maxScroll = this._getMaxScrollWidth();
         avgDimension = this.m_avgColWidth;
+        hiddenItems = this.m_hiddenColumns;
         scrollbarSize = this.m_hasVerticalScroller ? this.m_utils.getScrollbarSize() : 0;
-        total = Math.max(Math.max(this.getDataSource().getCount(axis), this.m_endCol), 0);
+        total = Math.max(
+          this.getDataSource().getCount(axis) - hiddenItems.length,
+          this.m_endCol,
+          this.m_maxColYet,
+          0
+        );
+        direction = { right: true };
       }
 
       var oversizeRatio = Math.max(Math.min(scrollDir / scrollerDimension, 1), 0);
       var fetchSize = this.getFetchSize(axis);
-      start = Math.floor(total * oversizeRatio);
-      startPixel =
-        maxDimension <= scrollerDimension ? Math.min(scrollDir, maxScroll) : start * avgDimension;
+
+      if (maxDimension > scrollerDimension) {
+        let currentIndex = Math.floor(scrollDir / avgDimension);
+        hiddenItems.forEach((index) => {
+          if (index < currentIndex) {
+            currentIndex += 1;
+          }
+        });
+        start = this.getVisibleCellIndexInDirection(axis, currentIndex, direction);
+      } else if (maxDimension <= scrollerDimension) {
+        start = Math.floor(total * oversizeRatio);
+      }
+      startPixel = Math.min(scrollDir, maxScroll);
 
       if (
         oversizeRatio === 1 ||
         scrollDir + fetchSize * avgDimension > scrollerDimension - scrollbarSize
       ) {
-        start = Math.max(total - fetchSize, 0);
-        startPixel = Math.max(scrollerDimension - fetchSize * avgDimension, 0);
+        let lastIndex =
+          axis === 'column'
+            ? Math.max(this.getDataSource().getCount(axis), this.m_endCol, this.m_maxColYet, 0)
+            : Math.max(this.getDataSource().getCount(axis), this.m_endRow, this.m_maxRowYet, 0);
+        let startIndex = lastIndex - fetchSize;
+        let hiddenCount = hiddenItems.filter(
+          (index) => index >= startIndex && index < lastIndex
+        ).length;
+        let newStart = startIndex - hiddenCount;
+        // if newStart is hidden
+        while (newStart > 0 && hiddenItems.includes(newStart)) {
+          newStart -= 1; // till we find a visible index
+        }
+        start = Math.max(newStart, 0);
+        let hiddenTillIndex = this._getHiddenCountBeforeIndex(start, axis);
+        startPixel = Math.max((start - hiddenTillIndex) * avgDimension, 0);
       }
     } else if (axis === 'row') {
       start = this.m_longScrollRow != null ? this.m_longScrollRow : this.m_startRow;
@@ -13292,6 +13470,7 @@ var __oj_data_grid_metadata =
       dir = this.getResources().isRTLMode() ? 'right' : 'left';
       j = isFromEnd ? axisEnd : axisStart;
     }
+    let deleteArray = [];
 
     while (j <= axisEnd && j >= axisStart) {
       var key = this._getKey(this._getHeaderByIndex(j, axis, axisLevelCount - 1), axis);
@@ -13306,9 +13485,14 @@ var __oj_data_grid_metadata =
         );
       }
 
-      var dimensionValue = this.isHidden(axis, j)
-        ? 0
-        : this._getCellDimension(null, j, key, axis, dimension);
+      var dimensionValue;
+      if (this.isHidden(axis, j)) {
+        dimensionValue = 0;
+        deleteArray.push(j);
+      } else {
+        dimensionValue = this._getCellDimension(null, j, key, axis, dimension);
+      }
+
       if (
         isFromEnd
           ? axisEndPixel - dimensionValue - totalDimensionChange > threshold
@@ -13325,10 +13509,6 @@ var __oj_data_grid_metadata =
 
           if (axisExtent === 1) {
             this._remove(cell);
-            // remove hidden indicator div belonging to cell (if any) along the axis
-            if (this.isHidden(axis, j)) {
-              this._remove(this.getHiddenIndicatorByIndex(j, this.m_databody.firstChild, false));
-            }
           } else {
             cellContext.extents[axis] -= 1;
             this.setElementDir(cell, this.getElementDir(cell, dimension) - dimensionValue, dimension);
@@ -13350,6 +13530,7 @@ var __oj_data_grid_metadata =
         break;
       }
     }
+    this.deleteHiddenIndicators(deleteArray, this.m_databody.firstChild);
 
     return { dimensionChange: totalDimensionChange, extentChange: totalCountChange };
   };
@@ -13399,6 +13580,7 @@ var __oj_data_grid_metadata =
     var isHeader = this.m_utils.containsCSSClassName(element, className);
     var header = isHeader ? element : element.firstChild;
     var dimensionValue = this.getElementDir(header, dimension);
+    let deleteArray = [];
 
     while (startPixel + dimensionValue < scrollPosition - threshold) {
       this._remove(element);
@@ -13408,7 +13590,7 @@ var __oj_data_grid_metadata =
         // remove header/endHeader hidden indicator div belonging to element (if any)
         // along the axis from start on scroll
         if (this.isHidden(axis, elementIndex)) {
-          this._remove(this.getHiddenIndicatorByIndex(elementIndex, headersContainer, true));
+          deleteArray.push(elementIndex);
         }
       }
 
@@ -13427,6 +13609,7 @@ var __oj_data_grid_metadata =
       header = isHeader ? element : element.firstChild;
       dimensionValue = this.getElementDir(header, dimension);
     }
+    this.deleteHiddenIndicators(deleteArray, headersContainer);
 
     if (!isHeader) {
       var returnVal = this.removeHeadersFromStartOfContainer(
@@ -13501,6 +13684,7 @@ var __oj_data_grid_metadata =
     var isHeader = this.m_utils.containsCSSClassName(element, className);
     var header = isHeader ? element : element.firstChild;
     var dimensionValue = this.getElementDir(header, dimension);
+    let deleteArray = [];
 
     while (endPixel - dimensionValue > threshold) {
       this._remove(element);
@@ -13509,7 +13693,7 @@ var __oj_data_grid_metadata =
         let axis = element[context].axis;
         let elementIndex = element[context].index;
         if (this.isHidden(axis, elementIndex)) {
-          this._remove(this.getHiddenIndicatorByIndex(elementIndex, headersContainer, true));
+          deleteArray.push(elementIndex);
         }
       }
       /* eslint-disable no-loop-func */
@@ -13525,6 +13709,7 @@ var __oj_data_grid_metadata =
       header = isHeader ? element : element.firstChild;
       dimensionValue = this.getElementDir(header, dimension);
     }
+    this.deleteHiddenIndicators(deleteArray, headersContainer);
 
     if (!isHeader) {
       var returnVal = this.removeHeadersFromEndOfContainer(
@@ -16743,8 +16928,13 @@ var __oj_data_grid_metadata =
         this._handleDeleteRangeEvent(event.detail);
       }
       if (operation === 'insert') {
-        this._handleInsertRangeEvent(event.detail);
-        clearProcessing = false;
+        // JET-73179 - add to empty grid.
+        if (this._databodyEmptyState()) {
+          this._handleModelRefreshEvent();
+        } else {
+          this._handleInsertRangeEvent(event.detail);
+          clearProcessing = false;
+        }
       }
       if (operation === 'update') {
         this._handleUpdateRangeEvent(event.detail);
@@ -17117,6 +17307,9 @@ var __oj_data_grid_metadata =
           this.m_startRowEndHeaderPixel += total;
           this.m_endRowEndHeaderPixel += total;
         }
+        if (this.m_endRow >= 0 || this.m_endRowHeader >= 0 || this.m_endRowEndHeader >= 0) {
+          this.m_maxRowYet += count;
+        }
       } else {
         avg = this.m_avgColWidth;
         total = avg * count;
@@ -17139,6 +17332,9 @@ var __oj_data_grid_metadata =
           this.m_endColEndHeader += count;
           this.m_startColEndHeaderPixel += total;
           this.m_endColEndHeaderPixel += total;
+        }
+        if (this.m_endCol >= 0 || this.m_endColHeader >= 0 || this.m_endColEndHeader >= 0) {
+          this.m_maxColYet += count;
         }
       }
 
@@ -17859,6 +18055,9 @@ var __oj_data_grid_metadata =
         }
         this.m_stopRowEndHeaderFetch = false;
       }
+      if (hasData || hasHeaders || hasEndHeaders) {
+        this.m_maxRowYet += count;
+      }
 
       if (this._hasFrozenRows() && offset < this.m_frozenRowIndex + 1) {
         let frozenDatabodyContentHeight =
@@ -17871,10 +18070,9 @@ var __oj_data_grid_metadata =
         let databodyContentHeight = databodyFrozenColContent
           ? this.getElementHeight(databodyFrozenColContent) + totalDimension
           : this.getElementHeight(databodyContent) + totalDimension;
-        this.setElementHeight(databodyContent, databodyContentHeight);
+        this._setAllScrollableRegions('height', databodyContentHeight);
         if (databodyFrozenColContent) {
           this.setElementHeight(databodyFrozenColContent.parentElement, databodyContentHeight);
-          this.setElementHeight(databodyFrozenColContent, databodyContentHeight);
         }
       }
       this.updateRowBanding();
@@ -17909,6 +18107,9 @@ var __oj_data_grid_metadata =
         }
         this.m_stopColumnEndHeaderFetch = false;
       }
+      if (hasData || hasHeaders || hasEndHeaders) {
+        this.m_maxColYet += count;
+      }
       if (this._hasFrozenColumns() && offset < this.m_frozenColIndex + 1) {
         let frozenDatabodyContentWidth =
           this.getElementWidth(this.m_databodyFrozenCol) + totalDimension;
@@ -17920,10 +18121,9 @@ var __oj_data_grid_metadata =
         let databodyContentWidth = databodyFrozenRowContent
           ? this.getElementWidth(databodyFrozenRowContent) + totalDimension
           : this.getElementWidth(databodyContent) + totalDimension;
-        this.setElementWidth(databodyContent, databodyContentWidth);
+        this._setAllScrollableRegions('width', databodyContentWidth);
         if (databodyFrozenRowContent) {
           this.setElementWidth(databodyFrozenRowContent.parentElement, databodyContentWidth);
-          this.setElementWidth(databodyFrozenRowContent, databodyContentWidth);
         }
       }
       this.updateColumnBanding();
@@ -18228,6 +18428,7 @@ var __oj_data_grid_metadata =
         this.m_startRow += 1;
         this.m_startRowHeader += 1;
         this.m_endRow += 1;
+        this.m_maxRowYet += 1;
         this.m_endRowHeader += 1;
         this.m_startRowPixel += this.m_avgRowHeight;
         this.m_startRowHeaderPixel += this.m_avgRowHeight;
@@ -18261,12 +18462,15 @@ var __oj_data_grid_metadata =
     // so that grid will be resize
     // this.m_initialized = false;
     this.m_resizeRequired = true;
+    var rowStart = cellRanges[0].start;
 
+    if (rowStart < this.m_maxRowYet) {
+      this.m_maxRowYet += 1;
+    }
     // insert the row
     this.handleCellsFetchSuccess(cellSet, cellRanges, this.m_endRow >= cellRanges[0].start);
 
     // make sure the new row is in range
-    var rowStart = cellRanges[0].start;
     this._scrollRowIntoViewport(rowStart);
 
     // clean up rows outside of viewport (for non high-water mark scrolling only)
@@ -19043,6 +19247,7 @@ var __oj_data_grid_metadata =
           beforeDeletedCount += 1;
           dimension = avgDimension;
           beforeDeletedDimension += dimension;
+          databodyDimension += dimension;
         } else if (flag === DvtDataGrid.INSIDE) {
           insideDeletedCount += 1;
           dimension = this.getElementDir(
@@ -19235,8 +19440,11 @@ var __oj_data_grid_metadata =
           this.m_endRowEndHeaderPixel - beforeDeletedDimension - insideDeletedDimension;
         this.m_stopRowEndHeaderFetch = false;
       }
+      if (hasData || hasHeaders || hasEndHeaders) {
+        this.m_maxRowYet = this.m_maxRowYet - beforeDeletedCount - insideDeletedCount;
+      }
       var databodyContentHeight = this.getElementHeight(databodyContent) - databodyDimension;
-      this.setElementHeight(databodyContent, databodyContentHeight);
+      this._setAllScrollableRegions('height', databodyContentHeight);
       if (this.m_databodyFrozenCol) {
         this.setElementHeight(this.m_databodyFrozenCol, databodyContentHeight);
       }
@@ -19274,8 +19482,11 @@ var __oj_data_grid_metadata =
           this.m_endColEndHeaderPixel - beforeDeletedDimension - insideDeletedDimension;
         this.m_stopColumnEndHeaderFetch = false;
       }
+      if (hasData || hasHeaders || hasEndHeaders) {
+        this.m_maxColYet = this.m_maxColYet - beforeDeletedCount - insideDeletedCount;
+      }
       var databodyContentWidth = this.getElementWidth(databodyContent) - databodyDimension;
-      this.setElementWidth(databodyContent, databodyContentWidth);
+      this._setAllScrollableRegions('width', databodyContentWidth);
       if (this.m_databodyFrozenRow) {
         this.setElementWidth(this.m_databodyFrozenRow, databodyContentWidth);
       }
@@ -19354,7 +19565,6 @@ var __oj_data_grid_metadata =
     var totalRowHeight = 0;
     var rowHeaderSupport = this.m_endRowHeader !== -1;
     var rowEndHeaderSupport = this.m_endRowEndHeader !== -1;
-    var databodyContent = this.m_databody.firstChild;
 
     var referenceCellsIndex =
       this._getIndex(this._getAxisCellsByKey(keys[0].row, 'row')[0], 'row') - 1;
@@ -19534,6 +19744,7 @@ var __oj_data_grid_metadata =
 
       // clean up the variables no longer need because event animation handling
       self.m_endRow -= rowsToRemove.length;
+      self.m_maxRowYet -= rowsToRemove.length;
       self.m_endRowPixel -= totalRowHeight;
       self.m_stopRowFetch = false;
       if (rowHeaderSupport) {
@@ -19547,7 +19758,7 @@ var __oj_data_grid_metadata =
         self.m_stopRowEndHeaderFetch = false;
       }
 
-      self.setElementHeight(databodyContent, self.m_endRowPixel - self.m_startRowPixel);
+      self._setAllScrollableRegions('height', self.m_endRowPixel - self.m_startRowPixel);
       self.resizeGrid();
       self.updateRowBanding();
       if (self.m_modelEvents != null && self.m_modelEvents.length === 0 && !self.m_moveActive) {
@@ -19791,6 +20002,7 @@ var __oj_data_grid_metadata =
     // reset ranges
     this.m_startRow = startRow;
     this.m_endRow = -1;
+    this.m_maxRowYet = -1;
     this.m_startRowHeader = startRow;
     this.m_endRowHeader = -1;
     this.m_startRowEndHeader = startRow;
@@ -19803,6 +20015,7 @@ var __oj_data_grid_metadata =
     this.m_endRowEndHeaderPixel = startRowPixel;
     this.m_startCol = startCol;
     this.m_endCol = -1;
+    this.m_maxColYet = -1;
 
     this.m_startColHeader = startCol;
     this.m_endColHeader = -1;
@@ -28081,7 +28294,7 @@ var __oj_data_grid_metadata =
       if (this.m_databody.firstChild != null && !isFrozenSectionResize) {
         let oldScrollerWidth = this.getElementWidth(this.m_databody.firstChild);
         newScrollerWidth = oldScrollerWidth + widthChange;
-        this.setElementWidth(this.m_databody.firstChild, newScrollerWidth);
+        this._setAllScrollableRegions('width', newScrollerWidth);
         if (this.m_databodyFrozenRow) {
           this.setElementWidth(this.m_databodyFrozenRow.firstChild, newScrollerWidth);
         }
@@ -28096,9 +28309,7 @@ var __oj_data_grid_metadata =
         }
         newScrollerWidth = oldScrollerWidth + widthChange;
         this.setElementWidth(this.m_databodyFrozenCol, newScrollerWidth);
-        this.setElementWidth(this.m_databodyFrozenCol, newScrollerWidth);
         if (this.m_databodyFrozenCorner) {
-          this.setElementWidth(this.m_databodyFrozenCorner, newScrollerWidth);
           this.setElementWidth(this.m_databodyFrozenCorner, newScrollerWidth);
         }
       }
@@ -28145,7 +28356,7 @@ var __oj_data_grid_metadata =
       if (this.m_databody.firstChild != null && !isFrozenSectionResize) {
         let oldScrollerHeight = this.getElementHeight(this.m_databody.firstChild);
         newScrollerHeight = oldScrollerHeight + heightChange;
-        this.setElementHeight(this.m_databody.firstChild, newScrollerHeight);
+        this._setAllScrollableRegions('height', newScrollerHeight);
       } else if (isFrozenSectionResize && this.m_databodyFrozenRow) {
         let oldScrollerHeight = this.getElementHeight(this.m_databodyFrozenRow);
         let scrollerDir = this.getElementDir(this.m_databodyFrozenRow, dir);
@@ -28159,9 +28370,7 @@ var __oj_data_grid_metadata =
         }
         newScrollerHeight = oldScrollerHeight + heightChange;
         this.setElementHeight(this.m_databodyFrozenRow, newScrollerHeight);
-        this.setElementHeight(this.m_databodyFrozenRow, newScrollerHeight);
         if (this.m_databodyFrozenCorner) {
-          this.setElementHeight(this.m_databodyFrozenCorner, newScrollerHeight);
           this.setElementHeight(this.m_databodyFrozenCorner, newScrollerHeight);
         }
       }
@@ -28942,10 +29151,10 @@ var __oj_data_grid_metadata =
         var emptyHeight = this.getElementHeight(empty);
         var emptyWidth = this.getElementWidth(empty);
         if (emptyHeight > this.getElementHeight(databodyScroller)) {
-          this.setElementHeight(databodyScroller, emptyHeight);
+          this._setAllScrollableRegions('height', emptyHeight);
         }
         if (emptyWidth > this.getElementWidth(databodyScroller)) {
-          this.setElementWidth(databodyScroller, emptyWidth);
+          this._setAllScrollableRegions('width', emptyWidth);
         }
         this.m_databody.firstChild.appendChild(empty);
       } else {
@@ -29309,7 +29518,7 @@ var __oj_data_grid_metadata =
             );
           }
           if (forHideShow) {
-            if (this.isHidden(axis, startAxisChange)) {
+            if (this.isCellHidden(cell)) {
               cell.style.display = 'none';
             } else {
               cell.style.display = '';
@@ -29393,7 +29602,7 @@ var __oj_data_grid_metadata =
       if (!(tempArray[i] && tempArray[i][startAxisChange]) && shiftOnly !== true) {
         this.setElementDir(cell, this.getElementDir(cell, dimension) + dimensionDelta, dimension);
         if (forHideShow) {
-          if (this.isHidden(axis, startAxisChange)) {
+          if (this.isCellHidden(cell)) {
             cell.style.display = 'none';
           } else {
             cell.style.display = '';
@@ -38833,7 +39042,7 @@ var __oj_data_grid_metadata =
            * @name header.row.hidable
            * @instance
            * @memberof! oj.ojDataGrid
-           * @type {string}
+           * @type {string=}
            * @default 'disable'
            * @ojvalue {string} "enable" enable hide and unhide on rows
            * @ojvalue {string} "disable" disable hide and unhide on rows
@@ -39511,7 +39720,7 @@ var __oj_data_grid_metadata =
            * @name header.column.hidable
            * @instance
            * @memberof! oj.ojDataGrid
-           * @type {string}
+           * @type {string=}
            * @default 'disable'
            * @ojvalue {string} "enable" enable hide and unhide on columns
            * @ojvalue {string} "disable" disable hide and unhide on columns
@@ -44308,6 +44517,29 @@ var __oj_data_grid_metadata =
           }
           return returnValue;
         }
+      } else if (this._databodyEmptyState()) {
+        let returnValue;
+        if (selectionAxis === 'row') {
+          this.m_dropRowIndex = 0;
+          returnValue = this._invokeDropCallback('rows', 'dragOver', event, {
+            index: this.m_dropRowIndex,
+            position: 'before',
+            axis: 'row'
+          });
+        } else {
+          this.m_dropColumnIndex = 0;
+          returnValue = this._invokeDropCallback('columns', 'dragOver', event, {
+            index: this.m_dropColumnIndex,
+            position: 'before',
+            axis: 'column'
+          });
+        }
+
+        if (returnValue === false || (event.defaultPrevented && this.m_dropTarget === undefined)) {
+          this._removeDropTargetLine(selectionAxis);
+          this._removeDropTargetClass();
+        }
+        return returnValue;
       }
     }
   };
@@ -44411,7 +44643,25 @@ var __oj_data_grid_metadata =
         if (this.m_dropRowIndex) {
           return this._invokeDropCallback('rows', 'dragEnter', event, dropContext);
         }
+        if (this.m_dropColumnIndex) {
+          return this._invokeDropCallback('columns', 'dragEnter', event, dropContext);
+        }
       }
+    } else if (this._databodyEmptyState()) {
+      cellIndex = this.createIndex(0, 0);
+      let dropContext = {
+        index: cellIndex,
+        position: 'before',
+        axis: selectionAxis
+      };
+      let axis = 'rows';
+      if (selectionAxis === 'row') {
+        this.m_dropRowIndex = 0;
+      } else {
+        axis = 'columns';
+        this.m_dropColumnIndex = 0;
+      }
+      return this._invokeDropCallback(axis, 'dragEnter', event, dropContext);
     }
   };
 
@@ -47069,7 +47319,7 @@ var __oj_data_grid_metadata =
 
     if (this.m_databodyFrozenCorner) {
       frozenCornerCells = this._getFrozenAxisCells(axis, endIndex);
-      if (calculateWidthFromCorner) {
+      if (calculateWidthFromCorner && cells.length > 0) {
         let lastCell = frozenCornerCells[frozenCornerCells.length - 1];
         cellsWidthToAdjust = this.getElementDir(lastCell, dir) + this.getElementWidth(lastCell);
       }
@@ -47086,7 +47336,7 @@ var __oj_data_grid_metadata =
 
     let dirValueInit = dirValue;
 
-    if (cells.length) {
+    if (cells.length !== 0) {
       dirValue = this._appendElementsToFrozenContainer(
         axis,
         cells,
@@ -47096,9 +47346,16 @@ var __oj_data_grid_metadata =
         this.getMappedStyle('frozenCell'),
         newStartIndex
       );
+    } else if (headers.length !== 0) {
+      headers.forEach((frozenHeader) => {
+        cellsWidthToAdjust += this.getElementWidth(frozenHeader);
+      });
     } else {
-      dirValue += cellsWidthToAdjust;
+      endHeaders.forEach((frozenHeader) => {
+        cellsWidthToAdjust += this.getElementWidth(frozenHeader);
+      });
     }
+
     this._appendElementsToFrozenContainer(
       axis,
       headers,
@@ -47120,10 +47377,10 @@ var __oj_data_grid_metadata =
       );
     }
 
-    if (endIndex + 1 <= this.m_endCol) {
+    if (endIndex + 1 <= this._getMaxRight()) {
       this._shiftCellsAlongAxis(axis, -cellsWidthToAdjust, endIndex + 1, true);
 
-      if (this.m_databodyFrozenRow && this._hasFrozenRows()) {
+      if (this.m_databodyFrozenRow && this._hasFrozenRows() && cells.length > 0) {
         this._shiftFrozenCellsAlongAxis(axis, -cellsWidthToAdjust, endIndex + 1, true);
       }
 
@@ -47148,8 +47405,19 @@ var __oj_data_grid_metadata =
     this.m_endColHeaderPixel -= cellsWidthToAdjust;
     this.m_endColEndHeaderPixel -= cellsWidthToAdjust;
 
-    let newFrozenColWidth = databodyFrozenColDirValue + dirValue;
-    let newColWidth = databodyFrozenRowWidth - cellsWidthToAdjust;
+    let newFrozenColWidth;
+    let newColWidth;
+    if (cells.length !== 0) {
+      newFrozenColWidth = databodyFrozenColDirValue + dirValue;
+      newColWidth = databodyFrozenRowWidth - cellsWidthToAdjust;
+    } else {
+      const currentFrozenRegionWidth = this.m_colHeaderFrozen
+        ? this.getElementWidth(this.m_colHeaderFrozen)
+        : this.getElementWidth(this.m_colEndHeaderFrozen);
+      newFrozenColWidth = cellsWidthToAdjust + databodyFrozenColDirValue + currentFrozenRegionWidth;
+      dirValue = newFrozenColWidth - databodyFrozenColDirValue;
+      newColWidth = this._getViewportRight() - this._getViewportLeft() - cellsWidthToAdjust;
+    }
 
     // ensures endHeaders have the space assigned for them.
     newColWidth = newColWidth < 0 ? 0 : newColWidth;
@@ -47291,7 +47559,7 @@ var __oj_data_grid_metadata =
 
     let topValueInit = frozenRowHeight;
 
-    if (cells.length) {
+    if (cells.length !== 0) {
       topValue = this._appendElementsToFrozenContainer(
         axis,
         cells,
@@ -47301,7 +47569,16 @@ var __oj_data_grid_metadata =
         this.getMappedStyle('frozenCell'),
         newStartIndex
       );
+    } else if (headers.length !== 0) {
+      headers.forEach((frozenHeader) => {
+        cellsHeightToAdjust += this.getElementHeight(frozenHeader);
+      });
+    } else {
+      endHeaders.forEach((frozenHeader) => {
+        cellsHeightToAdjust += this.getElementHeight(frozenHeader);
+      });
     }
+
     this._appendElementsToFrozenContainer(
       axis,
       headers,
@@ -47323,9 +47600,9 @@ var __oj_data_grid_metadata =
       );
     }
 
-    if (endIndex + 1 <= this.m_endRow) {
+    if (endIndex + 1 <= this._getMaxBottom()) {
       this._shiftCellsAlongAxis(axis, -cellsHeightToAdjust, endIndex + 1, true);
-      if (this.m_databodyFrozenCol && this._hasFrozenColumns()) {
+      if (this.m_databodyFrozenCol && this._hasFrozenColumns() && cells.length > 0) {
         this._shiftFrozenCellsAlongAxis(axis, -cellsHeightToAdjust, endIndex + 1, true);
       }
       this._shiftHeadersAlongAxisInContainer(
@@ -47347,12 +47624,24 @@ var __oj_data_grid_metadata =
     this.m_endRowHeaderPixel -= cellsHeightToAdjust;
     this.m_endRowEndHeaderPixel -= cellsHeightToAdjust;
 
-    let newFrozenRowHeight = databodyFrozenRowTop + topValue;
-    let newRowHeight = databodyFrozenColHeight - cellsHeightToAdjust;
+    let newFrozenRowHeight;
+    let newRowHeight;
+
+    if (cells.length !== 0) {
+      newFrozenRowHeight = databodyFrozenRowTop + topValue;
+      newRowHeight = databodyFrozenColHeight - cellsHeightToAdjust;
+    } else {
+      const currentFrozenRegionHeight = this.m_rowHeaderFrozen
+        ? this.getElementHeight(this.m_rowHeaderFrozen)
+        : this.getElementHeight(this.m_rowEndHeaderFrozen);
+      newFrozenRowHeight = cellsHeightToAdjust + databodyFrozenRowTop + currentFrozenRegionHeight;
+      topValue = newFrozenRowHeight - databodyFrozenRowTop;
+      newRowHeight = this._getViewportBottom() - this._getViewportTop() - cellsHeightToAdjust;
+    }
 
     // ensures endHeaders have the space assigned for them.
     newRowHeight = newRowHeight < 0 ? 0 : newRowHeight;
-    if (this.m_endColEndHeader) {
+    if (this.m_endColEndHeader !== -1) {
       const colEndHeaderTop = this.getElementDir(this.m_colEndHeader, 'top');
       const colEndHeaderDimension = colEndHeaderTop;
       topValue =
@@ -47657,8 +47946,10 @@ var __oj_data_grid_metadata =
 
     let totalFrozenCellsWidth = cellsWidthToAdjust;
     for (let i = startLoop, j = 0; j <= index; j++) {
-      let indexCell = this._getFrozenCellByIndex(this.createIndex(i, j), 'row');
-      totalFrozenCellsWidth += this.getElementWidth(indexCell);
+      const indexCell = this._getFrozenCellByIndex(this.createIndex(i, j), 'row');
+      if (indexCell) {
+        totalFrozenCellsWidth += this.getElementWidth(indexCell);
+      }
     }
 
     // if no cells beyond the current frozen section then calculate width from corner.
@@ -47698,15 +47989,28 @@ var __oj_data_grid_metadata =
 
     dirValue = 0;
     let referenceDatabodyNode = this.m_databody.firstChild.firstChild;
-    for (let i = 0; i < cells.length; i++) {
-      this.setElementDir(cells[i], dirValue, dir);
-      this.m_utils.removeCSSClassName(cells[i], this.getMappedStyle('frozenCell'));
-      this.m_databody.firstChild.insertBefore(cells[i], referenceDatabodyNode);
-      if (i % indexDifference === indexDifference - 1) {
-        dirValue = 0;
-      } else {
-        dirValue += this.getElementWidth(cells[i]);
+    if (cells.length !== 0) {
+      for (let i = 0; i < cells.length; i++) {
+        this.setElementDir(cells[i], dirValue, dir);
+        this.m_utils.removeCSSClassName(cells[i], this.getMappedStyle('frozenCell'));
+        this.m_databody.firstChild.insertBefore(cells[i], referenceDatabodyNode);
+        if (i % indexDifference === indexDifference - 1) {
+          dirValue = 0;
+        } else {
+          dirValue += this.getElementWidth(cells[i]);
+        }
       }
+    } else {
+      if (headers.length !== 0) {
+        headers.forEach((frozenHeader) => {
+          totalFrozenCellsWidth += this.getElementWidth(frozenHeader);
+        });
+      } else {
+        endHeaders.forEach((frozenHeader) => {
+          totalFrozenCellsWidth += this.getElementWidth(frozenHeader);
+        });
+      }
+      cellsWidthToAdjust = totalFrozenCellsWidth;
     }
 
     let referenceHeaderNode = this.m_colHeader.firstChild.firstChild;
@@ -47771,10 +48075,22 @@ var __oj_data_grid_metadata =
     this.m_endColHeaderPixel += cellsWidthToAdjust;
     this.m_endColEndHeaderPixel += cellsWidthToAdjust;
 
-    let newColDir = frozenSectionWidth + databodyFrozenColDirValue;
-    let newColWidth = databodyFrozenRowWidth + cellsWidthToAdjust;
+    let newColDir;
+    let newColWidth;
+    if (cells.length !== 0) {
+      newColDir = frozenSectionWidth + databodyFrozenColDirValue;
+      newColWidth = databodyFrozenRowWidth + cellsWidthToAdjust;
+    } else {
+      const currentFrozenRegionWidth = this.m_colHeaderFrozen
+        ? this.getElementWidth(this.m_colHeaderFrozen)
+        : this.getElementWidth(this.m_colEndHeaderFrozen);
+      newColDir = currentFrozenRegionWidth - cellsWidthToAdjust + databodyFrozenColDirValue;
+      frozenSectionWidth = newColDir - databodyFrozenColDirValue;
+      newColWidth =
+        this._getViewportRight() - this._getViewportLeft() + currentFrozenRegionWidth + newColDir;
+    }
 
-    if (this.m_endRowEndHeader) {
+    if (this.m_endRowEndHeader !== -1) {
       const rowEndHeaderDir = this.getElementDir(this.m_rowEndHeader, dir);
       const rowEndHeaderDimension = rowEndHeaderDir;
       newColWidth =
@@ -47895,13 +48211,26 @@ var __oj_data_grid_metadata =
 
     dirValue = 0;
     let referenceDatabodyNode = this.m_databody.firstChild.firstChild;
-    for (let i = 0; i < cells.length; i++) {
-      this.setElementDir(cells[i], dirValue, 'top');
-      this.m_utils.removeCSSClassName(cells[i], this.getMappedStyle('frozenCell'));
-      this.m_databody.firstChild.insertBefore(cells[i], referenceDatabodyNode);
-      if ((i + 1) % Math.floor(cells.length / indexDifference) === 0) {
-        dirValue += this.getElementHeight(cells[i]);
+    if (cells.length !== 0) {
+      for (let i = 0; i < cells.length; i++) {
+        this.setElementDir(cells[i], dirValue, 'top');
+        this.m_utils.removeCSSClassName(cells[i], this.getMappedStyle('frozenCell'));
+        this.m_databody.firstChild.insertBefore(cells[i], referenceDatabodyNode);
+        if ((i + 1) % Math.floor(cells.length / indexDifference) === 0) {
+          dirValue += this.getElementHeight(cells[i]);
+        }
       }
+    } else {
+      if (headers.length !== 0) {
+        headers.forEach((frozenHeader) => {
+          totalFrozenCellsHeight += this.getElementHeight(frozenHeader);
+        });
+      } else {
+        endHeaders.forEach((frozenHeader) => {
+          totalFrozenCellsHeight += this.getElementHeight(frozenHeader);
+        });
+      }
+      cellsHeightToAdjust = totalFrozenCellsHeight;
     }
 
     let referenceHeaderNode = this.m_rowHeader.firstChild.firstChild;
@@ -47963,10 +48292,22 @@ var __oj_data_grid_metadata =
       this.getMappedStyle('rowendheadercell')
     );
 
-    let newRowTop = frozenSectionHeight + databodyFrozenRowTop;
-    let newRowHeight = databodyFrozenColHeight + cellsHeightToAdjust;
+    let newRowTop;
+    let newRowHeight;
+    if (cells.length !== 0) {
+      newRowTop = frozenSectionHeight + databodyFrozenRowTop;
+      newRowHeight = databodyFrozenColHeight + cellsHeightToAdjust;
+    } else {
+      const currentFrozenRegionHeight = this.m_rowHeaderFrozen
+        ? this.getElementHeight(this.m_rowHeaderFrozen)
+        : this.getElementHeight(this.m_rowEndHeaderFrozen);
+      newRowTop = currentFrozenRegionHeight - cellsHeightToAdjust + databodyFrozenRowTop;
+      frozenSectionHeight = newRowTop - databodyFrozenRowTop;
+      newRowHeight =
+        this._getViewportBottom() - this._getViewportTop() + currentFrozenRegionHeight + newRowTop;
+    }
 
-    if (this.m_endColEndHeader) {
+    if (this.m_endColEndHeader !== -1) {
       const colEndHeaderTop = this.getElementDir(this.m_colEndHeader, 'top');
       const colEndHeaderDimension = colEndHeaderTop;
       newRowHeight =
@@ -49204,7 +49545,10 @@ var __oj_data_grid_metadata =
       (!this.m_stopColumnHeaderFetch || !this.m_stopColumnEndHeaderFetch || !this.m_stopColumnFetch)
     ) {
       // scroll to right of data region or currently rendered skeletons
-      if (this._isHighWatermarkScrolling()) {
+      if (
+        this._isHighWatermarkScrolling() ||
+        (this._isCountUnknown('column') && this.m_maxColYet === this._getMaxRight())
+      ) {
         rowCount = this._getMaxBottom() - this._getMaxTop() + 1;
         columnCount = DvtDataGrid.SKELETON_DEFAULT_COUNT;
         row = this._getMaxTop();
@@ -49238,10 +49582,15 @@ var __oj_data_grid_metadata =
       (!this.m_stopRowHeaderFetch || !this.m_stopRowEndHeaderFetch || !this.m_stopRowFetch)
     ) {
       // scroll below the data region or currently rendered skeletons
-      if (this._isHighWatermarkScrolling()) {
+      if (
+        this._isHighWatermarkScrolling() ||
+        (this._isCountUnknown('row') && this.m_maxRowYet === this._getMaxBottom())
+      ) {
         row = this._getMaxBottom() + 1;
         column = this._getMaxLeft();
-        rowAppend = rowStart >= this._getMaxTop();
+        rowAppend =
+          rowStart + this.hiddenItemsInRange(rowStart, this._getMaxBottom(), 'row') >=
+          this._getMaxTop();
         top = rowAppend ? this._getMaxBottomPixel() : this._getMaxTopPixel();
         left = this._getMaxLeftPixel();
         rowCount = DvtDataGrid.SKELETON_DEFAULT_COUNT;
@@ -50345,39 +50694,18 @@ var __oj_data_grid_metadata =
   };
 
   /**
-   * Returns hidden indicator div belonging to the region
-   * @param {number} index
-   * @param {Object} databody/header/endHeader
-   * @param {boolean} isHeader
+   * Deletes hidden indicators
+   * @param {Array} deleteArray
+   * @param {Element} container
    */
-  DvtDataGrid.prototype.getHiddenIndicatorByIndex = function (index, container, isHeader) {
-    let hiddenIndicators;
-
-    if (isHeader) {
-      hiddenIndicators = container.querySelectorAll(
-        `.${this.getResources().getMappedStyle('colHeaderHiddenIndicator')},
-      .${this.getResources().getMappedStyle('rowHeaderHiddenIndicator')}`
-      );
-    } else {
-      hiddenIndicators = container.querySelectorAll(
-        `.${this.getResources().getMappedStyle('colHiddenIndicator')},
-      .${this.getResources().getMappedStyle('rowHiddenIndicator')}`
-      );
-    }
-
-    hiddenIndicators = Array.from(hiddenIndicators);
-
-    if (hiddenIndicators.length > 0) {
-      const hiddenIndicatorNode = hiddenIndicators.find(
-        (node) => this._getAttribute(node, 'hiddenIndicatorIndex', true) === index
-      );
-
-      if (hiddenIndicatorNode) {
-        return hiddenIndicatorNode;
+  DvtDataGrid.prototype.deleteHiddenIndicators = function (deleteArray, container) {
+    const hideIndexAttribute = this.getResources().getMappedAttribute('hiddenIndicatorIndex');
+    deleteArray.forEach((index) => {
+      const node = container.querySelector(`[${hideIndexAttribute}="${index}"]`);
+      if (node && node.parentNode) {
+        node.parentNode.removeChild(node);
       }
-    }
-
-    return null;
+    });
   };
 
   // returns active databody indicators
@@ -50427,20 +50755,34 @@ var __oj_data_grid_metadata =
     let hiddenItems;
     let headerLevelCount;
     let dimension;
+    let axisHeader;
+    let axisEndHeader;
+    let frozenHeader;
+    let frozenEndHeader;
 
     if (axis === 'column') {
       hiddenItems = this.m_hiddenColumns;
       headerLevelCount = this.m_columnHeaderLevelCount;
       dimension = 'width';
+      axisHeader = this.m_colHeader;
+      axisEndHeader = this.m_colEndHeader;
+      frozenHeader = this.m_colHeaderFrozen;
+      frozenEndHeader = this.m_colEndHeaderFrozen;
     } else if (axis === 'row') {
       hiddenItems = this.m_hiddenRows;
       headerLevelCount = this.m_rowHeaderLevelCount;
       dimension = 'height';
+      axisHeader = this.m_rowHeader;
+      axisEndHeader = this.m_rowEndHeader;
+      frozenHeader = this.m_rowHeaderFrozen;
+      frozenEndHeader = this.m_rowEndHeaderFrozen;
     }
 
     hiddenItems.sort((a, b) => a - b);
 
     let hiddenItemsCopy = axis === 'column' ? this.m_hiddenColumns : this.m_hiddenRows;
+
+    let fragments = {};
 
     for (let i = startAxis; i <= endAxis; i++) {
       if (hiddenItemsCopy.includes(i)) {
@@ -50459,13 +50801,14 @@ var __oj_data_grid_metadata =
               axis === 'column' ? this.getElementDir(header, dir) : this.getElementDir(header, 'top');
             indicatorDirPosition += i === -1 ? 0 : this.getElementDir(header, dimension);
 
-            this.renderHiddenAxisVisualIndicator(
+            fragments = this.renderHiddenAxisVisualIndicator(
               axis,
               axis === 'column' ? 0 : indicatorDirPosition,
               dir,
               axis === 'column' ? indicatorDirPosition : 0,
               adjustedAxisIndex,
-              databodyIndicator
+              databodyIndicator,
+              fragments
             );
           }
         } else {
@@ -50479,13 +50822,14 @@ var __oj_data_grid_metadata =
               let headerTop = this.getElementDir(currentHeader, 'top');
               let indicatorDirPosition = this.getElementDir(currentHeader, dir);
               indicatorDirPosition += j === -1 ? 0 : this.getElementDir(currentHeader, dimension);
-              this.renderHiddenAxisVisualIndicator(
+              fragments = this.renderHiddenAxisVisualIndicator(
                 axis,
                 headerTop,
                 dir,
                 indicatorDirPosition,
                 adjustedAxisIndex,
-                databodyIndicator
+                databodyIndicator,
+                fragments
               );
               // filtering to avoid multiple loops for the same nested header for each header
               /* eslint-disable  no-loop-func */
@@ -50494,6 +50838,33 @@ var __oj_data_grid_metadata =
           }
         }
       }
+    }
+
+    // Append hidden indicators
+    if (fragments.header) {
+      axisHeader.firstChild.appendChild(fragments.header); // @HTMLUpdateOK
+    }
+    if (fragments.endHeader) {
+      axisEndHeader.firstChild.appendChild(fragments.endHeader); // @HTMLUpdateOK
+    }
+    if (fragments.frozenHeader) {
+      frozenHeader.firstChild.appendChild(fragments.frozenHeader); // @HTMLUpdateOK
+    }
+    if (fragments.frozenEndHeader) {
+      frozenEndHeader.firstChild.appendChild(fragments.frozenEndHeader); // @HTMLUpdateOK
+    }
+    if (fragments.databody) {
+      this.m_databody.firstChild.appendChild(fragments.databody); // @HTMLUpdateOK
+    }
+    if (fragments.frozenCornerDatabody) {
+      this.m_databodyFrozenCorner.firstChild.appendChild(fragments.frozenCornerDatabody); // @HTMLUpdateOK
+    }
+    if (fragments.frozenDatabody) {
+      let databodyElem = axis === 'column' ? this.m_databodyFrozenCol : this.m_databodyFrozenRow;
+      databodyElem.firstChild.appendChild(fragments.frozenDatabody); // @HTMLUpdateOK
+    }
+    if (fragments.frozenRowDatabody) {
+      this.m_databodyFrozenRow.firstChild.appendChild(fragments.frozenRowDatabody); // @HTMLUpdateOK
     }
   };
 
@@ -50505,24 +50876,22 @@ var __oj_data_grid_metadata =
    * @param {number} index
    * @param {Array} databodyIndicatorArray
    */
+  /* eslint-disable no-param-reassign */
   DvtDataGrid.prototype.renderHiddenAxisVisualIndicator = function (
     axis,
     top,
     dir,
     dirValue,
     index,
-    databodyIndicatorArray
+    databodyIndicatorArray,
+    fragments
   ) {
-    let headerElem;
-    let endHeaderElem;
-    let databodyElem;
-
     const isFrozen =
       (axis === 'column' && this._hasFrozenColumns() && index <= this.m_frozenColIndex) ||
       (axis === 'row' && this._hasFrozenRows() && index <= this.m_frozenRowIndex);
 
     /* eslint-disable no-nested-ternary */
-    headerElem =
+    let headerElem =
       axis === 'column'
         ? isFrozen
           ? this.m_colHeaderFrozen
@@ -50531,7 +50900,7 @@ var __oj_data_grid_metadata =
         ? this.m_rowHeaderFrozen
         : this.m_rowHeader;
 
-    endHeaderElem =
+    let endHeaderElem =
       axis === 'column'
         ? isFrozen
           ? this.m_colEndHeaderFrozen
@@ -50539,15 +50908,6 @@ var __oj_data_grid_metadata =
         : isFrozen
         ? this.m_rowEndHeaderFrozen
         : this.m_rowEndHeader;
-
-    databodyElem =
-      axis === 'column'
-        ? isFrozen
-          ? this.m_databodyFrozenCol
-          : this.m_databody
-        : isFrozen
-        ? this.m_databodyFrozenRow
-        : this.m_databody;
 
     let headerVisualIndicatorDimension;
     let databodyVisualIndicatorDimension;
@@ -50613,7 +50973,17 @@ var __oj_data_grid_metadata =
         headerVisualIndicatorDimensionValue,
         headerVisualIndicatorDimension
       );
-      headerElem.firstChild.appendChild(headerIndicator); // @HTMLUpdateOK
+      if (isFrozen) {
+        if (!fragments.frozenHeader) {
+          fragments.frozenHeader = document.createDocumentFragment();
+        }
+        fragments.frozenHeader.appendChild(headerIndicator); // @HTMLUpdateOK
+      } else {
+        if (!fragments.header) {
+          fragments.header = document.createDocumentFragment();
+        }
+        fragments.header.appendChild(headerIndicator); // @HTMLUpdateOK
+      }
     }
 
     if (hasEndHeader) {
@@ -50629,7 +50999,17 @@ var __oj_data_grid_metadata =
         endHeaderVisualIndicatorDimensionValue,
         headerVisualIndicatorDimension
       );
-      endHeaderElem.firstChild.appendChild(endHeaderIndicator); // @HTMLUpdateOK
+      if (isFrozen) {
+        if (!fragments.frozenEndHeader) {
+          fragments.frozenEndHeader = document.createDocumentFragment();
+        }
+        fragments.frozenEndHeader.appendChild(endHeaderIndicator); // @HTMLUpdateOK
+      } else {
+        if (!fragments.endHeader) {
+          fragments.endHeader = document.createDocumentFragment();
+        }
+        fragments.endHeader.appendChild(endHeaderIndicator); // @HTMLUpdateOK
+      }
     }
 
     if (databodyIndicatorArray && databodyIndicatorArray.includes(index)) {
@@ -50646,7 +51026,17 @@ var __oj_data_grid_metadata =
         databodyVisualIndicatorDimensionValue,
         databodyVisualIndicatorDimension
       );
-      databodyElem.firstChild.appendChild(databodyIndicator); // @HTMLUpdateOK
+      if (isFrozen) {
+        if (!fragments.frozenDatabody) {
+          fragments.frozenDatabody = document.createDocumentFragment();
+        }
+        fragments.frozenDatabody.appendChild(databodyIndicator); // @HTMLUpdateOK
+      } else {
+        if (!fragments.databody) {
+          fragments.databody = document.createDocumentFragment();
+        }
+        fragments.databody.appendChild(databodyIndicator); // @HTMLUpdateOK
+      }
 
       let crossAxisFrozenCheck = axis === 'column' ? this._hasFrozenRows() : this._hasFrozenColumns();
       let frozenCheck =
@@ -50674,8 +51064,10 @@ var __oj_data_grid_metadata =
             databodyFrozenCornerVisualIndicatorDimensionValue,
             databodyVisualIndicatorDimension
           );
-
-          databodyFrozenCornerElem.firstChild.appendChild(databodyFrozenCornerIndicator); // @HTMLUpdateOK
+          if (!fragments.frozenCornerDatabody) {
+            fragments.frozenCornerDatabody = document.createDocumentFragment();
+          }
+          fragments.frozenCornerDatabody.appendChild(databodyFrozenCornerIndicator); // @HTMLUpdateOK
         } else {
           // appending indicator to the frozen row
           let databodyFrozenRowIndicator = document.createElement('div');
@@ -50696,10 +51088,30 @@ var __oj_data_grid_metadata =
             databodyFrozenRowVisualIndicatorDimensionValue,
             databodyVisualIndicatorDimension
           );
-          databodyFrozenRowElem.firstChild.appendChild(databodyFrozenRowIndicator); // @HTMLUpdateOK
+          if (!fragments.frozenRowDatabody) {
+            fragments.frozenRowDatabody = document.createDocumentFragment();
+          }
+          fragments.frozenRowDatabody.appendChild(databodyFrozenRowIndicator); // @HTMLUpdateOK
         }
       }
     }
+    return fragments;
+  };
+  /* eslint-enable no-param-reassign */
+
+  /**
+   * Returns true if the given cell is hidden
+   * @param {Element} cell
+   */
+  DvtDataGrid.prototype.isCellHidden = function (cell) {
+    let indexes = this.getCellIndexes(cell);
+    let rowIndex = indexes.row;
+    let columnIndex = indexes.column;
+    if (this.isHidden('column', columnIndex) || this.isHidden('row', rowIndex)) {
+      return true;
+    }
+
+    return false;
   };
 
   /**
@@ -50807,6 +51219,22 @@ var __oj_data_grid_metadata =
   };
 
   /**
+   * Returns hiddden count till index
+   * @param {Number} index
+   */
+  DvtDataGrid.prototype._getHiddenCountBeforeIndex = function (index, axis) {
+    let count = 0;
+    let hiddenItems =
+      axis === 'column' || axis === 'columnEnd' ? this.m_hiddenColumns : this.m_hiddenRows;
+    hiddenItems.forEach((hiddenIndex) => {
+      if (hiddenIndex < index) {
+        count += 1;
+      }
+    });
+    return count;
+  };
+
+  /**
    * returns true if given index is the first visible index by checking if all indices before that are hidden
    * @param {Number} index
    * @param {String} axis
@@ -50894,26 +51322,35 @@ var __oj_data_grid_metadata =
    * @param {Object} direction
    */
   DvtDataGrid.prototype.getVisibleCellIndexInDirection = function (axis, index, direction) {
-    let newIndex = index;
-    let hiddenArray;
+    let rowCount = this.getDataSource().getCount('row');
+    let colCount = this.getDataSource().getCount('column');
+    let newStartIndex = index;
+    let hiddenItems;
+    let maxIndex;
 
     if (axis === 'column' || axis === 'columnEnd') {
-      hiddenArray = this.m_hiddenColumns;
+      hiddenItems = this.m_hiddenColumns;
+      maxIndex = colCount !== -1 ? colCount : Number.MAX_VALUE;
     } else if (axis === 'row' || axis === 'rowEnd') {
-      hiddenArray = this.m_hiddenRows;
+      hiddenItems = this.m_hiddenRows;
+      maxIndex = rowCount !== -1 ? rowCount : Number.MAX_VALUE;
     }
 
-    if (direction.right || direction.down) {
-      while (hiddenArray.includes(newIndex)) {
-        newIndex += 1;
-      }
-    } else if (direction.left || direction.up) {
-      while (hiddenArray.includes(newIndex)) {
-        newIndex -= 1;
+    if (hiddenItems.length) {
+      if (direction.right || direction.down) {
+        while (hiddenItems.includes(newStartIndex) && newStartIndex >= 0) {
+          newStartIndex += 1;
+          if (newStartIndex >= maxIndex) {
+            return index;
+          }
+        }
+      } else if (direction.left || direction.up) {
+        while (hiddenItems.includes(newStartIndex) && newStartIndex >= 0) {
+          newStartIndex -= 1;
+        }
       }
     }
-
-    return newIndex;
+    return newStartIndex;
   };
 
   /**
@@ -51151,6 +51588,11 @@ var __oj_data_grid_metadata =
     return commonHiddenItems;
   };
 
+  DvtDataGrid.prototype.hiddenItemsInRange = function (lowerRangeIndex, upperRangeIndex, axis) {
+    let hiddenItems = axis === 'column' ? this.m_hiddenColumns : this.m_hiddenRows;
+    return hiddenItems.filter((index) => index >= lowerRangeIndex && index <= upperRangeIndex).length;
+  };
+
   /**
    * Unhide and shift cells and headers when column is hidden
    * @param event
@@ -51352,7 +51794,7 @@ var __oj_data_grid_metadata =
       let dimensionChange;
 
       currentElementDimension =
-          axis === 'column' ? this.getElementWidth(cell) : this.getElementHeight(cell);
+        axis === 'column' ? this.getElementWidth(cell) : this.getElementHeight(cell);
       oldElementDimension = this.m_sizingManager.getSize(axis, axisKey);
 
       if (hide) {
@@ -51409,10 +51851,7 @@ var __oj_data_grid_metadata =
         if (this.m_databody.firstChild != null && !isHideFrozenSection) {
           let oldScrollerDimension = this.getElementDir(this.m_databody.firstChild, dimension);
           newScrollerDimension = oldScrollerDimension + dimensionChange;
-          this.setElementDir(this.m_databody.firstChild, newScrollerDimension, dimension);
-          if (this.m_databodyFrozenRow) {
-            this.setElementWidth(this.m_databodyFrozenRow.firstChild, newScrollerDimension);
-          }
+          this._setAllScrollableRegions(dimension, newScrollerDimension);
         } else if (isHideFrozenSection && databodyFrozenSection) {
           let oldScrollerDimension = this.getElementDir(databodyFrozenSection, dimension);
           let scrollerDir = this.getElementDir(databodyFrozenSection, dir);
@@ -51421,9 +51860,9 @@ var __oj_data_grid_metadata =
             let endHeaderDir = this.getElementDir(crossAxisEndHeader, dir);
             let newDimension = scrollerDir + oldScrollerDimension + dimensionChange;
             dimensionChange =
-                newDimension > endHeaderDir
-                    ? endHeaderDir - (scrollerDir + oldScrollerDimension)
-                    : dimensionChange;
+              newDimension > endHeaderDir
+                ? endHeaderDir - (scrollerDir + oldScrollerDimension)
+                : dimensionChange;
           }
           newScrollerDimension = oldScrollerDimension + dimensionChange;
           this.setElementDir(databodyFrozenSection, newScrollerDimension, dimension);
@@ -51437,70 +51876,73 @@ var __oj_data_grid_metadata =
         // shifting start/end headers and set display to none for single headers
         if (hasHeader) {
           this._shiftHeadersAlongAxisInContainer(
-              headerRoot.firstChild,
-              axisIndex,
-              dimensionChange,
-              dir,
-              headerCellClass,
-              axis,
-              true
+            headerRoot.firstChild,
+            axisIndex,
+            dimensionChange,
+            dir,
+            headerCellClass,
+            axis,
+            true
           );
           if (!isHideFrozenSection) {
             // eslint-disable-next-line no-unused-expressions
             axis === 'column'
-                ? (this.m_endColHeaderPixel += dimensionChange)
-                : (this.m_endRowHeaderPixel += dimensionChange);
+              ? (this.m_endColHeaderPixel += dimensionChange)
+              : (this.m_endRowHeaderPixel += dimensionChange);
           }
         }
         if (hasEndHeader) {
           this._shiftHeadersAlongAxisInContainer(
-              endHeaderRoot.firstChild,
-              axisIndex,
-              dimensionChange,
-              dir,
-              endHeaderCellClass,
-              axis,
-              true
+            endHeaderRoot.firstChild,
+            axisIndex,
+            dimensionChange,
+            dir,
+            endHeaderCellClass,
+            axis,
+            true
           );
           if (!isHideFrozenSection) {
             // eslint-disable-next-line no-unused-expressions
             axis === 'column'
-                ? (this.m_endColEndHeaderPixel += dimensionChange)
-                : (this.m_endRowEndHeaderPixel += dimensionChange);
+              ? (this.m_endColEndHeaderPixel += dimensionChange)
+              : (this.m_endRowEndHeaderPixel += dimensionChange);
           }
         }
 
         // shift the cells widths and left/right values in the databody
         if (!isHideFrozenSection) {
           this._shiftCellsAlongAxis(
-              axis,
-              dimensionChange,
-              axisIndex,
-              false,
-              undefined,
-              undefined,
-              true
+            axis,
+            dimensionChange,
+            axisIndex,
+            false,
+            undefined,
+            undefined,
+            true
           );
-          if ((axis === 'column' && this.m_databodyFrozenRow) || (axis === 'row' && this.m_databodyFrozenCol)) {
+          if (
+            (axis === 'column' && this.m_databodyFrozenRow) ||
+            (axis === 'row' && this.m_databodyFrozenCol)
+          ) {
             this._shiftFrozenCellsAlongAxis(axis, dimensionChange, axisIndex, false, true);
           }
           // eslint-disable-next-line no-unused-expressions
           axis === 'column'
-              ? (this.m_endColPixel += dimensionChange)
-              : (this.m_endRowPixel += dimensionChange);
+            ? (this.m_endColPixel += dimensionChange)
+            : (this.m_endRowPixel += dimensionChange);
         } else if (
-            (axis === 'column' && this.m_databodyFrozenCol) ||
-            (axis === 'row' && this.m_databodyFrozenRow)
+          (axis === 'column' && this.m_databodyFrozenCol) ||
+          (axis === 'row' && this.m_databodyFrozenRow)
         ) {
           corner = true;
           this._shiftCellsAlongAxis(
-              axis,
-              dimensionChange,
-              axisIndex,
-              null,
-              frozenAxisIndex,
-              corner,
-              true
+            axis,
+            dimensionChange,
+            axisIndex,
+            null,
+            frozenAxisIndex,
+            corner,
+            true
           );
         }
       }

@@ -3392,7 +3392,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
- * <p>The application is responsible for populating the <i>title</i> attribute on the element with meaningful descriptors as the oj-rating-gauge element does not provide a default descriptor.
+ * <p>The application is responsible for providing a meaningful tooltip using <i>tooltip.renderer</i> function on the element as the oj-rating-gauge element does not provide a default tooltip and also ensuring that an accessible label is included that matches the tooltip's content.
  * Since component terminology for keyboard and touch shortcuts can conflict with those of the application, it is the application's responsibility to provide these shortcuts, possibly via a help popup.</p>
  *
  * @ojfragment a11y
@@ -3416,7 +3416,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <p>track-resize attribute is no longer supported. Rating gauges now have fixed sizes. Since we are not supporting the 'fit' enum value for the 'size' api, we no longer need 'track-resize'. </p>
  * <h5>tooltip attribute and tooltipTemplate slot </h5>
  * <p> The support for this feature has been split into two attributes, tooltip and datatip. The datatip will be used for interactive gauges only and it will be a function that takes DatatipContext as argument.
- * Tooltip attribute, which will be a string instead of a function, will be used for readonly rating gauge.
+ * Tooltip attribute, which will be a string instead of a function, will be used for readonly rating gauge. To get the preventDefault as true behaviour, do not set tooltip or datatip properties
  * </p>
  * <h5>title support</h5>
  * <p>title will no longer be required to make your rating gauge accessible. Use aria-label attribute instead for text to be used by screen readers, and datatip or tooltip for text to be shown on hover or focus.
@@ -3703,7 +3703,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <p>track-resize attribute is no longer supported. The component will itself resize on change in dimension when size is set to fit.
  * </p>
  * <h5>tooltip attribute and tooltipTemplate slot</h5>
- * <p> tooltip attribute and the tooltipTemplate slot are no longer supported. datatip attribute has been introduced to support this feature. The datatip attribute takes a function that provides datatipContext as argument.
+ * <p> tooltip attribute and the tooltipTemplate slot are no longer supported. datatip attribute has been introduced to support this feature. The datatip attribute takes a function that provides datatipContext as argument. To get the preventDefault as true behaviour, the datatip function should return null.
  * </p>
  * <h5>indicator-size attribute </h5>
  * <p>

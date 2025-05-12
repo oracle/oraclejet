@@ -2053,9 +2053,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._contentBackground.setClassName(this._gantt.GetStyleClass('row'));
         this._gantt.getEventManager().associate(this._contentBackground, this, true);
       }
-      if (!this._contentBackground.getParent()) {
-        this._rowAxis.addLabelBackground(this._contentBackground);
-      }
+      this._rowAxis.addLabelBackground(this._contentBackground, rowObj['isSticky']);
 
       if (!this._content) {
         this._content =
@@ -2082,9 +2080,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         // Performance is not really a concern because there are typically far more tasks than rows.
         this._contentDisplayableContainer.setAriaRole('row', true);
       }
-      if (!this._contentDisplayableContainer.getParent()) {
-        this._rowAxis.addLabelContent(this._contentDisplayableContainer);
-      }
+      this._rowAxis.addLabelContent(this._contentDisplayableContainer, rowObj['isSticky']);
 
       // TODO consider tweaking the logic to avoid this step when an explicit width is set on the row axis for potential performance improvements, especially for custom content
       var contentDimensions = this._contentDisplayable.getDimensions();
@@ -2211,7 +2207,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       // Content needs to be in DOM in order for subsequent getDimensions to work
       container.addChild(content);
-      this._rowAxis.addLabelContent(container);
+      this._rowAxis.addLabelContent(container, rowObj['isSticky']);
 
       if (rowObj['expanded'] != null) {
         // if not leaf
@@ -2489,12 +2485,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * Ensures row label is in the DOM
      */
     ensureInDOM() {
-      if (this._contentDisplayable.getParent() !== null) {
-        return;
-      }
-
-      this._rowAxis.addLabelBackground(this._contentBackground);
-      this._rowAxis.addLabelContent(this._contentDisplayable);
+      const rowObj = this.getRowLayoutObject();
+      this._rowAxis.addLabelBackground(this._contentBackground, rowObj?.['isSticky']);
+      this._rowAxis.addLabelContent(this._contentDisplayableContainer, rowObj?.['isSticky']);
     }
 
     /**
@@ -2502,7 +2495,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     remove() {
       this._rowAxis.removeLabelBackground(this._contentBackground);
-      this._rowAxis.removeLabelContent(this._contentDisplayable);
+      this._rowAxis.removeLabelContent(this._contentDisplayableContainer);
     }
 
     // ---------------------------------------------------------------------//
@@ -2593,7 +2586,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       // Node should exist in DOM already due to ensureInDOM call in getNextNavigable()
       var rowObj = this.getRowLayoutObject();
       var rowNode = rowObj.node;
-      rowNode.scrollIntoView();
+      rowNode.scrollIntoView(true);
 
       var backgroundElem = this._contentBackground.getElem();
       dvt.ToolkitUtils.addClassName(backgroundElem, this._gantt.GetStyleClass('focusHighlight'));
@@ -4970,7 +4963,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             localPos,
             DvtGanttStyleUtils.getAutoPanEdgeThreshold(),
             false,
-            false
+            false,
+            true
           );
 
           var layoutObjs = this._comp
@@ -5045,9 +5039,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._comp.getReferenceLinesContainer().setMouseEnabled(false);
       this._comp.getReferenceAreasContainer().setMouseEnabled(false);
       this._comp.getRowReferenceObjectsContainer().setMouseEnabled(false);
-      if (this._comp.getDependenciesContainer()) {
-        this._comp.getDependenciesContainer().setMouseEnabled(false);
-      }
+      this._comp.getStickyRowReferenceObjectsContainer()?.setMouseEnabled(false);
+      this._comp.getDependenciesContainer()?.setMouseEnabled(false);
 
       // Un-dim the data area
       if (this._comp.getOptions()['selectionBehavior'] === 'highlightDependencies') {
@@ -5083,9 +5076,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._comp.getReferenceLinesContainer().setMouseEnabled(true);
       this._comp.getReferenceAreasContainer().setMouseEnabled(true);
       this._comp.getRowReferenceObjectsContainer().setMouseEnabled(true);
-      if (this._comp.getDependenciesContainer()) {
-        this._comp.getDependenciesContainer().setMouseEnabled(true);
-      }
+      this._comp.getStickyRowReferenceObjectsContainer()?.setMouseEnabled(true);
+      this._comp.getDependenciesContainer()?.setMouseEnabled(true);
 
       var obj = this.DragSource.getDragObject();
       if (obj && obj.nodeType === 'task') {
@@ -5116,9 +5108,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._comp.getReferenceLinesContainer().setMouseEnabled(true);
       this._comp.getReferenceAreasContainer().setMouseEnabled(true);
       this._comp.getRowReferenceObjectsContainer().setMouseEnabled(true);
-      if (this._comp.getDependenciesContainer()) {
-        this._comp.getDependenciesContainer().setMouseEnabled(true);
-      }
+      this._comp.getStickyRowReferenceObjectsContainer()?.setMouseEnabled(true);
+      this._comp.getDependenciesContainer()?.setMouseEnabled(true);
 
       this._isDndDragging = false;
     }
@@ -6050,7 +6041,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     _onDndDragStart(event) {
       // At this point, isDnDDragging should be false. If true, then something else initiated a drag, e.g. keyboard move,
       // There should only be one set of things dragging at any give time, so cancel this one.
-      if (this._isDndDragging) {
+      if (this._isDndDragging || this._keyboardDnDMode) {
         event.preventDefault();
       }
 
@@ -6523,7 +6514,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (
         event.button === 0 &&
         !(event.ctrlKey || event.shiftKey) &&
-        this._comp.isHighLevelDnDEnabled()
+        this._comp.isHighLevelDnDEnabled() &&
+        !this._keyboardDnDMode
       ) {
         this._onHighLevelDnDPointerDown(event);
       }
@@ -6533,7 +6525,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @override
      */
     PreOnMouseOver(event) {
-      if (this._isDndDragging && this._comp.isHighLevelDnDEnabled()) {
+      if (this._isDndDragging && !this._keyboardDnDMode && this._comp.isHighLevelDnDEnabled()) {
         this._onHighLevelDnDPrePointerOver(event);
         return;
       }
@@ -6544,7 +6536,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @override
      */
     PreOnMouseOut(event) {
-      if (this._isDndDragging && this._comp.isHighLevelDnDEnabled()) {
+      if (this._isDndDragging && !this._keyboardDnDMode && this._comp.isHighLevelDnDEnabled()) {
         this._onHighLevelDnDPrePointerOut(event);
         return;
       }
@@ -6566,7 +6558,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @override
      */
     OnMouseMove(event) {
-      if (this._comp.isHighLevelDnDEnabled()) {
+      if (this._comp.isHighLevelDnDEnabled() && !this._keyboardDnDMode) {
         this._onHighLevelDnDPointerMove(event);
         if (this._isDndDragging) return;
       }
@@ -6604,7 +6596,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @override
      */
     OnMouseUp(event) {
-      if (this._comp.isHighLevelDnDEnabled()) {
+      if (this._comp.isHighLevelDnDEnabled() && !this._keyboardDnDMode) {
         this._onHighLevelDnDPointerUp(event);
         if (this._highLevelDnDEndExecuted) return;
       }
@@ -6699,6 +6691,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       // Need to clear selection before render to clear selection effects--selection will be restored on next render
       if (this._comp.isSelectionSupported()) this._comp.getSelectionHandler().clearSelection();
+
+      // When collapsing a sticky row, make sure to scroll to the unsticky position of the row first
+      // so that after the Gantt re-renders with collapsed state, we see the row in the viewport.
+      if (type === 'collapse' && rowObj['isSticky'] && rowObj['node']) {
+        rowObj['node'].scrollIntoView();
+      }
 
       var evt = dvt.EventFactory.newGanttExpandCollapseEvent(
         type,
@@ -10423,16 +10421,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         this._mainDragFeedbacks &&
         this._mainDragFeedbacks.length > 0
       ) {
-        targetShape = this._mainDragFeedbacks[0].getTask().getShape('main');
-        referenceFrame = this._mainDragFeedbacks[0];
+        const { dragFeedback } = this._mainDragFeedbacks[0];
+        targetShape = dragFeedback.getTask().getShape('main');
+        referenceFrame = dragFeedback;
       } else if (
         (keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_START ||
           keyboardDnDMode === DvtGanttEventManager.KEYBOARD_RESIZE_END) &&
         this._mainResizeHandleDragFeedbacks &&
         this._mainResizeHandleDragFeedbacks.length > 0
       ) {
-        targetShape = this._mainResizeHandleDragFeedbacks[0].getTask().getShape('main');
-        referenceFrame = this._mainResizeHandleDragFeedbacks[0];
+        const { dragFeedback } = this._mainResizeHandleDragFeedbacks[0];
+        targetShape = dragFeedback.getTask().getShape('main');
+        referenceFrame = dragFeedback;
       } else {
         targetShape = this.getTask().getShape('main');
         targetShape = targetShape ? targetShape : this.getTask().getShape('baseline');
@@ -10453,8 +10453,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         region,
         xPriority,
         yPriority,
-        DvtGanttStyleUtils.getRowPaddingTop(options)
+        DvtGanttStyleUtils.getRowPaddingTop(options),
+        true
       );
+      this._updateDragFeedbacks();
     }
 
     /**
@@ -10781,7 +10783,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
               artifactsContainer,
               feedbackRowNode
             );
-            this._renderDependencyLinesDragFeedback(this._mainDragFeedbacks, artifactsContainer);
+            this._renderDependencyLinesDragFeedback(
+              this._mainDragFeedbacks.map(({ dragFeedback }) => dragFeedback),
+              artifactsContainer
+            );
 
             // Show tooltip
             var referenceMainShape = this.getTask().getShape('main');
@@ -10807,7 +10812,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
               event,
               feedbackStartTime,
               feedbackEndTime,
-              this._mainDragFeedbacks[0],
+              this._mainDragFeedbacks[0].dragFeedback,
               'center',
               feedbackRowNode
             );
@@ -10827,17 +10832,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             // render feedback
             this._renderTaskResizeDragFeedback(referenceFinalLocalX, artifactsContainer);
             this._renderDependencyLinesDragFeedback(
-              this._mainResizeHandleDragFeedbacks,
+              this._mainResizeHandleDragFeedbacks.map(({ dragFeedback }) => dragFeedback),
               artifactsContainer
             );
 
             // Show tooltip
+            const { dragFeedback } = this._mainResizeHandleDragFeedbacks[0];
             var isEndResize = this._draggedObj.getType() === 'mainResizeHandleEnd';
             if (isEndResize) {
               feedbackStartTime = this.getValue('start');
               feedbackEndTimePos =
-                this._mainResizeHandleDragFeedbacks[0].getTranslateX() -
-                orientationFactor * this._mainResizeHandleDragFeedbacks[0]._getWidth();
+                dragFeedback.getTranslateX() - orientationFactor * dragFeedback._getWidth();
               feedbackEndTimePos = isRTL
                 ? ganttContentLength - feedbackEndTimePos
                 : feedbackEndTimePos;
@@ -10848,7 +10853,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
                 ganttContentLength
               );
             } else {
-              feedbackStartTimePos = this._mainResizeHandleDragFeedbacks[0].getTranslateX();
+              feedbackStartTimePos = dragFeedback.getTranslateX();
               feedbackStartTimePos = isRTL
                 ? ganttContentLength - feedbackStartTimePos
                 : feedbackStartTimePos;
@@ -10864,7 +10869,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
               event,
               feedbackStartTime,
               feedbackEndTime,
-              this._mainResizeHandleDragFeedbacks[0],
+              dragFeedback,
               isEndResize ? 'end' : 'start'
             );
             break;
@@ -10975,19 +10980,27 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (this._mainDragFeedbacks) {
         for (var i = 0; i < this._mainDragFeedbacks.length; i++) {
-          var dragFeedback = this._mainDragFeedbacks[i];
-          var dragFeedbackOffset = this._mainDragFeedbackOffsets[i];
+          const mainDragFeedback = this._mainDragFeedbacks[i];
+          const {
+            source,
+            dragFeedback,
+            dragOutlineFeedback,
+            dropOutlineFeedback,
+            dragFeedbackOffset
+          } = mainDragFeedback;
           var newFeedbackX = referenceFinalLocalX + dragFeedbackOffset.x;
           setTranslate(dragFeedback, newFeedbackX, referenceFinalLocalY + dragFeedbackOffset.y);
 
+          var sourceMainShape = source.getTask().getShape('main');
+          dragOutlineFeedback.setY(source.getFinalY() + sourceMainShape.getFinalY());
+
           if (i === 0) {
             // Drop outline only shown for drag source task
-            var dropOutlineFeedback = this._mainDropOutlineFeedbacks[i];
             dropOutlineFeedback.setX(newFeedbackX);
             dropOutlineFeedback.setY(dropFeedbackY);
           }
 
-          this._mainDragFeedbackStartTimes[i] = ojtimeaxisToolkit.TimeAxisUtils.getPositionDate(
+          mainDragFeedback.dragFeedbackStartTime = ojtimeaxisToolkit.TimeAxisUtils.getPositionDate(
             ganttStartTime,
             ganttEndTime,
             isRTL ? ganttContentLength - newFeedbackX : newFeedbackX,
@@ -11004,12 +11017,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
         var referenceDragFeedback = this._renderClone(container);
         setTranslate(referenceDragFeedback, referenceFinalLocalX, referenceFinalLocalY);
-        this._mainDragFeedbacks = [referenceDragFeedback];
-        this._mainDragOutlineFeedbacks = [referenceDragOutlineFeedback];
-        this._mainDropOutlineFeedbacks = [referenceDropOutlineFeedback];
-        this._mainDragFeedbackOffsets = [new dvt.Point(0, 0)];
-        // time information is necessary for updating the feedback, e.g. in case the Gantt resized during move the feedback needs to be placed correctly under the new time axis.
-        this._mainDragFeedbackStartTimes = [this.getValue('start')];
+        this._mainDragFeedbacks = [
+          {
+            source: this,
+            dragFeedback: referenceDragFeedback,
+            dragOutlineFeedback: referenceDragOutlineFeedback,
+            dropOutlineFeedback: referenceDropOutlineFeedback,
+            dragFeedbackOffset: new dvt.Point(0, 0),
+            // time information is necessary for updating the feedback, e.g. in case the Gantt resized during move the feedback needs to be placed correctly under the new time axis.
+            dragFeedbackStartTime: this.getValue('start')
+          }
+        ];
 
         if (
           this._gantt.isSelectionSupported() &&
@@ -11033,14 +11051,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
               var dragFeedbackLocalY = referenceFinalLocalY + offsetFromReferenceY;
               selectionObj.hide(true);
               var dragOutlineFeedback = selectionObj._renderOutlineClone(container);
-              dragFeedback = selectionObj._renderClone(container);
+              var dragFeedback = selectionObj._renderClone(container);
               setTranslate(dragFeedback, dragFeedbackLocalX, dragFeedbackLocalY);
-              this._mainDragFeedbacks.push(dragFeedback);
-              this._mainDragOutlineFeedbacks.push(dragOutlineFeedback);
-              this._mainDragFeedbackOffsets.push(
-                new dvt.Point(offsetFromReferenceX, offsetFromReferenceY)
-              );
-              this._mainDragFeedbackStartTimes.push(selectionObj.getValue('start'));
+              this._mainDragFeedbacks.push({
+                source: selectionObj,
+                dragFeedback,
+                dragOutlineFeedback,
+                dragFeedbackOffset: new dvt.Point(offsetFromReferenceX, offsetFromReferenceY),
+                dragFeedbackStartTime: selectionObj.getValue('start')
+              });
             }
           }
         }
@@ -11085,18 +11104,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (this._mainResizeHandleDragFeedbacks) {
         for (var i = 0; i < this._mainResizeHandleDragFeedbacks.length; i++) {
-          var dragFeedback = this._mainResizeHandleDragFeedbacks[i];
-          var dragSourceNode = this._mainResizeHandleDragFeedbackSources[i];
+          const { dragFeedback, source: dragSourceNode } = this._mainResizeHandleDragFeedbacks[i];
           var dragSourceShape = dragSourceNode.getTask().getShape('main');
           var newFeedbackWidth = Math.max(0, dragSourceShape.getFinalWidth() + deltaWidth);
-          if (!isEndResize) {
-            var dragSourceAnchorX =
-              dragSourceShape.getFinalX() -
+          var x = !isEndResize
+            ? dragSourceShape.getFinalX() -
               orientationFactor * dragSourceShape.getFinalWidth() +
-              dragSourceNode.getTranslateX();
-            dragFeedback.setTranslateX(dragSourceAnchorX + orientationFactor * newFeedbackWidth);
-            dragFeedback._taskObj.x = dragFeedback.getTranslateX();
-          }
+              dragSourceNode.getTranslateX() +
+              orientationFactor * newFeedbackWidth
+            : dragFeedback.getTranslateX();
+          setTranslate(dragFeedback, x, dragSourceNode._taskObj.y);
           dragFeedback._setWidth(newFeedbackWidth);
         }
       } else {
@@ -11107,8 +11124,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           isEndResize ? anchorX : finalLocalX,
           referenceMainShape.getFinalY() + this.getTranslateY()
         );
-        this._mainResizeHandleDragFeedbacks = [referenceDragFeedback];
-        this._mainResizeHandleDragFeedbackSources = [this];
+        this._mainResizeHandleDragFeedbacks = [
+          {
+            source: this,
+            dragFeedback: referenceDragFeedback
+          }
+        ];
 
         if (
           this._gantt.isSelectionSupported() &&
@@ -11131,14 +11152,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
                   orientationFactor * feedbackWidth;
 
               selectionObj.hide();
-              dragFeedback = selectionObj._renderClone(container);
+              var dragFeedback = selectionObj._renderClone(container);
               setTranslate(
                 dragFeedback,
                 feedbackX,
                 mainShape.getFinalY() + selectionObj.getTranslateY()
               );
-              this._mainResizeHandleDragFeedbacks.push(dragFeedback);
-              this._mainResizeHandleDragFeedbackSources.push(selectionObj);
+              this._mainResizeHandleDragFeedbacks.push({
+                source: selectionObj,
+                dragFeedback
+              });
             }
           }
         }
@@ -11215,40 +11238,50 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var ganttStartTime = this._gantt.getStartTime();
       var ganttEndTime = this._gantt.getEndTime();
       var ganttContentLength = this._gantt.getContentLength();
-      var dragFeedback, dragFeedbackX, dragOutlineFeedback, dropOutlineFeedback;
 
       if (this._mainDragFeedbacks) {
         var newReferenceX = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(
           ganttStartTime,
           ganttEndTime,
-          this._mainDragFeedbackStartTimes[0],
+          this._mainDragFeedbacks[0].dragFeedbackStartTime,
           ganttContentLength
         );
         newReferenceX = isRTL ? ganttContentLength - newReferenceX : newReferenceX;
         for (var i = 0; i < this._mainDragFeedbacks.length; i++) {
-          dragFeedback = this._mainDragFeedbacks[i];
-          dragOutlineFeedback = this._mainDragOutlineFeedbacks[i];
-          dragFeedbackX = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(
+          const {
+            source,
+            dragFeedback,
+            dragOutlineFeedback,
+            dropOutlineFeedback,
+            dragFeedbackOffset,
+            dragFeedbackStartTime
+          } = this._mainDragFeedbacks[i];
+          let dragFeedbackX = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(
             ganttStartTime,
             ganttEndTime,
-            this._mainDragFeedbackStartTimes[i],
+            dragFeedbackStartTime,
             ganttContentLength
           );
           dragFeedbackX = isRTL ? ganttContentLength - dragFeedbackX : dragFeedbackX;
 
-          this._mainDragFeedbackOffsets[i].x = dragFeedbackX - newReferenceX; // recalculate x positional offsets
+          dragFeedbackOffset.x = dragFeedbackX - newReferenceX; // recalculate x positional offsets
 
-          var mainShape = this.getTask().getShape('main');
+          var mainShape = source.getTask().getShape('main');
           var mainShapeWidth = mainShape.getFinalWidth();
+          var dragFeedbackShape = dragFeedback.getTask().getShape('main');
+          var dragFeedbackShapeWidth = dragFeedbackShape.getFinalWidth();
           dragFeedback.setTranslateX(dragFeedbackX);
           dragFeedback._taskObj.x = dragFeedback.getTranslateX();
-          dragFeedback._setWidth(mainShapeWidth);
-          dragOutlineFeedback.setX(mainShape.getFinalX() + this.getFinalX());
+          if (dragFeedbackShapeWidth !== mainShapeWidth) {
+            dragFeedback._setWidth(mainShapeWidth);
+          }
+
+          dragOutlineFeedback.setX(source.getFinalX() + mainShape.getFinalX());
+          dragOutlineFeedback.setY(source.getFinalY() + mainShape.getFinalY());
           dragOutlineFeedback.setWidth(mainShapeWidth);
 
           if (i === 0) {
             // Drop outline only shown for the drag source task
-            dropOutlineFeedback = this._mainDropOutlineFeedbacks[i];
             dropOutlineFeedback.setX(dragFeedbackX);
             dropOutlineFeedback.setWidth(mainShapeWidth);
           }
@@ -11260,17 +11293,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       }
       if (this._mainResizeHandleDragFeedbacks) {
         for (var i = 0; i < this._mainResizeHandleDragFeedbacks; i++) {
-          dragFeedback = this._mainResizeHandleDragFeedbacks[i];
+          const { dragFeedback, source } = this._mainResizeHandleDragFeedbacks[i];
           var dragFeedbackStartX = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(
             ganttStartTime,
             ganttEndTime,
-            this._mainResizeHandleDragFeedbackSources[i].getValue('start'),
+            source.getValue('start'),
             ganttContentLength
           );
           var dragFeedbackEndX = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(
             ganttStartTime,
             ganttEndTime,
-            this._mainResizeHandleDragFeedbackSources[i].getValue('end'),
+            source.getValue('end'),
             ganttContentLength
           );
           dragFeedbackX = isRTL ? ganttContentLength - dragFeedbackStartX : dragFeedbackStartX;
@@ -11297,19 +11330,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     removeDragFeedbacks() {
       if (this._mainDragFeedbacks) {
         for (var i = 0; i < this._mainDragFeedbacks.length; i++) {
-          this._mainDragFeedbacks[i].getParent().removeChild(this._mainDragFeedbacks[i]);
-          this._mainDragOutlineFeedbacks[i]
-            .getParent()
-            .removeChild(this._mainDragOutlineFeedbacks[i]);
+          const { dragFeedback, dragOutlineFeedback } = this._mainDragFeedbacks[i];
+          dragFeedback.getParent().removeChild(dragFeedback);
+          dragOutlineFeedback.getParent().removeChild(dragOutlineFeedback);
         }
         // Only one drop outline for drag source task
-        this._mainDropOutlineFeedbacks[0].getParent().removeChild(this._mainDropOutlineFeedbacks[0]);
+        const { dropOutlineFeedback } = this._mainDragFeedbacks[0];
+        dropOutlineFeedback.getParent().removeChild(dropOutlineFeedback);
 
         this._mainDragFeedbacks = null;
-        this._mainDragOutlineFeedbacks = null;
-        this._mainDropOutlineFeedbacks = null;
-        this._mainDragFeedbackOffsets = null;
-        this._mainDragFeedbackStartTimes = null;
       }
       if (this._mainDependencyLineDragFeedbacks) {
         for (var i = 0; i < this._mainDependencyLineDragFeedbacks.length; i++) {
@@ -11321,12 +11350,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       }
       if (this._mainResizeHandleDragFeedbacks) {
         for (var i = 0; i < this._mainResizeHandleDragFeedbacks.length; i++) {
-          this._mainResizeHandleDragFeedbacks[i]
-            .getParent()
-            .removeChild(this._mainResizeHandleDragFeedbacks[i]);
+          const { dragFeedback } = this._mainResizeHandleDragFeedbacks[i];
+          dragFeedback.getParent().removeChild(dragFeedback);
         }
         this._mainResizeHandleDragFeedbacks = null;
-        this._mainResizeHandleDragFeedbackSources = null;
       }
       // Hide tooltips if any
       this._gantt.getEventManager().hideTooltip();
@@ -11448,7 +11475,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @return {number} The final y.
      */
     getFinalY() {
-      return this._taskObj['y'];
+      var rowObj = this._taskObj['rowObj'];
+      return this._taskObj['y'] - rowObj['unstickyY'] + rowObj['y'];
     }
 
     /**
@@ -11719,10 +11747,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         });
       }
 
-      // When selection is triggered by user gesture, highlight the relevant dependencies
-      // See also Bug JIRA JET-49382, and JET-59109
+      // When selection is triggered by user gesture or programmatically after initial render, highlight the relevant dependencies
+      // See also Bug JIRA JET-49382, JET-59109, JET-73382
       if (
-        (!isInitial || isMarqueeDragging) &&
+        (!(isInitial && this._gantt.isInitialRender()) || isMarqueeDragging) &&
         options.selectionBehavior === 'highlightDependencies'
       ) {
         var viewport = this._gantt.getViewPort();
@@ -12247,9 +12275,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {dvt.Container=} container the container. If not provided, update render is assumed.
      */
     render(container, subsetRenderOperations) {
+      const backgroundContainer = this._rowObj['isSticky']
+        ? this._gantt.getStickyRowBackgroundsContainer()
+        : this._gantt.getDatabodyBackground();
+      const refObjsContainer = this._rowObj['isSticky']
+        ? this._gantt.getStickyRowReferenceObjectsContainer()
+        : this._gantt.getRowReferenceObjectsContainer();
       this._renderTasks(subsetRenderOperations);
-      this._renderBackground(this._gantt, this._gantt.getDatabodyBackground());
-      this._renderReferenceObjects(this._gantt, this._gantt.getRowReferenceObjectsContainer());
+      this._renderBackground(this._gantt, backgroundContainer);
+      this._renderReferenceObjects(this._gantt, refObjsContainer);
       this._renderHorizontalGridline(this._gantt, this);
 
       if (container) {
@@ -12400,7 +12434,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       }
 
       // Remove previous reference objects
-      this._referenceObjects.forEach((refObj) => container.removeChild(refObj));
+      this._referenceObjects.forEach((refObj) => refObj?.removeFromParent());
 
       // Render reference objects
       this._referenceObjects = gantt.generateReferenceObjects(refObjsData, 'area');
@@ -12444,7 +12478,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var bRowAxisEnabled = this._gantt.isRowAxisEnabled() && rowAxis;
 
       if (gantt.isHorizontalGridlinesVisible()) {
-        y1 = this._rowObj['y'] + this._rowObj['height'] + yOffset;
+        y1 = this._rowObj['unstickyY'] + this._rowObj['height'] + yOffset;
         y2 = y1;
         x1 = 0;
         x2 = gantt.getContentLength();
@@ -12473,23 +12507,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           var rowAxisHorizontalLineFinalStates = {
             x1: x1,
             x2: rowAxis.getWidth(),
-            y1: y1,
-            y2: y2
+            y1: y1 - this._rowObj['unstickyY'] + this._rowObj['y'],
+            y2: y2 - this._rowObj['unstickyY'] + this._rowObj['y']
           };
 
           if (!this._rowAxisHorizontalLine) {
             this._rowAxisHorizontalLine = new dvt.Line(
               this._gantt.getCtx(),
               this._horizontalLine.getX1(),
-              this._horizontalLine.getY1(),
+              rowAxisHorizontalLineFinalStates['y1'],
               rowAxisHorizontalLineFinalStates['x2'],
-              this._horizontalLine.getY2()
+              rowAxisHorizontalLineFinalStates['y2']
             );
             this._rowAxisHorizontalLine.setPixelHinting(true);
             this._rowAxisHorizontalLine.setClassName(gridlineStyleClass, true);
           }
           // row axis is cleared on rerender, so line would not be in DOM
-          rowAxis.addHorizontalLine(this._rowAxisHorizontalLine);
+          rowAxis.addHorizontalLine(this._rowAxisHorizontalLine, this._rowObj['isSticky']);
 
           this._gantt
             .getAnimationManager()
@@ -12618,7 +12652,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             rowLabelContent.ensureInDOM();
 
             if (this._gantt.isHorizontalGridlinesVisible()) {
-              rowAxis.addHorizontalLine(this._rowAxisHorizontalLine);
+              rowAxis.addHorizontalLine(this._rowAxisHorizontalLine, this._rowObj?.['height']);
             }
           }
 
@@ -12647,13 +12681,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     /**
      * Scrolls the row into view.
+     * @param {boolean=} excludeStickyRowRegion Whether to exclude any sticky row region from being part of the viewport
      */
-    scrollIntoView() {
-      var viewportRect = this._gantt.getViewportDimensions();
-      var deltaYTopVisible = Math.min(this._rowObj.y - viewportRect.y, 0);
+    scrollIntoView(excludeStickyRowRegion) {
+      var viewportRect = this._gantt.getViewportDimensions(excludeStickyRowRegion);
+      var deltaYTopVisible = Math.min(this._rowObj['unstickyY'] - viewportRect.y, 0);
       var deltaYBottomVisible = Math.max(
         0,
-        this._rowObj.y + this._rowObj.height - (viewportRect.y + viewportRect.h)
+        this._rowObj['unstickyY'] + this._rowObj['height'] - (viewportRect.y + viewportRect.h)
       );
       var deltaY = deltaYTopVisible < 0 ? deltaYTopVisible : deltaYBottomVisible;
       this._gantt.panBy(0, deltaY);
@@ -12675,6 +12710,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._contentHeight = 0;
       this._prevHighlightedTaskObjs = new Set();
       this._prevDependencyObjs = new Set();
+      this._prevViewportStickyRowObj = null;
+      this._viewportStickyRowObj = null;
     }
 
     /**
@@ -12684,6 +12721,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._rowObjs = [];
       this._dependencyObjs = [];
       this._contentHeight = 0;
+      this._clearStickyRowObj();
 
       this._prevViewport = null;
     }
@@ -13127,7 +13165,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           // Otherwise align all tasks to top (with offset)
           overlapChains.forEach((chain, i) => {
             chain.forEach((taskObj) => {
-              taskObj['y'] += rowObj['y'];
+              taskObj['y'] += rowObj['unstickyY'];
             });
           });
         }
@@ -13242,16 +13280,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             data: row,
             index: i,
             y: top,
+            unstickyY: top, // If row is sticky, y changes, so this tracks the original y when it's not sticky
             renderState: 'add'
           };
           // Hierarchical data case
           if (row['_depth'] != null) {
             rowObj['depth'] = row['_depth'];
+            rowObj['isStickyCandidate'] = row['_isStickyCandidate'];
             rowObj['expanded'] = row['_expanded'];
             // child rows are always below its parent row, so at this point it must be that the parent row index < rowObjs.length
             rowObj['parent'] =
               row['_parentFlatIndex'] == null ? null : rowObjs[row['_parentFlatIndex']];
             row['_depth'] = undefined;
+            row['_isStickyCandidate'] = undefined;
             row['_expanded'] = undefined;
             row['_parentFlatIndex'] = undefined;
             row['_flatIndex'] = undefined;
@@ -13370,12 +13411,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @private
      */
     _generateDependencyObjs(dependencies, idTaskObjMap) {
+      var dependencyObjs = [];
+      if (dependencies.length === 0) {
+        return dependencyObjs;
+      }
       var idTaskObjMap = idTaskObjMap || this._createIdObjMap(this._rowObjs, 'taskObjs');
       idTaskObjMap.forEach((taskObj, id) => {
         taskObj.successorDepObjs = [];
         taskObj.predecessorDepObjs = [];
       });
-      var dependencyObjs = [];
 
       for (var i = 0; i < dependencies.length; i++) {
         var dependency = dependencies[i];
@@ -13771,6 +13815,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var options = this._gantt.getOptions();
       var ganttRenderState = this._gantt.getRenderState();
       if (ganttRenderState == null) {
+        this._clearStickyRowObj();
         var newTaskIdObjsMap = this._calcRowsLayout(options);
       } else {
         // For now, renderState is only non-null for expand/collapse case
@@ -13783,10 +13828,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (this._rowObjs.length > 0) {
         var lastRowObj = this._rowObjs[this._rowObjs.length - 1];
-        this._contentHeight = lastRowObj['y'] + lastRowObj['height'];
+        this._contentHeight = lastRowObj['unstickyY'] + lastRowObj['height'];
 
         var dependencies = options['dependencies'];
-        if (dependencies != null && dependencies.length > 0) {
+        if (dependencies != null) {
           this._dependencyObjs = this._generateDependencyObjs(dependencies, newTaskIdObjsMap);
         }
       }
@@ -13807,7 +13852,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       var flatRows = rows;
       if (this._gantt.isRowsHierarchical()) {
-        flatRows = this._flattenRows(rows, options['expanded']);
+        flatRows = this._flattenRows(rows, options['expanded'], options['parentRowPosition']);
       }
       var newRowObjs = this._generateRowObjs(flatRows);
 
@@ -13907,6 +13952,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var row = rowObj['data'];
       var rowChildren = row['rows'];
       var expandedKeySet = options['expanded'];
+      var parentRowPosition = options['parentRowPosition'];
       var animationManager = this._gantt.getAnimationManager();
       var animationMode = animationManager.getAnimationMode();
       var isAnimationOn = animationMode !== 'none';
@@ -13965,6 +14011,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         var flattenedChildrenRows = this._flattenRows(
           rowChildren,
           expandedKeySet,
+          parentRowPosition,
           0,
           rowObj['depth'] + 1
         );
@@ -14001,23 +14048,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (this._gantt.isHorizontalGridlinesVisible())
         horizontalLineHeightOffset = DvtGanttStyleUtils.getHorizontalGridlineWidth(options);
 
-      var top = rowObj['y'] + rowObj['height'] + horizontalLineHeightOffset;
+      var top = rowObj['unstickyY'] + rowObj['height'] + horizontalLineHeightOffset;
       for (var i = index + 1; i < this._rowObjs.length; i++) {
         var _rowObj = this._rowObjs[i];
         _rowObj['index'] = i;
         var taskObjs = _rowObj['taskObjs'];
         for (var j = 0; j < taskObjs.length; j++) {
           var taskObj = taskObjs[j];
-          taskObj['y'] = taskObj['y'] - _rowObj['y'] + top;
+          taskObj['y'] = taskObj['y'] - _rowObj['unstickyY'] + top;
         }
         _rowObj['y'] = top;
+        _rowObj['unstickyY'] = top;
         top += _rowObj['height'] + horizontalLineHeightOffset;
       }
 
       if (isAnimationOn) {
         // rows in final viewport should also be added to final state
         var lastRowObj = this._rowObjs[this._rowObjs.length - 1];
-        this._contentHeight = lastRowObj['y'] + lastRowObj['height'];
+        this._contentHeight = lastRowObj['unstickyY'] + lastRowObj['height'];
         var finalTranslateY = this._gantt.scrollPositionToTranslateY(
           this._gantt.getOptions()['scrollPosition']
         );
@@ -14038,12 +14086,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * Flattens hierarchical row structure
      * @param {Array} rows The hierarchical rows data array
      * @param {*} expandedKeySet The expanded key set
+     * @param {string} parentRowPosition "static" | "sticky"
      * @param {number=} flatIndex The current flat index. Assumed to be 0 (root) if not specified
      * @param {number=} depth The current depth. Assumed to be 0 (root) if not specified
      * @return {Array} Flattened array
      * @private
      */
-    _flattenRows(rows, expandedKeySet, flatIndex, depth) {
+    _flattenRows(rows, expandedKeySet, parentRowPosition, flatIndex, depth) {
       flatIndex = flatIndex || 0;
       depth = depth || 0;
 
@@ -14055,6 +14104,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           // from a tree data provider, which means we own the rows, and so we are allowed to modify it
           // and add properties. We'll remove then later in generateRowObjs().
           row['_depth'] = depth;
+          // Only top-level parent rows can be sticky
+          row['_isStickyCandidate'] = depth === 0 && parentRowPosition === 'sticky';
           row['_parentFlatIndex'] = parentRow ? parentRow['_flatIndex'] : null;
           row['_flatIndex'] = flatIndex;
           flatIndex += 1;
@@ -14143,10 +14194,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @private
      */
     _renderRowObj(rowObj, operations, mode) {
-      var databody = this._gantt.getDatabody();
+      var container = rowObj['isSticky']
+        ? this._gantt.getStickyRowsContainer()
+        : this._gantt.getDatabody();
       var rowNode = rowObj.node;
       if (mode === 'update') {
-        rowNode.render(null, operations);
+        rowNode.render(rowNode.getParent() === container ? null : container, operations);
       } else {
         // mode === 'add' or no operations (full row rerender)
         if (!rowNode) {
@@ -14169,7 +14222,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             rowNode.setRowLabelContent(rowLabelContent);
           }
         }
-        rowNode.render(databody, operations);
+        rowNode.render(container, operations);
       }
     }
 
@@ -14353,7 +14406,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       // linear search from that row to search for last row (intersecting yMax)
       for (var i = minRowInd; i < rowObjs.length; i++) {
         var rowObj = rowObjs[i];
-        if (rowObj['y'] <= yMax) {
+        if (rowObj['unstickyY'] <= yMax) {
           maxRowInd = i;
         } else {
           break;
@@ -14690,6 +14743,50 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     }
 
     /**
+     * Clears sticky row layout object.
+     * @private
+     */
+    _clearStickyRowObj() {
+      this._prevViewportStickyRowObj = null;
+      this._viewportStickyRowObj = null;
+    }
+
+    /**
+     * Identify and store the sticky row layout object.
+     * @private
+     */
+    _findAndUpdateStickyRowObj() {
+      if (!this._gantt.isStickyRowsEnabled()) {
+        this._clearStickyRowObj();
+        return;
+      }
+      const { yMin: scrollY } = this._gantt.getViewportYBounds();
+      const rowInd = this._binarySearchLeftMost(this._rowObjs, scrollY, 'predecessor', 'unstickyY');
+      let stickyRowObj = this._rowObjs[rowInd];
+      while (stickyRowObj['depth'] > 0 && !stickyRowObj['isStickyCandidate']) {
+        stickyRowObj = stickyRowObj['parent'];
+      }
+      if (stickyRowObj['isStickyCandidate']) {
+        if (this._viewportStickyRowObj) {
+          this._viewportStickyRowObj['isSticky'] = false;
+          this._viewportStickyRowObj['y'] = this._viewportStickyRowObj['unstickyY'];
+          this._prevViewportStickyRowObj = this._viewportStickyRowObj;
+        }
+        stickyRowObj['y'] = scrollY;
+        stickyRowObj['isSticky'] = true;
+        this._viewportStickyRowObj = stickyRowObj;
+      }
+    }
+
+    /**
+     * Gets the current sticky row layout object.
+     * @returns {Object}
+     */
+    getStickyRowObj() {
+      return this._viewportStickyRowObj;
+    }
+
+    /**
      * Renders viewport related dependency lines
      * @param {Object} viewport Object describing the viewport, of shape {minRowInd: number, maxRowInd: number, viewStartTime: number, viewEndTime: number}
      * @param {string} action The action that triggered the viewport change. One of the DvtGanttDataLayoutManager.VPC_X strings.
@@ -14843,7 +14940,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @private
      */
     _prepareViewport(viewport, action) {
-      var databody = this._gantt.getDatabody();
       if (action === DvtGanttDataLayoutManager.VPC_REFRESH) {
         // Clear previous viewport
         // Note that we have to perform diffing for all other actions because:
@@ -14853,9 +14949,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
         // Also need to clear tasks within each row.
         this._rowObjs.forEach(this._detachRowObjNode, this);
-        databody.removeChildren();
+        this._gantt.getDatabody().removeChildren();
+        this._gantt.getStickyRowsContainer()?.removeChildren();
         this._gantt.getDatabodyBackground().removeChildren();
+        this._gantt.getStickyRowBackgroundsContainer()?.removeChildren();
         this._gantt.getRowReferenceObjectsContainer().removeChildren();
+        this._gantt.getStickyRowReferenceObjectsContainer()?.removeChildren();
       }
       var rowAxis = this._gantt.getRowAxis();
       if (
@@ -14870,6 +14969,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         // Clear row axis when: Refresh/Animation. In animation case, labels are added back later with care.
         rowAxis.clear();
       }
+      this._findAndUpdateStickyRowObj();
     }
 
     /**
@@ -14885,37 +14985,42 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var rowsDelete = [];
       var rowsAdd = [];
       var rowsUpdate = [];
+
+      var addSimpleRowAddOperation = (rowObj) => {
+        var viewportTaskObjs = this.findTaskObjsRange(
+          rowObj,
+          viewport.viewStartTime,
+          true,
+          viewport.viewEndTime,
+          true
+        );
+        var bufferTaskObjs = this.findBufferTaskObjsRange(
+          rowObj,
+          viewport.viewStartTime,
+          viewport.viewEndTime
+        );
+        bufferTaskObjs.forEach((taskObj) => {
+          viewportTaskObjs.push(taskObj);
+        });
+        rowsAdd.push({
+          rowObj: rowObj,
+          tasksAdd: new Set(viewportTaskObjs),
+          tasksUpdate: new Set(),
+          tasksDelete: new Set(),
+          updateRender: true
+        });
+      };
+
       if (action === DvtGanttDataLayoutManager.VPC_REFRESH) {
         // Viewport is empty; just add the rows and tasks for the current viewport
         for (var i = viewport.minRowInd; i <= viewport.maxRowInd; i++) {
           var rowObj = this._rowObjs[i];
-          var viewportTaskObjs = this.findTaskObjsRange(
-            rowObj,
-            viewport.viewStartTime,
-            true,
-            viewport.viewEndTime,
-            true
-          );
-          var bufferTaskObjs = this.findBufferTaskObjsRange(
-            rowObj,
-            viewport.viewStartTime,
-            viewport.viewEndTime
-          );
-          bufferTaskObjs.forEach((taskObj) => {
-            viewportTaskObjs.push(taskObj);
-          });
-          rowsAdd.push({
-            rowObj: rowObj,
-            tasksAdd: new Set(viewportTaskObjs),
-            tasksUpdate: new Set(),
-            tasksDelete: new Set(),
-            updateRender: true
-          });
+          addSimpleRowAddOperation(rowObj);
         }
       } else if (action === DvtGanttDataLayoutManager.VPC_ANIMATE) {
         // Don't delete anything from the old viewport; those elements are initial states
         // Render the curated particpating rows (which may include more than what's in the viewport)
-        this._animationFinalStateRowObjs.forEach((taskObjsSet, rowObj) => {
+        this._animationFinalStateRowObjs?.forEach((taskObjsSet, rowObj) => {
           var tasksAdd = new Set();
           var viewportTaskObjs = this.findTaskObjsRange(
             rowObj,
@@ -15002,28 +15107,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           i++
         ) {
           var rowObj = this._rowObjs[i];
-          var viewportTaskObjs = this.findTaskObjsRange(
-            rowObj,
-            viewport.viewStartTime,
-            true,
-            viewport.viewEndTime,
-            true
-          );
-          var bufferTaskObjs = this.findBufferTaskObjsRange(
-            rowObj,
-            viewport.viewStartTime,
-            viewport.viewEndTime
-          );
-          bufferTaskObjs.forEach((taskObj) => {
-            viewportTaskObjs.push(taskObj);
-          });
-          rowsAdd.push({
-            rowObj: rowObj,
-            tasksAdd: new Set(viewportTaskObjs),
-            tasksUpdate: new Set(),
-            tasksDelete: new Set(),
-            updateRender: true
-          });
+          addSimpleRowAddOperation(rowObj);
         }
 
         // Any current rows below the previous viewport should be added
@@ -15033,28 +15117,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           i++
         ) {
           var rowObj = this._rowObjs[i];
-          var viewportTaskObjs = this.findTaskObjsRange(
-            rowObj,
-            viewport.viewStartTime,
-            true,
-            viewport.viewEndTime,
-            true
-          );
-          var bufferTaskObjs = this.findBufferTaskObjsRange(
-            rowObj,
-            viewport.viewStartTime,
-            viewport.viewEndTime
-          );
-          bufferTaskObjs.forEach((taskObj) => {
-            viewportTaskObjs.push(taskObj);
-          });
-          rowsAdd.push({
-            rowObj: rowObj,
-            tasksAdd: new Set(viewportTaskObjs),
-            tasksUpdate: new Set(),
-            tasksDelete: new Set(),
-            updateRender: true
-          });
+          addSimpleRowAddOperation(rowObj);
         }
 
         // Rows intersecting previous and current viewport should be updated
@@ -15195,6 +15258,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         rowsDelete = [];
       }
 
+      if (this._viewportStickyRowObj) {
+        var addStickyRowOperation = (stickyRowObj) => {
+          rowsDelete = rowsDelete.filter((rowObj) => !(rowObj === stickyRowObj));
+          rowsAdd = rowsAdd.filter((rowObj) => !(rowObj === stickyRowObj));
+          rowsUpdate = rowsUpdate.filter((rowObj) => !(rowObj === stickyRowObj));
+          addSimpleRowAddOperation(stickyRowObj);
+        };
+        if (this._prevViewportStickyRowObj) {
+          // Ensure the previously sticky row is re-rendered back to its unsticky position
+          addStickyRowOperation(this._prevViewportStickyRowObj);
+        }
+        addStickyRowOperation(this._viewportStickyRowObj);
+      }
+
       return { rowsDelete: rowsDelete, rowsAdd: rowsAdd, rowsUpdate: rowsUpdate };
     }
 
@@ -15231,16 +15308,33 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       // Apply any appropriate shape and text rendering performance optimizations to the databody
       // before updating the viewport
       var databodyElem = this._gantt.getDatabody().getElem();
+      var stickyRowsContainerElem = this._gantt.getStickyRowsContainer()?.getElem();
       var shapeRendering = dvt.ToolkitUtils.getAttrNullNS(databodyElem, 'shape-rendering');
       if (this._gantt.getViewportDensity() > 1) {
         if (shapeRendering !== 'optimizeSpeed') {
           dvt.ToolkitUtils.setAttrNullNS(databodyElem, 'shape-rendering', 'optimizeSpeed');
           dvt.ToolkitUtils.setAttrNullNS(databodyElem, 'text-rendering', 'optimizeSpeed');
+          if (stickyRowsContainerElem) {
+            dvt.ToolkitUtils.setAttrNullNS(
+              stickyRowsContainerElem,
+              'shape-rendering',
+              'optimizeSpeed'
+            );
+            dvt.ToolkitUtils.setAttrNullNS(
+              stickyRowsContainerElem,
+              'text-rendering',
+              'optimizeSpeed'
+            );
+          }
         }
       } else {
         if (shapeRendering === 'optimizeSpeed') {
           dvt.ToolkitUtils.removeAttrNullNS(databodyElem, 'shape-rendering');
           dvt.ToolkitUtils.removeAttrNullNS(databodyElem, 'text-rendering');
+          if (stickyRowsContainerElem) {
+            dvt.ToolkitUtils.removeAttrNullNS(stickyRowsContainerElem, 'shape-rendering');
+            dvt.ToolkitUtils.removeAttrNullNS(stickyRowsContainerElem, 'text-rendering');
+          }
         }
       }
 
@@ -16980,13 +17074,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this.addEvtListener(dvt.MouseEvent.MOUSEOVER, em.PreOnMouseOver.bind(em), false, this);
       this.addEvtListener(dvt.MouseEvent.MOUSEOUT, em.PreOnMouseOut.bind(em), false, this);
 
-      // label background container
+      // Create containers. The "ContainerContainer" ones are there so that we can set a clippath on it to handle sticky rows.
+      this._labelBackgroundContainerContainer = new dvt.Container(gantt.getCtx());
       this._labelBackgroundContainer = new dvt.Container(gantt.getCtx());
-      this.addChild(this._labelBackgroundContainer);
+      this._labelBackgroundContainerContainer.addChild(this._labelBackgroundContainer);
 
-      // label content container
+      this._labelContentContainerContainer = new dvt.Container(gantt.getCtx());
       this._labelContentContainer = new dvt.Container(gantt.getCtx());
-      this.addChild(this._labelContentContainer);
+      this._labelContentContainerContainer.addChild(this._labelContentContainer);
+
+      this._stickyLabelBackgroundContainerContainer = new dvt.Container(gantt.getCtx());
+      this._stickyLabelBackgroundContainer = new dvt.Container(gantt.getCtx());
+      this._stickyLabelBackgroundContainerContainer.addChild(this._stickyLabelBackgroundContainer);
+
+      this._stickyLabelContentContainerContainer = new dvt.Container(gantt.getCtx());
+      this._stickyLabelContentContainer = new dvt.Container(gantt.getCtx());
+      this._stickyLabelContentContainerContainer.addChild(this._stickyLabelContentContainer);
     }
 
     /**
@@ -17132,6 +17235,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     render(totalAvailWidth, isResize) {
       if (!isResize) {
+        if (this._gantt.isStickyRowsEnabled()) {
+          this.addChild(this._labelBackgroundContainerContainer);
+          this.addChild(this._stickyLabelBackgroundContainerContainer);
+          this.addChild(this._labelContentContainerContainer);
+          this.addChild(this._stickyLabelContentContainerContainer);
+        } else {
+          this._stickyLabelBackgroundContainerContainer.removeFromParent();
+          this._stickyLabelContentContainerContainer.removeFromParent();
+          this._labelBackgroundContainerContainer.setClipPath(null);
+          this._labelContentContainerContainer.setClipPath(null);
+          this.addChild(this._labelBackgroundContainerContainer);
+          this.addChild(this._labelContentContainerContainer);
+        }
+
         this.setAriaRole('grid', true);
         // JET-68049 - ensure role grid element has accessible text
         var translations = this._gantt.getOptions().translations;
@@ -17201,9 +17318,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     /**
      * Adds the label content to the row axis
      * @param {dvt.Displayable} labelContent
+     * @param {boolean=} isSticky Whether the label belongs to a sticky row
      */
-    addLabelContent(labelContent) {
-      this._labelContentContainer.addChild(labelContent);
+    addLabelContent(labelContent, isSticky) {
+      const container = isSticky ? this._stickyLabelContentContainer : this._labelContentContainer;
+      if (labelContent.getParent() === container) {
+        return;
+      }
+      container.addChild(labelContent);
     }
 
     /**
@@ -17211,15 +17333,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {dvt.Displayable} labelContent
      */
     removeLabelContent(labelContent) {
-      this._labelContentContainer.removeChild(labelContent);
+      labelContent?.removeFromParent();
     }
 
     /**
      * Adds the label background to the row axis
      * @param {dvt.Rect} background
+     * @param {boolean=} isSticky Whether the label belongs to a sticky row
      */
-    addLabelBackground(background) {
-      this._labelBackgroundContainer.addChild(background);
+    addLabelBackground(background, isSticky) {
+      const container = isSticky
+        ? this._stickyLabelBackgroundContainer
+        : this._labelBackgroundContainer;
+      if (background.getParent() === container) {
+        return;
+      }
+      container.addChild(background);
     }
 
     /**
@@ -17227,15 +17356,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {dvt.Rect} background
      */
     removeLabelBackground(background) {
-      this._labelBackgroundContainer.removeChild(background);
+      background?.removeFromParent();
     }
 
     /**
      * Adds the horizontal gridline to the row axis
      * @param {dvt.Line} line
+     * @param {boolean=} isSticky Whether the label belongs to a sticky row
      */
-    addHorizontalLine(line) {
-      this._labelContentContainer.addChild(line);
+    addHorizontalLine(line, isSticky) {
+      const container = isSticky ? this._stickyLabelContentContainer : this._labelContentContainer;
+      if (line.getParent() === container) {
+        return;
+      }
+      container.addChild(line);
     }
 
     /**
@@ -17243,7 +17377,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {dvt.Line} line
      */
     removeHorizontalLine(line) {
-      this._labelContentContainer.removeChild(line);
+      line?.removeFromParent();
     }
 
     /**
@@ -17330,11 +17464,74 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     }
 
     /**
+     * Sets the translate y of the row axis
+     * @param {number} y
+     */
+    setY(y) {
+      this._labelBackgroundContainer.setTranslateY(y);
+      this._stickyLabelBackgroundContainer.setTranslateY(y);
+      this._labelContentContainer.setTranslateY(y);
+      this._stickyLabelContentContainer.setTranslateY(y);
+    }
+
+    /**
+     * Updates clippaths and parenting related to sticky rows to adjust visibility.
+     * @param {object} viewport The current viewport that contains { minRowInd, maxRowInd }
+     */
+    updateStickyRowsVisibility(viewport) {
+      const { height: stickyRowRegionHeight } = this._gantt.getStickyRowRegionHeight(viewport);
+      if (stickyRowRegionHeight !== this._prevStickyRowRegionHeight) {
+        const databodyStart = this._gantt.getDatabodyStart();
+        const databodyHeight = this._gantt.getDatabodyHeight();
+        const startYOffset = this._gantt.getStartYOffset();
+        const backgroundDividerWidth = this._backgroundDivider ? 1 : 0;
+        const nonStickyContainers = [
+          this._labelBackgroundContainerContainer,
+          this._labelContentContainerContainer
+        ];
+        const stickyContainers = [
+          this._stickyLabelBackgroundContainerContainer,
+          this._stickyLabelContentContainerContainer
+        ];
+        for (let i = 0; i < nonStickyContainers.length; i++) {
+          const nonStickyContainer = nonStickyContainers[i];
+          if (nonStickyContainer) {
+            var cpStickyRegion = new dvt.ClipPath();
+            cpStickyRegion.addRect(
+              0,
+              // subtract 1 because of the top background divider
+              databodyStart + startYOffset + stickyRowRegionHeight - backgroundDividerWidth,
+              this._width,
+              databodyHeight
+            );
+            nonStickyContainer.setClipPath(cpStickyRegion);
+          }
+        }
+        for (let i = 0; i < stickyContainers.length; i++) {
+          const stickyContainer = stickyContainers[i];
+          if (stickyContainer) {
+            var cpNonStickyRegion = new dvt.ClipPath();
+            cpNonStickyRegion.addRect(
+              0,
+              databodyStart + startYOffset,
+              this._width,
+              stickyRowRegionHeight
+            );
+            stickyContainer.setClipPath(cpNonStickyRegion);
+          }
+        }
+      }
+      this._prevStickyRowRegionHeight = stickyRowRegionHeight;
+    }
+
+    /**
      * Clears the row axis.
      */
     clear() {
       this._labelContentContainer.removeChildren();
+      this._stickyLabelContentContainer.removeChildren();
       this._labelBackgroundContainer.removeChildren();
+      this._prevStickyRowRegionHeight = null;
     }
   }
 
@@ -17549,19 +17746,42 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
         gantt.renderTimeZoomCanvas(gantt._canvas);
 
+        // If sticky rows enabled on re-render due to option change, make sure the sticky containers
+        // and the other containers are rendered in the right order by making them call addChild.
+        var enforceLayering = !!(!gantt.getStickyRowsContainer() && gantt.isStickyRowsEnabled());
+
         var timeZoomCanvas = gantt.getTimeZoomCanvas();
         DvtGanttRenderer._renderAxes(gantt, timeZoomCanvas);
-        DvtGanttRenderer._renderDatabodyBackground(gantt, timeZoomCanvas);
-        DvtGanttRenderer._renderRowReferenceObjectsContainer(gantt, timeZoomCanvas);
-        DvtGanttRenderer._renderReferenceObjects(gantt, timeZoomCanvas, 'area');
-        DvtGanttRenderer._renderVerticalGridline(gantt, timeZoomCanvas);
+        DvtGanttRenderer._renderDatabodyBackground(gantt, timeZoomCanvas, enforceLayering);
+        DvtGanttRenderer._renderStickyContainer(
+          gantt,
+          timeZoomCanvas,
+          DvtGanttRenderer._renderStickyRowBackgroundsContainer,
+          gantt.getStickyRowBackgroundsContainer.bind(gantt),
+          gantt.setStickyRowBackgroundsContainer.bind(gantt)
+        );
+        DvtGanttRenderer._renderRowReferenceObjectsContainer(gantt, timeZoomCanvas, enforceLayering);
+        DvtGanttRenderer._renderStickyContainer(
+          gantt,
+          timeZoomCanvas,
+          DvtGanttRenderer._renderStickyRowReferenceObjectsContainer,
+          gantt.getStickyRowReferenceObjectsContainer.bind(gantt),
+          gantt.setStickyRowReferenceObjectsContainer.bind(gantt)
+        );
+        DvtGanttRenderer._renderReferenceObjects(gantt, timeZoomCanvas, 'area', enforceLayering);
+        DvtGanttRenderer._renderVerticalGridline(gantt, timeZoomCanvas, enforceLayering);
         if (gantt.isRowAxisEnabled()) gantt.getRowAxis().adjustPosition();
 
-        DvtGanttRenderer._renderData(gantt, timeZoomCanvas, DvtGanttDataLayoutManager.VPC_REFRESH);
+        DvtGanttRenderer._renderData(
+          gantt,
+          timeZoomCanvas,
+          DvtGanttDataLayoutManager.VPC_REFRESH,
+          enforceLayering
+        );
 
-        DvtGanttRenderer._renderReferenceObjects(gantt, timeZoomCanvas, 'line');
+        DvtGanttRenderer._renderReferenceObjects(gantt, timeZoomCanvas, 'line', enforceLayering);
 
-        DvtGanttRenderer._renderTimeCursor(gantt, timeZoomCanvas);
+        DvtGanttRenderer._renderTimeCursor(gantt, timeZoomCanvas, enforceLayering);
 
         DvtGanttRenderer._renderZoomControls(gantt);
 
@@ -17942,15 +18162,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * would be placed above the vertical gridlines.
      * @param {Gantt} gantt The gantt component.
      * @param {dvt.Container=} container The container to render the background container into.
+     * @param {boolean=} enforceLayering Call addChild to make sure it's rendered on top of everything else.
      * @private
      */
-    _renderDatabodyBackground: (gantt, container) => {
+    _renderDatabodyBackground: (gantt, container, enforceOrdering) => {
       var databodyBackground = gantt.getDatabodyBackground();
       if (databodyBackground == null) {
         databodyBackground = new dvt.Container(gantt.getCtx());
-        container.addChild(databodyBackground);
         gantt.setDatabodyBackground(databodyBackground);
+        if (!enforceOrdering) container.addChild(databodyBackground);
       }
+      if (enforceOrdering) container.addChild(databodyBackground);
+
       if (gantt.getDatabody() == null) {
         // Initial state: honor scroll position
         databodyBackground.setTranslateY(
@@ -17964,18 +18187,44 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     },
 
     /**
+     * Renders the container for sticky row backgrounds.
+     * @param {Gantt} gantt the gantt component.
+     * @param {dvt.Container=} container the parent container for this container
+     * @private
+     */
+    _renderStickyRowBackgroundsContainer: (gantt, container) => {
+      const databodyBackground = gantt.getDatabodyBackground();
+      if (!databodyBackground) return;
+
+      var stickyRowBackgroundsContainer = gantt.getStickyRowBackgroundsContainer();
+      if (stickyRowBackgroundsContainer == null) {
+        stickyRowBackgroundsContainer = new dvt.Container(gantt.getCtx());
+        stickyRowBackgroundsContainer.setTranslateY(databodyBackground.getTranslateY());
+        container.addChild(stickyRowBackgroundsContainer);
+        gantt.setStickyRowBackgroundsContainer(stickyRowBackgroundsContainer);
+      }
+
+      var cp = new dvt.ClipPath();
+      cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
+      stickyRowBackgroundsContainer.setClipPath(cp);
+    },
+
+    /**
      * Renders the container for row reference areas.
      * @param {Gantt} gantt The gantt component.
      * @param {dvt.Container=} container The container to render into.
+     * @param {boolean=} enforceLayering Call addChild to make sure it's rendered on top of everything else.
      * @private
      */
-    _renderRowReferenceObjectsContainer: (gantt, container) => {
+    _renderRowReferenceObjectsContainer: (gantt, container, enforceLayering) => {
       var rowRefObjsContainer = gantt.getRowReferenceObjectsContainer();
       if (rowRefObjsContainer == null) {
         rowRefObjsContainer = new dvt.Container(gantt.getCtx());
-        container.addChild(rowRefObjsContainer);
+        if (!enforceLayering) container.addChild(rowRefObjsContainer);
         gantt.setRowReferenceObjectsContainer(rowRefObjsContainer);
       }
+      if (enforceLayering) container.addChild(rowRefObjsContainer);
+
       if (gantt.getDatabody() == null) {
         // Initial state: sync with data body background container
         rowRefObjsContainer.setTranslateY(gantt.getDatabodyBackground().getTranslateY());
@@ -17984,6 +18233,29 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var cp = new dvt.ClipPath();
       cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
       rowRefObjsContainer.setClipPath(cp);
+    },
+
+    /**
+     * Renders the container for sticky row reference areas.
+     * @param {Gantt} gantt the gantt component.
+     * @param {dvt.Container=} container the parent container for this container
+     * @private
+     */
+    _renderStickyRowReferenceObjectsContainer: (gantt, container) => {
+      const rowRefObjsContainer = gantt.getRowReferenceObjectsContainer();
+      if (!rowRefObjsContainer) return;
+
+      var stickyRowReferenceObjectsContainer = gantt.getStickyRowReferenceObjectsContainer();
+      if (stickyRowReferenceObjectsContainer == null) {
+        stickyRowReferenceObjectsContainer = new dvt.Container(gantt.getCtx());
+        stickyRowReferenceObjectsContainer.setTranslateY(rowRefObjsContainer.getTranslateY());
+        container.addChild(stickyRowReferenceObjectsContainer);
+        gantt.setStickyRowReferenceObjectsContainer(stickyRowReferenceObjectsContainer);
+      }
+
+      var cp = new dvt.ClipPath();
+      cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
+      stickyRowReferenceObjectsContainer.setClipPath(cp);
     },
 
     /**
@@ -18336,18 +18608,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * Renders the databody
      * @param {Gantt} gantt the gantt component.
      * @param {dvt.Container=} container the container to add the databody to.
+     * @param {boolean=} enforceLayering Call addChild to make sure it's rendered on top of everything else.
      * @private
      */
-    _renderDatabody: (gantt, container) => {
+    _renderDatabody: (gantt, container, enforceLayering) => {
       var databody = gantt.getDatabody();
       if (databody == null) {
         databody = new dvt.Container(gantt.getCtx(), 'g', 'db');
-        container.addChild(databody);
+        if (!enforceLayering) container.addChild(databody);
         gantt.setDatabody(databody);
 
         // Initial state: sync with databody background's initial state
         databody.setTranslateY(gantt.getDatabodyBackground().getTranslateY());
       }
+      if (enforceLayering) container.addChild(databody);
 
       var cp = new dvt.ClipPath();
       cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
@@ -18358,12 +18632,43 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     },
 
     /**
+     * Renders the sticky rows container.
+     * @param {Gantt} gantt the gantt component.
+     * @param {dvt.Container=} container the parent container for the sticky rows container
+     * @private
+     */
+    _renderStickyRowsContainer: (gantt, container) => {
+      var databody = gantt.getDatabody();
+      // don't bother in the no data case
+      if (!databody) {
+        return;
+      }
+
+      var sticyRowsContainer = gantt.getStickyRowsContainer();
+      if (sticyRowsContainer == null) {
+        sticyRowsContainer = new dvt.Container(gantt.getCtx());
+        // Initial state: sync with databody's initial state
+        sticyRowsContainer.setTranslateY(databody.getTranslateY());
+        container.addChild(sticyRowsContainer);
+        gantt.setStickyRowsContainer(sticyRowsContainer);
+      }
+
+      var cp = new dvt.ClipPath();
+      cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
+      sticyRowsContainer.setClipPath(cp);
+
+      // Note that translateY is synced with databody in renderData,
+      // and continually synced through setDataRegionTranslateY calls
+    },
+
+    /**
      * Renders vertical grid lines
      * @param {Gantt} gantt The Gantt component
      * @param {dvt.Container} container The container to render into.
+     * @param {boolean=} enforceLayering Call addChild to make sure it's rendered on top of everything else.
      * @private
      */
-    _renderVerticalGridline: (gantt, container) => {
+    _renderVerticalGridline: (gantt, container, enforceLayering) => {
       // remove all existing gridlines regardless whether it was visible/hidden
       var gridlines = gantt.getVerticalGridlines();
       if (gridlines != null) {
@@ -18373,9 +18678,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (gantt.isVerticalGridlinesVisible()) {
         if (gridlines == null) {
           gridlines = new dvt.Container(gantt.getCtx());
-          container.addChild(gridlines);
+          if (!enforceLayering) container.addChild(gridlines);
           gantt.setVerticalGridlines(gridlines);
         }
+        if (enforceLayering) container.addChild(gridlines);
 
         const ganttMinTime = gantt.getStartTime();
         const ganttMaxTime = gantt.getEndTime();
@@ -18479,14 +18785,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {Gantt} gantt The Gantt component
      * @param {dvt.Container} container The container to render into.
      * @param {string} type 'area' or 'line'
+     * @param {boolean=} enforceLayering Call addChild to make sure it's rendered on top of everything else.
      * @private
      */
-    _renderReferenceObjects: (gantt, container, type) => {
+    _renderReferenceObjects: (gantt, container, type, enforceLayering) => {
       var referenceObjectsContainer =
         type === 'line' ? gantt.getReferenceLinesContainer() : gantt.getReferenceAreasContainer();
       if (referenceObjectsContainer == null) {
         referenceObjectsContainer = new dvt.Container(gantt.getCtx());
-        container.addChild(referenceObjectsContainer);
+        if (!enforceLayering) container.addChild(referenceObjectsContainer);
         if (type === 'line') {
           gantt.setReferenceLinesContainer(referenceObjectsContainer);
         } else {
@@ -18495,6 +18802,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       }
       // Remove any previously rendered reference lines
       referenceObjectsContainer.removeChildren();
+
+      if (enforceLayering) container.addChild(referenceObjectsContainer);
 
       var isValidDate = (value) => {
         return value != null && !isNaN(new Date(value).getTime());
@@ -18516,17 +18825,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * Renders time cursor
      * @param {Gantt} gantt The Gantt component
      * @param {dvt.Container} container The container to render into.
+     * @param {boolean=} enforceLayering Call addChild to make sure it's rendered on top of everything else.
      * @private
      */
-    _renderTimeCursor: (gantt, container) => {
+    _renderTimeCursor: (gantt, container, enforceLayering) => {
       var timeCursorContainer = gantt.getTimeCursorContainer();
       if (timeCursorContainer == null) {
         timeCursorContainer = new dvt.Container(gantt.getCtx());
-        container.addChild(timeCursorContainer);
+        if (!enforceLayering) container.addChild(timeCursorContainer);
         gantt.setTimeCursorContainer(timeCursorContainer);
       }
 
       timeCursorContainer.removeChildren();
+
+      if (enforceLayering) container.addChild(timeCursorContainer);
 
       var timeCursor = new DvtGanttReferenceObjects(gantt, 'timeCursor', [
         {
@@ -18541,13 +18853,35 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     },
 
     /**
+     * Renders a sticky container.
+     * @param {Gantt} gantt The gantt component.
+     * @param {dvt.Container} container The container to render into.
+     * @param {function} renderer The sticky container's renderer function.
+     * @param {function} getter The getter that returns the sticky container.
+     * @param {function} setter The setter to set the sticky container.
+     * @private
+     */
+    _renderStickyContainer: (gantt, container, renderer, getter, setter) => {
+      if (gantt.isStickyRowsEnabled()) {
+        renderer(gantt, container);
+      } else {
+        var stickyContainer = getter();
+        if (stickyContainer) {
+          stickyContainer.getParent().removeChild(stickyContainer);
+          setter(null);
+        }
+      }
+    },
+
+    /**
      * Render data (rows and dependencies)
      * @param {Gantt} gantt The gantt component
      * @param {dvt.Container} container The container to render into
      * @param {string=} action The action that triggered the render. One of the DvtGanttDataLayoutManager.VPC_X strings. Defaults to vpc_refresh.
+     * @param {boolean=} enforceLayering Call addChild to make sure it's rendered on top of everything else.
      * @private
      */
-    _renderData: (gantt, container, action) => {
+    _renderData: (gantt, container, action, enforceLayering) => {
       var options = gantt.getOptions();
       var rowObjs = gantt.getRowLayoutObjs();
       var dependencyObjs = gantt.getDependencyLayoutObjs();
@@ -18556,7 +18890,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         return;
       }
 
-      DvtGanttRenderer._renderDatabody(gantt, container);
+      DvtGanttRenderer._renderDatabody(gantt, container, enforceLayering);
+      DvtGanttRenderer._renderStickyContainer(
+        gantt,
+        container,
+        DvtGanttRenderer._renderStickyRowsContainer,
+        gantt.getStickyRowsContainer.bind(gantt),
+        gantt.setStickyRowsContainer.bind(gantt)
+      );
       if (dependencyObjs.length > 0) DvtGanttRenderer._renderDependenciesContainer(gantt, container);
 
       // Cache the base task label style dvt.CSSStyle object; it's expensive to instantiate one
@@ -19001,6 +19342,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var eventManager = this.getEventManager();
       if (eventManager) eventManager.cancelMarquee();
 
+      // Unset to ensure clippaths are recalculated in updateStickyRowsVisibility
+      this._prevStickyRowRegionHeight = null;
+
       if (!options) {
         this._handleResize(width, height);
         return;
@@ -19305,11 +19649,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var viewport = this.getViewPort();
       this._dataLayoutManager.renderViewport(viewport, action);
 
+      if (this.isStickyRowsEnabled()) {
+        if (this.isRowAxisEnabled()) {
+          this.getRowAxis().updateStickyRowsVisibility(viewport);
+        }
+        this.updateStickyRowsVisibility(viewport);
+      }
+
       if (bScrollPositionChanged) {
         // Fire scroll position change event
         var y = this._translateYToScrollPositionY(this._databody.getTranslateY());
         var rowObj = this.getRowLayoutObjs()[viewport.minRowInd];
-        var offsetY = y - rowObj.y;
+        var offsetY = y - rowObj['unstickyY'];
         var evt = dvt.EventFactory.newGanttScrollPositionChangeEvent(y, viewport.minRowInd, offsetY);
         this.dispatchEvent(evt);
       }
@@ -19394,6 +19745,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     }
 
     /**
+     * Whether sticky rows are enabled.
+     * @return {boolean}
+     */
+    isStickyRowsEnabled() {
+      const dataLayoutManager = this.getDataLayoutManager();
+      const depdendencyObjs = dataLayoutManager.getDependencyObjs();
+      const options = this.getOptions();
+      // Disable sticky rows if dependency lines are present
+      return options['parentRowPosition'] === 'sticky' && depdendencyObjs.length === 0;
+    }
+
+    /**
      * Scrolls the gantt according to the supplied scroll position object.
      * Mainly called by framework when writeback happens to the scroll position option.
      * @param {Object} scrollPosition The scroll position object
@@ -19429,7 +19792,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         // prevent undef rowY from causing an error: 
         if (rowY != null) {
           var offsetY = scrollPosition['offsetY'] != null ? scrollPosition['offsetY'] : 0;
-          scrollPositionY = rowY['y'] + offsetY;
+          scrollPositionY = rowY['unstickyY'] + offsetY;
         }
       } else if (scrollPosition['y'] != null) {
         scrollPositionY = scrollPosition['y'];
@@ -19464,15 +19827,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     setDataRegionTranslateY(translateY) {
       // Translate relevant data regions
       if (this._databody) this._databody.setTranslateY(translateY);
+      if (this._stickyRowsContainer) this._stickyRowsContainer.setTranslateY(translateY);
       if (this._databodyBackground) this._databodyBackground.setTranslateY(translateY);
+      if (this._stickyRowBackgroundsContainer)
+        this._stickyRowBackgroundsContainer.setTranslateY(translateY);
       if (this._rowReferenceObjectsContainer)
         this._rowReferenceObjectsContainer.setTranslateY(translateY);
+      if (this._stickyRowReferenceObjectsContainer)
+        this._stickyRowReferenceObjectsContainer.setTranslateY(translateY);
       if (this.isMarqueeSelectEnabled() && this._marqueeArtifactsContainer)
         this._marqueeArtifactsContainer.setTranslateY(translateY);
       if (this.isDndEnabled() && this._dndArtifactsContainer)
         this._dndArtifactsContainer.setTranslateY(translateY);
-      if (this.isRowAxisEnabled())
-        this.getRowAxis().setTranslateY(translateY + this.getStartYOffset());
+      if (this.isRowAxisEnabled()) this.getRowAxis().setY(translateY + this.getStartYOffset());
       if (this._dependenciesContainer) this._dependenciesContainer.setTranslateY(translateY);
     }
 
@@ -19542,7 +19909,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         var timeZoomCanvas = this.getTimeZoomCanvas();
         DvtGanttRenderer._renderAxes(this, timeZoomCanvas);
         DvtGanttRenderer._renderDatabodyBackground(this);
+        DvtGanttRenderer._renderStickyContainer(
+          this,
+          null,
+          DvtGanttRenderer._renderStickyRowBackgroundsContainer,
+          this.getStickyRowBackgroundsContainer.bind(this),
+          this.setStickyRowBackgroundsContainer.bind(this)
+        );
         DvtGanttRenderer._renderRowReferenceObjectsContainer(this);
+        DvtGanttRenderer._renderStickyContainer(
+          this,
+          null,
+          DvtGanttRenderer._renderStickyRowReferenceObjectsContainer,
+          this.getStickyRowReferenceObjectsContainer.bind(this),
+          this.setStickyRowReferenceObjectsContainer.bind(this)
+        );
         DvtGanttRenderer._renderReferenceObjects(this, timeZoomCanvas, 'area');
         DvtGanttRenderer._renderVerticalGridline(this, timeZoomCanvas);
         DvtGanttRenderer._renderData(this, null, DvtGanttDataLayoutManager.VPC_SCALE);
@@ -19679,6 +20060,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         return;
       }
 
+      // Unset to ensure clippaths are recalculated in updateStickyRowsVisibility
+      this._prevStickyRowRegionHeight = null;
+
       if (newLength > this._masterAxis.getMaxContentLength()) {
         newLength = this._masterAxis.getMaxContentLength();
         this.disableZoomButton(true);
@@ -19733,7 +20117,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var timeZoomCanvas = this.getTimeZoomCanvas();
       DvtGanttRenderer._renderAxes(this, timeZoomCanvas, true);
       DvtGanttRenderer._renderDatabodyBackground(this);
+      DvtGanttRenderer._renderStickyContainer(
+        this,
+        null,
+        DvtGanttRenderer._renderStickyRowBackgroundsContainer,
+        this.getStickyRowBackgroundsContainer.bind(this),
+        this.setStickyRowBackgroundsContainer.bind(this)
+      );
       DvtGanttRenderer._renderRowReferenceObjectsContainer(this);
+      DvtGanttRenderer._renderStickyContainer(
+        this,
+        null,
+        DvtGanttRenderer._renderStickyRowReferenceObjectsContainer,
+        this.getStickyRowReferenceObjectsContainer.bind(this),
+        this.setStickyRowReferenceObjectsContainer.bind(this)
+      );
       DvtGanttRenderer._renderReferenceObjects(this, timeZoomCanvas, 'area');
       DvtGanttRenderer._renderVerticalGridline(this, timeZoomCanvas);
       DvtGanttRenderer._renderData(this, null, DvtGanttDataLayoutManager.VPC_SCALE);
@@ -19802,6 +20200,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (this._databody && !this._isDatabodyDimmed) {
         dvt.ToolkitUtils.addClassName(this._databody.getElem(), this.GetStyleClass('databodyDim'));
       }
+      if (this._stickyRowsContainer && !this._isDatabodyDimmed) {
+        dvt.ToolkitUtils.addClassName(
+          this._stickyRowsContainer.getElem(),
+          this.GetStyleClass('databodyDim')
+        );
+      }
       this._isDatabodyDimmed = true;
     }
 
@@ -19811,6 +20215,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     undimDatabody() {
       if (this._databody && this._isDatabodyDimmed) {
         dvt.ToolkitUtils.removeClassName(this._databody.getElem(), this.GetStyleClass('databodyDim'));
+      }
+      if (this._stickyRowsContainer && this._isDatabodyDimmed) {
+        dvt.ToolkitUtils.removeClassName(
+          this._stickyRowsContainer.getElem(),
+          this.GetStyleClass('databodyDim')
+        );
       }
       this._isDatabodyDimmed = false;
     }
@@ -19829,6 +20239,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     setDatabodyBackground(databodyBackground) {
       this._databodyBackground = databodyBackground;
+    }
+
+    /**
+     * Retrieves the container for sticky row backgrounds.
+     * @return {dvt.Container}
+     */
+    getStickyRowBackgroundsContainer() {
+      return this._stickyRowBackgroundsContainer;
+    }
+
+    /**
+     * Sets the container for sticky row backgrounds.
+     * @param {dvt.Container} container
+     */
+    setStickyRowBackgroundsContainer(container) {
+      this._stickyRowBackgroundsContainer = container;
     }
 
     /**
@@ -19853,6 +20279,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     getDatabodyHeight() {
       return Math.max(0, this.getCanvasSize() - this.getAxesHeight());
+    }
+
+    /**
+     * Retrieve the sticky rows container
+     * @return {dvt.Container}
+     */
+    getStickyRowsContainer() {
+      return this._stickyRowsContainer;
+    }
+
+    /**
+     * Sets the sticky rows container
+     * @param {dvt.Container} container
+     */
+    setStickyRowsContainer(container) {
+      this._stickyRowsContainer = container;
     }
 
     /**
@@ -20025,6 +20467,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      */
     setRowReferenceObjectsContainer(container) {
       this._rowReferenceObjectsContainer = container;
+    }
+
+    /**
+     * Retrieves the container for sticky row reference objects.
+     * @return {dvt.Container}
+     */
+    getStickyRowReferenceObjectsContainer() {
+      return this._stickyRowReferenceObjectsContainer;
+    }
+
+    /**
+     * Sets the container for sticky row reference objects.
+     * @param {dvt.Container} container
+     */
+    setStickyRowReferenceObjectsContainer(container) {
+      this._stickyRowReferenceObjectsContainer = container;
     }
 
     /**
@@ -20256,15 +20714,109 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     }
 
     /**
-     * Gets the current viewport bounding box in the reference coord system of the databody
+     * The height of the space the sticky row takes up.
+     * @param {Object} viewport The current viewport that contains { minRowInd, maxRowInd }
+     * @returns {Object} { height: number, isNextStickyOverlapping: boolean }
+     */
+    getStickyRowRegionHeight(viewport) {
+      const dataLayoutManager = this.getDataLayoutManager();
+      const stickyRowObj = dataLayoutManager.getStickyRowObj();
+      if (stickyRowObj) {
+        const horizontalLineHeightOffset = this.isHorizontalGridlinesVisible()
+          ? DvtGanttStyleUtils.getHorizontalGridlineWidth(this.getOptions())
+          : 0;
+
+        const rowObjs = this.getRowLayoutObjs();
+        const { yMin: scrollY } = this.getViewportYBounds();
+        const stickyRowBottomY = stickyRowObj['height'] + horizontalLineHeightOffset;
+        let nextStickyRowOverlapHeight = 0;
+        // If next sticky row is starting to overlap the current sticky row, reduce the sticky row region height by the overlap amount.
+        // This will be used to adjust the clippaths accordingly to provide the illusion of the next sticky row being on top of the current sticky row.
+        for (let i = stickyRowObj['index'] + 1; i <= viewport.maxRowInd; i++) {
+          const rowObj = rowObjs[i];
+          if (rowObj && rowObj['unstickyY'] - scrollY < stickyRowBottomY) {
+            if (rowObj['isStickyCandidate'] && rowObj !== stickyRowObj) {
+              nextStickyRowOverlapHeight =
+                stickyRowBottomY - Math.max(0, rowObj['unstickyY'] - scrollY);
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+
+        return {
+          height: stickyRowObj['height'] + horizontalLineHeightOffset - nextStickyRowOverlapHeight,
+          isNextStickyOverlapping: nextStickyRowOverlapHeight !== 0
+        };
+      }
+      return { height: 0, isNextStickyOverlapping: false };
+    }
+
+    /**
+     * Updates clippaths and parenting related to sticky rows to adjust visibility.
+     * @param {object} viewport The current viewport that contains { minRowInd, maxRowInd }
+     */
+    updateStickyRowsVisibility(viewport) {
+      const { height: stickyRowRegionHeight } = this.getStickyRowRegionHeight(viewport);
+      const horizontalLineHeightOffset = this.isHorizontalGridlinesVisible()
+        ? DvtGanttStyleUtils.getHorizontalGridlineWidth(this.getOptions())
+        : 0;
+      const databodyStart = this.getDatabodyStart();
+      const contentLength = this.getContentLength();
+      const databodyHeight = this.getDatabodyHeight();
+
+      if (stickyRowRegionHeight !== this._prevStickyRowRegionHeight) {
+        const nonStickyContainers = [
+          this.getDatabodyBackground(),
+          this.getRowReferenceObjectsContainer(),
+          this.getDatabody()
+        ];
+        const stickyContainers = [
+          this.getStickyRowBackgroundsContainer(),
+          this.getStickyRowReferenceObjectsContainer(),
+          this.getStickyRowsContainer()
+        ];
+        for (let i = 0; i < nonStickyContainers.length; i++) {
+          const nonStickyContainer = nonStickyContainers[i];
+          if (nonStickyContainer) {
+            var cpStickyRegion = new dvt.ClipPath();
+            cpStickyRegion.addRect(
+              0,
+              databodyStart + stickyRowRegionHeight - horizontalLineHeightOffset,
+              contentLength,
+              databodyHeight
+            );
+            nonStickyContainer.setClipPath(cpStickyRegion);
+          }
+        }
+        for (let i = 0; i < stickyContainers.length; i++) {
+          const stickyContainer = stickyContainers[i];
+          if (stickyContainer) {
+            var cpNonStickyRegion = new dvt.ClipPath();
+            cpNonStickyRegion.addRect(0, databodyStart, contentLength, stickyRowRegionHeight);
+            stickyContainer.setClipPath(cpNonStickyRegion);
+          }
+        }
+      }
+
+      this._prevStickyRowRegionHeight = stickyRowRegionHeight;
+    }
+
+    /**
+     * Gets the current viewport bounding box in the reference coord system of the databody.
+     * @param {boolean=} excludeStickyRowRegion Whether the viewport bounding box should exclude the space taken up by the sticky row if there is one.
      * @return {dvt.Rectangle} the current bounding box of the viewport
      */
-    getViewportDimensions() {
+    getViewportDimensions(excludeStickyRowRegion) {
+      var stickyRowRegionHeight = excludeStickyRowRegion
+        ? this.getStickyRowRegionHeight(this.getViewPort()).height
+        : 0;
       return new dvt.Rectangle(
         this.getStartXOffset() - this.getTimeZoomCanvas().getTranslateX(),
-        this._databodyStart - this._databody.getTranslateY(),
+        this._databodyStart - this._databody.getTranslateY() + stickyRowRegionHeight,
         this._canvasLength,
-        this.getDatabodyHeight()
+        this.getDatabodyHeight() - stickyRowRegionHeight
       );
     }
 
@@ -20274,10 +20826,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {string=} xPriority The side in the x direction to prioritize scroll into view, one of 'start', 'end', or 'auto'. Default 'auto'.
      * @param {string=} yPriority The side in the y direction to prioritize scroll into view, one of 'top', 'bottom', or 'auto'. Default 'auto'.
      * @param {number=} overShoot The extra amount of space to pan by. Default 0.
+     * @param {boolean=} excludeStickyRowRegion Whether to exclude any sticky row region from being part of the viewport
      */
-    scrollIntoView(region, xPriority, yPriority, overShoot) {
+    scrollIntoView(region, xPriority, yPriority, overShoot, excludeStickyRowRegion) {
       var isRTL = dvt.Agent.isRightToLeft(this.getCtx()),
-        viewportRect = this.getViewportDimensions(),
+        viewportRect = this.getViewportDimensions(excludeStickyRowRegion),
         deltaX = 0,
         deltaY = 0;
 
@@ -20388,10 +20941,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @param {number} edgeThreshold The distance from an edge at which auto pan should happen
      * @param {boolean=} excludeX Whether to exclude x direction from auto pan consideration
      * @param {boolean=} excludeY Whether to exclude y direction from auto pan consideration
+     * @param {boolean=} excludeStickyRowRegion Whether to exclude any sticky row region from being part of the viewport
      * @return {object} The actual deltaX and deltaY panned
      */
-    autoPanOnEdgeDrag(targetPos, edgeThreshold, excludeX, excludeY) {
-      var viewportRect = this.getViewportDimensions();
+    autoPanOnEdgeDrag(targetPos, edgeThreshold, excludeX, excludeY, excludeStickyRowRegion) {
+      var viewportRect = this.getViewportDimensions(excludeStickyRowRegion);
       var deltaX = 0;
       var deltaY = 0;
 
