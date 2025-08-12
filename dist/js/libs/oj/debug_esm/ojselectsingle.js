@@ -405,6 +405,13 @@ LovDropdownSingle.prototype._GetDefaultCollectionRendererSelectionMode = functio
  * @augments oj.ojSelectBase
  * @ojimportmembers oj.ojDisplayOptionsNoConverterValidatorHints
  * @since 8.0.0
+ * @ojdeprecated [
+ *   {
+ *     type: "maintenance",
+ *     since: "19.0.0",
+ *     value: ["oj-c-select-single"]
+ *   }
+ * ]
  * @ojdisplayname Select (Single)
  * @ojshortdesc A select single is a dropdown list that supports single selection and search filtering.
  * @ojrole combobox
@@ -821,6 +828,12 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
     this._resolveValueItemLater = false;
 
     this._super(cachedMainFieldInputElem);
+
+    // JET-74020 - select single placeholder: implement opening dropdown on initial render
+    // This method is used by DataGrid to open the dropdown at the start of a cell edit.
+    // The original private method is added to the OuterWrapper here so that it doesn't appear
+    // in the component typings.
+    this.OuterWrapper.UNSAFE_focusAndOpenDropdown = this._UNSAFE_focusAndOpenDropdown.bind(this);
   },
 
   /**
@@ -966,6 +979,13 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
           if (!this._fullScreenPopup) {
             if (this._IsValueItemForPlaceholder(newValueItem)) {
               inputElem.value = '';
+
+              // JET-74708 - Select-Single + DataGrid does not filter on first keypress
+              // save the display value so that we can compare against possible typed text in
+              // ojselectbase's _SetFilterFieldText to see if we need to filter for the
+              // data-grid use case where a user starts typing in a cell and the cell then
+              // goes into edit mode with the select dropdown open and filtered
+              this._LastInputElemDisplayValue = '';
             }
             this._SetFilterFieldText(inputElem.value);
             // JET-44746 - focus pulled back again after pressing Tab with DelayingDataProvider
@@ -1410,10 +1430,10 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    */
   _updateInputElemValue: function (valueItem) {
     var $inputElem = $(this._lovMainField.getInputElem());
+    var inputElemText = $inputElem.val();
     var text = null;
     if (valueItem && valueItem.data) {
       var formatted = this._ItemTextRenderer(valueItem);
-      var inputElemText = $inputElem.val();
       if (formatted !== undefined && inputElemText !== formatted) {
         text = formatted;
       }
@@ -1423,6 +1443,14 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
     }
     if (text !== null) {
       $inputElem.val(text);
+
+      // JET-74708 - Select-Single + DataGrid does not filter on first keypress
+      // save the display value so that we can compare against possible typed text in
+      // ojselectbase's _SetFilterFieldText to see if we need to filter for the
+      // data-grid use case where a user starts typing in a cell and the cell then
+      // goes into edit mode with the select dropdown open and filtered
+      this._LastInputElemDisplayValue = text;
+
       // keep readonly div's content in sync
       if (this.options.readOnly) {
         let readonlyElem = this._getReadonlyDiv();
@@ -1604,6 +1632,31 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
     }
 
     return fetchDataAndSelectPromise;
+  },
+
+  // JET-74020 - select single placeholder: implement opening dropdown on initial render
+  /**
+   * Focus the component and open the dropdown.
+   * If the component is readonly or disabled, this will be a no-op.
+   *
+   * This method is used by DataGrid to open the dropdown at the start of a cell edit.
+   * It's declared private here so that it doesn't appear in the component typings, and
+   * added to the OuterWrapper in _SetupSelectResources (without the leading underscore).
+   *
+   * @return {void}
+   * @memberof! oj.ojSelectSingle
+   * @instance
+   * @private
+   */
+  _UNSAFE_focusAndOpenDropdown: function () {
+    // Dispatch mousedown on the main field container element. The event handler that listens to
+    // the mousedown and opens the dropdown is attached to this element. Dispatching the
+    // mousedown on this element will focus the field and also open the dropdown at the same time.
+    // In readonly/disabled this will be a no-op.
+    if (this._lovMainField && !this.options.readOnly && !this.options.disabled) {
+      var mainFieldElem = this._lovMainField.getElement();
+      mainFieldElem.dispatchEvent(new MouseEvent('mousedown'));
+    }
   },
 
   /**
@@ -2155,6 +2208,14 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    * and the value-item, which is <code>ItemContext&lt;V, D&gt;</code>.
    * </p>
    *
+   * <h5>Using ArrayDataProvider with multiple keys</h5>
+   * <p>
+   * If you want to use an ArrayDataProvider with multiple key attributes, you can do so by setting
+   * the <code class="prettyprint">enforceKeyStringify</code> option on ArrayDataProvider to
+   * <code class="prettyprint">'on'</code> to use multiple key attributes but have string keys.
+   * See the ArrayDataProvider doc for more information.
+   * </p>
+   *
    * <h5>Global attributes</h5>
    * <p>
    * The following global attributes are no longer supported:
@@ -2206,6 +2267,36 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    * </ul>
    * </p>
    *
+   *
+   * <h5>MaxWidth attribute</h5>
+   * <p>
+   * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
+   * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+   * <ul>
+   * <li>
+   * .oj-form-control-max-width-sm maps to 'sm'
+   * </li>
+   * <li>
+   * .oj-form-control-max-width-md maps to 'md'
+   * </li>
+   * </ul>
+   * </p>
+   *
+   * <h5>Width attribute</h5>
+   * <p>
+   * The usage of the style classes: oj-form-control-width-sm and oj-form-control-width-md is now
+   * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+   * <ul>
+   * <li>
+   * .oj-form-control-width-sm maps to 'sm'
+   * </li>
+   * <li>
+   * .oj-form-control-width-md maps to 'md'
+   * </li>
+   * </ul>
+   * </p>
+   *
+   *
    * <h5>Translations</h5>
    * <p>
    * The instance level translations are not supported anymore for the following translation properties. These need to be configured
@@ -2255,6 +2346,14 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
    *
+   * <h5>LabelledBy attribute</h5>
+   * <p>
+   * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
+   * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
+   * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
+   * to add a label for the form component.
+   * </p>
+   *
    * <h5>DescribedBy attribute</h5>
    * <p>
    * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
@@ -2268,26 +2367,32 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    *
    * <h5>Collection Template</h5>
    * <p>
-   * Currently in oj-c-select-single, only oj-c-table is supported in the collectionTemplate template slot. Other collection components, including legacy oj-table, are not supported.
+   * Currently in oj-c-select-single, only oj-c-table and oj-c-list-view are supported in the collectionTemplate template slot. Other collection components, including legacy oj-table, are not supported.
    * Some of the properties of the <code class="prettyprint">$current</code> object are changed. Please refer below on how to migrate these properties.
    *
    * <h6>currentRow</h6>
    * <p>
    * There are a few changes made to the <code class="prettyprint">currentRow</code> property:
    * <ul>
-   * <li>This is renamed to <code class="prettyprint">currentRowOverride</code> and as such needs to be bound to the oj-c-table's <code class="prettyprint">current-cell-override</code>
+   * <li>This is renamed to <code class="prettyprint">currentRowOverride</code> and as such needs to be bound to the oj-c-table's <code class="prettyprint">current-cell-override</code> or oj-c-list-view's <code class="prettyprint">current-item-override</code>
    * attribute.</li>
    * <li>The <code class="prettyprint">currentRowOverride</code> is not a writable property. In <code class="prettyprint">oj-c-select-single</code> the <code class="prettyprint">onCurrentRowChanged</code> property from the
-   * <code class="prettyprint">$current</code> is used to listen to the changes made by the table. You need to provide a function to the oj-c-table's <code class="prettyprint">on-current-cell-changed</code> attribute
+   * <code class="prettyprint">$current</code> is used to listen to the changes made by the collection. You need to provide a function to the oj-c-table's <code class="prettyprint">on-current-cell-changed</code> or oj-c-list-view's <code class="prettyprint">on-current-item-changed</code> attribute
    * and then call the <code class="prettyprint">$current.onCurrentRowChanged</code> function with the appropriate parameters.
    * <p>
-   * Example:
+   * Examples:
    * <pre>
    * <code>
    * &lt;oj-c-table
    *   ...
-   *   current-cell-override="[[$current.currentRow]]"
+   *   current-cell-override="[[$current.currentRowOverride]]"
    *   on-current-cell-changed="[[ (event) => event.detail.value && $current.onCurrentRowChanged({ rowKey: event.detail.value.type === 'data' ? event.detail.value.rowKey : undefined }) ]]"
+   *   ...&gt;
+   *
+   * &lt;oj-c-list-view
+   *   ...
+   *   current-item-override="[[$current.currentRowOverride]]"
+   *   on-current-item-changed="[[ (event) => event.detail.value && $current.onCurrentRowChanged({ rowKey: event.detail.value }) ]]"
    *   ...&gt;
    * </code>
    * </pre>
@@ -2301,15 +2406,20 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    * <h6>handleRowAction</h6>
    * <p>
    * This property is renamed to <code class="prettyprint">onRowAction</code>. The <code class="prettyprint">onRowAction</code> expects a different argument, so you need to provide a function to the
-   * oj-c-table's <code class="prettyprint">on-oj-row-action</code> attribute and then call the <code class="prettyprint">$current.onRowAction</code> function with the appropriate parameters.
+   * oj-c-table's <code class="prettyprint">on-oj-row-action</code> or oj-c-list-view's <code class="prettyprint">on-oj-item-action</code> attribute and then call the <code class="prettyprint">$current.onRowAction</code> function with the appropriate parameters.
    * </p>
    * <p>
-   * Example:
+   * Examples:
    * <pre>
    * <code>
    * &lt;oj-c-table
    *   ...
    *   on-oj-row-action="[[ (event) => $current.onRowAction({ item: event.detail.context.item }) ]]"
+   *   ...&gt;
+   *
+   * &lt;oj-c-list-view
+   *   ...
+   *   on-oj-item-action="[[ (event) => $current.onRowAction({ item: event.detail.context.item }) ]]"
    *   ...&gt;
    * </code>
    * </pre>
@@ -2328,7 +2438,7 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    * </p>
    * <ul>
    * <li>It does not support hierarchical data.</li>
-   * <li>It supports customizing dropdown content only using oj-c-table. Other collection components (including legacy oj-table) are not supported.</li>
+   * <li>It supports customizing dropdown content only using oj-c-table and oj-c-list-view. Other collection components (including legacy oj-table) are not supported.</li>
    * </ul>
    * @ojfragment migrationDoc
    * @memberof oj.ojSelectSingle

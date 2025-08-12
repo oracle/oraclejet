@@ -264,9 +264,13 @@ export namespace ojTreemap {
     // tslint:disable-next-line interface-over-type-literal
     type RenderNodeContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeContentContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type NodeContentTemplateContext<K, D> = NodeContentContext<K, D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderNodeTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K, D> = TooltipContext<K, D>;
 }
 export interface ojTreemapEventMap<K, D extends ojTreemap.Node<K> | any> extends dvtBaseComponentEventMap<ojTreemapSettableProperties<K, D>> {
     'ojBeforeDrill': ojTreemap.ojBeforeDrill<K, D>;
@@ -672,9 +676,13 @@ export namespace TreemapElement {
     // tslint:disable-next-line interface-over-type-literal
     type RenderNodeContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeContentContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type NodeContentTemplateContext<K, D> = NodeContentContext<K, D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderNodeTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K, D> = TooltipContext<K, D>;
 }
 export namespace TreemapNodeElement {
     // tslint:disable-next-line interface-over-type-literal

@@ -18,6 +18,78 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
 };
 class ListItemLayoutProps {
 }
+/**
+ * @classdesc
+ * <h3 id="ListItemLayoutOverview-section">
+ *   JET ListItem Layout
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#ListItemLayoutOverview-section"></a>
+ * </h3>
+ * <p>Description: A JET ListItemLayout component helps application teams to easily layout their
+ * content into different slots.</p>
+ * <pre class="prettyprint">
+ * <code>//ListItemLayout with text
+ * &lt;oj-list-view id="listview1" aria-label="list layout within list view" data="[[dataProvider]]" style="width: 450px;"
+ *                  selected="{{selectorSelectedItems}}" selection-mode="multiple">
+ *    &lt;template slot="itemTemplate" data-oj-as="item">
+ *       &lt;li>
+ *          &lt;oj-list-item-layout>
+ *             &lt;oj-selector slot='selector' selected-keys='{{selectorSelectedItems}}' key='[[item.data.id]]'>
+ *             &lt;/oj-selector>
+ *             &lt;div>
+ *                &lt;oj-bind-text value="default">&lt;/oj-bind-text>
+ *             &lt;/div>
+ *          &lt;/oj-list-item-layout>
+ *       &lt;/li>
+ *    &lt;/template>
+ * &lt;/oj-list-view>
+ * </code></pre>
+ *
+ *
+ *  <h3 id="migration-section">Migration<a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a></h3>
+ *  To migrate from ojlistitemlayout to oj-c-list-item-layout, you need to revise the import statement and references to oj-c-list-item-layout in your app.
+ *  <h5>Padding Off</h5>
+ *  The feature to remove default padding around the List Item Layout has changed.
+ *  Replace the class "oj-listitemlayout-padding-off" with a prop, <strong>inset</strong>, set to <i>none</i>
+ *    <p> Example: &lt;oj-c-list-item-layout inset="none"></p>
+ *
+ * @ojmetadata description "A List Item Layout represents layout used for list view item elements."
+ * @ojmetadata displayName "List Item Layout"
+ * @ojmetadata main "ojs/ojlistitemlayout"
+ * @ojmetadata status [
+ *   {
+ *     "type": "maintenance",
+ *     "since": "14.0.0",
+ *     "value": ["oj-c-list-item-layout"]
+ *   }
+ * ]
+ * @ojmetadata extension {
+ *   "oracle": {
+ *     "icon": "oj-ux-ico-list-item-layout",
+ *     "uxSpecs": ["list-view"]
+ *   },
+ *   "vbdt": {
+ *     "module": "ojs/ojlistitemlayout",
+ *     "defaultColumns": "12",
+ *     "minColumns": "2"
+ *   }
+ * }
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/19/reference-api/oj.ojListItemLayout.html"
+ * @ojmetadata since "9.0.0"
+ * @ojmetadata styleClasses [
+ *   {
+ *     "name": "oj-listitemlayout-padding-off",
+ *     "kind": "class",
+ *     "displayName": "Padding Off",
+ *     "description": "Turn off horizontal and vertical padding for the list item layout.",
+ *     "help": "#oj-listitemlayout-padding-off",
+ *     "extension": {
+ *        "jet": {
+ *            "example": "&lt;oj-list-item-layout class='oj-listitemlayout-padding-off'>\n &lt;div>\n  &lt;oj-bind-text value='default'>\n  &lt;/oj-bind-text>\n &lt;/div>\n&lt;/oj-list-item-layout>"
+ *          }
+ *      }
+ *   }
+ * ]
+ */
 let ListItemLayout = class ListItemLayout extends Component {
     constructor() {
         super(...arguments);
@@ -60,6 +132,8 @@ let ListItemLayout = class ListItemLayout extends Component {
         return null;
     }
     render(props) {
+        // a reference is used to track if the consumer has added the style class 'oj-listitemlayout-padding-off'
+        // if so, we need to offset the border of the primary slot, to make it visible when there is no padding around it
         const layoutRef = useRef(null);
         let primaryClass = useRef();
         useEffect(() => {

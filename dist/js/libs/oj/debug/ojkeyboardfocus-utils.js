@@ -226,7 +226,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    * @ignore
    */
   const getLogicalChildPopup = function (componentElement) {
-    var popups = oj.ZOrderUtils.findOpenPopups();
+    var popups = ojpopupcore.ZOrderUtils.findOpenPopups();
     for (var i = 0; i < popups.length; i++) {
       // Get the launcher of the popup.
       // popups[i] is just a wrapper with the real popup as its child.
@@ -236,7 +236,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
       // Check if the component contains the launcher
       if (launcher != null && $(componentElement).has(launcher.get(0)).length > 0) {
         // only return the popup if the child popup is currently open
-        if (oj.ZOrderUtils.getStatus(popupElem) === oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(popupElem) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           return popupElem;
         }
       }
@@ -255,7 +255,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
    */
   const getAllLogicalChildPopups = function (componentElement) {
     var allPopups = {
-      popups: oj.ZOrderUtils.findOpenPopups()
+      popups: ojpopupcore.ZOrderUtils.findOpenPopups()
     };
 
     var _getLogicalChildPopups = function (parentElement) {

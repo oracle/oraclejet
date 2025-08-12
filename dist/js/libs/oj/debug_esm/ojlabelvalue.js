@@ -289,9 +289,10 @@ function ojLabelValue(context) {
             // make padding adjustments, etc.
             valueOjFlexItem.classList.add('oj-formlayout-nested-formlayout');
           }
-          // If we have a corepack form component, we need to hide the label flex item as the
-          // component will be rendering its own label for 'top' and 'start' in addition to 'inside'
-          if (child.tagName.toLowerCase().startsWith('oj-c-') && 'labelEdge' in child) {
+          // If we have a component that renders its own label and has set 'data-oj-renders-label'
+          // on its root element, we need to hide the label flex item as the component will
+          // be rendering its own label for 'top' and 'start' in addition to 'inside'
+          if (child.hasAttribute('data-oj-renders-label')) {
             labelOjFlexItem.classList.add('oj-helper-hidden');
           }
           break;

@@ -57,8 +57,7 @@ import { warn } from 'ojs/ojlogger';
    *
    * <p>A toolbar that contains radios should contain all radios in the radio group.
    *
-   * <p>Multiple toolbars can be laid out as a set using the <a href="ToolbarSets.html#oj-toolbars">.oj-toolbars</a>
-   * and <a href="ToolbarSets.html#oj-toolbar-row">.oj-toolbar-row</a> style classes.
+   * <p>Multiple toolbars can be laid out as a set using the <a href="FlexLayout.html">.oj-flex</a> and <a href="Divider.html">.oj-divider</a> style classes.
    *
    *
    * <h3 id="touch-section">
@@ -284,6 +283,7 @@ import { warn } from 'ojs/ojlogger';
    * Applies a top border to the toolbar, or to the oj-toolbars element, in themes not having this border by default.
    * @ojstyleclass oj-toolbar-top-border
    * @ojdisplayname Top Border
+   * @ojdeprecated {since: '19.0.0', description: 'Use the <a href="Divider.html">.oj-divider</a> style classes instead.'}
    * @memberof oj.ojToolbar
    * @ojtsexample
    * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-top-border">
@@ -297,6 +297,7 @@ import { warn } from 'ojs/ojlogger';
    * Applies a bottom border to the toolbar, or to the oj-toolbars element, in themes not having this border by default.
    * @ojstyleclass oj-toolbar-bottom-border
    * @ojdisplayname Bottom Border
+   * @ojdeprecated {since: '19.0.0', description: 'Use the <a href="Divider.html">.oj-divider</a> style classes instead.'}
    * @memberof oj.ojToolbar
    * @ojtsexample
    * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-bottom-border">
@@ -310,6 +311,7 @@ import { warn } from 'ojs/ojlogger';
    * Removes chrome (background and border) from the toolbar(s), in themes having this chrome by default.
    * @ojstyleclass oj-toolbar-no-chrome
    * @ojdisplayname No Chrome
+   * @ojdeprecated {since: '19.0.0', description: 'Default chrome themes around toolbars is not supported in the Redwood design system.'}
    * @memberof oj.ojToolbar
    * @ojtsexample
    * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-no-chrome">

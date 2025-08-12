@@ -13,20 +13,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
 
   /**
-   * @preserve Copyright 2013 jQuery Foundation and other contributors
-   * Released under the MIT license.
-   * http://jquery.org/license
-   */
-
-  /* jslint browser: true,devel:true*/
-  /**
-   * Utilities for getting DataProvider features.
-   * @ignore
-   */
-
-  // end of jsdoc
-
-  /**
    * This picks a strategy for where to put each piece of information
    * that is on a component. It started out being messaging pieces: like
    * placeholder, converter hints, validator hints, error messages. In v8.0
@@ -749,7 +735,12 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         strategyToArtifacts = this._getResolvedMessagingDisplayOptions(messagingPreferences);
       } else {
         if (options.readOnly) {
-          if (options.readonlyUserAssistanceShown === 'confirmationAndInfoMessages') {
+          // JET-74517 For compact, we don't want to show inline messages when readonly
+          // This brings legacy inline with core pack behavior for compact readonly.
+          if (
+            options.readonlyUserAssistanceShown === 'confirmationAndInfoMessages' &&
+            resolvedUserAssistance !== 'compact'
+          ) {
             messagingPreferences.messages = ComponentMessaging._STRATEGY_TYPE.INLINE;
           } else {
             messagingPreferences.messages = ComponentMessaging._STRATEGY_TYPE.NONE;
@@ -2307,7 +2298,12 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         // If the attribute has not been set, return the default value
         if (value === undefined) {
           value = this._BRIDGE._getDefaultValue(property, propertyMeta);
-          this._BRIDGE._PROPS[property] = value;
+
+          if (value && oj.CollectionUtils.isPlainObject(value)) {
+            this._BRIDGE._PROPS[property] = oj.CollectionUtils.copyInto({}, value, undefined, true);
+          } else {
+            this._BRIDGE._PROPS[property] = value;
+          }
         }
         return value;
       }
@@ -2415,12 +2411,21 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   });
   oj._registerLegacyNamespaceProp('DefinitionElementBridge', DefinitionalElementBridge);
 
+  /**
+   * @ignore
+   */
   class WidgetState extends ojcustomelementUtils.ElementState {
+      /**
+       * @override
+       */
       IsTransferAttribute(attrName) {
           const bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this.Element);
           const transferAttrs = bridge._EXTENSION._GLOBAL_TRANSFER_ATTRS;
           return bridge._WIDGET_ELEM && transferAttrs && transferAttrs.includes(attrName);
       }
+      /**
+       * @override
+       */
       GetDescriptiveTransferAttributeValue(name) {
           const bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this.Element);
           return bridge._WIDGET_ELEM.getAttribute(name);
@@ -3186,22 +3191,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    * @private
    */
   CustomElementBridge._METADATA_MAP = {};
-
-  class DataProviderFeatureChecker {
-      static isDataProvider(dataprovider) {
-          if (dataprovider && dataprovider['fetchFirst']) {
-              return true;
-          }
-          return false;
-      }
-      static isTreeDataProvider(dataprovider) {
-          if (dataprovider && dataprovider['getChildDataProvider']) {
-              return true;
-          }
-          return false;
-      }
-  }
-  oj$1._registerLegacyNamespaceProp('DataProviderFeatureChecker', DataProviderFeatureChecker);
 
   /**
    * @private
@@ -6801,7 +6790,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   const callComponentMethod = Components.callComponentMethod;
   const _OJ_CONTAINER_ATTR = Components._OJ_CONTAINER_ATTR;
 
-  exports.DataProviderFeatureChecker = DataProviderFeatureChecker;
   exports._OJ_CONTAINER_ATTR = _OJ_CONTAINER_ATTR;
   exports.__GetWidgetConstructor = __GetWidgetConstructor;
   exports.__getDefaultOptions = __getDefaultOptions;

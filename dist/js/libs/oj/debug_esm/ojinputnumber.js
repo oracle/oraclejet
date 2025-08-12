@@ -527,6 +527,35 @@ function _getNumberDefaultConverter() {
    * </li>
    * </ul>
    * </p>
+   *
+   * <h5>MaxWidth attribute</h5>
+   * <p>
+   * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
+   * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+   * <ul>
+   * <li>
+   * .oj-form-control-max-width-sm maps to 'sm'
+   * </li>
+   * <li>
+   * .oj-form-control-max-width-md maps to 'md'
+   * </li>
+   * </ul>
+   * </p>
+   *
+   * <h5>Width attribute</h5>
+   * <p>
+   * The usage of the style classes: oj-form-control-width-sm and oj-form-control-width-md is now
+   * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+   * <ul>
+   * <li>
+   * .oj-form-control-width-sm maps to 'sm'
+   * </li>
+   * <li>
+   * .oj-form-control-width-md maps to 'md'
+   * </li>
+   * </ul>
+   * </p>
+   *
    * <h5>Translations attribute</h5>
    * <ul>
    * <li>The translations.required.message-detail attribute has changed to required-message-detail.
@@ -573,6 +602,14 @@ function _getNumberDefaultConverter() {
    * <p>
    * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+   * </p>
+   *
+   * <h5>LabelledBy attribute</h5>
+   * <p>
+   * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
+   * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
+   * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
+   * to add a label for the form component.
    * </p>
    *
    * <h5>DescribedBy attribute</h5>

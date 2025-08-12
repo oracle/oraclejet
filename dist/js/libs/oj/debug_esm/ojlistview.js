@@ -13,11 +13,12 @@ import Context from 'ojs/ojcontext';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { parseJSONFromFontFamily, getCachedCSSVarValues } from 'ojs/ojthemeutils';
 import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { enableAllFocusableElements, isFetchAborted, disableAllFocusableElements, getAbortReason, isFirefox, isIos, isMobileTouchDevice, isElementIntersectingScrollerBounds, getBrowserVersion, isIE, isElementOrAncestorFocusable, isAndroid, isWindows, isEventClickthroughDisabled, handleActionablePrevTab, handleActionableTab, getFocusableElementsInNode, isEdge, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
+import { enableAllFocusableElements, isFetchAborted, disableAllFocusableElements, isFirefox, isIos, isMobileTouchDevice, isElementIntersectingScrollerBounds, getBrowserVersion, isIE, isElementOrAncestorFocusable, isAndroid, isWindows, isEventClickthroughDisabled, handleActionablePrevTab, handleActionableTab, getFocusableElementsInNode, isEdge, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
 import { fadeIn, startAnimation } from 'ojs/ojanimation';
 import { info, error, warn, log } from 'ojs/ojlogger';
 import { KeySet, KeySetImpl, KeySetUtils } from 'ojs/ojkeyset';
 import KeyMap from 'ojs/ojmap';
+import { getAbortReason } from 'ojs/ojabortreason';
 import { unwrap, removeResizeListener, addResizeListener, getCSSTimeUnitAsMillis, setScrollLeft, isTouchSupported, isMetaKeyPressed } from 'ojs/ojdomutils';
 import 'ojs/ojdataprovideradapter';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
@@ -169,6 +170,14 @@ var __oj_list_view_metadata =
     "item": {
       "type": "object",
       "properties": {
+        "enterKeyFocusBehavior": {
+          "type": "string",
+          "enumValues": [
+            "focusWithin",
+            "none"
+          ],
+          "value": "none"
+        },
         "focusable": {
           "type": "boolean|function",
           "value": true
@@ -261,6 +270,7 @@ var __oj_list_view_metadata =
       "type": "string",
       "enumValues": [
         "multiple",
+        "multipleToggle",
         "none",
         "single"
       ],
@@ -1481,8 +1491,6 @@ TreeDataProviderContentHandler.prototype.Expand = function (item, successCallbac
     }.bind(this)
   );
 
-  this.m_widget.updateStatusGroupExpandCollapse(true);
-
   this.signalTaskEnd(); // signal method task end
 };
 
@@ -1495,8 +1503,6 @@ TreeDataProviderContentHandler.prototype.Collapse = function (item) {
 
   // remove all children nodes
   item.empty();
-
-  this.m_widget.updateStatusGroupExpandCollapse(false);
 };
 
 /**
@@ -2126,6 +2132,23 @@ const _ojListView = _ListViewUtils.clazz(
       }
     },
 
+    /** Help method to use in test adapter
+     * @private
+     */
+    _doReorderHelper: function (event, key, position) {
+      if (this.m_dndContext != null) {
+        this.m_dndContext._doReorderHelper(event, key, position);
+      }
+    },
+
+    /**
+     * Whether the current theme is Redwood
+     * @private
+     */
+    _isRedwood: function () {
+      return parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+    },
+
     /**
      * Whether ListView is available or offline/detached
      * Invoked by widget
@@ -2211,8 +2234,7 @@ const _ojListView = _ListViewUtils.clazz(
      * @private
      */
     _isTextSelectionEnabled: function () {
-      const isRedwood = parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
-      return this.ShouldUseGridRole() && isRedwood;
+      return this.ShouldUseGridRole() && this._isRedwood();
     },
 
     /**
@@ -2414,6 +2436,8 @@ const _ojListView = _ListViewUtils.clazz(
      * Invoked before refresh, including DataProviderRefresh event
      */
     resetFocusBeforeRefresh: function () {
+      // make sure we exit actionable mode, otherwise focus will be lost
+      this._setActionableMode(false, true);
       this.m_active = null;
       this.SetRootElementTabIndex();
       if (this.element[0].contains(document.activeElement)) {
@@ -2554,12 +2578,17 @@ const _ojListView = _ListViewUtils.clazz(
       this.m_initialSelectionStateValidated = null;
       this.m_validatedSelectedKeyData = null;
       this.m_selectionFrontier = null;
+      this.m_prevSelectionFrontier = null;
+      this.m_initialSelectionFrontier = null;
       this.m_initialCardAnimationPromise = null;
+      this.m_externalScrollTop = null;
+      this.m_browserAutoScroll = null;
 
       this.ClearCache();
       this._clearFocusoutTimeout();
       this._clearFocusoutBusyState();
       this._clearScrollPosBusyState();
+      this._clearBrowserAutoscrollTimeout();
 
       // give dnd context a chance to clear internals
       if (this.m_dndContext != null) {
@@ -3213,7 +3242,7 @@ const _ojListView = _ListViewUtils.clazz(
           }
 
           // clear selection first
-          this._clearSelection(false, selectionFrontier);
+          this._clearSelection(false, selectionFrontier, false, true);
 
           // selects each key
           for (var i = 0; i < newSelection.length; i++) {
@@ -3709,31 +3738,18 @@ const _ojListView = _ListViewUtils.clazz(
      * @private
      */
     updateStatusFetchEnd: function (count) {
-      var msg = this.ojContext.getTranslatedString('msgFetchCompleted');
-      this._setLoadingDescText(msg);
-
+      this._setLoadingDescText('');
+      let msg;
       if (this.element[0].hasAttribute('data-oj-loading')) {
         if (count !== 0) {
           msg = this.ojContext.getTranslatedString('msgItemsAppended', { count: count });
+        } else {
+          msg = this.ojContext.getTranslatedString('msgFetchCompleted');
         }
         this._setAccInfoText(msg);
         this.element[0].removeAttribute('data-oj-loading');
         this.element[0].removeAttribute('aria-describedby');
       }
-    },
-
-    /**
-     * Update role status text to reflect that group header is expanded
-     * @private
-     */
-    updateStatusGroupExpandCollapse: function (expanded) {
-      let msg;
-      if (expanded) {
-        msg = this.ojContext.getTranslatedString('accessibleGroupExpand');
-      } else {
-        msg = this.ojContext.getTranslatedString('accessibleGroupCollapse');
-      }
-      this._setAccInfoText(msg);
     },
 
     /**
@@ -4009,6 +4025,14 @@ const _ojListView = _ListViewUtils.clazz(
     getItemSelectable: function (context) {
       // if it's not focusable, it's not selectable also
       return this.getItemFocusable(context) && this._getItemOption('selectable', context, true);
+    },
+
+    /**
+     * Gets the item.enterKeyBehavior option.
+     * @private
+     */
+    _getItemEnterKeyFocusBehavior: function () {
+      return this._getItemOption('enterKeyFocusBehavior', null, false);
     },
 
     /**
@@ -4393,7 +4417,7 @@ const _ojListView = _ListViewUtils.clazz(
       // if listview has focus but there's no active element, then set focusable item
       // this could happen after refresh from context menu
       if (
-        this.getListContainer().hasClass('oj-focus-ancestor') &&
+        this.element.get(0).contains(document.activeElement) &&
         this.m_active == null &&
         current == null &&
         !this._isTouchSupport()
@@ -5201,14 +5225,20 @@ const _ojListView = _ListViewUtils.clazz(
           .then(
             function () {
               // prepare the context menu that have listview specific menu items
-              this.PrepareContextMenu(parent);
-              this.ojContext._OpenContextMenu(event, eventType, openOptions);
+              const prepareContextMenu = this.PrepareContextMenu(parent);
+              // We want to open the context menu only if prepareContextMenu of the parent returns true (in NavigationList) or if it is null (in ListView). Otherwise opening it makes calls to _GetDefaultContextMenu from parent (due to an override definition like in NavigationList._GetDefaultContextMenu) and when parent not available it would throw an error.
+              if (prepareContextMenu || prepareContextMenu == null) {
+                this.ojContext._OpenContextMenu(event, eventType, openOptions);
+              }
             }.bind(this)
           );
       } else {
-        this.PrepareContextMenu(parent);
-        this.ojContext._OpenContextMenu(event, eventType, openOptions);
+        const prepareContextMenu = this.PrepareContextMenu(parent);
+        if (prepareContextMenu || prepareContextMenu == null) {
+          this.ojContext._OpenContextMenu(event, eventType, openOptions);
+        }
       }
+
       return undefined;
     },
 
@@ -5431,6 +5461,17 @@ const _ojListView = _ListViewUtils.clazz(
     },
 
     /**
+     * Clears any pending browser autoscroll timeout.
+     * @private
+     */
+    _clearBrowserAutoscrollTimeout: function () {
+      if (this.m_browserAutoScrollTimeout) {
+        clearTimeout(this.m_browserAutoScrollTimeout);
+        this.m_browserAutoScrollTimeout = null;
+      }
+    },
+
+    /**
      * Handler for focus event
      * @param {Event} event the focus event
      * @protected
@@ -5439,6 +5480,15 @@ const _ojListView = _ListViewUtils.clazz(
       this._clearFocusoutTimeout();
       this._clearFocusoutBusyState();
       this.getListContainer().addClass('oj-focus-ancestor');
+
+      // tracks whether focus causes scroll (see JET-69617)
+      this._clearBrowserAutoscrollTimeout();
+      if (this._isExternalScroller()) {
+        this.m_browserAutoScroll = true;
+        this.m_browserAutoScrollTimeout = setTimeout(() => {
+          this.m_browserAutoScroll = null;
+        }, 10);
+      }
 
       // first time tab into listview, focus on first item
       if (this.m_active == null) {
@@ -5544,6 +5594,18 @@ const _ojListView = _ListViewUtils.clazz(
         container.appendChild(tempFocusDiv);
       }
       tempFocusDiv.focus({ preventScroll: true });
+    },
+
+    /**
+     * remove the temp shift focus div as this causes violation in Tabbar
+     * in general, we should just recreate it when needed.
+     */
+    _cleanupTempShiftFocusDiv: function () {
+      var container = this.getListContainer()[0];
+      var tempFocusDiv = container.querySelector('.oj-listview-temp-focus');
+      if (tempFocusDiv) {
+        tempFocusDiv.parentNode.removeChild(tempFocusDiv);
+      }
     },
 
     /**
@@ -5757,7 +5819,7 @@ const _ojListView = _ListViewUtils.clazz(
       // do this for real mouse enters, but not 300ms after a tap
       // skip if we are in the middle of dnd
       if (
-        !this._isShowHover() ||
+        !this._isShowHoverOrActive() ||
         this._recentTouch() ||
         (this.m_dndContext && this.m_dndContext.isDndInProgress())
       ) {
@@ -5784,11 +5846,11 @@ const _ojListView = _ListViewUtils.clazz(
      * and drag is enabled (without affordance, which requires selection to be enabled)
      * @private
      */
-    _isShowHover: function () {
-      var isRedWood = parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+    _isShowHoverOrActive: function () {
       // Hover only over redwood listview collapsible group header
       return (
-        this._isSelectionEnabled() || (isRedWood && this.isExpandable() && this.ShouldUseGridRole())
+        this._isSelectionEnabled() ||
+        (this._isRedwood() && this.isExpandable() && this.ShouldUseGridRole())
       );
     },
 
@@ -5871,6 +5933,7 @@ const _ojListView = _ListViewUtils.clazz(
       // unhighlight item that got focus in mousedown
       if (this.m_preActiveItem) {
         this._unhighlightElem(this.m_preActiveItem, 'oj-focus');
+        this._unhighlightElem(this.m_preActiveItem, 'oj-active');
       }
 
       // dnd
@@ -5953,6 +6016,9 @@ const _ojListView = _ListViewUtils.clazz(
 
       // apply focus
       this._highlightElem(item, 'oj-focus');
+      if (this._isShowHoverOrActive()) {
+        this._highlightElem(item, 'oj-active');
+      }
 
       // focus on item, we need to do it on mousedown instead of click otherwise click handler will
       // steal focus from popup and causes it to close prematurely
@@ -5995,7 +6061,7 @@ const _ojListView = _ListViewUtils.clazz(
      */
     _preventNativeShiftSelection: function (event) {
       const isTextSelection = this._isTextSelectionEnabled();
-      const isMultiSelect = this.GetOption('selectionMode') === 'multiple';
+      const isMultiSelect = this._isMultipleSelection();
       if (isTextSelection && event.shiftKey && this.m_selectionFrontier && isMultiSelect) {
         event.preventDefault();
       }
@@ -6178,6 +6244,10 @@ const _ojListView = _ListViewUtils.clazz(
             // if not processed, then we'll still need to make sure it's active
             if (!processed) {
               this.HandleClickActive(item, event);
+            }
+
+            if (this._isMultipleToggleSelection()) {
+              this._setSelectionFrontier(item, event.shiftKey);
             }
 
             // if user hits the padding part of item, since LI does not have tabindex anymore, item will not get focus
@@ -6694,11 +6764,13 @@ const _ojListView = _ListViewUtils.clazz(
         return true;
       }
 
-      var current;
-      if (!isExtend || this.m_isNavigate) {
-        current = this.m_active.elem;
-      } else {
-        current = this.m_selectionFrontier;
+      var current = this.m_active.elem;
+
+      if (isExtend && !this.m_isNavigate) {
+        current = this.m_selectionFrontier || current;
+        if (this._isMultipleToggleSelection() && !this.m_initialSelectionFrontier) {
+          this.m_initialSelectionFrontier = this.m_selectionFrontier || this.m_active.elem;
+        }
       }
 
       // invoke different function for handling focusing on active item depending on whether selection is enabled
@@ -6782,10 +6854,18 @@ const _ojListView = _ListViewUtils.clazz(
           return;
         }
 
+        // track selection frontier during arrow keys
+        // for shift + arrow keys, selection frontier will be updated in _extendSelection()
+        if (this._isMultipleToggleSelection() && !event.shiftKey) {
+          this._setSelectionFrontier(next, false);
+        }
+
         if (isExtend) {
           this._extendSelection(next, event);
           this.m_isNavigate = false;
-        } else {
+        }
+
+        if (!isExtend || this._isMultipleToggleSelection()) {
           this.SetCurrentItem(next, event);
           this.m_isNavigate = true;
         }
@@ -6817,10 +6897,18 @@ const _ojListView = _ListViewUtils.clazz(
           return;
         }
 
+        // track selection frontier during arrow keys
+        // for shift + arrow keys, selection frontier will be updated in _extendSelection()
+        if (this._isMultipleToggleSelection() && !event.shiftKey) {
+          this._setSelectionFrontier(prev, false);
+        }
+
         if (isExtend) {
           this._extendSelection(prev, event);
           this.m_isNavigate = false;
-        } else {
+        }
+
+        if (!isExtend || this._isMultipleToggleSelection()) {
           this.SetCurrentItem(prev, event);
           this.m_isNavigate = true;
         }
@@ -6928,10 +7016,18 @@ const _ojListView = _ListViewUtils.clazz(
           return;
         }
 
+        // track selection frontier during arrow keys
+        // for shift + arrow keys, selection frontier will be updated in _extendSelection()
+        if (this._isMultipleToggleSelection() && !event.shiftKey) {
+          this._setSelectionFrontier(above, false);
+        }
+
         if (isExtend) {
           this._extendSelection(above, event);
           this.m_isNavigate = false;
-        } else {
+        }
+
+        if (!isExtend || this._isMultipleToggleSelection()) {
           if (numOfItemSkip != null && numOfItemSkip > 0) {
             this._updateSkipItemAriaLabel(above, numOfItemSkip);
           }
@@ -6983,10 +7079,18 @@ const _ojListView = _ListViewUtils.clazz(
           return;
         }
 
+        // track selection frontier during arrow keys
+        // for shift + arrow keys, selection frontier will be updated in _extendSelection()
+        if (this._isMultipleToggleSelection() && !event.shiftKey) {
+          this._setSelectionFrontier(below, false);
+        }
+
         if (isExtend) {
           this._extendSelection(below, event);
           this.m_isNavigate = false;
-        } else {
+        }
+
+        if (!isExtend || this._isMultipleToggleSelection()) {
           if (numOfItemSkip != null && numOfItemSkip > 0) {
             this._updateSkipItemAriaLabel(below, numOfItemSkip);
           }
@@ -7016,7 +7120,7 @@ const _ojListView = _ListViewUtils.clazz(
     _setActionableMode: function (flag, skipFocus) {
       this.m_keyMode = flag ? 'actionable' : 'navigation';
 
-      if (!flag && !skipFocus) {
+      if (!flag && !skipFocus && this.element[0].contains(document.activeElement)) {
         // focus should be shift back to active descendant container
         this.element[0].focus();
       }
@@ -7205,7 +7309,12 @@ const _ojListView = _ListViewUtils.clazz(
             // focus on it only for non-click events or when done programmatically
             // the issue is we can't shift focus on click since it will steal focus from the popups
             // the focusing on item is done already on mousedown
-            if (event == null || (event.originalEvent && event.originalEvent.type !== 'click')) {
+            // except for multiple toggle selection, we spot focus lost during shift+click, need to make sure the item is focused
+            if (
+              event == null ||
+              (event.originalEvent && event.originalEvent.type !== 'click') ||
+              (this._isMultipleToggleSelection() && event.shiftKey)
+            ) {
               this._focusItem(item);
             }
 
@@ -7406,8 +7515,26 @@ const _ojListView = _ListViewUtils.clazz(
      * @return {boolean} true if multiple selection enabled
      * @private
      */
-    _isMultipleSelection: function () {
+    _isMultipleReplaceSelection: function () {
       return this.GetOption('selectionMode') === 'multiple';
+    },
+
+    /**
+     * Check whether multipleToggle selection is allowed by options on the list
+     * @return {boolean} true if multipleToggle selection enabled
+     * @private
+     */
+    _isMultipleToggleSelection: function () {
+      return this.GetOption('selectionMode') === 'multipleToggle';
+    },
+
+    /**
+     * Check whether multiple or multipleToggle selection is allowed by options on the list
+     * @return {boolean} true if multiple selection enabled
+     * @private
+     */
+    _isMultipleSelection: function () {
+      return this._isMultipleReplaceSelection() || this._isMultipleToggleSelection();
     },
 
     /**
@@ -7568,17 +7695,28 @@ const _ojListView = _ListViewUtils.clazz(
 
     /**
      * Unhighlights the selection.  Does not change selection, focus, anchor, or frontier
+     * @param {boolean} isOptionUpdate optional, true if the selected option is going to be updated by the app or the checkbox, should clear all selection in this case
      * @private
      */
-    _unhighlightSelection: function () {
+    _unhighlightSelection: function (isOptionUpdate) {
       if (this.m_keyElemMap == null) {
         return;
       }
 
       var self = this;
+      var items = this._getItemsCache();
       var selected = this.GetOption('selected');
-      if (selected.isAddAll()) {
-        var items = this._getItemsCache();
+
+      if (this._isMultipleToggleSelection() && !isOptionUpdate) {
+        // only unhighlight the items in the previous range selection
+        // if there is no previous range selection, do nothing
+        if (this.m_prevSelectionFrontier) {
+          const { from, to } = this._getPrevRangeSelection();
+          for (let j = from; j <= to; j++) {
+            self._unhighlightElem(items[j], 'oj-selected');
+          }
+        }
+      } else if (selected.isAddAll()) {
         for (var i = 0; i < items.length; i++) {
           self._unhighlightElem(items[i], 'oj-selected');
         }
@@ -7655,6 +7793,9 @@ const _ojListView = _ListViewUtils.clazz(
         } else if (!ctrlKey && shiftKey) {
           // active item doesn't change in this case
           processed = this._extendSelection(item, event);
+          if (processed && this._isMultipleToggleSelection()) {
+            this.SetCurrentItem(item, event);
+          }
         } else {
           // processed is always true in this case
           this._augmentSelectionAndFocus(item, event);
@@ -7678,6 +7819,9 @@ const _ojListView = _ListViewUtils.clazz(
         if (event.shiftKey) {
           // for touch device with keyboard support
           processed = this._extendSelection(item, event);
+          if (processed && this._isMultipleToggleSelection()) {
+            this.SetCurrentItem(item, event);
+          }
         } else {
           // treat this as like ctrl+click
           this._augmentSelectionAndFocus(item, event);
@@ -7693,11 +7837,19 @@ const _ojListView = _ListViewUtils.clazz(
      * Clear the current selection.
      * @param {boolean} updateOption true if the underlying selection option should be updated, false otherwise.
      * @param {jQuery=} newSelectionFrontier new value to set the selection frontier. If none specified, set to null
+     * @param {boolean} isShiftKey optional, true if this function is called due to the event with shiftKey, only need this to set prevSelectionFrontier for 'multipleToggle' selection
+     * @param {boolean} isOptionUpdate optional, true if the selected option is going to be updated by the app or the checkbox
      * @private
      */
-    _clearSelection: function (updateOption, newSelectionFrontier) {
+    _clearSelection: function (updateOption, newSelectionFrontier, isShiftKey, isOptionUpdate) {
+      // make sure prevSelectionFrontier is updated before unhighlight
+      this._setSelectionFrontier(
+        newSelectionFrontier === undefined ? null : newSelectionFrontier,
+        isShiftKey
+      );
+
       // unhighlight previous selection
-      this._unhighlightSelection();
+      this._unhighlightSelection(isOptionUpdate);
 
       if (updateOption) {
         // if the intend is to empty selection option, we have to make sure if
@@ -7710,9 +7862,6 @@ const _ojListView = _ListViewUtils.clazz(
           this._setSelectionOption(selected, null, null);
         }
       }
-
-      // clear selection frontier also
-      this.m_selectionFrontier = newSelectionFrontier === undefined ? null : newSelectionFrontier;
     },
 
     /**
@@ -7720,10 +7869,10 @@ const _ojListView = _ListViewUtils.clazz(
      * Select and focus is an asynchronus call
      * @param {jQuery} item the item clicked on
      * @param {Event} event the click event
-     * @param {isToggle=} isToggle true if this is a toggle selection event
+     * @param {isSingleToggle=} isSingleToggle true if this is a toggle selection event for 'single' selectionMode
      * @protected
      */
-    SelectAndFocus: function (item, event, isToggle) {
+    SelectAndFocus: function (item, event, isSingleToggle) {
       var key = this.GetKey(item[0]);
       var selected = this.GetOption('selected');
       var exists = selected.has(key);
@@ -7738,14 +7887,14 @@ const _ojListView = _ListViewUtils.clazz(
         return false;
       }
 
-      var isRedwood = parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+      const isMultipleToggle = this._isMultipleToggleSelection();
       // if it's already selected, deselect it and update options
-      if (exists && (isToggle || !isRedwood)) {
+      if (exists && (isSingleToggle || !this._isRedwood())) {
         this._clearSelection(true);
       } else {
         this._clearSelection(false);
         // add the elem to selection
-        this._augmentSelectionAndFocus(item, event, selected.clear());
+        this._augmentSelectionAndFocus(item, event, isMultipleToggle ? selected : selected.clear());
       }
 
       return true;
@@ -7771,7 +7920,10 @@ const _ojListView = _ListViewUtils.clazz(
       // remove focus style on the item click on
       this._unhighlightElem(item, 'oj-focus');
 
-      this._extendSelectionRange(this.m_active.elem, item, event);
+      const from = this._isMultipleToggleSelection()
+        ? this.m_initialSelectionFrontier
+        : this.m_active.elem;
+      this._extendSelectionRange(from, item, event);
 
       return true;
     },
@@ -7787,12 +7939,13 @@ const _ojListView = _ListViewUtils.clazz(
     _extendSelectionRange: function (from, to, event, keepSelectionFrontier) {
       if (keepSelectionFrontier === true) {
         // clear selection as we'll be just re-highlight the entire range
-        this._clearSelection(false, this.m_selectionFrontier);
+        this._clearSelection(false, this.m_selectionFrontier, event.shiftKey);
       } else {
-        this._clearSelection(false, to);
+        this._clearSelection(false, to, event.shiftKey);
       }
 
       // highlights the items between active item and new item
+      // for multipleToggle selection, highlights the items between initial selection frontier and new item
       this._highlightRange(from, to, event);
       this.HighlightActive();
 
@@ -7810,7 +7963,10 @@ const _ojListView = _ListViewUtils.clazz(
     _highlightRange: function (start, end, event) {
       var from;
       var to;
-      var selected = this.GetOption('selected').clear();
+      const isMultipleToggle = this._isMultipleToggleSelection();
+      var selected = isMultipleToggle
+        ? this.GetOption('selected')
+        : this.GetOption('selected').clear();
       var selectedItems = [];
       var items = this._getItemsCache();
       var startIndex = items.index(start);
@@ -7822,6 +7978,15 @@ const _ojListView = _ListViewUtils.clazz(
       } else {
         from = startIndex;
         to = endIndex;
+      }
+
+      if (this._shouldClearPrevRangeSelection()) {
+        const { from: prevFrom, to: prevTo } = this._getPrevRangeSelection();
+        for (let i = prevFrom; i <= prevTo; i++) {
+          const item = items[i];
+          const key = this.m_contentHandler.GetKey(item);
+          selected = selected.delete([key]);
+        }
       }
 
       // exclude start and include end
@@ -7920,7 +8085,7 @@ const _ojListView = _ListViewUtils.clazz(
         // eslint-disable-next-line no-param-reassign
         selected = selected.delete([key]);
       } else {
-        this.m_selectionFrontier = item;
+        this._setSelectionFrontier(item, event.shiftKey);
         this._applySelection(item, key);
         // eslint-disable-next-line no-param-reassign
         selected = selected.add([key]);
@@ -7965,7 +8130,7 @@ const _ojListView = _ListViewUtils.clazz(
         selected = selected.delete([key]);
 
         if (!isAll && selected.values().size === 0) {
-          this.m_selectionFrontier = null;
+          this._setSelectionFrontier(null, event.shiftKey);
         }
       } else if (this.IsSelectable(item[0])) {
         // deselect any selected items
@@ -7974,7 +8139,7 @@ const _ojListView = _ListViewUtils.clazz(
           selected = selected.clear();
         }
 
-        this.m_selectionFrontier = item;
+        this._setSelectionFrontier(item, event.shiftKey);
 
         // select current item
         this._applySelection(item, key);
@@ -8008,6 +8173,33 @@ const _ojListView = _ListViewUtils.clazz(
     },
 
     /**
+     * Enter actionable mode and focus
+     * @private
+     */
+    _enterActionableModeAndFocus: function () {
+      var first;
+      var current = this.m_active.elem;
+
+      this._enterActionableMode();
+
+      // focus on first focusable item in the cell
+      first = current.find('[data-first]');
+      if (first.length > 0) {
+        first[0].focus();
+
+        if (this._isExpandCollapseIcon(first)) {
+          this._focusInHandler(first);
+        }
+
+        // check if it's group item
+        if (!current.hasClass(this.getItemStyleClass())) {
+          current = current.children('.' + this.getGroupItemStyleClass()).first();
+        }
+        current.removeClass('oj-focus-highlight').addClass('oj-focus-previous-highlight');
+      }
+    },
+
+    /**
      * Handles key event for selection or active
      * @param {Event} event
      * @return {boolean} true if the event is processed
@@ -8017,7 +8209,6 @@ const _ojListView = _ListViewUtils.clazz(
       var ctrlKey;
       var shiftKey;
       var processed = false;
-      var first;
 
       // this could happen if nothing in the list is focusable
       // or if the key is handled by a descendant already and explicitly do not want parent to handle
@@ -8072,23 +8263,7 @@ const _ojListView = _ListViewUtils.clazz(
       } else if (key === 'F2' || key === this.F2_KEY) {
         // F2 key goes to actionable mode
         event.stopPropagation();
-        this._enterActionableMode();
-
-        // focus on first focusable item in the cell
-        first = current.find('[data-first]');
-        if (first.length > 0) {
-          first[0].focus();
-
-          if (this._isExpandCollapseIcon(first)) {
-            this._focusInHandler(first);
-          }
-
-          // check if it's group item
-          if (!current.hasClass(this.getItemStyleClass())) {
-            current = current.children('.' + this.getGroupItemStyleClass()).first();
-          }
-          current.removeClass('oj-focus-highlight').addClass('oj-focus-previous-highlight');
-        }
+        this._enterActionableModeAndFocus();
       } else if (
         (key === ' ' || key === 'Spacebar' || key === this.SPACE_KEY) &&
         this._isSelectionEnabled() &&
@@ -8097,29 +8272,46 @@ const _ojListView = _ListViewUtils.clazz(
         ctrlKey = this._ctrlEquivalent(event);
         shiftKey = event.shiftKey;
         if (
+          !this._isRedwood() &&
           shiftKey &&
           !ctrlKey &&
           this.m_selectionFrontier != null &&
-          this._isMultipleSelection()
+          this._isMultipleReplaceSelection()
         ) {
           if (this.GetOption('selected').has(this.m_active.key)) {
             // deselect the selected item only, keep previous items selected
-            this.ToggleSelection(event, !ctrlKey && shiftKey && this._isMultipleSelection(), false);
+            this.ToggleSelection(
+              event,
+              !ctrlKey && shiftKey && this._isMultipleReplaceSelection(),
+              false
+            );
           } else {
             // selects contiguous items from last selected item to current item
             this._extendSelectionRange(this.m_selectionFrontier, this.m_active.elem, event, true);
           }
         } else {
-          // toggle selection, deselect previous selected items
-          this.ToggleSelection(event, ctrlKey && !shiftKey && this._isMultipleSelection(), false);
+          this.ToggleSelection(
+            event,
+            (this._isRedwood() || ctrlKey) && this._isMultipleSelection(),
+            false
+          );
         }
         processed = true;
       } else if (key === 'Enter' || key === this.ENTER_KEY) {
-        if (this._isSelectionEnabled()) {
+        var useGridRole = this.ShouldUseGridRole();
+        if (
+          this._isRedwood() &&
+          useGridRole &&
+          !this._isActionableMode() &&
+          this._getItemEnterKeyFocusBehavior() === 'focusWithin'
+        ) {
+          // Enter key goes to actionable mode when enterKeyFocusBehavior is 'focusWithin'
+          this._enterActionableModeAndFocus();
+        } else if ((!this._isRedwood() || !useGridRole) && this._isSelectionEnabled()) {
           // selects it if it's not selected, do nothing if it's already selected
           this.ToggleSelection(event, false, true);
         }
-        this._fireActionEvent(current.get(0), event, false);
+        this._fireActionEvent(current.get(0), event, true);
       } else if (this.IsArrowKey(key)) {
         ctrlKey = this._ctrlEquivalent(event);
         shiftKey = event.shiftKey;
@@ -8140,6 +8332,48 @@ const _ojListView = _ListViewUtils.clazz(
       }
 
       return processed;
+    },
+
+    /**
+     * Set the selectionFrontier for range selection; if the selectionMode is 'multipleToggle', set the prevSelectionFrontier
+     * @param {Element} item the new selection frontier
+     * @param {boolean} isShiftKey optional boolean to determine whether this function is triggered by an event with shiftKey, only need this for 'multipleToggle' selection
+     */
+    _setSelectionFrontier: function (item, isShiftKey) {
+      if (this._isMultipleToggleSelection()) {
+        if (isShiftKey) {
+          this.m_prevSelectionFrontier = this.m_selectionFrontier;
+        } else {
+          this.m_initialSelectionFrontier = item;
+          this.m_prevSelectionFrontier = undefined;
+        }
+      }
+      this.m_selectionFrontier = item;
+    },
+
+    /**
+     * To get the range of previous range selection during continious range selections.
+     */
+    _getPrevRangeSelection: function () {
+      var start = this.m_initialSelectionFrontier;
+      var end = this.m_prevSelectionFrontier;
+
+      var items = this._getItemsCache();
+      var startIndex = items.index(start);
+      var endIndex = items.index(end);
+
+      var from = Math.min(startIndex, endIndex);
+      var to = Math.max(startIndex, endIndex);
+
+      return { from, to };
+    },
+
+    /**
+     * Used when the selectionMode is 'multipleToggle' and this.m_prevSelectionFrontier is set,
+     * i.e. not the 1st range selection among continuous range selections
+     */
+    _shouldClearPrevRangeSelection: function () {
+      return this._isMultipleToggleSelection() && this.m_prevSelectionFrontier;
     },
 
     /** ******************************** End Selection **********************************************/
@@ -9396,6 +9630,23 @@ const _ojListView = _ListViewUtils.clazz(
     },
 
     /**
+     * Handles scrolling on an external scroller
+     * @private
+     */
+    _handleExternalScroll: function () {
+      // checks whether the scroll is caused by browser focus
+      if (this.m_browserAutoScroll != null) {
+        var scrollTop = this.m_externalScrollTop;
+        var scrollPos = this._getCurrentScrollPosition();
+        if (scrollPos.index > 0 && scrollPos.y > scrollTop) {
+          this._getScroller().scrollTop = scrollTop;
+        }
+      } else {
+        this.m_externalScrollTop = this._getScroller().scrollTop;
+      }
+    },
+
+    /**
      * Whether high-watermark scrolling is specified
      * @protected
      */
@@ -9445,7 +9696,17 @@ const _ojListView = _ListViewUtils.clazz(
       var self = this;
       var scrollElem = this._unregisterScrollHandler();
 
+      if (this._isExternalScroller()) {
+        // store initial scrollTop for external scroller
+        this.m_externalScrollTop = this._getScroller().scrollTop;
+      }
+
       this._scrollListener = function (event) {
+        // handle unwated scroll due to autofocus
+        if (self._isExternalScroller()) {
+          self._handleExternalScroll();
+        }
+
         // throttle the event using requestAnimationFrame for performance reason
         // don't update if scroll is triggered by listview internally setting scrollLeft/scrollTop
         if (!self._skipScrollUpdate && !self.m_ticking) {
@@ -9665,6 +9926,14 @@ const _ojListView = _ListViewUtils.clazz(
 
         this.m_groupItemToPin.style.top = scrollTop + 'px';
       }
+    },
+
+    /**
+     * Returns true if the scroller is an external scroller (page), false otherwise.
+     * @returns boolean
+     */
+    _isExternalScroller: function () {
+      return this.options.scrollPolicyOptions && this.options.scrollPolicyOptions.scroller != null;
     },
 
     /**
@@ -10165,6 +10434,9 @@ oj._registerLegacyNamespaceProp('_ojListView', _ojListView);
  * <h5>item.renderer attribute</h5>
  * <p>This is not supported, everything this attribute did can be accomplished through the template.</p>
  *
+ * <h5>item.enter-key-focus-behavior attribute</h5>
+ * <p>The default value for this attribute is 'focusWithin' instead of 'none'.</p>
+ *
  * <h5>scroll-policy attribute</h5>
  * <p>This is no longer supported as 'loadMoreOnScroll' is the only supported mode going forward.</p>
  *
@@ -10442,6 +10714,7 @@ oj._registerLegacyNamespaceProp('_ojListView', _ojListView);
  * Shows items as cards and lay them out in a grid.
  * @ojstyleclass oj-listview-card-layout
  * @ojdisplayname Card Layout
+ * @ojdeprecated {since: '19.0.0', description: 'Use the display attribute and then set the value as card instead'}
  * @memberof oj.ojListView
  * @ojtsexample
  * &lt;oj-list-view class="oj-listview-card-layout">
@@ -10984,7 +11257,38 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
        * // setter
        * myListView.item.selectable = mySelectableFunc;
        */
-      selectable: true
+      selectable: true,
+      /**
+       * Specifies the focus behavior when user pressed enter key while an item has focus.  For applications that
+       * do not have <a href="#event:itemAction">ItemAction</a> specified, it is recommended to set this property
+       * to "focusWithin" to allow easy access to focusable elements within the item.  Applications with ItemAction
+       * should leave the value to "none".
+       *
+       * @ojshortdesc Specifies the focus behavior when enter key is pressed while an item has focus.
+       * @expose
+       * @name item.enterKeyFocusBehavior
+       * @memberof! oj.ojListView
+       * @instance
+       * @type {string}
+       * @ojsignature { target: "Type", value: "?string"}
+       *
+       * @default "none"
+       * @ojvalue {string} "none" Pressing enter key while an item has focus will not shift focus to focusable element within the item.
+       * @ojvalue {string} "focusWithin" Pressing enter key while an item has focus will enter actionable mode and shift focus to the
+       *                                 first focusable element within the item.  If there are no focusable elements within the item
+       *                                 then the behavior is the same as 'none'.
+       *
+       * @example <caption>Initialize the ListView with the <code class="prettyprint">enterKeyFocusBehavior</code> attribute specified:</caption>
+       * &lt;oj-list-view item.enterKeyFocusBehavior='focusWithin'>&lt;/oj-list-view>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">enterKeyFocusBehavior</code> property after initialization:</caption>
+       * // getter
+       * var enterKeyFocusBehavior = myListView.item.enterKeyFocusBehavior;
+       *
+       * // setter
+       * myListView.item.enterKeyFocusBehavior = 'focusWithin';
+       */
+      enterKeyFocusBehavior: 'none'
     },
     /**
      * Specifies the behavior when ListView needs to scroll to a position based on an item key.  This includes the case where 1) a value of
@@ -11235,7 +11539,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
     /**
      * <p>The type of selection behavior that is enabled on the ListView. This attribute controls the number of selections that can be made via selection gestures at any given time.
      *
-     * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the ListView's selection styling will be applied to all items specified by the <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes.
+     * <p>If the specified value is not <code class="prettyprint">none</code>, selection gestures will be enabled, and the ListView's selection styling will be applied to all items specified by the <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes.
      * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the ListView's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes.
      *
      * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> or <a href="#selected">selected</a> attributes.
@@ -11248,7 +11552,8 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * @default "none"
      * @ojvalue {string} "none" Selection is disabled.
      * @ojvalue {string} "single" Only a single item can be selected at a time.
-     * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
+     * @ojvalue {string} "multiple" Multiple items can be selected at the same time with the 'replace' selection behavior. For example, clicking on an already selected item will not affect that item's selection, and clicking on a non-selected item will select that item and deselect any other previously selected items. In order to perform additive selections, users can click on selector checkboxes, use spacebar, or ctrl/cmd click on individual items to perform 'toggle' selection gestures.
+     * @ojvalue {string} "multipleToggle" Multiple items can be selected at the same time with the 'toggle' selection behavior. For example, clicking on an already selected item will deselect that item, and clicking on any non-selected item will select that item without affecting any previously selected items.
      *
      * @example <caption>Initialize the ListView with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
      * &lt;oj-list-view selection-mode='multiple'>&lt;/oj-list-view>
@@ -11680,7 +11985,11 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
     var extraData;
 
     if (key === 'selectionMode') {
-      valid = value === 'none' || value === 'single' || value === 'multiple';
+      valid =
+        value === 'none' ||
+        value === 'single' ||
+        value === 'multiple' ||
+        value === 'multipleToggle';
     } else if (key === 'drillMode') {
       valid = value === 'collapsible' || value === 'none';
     } else if (key === 'scrollPolicy') {
@@ -12025,13 +12334,13 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  * @ojmaxitems 1
  * @memberof oj.ojListView
  * @ojtemplateslotprops {}
- * @ojtemplateslotrendertype "RenderNoDataTemplate"
+ * @ojlegacymetadata templateSlotAlias "noDataTemplate"
  *
  * @example <caption>Initialize the ListView with a noData slot specified:</caption>
  * &lt;oj-list-view>
  *   &lt;template slot='noData'>
  *     &lt;span>&lt;oj-button>Add item&lt;/span>
- *   &lt;template>
+ *   &lt;/template>
  * &lt;/oj-list-view>
  */
 
@@ -12089,6 +12398,10 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  *       <td>Enters Actionable mode.  This enables keyboard action on elements inside the item, including navigate between focusable elements inside the item. It can also be used to exit actionable mode if already in actionable mode.</td>
  *     </tr>
  *     <tr>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td>Enters tabbable mode if <a href="#item">enterKeyFocusBehavior</a> is "focusWithin".  This enables keyboard action on elements inside the item, including navigate between focusable elements inside the item.</td>
+ *     </tr>
+ *     <tr>
  *       <td><kbd>Esc</kbd></td>
  *       <td>Exits Actionable mode.</td>
  *     </tr>
@@ -12139,20 +12452,16 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  *       <td>Launch the context menu if there is one associated with the current item.</td>
  *     </tr>
  *     <tr>
- *       <td><kbd>Enter</kbd></td>
- *       <td>Selects the current item.  No op if the item is already selected.</td>
- *     </tr>
- *     <tr>
  *       <td><kbd>Space</kbd></td>
- *       <td>Toggles to select and deselect the current item.  If previous items have been selected, deselects them and selects the current item.</td>
+ *       <td>Toggles to select and deselect the current item while maintaining previously selected items.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift+Space</kbd></td>
- *       <td>Selects contiguous items from the last selected item to the current item.</td>
+ *       <td>Toggles to select and deselect the current item while maintaining previously selected items.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Ctrl+Space</kbd></td>
- *       <td>Toggles to select and deselect the current item while maintaining previous selected items.</td>
+ *       <td>Toggles to select and deselect the current item while maintaining previously selected items.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Ctrl+X</kbd></td>

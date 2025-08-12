@@ -32,9 +32,13 @@ const DvtGaugeDataUtils = {
    */
   hasValidData: (gauge) => {
     var options = gauge.getOptions();
-
     // Check that the min and max are not equal to each other
     return Number(options['min']) < Number(options['max']);
+  },
+
+  hasUndefinedValue: (gauge) => {
+    var options = gauge.getOptions();
+    return options['value'] === null;
   },
 
   /**
@@ -101,10 +105,13 @@ const DvtGaugeRenderer = {
    */
   renderEmptyText: (gauge, container, availSpace) => {
     // Get the empty text string
+    if (DvtGaugeDataUtils.hasUndefinedValue(gauge)) {
+      return;
+    }
     var options = gauge.getOptions();
     var translations = options.translations;
     var emptyTextStr = options['emptyText'];
-    if (!emptyTextStr) emptyTextStr = translations.labelNoData;
+
     if (!DvtGaugeDataUtils.hasValidData(gauge)) emptyTextStr = translations.labelInvalidData;
 
     // Set font size
@@ -951,13 +958,13 @@ class DvtGauge extends BaseComponent {
     parentContainer.setAttribute('role', 'slider');
     parentContainer.setAttribute('aria-valuemin', this.Options['min']);
     parentContainer.setAttribute('aria-valuemax', this.Options['max']);
-    parentContainer.setAttribute('aria-valuenow', this.Options['value']);
 
-    var valueText = DvtGaugeRenderer.getFormattedMetricLabel(this.Options['value'], this);
-    if (Number(valueText) === this.Options['value']) valueText = this.Options['value'].toString();
-
-    parentContainer.setAttribute('aria-valuetext', valueText);
-
+    if (this.Options['value'] != null) {
+      var valueText = DvtGaugeRenderer.getFormattedMetricLabel(this.Options['value'], this);
+      if (Number(valueText) === this.Options['value']) valueText = this.Options['value'].toString();
+      parentContainer.setAttribute('aria-valuetext', valueText);
+      parentContainer.setAttribute('aria-valuenow', this.Options['value']);
+    }
     if (this.Options['disabled']) {
       parentContainer.setAttribute('aria-disabled', true);
       parentContainer.setAttribute('tabindex', '-1');

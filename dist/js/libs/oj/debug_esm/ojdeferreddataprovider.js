@@ -6,8 +6,7 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import { wrapWithAbortHandling } from 'ojs/ojdataprovider';
-import { DataProviderFeatureChecker } from 'ojs/ojcomponentcore';
+import { wrapWithAbortHandling, DataProviderFeatureChecker } from 'ojs/ojdataprovider';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -203,12 +202,18 @@ class DeferredDataProvider {
             }
         };
     }
+    /**
+     * Fetch the first block of data
+     */
     fetchFirst(params) {
         const asyncIteratorPromise = this._getDataProvider().then((dataProvider) => {
             return dataProvider.fetchFirst(params)[Symbol.asyncIterator]();
         });
         return new this.AsyncIterable(new this.AsyncIterator(asyncIteratorPromise));
     }
+    /**
+     * Fetch rows by keys
+     */
     fetchByKeys(params) {
         const signal = params?.signal;
         const callback = (resolve) => {
@@ -218,6 +223,9 @@ class DeferredDataProvider {
         };
         return wrapWithAbortHandling(signal, callback, false);
     }
+    /**
+     * Check if rows are contained by keys
+     */
     containsKeys(params) {
         const signal = params?.signal;
         const callback = (resolve) => {
@@ -227,27 +235,41 @@ class DeferredDataProvider {
         };
         return wrapWithAbortHandling(signal, callback, false);
     }
+    /**
+     * Fetch rows by offset
+     */
     fetchByOffset(params) {
         return this._getDataProvider().then((dataProvider) => {
             return dataProvider.fetchByOffset(params);
         });
     }
+    /**
+     * Returns the total size of the data
+     */
     getTotalSize() {
         return this._getDataProvider().then((dataProvider) => {
             return dataProvider.getTotalSize();
         });
     }
+    /**
+     * Returns a string that indicates if this data provider is empty.
+     * Returns "unknown" if the dataProvider has not resolved yet.
+     */
     isEmpty() {
         if (!this[this._DATAPROVIDER])
             return 'unknown';
         else
             return this[this._DATAPROVIDER].isEmpty();
     }
+    /**
+     * Determines whether this DataProvider supports certain feature.
+     */
     getCapability(capabilityName) {
         if (this._capabilityFunc)
             return this._capabilityFunc(capabilityName);
         return null;
     }
+    /** EVENT TARGET IMPLEMENTATION **/
     addEventListener(eventType, listener) {
         this._getDataProvider().then((dataProvider) => {
             dataProvider.addEventListener(eventType, listener);
@@ -263,6 +285,9 @@ class DeferredDataProvider {
             return false;
         return this[this._DATAPROVIDER].dispatchEvent(evt);
     }
+    /**
+     * Returns the resolved dataProvider for this instance
+     */
     _getDataProvider() {
         return this._dataProvider.then((dataProvider) => {
             if (DataProviderFeatureChecker.isDataProvider(dataProvider)) {

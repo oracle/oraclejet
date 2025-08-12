@@ -377,6 +377,10 @@ var __oj_data_grid_metadata =
         }
       }
     },
+    "editCell": {
+      "type": "object",
+      "writeback": true
+    },
     "editMode": {
       "type": "string",
       "writeback": true,
@@ -982,7 +986,16 @@ var __oj_data_grid_metadata =
         "accessibleContainsControls": {
           "type": "string"
         },
+        "accessibleEndOfDataGrid": {
+          "type": "string"
+        },
         "accessibleExpanded": {
+          "type": "string"
+        },
+        "accessibleFilterable": {
+          "type": "string"
+        },
+        "accessibleFiltered": {
           "type": "string"
         },
         "accessibleFirstColumn": {
@@ -1251,7 +1264,7 @@ var __oj_data_grid_metadata =
 };
     __oj_data_grid_metadata.extension._WIDGET_NAME = 'ojDataGrid';
     __oj_data_grid_metadata.extension._BINDING = {
-      provide: new Map([[UNSAFE_useFormVariantContext.FormVariantContext, 'embedded']])
+      provide: new Map([[UNSAFE_useFormVariantContext.FormVariantContext, 'legacyEmbedded']])
     };
     oj.CustomElementBridge.register('oj-data-grid', {
       metadata: oj.CollectionUtils.mergeDeep(__oj_data_grid_metadata, {
@@ -1318,7 +1331,6 @@ var __oj_data_grid_metadata =
     this.styles.columnheaderlabel = 'oj-datagrid-column-header-label';
     this.styles.rowendheaderlabel = 'oj-datagrid-row-end-header-label';
     this.styles.columnendheaderlabel = 'oj-datagrid-column-end-header-label';
-    this.styles['scroller-mobile'] = 'oj-datagrid-scroller-touch';
     this.styles.scroller = 'oj-datagrid-scroller';
     this.styles.scrollers = 'oj-datagrid-scrollers';
     this.styles.scrollbarForce = 'oj-scrollbar-force';
@@ -2701,6 +2713,14 @@ var __oj_data_grid_metadata =
     return this.getProperty('editMode');
   };
 
+  /**
+   * Get the editCell value(none,index)
+   * @return {Object}
+   */
+  DvtDataGridOptions.prototype.getEditCell = function () {
+    return this.getProperty('editCell');
+  };
+
   // //////////////////////// Grid header/cell options /////////////////////////////////
   /**
    * Is the given header sortable
@@ -2826,10 +2846,6 @@ var __oj_data_grid_metadata =
    */
   DvtDataGridOptions.prototype.isFreezeEnabled = function (axis) {
     let isEnabled = false;
-    // handling virtual scroll to not support freeze currently.
-    if (this.getProperty('scrollPolicy') === 'scroll') {
-      return false;
-    }
     let v = this.extract('header', axis, 'freezable');
     if (v === 'enable') {
       isEnabled = true;
@@ -2839,10 +2855,6 @@ var __oj_data_grid_metadata =
 
   DvtDataGridOptions.prototype._getFreezeIndex = function (axis) {
     let freezeIndex = null;
-    // handling virtual scroll to not support freeze currently.
-    if (this.getProperty('scrollPolicy') === 'scroll') {
-      return freezeIndex;
-    }
     if (axis === 'row') {
       freezeIndex = this.getProperty('frozenRowCount');
     } else {
@@ -3585,6 +3597,10 @@ var __oj_data_grid_metadata =
         obj = this.m_options._getHiddenIndices('row');
         this._updateHiddenSection(Array.from(obj), 'row');
         break;
+      case 'editCell':
+        obj = this.m_options.getEditCell();
+        this._setEditCell(obj);
+        break;
       // just refresh
       default:
         return false;
@@ -3608,6 +3624,45 @@ var __oj_data_grid_metadata =
       // don't clear the selection so the old one can be passed in
       // sets the new selection
       this.SetSelection(selection);
+    }
+  };
+
+  DvtDataGrid.prototype._setEditCell = function (obj) {
+    let event;
+    if (this._isGridEditable()) {
+      let cell = obj?.indexes ? this._getCellByIndex(obj?.indexes) : null;
+      let currentMode = this._getCurrentMode();
+      if (currentMode === 'edit') {
+        let activeCell = this._getActiveElement();
+        if (cell === activeCell) {
+          return;
+        }
+        let editCellChanged = false;
+        if (!this._handleExitEdit(event, activeCell)) {
+          this.m_editCell = {
+            indexes: activeCell[this.getResources().getMappedAttribute('context')].indexes
+          };
+          editCellChanged = true;
+        } else if (obj === null) {
+          this.m_editCell = null;
+          editCellChanged = true;
+        }
+        if (editCellChanged) {
+          let details = {
+            event: event,
+            ui: {
+              editCell: this.m_editCell
+            }
+          };
+          this.fireEvent('editCell', details);
+          return;
+        }
+      }
+
+      let activeObj = { type: 'cell', indexes: obj?.indexes };
+      this._updateActive(activeObj, true, false);
+      this._handleEditable(event, cell);
+      this._handleEdit(event, cell);
     }
   };
 
@@ -4530,7 +4585,9 @@ var __oj_data_grid_metadata =
     if (elem.style[dimension] !== '') {
       value = this.getElementDir(elem, dimension);
       // in the event that row height is set via an additional style only on row header store the value
-      this.m_sizingManager.setSize(axis, key, value);
+      if (key !== null) {
+        this.m_sizingManager.setSize(axis, key, value);
+      }
       return value;
     }
 
@@ -4548,6 +4605,51 @@ var __oj_data_grid_metadata =
 
     this.m_styleClassDimensionMap[dimension][className] = value;
     return value;
+  };
+
+  /**
+   * Computes the header dimension for an axis
+   * @param {string} axis row or column
+   * @param {boolean} isFrozenHeader is frozen or not
+   * @param {string} dimension width or height
+   */
+  DvtDataGrid.prototype._computeHeaderDimension = function (axis, isFrozenHeader, dimension) {
+    let { root, totalLevels } = this._getHeaderRootAndLevels(axis, isFrozenHeader);
+    let headerDimension = 0;
+
+    for (let i = 0; i < root.firstChild.childElementCount; i++) {
+      let child =
+        totalLevels > 1 ? root.firstChild.childNodes[i].firstChild : root.firstChild.childNodes[i];
+      headerDimension += this.getElementDir(child, dimension);
+    }
+
+    return headerDimension;
+  };
+
+  /**
+   * Gets the header root & levels
+   * @param {string} axis row or column
+   * @param {boolean} isFrozenHeader is frozen or not
+   */
+  DvtDataGrid.prototype._getHeaderRootAndLevels = function (axis, isFrozenHeader) {
+    let root;
+    let totalLevels;
+
+    if (axis === 'column') {
+      root = isFrozenHeader ? this.m_colHeaderFrozen : this.m_colHeader;
+      totalLevels = this.m_columnHeaderLevelCount;
+    } else if (axis === 'columnEnd') {
+      root = isFrozenHeader ? this.m_colEndHeaderFrozen : this.m_colEndHeader;
+      totalLevels = this.m_columnEndHeaderLevelCount;
+    } else if (axis === 'row') {
+      root = isFrozenHeader ? this.m_rowHeaderFrozen : this.m_rowHeader;
+      totalLevels = this.m_rowHeaderLevelCount;
+    } else if (axis === 'rowEnd') {
+      root = isFrozenHeader ? this.m_rowEndHeaderFrozen : this.m_rowEndHeader;
+      totalLevels = this.m_rowEndHeaderLevelCount;
+    }
+
+    return { root, totalLevels };
   };
 
   /**
@@ -4849,6 +4951,7 @@ var __oj_data_grid_metadata =
     this.m_externalFocus = null;
     this.m_currentMode = null;
     this.m_editMode = null;
+    this.m_editCell = null;
 
     this.m_hasCells = null;
     this.m_hasRowHeader = null;
@@ -4866,6 +4969,7 @@ var __oj_data_grid_metadata =
 
     this.m_sortContainerWidth = null;
     this.m_sortContainerHeight = null;
+    this.m_editCell = null;
 
     this._resetSkeletonProperties();
     this._destroyEditableClone();
@@ -4898,7 +5002,17 @@ var __oj_data_grid_metadata =
       }
 
       if (this.isFetchComplete()) {
-        this._updateActive(this.m_options.getCurrentCell(), !!this.m_focusOnRefresh, true);
+        let clearSelection = false;
+        this._updateActive(
+          this.m_options.getCurrentCell(),
+          !!this.m_focusOnRefresh,
+          true,
+          clearSelection
+        );
+        let editCellOption = this.m_options.getEditCell();
+        if (editCellOption) {
+          this._setEditCell(editCellOption);
+        }
         this.m_initialized = true;
         this.fireEvent('ready', {});
         this._runModelEventQueue();
@@ -5697,7 +5811,7 @@ var __oj_data_grid_metadata =
       this.m_rowHeaderWidth = rowHeaderWidth;
     }
 
-    // adjusted to make the databody wrap the databody content, and the scroller to fill the remaing part of the grid
+    // adjusted to make the databody wrap the databody content, and the scroller to fill the remaining part of the grid
     // this way our scrollbars are always at the edges of our viewport
     var availableHeight = height - colHeaderHeight - colEndHeaderHeight - databodyFrozenRowHeight;
     var availableWidth = width - rowHeaderWidth - rowEndHeaderWidth - databodyFrozenColumnWidth;
@@ -5890,54 +6004,61 @@ var __oj_data_grid_metadata =
     const accSummary = document.getElementById(this.createSubId('summary'));
     let lastElement = accSummary;
 
-    if (!this._isHeaderLabelCollision()) {
-      lastElement = this._handleRowLabelIosAccessibility(lastElement);
-      lastElement = this._handleRowEndLabelIosAccessibility(lastElement);
-      lastElement = this._handleColumnHeaderIosAccessibility(lastElement);
+    const noDataContainer = this._getEmptyElement();
+    if (noDataContainer) {
+      noDataContainer.setAttribute('role', 'text');
+      this._applyAriaFlowTo(lastElement, noDataContainer.id);
+      lastElement = noDataContainer;
     } else {
-      lastElement = this._handleColumnHeaderIosAccessibility(lastElement);
-      lastElement = this._handleRowLabelIosAccessibility(lastElement);
-      lastElement = this._handleRowEndLabelIosAccessibility(lastElement);
-    }
+      if (!this._isHeaderLabelCollision()) {
+        lastElement = this._handleRowLabelIosAccessibility(lastElement);
+        lastElement = this._handleRowEndLabelIosAccessibility(lastElement);
+        lastElement = this._handleColumnHeaderIosAccessibility(lastElement);
+      } else {
+        lastElement = this._handleColumnHeaderIosAccessibility(lastElement);
+        lastElement = this._handleRowLabelIosAccessibility(lastElement);
+        lastElement = this._handleRowEndLabelIosAccessibility(lastElement);
+      }
 
-    for (let i = this._getMaxTop(); i <= this._getMaxBottom(); i++) {
-      // handles row headers
-      for (let j = 0; j < this.m_rowHeaderLevelCount; j++) {
-        const header = this._getHeaderByIndex(i, 'row', j);
-        this._applyIosAccessibilityToElement(header, lastElement);
-        if (header.getAttribute('aria-flowto') === null) {
-          this._applyAriaFlowTo(lastElement, header.id);
-          lastElement = header;
+      for (let i = this._getMaxTop(); i <= this._getMaxBottom(); i++) {
+        // handles row headers
+        for (let j = 0; j < this.m_rowHeaderLevelCount; j++) {
+          const header = this._getHeaderByIndex(i, 'row', j);
+          this._applyIosAccessibilityToElement(header, lastElement);
+          if (header.getAttribute('aria-flowto') === null) {
+            this._applyAriaFlowTo(lastElement, header.id);
+            lastElement = header;
+          }
+        }
+        // handles databody rows
+        for (let j = this._getMaxLeft(); j <= this._getMaxRight(); j++) {
+          const cell = this._getCellByIndex(this.createIndex(i, j));
+          this._applyIosAccessibilityToElement(cell, lastElement);
+          if (cell.getAttribute('aria-flowto') === null) {
+            this._applyAriaFlowTo(lastElement, cell.id);
+            lastElement = cell;
+          }
+        }
+        // handles rowEnd headers
+        for (let j = this.m_rowEndHeaderLevelCount - 1; j >= 0; j--) {
+          const header = this._getHeaderByIndex(i, 'rowEnd', j);
+          this._applyIosAccessibilityToElement(header, lastElement);
+          if (header.getAttribute('aria-flowto') === null) {
+            this._applyAriaFlowTo(lastElement, header.id);
+            lastElement = header;
+          }
         }
       }
-      // handles databody rows
-      for (let j = this._getMaxLeft(); j <= this._getMaxRight(); j++) {
-        const cell = this._getCellByIndex(this.createIndex(i, j));
-        this._applyIosAccessibilityToElement(cell, lastElement);
-        if (cell.getAttribute('aria-flowto') === null) {
-          this._applyAriaFlowTo(lastElement, cell.id);
-          lastElement = cell;
-        }
-      }
-      // handles rowEnd headers
-      for (let j = this.m_rowEndHeaderLevelCount - 1; j >= 0; j--) {
-        const header = this._getHeaderByIndex(i, 'rowEnd', j);
-        this._applyIosAccessibilityToElement(header, lastElement);
-        if (header.getAttribute('aria-flowto') === null) {
-          this._applyAriaFlowTo(lastElement, header.id);
-          lastElement = header;
-        }
-      }
-    }
 
-    lastElement = this._handleColumnEndHeaderIosAccessibility(lastElement);
+      lastElement = this._handleColumnEndHeaderIosAccessibility(lastElement);
+    }
 
     let lastItem = document.getElementById(this.createSubId('lastitem'));
     if (!lastItem) {
       lastItem = document.createElement('div');
       lastItem.setAttribute('role', 'text');
       lastItem.id = this.createSubId('lastitem');
-      lastItem.textContent = this.getResources().getTranslatedText('accessibleLastColumn');
+      lastItem.textContent = this.getResources().getTranslatedText('accessibleEndOfDataGrid');
       lastItem.className = this.getMappedStyle('info');
       this.m_root.appendChild(lastItem); // @HTMLUpdateOK
     }
@@ -5945,7 +6066,7 @@ var __oj_data_grid_metadata =
   };
 
   /**
-   * Method that applys role text and labeled by to cell, headers and labels.
+   * Method that applies role text and labeled by to cell, headers and labels.
    * @param {Element} element target element
    */
   DvtDataGrid.prototype._applyIosAccessibilityToElement = function (element, lastElement) {
@@ -5953,15 +6074,16 @@ var __oj_data_grid_metadata =
       const previousContext =
         lastElement.id === this.createSubId('summary') ? null : this._createActiveObject(lastElement);
       element.setAttribute('role', 'text');
-      element.setAttribute(
-        'aria-labelledby',
-        this.getLabelledBy(this._createActiveObject(element), previousContext, element),
-        true
-      );
       const currentContext = this._createActiveObject(element);
       element.setAttribute(
+        'aria-labelledby',
+        this.getLabelledBy(currentContext, previousContext, element),
+        true
+      );
+      const currentState = this.m_stateInfo.textContent;
+      element.setAttribute(
         'aria-description',
-        this._getActiveContext(currentContext, previousContext)
+        this._getActiveContext(currentContext, previousContext) + currentState
       );
     }
   };
@@ -6141,37 +6263,164 @@ var __oj_data_grid_metadata =
     }
   };
 
+  /**
+   * Helper function that sets databodyScroller and syncs other scrollable regions
+   * @private
+   */
+  DvtDataGrid.prototype._setAllScrollableRegions = function (dimension, newValue) {
+    const databodyScroller = this.m_databody.firstElementChild;
+    if (dimension === 'height') {
+      this.setElementHeight(databodyScroller, newValue);
+      if (this.m_hasRowHeader) {
+        const rowScroller = this.m_rowHeader.firstElementChild;
+        this.setElementHeight(rowScroller, newValue);
+      }
+      if (this.m_hasRowEndHeader) {
+        const rowEndScroller = this.m_rowEndHeader.firstElementChild;
+        this.setElementHeight(rowEndScroller, newValue);
+      }
+      if (this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+        const frozenColScroller = this.m_databodyFrozenCol.firstElementChild;
+        this.setElementHeight(frozenColScroller, newValue);
+      }
+      if (this.m_initialized) {
+        this.m_scrollHeight =
+          this.getElementHeight(databodyScroller) -
+          Math.min(
+            this.getElementHeight(databodyScroller),
+            this.getElementHeight(this.m_databody) -
+              (this.m_hasHorizontalScroller ? this.m_utils.getScrollbarSize() : 0)
+          );
+      }
+    } else if (dimension === 'width') {
+      this.setElementWidth(databodyScroller, newValue);
+      if (this.m_hasColHeader) {
+        const colScroller = this.m_colHeader.firstElementChild;
+        this.setElementWidth(colScroller, newValue);
+      }
+      if (this.m_hasColEndHeader) {
+        const colEndScroller = this.m_colEndHeader.firstElementChild;
+        this.setElementWidth(colEndScroller, newValue);
+      }
+      if (this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+        const frozenRowScroller = this.m_databodyFrozenRow.firstElementChild;
+        this.setElementWidth(frozenRowScroller, newValue);
+      }
+      if (this.m_initialized) {
+        this.m_scrollWidth =
+          this.getElementWidth(databodyScroller) -
+          Math.min(
+            this.getElementWidth(databodyScroller),
+            this.getElementWidth(this.m_databody) -
+              (this.m_hasVerticalScroller ? this.m_utils.getScrollbarSize() : 0)
+          );
+      }
+    }
+  };
+
   DvtDataGrid.prototype._setScrollerDimension = function (scroller, endRowPixel, endColPixel) {
     let isHWS = this._isHighWatermarkScrolling();
     let maxHeight = this.m_utils._getMaxDivHeightForScrolling();
     let maxWidth = this.m_utils._getMaxDivWidthForScrolling();
-    let rowCount = this.getDataSource().getCount('row') - this.m_hiddenRows.length;
-    let colCount = this.getDataSource().getCount('column') - this.m_hiddenColumns.length;
-    let maxRowKnownCount =
-      this.m_maxRowYet - this._getHiddenCountBeforeIndex(this.m_maxRowYet, 'row');
-    let maxColKnownCount =
-      this.m_maxColYet - this._getHiddenCountBeforeIndex(this.m_maxColYet, 'column');
+    let rowCount = this.getDatabodyCount('row', 'count');
+    let colCount = this.getDatabodyCount('column', 'count');
+    let maxRowKnownCount = this.getDatabodyCount('row', 'maxCountKnown');
+    let maxColKnownCount = this.getDatabodyCount('column', 'maxCountKnown');
     let totalHeight = 0;
     let totalWidth = 0;
 
-    if (!this._isCountUnknown('row') && !isHWS) {
-      totalHeight = rowCount * this.m_avgRowHeight; // Known row count & virtual scrolling
-    } else if (this._isCountUnknown('column') && !isHWS) {
-      totalHeight = maxRowKnownCount * this.m_avgRowHeight; // Unknown row count & virtual scrolling
+    if (!isHWS) {
+      if (this.getDataSource().getCount('row') < 0) {
+        totalHeight = maxRowKnownCount * this.m_avgRowHeight;
+      } else {
+        totalHeight = rowCount * this.m_avgRowHeight;
+      }
     } else {
       totalHeight = endRowPixel; // HWS
     }
 
-    if (!this._isCountUnknown('column') && !isHWS) {
-      totalWidth = colCount * this.m_avgColWidth; // Known column count & virtual scrolling
-    } else if (this._isCountUnknown('column') && !isHWS) {
-      totalWidth = maxColKnownCount * this.m_avgColWidth; // Unknown column count & virtual scrolling
+    if (!isHWS) {
+      if (this.getDataSource().getCount('column') < 0) {
+        totalWidth = maxColKnownCount * this.m_avgColWidth;
+      } else {
+        totalWidth = colCount * this.m_avgColWidth;
+      }
     } else {
       totalWidth = endColPixel; // HWS
     }
 
+    if (!isHWS) {
+      if (this.m_utils.containsCSSClassName(scroller, this.getMappedStyle('databodyFrozenRow'))) {
+        let frozenRowCount = this.m_frozenRowIndex + 1;
+        let hiddenBeforeFrozenCount = this._getHiddenCountBeforeIndex(
+          this.m_frozenRowIndex + 1,
+          'row'
+        );
+        if (hiddenBeforeFrozenCount) {
+          frozenRowCount = this.m_frozenRowIndex + 1 - hiddenBeforeFrozenCount;
+        }
+        let avgRowHeight =
+          this.m_avgRowHeight != null ? this.m_avgRowHeight : endRowPixel / frozenRowCount;
+        totalHeight = frozenRowCount * avgRowHeight;
+      } else if (
+        this.m_utils.containsCSSClassName(scroller, this.getMappedStyle('databodyFrozenCol'))
+      ) {
+        let frozenColCount = this.m_frozenColIndex + 1;
+        let hiddenBeforeFrozenCount = this._getHiddenCountBeforeIndex(
+          this.m_frozenColIndex + 1,
+          'column'
+        );
+        if (hiddenBeforeFrozenCount) {
+          frozenColCount = this.m_frozenColIndex + 1 - hiddenBeforeFrozenCount;
+        }
+        let avgColWidth =
+          this.m_avgColWidth != null ? this.m_avgColWidth : endColPixel / frozenColCount;
+        totalWidth = frozenColCount * avgColWidth;
+      } else if (
+        this.m_utils.containsCSSClassName(scroller, this.getMappedStyle('databodyFrozenCorner'))
+      ) {
+        let frozenRowCount = this.m_frozenRowIndex + 1;
+        let frozenColCount = this.m_frozenColIndex + 1;
+        let avgRowHeight =
+          this.m_avgRowHeight != null ? this.m_avgRowHeight : endRowPixel / frozenRowCount;
+        let avgColWidth =
+          this.m_avgColWidth != null ? this.m_avgColWidth : endColPixel / frozenColCount;
+        totalHeight = frozenRowCount * avgRowHeight;
+        totalWidth = frozenColCount * avgColWidth;
+      }
+      this.setElementHeight(scroller, Math.min(maxHeight, totalHeight));
+      this.setElementWidth(scroller, Math.min(maxWidth, totalWidth));
+    }
+
     this._setAllScrollableRegions('height', Math.min(maxHeight, totalHeight));
     this._setAllScrollableRegions('width', Math.min(maxWidth, totalWidth));
+  };
+
+  DvtDataGrid.prototype.getDatabodyCount = function (axis, type) {
+    const hidden = axis === 'row' ? this.m_hiddenRows : this.m_hiddenColumns;
+    const frozenIndex = axis === 'row' ? this.m_frozenRowIndex : this.m_frozenColIndex;
+    const maxYet = axis === 'row' ? this.m_maxRowYet : this.m_maxColYet;
+
+    const totalCount = this.getDataSource().getCount(axis);
+    let count = totalCount;
+    if (type === 'count') {
+      count = totalCount - hidden.length;
+      if (
+        (axis === 'row' && this._hasFrozenRows()) ||
+        (axis === 'column' && this._hasFrozenColumns())
+      ) {
+        count -= frozenIndex + 1 + this._getHiddenCountBeforeIndex(frozenIndex + 1, axis);
+      }
+    } else if (type === 'maxCountKnown') {
+      count = maxYet - this._getHiddenCountBeforeIndex(maxYet, axis);
+      if (
+        (axis === 'row' && this._hasFrozenRows()) ||
+        (axis === 'column' && this._hasFrozenColumns())
+      ) {
+        count -= frozenIndex + 1 + this._getHiddenCountBeforeIndex(frozenIndex + 1, axis);
+      }
+    }
+    return count;
   };
 
   /**
@@ -7133,9 +7382,8 @@ var __oj_data_grid_metadata =
    * @private
    */
   DvtDataGrid.prototype._setScrollPositionTimeout = function () {
-    if (!this.m_utils.isTouchDeviceNotIOS()) {
-      // prettier-ignore
-      this.pendingScrollTimeout = setTimeout( // @HTMLUpdateOK
+    // prettier-ignore
+    this.pendingScrollTimeout = setTimeout( // @HTMLUpdateOK
         function () {
           if (this.m_desiredScrollPositionObject != null) {
             this._signalTaskEnd('reached desired location');
@@ -7145,7 +7393,6 @@ var __oj_data_grid_metadata =
         }.bind(this),
         300
       );
-    }
   };
 
   /**
@@ -7640,9 +7887,7 @@ var __oj_data_grid_metadata =
    * @return {Object} contains the root and endRoot of the header axis
    */
   DvtDataGrid.prototype.buildHeaders = function (axis, styleClass, endStyleClass) {
-    var scrollerClassName =
-      this.getMappedStyle('scroller') +
-      (this.m_utils.isTouchDeviceNotIOS() ? ' ' + this.getMappedStyle('scroller-mobile') : '');
+    var scrollerClassName = this.getMappedStyle('scroller');
 
     let root = this._createHeaderElement(axis, styleClass, scrollerClassName, false);
     let endRoot = this._createHeaderElement(axis, endStyleClass, scrollerClassName, true);
@@ -7704,6 +7949,12 @@ var __oj_data_grid_metadata =
       var scrollPosition = this.m_options.getScrollPosition();
       this._getIndexesFromScrollPosition(scrollPosition).then(function (fetchIndexes) {
         var index = fetchIndexes[axis];
+        if (
+          (axis === 'column' && self._hasFrozenColumns() && index < self.m_frozenColIndex + 1) ||
+          (axis === 'row' && self._hasFrozenRows() && index < self.m_frozenRowIndex + 1)
+        ) {
+          index = 0;
+        }
         if (axis === 'column') {
           self.m_startColHeader = index;
           self.m_startColEndHeader = index;
@@ -7714,10 +7965,7 @@ var __oj_data_grid_metadata =
         let count = null;
 
         self.m_fetching[axis] = false;
-        if (freezeIndex !== null) {
-          count = self.getFetchSize(axis) + index;
-          index = 0;
-        }
+
         self.fetchHeaders(axis, index, root, endRoot, count, null);
       });
       this.m_fetching[axis] = true;
@@ -7790,6 +8038,46 @@ var __oj_data_grid_metadata =
       endHeader: endHeader
     };
 
+    let frozenHeaderRange;
+    if (
+      !this._isHighWatermarkScrolling() &&
+      ((axis === 'column' &&
+        this._hasFrozenColumns() &&
+        (this.m_startColHeader > 0 || this.m_startColEndHeader > 0 || start > 0)) ||
+        (axis === 'row' &&
+          this._hasFrozenRows() &&
+          (this.m_startRowHeader > 0 || this.m_startRowEndHeader > 0 || start > 0)))
+    ) {
+      if (
+        (axis === 'row' && start < this.m_frozenRowIndex + 1) ||
+        (axis === 'column' && start < this.m_frozenColIndex + 1)
+      ) {
+        let frozenCount = axis === 'row' ? this.m_frozenRowIndex + 1 : this.m_frozenColIndex + 1;
+        let headerFetchSize = start + fetchSize > frozenCount ? frozenCount - start + 1 : fetchSize;
+
+        frozenHeaderRange = {
+          axis: axis,
+          start: start,
+          count: headerFetchSize,
+          header: axis === 'row' ? this.m_rowHeaderFrozen : this.m_colHeaderFrozen,
+          endHeader: axis === 'row' ? this.m_rowEndHeaderFrozen : this.m_colEndHeaderFrozen
+        };
+        if (headerFetchSize === fetchSize) {
+          headerRange = {};
+        } else {
+          headerRange.count = fetchSize - frozenCount;
+        }
+      } else if (!(this.m_fetchingForInsert || this.m_fetchingForUpdate)) {
+        frozenHeaderRange = {
+          axis: axis,
+          start: 0,
+          count: axis === 'row' ? this.m_frozenRowIndex + 1 : this.m_frozenColIndex + 1,
+          header: axis === 'row' ? this.m_rowHeaderFrozen : this.m_colHeaderFrozen,
+          endHeader: axis === 'row' ? this.m_rowEndHeaderFrozen : this.m_colEndHeaderFrozen
+        };
+      }
+    }
+
     this.m_fetching[axis] = headerRange;
 
     var successCallback;
@@ -7815,7 +8103,8 @@ var __oj_data_grid_metadata =
       {
         success: this,
         error: this
-      }
+      },
+      frozenHeaderRange
     );
   };
 
@@ -7876,11 +8165,15 @@ var __oj_data_grid_metadata =
     startResults,
     headerRange,
     endResults,
-    rowInsert
+    rowInsert,
+    frozenStartResults,
+    frozenHeaderRange,
+    frozenEndResults
   ) {
     var scrollOptions = this.m_options.getScrollPolicyOptions();
     var maxRowCount = scrollOptions ? scrollOptions.maxRowCount : null;
     var maxColumnCount = scrollOptions ? scrollOptions.maxColumnCount : null;
+    let isHWSFreeze = false;
 
     // validate result matches what we currently asks for
     if (!this.isHeaderFetchResponseValid(headerRange)) {
@@ -7911,18 +8204,72 @@ var __oj_data_grid_metadata =
     var start = headerRange.start;
 
     var count = this.getDataSource().getCount(axis);
+    let scrollPosition = this.m_options.getScrollPosition();
 
     if (axis === 'column') {
       if (!this.m_initialized && this.m_frozenColIndex === null) {
         this.m_frozenColIndex = this.m_options._getFreezeIndex(axis);
       }
 
-      let { headerStart, endHeaderStart, headerFetchCount, endHeaderFetchCount } =
-        this._buildFrozenHeaders(axis, startResults, endResults, headerRange);
-      if (startResults != null && headerFetchCount > 0) {
-        start = headerStart;
-        let fetchCount = headerFetchCount;
+      if (
+        this._hasFrozenColumns() &&
+        (startResults?.start === 0 || endResults?.start === 0) &&
+        (this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() &&
+            (scrollPosition.columnIndex === undefined || scrollPosition.columnIndex === 0)))
+      ) {
+        // eslint-disable-next-line no-param-reassign
+        frozenStartResults = startResults;
+        // eslint-disable-next-line no-param-reassign
+        frozenEndResults = endResults;
+        if (frozenHeaderRange === undefined) {
+          // eslint-disable-next-line no-param-reassign
+          frozenHeaderRange = headerRange;
+        }
+        isHWSFreeze = true;
+      }
+
+      let headerStart = headerRange.start;
+      let endHeaderStart = headerRange.start;
+      let headerFetchCount = startResults?.getCount();
+      let endHeaderFetchCount = endResults?.getCount();
+
+      let frozenHeaderObj;
+      if (frozenHeaderRange !== undefined) {
+        frozenHeaderObj = this._buildFrozenHeaders(
+          axis,
+          frozenStartResults,
+          frozenEndResults,
+          frozenHeaderRange,
+          isHWSFreeze
+        );
+        headerStart = frozenHeaderObj.headerStart;
+        endHeaderStart = frozenHeaderObj.endHeaderStart;
+        headerFetchCount = frozenHeaderObj.headerFetchCount;
+        endHeaderFetchCount = frozenHeaderObj.endHeaderFetchCount;
+      }
+
+      if (startResults != null) {
+        start = startResults.start;
+        let fetchCount;
+        if (
+          this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() && !this._hasFrozenColumns()) ||
+          isHWSFreeze ||
+          (scrollPosition.rowIndex === 0 && scrollPosition.columnIndex === 0)
+        ) {
+          start = headerStart;
+          fetchCount = headerFetchCount;
+        }
         this.buildColumnHeaders(root, startResults, start, count, false, false, fetchCount, false);
+        if (
+          this.m_initialized &&
+          !this._isHighWatermarkScrolling() &&
+          this._hasFrozenColumns() &&
+          this.m_startColHeader === 0
+        ) {
+          this.m_startColHeader = this.m_frozenColIndex + 1;
+        }
         if (
           startResults.getCount() < headerRange.count ||
           (maxColumnCount && maxColumnCount > 0 && maxColumnCount === start + startResults.getCount())
@@ -7941,9 +8288,17 @@ var __oj_data_grid_metadata =
         this._buildHeaderLabels(axis, startResults);
       }
 
-      if (endResults != null && endHeaderFetchCount > 0) {
-        start = endHeaderStart;
-        let fetchCount = endHeaderFetchCount;
+      if (endResults != null) {
+        start = endResults.start;
+        let fetchCount;
+        if (
+          this._isHighWatermarkScrolling() ||
+          isHWSFreeze ||
+          (!this._isHighWatermarkScrolling() && !this._hasFrozenColumns())
+        ) {
+          start = endHeaderStart;
+          fetchCount = endHeaderFetchCount;
+        }
         this.buildColumnEndHeaders(
           endRoot,
           endResults,
@@ -7954,6 +8309,14 @@ var __oj_data_grid_metadata =
           fetchCount,
           false
         );
+        if (
+          this.m_initialized &&
+          !this._isHighWatermarkScrolling() &&
+          this._hasFrozenColumns() &&
+          this.m_startColEndHeader === 0
+        ) {
+          this.m_startColEndHeader = this.m_frozenColIndex + 1;
+        }
         if (
           endResults.getCount() < headerRange.count ||
           (maxColumnCount && maxColumnCount > 0 && maxColumnCount === start + endResults.getCount())
@@ -7975,12 +8338,64 @@ var __oj_data_grid_metadata =
       if (!this.m_initialized && this.m_frozenRowIndex === null) {
         this.m_frozenRowIndex = this.m_options._getFreezeIndex('row');
       }
-      let { headerStart, endHeaderStart, headerFetchCount, endHeaderFetchCount } =
-        this._buildFrozenHeaders(axis, startResults, endResults, headerRange, count);
-      if (startResults != null && headerFetchCount > 0) {
-        start = headerStart;
-        const fetchCount = headerFetchCount;
+      if (
+        this._hasFrozenRows() &&
+        (startResults?.start === 0 || endResults?.start === 0) &&
+        (this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() &&
+            (scrollPosition.rowIndex === undefined || scrollPosition.rowIndex === 0)))
+      ) {
+        // eslint-disable-next-line no-param-reassign
+        frozenStartResults = startResults;
+        // eslint-disable-next-line no-param-reassign
+        frozenEndResults = endResults;
+        if (frozenHeaderRange === undefined) {
+          // eslint-disable-next-line no-param-reassign
+          frozenHeaderRange = headerRange;
+        }
+        isHWSFreeze = true;
+      }
+      let headerStart = headerRange.start;
+      let endHeaderStart = headerRange.start;
+      let headerFetchCount = startResults?.getCount();
+      let endHeaderFetchCount = endResults?.getCount();
+
+      let frozenHeaderObj;
+      if (frozenHeaderRange !== undefined) {
+        frozenHeaderObj = this._buildFrozenHeaders(
+          axis,
+          frozenStartResults,
+          frozenEndResults,
+          frozenHeaderRange,
+          isHWSFreeze
+        );
+        headerStart = frozenHeaderObj.headerStart;
+        endHeaderStart = frozenHeaderObj.endHeaderStart;
+        headerFetchCount = frozenHeaderObj.headerFetchCount;
+        endHeaderFetchCount = frozenHeaderObj.endHeaderFetchCount;
+      }
+
+      if (startResults != null) {
+        start = startResults.start;
+        let fetchCount;
+        if (
+          this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() && !this._hasFrozenRows()) ||
+          isHWSFreeze ||
+          (scrollPosition.rowIndex === 0 && scrollPosition.columnIndex === 0)
+        ) {
+          start = headerStart;
+          fetchCount = headerFetchCount;
+        }
         this.buildRowHeaders(root, startResults, start, count, rowInsert, false, fetchCount, false);
+        if (
+          this.m_initialized &&
+          !this._isHighWatermarkScrolling() &&
+          this._hasFrozenRows() &&
+          this.m_startRowHeader === 0
+        ) {
+          this.m_startRowHeader = this.m_frozenRowIndex + 1;
+        }
         if (
           startResults.getCount() < headerRange.count ||
           (maxRowCount && maxRowCount > 0 && maxRowCount === start + startResults.getCount())
@@ -7999,9 +8414,17 @@ var __oj_data_grid_metadata =
         this._buildHeaderLabels(axis, startResults);
       }
 
-      if (endResults != null && endHeaderFetchCount > 0) {
-        start = endHeaderStart;
-        const fetchCount = endHeaderFetchCount;
+      if (endResults != null) {
+        start = endResults.start;
+        let fetchCount;
+        if (
+          this._isHighWatermarkScrolling() ||
+          isHWSFreeze ||
+          (!this._isHighWatermarkScrolling() && !this._hasFrozenRows())
+        ) {
+          fetchCount = endHeaderFetchCount;
+          start = endHeaderStart;
+        }
         this.buildRowEndHeaders(
           endRoot,
           endResults,
@@ -8012,6 +8435,14 @@ var __oj_data_grid_metadata =
           fetchCount,
           false
         );
+        if (
+          this.m_initialized &&
+          !this._isHighWatermarkScrolling() &&
+          this._hasFrozenRows() &&
+          this.m_startRowEndHeader === 0
+        ) {
+          this.m_startRowEndHeader = this.m_frozenRowIndex + 1;
+        }
         if (
           endResults.getCount() < headerRange.count ||
           (maxRowCount && maxRowCount > 0 && maxRowCount === start + endResults.getCount())
@@ -8491,7 +8922,10 @@ var __oj_data_grid_metadata =
       this.m_colHeaderHeight = totalColumnHeight;
       this.setElementHeight(headerRoot, this.m_colHeaderHeight);
     }
-
+    if (!this._isHighWatermarkScrolling() && isFrozen) {
+      // eslint-disable-next-line consistent-return
+      return undefined;
+    }
     // whether this is adding columns to the left or right
     if (!isAppend) {
       // to the left
@@ -8519,11 +8953,15 @@ var __oj_data_grid_metadata =
       this.m_stopColumnHeaderFetch = returnObj.stopFetch;
     }
 
+    let startColIndex = 0;
+    if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+      startColIndex = this.m_frozenColIndex + 1;
+    }
     // if virtual scrolling may have to adjust at the beginning
-    if (this.m_startColHeader === 0 && this.m_startColHeaderPixel !== 0) {
+    if (this.m_startColHeader === startColIndex && this.m_startColHeaderPixel !== 0) {
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
-        0,
+        startColIndex,
         this.m_startColHeaderPixel * -1,
         this.getResources().isRTLMode() ? 'right' : 'left',
         this.getMappedStyle('colheadercell')
@@ -8534,9 +8972,22 @@ var __oj_data_grid_metadata =
 
     if (!this.m_initialized && this.m_startColHeader > 0) {
       let hiddenTillIndexCount = this._getHiddenCountBeforeIndex(this.m_startColHeader, 'column');
-      var newStartEstimate = Math.round(
+      let newStartEstimate = Math.round(
         this.m_avgColWidth * (this.m_startColHeader - hiddenTillIndexCount)
       );
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenColumns() &&
+        this.m_startColHeader === this.m_frozenColIndex + 1
+      ) {
+        newStartEstimate = Math.round(
+          this.m_avgColWidth *
+            (this.m_startColHeader -
+              hiddenTillIndexCount -
+              (this.m_frozenColIndex + 1) +
+              this._getHiddenCountBeforeIndex(this.m_frozenColIndex + 1, 'column'))
+        );
+      }
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
         this.m_startColHeader,
@@ -8636,6 +9087,11 @@ var __oj_data_grid_metadata =
       this.setElementHeight(headerRoot, this.m_colEndHeaderHeight);
     }
 
+    if (!this._isHighWatermarkScrolling() && isFrozen) {
+      this.m_endFrozenColEndHeaderPixel = totalColumnWidth;
+      // eslint-disable-next-line consistent-return
+      return undefined;
+    }
     // whether this is adding columns to the left or right
     if (!isAppend) {
       // to the left
@@ -8664,10 +9120,14 @@ var __oj_data_grid_metadata =
     }
 
     // if virtual scrolling may have to adjust at the beginning
-    if (this.m_startColEndHeader === 0 && this.m_startColEndHeaderPixel !== 0) {
+    let startColIndex = 0;
+    if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+      startColIndex = this.m_frozenColIndex + 1;
+    }
+    if (this.m_startColEndHeader === startColIndex && this.m_startColEndHeaderPixel !== 0) {
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
-        0,
+        startColIndex,
         this.m_startColEndHeaderPixel * -1,
         this.getResources().isRTLMode() ? 'right' : 'left',
         this.getMappedStyle('colendheadercell')
@@ -8681,9 +9141,22 @@ var __oj_data_grid_metadata =
         this.m_startColEndHeader,
         'columnEnd'
       );
-      var newStartEstimate = Math.round(
+      let newStartEstimate = Math.round(
         this.m_avgColWidth * (this.m_startColEndHeader - hiddenTillIndexCount)
       );
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenColumns() &&
+        this.m_startColEndHeader === this.m_frozenColIndex + 1
+      ) {
+        newStartEstimate = Math.round(
+          this.m_avgColWidth *
+            (this.m_startColEndHeader -
+              hiddenTillIndexCount -
+              (this.m_frozenColIndex + 1) +
+              this._getHiddenCountBeforeIndex(this.m_frozenColIndex + 1, 'column'))
+        );
+      }
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
         this.m_startColEndHeader,
@@ -8788,6 +9261,11 @@ var __oj_data_grid_metadata =
       this.setElementWidth(headerRoot, this.m_rowHeaderWidth);
     }
 
+    if (!this._isHighWatermarkScrolling() && isFrozen) {
+      // eslint-disable-next-line consistent-return
+      return undefined;
+    }
+
     if (isAppend) {
       // if appending a row header, make sure the previous fragment has a bottom border if it was the last
       if (this.m_endRowHeader !== -1 && count !== 0) {
@@ -8833,10 +9311,14 @@ var __oj_data_grid_metadata =
     }
 
     // if virtual scrolling may have to adjust at the beginning
-    if (this.m_startRowHeader === 0 && this.m_startRowHeaderPixel !== 0) {
+    let startRowIndex = 0;
+    if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+      startRowIndex = this.m_frozenRowIndex + 1;
+    }
+    if (this.m_startRowHeader === startRowIndex && this.m_startRowHeaderPixel !== 0) {
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
-        0,
+        startRowIndex,
         this.m_startRowHeaderPixel * -1,
         'top',
         this.getMappedStyle('rowheadercell')
@@ -8847,9 +9329,22 @@ var __oj_data_grid_metadata =
 
     if (!this.m_initialized && this.m_startRowHeader > 0) {
       let hiddenTillIndexCount = this._getHiddenCountBeforeIndex(this.m_startRowHeader, 'row');
-      var newStartEstimate = Math.round(
+      let newStartEstimate = Math.round(
         this.m_avgRowHeight * (this.m_startRowHeader - hiddenTillIndexCount)
       );
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenRows() &&
+        this.m_startRowHeader === this.m_frozenRowIndex + 1
+      ) {
+        newStartEstimate = Math.round(
+          this.m_avgRowHeight *
+            (this.m_startRowHeader -
+              hiddenTillIndexCount -
+              (this.m_frozenRowIndex + 1) +
+              this._getHiddenCountBeforeIndex(this.m_frozenRowIndex + 1, 'row'))
+        );
+      }
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
         this.m_startRowHeader,
@@ -8948,6 +9443,14 @@ var __oj_data_grid_metadata =
       }
       */
 
+    if (
+      !this._isHighWatermarkScrolling() &&
+      this._hasFrozenRows() &&
+      returnObj.visibleHeaderCount > count
+    ) {
+      count = returnObj.visibleHeaderCount;
+    }
+
     if (totalRowHeight !== 0 && (this.m_avgRowHeight === 0 || this.m_avgRowHeight == null)) {
       // the average row height should only be set once, it will only change when the row height varies between rows, but
       // in such case the new average row height would not be any more precise than previous one.
@@ -8959,6 +9462,10 @@ var __oj_data_grid_metadata =
       this.setElementWidth(headerRoot, this.m_rowEndHeaderWidth);
     }
 
+    if (!this._isHighWatermarkScrolling() && isFrozen) {
+      // eslint-disable-next-line consistent-return
+      return undefined;
+    }
     if (isAppend) {
       // if appending a row header, make sure the previous fragment has a bottom border if it was the last
       if (this.m_endRowEndHeader !== -1 && count !== 0) {
@@ -9005,10 +9512,14 @@ var __oj_data_grid_metadata =
     }
 
     // if virtual scrolling may have to adjust at the beginning
-    if (this.m_startRowEndHeader === 0 && this.m_startRowEndHeaderPixel !== 0) {
+    let startRowIndex = 0;
+    if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+      startRowIndex = this.m_frozenRowIndex + 1;
+    }
+    if (this.m_startRowEndHeader === startRowIndex && this.m_startRowEndHeaderPixel !== 0) {
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
-        0,
+        startRowIndex,
         this.m_startRowEndHeaderPixel * -1,
         'top',
         this.getMappedStyle('rowendheadercell')
@@ -9019,9 +9530,22 @@ var __oj_data_grid_metadata =
 
     if (!this.m_initialized && this.m_startRowEndHeader > 0) {
       let hiddenTillIndexCount = this._getHiddenCountBeforeIndex(this.m_startRowEndHeader, 'rowEnd');
-      var newStartEstimate = Math.round(
+      let newStartEstimate = Math.round(
         this.m_avgRowHeight * (this.m_startRowEndHeader - hiddenTillIndexCount)
       );
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenRows() &&
+        this.m_startRowEndHeader === this.m_frozenRowIndex + 1
+      ) {
+        newStartEstimate = Math.round(
+          this.m_avgRowHeight *
+            (this.m_startRowEndHeader -
+              hiddenTillIndexCount -
+              (this.m_frozenRowIndex + 1) +
+              this._getHiddenCountBeforeIndex(this.m_frozenRowIndex + 1, 'row'))
+        );
+      }
       this._shiftHeadersAlongAxisInContainer(
         headerRoot.firstChild,
         this.m_startRowEndHeader,
@@ -9105,6 +9629,7 @@ var __oj_data_grid_metadata =
     var renderer = this.getRendererOrTemplate(axis);
     var fragment = document.createDocumentFragment();
     var x = 0;
+    let returnValCount = 0;
     while (count - x > 0) {
       if (isAppend || insert) {
         index = start + x;
@@ -9136,6 +9661,7 @@ var __oj_data_grid_metadata =
       );
       // increment the count over the extent of the header
       x += returnVal.count;
+      returnValCount = Math.max(returnValCount, returnVal.count);
       totalHeaderDimension += returnVal.totalHeaderDimension;
       if (returnVal.totalLevelDimension > totalLevelDimension) {
         totalLevelDimension = returnVal.totalLevelDimension;
@@ -9159,6 +9685,15 @@ var __oj_data_grid_metadata =
     }
 
     this.m_subtreeAttachedCallback(scroller);
+
+    // in nested header case, the visible header count can be greater than fetchCount
+    if (
+      !this._isHighWatermarkScrolling() &&
+      cellClassName.split(' ').indexOf(this.getMappedStyle('frozenHeader')) !== -1
+    ) {
+      // eslint-disable-next-line no-param-reassign
+      count = returnValCount > count ? returnValCount : count;
+    }
 
     let visibleHeaderCount = count - hiddenInRangeCount;
 
@@ -10127,10 +10662,21 @@ var __oj_data_grid_metadata =
     }
 
     if (hasFrozen) {
-      if (index <= frozenIndex) {
+      if (
+        this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() &&
+          (axis === 'column' || axis === 'columnEnd') &&
+          this.m_startCol === 0) ||
+        ((axis === 'row' || axis === 'rowEnd') && this.m_startRow === 0)
+      ) {
+        if (index <= frozenIndex) {
+          root = frozenRoot;
+        } else {
+          startIndex += frozenIndex + 1;
+        }
+      } else if (index <= frozenIndex) {
         root = frozenRoot;
-      } else {
-        startIndex += frozenIndex + 1;
+        startIndex = 0;
       }
     }
     return { root, totalLevels, startIndex };
@@ -10231,8 +10777,6 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype.buildDatabody = function (hasNoData) {
     let root = this._createDatabodyElement('databody');
     this.m_databody = root;
-    const rowFreezeIndex = this.m_frozenRowIndex;
-    const colFreezeIndex = this.m_frozenColIndex;
 
     let databodyFrozenCol;
     let databodyFrozenRow;
@@ -10260,22 +10804,17 @@ var __oj_data_grid_metadata =
           var columnIndex = fetchIndexes.column;
           let colCount = null;
           let rowCount = null;
+          if (self._hasFrozenColumns() && columnIndex < self.m_frozenColIndex + 1) {
+            columnIndex = 0;
+          }
+          if (self._hasFrozenRows() && rowIndex < self.m_frozenRowIndex + 1) {
+            rowIndex = 0;
+          }
 
           self.m_startRow = rowIndex;
           self.m_startCol = columnIndex;
 
           self.m_fetching.cells = false;
-
-          if (colFreezeIndex !== null || rowFreezeIndex !== null) {
-            if (colFreezeIndex !== null) {
-              colCount = self.getFetchSize('column') + columnIndex;
-              columnIndex = 0;
-            }
-            if (rowFreezeIndex !== null) {
-              rowCount = self.getFetchSize('row') + rowIndex;
-              rowIndex = 0;
-            }
-          }
           self.fetchCells(root, rowIndex, columnIndex, rowCount, colCount);
         });
         this.m_fetching.cells = true;
@@ -10308,9 +10847,7 @@ var __oj_data_grid_metadata =
     // workaround for mozilla , where overflow div would make it focusable
     root.tabIndex = '-1';
     var scroller = document.createElement('div');
-    scroller.className =
-      this.getMappedStyle('scroller') +
-      (this.m_utils.isTouchDeviceNotIOS() ? ' ' + this.getMappedStyle('scroller-mobile') : '');
+    scroller.className = this.getMappedStyle('scroller');
     root.appendChild(scroller); // @HTMLUpdateOK
     return root;
   };
@@ -10452,6 +10989,31 @@ var __oj_data_grid_metadata =
       databody: databody
     };
 
+    let scrollPosition = this.m_options.getScrollPosition();
+    let frozenRowRange = {};
+    let frozenColRange = {};
+    let frozenCornerRange = {};
+
+    if (
+      !this._isHighWatermarkScrolling() &&
+      (this.m_startRow > 0 || this.m_startCol > 0 || rowStart > 0 || colStart > 0)
+    ) {
+      let rangesForFetch = this._getRangesForFetchVirtualScroll(
+        databody,
+        rowStart,
+        colStart,
+        rowCount,
+        colCount,
+        callbacks,
+        scrollPosition
+      );
+      rowRange = rangesForFetch.rowRange !== undefined ? rangesForFetch.rowRange : rowRange;
+      columnRange =
+        rangesForFetch.columnRange !== undefined ? rangesForFetch.columnRange : columnRange;
+      frozenRowRange = rangesForFetch.frozenRowRange;
+      frozenColRange = rangesForFetch.frozenColRange;
+      frozenCornerRange = rangesForFetch.frozenCornerRange;
+    }
     this.m_fetching.cells = { rowRange: rowRange, columnRange: columnRange };
 
     // if there is a override success callback specified, use it, otherwise use default one
@@ -10476,8 +11038,554 @@ var __oj_data_grid_metadata =
       {
         success: this,
         error: this
-      }
+      },
+      [frozenRowRange, frozenColRange, frozenCornerRange]
     );
+  };
+
+  DvtDataGrid.prototype._getRangesForFetchVirtualScroll = function (
+    databody,
+    rowStart,
+    colStart,
+    rowCount,
+    colCount,
+    callbacks,
+    scrollPosition
+  ) {
+    let rowRange;
+    let columnRange;
+    let frozenRowRange = {};
+    let frozenColRange = {};
+    let frozenCornerRange = {};
+
+    if (this.m_fetchingForInsert) {
+      [rowRange, columnRange, frozenRowRange, frozenColRange, frozenCornerRange] =
+        this._fetchCellsForFrozenVirtualScrollInsert(
+          databody,
+          rowStart,
+          colStart,
+          rowCount,
+          colCount,
+          callbacks
+        );
+    } else {
+      if (
+        (scrollPosition.rowIndex !== undefined && scrollPosition.rowIndex !== 0) ||
+        (scrollPosition.y !== undefined && scrollPosition.y !== 0) ||
+        (!this.m_initialized && rowStart > 0)
+      ) {
+        if (
+          (this.m_initialized && this._hasFrozenRows()) ||
+          (!this.m_initialized &&
+            (this.m_options.isFreezeEnabled('row') || this.m_options.options.frozenRowCount > 0))
+        ) {
+          let frozenRowCount = this.m_frozenRowIndex + 1;
+          let calculatedFrozenRowCount = rowCount;
+          // when partial fetch of certain rows for CRUD is done.
+          if (this.m_initialized && rowStart < frozenRowCount) {
+            let calculatedRowCount = 0;
+            if (rowStart + rowCount > frozenRowCount) {
+              calculatedFrozenRowCount = frozenRowCount - rowStart;
+              calculatedRowCount = rowCount - calculatedFrozenRowCount;
+            }
+            let calculatedColStart = colStart;
+            let calculatedColCount = colCount;
+            if (this._hasFrozenColumns()) {
+              let frozenColCount = this.m_frozenColIndex + 1;
+              if (colStart + colCount > frozenColCount) {
+                calculatedColStart = colStart < frozenColCount ? frozenColCount : colStart;
+                calculatedColCount =
+                  colStart < frozenColCount ? colCount - (frozenColCount - colStart) : colCount;
+                frozenRowRange = {
+                  axis: 'row',
+                  rowStart: rowStart,
+                  rowCount: calculatedFrozenRowCount,
+                  colStart: calculatedColStart,
+                  colCount: calculatedColCount
+                };
+              } else {
+                calculatedRowCount = 0;
+              }
+            } else {
+              frozenRowRange = {
+                axis: 'row',
+                rowStart: rowStart,
+                rowCount: calculatedFrozenRowCount,
+                colStart: calculatedColStart,
+                colCount: calculatedColCount
+              };
+            }
+
+            rowRange = {
+              axis: 'row',
+              start: this.m_frozenRowIndex + 1,
+              count: calculatedRowCount,
+              databody: databody
+            };
+          } else if (this.m_fetchingForUpdate) {
+            if (this._hasFrozenColumns() && colStart + colCount > this.m_frozenColIndex + 1) {
+              rowRange = {
+                axis: 'row',
+                start: rowStart < this.m_frozenRowIndex + 1 ? this.m_frozenRowIndex + 1 : rowStart,
+                count: rowCount,
+                databody: databody
+              };
+            }
+          } else {
+            let calculatedColStart = colStart;
+            let calculatedColCount = colCount;
+            if (this._hasFrozenColumns() && colStart + colCount > this.m_frozenColIndex + 1) {
+              let frozenColCount = this.m_frozenColIndex + 1;
+              calculatedColStart = colStart < frozenColCount ? frozenColCount : colStart;
+              calculatedColCount =
+                colStart < frozenColCount ? colCount - (frozenColCount - colStart) : colCount;
+            }
+            // when we switch between hws and virtual scroll through option update, need this check.
+            if (colStart < this.m_startCol || colStart + colCount - 1 > this.m_endCol) {
+              frozenRowRange = {
+                axis: 'row',
+                rowStart: 0,
+                rowCount: frozenRowCount,
+                colStart: calculatedColStart,
+                colCount: calculatedColCount
+              };
+            }
+            if (rowStart < frozenRowCount) {
+              // eslint-disable-next-line no-param-reassign
+              rowStart = frozenRowCount;
+              // eslint-disable-next-line no-param-reassign
+              rowCount -= frozenRowCount;
+            }
+            rowRange = {
+              axis: 'row',
+              start: rowStart,
+              count: rowCount
+            };
+          }
+          if (this.m_initialized && this._hasFrozenColumns() && !Object.keys(frozenColRange).length) {
+            if (
+              this._hasFrozenRows() &&
+              rowStart > this.m_frozenRowIndex &&
+              (rowStart < this.m_startRow || rowStart + rowCount - 1 > this.m_endRow)
+            ) {
+              frozenColRange = {
+                axis: 'column',
+                rowStart: rowStart,
+                rowCount: rowCount,
+                colStart: 0,
+                colCount: this.m_frozenColIndex + 1,
+                databody: this.m_databodyFrozenCol
+              };
+            }
+          }
+        }
+      }
+      if (
+        (scrollPosition.columnIndex !== undefined && scrollPosition.columnIndex !== 0) ||
+        (scrollPosition.x !== undefined && scrollPosition.x !== 0) ||
+        (!this.m_initialized && colStart > 0)
+      ) {
+        if (
+          (this.m_initialized && this._hasFrozenColumns()) ||
+          (!this.m_initialized &&
+            (this.m_options.isFreezeEnabled('column') ||
+              this.m_options.options.frozenColumnCount > 0))
+        ) {
+          let frozenColCount = this.m_frozenColIndex + 1;
+          let calculatedFrozenColCount = colCount;
+          // when partial fetch of certain columns for CRUD is done.
+          if (this.m_initialized && colStart < frozenColCount) {
+            let calculatedColCount = 0;
+            if (colStart + colCount > frozenColCount) {
+              calculatedFrozenColCount = frozenColCount - colStart;
+              calculatedColCount = colCount - calculatedFrozenColCount;
+            }
+            let calculatedRowStart = rowStart;
+            let calculatedRowCount = rowCount;
+            if (this._hasFrozenRows()) {
+              let frozenRowCount = this.m_frozenRowIndex + 1;
+              if (rowStart + rowCount > frozenRowCount) {
+                calculatedRowStart = rowStart < frozenRowCount ? frozenRowCount : rowStart;
+                calculatedRowCount =
+                  rowStart < frozenRowCount ? rowCount - (frozenRowCount - rowStart) : rowCount;
+                frozenColRange = {
+                  axis: 'column',
+                  rowStart: calculatedRowStart,
+                  rowCount: calculatedRowCount,
+                  colStart: colStart,
+                  colCount: calculatedFrozenColCount,
+                  databody: this.m_databodyFrozenCol
+                };
+              } else {
+                calculatedColCount = 0;
+              }
+            } else {
+              frozenColRange = {
+                axis: 'column',
+                rowStart: calculatedRowStart,
+                rowCount: calculatedRowCount,
+                colStart: colStart,
+                colCount: calculatedFrozenColCount,
+                databody: this.m_databodyFrozenCol
+              };
+            }
+
+            columnRange = {
+              axis: 'column',
+              start: this.m_frozenColIndex + 1,
+              count: calculatedColCount,
+              databody: databody
+            };
+          } else if (this.m_fetchingForUpdate) {
+            if (this._hasFrozenRows() && rowStart + rowCount > this.m_frozenRowIndex + 1) {
+              columnRange = {
+                axis: 'column',
+                start: colStart < this.m_frozenColIndex + 1 ? this.m_frozenColIndex + 1 : colStart,
+                count: colCount,
+                databody: databody
+              };
+            }
+          } else {
+            let calculatedRowStart = rowStart;
+            let calculatedRowCount = rowCount;
+            if (this._hasFrozenRows() && rowStart + rowCount > this.m_frozenRowIndex + 1) {
+              let frozenRowCount = this.m_frozenRowIndex + 1;
+              calculatedRowStart = rowStart < frozenRowCount ? frozenRowCount : rowStart;
+              calculatedRowCount =
+                rowStart < frozenRowCount ? rowCount - (frozenRowCount - rowStart) : rowCount;
+            }
+            // when we switch between hws and virtual scroll through option update, need this check.
+            if (rowStart < this.m_startRow || rowStart + rowCount - 1 > this.m_endRow) {
+              frozenColRange = {
+                axis: 'column',
+                rowStart: calculatedRowStart,
+                rowCount: calculatedRowCount,
+                colStart: 0,
+                colCount: frozenColCount,
+                databody: this.m_databodyFrozenCol
+              };
+            }
+            if (colStart < frozenColCount) {
+              // eslint-disable-next-line no-param-reassign
+              colStart = frozenColCount;
+              // eslint-disable-next-line no-param-reassign
+              colCount -= frozenColCount;
+            }
+            columnRange = {
+              axis: 'column',
+              start: colStart,
+              count: colCount,
+              databody: databody
+            };
+          }
+          if (this.m_initialized && this._hasFrozenRows() && !Object.keys(frozenRowRange).length) {
+            if (
+              this._hasFrozenColumns() &&
+              colStart > this.m_frozenColIndex &&
+              (colStart < this.m_startCol || colStart + colCount - 1 > this.m_endCol)
+            ) {
+              frozenRowRange = {
+                axis: 'row',
+                rowStart: 0,
+                rowCount: this.m_frozenRowIndex + 1,
+                colStart: colStart,
+                colCount: colCount
+              };
+            }
+          }
+        }
+      }
+      if (this._hasFrozenRows() && this._hasFrozenColumns()) {
+        if (
+          (scrollPosition.rowIndex !== undefined && scrollPosition.rowIndex !== 0) ||
+          (scrollPosition.y !== undefined && scrollPosition.y !== 0) ||
+          (scrollPosition.columnIndex !== undefined && scrollPosition.columnIndex !== 0) ||
+          (scrollPosition.x !== undefined && scrollPosition.x !== 0) ||
+          (!this.m_initialized && (rowStart > 0 || colStart > 0))
+        ) {
+          frozenCornerRange = {
+            axis: 'corner',
+            databody: this.m_databodyFrozenCorner
+          };
+          if (this.m_initialized && !this.m_fetchingForUpdate) {
+            frozenCornerRange = {};
+          } else {
+            let frozenRowCount = this.m_frozenRowIndex + 1;
+            let frozenColCount = this.m_frozenColIndex + 1;
+            let frozenCornerRowStart = frozenRowRange?.rowStart ? frozenRowRange.rowStart : 0;
+            let frozenCornerColStart = frozenColRange?.colStart ? frozenColRange.colStart : 0;
+            if (this.m_initialized && (colStart < frozenColCount || rowStart < frozenRowCount)) {
+              if (colStart < frozenColCount) {
+                if (colStart + colCount >= frozenColCount) {
+                  frozenColCount -= colStart;
+                } else {
+                  frozenColCount = colCount;
+                }
+                frozenCornerColStart = colStart;
+              } else {
+                frozenColCount = 0;
+              }
+              if (rowStart < frozenRowCount) {
+                if (rowStart + rowCount >= frozenRowCount) {
+                  frozenRowCount -= rowStart;
+                } else {
+                  frozenRowCount = rowCount;
+                }
+                frozenCornerRowStart = rowStart;
+              } else {
+                frozenRowCount = 0;
+              }
+              frozenRowCount = frozenColCount === 0 ? 0 : frozenRowCount;
+              frozenColCount = frozenRowCount === 0 ? 0 : frozenColCount;
+              frozenCornerRange.rowStart = frozenCornerRowStart;
+              frozenCornerRange.colStart = frozenCornerColStart;
+              frozenCornerRange.colCount = frozenColCount;
+              frozenCornerRange.rowCount = frozenRowCount;
+            } else {
+              frozenCornerRange.rowStart = 0;
+              frozenCornerRange.colStart = 0;
+              frozenCornerRange.colCount = this.m_frozenColIndex + 1;
+              frozenCornerRange.rowCount = this.m_frozenRowIndex + 1;
+            }
+          }
+        }
+      }
+    }
+    return {
+      rowRange: rowRange,
+      columnRange: columnRange,
+      frozenRowRange: frozenRowRange,
+      frozenColRange: frozenColRange,
+      frozenCornerRange: frozenCornerRange
+    };
+  };
+
+  DvtDataGrid.prototype._fetchCellsForFrozenVirtualScrollInsert = function (
+    databody,
+    rowStart,
+    colStart,
+    rowCount,
+    colCount,
+    // eslint-disable-next-line no-unused-vars
+    callbacks
+  ) {
+    let rowRange = {
+      axis: 'row',
+      start: rowStart,
+      count: rowCount
+    };
+    let columnRange = {
+      axis: 'column',
+      start: colStart,
+      count: colCount,
+      databody: databody
+    };
+    let scrollPosition = this.m_options.getScrollPosition();
+    let frozenRowRange = {};
+    let frozenColRange = {};
+    let frozenCornerRange = {};
+
+    if (scrollPosition.rowIndex !== undefined && scrollPosition.rowIndex !== 0) {
+      if (this._hasFrozenRows()) {
+        let frozenRowCount = this.m_frozenRowIndex + 1;
+        // when partial fetch of certain rows for CRUD is done.
+        if (rowStart < frozenRowCount) {
+          let calculatedColStart = colStart;
+          let calculatedColCount = colCount;
+          if (this._hasFrozenColumns()) {
+            if (colCount > 1) {
+              calculatedColStart = this.m_frozenColIndex + 1;
+              calculatedColCount = colCount - calculatedColStart;
+              if (colStart === calculatedColStart) {
+                calculatedColCount = colCount;
+              }
+              frozenRowRange = {
+                axis: 'row',
+                rowStart: rowStart,
+                rowCount: rowCount,
+                colStart: calculatedColStart,
+                colCount: calculatedColCount
+              };
+              rowRange.count = 0;
+            } else if (rowCount > 1) {
+              if (colStart < this.m_frozenColIndex + 1) {
+                frozenColRange = {
+                  axis: 'column',
+                  rowStart: frozenRowCount,
+                  rowCount: rowCount - frozenRowCount,
+                  colStart: colStart,
+                  colCount: colCount,
+                  databody: this.m_databodyFrozenCol
+                };
+                rowRange.count = 0;
+              } else {
+                frozenRowRange = {
+                  axis: 'row',
+                  rowStart: rowStart,
+                  rowCount: frozenRowCount,
+                  colStart: colStart,
+                  colCount: colCount
+                };
+                rowRange.start = frozenRowCount;
+                rowRange.count = rowCount - frozenRowCount;
+              }
+            }
+          } else {
+            frozenRowRange = {
+              axis: 'row',
+              rowStart: rowStart,
+              rowCount: frozenRowCount,
+              colStart: colStart,
+              colCount: colCount
+            };
+            if (rowCount > 1) {
+              rowRange = {
+                axis: 'row',
+                start: frozenRowCount,
+                count: rowCount - frozenRowCount
+              };
+            } else if (colCount > 1) {
+              frozenRowRange.rowCount = rowCount;
+            }
+          }
+        } else {
+          if (this._hasFrozenColumns() && colCount > 1) {
+            let frozenColCount = this.m_frozenColIndex + 1;
+            frozenColRange = {
+              axis: 'column',
+              rowStart: rowStart,
+              rowCount: rowCount,
+              colStart: 0,
+              colCount: frozenColCount
+            };
+          }
+          rowRange = {
+            axis: 'row',
+            start: rowStart,
+            count: rowCount
+          };
+        }
+      }
+    }
+
+    if (scrollPosition.columnIndex !== undefined && scrollPosition.columnIndex !== 0) {
+      if (this._hasFrozenColumns()) {
+        let frozenColCount = this.m_frozenColIndex + 1;
+        // when partial fetch of certain columns for CRUD is done.
+        if (colStart < frozenColCount) {
+          let calculatedRowStart = rowStart;
+          let calculatedRowCount = rowCount;
+          if (this._hasFrozenRows()) {
+            if (rowCount > 1) {
+              calculatedRowStart = this.m_frozenRowIndex + 1;
+              calculatedRowCount = rowCount - calculatedRowStart;
+              if (rowStart === calculatedRowStart) {
+                calculatedRowCount = rowCount;
+              }
+              frozenColRange = {
+                axis: 'column',
+                rowStart: calculatedRowStart,
+                rowCount: calculatedRowCount,
+                colStart: colStart,
+                colCount: colCount,
+                databody: this.m_databodyFrozenCol
+              };
+              columnRange.count = 0;
+            } else if (colCount > 1) {
+              if (rowStart < this.m_frozenRowIndex + 1) {
+                frozenRowRange = {
+                  axis: 'row',
+                  rowStart: rowStart,
+                  rowCount: rowCount,
+                  colStart: frozenColCount,
+                  colCount: colCount - frozenColCount
+                };
+                columnRange.count = 0;
+              } else {
+                frozenColRange = {
+                  axis: 'column',
+                  rowStart: rowStart,
+                  rowCount: rowCount,
+                  colStart: colStart,
+                  colCount: frozenColCount,
+                  databody: this.m_databodyFrozenCol
+                };
+                columnRange.start = frozenColCount;
+                columnRange.count = colCount - frozenColCount;
+              }
+            }
+          } else {
+            frozenColRange = {
+              axis: 'column',
+              rowStart: rowStart,
+              rowCount: rowCount,
+              colStart: colStart,
+              colCount: frozenColCount,
+              databody: this.m_databodyFrozenCol
+            };
+            if (rowCount > 1) {
+              frozenColRange.colCount = colCount;
+            } else if (colCount > 1) {
+              columnRange = {
+                axis: 'column',
+                start: frozenColCount,
+                count: colCount - frozenColCount,
+                databody: databody
+              };
+            }
+          }
+        } else {
+          if (this._hasFrozenRows() && rowCount > 1) {
+            let frozenRowCount = this.m_frozenRowIndex + 1;
+            frozenRowRange = {
+              axis: 'row',
+              rowStart: 0,
+              rowCount: frozenRowCount,
+              colStart: colStart,
+              colCount: colCount
+            };
+          }
+          columnRange = {
+            axis: 'column',
+            start: colStart,
+            count: colCount,
+            databody: databody
+          };
+        }
+      }
+    }
+
+    if (this._hasFrozenRows() && this._hasFrozenColumns()) {
+      let frozenRowCount = this.m_frozenRowIndex + 1;
+      let frozenColCount = this.m_frozenColIndex + 1;
+      frozenCornerRange = {
+        axis: 'corner',
+        rowStart: rowStart,
+        colStart: colStart,
+        rowCount: frozenRowCount,
+        colCount: frozenColCount,
+        databody: this.m_databodyFrozenCorner
+      };
+
+      if (colStart < frozenColCount && rowStart < frozenRowCount) {
+        if (rowCount < frozenRowCount) {
+          frozenCornerRange.rowCount = rowCount;
+        }
+        if (colCount < frozenColCount) {
+          frozenCornerRange.colCount = colCount;
+        }
+      } else {
+        if (colCount > 1) {
+          frozenCornerRange.colStart = 0;
+          frozenCornerRange.rowCount = 1;
+        }
+        if (rowCount > 1) {
+          frozenCornerRange.rowStart = 0;
+          frozenCornerRange.colCount = 1;
+        }
+      }
+    }
+    return [rowRange, columnRange, frozenRowRange, frozenColRange, frozenCornerRange];
   };
 
   /**
@@ -10546,7 +11654,22 @@ var __oj_data_grid_metadata =
     );
 
     // return true if the viewport fits inside the fetched range
-    return rowReturnVal.start === rowStart && columnReturnVal.start === columnStart;
+    let isFetchResponseInViewport = false;
+    if (rowReturnVal.start === rowStart && columnReturnVal.start === columnStart) {
+      isFetchResponseInViewport = true;
+    } else if (
+      (columnReturnVal.start !== columnStart &&
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenColumns() &&
+        columnStart === this.m_frozenColIndex + 1) ||
+      (rowReturnVal.start !== rowStart &&
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenRows() &&
+        rowStart === this.m_frozenRowIndex + 1)
+    ) {
+      isFetchResponseInViewport = true;
+    }
+    return isFetchResponseInViewport;
   };
 
   /**
@@ -10557,12 +11680,21 @@ var __oj_data_grid_metadata =
    * @param {boolean=} rowInsert - if this is triggered by a row insert event
    * @protected
    */
-  DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, rowInsert) {
+  DvtDataGrid.prototype.handleCellsFetchSuccess = function (
+    cellSet,
+    cellRange,
+    rowInsert,
+    frozenCellRange,
+    frozenRowCellSet,
+    frozenColumnCellSet,
+    frozenCornerCellSet
+  ) {
     var scrollOptions = this.m_options.getScrollPolicyOptions();
     var maxRowCount = scrollOptions ? scrollOptions.maxRowCount : null;
     var maxColumnCount = scrollOptions ? scrollOptions.maxColumnCount : null;
     var totalRowCount = this.getDataSource().getCount('row');
     var totalColumnCount = this.getDataSource().getCount('column');
+    let scrollPosition = this.m_options.getScrollPosition();
 
     // if rowInsert is specified we can skip a couple of checks
     if (rowInsert === undefined) {
@@ -10612,6 +11744,7 @@ var __oj_data_grid_metadata =
     let frozenRowIndex = this.m_frozenRowIndex;
     if (
       this.m_initialized &&
+      this._isHighWatermarkScrolling() &&
       this._hasFrozenRows() &&
       rowStart < frozenRowIndex &&
       this.m_rowHeaderFrozen
@@ -10643,6 +11776,7 @@ var __oj_data_grid_metadata =
     let frozenColumnIndex = this.m_frozenColIndex;
     if (
       this.m_initialized &&
+      this._isHighWatermarkScrolling() &&
       this._hasFrozenColumns() &&
       columnStart < frozenColumnIndex &&
       this.m_colHeaderFrozen
@@ -10653,6 +11787,65 @@ var __oj_data_grid_metadata =
       columnCount > 0 &&
       (columnStart > this.m_endCol || columnStart + columnCount === this.m_startCol);
 
+    let frozenRowRange = frozenCellRange?.length ? frozenCellRange[0] : undefined;
+    let frozenRowStart = frozenRowRange?.rowStart;
+    let frozenCornerRowCount = frozenCornerCellSet?.getCount('row');
+    let frozenRowCount = frozenRowCellSet?.getCount('row');
+    let frozenRowColStart = frozenRowCellSet?.columnStart;
+    let frozenRowColCount = frozenRowCellSet?.getCount('column');
+
+    if (
+      (this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() &&
+          frozenRowCellSet === undefined &&
+          this.m_startRow === 0)) &&
+      this._hasFrozenRows()
+    ) {
+      frozenRowRange = rowRange;
+      frozenRowStart = rowStart;
+      frozenRowCount = this.m_frozenRowIndex + 1;
+      // eslint-disable-next-line no-param-reassign
+      frozenRowCellSet = cellSet;
+      frozenRowColStart = columnStart;
+    }
+
+    let frozenColumnRange = frozenCellRange?.length ? frozenCellRange[1] : undefined;
+    let frozenColumnStart = frozenColumnRange?.colStart;
+    let frozenCornerColumnCount = frozenCornerCellSet?.getCount('column');
+    let frozenColumnCount = frozenColumnCellSet?.getCount('column');
+    let frozenColRowStart = frozenColumnCellSet?.rowStart;
+    let frozenColRowCount = frozenColumnCellSet?.getCount('row');
+
+    if (
+      (this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() &&
+          frozenColumnCellSet === undefined &&
+          this.m_startCol === 0)) &&
+      this._hasFrozenColumns()
+    ) {
+      frozenColumnRange = columnRange;
+      frozenColumnStart = columnStart;
+      frozenColumnCount = this.m_frozenColIndex + 1;
+      // eslint-disable-next-line no-param-reassign
+      frozenColumnCellSet = cellSet;
+      frozenColRowStart = rowStart;
+      frozenColRowCount = rowCount;
+    }
+
+    if (
+      (this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() &&
+          frozenCornerCellSet === undefined &&
+          this.m_startRow === 0 &&
+          this.m_startCol === 0)) &&
+      this._hasFrozenColumns() &&
+      this._hasFrozenRows()
+    ) {
+      frozenCornerColumnCount = this.m_frozenColIndex + 1;
+      frozenCornerRowCount = this.m_frozenRowIndex + 1;
+      // eslint-disable-next-line no-param-reassign
+      frozenCornerCellSet = cellSet;
+    }
     // if no results returned and count is unknown, flag it so we won't try to fetch again
     // OR if highwater mark scrolling is used and count is known and we have reach the last column, stop fetching
     // OR if result set is less than what's requested, then assumes we have fetched the last column
@@ -10720,51 +11913,77 @@ var __oj_data_grid_metadata =
         ) {
           addResult = this._populateFrozenContainer(
             this.m_databodyFrozenCorner.firstChild,
-            cellSet,
-            rowStart,
+            frozenCornerCellSet,
+            0,
             top,
-            columnStart,
+            0,
             left,
-            frozenRowIndex + 1,
-            frozenColumnIndex + 1
+            Math.min(rowCount, frozenCornerRowCount),
+            Math.min(columnCount, frozenCornerColumnCount)
           );
-          columnStart = frozenColumnIndex + 1;
-          rowStart = frozenRowIndex + 1;
-          rowCount = rowCountInit - (frozenRowIndex + 1);
-          columnCount = colCountInit - (frozenColumnIndex + 1);
+          if (
+            this._isHighWatermarkScrolling() ||
+            (!this._isHighWatermarkScrolling() &&
+              (scrollPosition.rowIndex === 0 || scrollPosition.rowIndex === undefined) &&
+              (scrollPosition.y === undefined || scrollPosition.y === 0) &&
+              (scrollPosition.x === undefined || scrollPosition.x === 0) &&
+              (scrollPosition.columnIndex === undefined || scrollPosition.columnIndex === 0))
+          ) {
+            frozenRowColStart = this.m_frozenColIndex + 1;
+            frozenColRowStart = this.m_frozenRowIndex + 1;
+            rowCount = rowCountInit - (this.m_frozenRowIndex + 1);
+            columnCount = colCountInit - (this.m_frozenColIndex + 1);
+          }
           // if the viewport is filled with frozen section, then update endRowPixel so that fillviewport is handled properly.
           if (columnCount === 0) {
             this.m_endRowPixel += addResult.totalRowHeight;
           }
         }
         if (this._hasFrozenRows() && this.m_rowHeaderFrozen !== null) {
+          if (
+            this._isHighWatermarkScrolling() ||
+            (!this._isHighWatermarkScrolling() &&
+              (scrollPosition.rowIndex === undefined || scrollPosition.rowIndex === 0) &&
+              (scrollPosition.y === undefined || scrollPosition.y === 0))
+          ) {
+            frozenRowColCount = columnCount;
+            frozenRowStart = rowStartInit;
+            rowCount = rowCountInit - (this.m_frozenRowIndex + 1);
+            rowStart = this.m_frozenRowIndex + 1;
+          }
           addResult = this._populateFrozenContainer(
             this.m_databodyFrozenRow.firstChild,
-            cellSet,
-            rowStartInit,
+            frozenRowCellSet,
+            frozenRowStart,
             top,
-            columnStart,
+            frozenRowColStart,
             left,
-            frozenRowIndex + 1,
-            columnCount
+            frozenRowCount,
+            frozenRowColCount
           );
-          rowCount = rowCountInit - (frozenRowIndex + 1);
-          rowStart = frozenRowIndex + 1;
         }
         if (this._hasFrozenColumns() && this.m_colHeaderFrozen !== null) {
+          if (
+            this._isHighWatermarkScrolling() ||
+            (!this._isHighWatermarkScrolling() &&
+              (scrollPosition.columnIndex === undefined || scrollPosition.columnIndex === 0) &&
+              (scrollPosition.x === undefined || scrollPosition.x === 0))
+          ) {
+            frozenColRowCount = rowCount;
+            frozenColumnStart = colStartInit;
+            columnStart = this.m_frozenColIndex + 1;
+            columnCount = colCountInit - (frozenColumnIndex + 1);
+          }
           addResult = this._populateFrozenContainer(
             this.m_databodyFrozenCol.firstChild,
-            cellSet,
-            rowStart,
+            frozenColumnCellSet,
+            frozenColRowStart,
             top,
-            colStartInit,
+            frozenColumnStart,
             left,
-            rowCount,
-            frozenColumnIndex + 1
+            frozenColRowCount,
+            frozenColumnCount
           );
-
-          columnCount = colCountInit - (frozenColumnIndex + 1);
-          columnStart = frozenColumnIndex + 1;
           // if the viewport is filled with frozen section, then update endRowPixel so that fillviewport is handled properly.
           if (columnCount === 0) {
             this.m_endRowPixel += addResult.totalRowHeight;
@@ -10773,24 +11992,78 @@ var __oj_data_grid_metadata =
       } else if (
         this._hasFrozenColumns() &&
         this.m_colHeaderFrozen !== null &&
-        this.m_databodyFrozenCol.firstChild.childElementCount
+        frozenColumnCellSet !== undefined &&
+        (this.m_databodyFrozenCol.firstChild.childElementCount || !this._isHighWatermarkScrolling())
       ) {
+        let frozenContainerLeft = 0;
         addResult = this._populateFrozenContainer(
           this.m_databodyFrozenCol.firstChild,
-          cellSet,
-          rowStart,
+          frozenColumnCellSet,
+          frozenColRowStart,
           top,
-          this.m_startCol,
-          left,
-          rowCount,
-          frozenColumnIndex + 1
+          0,
+          frozenContainerLeft,
+          frozenColRowCount,
+          frozenColumnCount
         );
-        columnCount = colCountInit - (frozenColumnIndex + 1);
-        columnStart = frozenColumnIndex + 1;
+
+        if (
+          this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() &&
+            (scrollPosition.columnIndex === undefined || scrollPosition.columnIndex === 0) &&
+            (scrollPosition.x === undefined || scrollPosition.x === 0)) ||
+          columnStart < this.m_frozenColIndex + 1
+        ) {
+          columnCount = colCountInit - (this.m_frozenColIndex + 1);
+          columnStart = frozenColumnIndex + 1;
+        }
         // if the viewport is filled with frozen section, then update endRowPixel so that fillviewport is handled properly.
         if (columnCount === 0) {
           this.m_endRowPixel += addResult.totalRowHeight;
         }
+        if (
+          columnRangeNeedsUpdate &&
+          this._hasFrozenRows() &&
+          this.m_rowHeaderFrozen !== null &&
+          frozenRowCellSet !== undefined
+        ) {
+          if (
+            this._isHighWatermarkScrolling() ||
+            (!this._isHighWatermarkScrolling() &&
+              (scrollPosition.rowIndex === undefined || scrollPosition.rowIndex === 0) &&
+              (scrollPosition.y === undefined || scrollPosition.y === 0))
+          ) {
+            frozenRowColCount = columnCount;
+          }
+          let frozenContainerTop = 0;
+          addResult = this._populateFrozenContainer(
+            this.m_databodyFrozenRow.firstChild,
+            frozenRowCellSet,
+            0,
+            frozenContainerTop,
+            frozenRowColStart,
+            left,
+            frozenRowCount,
+            frozenRowColCount
+          );
+        }
+      } else if (
+        this._hasFrozenRows() &&
+        this.m_rowHeaderFrozen !== null &&
+        frozenRowCellSet !== undefined &&
+        (this.m_databodyFrozenRow.firstChild.childElementCount || !this._isHighWatermarkScrolling())
+      ) {
+        let frozenContainerTop = 0;
+        addResult = this._populateFrozenContainer(
+          this.m_databodyFrozenRow.firstChild,
+          frozenRowCellSet,
+          0,
+          frozenContainerTop,
+          frozenRowColStart,
+          left,
+          frozenRowCount,
+          frozenRowColCount
+        );
       }
       fragment = document.createDocumentFragment();
       // left shall remain as calculated previously as the databody shall be shifted by the width of the frozen section.
@@ -10809,6 +12082,15 @@ var __oj_data_grid_metadata =
       avgWidth = addResult.avgWidth;
       avgHeight = totalRowHeight / rowCount;
       this._populateDatabody(databodyContent, fragment);
+
+      if (
+        this.m_initialized &&
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenRows() &&
+        this.m_startRow === 0
+      ) {
+        this.m_startRow = this.m_frozenRowIndex + 1;
+      }
 
       if (isAppend) {
         // make sure there is a bottom border if adding a row to the bottom
@@ -10855,19 +12137,32 @@ var __oj_data_grid_metadata =
         const lastChild = this.m_databodyFrozenRow.firstChild.lastChild;
         left = this.getElementDir(lastChild, dir) + this.getElementWidth(lastChild);
       }
-      if (this._hasFrozenRows() && this.m_rowHeaderFrozen !== null) {
-        this._populateFrozenContainer(
+      if (
+        this._hasFrozenRows() &&
+        this.m_rowHeaderFrozen !== null &&
+        frozenRowCellSet !== undefined
+      ) {
+        let frozenContainerTop = 0;
+        addResult = this._populateFrozenContainer(
           this.m_databodyFrozenRow.firstChild,
-          cellSet,
-          this.m_startRow,
-          top,
-          columnStart,
+          frozenRowCellSet,
+          0,
+          frozenContainerTop,
+          frozenRowColStart,
           left,
-          frozenRowIndex + 1,
-          columnCount
+          frozenRowCount,
+          frozenRowColCount
         );
-        rowCount -= frozenRowIndex + 1;
-        rowStart = frozenRowIndex + 1;
+        if (
+          this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() &&
+            (scrollPosition.rowIndex === undefined || scrollPosition.rowIndex === 0) &&
+            (scrollPosition.y === undefined || scrollPosition.y === 0)) ||
+          rowStart < this.m_frozenRowIndex + 1
+        ) {
+          rowCount -= frozenRowIndex + 1;
+          rowStart = frozenRowIndex + 1;
+        }
       }
       fragment = document.createDocumentFragment();
       addResult = this._addCellsToFragment(
@@ -10901,6 +12196,14 @@ var __oj_data_grid_metadata =
 
     // update column range info if neccessary
     if (columnRangeNeedsUpdate) {
+      if (
+        this.m_initialized &&
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenColumns() &&
+        this.m_startCol === 0
+      ) {
+        this.m_startCol = this.m_frozenColIndex + 1;
+      }
       // add to left or to right
       if (columnStart < this.m_startCol) {
         this.m_startCol -= columnCount;
@@ -10923,13 +12226,27 @@ var __oj_data_grid_metadata =
     }
 
     // if virtual scrolling we may need to adjust when the user hits the beginning
-    if (this.m_startCol === 0 && this.m_startColPixel !== 0) {
-      this._shiftCellsAlongAxis('column', -this.m_startColPixel, 0, true);
+    let startRowIndex = 0;
+    let startColIndex = 0;
+    if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+      startRowIndex = this.m_frozenRowIndex + 1;
+    }
+    if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+      startColIndex = this.m_frozenColIndex + 1;
+    }
+    if (this.m_startCol === startColIndex && this.m_startColPixel !== 0) {
+      this._shiftCellsAlongAxis('column', -this.m_startColPixel, startColIndex, true);
+      if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+        this._shiftFrozenCellsAlongAxis('column', -this.m_startColPixel, startColIndex, true);
+      }
       this.m_endColPixel -= this.m_startColPixel;
       this.m_startColPixel = 0;
     }
-    if (this.m_startRow === 0 && this.m_startRowPixel !== 0) {
-      this._shiftCellsAlongAxis('row', -this.m_startRowPixel, 0, true);
+    if (this.m_startRow === startRowIndex && this.m_startRowPixel !== 0) {
+      this._shiftCellsAlongAxis('row', -this.m_startRowPixel, startRowIndex, true);
+      if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+        this._shiftFrozenCellsAlongAxis('row', -this.m_startRowPixel, startRowIndex, true);
+      }
       this.m_endRowPixel -= this.m_startRowPixel;
       this.m_startRowPixel = 0;
     }
@@ -10938,24 +12255,74 @@ var __oj_data_grid_metadata =
     if (!this.m_initialized && this.m_startCol > 0) {
       let hiddenTillIndexCount = this._getHiddenCountBeforeIndex(this.m_startCol, 'column');
       newStartEstimate = Math.round(this.m_avgColWidth * (this.m_startCol - hiddenTillIndexCount));
+      // initial scrollposition at random point and scroll up which calls a fetch
+      // startEstimate should consider the frozen count for allocation.
+      if (
+        this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() &&
+          this._hasFrozenColumns() &&
+          (scrollPosition.columnIndex !== undefined || scrollPosition.columnIndex !== 0) &&
+          (scrollPosition.x !== undefined || scrollPosition.x !== 0))
+      ) {
+        newStartEstimate = Math.round(
+          this.m_avgColWidth *
+            (this.m_startCol -
+              hiddenTillIndexCount -
+              (this.m_frozenColIndex + 1) +
+              this._getHiddenCountBeforeIndex(this.m_frozenColIndex + 1, 'column'))
+        );
+      }
+
       this._shiftCellsAlongAxis(
         'column',
         newStartEstimate - this.m_startColPixel,
         this.m_startCol,
         true
       );
+      if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+        this._shiftFrozenCellsAlongAxis(
+          'column',
+          newStartEstimate - this.m_startColPixel,
+          this.m_startCol,
+          true
+        );
+      }
       this.m_endColPixel = newStartEstimate + totalColumnWidth;
       this.m_startColPixel = newStartEstimate;
     }
     if (!this.m_initialized && this.m_startRow > 0) {
       let hiddenTillIndexCount = this._getHiddenCountBeforeIndex(this.m_startRow, 'row');
       newStartEstimate = Math.round(this.m_avgRowHeight * (this.m_startRow - hiddenTillIndexCount));
+      if (
+        this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() &&
+          this._hasFrozenRows() &&
+          (scrollPosition.rowIndex !== undefined || scrollPosition.rowIndex !== 0) &&
+          (scrollPosition.y !== undefined || scrollPosition.y !== 0))
+      ) {
+        newStartEstimate = Math.round(
+          this.m_avgRowHeight *
+            (this.m_startRow -
+              hiddenTillIndexCount -
+              (this.m_frozenRowIndex + 1) +
+              this._getHiddenCountBeforeIndex(this.m_frozenRowIndex + 1, 'row'))
+        );
+      }
+
       this._shiftCellsAlongAxis(
         'row',
         newStartEstimate - this.m_startRowPixel,
         this.m_startRow,
         true
       );
+      if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+        this._shiftFrozenCellsAlongAxis(
+          'row',
+          newStartEstimate - this.m_startRowPixel,
+          this.m_startRow,
+          true
+        );
+      }
       this.m_endRowPixel = newStartEstimate + totalRowHeight;
       this.m_startRowPixel = newStartEstimate;
     }
@@ -10968,27 +12335,6 @@ var __oj_data_grid_metadata =
       this.hideStatusText();
 
       if (!this.m_initialized) {
-        // force bitmap (to GPU) to be generated now rather than when doing actual 3d translation to minimize
-        // the delay, this should only be done once
-        if (
-          this.m_utils.isTouchDeviceNotIOS() &&
-          Object.prototype.hasOwnProperty.call(window, 'WebKitCSSMatrix')
-        ) {
-          const TRANSLATE3D = 'translate3d(0, 0, 0)';
-          databodyContent.style.transform = TRANSLATE3D;
-          if (this.m_rowHeader != null) {
-            this.m_rowHeader.firstChild.style.transform = TRANSLATE3D;
-          }
-          if (this.m_colHeader != null) {
-            this.m_colHeader.firstChild.style.transform = TRANSLATE3D;
-          }
-          if (this.m_rowEndHeader != null) {
-            this.m_rowEndHeader.firstChild.style.transform = TRANSLATE3D;
-          }
-          if (this.m_colEndHeader != null) {
-            this.m_colEndHeader.firstChild.style.transform = TRANSLATE3D;
-          }
-        }
         this._updateScrollPosition(this.m_options.getScrollPosition());
       } else if (this._checkScroll) {
         this._checkScrollPosition();
@@ -11090,6 +12436,9 @@ var __oj_data_grid_metadata =
     // end fetch
     this._signalTaskEnd();
     // this.dumpRanges();
+
+    // check event queue for outstanding model events
+    this._runModelEventQueue();
   };
 
   /**
@@ -11408,9 +12757,20 @@ var __oj_data_grid_metadata =
       columnCount = cellSet.getCount('column');
     }
 
-    var rowAppend = rowStart >= this.m_startRow;
-    var columnAppend = columnStart >= this.m_startCol;
-
+    let rowAppend = rowStart >= this.m_startRow;
+    let columnAppend = columnStart >= this.m_startCol;
+    let freezeRowIndex = this.m_options._getFreezeIndex('row');
+    let freezeColIndex = this.m_options._getFreezeIndex('column');
+    if (!this._isHighWatermarkScrolling() && this._hasFrozenRows() && rowStart <= freezeRowIndex) {
+      rowAppend = true;
+    }
+    if (
+      !this._isHighWatermarkScrolling() &&
+      this._hasFrozenColumns() &&
+      columnStart <= freezeColIndex
+    ) {
+      columnAppend = true;
+    }
     var totalWidth = 0;
     var totalHeight = 0;
     var top = topStart;
@@ -12357,26 +13717,46 @@ var __oj_data_grid_metadata =
    * @param {boolean=} shouldSelect - should try to select content of first focusable element
    * @return {boolean} true if focus is set successfully, false otherwise
    */
-  DvtDataGrid.prototype._setFocusToFirstFocusableElement = function (elem, event, shouldSelect) {
+  DvtDataGrid.prototype._setFocusToFirstFocusableElement = function (
+    elem,
+    event,
+    shouldSelect,
+    beforeEditFocusCallbackDetails
+  ) {
     // enable all focusable elements
     DataCollectionUtils.enableAllFocusableElements(elem);
     var elems = DataCollectionUtils.getFocusableElementsInNode(elem);
-    if (elems.length > 0) {
-      var firstElement = elems[0];
-      firstElement.focus();
+    let elementToFocus = elems[0];
+    if (beforeEditFocusCallbackDetails?.locator) {
+      let foundElem = elem.querySelector(beforeEditFocusCallbackDetails.locator);
+      if (foundElem) {
+        elementToFocus = foundElem;
+      }
+    }
+
+    if (elementToFocus) {
+      if (
+        beforeEditFocusCallbackDetails?.action === 'focusAndOpen' &&
+        elementToFocus.UNSAFE_focusAndOpenDropdown != null
+      ) {
+        elementToFocus.UNSAFE_focusAndOpenDropdown();
+      } else {
+        elementToFocus.focus();
+      }
+      let focusedElem = document.activeElement;
       if (event) {
         event.preventDefault();
       }
-      if (firstElement.setSelectionRange && firstElement.value) {
+      if (focusedElem.setSelectionRange && focusedElem.value) {
         try {
           // ensure focus at the end
-          firstElement.setSelectionRange(firstElement.value.length, firstElement.value.length);
+          focusedElem.setSelectionRange(focusedElem.value.length, focusedElem.value.length);
         } catch (e) {
           // invalid state error
         }
       }
-      if (shouldSelect === true && typeof elems[0].select === 'function') {
-        firstElement.select();
+      if (shouldSelect === true && typeof focusedElem.select === 'function') {
+        focusedElem.select();
       }
       return true;
     }
@@ -12407,11 +13787,6 @@ var __oj_data_grid_metadata =
     // prevent scrolling when animating sort
     if (this.m_animating) {
       event.preventDefault();
-      return;
-    }
-
-    // scroll on touch is handled directly by touch handlers
-    if (this.m_utils.isTouchDeviceNotIOS()) {
       return;
     }
 
@@ -12525,20 +13900,13 @@ var __oj_data_grid_metadata =
    * @param {number} scrollTop
    */
   DvtDataGrid.prototype._initiateScroll = function (scrollLeft, scrollTop) {
-    if (!this.m_utils.isTouchDeviceNotIOS()) {
-      this.m_utils.setElementScrollLeft(this.m_databody, scrollLeft);
-      this.m_databody.scrollTop = scrollTop;
-      // scroll to be enabled, if all regions within the grid are frozen and scroll is initiated.
-      if (
-        !this.m_databody.firstChild.childElementCount &&
-        (this._hasFrozenColumns() || this._hasFrozenRows())
-      ) {
-        this.scrollTo(scrollLeft, scrollTop);
-      }
-    } else {
-      // for touch we'll call scrollTo directly instead of relying on scroll event to fire due to performance
-      // or if the scroll position of the databody was already set properly from mousewheel etc, then just sync everything up
-      // in scrollTo
+    this.m_utils.setElementScrollLeft(this.m_databody, scrollLeft);
+    this.m_databody.scrollTop = scrollTop;
+    // scroll to be enabled, if all regions within the grid are frozen and scroll is initiated.
+    if (
+      !this.m_databody.firstChild.childElementCount &&
+      (this._hasFrozenColumns() || this._hasFrozenRows())
+    ) {
       this.scrollTo(scrollLeft, scrollTop);
     }
   };
@@ -12548,18 +13916,6 @@ var __oj_data_grid_metadata =
    */
   DvtDataGrid.prototype._initiateScrollOnAttached = function () {
     this._initiateScroll(this.m_currentScrollLeft, this.m_currentScrollTop);
-  };
-
-  /**
-   * Disable touch scroll animation by setting durations to 0
-   * @private
-   */
-  DvtDataGrid.prototype._disableTouchScrollAnimation = function () {
-    this.m_databody.firstChild.style.transitionDuration = '0ms';
-    this.m_rowHeader.firstChild.style.transitionDuration = '0ms';
-    this.m_colHeader.firstChild.style.transitionDuration = '0ms';
-    this.m_rowEndHeader.firstChild.style.transitionDuration = '0ms';
-    this.m_colEndHeader.firstChild.style.transitionDuration = '0ms';
   };
 
   /**
@@ -12600,14 +13956,12 @@ var __oj_data_grid_metadata =
     // check if this is a long scroll
     // don't do this for touch, the check must be done AFTER transition ends otherwise
     // animation will become sluggish, see _syncScroller
-    if (!this.m_utils.isTouchDeviceNotIOS()) {
-      if (this._shouldLongScroll(scrollLeft, scrollTop)) {
-        this.handleLongScroll(scrollLeft, scrollTop);
-      } else {
-        this.fillViewport();
-      }
-      this._checkScroll = true;
+    if (this._shouldLongScroll(scrollLeft, scrollTop)) {
+      this.handleLongScroll(scrollLeft, scrollTop);
+    } else {
+      this.fillViewport();
     }
+    this._checkScroll = true;
 
     // update header and databody scroll position
     this._syncScroller();
@@ -12661,13 +14015,12 @@ var __oj_data_grid_metadata =
       }
     }
 
-    if (!this.m_utils.isTouchDeviceNotIOS()) {
-      // If detect an actual scroll, fire scroll event
-      if (this.m_prevScrollTop !== scrollTop || this.m_prevScrollLeft !== scrollLeft) {
-        this.fireEvent('scroll', { event: null, ui: { scrollX: scrollLeft, scrollY: scrollTop } });
-      }
+    // If detect an actual scroll, fire scroll event
+    if (this.m_prevScrollTop !== scrollTop || this.m_prevScrollLeft !== scrollLeft) {
+      this.fireEvent('scroll', { event: null, ui: { scrollX: scrollLeft, scrollY: scrollTop } });
     }
-    if (!this.m_utils.isTouchDeviceNotIOS() && this.isFetchComplete()) {
+
+    if (this.isFetchComplete()) {
       this._checkScrollPosition();
     }
   };
@@ -12707,140 +14060,32 @@ var __oj_data_grid_metadata =
   };
 
   /**
-   * Perform the bounce back animation when a swipe gesture causes over scrolling
-   * @private
-   */
-  DvtDataGrid.prototype._bounceBack = function () {
-    var scrollLeft = this.m_currentScrollLeft;
-    var scrollTop = this.m_currentScrollTop;
-
-    var databody = this.m_databody.firstChild;
-    var colHeader = this.m_colHeader.firstChild;
-    var rowHeader = this.m_rowHeader.firstChild;
-    var colEndHeader = this.m_colEndHeader.firstChild;
-    var rowEndHeader = this.m_rowEndHeader.firstChild;
-
-    databody.style.transitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
-    rowHeader.style.transitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
-    rowEndHeader.style.transitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
-    colHeader.style.transitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
-    colEndHeader.style.transitionDuration = DvtDataGrid.BOUNCE_ANIMATION_DURATION + 'ms';
-
-    // process to run after bounce back animation ends
-    if (this.m_scrollTransitionEnd == null) {
-      this.m_scrollTransitionEnd = this._scrollTransitionEnd.bind(this);
-    }
-    this._onEndEvent(
-      'transitionend',
-      databody,
-      this.m_scrollTransitionEnd,
-      DvtDataGrid.BOUNCE_ANIMATION_DURATION
-    );
-
-    // scroll back to actual scrollLeft/scrollTop positions
-    if (this.getResources().isRTLMode()) {
-      databody.style.transform = 'translate3d(' + scrollLeft + 'px, ' + -scrollTop + 'px, 0)';
-      colHeader.style.transform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
-      colEndHeader.style.transform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
-    } else {
-      databody.style.transform = 'translate3d(' + -scrollLeft + 'px, ' + -scrollTop + 'px, 0)';
-      colHeader.style.transform = 'translate3d(' + -scrollLeft + 'px, 0, 0)';
-      colEndHeader.style.transform = 'translate3d(' + -scrollLeft + 'px, 0, 0)';
-    }
-    rowHeader.style.transform = 'translate3d(0, ' + -scrollTop + 'px, 0)';
-    rowEndHeader.style.transform = 'translate3d(0, ' + -scrollTop + 'px, 0)';
-
-    // reset
-    this.m_extraScrollOverX = null;
-    this.m_extraScrollOverY = null;
-  };
-
-  /**
    * Make sure the databody/headers and the scroller are in sync, which could happen when scrolling
    * stopped awaiting fetch to complete.
    * @private
    */
   DvtDataGrid.prototype._syncScroller = function () {
-    var scrollLeft = this.m_currentScrollLeft;
-    var scrollTop = this.m_currentScrollTop;
+    const scrollLeft = this.m_currentScrollLeft;
+    const scrollTop = this.m_currentScrollTop;
 
-    var databody = this.m_databody.firstChild;
-    var colHeader = this.m_colHeader.firstChild;
-    var rowHeader = this.m_rowHeader.firstChild;
-    var colEndHeader = this.m_colEndHeader.firstChild;
-    var rowEndHeader = this.m_rowEndHeader.firstChild;
+    const colHeader = this.m_colHeader.firstChild;
+    const rowHeader = this.m_rowHeader.firstChild;
+    const colEndHeader = this.m_colEndHeader.firstChild;
+    const rowEndHeader = this.m_rowEndHeader.firstChild;
 
-    let databodyFrozenCol;
-    let databodyFrozenRow;
-    if (this.m_databodyFrozenCol) {
-      databodyFrozenCol = this.m_databodyFrozenCol.firstChild;
+    const databodyFrozenCol = this.m_databodyFrozenCol ? this.m_databodyFrozenCol.firstChild : null;
+    const databodyFrozenRow = this.m_databodyFrozenRow ? this.m_databodyFrozenRow.firstChild : null;
+
+    const dir = this.getResources().isRTLMode() ? 'right' : 'left';
+    this.setElementDir(colHeader, -scrollLeft, dir);
+    this.setElementDir(colEndHeader, -scrollLeft, dir);
+    this.setElementDir(rowHeader, -scrollTop, 'top');
+    this.setElementDir(rowEndHeader, -scrollTop, 'top');
+    if (databodyFrozenRow) {
+      this.setElementDir(databodyFrozenRow, -scrollLeft, dir);
     }
-    if (this.m_databodyFrozenRow) {
-      databodyFrozenRow = this.m_databodyFrozenRow.firstChild;
-    }
-
-    // use translate3d for smoother scrolling
-    // this checks determine whether this is webkit and translated3d is supported
-    if (
-      this.m_utils.isTouchDeviceNotIOS() &&
-      Object.prototype.hasOwnProperty.call(window, 'WebKitCSSMatrix')
-    ) {
-      this._checkScroll = false;
-
-      // check if the swipe gesture causes over scrolling of scrollable area
-      if (this.m_extraScrollOverX != null || this.m_extraScrollOverY != null) {
-        // swipe horizontal or vertical
-        if (this.m_extraScrollOverX != null) {
-          scrollLeft += this.m_extraScrollOverX;
-        } else {
-          scrollTop += this.m_extraScrollOverY;
-        }
-
-        // bounce back animation function
-        if (this.m_bounceBack == null) {
-          this.m_bounceBack = this._bounceBack.bind(this);
-        }
-
-        this._onEndEvent('transitionend', databody, this.m_bounceBack, 500);
-      } else if (databody.style.transitionDuration === '0ms') {
-        // no transition, just call the handler directly
-        this._scrollTransitionEnd();
-      } else {
-        if (this.m_scrollTransitionEnd == null) {
-          this.m_scrollTransitionEnd = this._scrollTransitionEnd.bind(this);
-        }
-        this._onEndEvent(
-          'transitionend',
-          databody,
-          this.m_scrollTransitionEnd,
-          databody.style.transitionDuration
-        );
-      }
-
-      // actual scrolling of databody and headers
-      if (this.getResources().isRTLMode()) {
-        databody.style.transform = 'translate3d(' + scrollLeft + 'px, ' + -scrollTop + 'px, 0)';
-        colHeader.style.transform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
-        colEndHeader.style.transform = 'translate3d(' + scrollLeft + 'px, 0, 0)';
-      } else {
-        databody.style.transform = 'translate3d(' + -scrollLeft + 'px, ' + -scrollTop + 'px, 0)';
-        colHeader.style.transform = 'translate3d(' + -scrollLeft + 'px, 0, 0)';
-        colEndHeader.style.transform = 'translate3d(' + -scrollLeft + 'px, 0, 0)';
-      }
-      rowHeader.style.transform = 'translate3d(0, ' + -scrollTop + 'px, 0)';
-      rowEndHeader.style.transform = 'translate3d(0, ' + -scrollTop + 'px, 0)';
-    } else {
-      var dir = this.getResources().isRTLMode() ? 'right' : 'left';
-      this.setElementDir(colHeader, -scrollLeft, dir);
-      this.setElementDir(colEndHeader, -scrollLeft, dir);
-      this.setElementDir(rowHeader, -scrollTop, 'top');
-      this.setElementDir(rowEndHeader, -scrollTop, 'top');
-      if (databodyFrozenRow) {
-        this.setElementDir(databodyFrozenRow, -scrollLeft, dir);
-      }
-      if (databodyFrozenCol) {
-        this.setElementDir(databodyFrozenCol, -scrollTop, 'top');
-      }
+    if (databodyFrozenCol) {
+      this.setElementDir(databodyFrozenCol, -scrollTop, 'top');
     }
   };
 
@@ -12957,7 +14202,13 @@ var __oj_data_grid_metadata =
         start = Math.floor(total * oversizeRatio);
       }
       startPixel = Math.min(scrollDir, maxScroll);
-
+      if (
+        !this._isHighWatermarkScrolling() &&
+        start === 0 &&
+        ((axis === 'row' && this._hasFrozenRows()) || (axis === 'column' && this._hasFrozenColumns()))
+      ) {
+        start = axis === 'row' ? this.m_frozenRowIndex + 1 : this.m_frozenColIndex + 1;
+      }
       if (
         oversizeRatio === 1 ||
         scrollDir + fetchSize * avgDimension > scrollerDimension - scrollbarSize
@@ -12978,6 +14229,28 @@ var __oj_data_grid_metadata =
         start = Math.max(newStart, 0);
         let hiddenTillIndex = this._getHiddenCountBeforeIndex(start, axis);
         startPixel = Math.max((start - hiddenTillIndex) * avgDimension, 0);
+        if (!this._isHighWatermarkScrolling() && axis === 'row' && this._hasFrozenRows()) {
+          let hiddenTillFrozenIndex = this._getHiddenCountBeforeIndex(
+            this.m_frozenRowIndex + 1,
+            axis
+          );
+          startPixel = Math.max(
+            (start - hiddenTillIndex - (this.m_frozenRowIndex + 1) - hiddenTillFrozenIndex) *
+              avgDimension,
+            0
+          );
+        }
+        if (!this._isHighWatermarkScrolling() && axis === 'column' && this._hasFrozenColumns()) {
+          let hiddenTillFrozenIndex = this._getHiddenCountBeforeIndex(
+            this.m_frozenColIndex + 1,
+            axis
+          );
+          startPixel = Math.max(
+            (start - hiddenTillIndex - (this.m_frozenColIndex + 1) - hiddenTillFrozenIndex) *
+              avgDimension,
+            0
+          );
+        }
       }
     } else if (axis === 'row') {
       start = this.m_longScrollRow != null ? this.m_longScrollRow : this.m_startRow;
@@ -13083,19 +14356,59 @@ var __oj_data_grid_metadata =
       // custom success callback so that we can reset all ranges and fields
       // initiate fetch of headers and cells
       this.fetchHeaders('row', startRow, this.m_rowHeader, this.m_rowEndHeader, undefined, {
-        success: function (headerSet, headerRange, endHeaderSet) {
+        success: function (
+          headerSet,
+          headerRange,
+          endHeaderSet,
+          rowInsert,
+          frozenStartResults,
+          frozenHeaderRange,
+          frozenEndResults
+        ) {
           resetVars();
-          this.handleHeadersFetchSuccessForLongScroll(headerSet, headerRange, endHeaderSet);
+          this.handleHeadersFetchSuccessForLongScroll(
+            headerSet,
+            headerRange,
+            endHeaderSet,
+            rowInsert,
+            frozenStartResults,
+            frozenHeaderRange,
+            frozenEndResults
+          );
         }
       });
       this.fetchHeaders('column', startCol, this.m_colHeader, this.m_colEndHeader, undefined, {
-        success: function (headerSet, headerRange, endHeaderSet) {
+        success: function (
+          headerSet,
+          headerRange,
+          endHeaderSet,
+          rowInsert,
+          frozenStartResults,
+          frozenHeaderRange,
+          frozenEndResults
+        ) {
           resetVars();
-          this.handleHeadersFetchSuccessForLongScroll(headerSet, headerRange, endHeaderSet);
+          this.handleHeadersFetchSuccessForLongScroll(
+            headerSet,
+            headerRange,
+            endHeaderSet,
+            rowInsert,
+            frozenStartResults,
+            frozenHeaderRange,
+            frozenEndResults
+          );
         }
       });
       this.fetchCells(this.m_databody, startRow, startCol, null, null, {
-        success: function (cellSet, cellRange) {
+        success: function (
+          cellSet,
+          cellRange,
+          rowInsert,
+          frozenCellRange,
+          frozenRowCellSet,
+          frozenColumnCellSet,
+          frozenCornerCellSet
+        ) {
           resetVars();
           this.handleCellsFetchSuccessForLongScroll(
             cellSet,
@@ -13103,7 +14416,12 @@ var __oj_data_grid_metadata =
             startRow,
             startCol,
             startRowPixel,
-            startColPixel
+            startColPixel,
+            rowInsert,
+            frozenCellRange,
+            frozenRowCellSet,
+            frozenColumnCellSet,
+            frozenCornerCellSet
           );
         }
       });
@@ -13120,7 +14438,11 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype.handleHeadersFetchSuccessForLongScroll = function (
     headerSet,
     headerRange,
-    endHeaderSet
+    endHeaderSet,
+    rowInsert,
+    frozenStartResults,
+    frozenHeaderRange,
+    frozenEndResults
   ) {
     let headerContent = this.m_rowHeader.firstChild;
     let endHeaderContent = this.m_rowEndHeader.firstChild;
@@ -13134,7 +14456,15 @@ var __oj_data_grid_metadata =
     if (endHeaderContent != null) {
       this._removeAllNonSkeletonContainerNodes(endHeaderContent);
     }
-    this.handleHeadersFetchSuccess(headerSet, headerRange, endHeaderSet, false);
+    this.handleHeadersFetchSuccess(
+      headerSet,
+      headerRange,
+      endHeaderSet,
+      rowInsert,
+      frozenStartResults,
+      frozenHeaderRange,
+      frozenEndResults
+    );
   };
 
   /**
@@ -13150,7 +14480,19 @@ var __oj_data_grid_metadata =
    */
   DvtDataGrid.prototype.handleCellsFetchSuccessForLongScroll =
     // eslint-disable-next-line no-unused-vars
-    function (cellSet, cellRange, startRow, startCol, startRowPixel, startColPixel) {
+    function (
+      cellSet,
+      cellRange,
+      startRow,
+      startCol,
+      startRowPixel,
+      startColPixel,
+      rowInsert,
+      frozenCellRange,
+      frozenRowCellSet,
+      frozenColumnCellSet,
+      frozenCornerCellSet
+    ) {
       const databodyContent = this.m_databody.firstChild;
       if (databodyContent != null && !this._getEmptyElement()) {
         const cells = this._getAllNonSkeletonContainerNodes(databodyContent);
@@ -13158,8 +14500,32 @@ var __oj_data_grid_metadata =
           this._remove(cell);
         });
       }
+      if (this._hasFrozenColumns() && this.m_currentScrollTop !== this.m_prevScrollTop) {
+        const frozenColCells = this._getAllNonSkeletonContainerNodes(
+          this.m_databodyFrozenCol.firstChild
+        );
+        frozenColCells.forEach((cell) => {
+          this._remove(cell);
+        });
+      }
+      if (this._hasFrozenRows() && this.m_currentScrollLeft !== this.m_prevScrollLeft) {
+        const frozenRowCells = this._getAllNonSkeletonContainerNodes(
+          this.m_databodyFrozenRow.firstChild
+        );
+        frozenRowCells.forEach((cell) => {
+          this._remove(cell);
+        });
+      }
       // now calls fetch success proc
-      this.handleCellsFetchSuccess(cellSet, cellRange);
+      this.handleCellsFetchSuccess(
+        cellSet,
+        cellRange,
+        rowInsert,
+        frozenCellRange,
+        frozenRowCellSet,
+        frozenColumnCellSet,
+        frozenCornerCellSet
+      );
     };
 
   /**
@@ -13248,7 +14614,7 @@ var __oj_data_grid_metadata =
       var viewportRight = this._getViewportRight() + DvtDataGrid.FETCH_PIXEL_THRESHOLD;
       var viewportTop = this._getViewportTop();
       var viewportBottom = this._getViewportBottom() + DvtDataGrid.FETCH_PIXEL_THRESHOLD;
-
+      let isHWS = this._isHighWatermarkScrolling();
       if (this._getMaxBottomPixel() <= viewportBottom) {
         if (!this.m_stopRowHeaderFetch || !this.m_stopRowEndHeaderFetch || !this.m_stopRowFetch) {
           fetchStart = Math.max(0, this._getMaxBottom() + 1);
@@ -13267,9 +14633,13 @@ var __oj_data_grid_metadata =
 
       if (
         (this._getMaxTopPixel() > viewportTop || this.m_currentScrollTop === 0) &&
-        this._getMaxTop() > 0
+        ((this._getMaxTop() > 0 && (!this._hasFrozenRows() || (this._hasFrozenRows() && isHWS))) ||
+          (this._hasFrozenRows() && this._getMaxTop() > this.m_frozenRowIndex + 1 && !isHWS))
       ) {
         fetchStart = Math.max(0, this._getMaxTop() - this.getFetchSize('row'));
+        if (!isHWS && this._hasFrozenRows() && fetchStart < this.m_frozenRowIndex + 1) {
+          fetchStart = this.m_frozenRowIndex + 1;
+        }
         fetchSize = Math.max(0, this._getMaxTop() - fetchStart);
         this.fetchHeaders('row', fetchStart, this.m_rowHeader, this.m_rowEndHeader, fetchSize);
         this.fetchCells(
@@ -13304,9 +14674,14 @@ var __oj_data_grid_metadata =
 
       if (
         (this._getMaxLeftPixel() > viewportLeft || this.m_currentScrollLeft === 0) &&
-        this._getMaxLeft() > 0
+        ((this._getMaxLeft() > 0 &&
+          (!this._hasFrozenColumns() || (this._hasFrozenColumns() && isHWS))) ||
+          (this._hasFrozenColumns() && this._getMaxLeft() > this.m_frozenColIndex + 1 && !isHWS))
       ) {
         fetchStart = Math.max(0, this._getMaxLeft() - this.getFetchSize('column'));
+        if (!isHWS && this._hasFrozenColumns() && fetchStart < this.m_frozenColIndex + 1) {
+          fetchStart = this.m_frozenColIndex + 1;
+        }
         fetchSize = Math.max(0, this._getMaxLeft() - fetchStart);
         this.fetchHeaders('column', fetchStart, this.m_colHeader, this.m_colEndHeader, fetchSize);
         this.fetchCells(
@@ -13442,6 +14817,7 @@ var __oj_data_grid_metadata =
     var dir;
     var totalDimensionChange = 0;
     var totalCountChange = 0;
+    let frozenAxisEnd;
 
     if (axis === 'row') {
       axisStart = this.m_startRow;
@@ -13456,6 +14832,7 @@ var __oj_data_grid_metadata =
       otherAxisEnd = this.m_endCol;
       dir = 'top';
       j = isFromEnd ? axisEnd : axisStart;
+      frozenAxisEnd = this.m_frozenColIndex;
     } else {
       axisStart = this.m_startCol;
       axisEnd = this.m_endCol;
@@ -13469,6 +14846,7 @@ var __oj_data_grid_metadata =
       otherAxisEnd = this.m_endRow;
       dir = this.getResources().isRTLMode() ? 'right' : 'left';
       j = isFromEnd ? axisEnd : axisStart;
+      frozenAxisEnd = this.m_frozenRowIndex;
     }
     let deleteArray = [];
 
@@ -13500,27 +14878,34 @@ var __oj_data_grid_metadata =
       ) {
         var otherExtent;
         for (var i = otherAxisStart; i <= otherAxisEnd; i += otherExtent) {
-          var cell = this._getCellByIndex(
-            axis === 'column' ? this.createIndex(i, j) : this.createIndex(j, i)
+          otherExtent = this._removeCells(
+            i,
+            j,
+            axis,
+            otherAxis,
+            dimension,
+            dimensionValue,
+            dir,
+            isFromEnd
           );
-          var cellContext = cell[this.getResources().getMappedAttribute('context')];
-          var axisExtent = cellContext.extents[axis];
-          otherExtent = cellContext.extents[otherAxis];
-
-          if (axisExtent === 1) {
-            this._remove(cell);
-          } else {
-            cellContext.extents[axis] -= 1;
-            this.setElementDir(cell, this.getElementDir(cell, dimension) - dimensionValue, dimension);
-            if (!isFromEnd) {
-              cellContext.indexes[axis] += 1;
-              this.setElementDir(cell, this.getElementDir(cell, dir) + dimensionValue, dir);
-            }
-          }
-
-          for (var k = 0; k < otherExtent; k++) {
-            var index = axis === 'column' ? this.createIndex(i + k, j) : this.createIndex(j, i + k);
-            this._removeIndexFromDatabodyMap(index);
+        }
+        if (
+          !this._isHighWatermarkScrolling() &&
+          otherAxisStart !== 0 &&
+          ((axis === 'row' && this._hasFrozenColumns()) ||
+            (axis === 'column' && this._hasFrozenRows()))
+        ) {
+          for (let l = 0; l <= frozenAxisEnd; l += otherExtent) {
+            otherExtent = this._removeCells(
+              l,
+              j,
+              axis,
+              otherAxis,
+              dimension,
+              dimensionValue,
+              dir,
+              isFromEnd
+            );
           }
         }
         totalDimensionChange += dimensionValue;
@@ -13531,8 +14916,43 @@ var __oj_data_grid_metadata =
       }
     }
     this.deleteHiddenIndicators(deleteArray, this.m_databody.firstChild);
-
     return { dimensionChange: totalDimensionChange, extentChange: totalCountChange };
+  };
+
+  DvtDataGrid.prototype._removeCells = function (
+    i,
+    j,
+    axis,
+    otherAxis,
+    dimension,
+    dimensionValue,
+    dir,
+    isFromEnd
+  ) {
+    let otherExtent;
+    let cell = this._getCellByIndex(
+      axis === 'column' ? this.createIndex(i, j) : this.createIndex(j, i)
+    );
+    let cellContext = cell[this.getResources().getMappedAttribute('context')];
+    let axisExtent = cellContext.extents[axis];
+    otherExtent = cellContext.extents[otherAxis];
+
+    if (axisExtent === 1) {
+      this._remove(cell);
+    } else {
+      cellContext.extents[axis] -= 1;
+      this.setElementDir(cell, this.getElementDir(cell, dimension) - dimensionValue, dimension);
+      if (!isFromEnd) {
+        cellContext.indexes[axis] += 1;
+        this.setElementDir(cell, this.getElementDir(cell, dir) + dimensionValue, dir);
+      }
+    }
+
+    for (let k = 0; k < otherExtent; k++) {
+      let index = axis === 'column' ? this.createIndex(i + k, j) : this.createIndex(j, i + k);
+      this._removeIndexFromDatabodyMap(index);
+    }
+    return otherExtent;
   };
 
   /**
@@ -13822,7 +15242,7 @@ var __oj_data_grid_metadata =
     if (this.m_endColHeader - this.m_startColHeader > this.MAX_COLUMN_THRESHOLD) {
       colHeaderContent = this.m_colHeader.firstChild;
       // don't clean up if end of row header is not below the bottom of viewport
-      if (this.m_endColHeaderPixel > colThreshold) {
+      if (this.m_endColHeaderPixel > colThreshold && colHeaderContent.childNodes.length) {
         if (this.m_stopColumnHeaderFetch) {
           this.m_stopColumnHeaderFetch = false;
         }
@@ -14945,7 +16365,7 @@ var __oj_data_grid_metadata =
         this.handleHeaderClickSelection(event);
       } else {
         // remove current selection and just make header active.
-        this.handleHeaderClickActive(event);
+        this.handleHeaderClickActive(event, null, true);
       }
     }
 
@@ -15722,6 +17142,11 @@ var __oj_data_grid_metadata =
         for (var i = returnObj.min.row; i <= returnObj.max.row; i++) {
           this._highlightCellsAlongAxis(i, 'row', 'index', addOrRemove, ['hover']);
         }
+        if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+          for (let j = returnObj.min.row; j <= returnObj.max.row; j++) {
+            this._highlightCellsAlongAxis(j, 'row', 'index', addOrRemove, ['hover']);
+          }
+        }
       }
     }
   };
@@ -15905,18 +17330,6 @@ var __oj_data_grid_metadata =
     if (header) {
       axis = header === this.m_rowHeader || header === this.m_rowEndHeader ? 'row' : 'column';
     }
-    // prevent scrolling of the page, unless there are no more rows, consistant with table/listview
-    if (
-      axis === 'row' &&
-      (!this.m_stopRowHeaderFetch || !this.m_stopRowEndHeaderFetch || !this.m_stopRowFetch)
-    ) {
-      event.preventDefault();
-    } else if (
-      axis === 'column' &&
-      (!this.m_stopColumnHeaderFetch || !this.m_stopColumnEndHeaderFetch || !this.m_stopColumnFetch)
-    ) {
-      event.preventDefault();
-    }
 
     // prevent scroll if animating sort
     if (this.m_animating) {
@@ -15954,6 +17367,21 @@ var __oj_data_grid_metadata =
       this._getMaxScrollHeight() !== scrollTop &&
       scrollTop !== 0 &&
       (this.find(event.target, 'header') || this.find(event.target, 'databodyFrozenCol'))
+    ) {
+      event.preventDefault();
+    }
+
+    // prevent scrolling of the page, unless there are no more rows, consistant with table/listview
+    if (
+      Math.abs(deltaX) > Math.abs(deltaY) &&
+      this.m_currentScrollLeft !== 0 &&
+      this.m_currentScrollLeft !== this.m_scrollWidth
+    ) {
+      event.preventDefault();
+    } else if (
+      Math.abs(deltaX) < Math.abs(deltaY) &&
+      this.m_currentScrollTop !== 0 &&
+      this.m_currentScrollTop !== this.m_scrollHeight
     ) {
       event.preventDefault();
     }
@@ -16029,8 +17457,6 @@ var __oj_data_grid_metadata =
    * @param {Event} event - touchmove event on the databody
    */
   DvtDataGrid.prototype.handleTouchMove = function (event) {
-    var target = /** @type {Element} */ (event.target);
-
     if (this.m_touchActive) {
       if (event.cancelable) {
         event.preventDefault();
@@ -16052,20 +17478,12 @@ var __oj_data_grid_metadata =
 
       if (this.m_touchMultipleSelect) {
         this.handleDatabodySelectionDrag(event);
-        if (!this.m_utils.isTouchDeviceNotIOS()) {
-          event.preventDefault();
-        }
+
+        event.preventDefault();
       } else if (this.m_databodyMove) {
         this._removeTouchSelectionAffordance();
         this._handleMove(event);
-        if (!this.m_utils.isTouchDeviceNotIOS()) {
-          event.preventDefault();
-        }
-      } else if (this._isEditOrEnter() && this.m_utils.isTouchDeviceNotIOS()) {
-        var cell = this._getActiveElement();
-        if (this.findCell(target) !== cell) {
-          this._handleNonSwipeScroll(diffX, diffY);
-        }
+        event.preventDefault();
       } else {
         this._handleNonSwipeScroll(diffX, diffY);
       }
@@ -16148,9 +17566,6 @@ var __oj_data_grid_metadata =
           this.m_databodyMove = false;
           this._handleMoveMouseUp(event, true);
           return;
-        }
-        if (this.m_utils.isTouchDeviceNotIOS()) {
-          this._handleSwipe(event);
         }
       }
     }
@@ -16336,6 +17751,13 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype.handleHeaderTouchEnd = function (event) {
     var header;
 
+    const activeElement = this._getActiveElement();
+
+    if (this._isEditOrEnter()) {
+      if (this._leaveEditing(event, activeElement, false) === false) {
+        return;
+      }
+    }
     if (this.m_touchActive && !event.defaultPrevented) {
       var target = /** @type {Element} */ (event.target);
       // if resizing handle resize first so that we don't conflict and forget to end
@@ -16399,7 +17821,7 @@ var __oj_data_grid_metadata =
             this.handleHeaderClickSelection(event);
           } else {
             // if not selecting, just make active.
-            this.handleHeaderClickActive(event);
+            this.handleHeaderClickActive(event, null, true);
           }
         }
       } else if (this.m_databodyMove) {
@@ -16457,9 +17879,6 @@ var __oj_data_grid_metadata =
    */
   DvtDataGrid.prototype._handleNonSwipeScroll = function (diffX, diffY) {
     var time = new Date().getTime();
-    // for non-swipe scroll use 0ms to prevent jiggling
-    this._disableTouchScrollAnimation();
-
     var diff = this.adjustTouchScroll(diffX, diffY);
     // eslint-disable-next-line no-param-reassign
     diffX = diff[0];
@@ -16551,15 +17970,6 @@ var __oj_data_grid_metadata =
       } else {
         momentumY = { duration: 0, destination: 0 };
         diffY = 0;
-      }
-
-      if (this.m_utils.isTouchDeviceNotIOS()) {
-        var transitionDuration = Math.max(momentumX.duration, momentumY.duration);
-        this.m_databody.firstChild.style.transitionDuration = transitionDuration + 'ms';
-        this.m_rowHeader.firstChild.style.transitionDuration = transitionDuration + 'ms';
-        this.m_colHeader.firstChild.style.transitionDuration = transitionDuration + 'ms';
-        this.m_rowEndHeader.firstChild.style.transitionDuration = transitionDuration + 'ms';
-        this.m_colEndHeader.firstChild.style.transitionDuration = transitionDuration + 'ms';
       }
 
       diffX += momentumX.destination;
@@ -16772,12 +18182,20 @@ var __oj_data_grid_metadata =
     if (index === -1) {
       return -1;
     }
-    if (axis === 'column') {
-      return this._isColumnIndexInViewport(index);
-    } else if (axis === 'row') {
-      return this._isRowIndexInViewport(index);
+    let withinViewport = -1;
+    if (
+      !this._isHighWatermarkScrolling() &&
+      ((axis === 'row' && this._hasFrozenRows()) || (axis === 'column' && this._hasFrozenColumns()))
+    ) {
+      withinViewport =
+        axis === 'row'
+          ? this._isRowIndexInViewportWithinFrozen(index)
+          : this._isColumnIndexInViewportWithinFrozen(index);
+    } else {
+      withinViewport =
+        axis === 'column' ? this._isColumnIndexInViewport(index) : this._isRowIndexInViewport(index);
     }
-    return -1;
+    return withinViewport;
   };
 
   DvtDataGrid.prototype._isColumnIndexInViewport = function (index) {
@@ -16796,6 +18214,31 @@ var __oj_data_grid_metadata =
    */
   DvtDataGrid.prototype._isRowIndexInViewport = function (index) {
     if (index < this.m_startRow) {
+      return DvtDataGrid.BEFORE;
+    }
+    if (index > this.m_endRow) {
+      return DvtDataGrid.AFTER;
+    }
+    // if it's not before or after, it must be inside
+    return DvtDataGrid.INSIDE;
+  };
+
+  DvtDataGrid.prototype._isColumnIndexInViewportWithinFrozen = function (index) {
+    if (index < this.m_startCol && index > this.m_frozenColIndex) {
+      return DvtDataGrid.BEFORE;
+    }
+    if (index > this.m_endCol) {
+      return DvtDataGrid.AFTER;
+    }
+    // if it's not before or after, it must be inside
+    return DvtDataGrid.INSIDE;
+  };
+
+  /**
+   * @private
+   */
+  DvtDataGrid.prototype._isRowIndexInViewportWithinFrozen = function (index) {
+    if (index < this.m_startRow && index > this.m_frozenRowIndex) {
       return DvtDataGrid.BEFORE;
     }
     if (index > this.m_endRow) {
@@ -16841,6 +18284,7 @@ var __oj_data_grid_metadata =
       this.m_processingEventQueue ||
       this.m_animating ||
       this.m_processingModelEvent ||
+      !this.isFetchComplete() ||
       (this._isEditOrEnter() &&
         (event.operation === 'refresh' || this._isActiveWithinUpdateRange(event)))
     ) {
@@ -16928,7 +18372,7 @@ var __oj_data_grid_metadata =
         this._handleDeleteRangeEvent(event.detail);
       }
       if (operation === 'insert') {
-        // JET-73179 - add to empty grid.
+        // JET-73179 - add to empty grid
         if (this._databodyEmptyState()) {
           this._handleModelRefreshEvent();
         } else {
@@ -17234,6 +18678,7 @@ var __oj_data_grid_metadata =
     let ranges = eventDetail.ranges;
     if (ranges.length === 0) {
       this.m_processingModelEvent = false;
+      this.m_fetchingForInsert = false;
       this._runModelEventQueue(true);
       return;
     }
@@ -17271,13 +18716,43 @@ var __oj_data_grid_metadata =
         headerFragment: headerFragment,
         endHeaderFragment: endHeaderFragment,
         totalDimension: 0,
-        promiseResolve: promiseResolve
+        promiseResolve: promiseResolve,
+        update: false
       };
 
-      this.fetchHeaders(axis, start, headerFragment, endHeaderFragment, count, {
-        success: this._handleInsertRangeHeaderFetchSuccess.bind(this, commonProps),
-        error: this.handleCellsFetchError
-      });
+      this.m_fetchingForInsert = true;
+      let computedHeaderStart = start;
+      let computedHeaderCount = count;
+      if (
+        !this._isHighWatermarkScrolling() &&
+        ((axis === 'row' && this._hasFrozenRows() && start <= this.m_frozenRowIndex + 1) ||
+          (axis === 'column' && this._hasFrozenColumns() && start <= this.m_frozenColIndex + 1))
+      ) {
+        if (axis === 'row') {
+          this.fetchHeaders('row', start, headerFragment, endHeaderFragment, count, {
+            success: this._handleInsertRangeHeaderFetchSuccess.bind(this, commonProps),
+            error: this.handleCellsFetchError
+          });
+        }
+        if (axis === 'column') {
+          this.fetchHeaders('column', start, headerFragment, endHeaderFragment, count, {
+            success: this._handleInsertRangeHeaderFetchSuccess.bind(this, commonProps),
+            error: this.handleCellsFetchError
+          });
+        }
+      } else {
+        this.fetchHeaders(
+          axis,
+          computedHeaderStart,
+          headerFragment,
+          endHeaderFragment,
+          computedHeaderCount,
+          {
+            success: this._handleInsertRangeHeaderFetchSuccess.bind(this, commonProps),
+            error: this.handleCellsFetchError
+          }
+        );
+      }
       this.fetchCells(this.m_databody, startRow, startCol, rowCount, colCount, {
         success: this._handleInsertRangeCellFetchSuccess.bind(this, commonProps),
         error: this.handleCellsFetchError
@@ -17454,7 +18929,8 @@ var __oj_data_grid_metadata =
         headerFragment,
         endHeaderFragment,
         totalDimension: 0,
-        promiseResolve: promiseResolve
+        promiseResolve: promiseResolve,
+        update: true
       };
 
       this.m_fetchingForUpdate = true;
@@ -17516,6 +18992,7 @@ var __oj_data_grid_metadata =
     // handleInsertRangeCellFetchSuccess expects { offset, count } as commonProps.range
     delete commonProps.range;
     commonProps.range = { offset, count };
+    commonProps.update = true;
     // this ends the task
     this._handleInsertRangeCellFetchSuccess(commonProps, cellSet, cellRange, focusCallback);
   };
@@ -17524,24 +19001,33 @@ var __oj_data_grid_metadata =
     commonProps,
     headerSet,
     headerRange,
-    endHeaderSet
+    endHeaderSet,
+    rowInsert,
+    frozenHeaderSet,
+    frozenHeaderRange,
+    frozenEndHeaderSet
   ) {
-    const axis = headerRange.axis;
+    const axis = headerRange?.axis !== undefined ? headerRange.axis : frozenHeaderRange.axis;
 
     this._signalTaskEnd();
     this.m_fetching[axis] = false;
 
     const dir = this.getResources().isRTLMode() ? 'right' : 'left';
-    const start = headerRange.start;
+    const start = headerRange?.start !== undefined ? headerRange.start : frozenHeaderRange.start;
     const count = commonProps.range.count;
     const headerFragment = commonProps.headerFragment;
     const endHeaderFragment = commonProps.endHeaderFragment;
     const insertDimension = axis === 'row' ? 'top' : dir;
+    let isUpdate = commonProps.update || false;
     // freezeIndex rather than m_frozenIndex as during update post deletion m_frozenIndex would be deducted
     // while freezeIndex would retain intact.
-    let freezeIndex = this._hasFrozenRows() ? this.m_options._getFreezeIndex('row') : null;
-    if (axis === 'column') {
-      freezeIndex = this._hasFrozenColumns() ? this.m_options._getFreezeIndex('column') : null;
+    let rowFreezeIndex = null;
+    if (this._hasFrozenRows()) {
+      rowFreezeIndex = isUpdate ? this.m_options._getFreezeIndex('row') : this.m_frozenRowIndex;
+    }
+    let columnFreezeIndex = null;
+    if (this._hasFrozenColumns()) {
+      columnFreezeIndex = isUpdate ? this.m_options._getFreezeIndex('column') : this.m_frozenColIndex;
     }
 
     this.updateHiddenAxisForInsertion(start, count, axis);
@@ -17579,7 +19065,8 @@ var __oj_data_grid_metadata =
         axis === 'column' &&
         this._hasFrozenColumns() &&
         !this.m_fetchingForUpdate &&
-        start === freezeIndex
+        start === columnFreezeIndex + 1 &&
+        isUpdate
       ) {
         if (this.m_colHeaderFrozen) {
           insertPixel = this.getElementWidth(this.m_colHeaderFrozen);
@@ -17590,7 +19077,8 @@ var __oj_data_grid_metadata =
         axis === 'row' &&
         this._hasFrozenRows() &&
         !this.m_fetchingForUpdate &&
-        start === freezeIndex
+        start === rowFreezeIndex + 1 &&
+        isUpdate
       ) {
         if (this.m_rowHeaderFrozen) {
           insertPixel = this.getElementHeight(this.m_rowHeaderFrozen);
@@ -17613,8 +19101,8 @@ var __oj_data_grid_metadata =
 
         index = start + c;
         if (
-          (axis === 'column' && this._hasFrozenColumns() && index <= freezeIndex) ||
-          (axis === 'row' && this._hasFrozenRows() && index <= freezeIndex)
+          (axis === 'column' && this._hasFrozenColumns() && index <= columnFreezeIndex) ||
+          (axis === 'row' && this._hasFrozenRows() && index <= rowFreezeIndex)
         ) {
           className = `${className} ${this.getMappedStyle('frozenHeader')}`;
         }
@@ -17693,13 +19181,184 @@ var __oj_data_grid_metadata =
         commonProps.totalDimension = totalDimension;
       }
     }
+    if (!this._isHighWatermarkScrolling() && frozenHeaderRange != null) {
+      this._handleInsertRangeFrozenHeaderFetchSuccess(
+        commonProps,
+        frozenHeaderSet,
+        frozenEndHeaderSet,
+        frozenHeaderRange
+      );
+    }
+  };
+
+  DvtDataGrid.prototype._handleInsertRangeFrozenHeaderFetchSuccess = function (
+    commonProps,
+    frozenHeaderSet,
+    frozenEndHeaderSet,
+    frozenHeaderRange
+  ) {
+    const axis = frozenHeaderRange.axis;
+    const start = frozenHeaderRange.start;
+    const dir = this.getResources().isRTLMode() ? 'right' : 'left';
+    const headerFragment = commonProps.headerFragment;
+    const endHeaderFragment = commonProps.endHeaderFragment;
+    const insertDimension = axis === 'row' ? 'top' : dir;
+    let insertReference;
+    let insertPixel;
+    let headerCount;
+    let c = 0;
+    let index;
+    let returnVal;
+    let className;
+    let renderer;
+    let levelCount;
+    let leftPixel;
+    let topPixel;
+    let totalDimension = 0;
+    if (frozenHeaderSet != null) {
+      className = this.getMappedStyle('headercell');
+      if (axis === 'row') {
+        levelCount = this.m_rowHeaderLevelCount;
+        className += ` ${this.getMappedStyle('rowheadercell')} ${this.getMappedStyle(
+        'rowHeaderFrozen'
+      )}`;
+      } else {
+        levelCount = this.m_columnHeaderLevelCount;
+        className += ` ${this.getMappedStyle('colheadercell')} ${this.getMappedStyle(
+        'colHeaderFrozen'
+      )}`;
+      }
+
+      insertReference = this._getHeaderByIndex(start, axis, levelCount - 1);
+      insertPixel = this.getElementDir(insertReference, insertDimension);
+
+      // insert reference for the last frozen header will return regular headers.
+      // Since the dir value would start from zero for the reference header,
+      // we have to handle this special case by checking the dimension on the frozen section.
+
+      if (axis === 'column' && this._hasFrozenColumns() && start === this.m_frozenColIndex + 1) {
+        if (this.m_colHeaderFrozen) {
+          insertPixel = this.getElementWidth(this.m_colHeaderFrozen);
+        } else if (this.m_colEndHeaderFrozen) {
+          insertPixel = this.getElementWidth(this.m_colEndHeaderFrozen);
+        }
+      } else if (axis === 'row' && this._hasFrozenRows() && start === this.m_frozenRowIndex + 1) {
+        if (this.m_rowHeaderFrozen) {
+          insertPixel = this.getElementHeight(this.m_rowHeaderFrozen);
+        } else if (this.m_rowEndHeaderFrozen) {
+          insertPixel = this.getElementHeight(this.m_rowEndHeaderFrozen);
+        }
+      }
+
+      headerCount = frozenHeaderSet.getCount();
+      renderer = this.getRendererOrTemplate(axis);
+
+      while (headerCount - c > 0) {
+        if (axis === 'row') {
+          leftPixel = 0;
+          topPixel = insertPixel + totalDimension;
+        } else {
+          leftPixel = insertPixel + totalDimension;
+          topPixel = 0;
+        }
+
+        index = start + c;
+        if (
+          (axis === 'column' && this._hasFrozenColumns() && index <= this.m_frozenColIndex + 1) ||
+          (axis === 'row' && this._hasFrozenRows() && index <= this.m_frozenRowIndex + 1)
+        ) {
+          className = `${className} ${this.getMappedStyle('frozenHeader')}`;
+        }
+
+        returnVal = this.buildLevelHeaders(
+          headerFragment,
+          index,
+          0,
+          leftPixel,
+          topPixel,
+          false,
+          true,
+          renderer,
+          frozenHeaderSet,
+          axis,
+          className,
+          levelCount
+        );
+        c += returnVal.count;
+        totalDimension += returnVal.totalHeaderDimension;
+      }
+      if (totalDimension > commonProps.totalDimension) {
+        // eslint-disable-next-line no-param-reassign
+        commonProps.totalDimension = totalDimension;
+      }
+    }
+
+    totalDimension = 0;
+    c = 0;
+    if (frozenEndHeaderSet != null) {
+      className = this.getMappedStyle('endheadercell');
+
+      if (axis === 'row') {
+        levelCount = this.m_rowEndHeaderLevelCount;
+        className += ` ${this.getMappedStyle('rowendheadercell')} ${this.getMappedStyle(
+        'rowEndHeaderFrozen'
+      )} `;
+      } else {
+        levelCount = this.m_columnEndHeaderLevelCount;
+        className += ` ${this.getMappedStyle('colendheadercell')} ${this.getMappedStyle(
+        'colEndHeaderFrozen'
+      )}`;
+      }
+
+      let tmpAxis = axis === 'column' ? 'columnEnd' : 'rowEnd';
+      insertReference = this._getHeaderByIndex(start, tmpAxis, levelCount - 1);
+      insertPixel = this.getElementDir(insertReference, insertDimension);
+
+      headerCount = frozenEndHeaderSet.getCount();
+      renderer = this.getRendererOrTemplate(tmpAxis);
+      while (headerCount - c > 0) {
+        if (axis === 'row') {
+          leftPixel = 0;
+          topPixel = insertPixel + totalDimension;
+        } else {
+          leftPixel = insertPixel + totalDimension;
+          topPixel = 0;
+        }
+
+        index = start + c;
+        returnVal = this.buildLevelHeaders(
+          endHeaderFragment,
+          index,
+          0,
+          leftPixel,
+          topPixel,
+          true,
+          false,
+          renderer,
+          frozenEndHeaderSet,
+          tmpAxis,
+          className,
+          levelCount
+        );
+        c += returnVal.count;
+        totalDimension += returnVal.totalHeaderDimension;
+      }
+      if (totalDimension > commonProps.totalDimension) {
+        // eslint-disable-next-line no-param-reassign
+        commonProps.totalDimension = totalDimension;
+      }
+    }
   };
 
   DvtDataGrid.prototype._handleInsertRangeCellFetchSuccess = function (
     commonProps,
     cellSet,
     cellRanges,
-    focusCallback
+    focusCallback,
+    frozenCellRanges,
+    frozenRowCellSet,
+    frozenColumnCellSet,
+    frozenCornerCellSet
   ) {
     const range = commonProps.range;
     const axis = commonProps.axis;
@@ -17708,25 +19367,33 @@ var __oj_data_grid_metadata =
     const newEndHeaderElements = commonProps.endHeaderFragment;
     let totalDimension = commonProps.totalDimension;
     const dir = this.getResources().isRTLMode() ? 'right' : 'left';
-    const newCellElements = document.createDocumentFragment();
-    const newFrozenColCellElements = document.createDocumentFragment();
-    const newFrozenRowCellElements = document.createDocumentFragment();
-    const newFrozenCornerCellElements = document.createDocumentFragment();
+    let newCellElements = document.createDocumentFragment();
+    let newFrozenColCellElements = document.createDocumentFragment();
+    let newFrozenRowCellElements = document.createDocumentFragment();
+    let newFrozenCornerCellElements = document.createDocumentFragment();
     let headerRoot = this.m_rowHeader;
     let endHeaderRoot = this.m_rowEndHeader;
     let frozenDatabody = this.m_databodyFrozenRow;
     let frozenHeaderRoot = this.m_rowHeaderFrozen;
     let frozenEndHeaderRoot = this.m_rowEndHeaderFrozen;
+    let isUpdate = commonProps.update || false;
     // freezeIndex rather than m_frozenIndex as during update post deletion m_frozenIndex would be deducted
     // while freezeIndex would retain intact.
-    let freezeIndex = this._hasFrozenRows() ? this.m_options._getFreezeIndex('row') : null;
+    let frozenRowIndex = null;
+    if (this._hasFrozenRows()) {
+      frozenRowIndex = isUpdate ? this.m_options._getFreezeIndex('row') : this.m_frozenRowIndex;
+    }
+    let frozenColIndex = null;
+    if (this._hasFrozenColumns()) {
+      frozenColIndex = isUpdate ? this.m_options._getFreezeIndex('column') : this.m_frozenColIndex;
+    }
+
     if (axis === 'column') {
       headerRoot = this.m_colHeader;
       endHeaderRoot = this.m_colEndHeader;
       frozenDatabody = this.m_databodyFrozenCol;
       frozenHeaderRoot = this.m_colHeaderFrozen;
       frozenEndHeaderRoot = this.m_colEndHeaderFrozen;
-      freezeIndex = this._hasFrozenColumns() ? this.m_options._getFreezeIndex('column') : null;
     }
 
     this._signalTaskEnd();
@@ -17735,7 +19402,30 @@ var __oj_data_grid_metadata =
     if (!dontModifySelection) {
       this.unhighlightSelection();
     }
-    if (cellSet) {
+    if (
+      !this._isHighWatermarkScrolling() &&
+      (this._hasFrozenColumns() || this._hasFrozenRows()) &&
+      (frozenRowCellSet !== undefined ||
+        frozenColumnCellSet !== undefined ||
+        frozenCornerCellSet !== undefined)
+    ) {
+      [
+        newFrozenCornerCellElements,
+        newFrozenRowCellElements,
+        newFrozenColCellElements,
+        newCellElements,
+        totalDimension
+      ] = this._handleInsertRangeCellFetchSuccessVirtualScroll(
+        commonProps,
+        cellSet,
+        cellRanges,
+        focusCallback,
+        frozenCellRanges,
+        frozenRowCellSet,
+        frozenColumnCellSet,
+        frozenCornerCellSet
+      );
+    } else if (cellSet) {
       const rowRange = cellRanges[0];
       let rowStart = rowRange.start;
       const columnRange = cellRanges[1];
@@ -17749,10 +19439,15 @@ var __oj_data_grid_metadata =
       if (insertReference) {
         topPixel = axis === 'row' ? this.getElementDir(insertReference, 'top') : this.m_startRowPixel;
         leftPixel = axis === 'row' ? this.m_startColPixel : this.getElementDir(insertReference, dir);
-        if (axis === 'column' && this._hasFrozenColumns() && columnStart === freezeIndex) {
+        if (
+          axis === 'column' &&
+          this._hasFrozenColumns() &&
+          columnStart === frozenColIndex &&
+          isUpdate
+        ) {
           leftPixel = this.getElementWidth(this.m_databodyFrozenCol);
         }
-        if (axis === 'row' && this._hasFrozenRows() && rowStart === freezeIndex) {
+        if (axis === 'row' && this._hasFrozenRows() && rowStart === frozenRowIndex && isUpdate) {
           topPixel = this.getElementHeight(this.m_databodyFrozenRow);
         }
       } else {
@@ -17762,7 +19457,7 @@ var __oj_data_grid_metadata =
 
       if (axis === 'column') {
         // if insert is within frozen section.
-        if (this._hasFrozenColumns() && columnStart < freezeIndex + 1) {
+        if (this._hasFrozenColumns() && columnStart < frozenColIndex + 1) {
           if (this.m_databodyFrozenCorner) {
             this._addCellsToFragment(
               newFrozenCornerCellElements,
@@ -17771,11 +19466,11 @@ var __oj_data_grid_metadata =
               topPixel,
               columnStart,
               leftPixel,
-              freezeIndex + 1,
+              frozenRowIndex + 1,
               null
             );
-            rowStart = freezeIndex + 1;
-            rowCount -= freezeIndex + 1;
+            rowStart = frozenRowIndex + 1;
+            rowCount -= frozenRowIndex + 1;
           }
           const returnVal = this._addCellsToFragment(
             newFrozenColCellElements,
@@ -17798,11 +19493,11 @@ var __oj_data_grid_metadata =
               topPixel,
               columnStart,
               leftPixel,
-              freezeIndex + 1,
+              frozenRowIndex + 1,
               null
             );
-            rowStart = freezeIndex + 1;
-            rowCount -= freezeIndex + 1;
+            rowStart = frozenRowIndex + 1;
+            rowCount -= frozenRowIndex + 1;
           }
           const returnVal = this._addCellsToFragment(
             newCellElements,
@@ -17821,7 +19516,7 @@ var __oj_data_grid_metadata =
         }
       } else if (axis === 'row') {
         // if insert is within frozen section.
-        if (this._hasFrozenRows() && rowStart < freezeIndex + 1) {
+        if (this._hasFrozenRows() && rowStart < frozenRowIndex + 1) {
           if (this.m_databodyFrozenCorner) {
             this._addCellsToFragment(
               newFrozenCornerCellElements,
@@ -17831,10 +19526,10 @@ var __oj_data_grid_metadata =
               columnStart,
               leftPixel,
               null,
-              freezeIndex + 1
+              frozenColIndex + 1
             );
-            columnStart = freezeIndex + 1;
-            columnCount -= freezeIndex + 1;
+            columnStart = frozenColIndex + 1;
+            columnCount -= frozenColIndex + 1;
           }
           const returnVal = this._addCellsToFragment(
             newFrozenRowCellElements,
@@ -17858,10 +19553,10 @@ var __oj_data_grid_metadata =
               columnStart,
               leftPixel,
               null,
-              freezeIndex + 1
+              frozenColIndex + 1
             );
-            columnStart = freezeIndex + 1;
-            columnCount -= freezeIndex + 1;
+            columnStart = frozenColIndex + 1;
+            columnCount -= frozenColIndex + 1;
           }
           const returnVal = this._addCellsToFragment(
             newCellElements,
@@ -17908,8 +19603,8 @@ var __oj_data_grid_metadata =
     // are available and insert is done at the end of the frozen section.
     if (this._hasFrozenColumns() || this._hasFrozenRows()) {
       if (
-        (axis === 'column' && this._hasFrozenColumns() && offset < freezeIndex + 1) ||
-        (axis === 'row' && this._hasFrozenRows() && offset < freezeIndex + 1)
+        (axis === 'column' && this._hasFrozenColumns() && offset < frozenColIndex + 1) ||
+        (axis === 'row' && this._hasFrozenRows() && offset < frozenRowIndex + 1)
       ) {
         frozenDimensions = new Array(count).fill(totalDimension / count);
       } else {
@@ -17919,7 +19614,10 @@ var __oj_data_grid_metadata =
       dimensions = new Array(count).fill(totalDimension / count);
     }
 
-    let hasData = newCellElements.childNodes.length || newFrozenRowCellElements.childNodes.length;
+    let hasData =
+      newCellElements.childNodes.length ||
+      newFrozenRowCellElements.childNodes.length ||
+      newFrozenColCellElements.childNodes.length;
     let hasHeaders = newHeaderElements.childNodes.length;
     let hasEndHeaders = newEndHeaderElements.childNodes.length;
     const databodyContent = this.m_databody.firstChild;
@@ -17931,8 +19629,8 @@ var __oj_data_grid_metadata =
     for (let i = indexes.length - 1; i >= 0; i--) {
       let index = indexes[i];
       if (
-        (axis === 'column' && this._hasFrozenColumns() && index < freezeIndex + 1) ||
-        (axis === 'row' && this._hasFrozenRows() && index < freezeIndex + 1)
+        (axis === 'column' && this._hasFrozenColumns() && index < frozenColIndex + 1) ||
+        (axis === 'row' && this._hasFrozenRows() && index < frozenRowIndex + 1)
       ) {
         frozenIndexes.push(index);
         indexes.splice(i, 1);
@@ -17995,8 +19693,24 @@ var __oj_data_grid_metadata =
       }
       if (axis === 'column') {
         this.m_frozenColIndex += frozenIndexes.length;
+        let details = {
+          event: null,
+          ui: {
+            frozenCount: this.m_frozenColIndex + 1
+          }
+        };
+
+        this.fireEvent('columnFreeze', details);
       } else {
         this.m_frozenRowIndex += frozenIndexes.length;
+        let details = {
+          event: null,
+          ui: {
+            frozenCount: this.m_frozenRowIndex + 1
+          }
+        };
+
+        this.fireEvent('rowFreeze', details);
       }
     }
 
@@ -18034,29 +19748,123 @@ var __oj_data_grid_metadata =
 
     // check for m_frozenIndex as m_frozenIndex is updated by now.
     if (axis === 'row') {
+      let updateMaxCount = false;
       if (hasData) {
-        this.m_endRow += count;
-        if (!this._hasFrozenRows() || (this._hasFrozenRows() && offset > this.m_frozenRowIndex)) {
+        if (
+          this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() && !this._hasFrozenRows())
+        ) {
+          this.m_endRow += count;
+          updateMaxCount = true;
+        } else if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+          // update the endRow count when we insert (when we consider it similar to HWS case; startRow === 0)
+          // update the endRow count when we insert outside the frozen section when the grid is at random position.
+          if ((offset > this.m_frozenRowIndex + 1 && this.m_startRow > 0) || this.m_startRow === 0) {
+            this.m_endRow += count;
+            updateMaxCount = true;
+          }
+        }
+        if (
+          !this._hasFrozenRows() ||
+          (this._isHighWatermarkScrolling() &&
+            this._hasFrozenRows() &&
+            offset > this.m_frozenRowIndex) ||
+          (!this._isHighWatermarkScrolling() &&
+            this._hasFrozenRows() &&
+            offset > this.m_frozenRowIndex + 1)
+        ) {
           this.m_endRowPixel += totalDimension;
+        }
+        if (
+          !this._isHighWatermarkScrolling() &&
+          this._hasFrozenRows() &&
+          offset <= this.m_frozenRowIndex &&
+          this.m_startRow > 0
+        ) {
+          this.m_startRow += count;
         }
         this.m_stopRowFetch = false;
       }
       if (hasHeaders) {
-        this.m_endRowHeader += count;
-        if (!this._hasFrozenRows() || (this._hasFrozenRows() && offset > this.m_frozenRowIndex)) {
+        if (
+          this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() && !this._hasFrozenRows())
+        ) {
+          this.m_endRowHeader += count;
+          updateMaxCount = true;
+        } else if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+          if (
+            (offset > this.m_frozenRowIndex + 1 && this.m_startRowHeader > 0) ||
+            this.m_startRowHeader === 0
+          ) {
+            this.m_endRowHeader += count;
+            updateMaxCount = true;
+          }
+        }
+        if (
+          !this._hasFrozenRows() ||
+          (this._isHighWatermarkScrolling() &&
+            this._hasFrozenRows() &&
+            offset > this.m_frozenRowIndex) ||
+          (!this._isHighWatermarkScrolling() &&
+            this._hasFrozenRows() &&
+            offset > this.m_frozenRowIndex + 1)
+        ) {
           this.m_endRowHeaderPixel += totalDimension;
+        }
+        if (
+          !this._isHighWatermarkScrolling() &&
+          this._hasFrozenRows() &&
+          offset <= this.m_frozenRowIndex &&
+          this.m_startRowHeader > 0
+        ) {
+          this.m_startRowHeader += count;
         }
         this.m_stopRowHeaderFetch = false;
       }
       if (hasEndHeaders) {
-        this.m_endRowEndHeader += count;
-        if (!this._hasFrozenRows() || (this._hasFrozenRows() && offset > this.m_frozenRowIndex)) {
+        if (
+          this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() && !this._hasFrozenRows())
+        ) {
+          this.m_endRowEndHeader += count;
+          updateMaxCount = true;
+        } else if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+          // update the endRow count when we insert (when we consider it similar to HWS case; startRow === 0)
+          // update the endRow count when we insert outside the frozen section when the grid is at random position.
+          if (
+            (offset > this.m_frozenRowIndex + 1 && this.m_startRowEndHeader > 0) ||
+            this.m_startRowEndHeader === 0
+          ) {
+            this.m_endRowEndHeader += count;
+            updateMaxCount = true;
+          }
+        }
+        if (
+          !this._hasFrozenRows() ||
+          (this._isHighWatermarkScrolling() &&
+            this._hasFrozenRows() &&
+            offset > this.m_frozenRowIndex) ||
+          (!this._isHighWatermarkScrolling() &&
+            this._hasFrozenRows() &&
+            offset > this.m_frozenRowIndex + 1)
+        ) {
           this.m_endRowEndHeaderPixel += totalDimension;
+        }
+        if (
+          !this._isHighWatermarkScrolling() &&
+          this._hasFrozenRows() &&
+          offset <= this.m_frozenRowIndex &&
+          this.m_startRowEndHeader > 0
+        ) {
+          this.m_startRowEndHeader += count;
         }
         this.m_stopRowEndHeaderFetch = false;
       }
       if (hasData || hasHeaders || hasEndHeaders) {
-        this.m_maxRowYet += count;
+        if (updateMaxCount) {
+          this.m_maxRowYet += count;
+        }
       }
 
       if (this._hasFrozenRows() && offset < this.m_frozenRowIndex + 1) {
@@ -18077,38 +19885,125 @@ var __oj_data_grid_metadata =
       }
       this.updateRowBanding();
     } else if (axis === 'column') {
+      let updateMaxCount = false;
       if (hasData) {
-        this.m_endCol += count;
+        if (
+          this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() && !this._hasFrozenColumns())
+        ) {
+          this.m_endCol += count;
+          updateMaxCount = true;
+        } else if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+          // update the endCol count when we insert (when we consider it similar to HWS case; startCol === 0)
+          // update the endCol count when we insert outside the frozen section when the grid is at random position.
+          if ((offset > this.m_frozenColIndex + 1 && this.m_startCol > 0) || this.m_startCol === 0) {
+            this.m_endCol += count;
+            updateMaxCount = true;
+          }
+        }
         if (
           !this._hasFrozenColumns() ||
-          (this._hasFrozenColumns() && offset > this.m_frozenColIndex)
+          (this._isHighWatermarkScrolling() &&
+            this._hasFrozenColumns() &&
+            offset > this.m_frozenColIndex) ||
+          (!this._isHighWatermarkScrolling() &&
+            this._hasFrozenColumns() &&
+            offset > this.m_frozenColIndex + 1)
         ) {
           this.m_endColPixel += totalDimension;
+        }
+        if (
+          !this._isHighWatermarkScrolling() &&
+          this._hasFrozenColumns() &&
+          offset <= this.m_frozenColIndex &&
+          this.m_startCol > 0
+        ) {
+          this.m_startCol += count;
         }
         this.m_stopColumnFetch = false;
       }
       if (hasHeaders) {
-        this.m_endColHeader += count;
+        if (
+          this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() && !this._hasFrozenColumns())
+        ) {
+          this.m_endColHeader += count;
+          updateMaxCount = true;
+        } else if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+          // update the endCol count when we insert (when we consider it similar to HWS case; startCol === 0)
+          // update the endCol count when we insert outside the frozen section when the grid is at random position.
+          if (
+            (offset > this.m_frozenColIndex + 1 && this.m_startColHeader > 0) ||
+            this.m_startColHeader === 0
+          ) {
+            this.m_endColHeader += count;
+            updateMaxCount = true;
+          }
+        }
         if (
           !this._hasFrozenColumns() ||
-          (this._hasFrozenColumns() && offset > this.m_frozenColIndex)
+          (this._isHighWatermarkScrolling() &&
+            this._hasFrozenColumns() &&
+            offset > this.m_frozenColIndex) ||
+          (!this._isHighWatermarkScrolling() &&
+            this._hasFrozenColumns() &&
+            offset > this.m_frozenColIndex + 1)
         ) {
           this.m_endColHeaderPixel += totalDimension;
+        }
+        if (
+          !this._isHighWatermarkScrolling() &&
+          this._hasFrozenColumns() &&
+          offset <= this.m_frozenColIndex &&
+          this.m_startColHeader > 0
+        ) {
+          this.m_startColHeader += count;
         }
         this.m_stopColumnHeaderFetch = false;
       }
       if (hasEndHeaders) {
-        this.m_endColEndHeader += count;
+        if (
+          this._isHighWatermarkScrolling() ||
+          (!this._isHighWatermarkScrolling() && !this._hasFrozenColumns())
+        ) {
+          this.m_endColEndHeader += count;
+          updateMaxCount = true;
+        } else if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+          // update the endCol count when we insert (when we consider it similar to HWS case; startCol === 0)
+          // update the endCol count when we insert outside the frozen section when the grid is at random position.
+          if (
+            (offset > this.m_frozenColIndex + 1 && this.m_startColEndHeader > 0) ||
+            this.m_startColEndHeader === 0
+          ) {
+            this.m_endColEndHeader += count;
+            updateMaxCount = true;
+          }
+        }
         if (
           !this._hasFrozenColumns() ||
-          (this._hasFrozenColumns() && offset > this.m_frozenColIndex)
+          (this._isHighWatermarkScrolling() &&
+            this._hasFrozenColumns() &&
+            offset > this.m_frozenColIndex) ||
+          (!this._isHighWatermarkScrolling() &&
+            this._hasFrozenColumns() &&
+            offset > this.m_frozenColIndex + 1)
         ) {
           this.m_endColEndHeaderPixel += totalDimension;
+        }
+        if (
+          !this._isHighWatermarkScrolling() &&
+          this._hasFrozenColumns() &&
+          offset <= this.m_frozenColIndex &&
+          this.m_startColEndHeader > 0
+        ) {
+          this.m_startColEndHeader += count;
         }
         this.m_stopColumnEndHeaderFetch = false;
       }
       if (hasData || hasHeaders || hasEndHeaders) {
-        this.m_maxColYet += count;
+        if (updateMaxCount) {
+          this.m_maxColYet += count;
+        }
       }
       if (this._hasFrozenColumns() && offset < this.m_frozenColIndex + 1) {
         let frozenDatabodyContentWidth =
@@ -18374,6 +20269,215 @@ var __oj_data_grid_metadata =
     }
   };
 
+  DvtDataGrid.prototype._handleInsertRangeCellFetchSuccessVirtualScroll = function (
+    commonProps,
+    cellSet,
+    cellRanges,
+    focusCallback,
+    frozenCellRanges,
+    frozenRowCellSet,
+    frozenColumnCellSet,
+    frozenCornerCellSet
+  ) {
+    const range = commonProps.range;
+    const axis = commonProps.axis;
+    let totalDimension = commonProps.totalDimension;
+    const dir = this.getResources().isRTLMode() ? 'right' : 'left';
+    const newCellElements = document.createDocumentFragment();
+    const newFrozenColCellElements = document.createDocumentFragment();
+    const newFrozenRowCellElements = document.createDocumentFragment();
+    const newFrozenCornerCellElements = document.createDocumentFragment();
+
+    let rowRange = cellRanges[0];
+    let rowStart = rowRange.start;
+    let columnRange = cellRanges[1];
+    let columnStart = columnRange.start;
+
+    let frozenRowRange = frozenCellRanges[0];
+    let frozenRowStart = frozenRowRange?.rowStart;
+    let frozenRowColStart = frozenRowCellSet?.columnStart;
+
+    let frozenColumnRange = frozenCellRanges[1];
+    let frozenColumnStart = frozenColumnRange?.colStart;
+    let frozenColRowStart = frozenColumnCellSet?.rowStart;
+
+    if (axis === 'row') {
+      if (
+        frozenRowCellSet &&
+        frozenRowCellSet.rowEnd >= frozenRowCellSet.rowStart &&
+        range.offset <= this.m_frozenRowIndex + 1
+      ) {
+        const insertReference = this._getCellByIndex(
+          this.createIndex(frozenRowStart, frozenRowColStart)
+        );
+        let topPixel;
+        let leftPixel;
+        if (insertReference) {
+          topPixel = this.getElementDir(insertReference, 'top');
+          leftPixel = this.getElementDir(insertReference, dir);
+          if (frozenRowStart === this.m_frozenRowIndex + 1) {
+            topPixel = this.getElementHeight(this.m_databodyFrozenRow);
+          }
+        }
+        if (frozenCornerCellSet && frozenCornerCellSet.rowEnd >= frozenCornerCellSet.rowStart) {
+          this._addCellsToFragment(
+            newFrozenCornerCellElements,
+            frozenCornerCellSet,
+            frozenCornerCellSet.rowStart,
+            topPixel,
+            frozenCornerCellSet.columnStart,
+            0,
+            frozenCornerCellSet.rowCount,
+            frozenCornerCellSet.columnCount
+          );
+        }
+        const returnVal = this._addCellsToFragment(
+          newFrozenRowCellElements,
+          frozenRowCellSet,
+          frozenRowCellSet.rowStart,
+          topPixel,
+          frozenRowCellSet.columnStart,
+          leftPixel,
+          frozenRowCellSet.rowCount,
+          frozenRowCellSet.columnCount
+        );
+        totalDimension = Math.max(totalDimension, returnVal.totalRowHeight);
+      } else {
+        let topPixel;
+        let leftPixel;
+        if (frozenColumnCellSet && frozenColumnCellSet.columnEnd >= frozenColumnCellSet.columnStart) {
+          const insertReference = this._getCellByIndex(
+            this.createIndex(frozenColRowStart, frozenColumnStart)
+          );
+
+          if (insertReference) {
+            topPixel = this.getElementDir(insertReference, 'top');
+            leftPixel = this.getElementDir(insertReference, dir);
+          }
+          this._addCellsToFragment(
+            newFrozenColCellElements,
+            frozenColumnCellSet,
+            frozenColumnCellSet.rowStart,
+            topPixel,
+            frozenColumnCellSet.columnStart,
+            leftPixel,
+            frozenColumnCellSet.rowCount,
+            frozenColumnCellSet.columnCount
+          );
+        }
+
+        const insertReference = this._getCellByIndex(this.createIndex(rowStart, columnStart));
+        if (insertReference) {
+          topPixel = this.getElementDir(insertReference, 'top');
+          leftPixel = this.getElementDir(insertReference, dir);
+        }
+        const returnVal = this._addCellsToFragment(
+          newCellElements,
+          cellSet,
+          cellSet.rowStart,
+          topPixel,
+          cellSet.columnStart,
+          leftPixel,
+          cellSet.rowCount,
+          cellSet.columnCount
+        );
+        totalDimension = Math.max(totalDimension, returnVal.totalRowHeight);
+      }
+    } else if (axis === 'column') {
+      if (
+        frozenColumnCellSet &&
+        frozenColumnCellSet.columnEnd >= frozenColumnCellSet.columnStart &&
+        range.offset <= this.m_frozenColIndex + 1
+      ) {
+        const insertReference = this._getCellByIndex(
+          this.createIndex(frozenColRowStart, frozenColumnStart)
+        );
+        let topPixel;
+        let leftPixel;
+        if (insertReference) {
+          topPixel = this.getElementDir(insertReference, 'top');
+          // check this ??
+          if (frozenColumnStart === this.m_frozenColIndex + 1) {
+            leftPixel = this.getElementWidth(this.m_databodyFrozenCol);
+          } else {
+            leftPixel = this.getElementDir(insertReference, dir);
+          }
+        }
+        if (frozenCornerCellSet && frozenCornerCellSet.columnEnd >= frozenCornerCellSet.columnStart) {
+          this._addCellsToFragment(
+            newFrozenCornerCellElements,
+            frozenCornerCellSet,
+            frozenCornerCellSet.rowStart,
+            0,
+            frozenCornerCellSet.columnStart,
+            leftPixel,
+            frozenCornerCellSet.rowCount,
+            frozenCornerCellSet.columnCount
+          );
+        }
+        const returnVal = this._addCellsToFragment(
+          newFrozenColCellElements,
+          frozenColumnCellSet,
+          frozenColumnCellSet.rowStart,
+          topPixel,
+          frozenColumnCellSet.columnStart,
+          leftPixel,
+          frozenColumnCellSet.rowCount,
+          frozenColumnCellSet.columnCount
+        );
+        totalDimension = Math.max(totalDimension, returnVal.totalColumnWidth);
+      } else {
+        let topPixel;
+        let leftPixel;
+
+        if (frozenRowCellSet && frozenRowCellSet.rowEnd >= frozenRowCellSet.rowStart) {
+          const insertReference = this._getCellByIndex(
+            this.createIndex(frozenRowStart, frozenRowColStart)
+          );
+          if (insertReference) {
+            topPixel = 0;
+            // check this ??
+            leftPixel = this.getElementDir(insertReference, dir);
+          }
+          this._addCellsToFragment(
+            newFrozenRowCellElements,
+            frozenRowCellSet,
+            frozenRowCellSet.rowStart,
+            topPixel,
+            frozenRowCellSet.columnStart,
+            leftPixel,
+            frozenRowCellSet.rowCount,
+            frozenRowCellSet.columnCount
+          );
+        }
+        const insertReference = this._getCellByIndex(this.createIndex(rowStart, columnStart));
+        if (insertReference) {
+          topPixel = 0;
+          // check this ??
+          leftPixel = this.getElementDir(insertReference, dir);
+        }
+        const returnVal = this._addCellsToFragment(
+          newCellElements,
+          cellSet,
+          cellSet.rowStart,
+          topPixel,
+          cellSet.columnStart,
+          leftPixel,
+          cellSet.rowCount,
+          cellSet.columnCount
+        );
+        totalDimension = Math.max(totalDimension, returnVal.totalColumnWidth);
+      }
+    }
+    return [
+      newFrozenCornerCellElements,
+      newFrozenRowCellElements,
+      newFrozenColCellElements,
+      newCellElements,
+      totalDimension
+    ];
+  };
+
   /**
    * Handles model insert event
    * @param {Object} indexes the indexes that identifies the row that got updated.
@@ -18467,9 +20571,11 @@ var __oj_data_grid_metadata =
     if (rowStart < this.m_maxRowYet) {
       this.m_maxRowYet += 1;
     }
+
     // insert the row
     this.handleCellsFetchSuccess(cellSet, cellRanges, this.m_endRow >= cellRanges[0].start);
 
+    // "Increment maxRowYet" question
     // make sure the new row is in range
     this._scrollRowIntoViewport(rowStart);
 
@@ -18899,7 +21005,16 @@ var __oj_data_grid_metadata =
   /**
    * @private
    */
-  DvtDataGrid.prototype._handleUpdateRangeFetchSuccess = function (commonProps, cellSet, cellRange) {
+  DvtDataGrid.prototype._handleUpdateRangeFetchSuccess = function (
+    commonProps,
+    cellSet,
+    cellRange,
+    rowInsert,
+    frozenCellRange,
+    frozenRowCellSet,
+    frozenColumnCellSet,
+    frozenCornerCellSet
+  ) {
     // fetch complete
     this.m_fetching.cells = false;
     this.m_fetchingForUpdate = false;
@@ -18919,7 +21034,16 @@ var __oj_data_grid_metadata =
         this.m_activeEdit = element;
       }
     }
-    this._splitRange(cellSet, rowStart, rowEnd, columnStart, columnEnd);
+    this._splitRange(
+      cellSet,
+      rowStart,
+      rowEnd,
+      columnStart,
+      columnEnd,
+      frozenRowCellSet,
+      frozenColumnCellSet,
+      frozenCornerCellSet
+    );
     // hide fetching text now that we are done
     this.hideStatusText();
 
@@ -18954,95 +21078,209 @@ var __oj_data_grid_metadata =
    * @param {number} colEnd
    * @private
    */
-  DvtDataGrid.prototype._splitRange = function (cellSet, rowStart, rowEnd, colStart, colEnd) {
-    let tmpRowEnd = rowEnd < this.m_frozenRowIndex ? rowEnd : this.m_frozenRowIndex;
-    let tmpColEnd = colEnd < this.m_frozenColIndex ? colEnd : this.m_frozenColIndex;
+  DvtDataGrid.prototype._splitRange = function (
+    cellSet,
+    rowStart,
+    rowEnd,
+    colStart,
+    colEnd,
+    frozenRowCellSet,
+    frozenColumnCellSet,
+    frozenCornerCellSet
+  ) {
     if (
-      this.m_frozenRowIndex !== null &&
-      this.m_frozenColIndex !== null &&
-      rowStart <= this.m_frozenRowIndex &&
-      colStart <= this.m_frozenColIndex
+      !this._isHighWatermarkScrolling() &&
+      (frozenRowCellSet !== undefined ||
+        frozenColumnCellSet !== undefined ||
+        frozenCornerCellSet !== undefined)
     ) {
-      this._fetchAndMutateCellsByRange(
+      this._splitFrozenRange(
         cellSet,
-        this.m_databodyFrozenCorner,
         rowStart,
-        tmpRowEnd,
+        rowEnd,
         colStart,
-        tmpColEnd
+        colEnd,
+        frozenRowCellSet,
+        frozenColumnCellSet,
+        frozenCornerCellSet
       );
-      if (rowEnd > this.m_frozenRowIndex) {
+    } else {
+      let tmpRowEnd = rowEnd < this.m_frozenRowIndex ? rowEnd : this.m_frozenRowIndex;
+      let tmpColEnd = colEnd < this.m_frozenColIndex ? colEnd : this.m_frozenColIndex;
+      if (
+        this.m_frozenRowIndex !== null &&
+        this.m_frozenColIndex !== null &&
+        rowStart <= this.m_frozenRowIndex &&
+        colStart <= this.m_frozenColIndex
+      ) {
+        this._fetchAndMutateCellsByRange(
+          cellSet,
+          this.m_databodyFrozenCorner,
+          rowStart,
+          tmpRowEnd,
+          colStart,
+          tmpColEnd
+        );
+        if (rowEnd > this.m_frozenRowIndex) {
+          this._fetchAndMutateCellsByRange(
+            cellSet,
+            this.m_databodyFrozenCol,
+            this.m_frozenRowIndex + 1,
+            rowEnd,
+            colStart,
+            tmpColEnd
+          );
+        }
+        if (colEnd > this.m_frozenColIndex) {
+          this._fetchAndMutateCellsByRange(
+            cellSet,
+            this.m_databodyFrozenRow,
+            rowStart,
+            tmpRowEnd,
+            this.m_frozenColIndex + 1,
+            colEnd
+          );
+        }
+        if (rowEnd > this.m_frozenRowIndex) {
+          // eslint-disable-next-line no-param-reassign
+          rowStart = this.m_frozenRowIndex + 1;
+        }
+        if (colEnd > this.m_frozenColIndex) {
+          // eslint-disable-next-line no-param-reassign
+          colStart = this.m_frozenColIndex + 1;
+        }
+      } else if (
+        this.m_databodyFrozenCol &&
+        this.m_frozenColIndex !== null &&
+        colStart <= this.m_frozenColIndex
+      ) {
         this._fetchAndMutateCellsByRange(
           cellSet,
           this.m_databodyFrozenCol,
-          this.m_frozenRowIndex + 1,
+          rowStart,
           rowEnd,
           colStart,
           tmpColEnd
         );
-      }
-      if (colEnd > this.m_frozenColIndex) {
+        // eslint-disable-next-line no-param-reassign
+        colStart = this.m_frozenColIndex + 1;
+      } else if (
+        this.m_databodyFrozenRow &&
+        this.m_frozenRowIndex !== null &&
+        rowStart <= this.m_frozenRowIndex
+      ) {
         this._fetchAndMutateCellsByRange(
           cellSet,
           this.m_databodyFrozenRow,
           rowStart,
           tmpRowEnd,
-          this.m_frozenColIndex + 1,
+          colStart,
           colEnd
         );
-      }
-      if (rowEnd > this.m_frozenRowIndex) {
         // eslint-disable-next-line no-param-reassign
         rowStart = this.m_frozenRowIndex + 1;
       }
-      if (colEnd > this.m_frozenColIndex) {
-        // eslint-disable-next-line no-param-reassign
-        colStart = this.m_frozenColIndex + 1;
+
+      let frozenColExists = this.m_frozenColIndex !== null && this.m_frozenColIndex !== -1;
+      let frozenRowExists = this.m_frozenRowIndex !== null && this.m_frozenRowIndex !== -1;
+
+      // * If no frozen section, mutate the rest of the databody
+      // * If either of them exists, then check if the row/col End exceeds the frozen region and mutate the rest of the databody
+      // * ensure check for frozenAxisExists as 1 > null alone shall pass
+      if (
+        (!frozenColExists && !frozenRowExists) ||
+        ((frozenColExists || frozenRowExists) &&
+          (!frozenRowExists || rowEnd > this.m_frozenRowIndex) &&
+          (!frozenColExists || colEnd > this.m_frozenColIndex))
+      ) {
+        this._fetchAndMutateCellsByRange(
+          cellSet,
+          this.m_databody,
+          rowStart,
+          rowEnd,
+          colStart,
+          colEnd
+        );
+      }
+    }
+  };
+
+  DvtDataGrid.prototype._splitFrozenRange = function (
+    cellSet,
+    rowStart,
+    rowEnd,
+    colStart,
+    colEnd,
+    frozenRowCellSet,
+    frozenColumnCellSet,
+    frozenCornerCellSet
+  ) {
+    if (
+      this._hasFrozenColumns() &&
+      this._hasFrozenRows() &&
+      frozenCornerCellSet !== undefined &&
+      frozenCornerCellSet.rowEnd >= frozenCornerCellSet.rowStart &&
+      frozenCornerCellSet.columnEnd >= frozenCornerCellSet.columnStart
+    ) {
+      this._fetchAndMutateCellsByRange(
+        frozenCornerCellSet,
+        this.m_databodyFrozenCorner,
+        frozenCornerCellSet.rowStart,
+        frozenCornerCellSet.rowEnd,
+        frozenCornerCellSet.columnStart,
+        frozenCornerCellSet.columnEnd
+      );
+      if (
+        frozenColumnCellSet !== undefined &&
+        frozenColumnCellSet.rowEnd >= frozenColumnCellSet.rowStart
+      ) {
+        this._fetchAndMutateCellsByRange(
+          frozenColumnCellSet,
+          this.m_databodyFrozenCol,
+          frozenColumnCellSet.rowStart,
+          frozenColumnCellSet.rowEnd,
+          frozenColumnCellSet.columnStart,
+          frozenColumnCellSet.columnEnd
+        );
+      }
+      if (
+        frozenRowCellSet !== undefined &&
+        frozenRowCellSet.columnEnd >= frozenRowCellSet.columnStart
+      ) {
+        this._fetchAndMutateCellsByRange(
+          frozenRowCellSet,
+          this.m_databodyFrozenRow,
+          frozenRowCellSet.rowStart,
+          frozenRowCellSet.rowEnd,
+          frozenRowCellSet.columnStart,
+          frozenRowCellSet.columnEnd
+        );
       }
     } else if (
       this.m_databodyFrozenCol &&
-      this.m_frozenColIndex !== null &&
-      colStart <= this.m_frozenColIndex
+      this._hasFrozenColumns() &&
+      frozenColumnCellSet !== undefined
     ) {
       this._fetchAndMutateCellsByRange(
-        cellSet,
+        frozenColumnCellSet,
         this.m_databodyFrozenCol,
-        rowStart,
-        rowEnd,
-        colStart,
-        tmpColEnd
+        frozenColumnCellSet.rowStart,
+        frozenColumnCellSet.rowEnd,
+        frozenColumnCellSet.columnStart,
+        frozenColumnCellSet.columnEnd
       );
-      // eslint-disable-next-line no-param-reassign
-      colStart = this.m_frozenColIndex + 1;
-    } else if (
-      this.m_databodyFrozenRow &&
-      this.m_frozenRowIndex !== null &&
-      rowStart <= this.m_frozenRowIndex
-    ) {
+    } else if (this.m_databodyFrozenRow && this._hasFrozenRows() && frozenRowCellSet !== undefined) {
       this._fetchAndMutateCellsByRange(
-        cellSet,
+        frozenRowCellSet,
         this.m_databodyFrozenRow,
-        rowStart,
-        tmpRowEnd,
-        colStart,
-        colEnd
+        frozenRowCellSet.rowStart,
+        frozenRowCellSet.rowEnd,
+        frozenRowCellSet.columnStart,
+        frozenRowCellSet.columnEnd
       );
-      // eslint-disable-next-line no-param-reassign
-      rowStart = this.m_frozenRowIndex + 1;
     }
 
-    let frozenColExists = this.m_frozenColIndex !== null && this.m_frozenColIndex !== -1;
-    let frozenRowExists = this.m_frozenRowIndex !== null && this.m_frozenRowIndex !== -1;
-
-    // * If no frozen section, mutate the rest of the databody
-    // * If either of them exists, then check if the row/col End exceeds the frozen region and mutate the rest of the databody
-    // * ensure check for frozenAxisExists as 1 > null alone shall pass
-    if (
-      (!frozenColExists && !frozenRowExists) ||
-      ((frozenColExists || frozenRowExists) &&
-        (!frozenRowExists || rowEnd > this.m_frozenRowIndex) &&
-        (!frozenColExists || colEnd > this.m_frozenColIndex))
-    ) {
+    if (cellSet !== undefined && rowEnd >= rowStart && colEnd >= colStart) {
       this._fetchAndMutateCellsByRange(cellSet, this.m_databody, rowStart, rowEnd, colStart, colEnd);
     }
   };
@@ -19301,6 +21539,15 @@ var __oj_data_grid_metadata =
           (axis === 'row' && this._hasFrozenRows() && index <= this.m_frozenRowIndex)
         ) {
           frozenSectionDimensions.unshift(dimension);
+          if (!this._isHighWatermarkScrolling()) {
+            insideDeletedCount -= 1;
+            if (
+              (axis === 'row' && this.m_startRow > 0) ||
+              (axis === 'column' && this.m_startCol > 0)
+            ) {
+              beforeDeletedCount += 1;
+            }
+          }
         } else {
           insideDeletedDimension += dimension;
           dimensions.unshift(dimension);
@@ -19384,8 +21631,26 @@ var __oj_data_grid_metadata =
       }
       if (axis === 'column') {
         this.m_frozenColIndex -= frozenIndexes.length;
+        if (!isFromUpdate) {
+          let details = {
+            event: null,
+            ui: {
+              frozenCount: this.m_frozenColIndex + 1
+            }
+          };
+          this.fireEvent('columnFreeze', details);
+        }
       } else {
         this.m_frozenRowIndex -= frozenIndexes.length;
+        if (!isFromUpdate) {
+          let details = {
+            event: null,
+            ui: {
+              frozenCount: this.m_frozenRowIndex + 1
+            }
+          };
+          this.fireEvent('rowFreeze', details);
+        }
       }
     }
 
@@ -20184,12 +22449,17 @@ var __oj_data_grid_metadata =
    * @param {boolean=} shouldNotScroll
    * @private
    */
-  DvtDataGrid.prototype._updateActive = function (activeObject, shouldFocus, shouldNotScroll) {
+  DvtDataGrid.prototype._updateActive = function (
+    activeObject,
+    shouldFocus,
+    shouldNotScroll,
+    clearSelection = true
+  ) {
     // the activeObject is potentially sparse, try to get an element from it
     var newActiveElement;
 
     if (activeObject == null) {
-      this._setActive(null, null, null, true, false, shouldNotScroll);
+      this._setActive(null, null, null, clearSelection, false, shouldNotScroll);
     } else if (activeObject.keys != null) {
       newActiveElement = this._getCellByKeys(activeObject.keys);
     } else if (activeObject.indexes != null) {
@@ -20251,7 +22521,7 @@ var __oj_data_grid_metadata =
       if (!shouldFocus) {
         this.m_shouldFocus = false;
       }
-      this._setActive(newActiveElement, activeObject, null, true, false, shouldNotScroll);
+      this._setActive(newActiveElement, activeObject, null, clearSelection, false, shouldNotScroll);
     }
   };
 
@@ -20421,25 +22691,41 @@ var __oj_data_grid_metadata =
       if (active.type === 'header') {
         if (active.axis === 'row') {
           let root = this.m_rowHeader;
-          if (this._hasFrozenRows() && active.index <= this.m_frozenRowIndex) {
+          if (
+            this._isHighWatermarkScrolling() &&
+            this._hasFrozenRows() &&
+            active.index <= this.m_frozenRowIndex
+          ) {
             root = this.m_rowHeaderFrozen;
           }
           return this._findHeaderByKey(active.key, root, this.getMappedStyle('rowheadercell'));
         } else if (active.axis === 'column') {
           let root = this.m_colHeader;
-          if (this._hasFrozenColumns() && active.index <= this.m_frozenColIndex) {
+          if (
+            this._isHighWatermarkScrolling() &&
+            this._hasFrozenColumns() &&
+            active.index <= this.m_frozenColIndex
+          ) {
             root = this.m_colHeaderFrozen;
           }
           return this._findHeaderByKey(active.key, root, this.getMappedStyle('colheadercell'));
         } else if (active.axis === 'rowEnd') {
           let root = this.m_rowEndHeader;
-          if (this._hasFrozenRows() && active.index <= this.m_frozenRowIndex) {
+          if (
+            this._isHighWatermarkScrolling() &&
+            this._hasFrozenRows() &&
+            active.index <= this.m_frozenRowIndex
+          ) {
             root = this.m_rowEndHeaderFrozen;
           }
           return this._findHeaderByKey(active.key, root, this.getMappedStyle('rowendheadercell'));
         } else if (active.axis === 'columnEnd') {
           let root = this.m_colEndHeader;
-          if (this._hasFrozenColumns() && active.index <= this.m_frozenColIndex) {
+          if (
+            this._isHighWatermarkScrolling() &&
+            this._hasFrozenColumns() &&
+            active.index <= this.m_frozenColIndex
+          ) {
             root = this.m_colEndHeaderFrozen;
           }
           return this._findHeaderByKey(active.key, root, this.getMappedStyle('colendheadercell'));
@@ -20678,7 +22964,7 @@ var __oj_data_grid_metadata =
     var target = /** @type {Element} */ (event.target);
     var cell = this.findCell(target);
     if (cell != null) {
-      this._setActive(cell, this._createActiveObject(cell), event);
+      this._setActive(cell, this._createActiveObject(cell), event, null, null, true);
     }
     const noDataSlotElement = this._getEmptyElement();
     if (noDataSlotElement) {
@@ -20913,6 +23199,15 @@ var __oj_data_grid_metadata =
       index = start;
     }
 
+    if (
+      !this._isHighWatermarkScrolling() &&
+      frozenRoot !== undefined &&
+      frozenRoot.querySelector(`#${header.id}`) !== null &&
+      levelCount === 1
+    ) {
+      index = 0;
+    }
+
     // To get header Index, make sure we don't get other children divs (like visual indicator)
     // check divs if they aren't hiddenIndicators by 'colHeaderHiddenIndicator' class name
     // eslint-disable-next-line no-param-reassign
@@ -20924,6 +23219,10 @@ var __oj_data_grid_metadata =
     }
 
     if (
+      (this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() &&
+          (((axis === 'column' || axis === 'columnEnd') && this.m_startCol === 0) ||
+            ((axis === 'row' || axis === 'rowEnd') && this.m_startRow === 0)))) &&
       levelCount === 1 &&
       frozenRoot !== undefined &&
       frozenRoot.querySelector(`#${header.id}`) === null
@@ -21351,19 +23650,7 @@ var __oj_data_grid_metadata =
         ].join(' ');
       }
 
-      var direction = element.getAttribute(this.getResources().getMappedAttribute('sortDir'));
-      if (direction === 'ascending') {
-        key = 'accessibleSortAscending';
-      } else if (direction === 'descending') {
-        key = 'accessibleSortDescending';
-      } else if (this._getAttribute(element, 'sortable')) {
-        key = 'accessibleSortable';
-      }
-
-      if (key != null) {
-        statesArray.push({ key: key, args: { id: '' } });
-      }
-
+      // DOM order is Disclosure, Filter, Sort, Required - Readout is in the same order
       if (elementMetadata && elementMetadata.metadata) {
         if (elementMetadata.metadata.expanded === 'expanded') {
           statesArray.push({ key: 'accessibleExpanded', args: {} });
@@ -21473,7 +23760,32 @@ var __oj_data_grid_metadata =
           const translationKey = this._getHierarchicalTranslationKey(state, activeObject.axis);
           statesArray.push({ key: translationKey, args: { posInSet: posInSet, setSize: setSize } });
         }
+        if (elementMetadata.metadata.filter === 'filtered') {
+          statesArray.push({ key: 'accessibleFiltered', args: {} });
+        } else if (elementMetadata.metadata.filter === 'filterable') {
+          statesArray.push({ key: 'accessibleFilterable', args: {} });
+        }
       }
+
+      const direction = element.getAttribute(this.getResources().getMappedAttribute('sortDir'));
+      if (direction === 'ascending') {
+        key = 'accessibleSortAscending';
+      } else if (direction === 'descending') {
+        key = 'accessibleSortDescending';
+      } else if (this._getAttribute(element, 'sortable')) {
+        key = 'accessibleSortable';
+      }
+
+      if (key != null) {
+        statesArray.push({ key: key, args: { id: '' } });
+      }
+
+      if (elementMetadata && elementMetadata.metadata) {
+        if (elementMetadata.metadata.showRequired) {
+          statesArray.push({ key: 'tooltipRequired', args: {} });
+        }
+      }
+
       if (statesArray.length !== 0) {
         label = label + ' ' + this.createSubId('state');
       }
@@ -21876,10 +24188,23 @@ var __oj_data_grid_metadata =
     }
 
     // check if in the rendered range
-    if (endRow < rangeStartRow || rangeEndRow < startRow) {
+    if (
+      !this._isHighWatermarkScrolling() &&
+      this._hasFrozenRows() &&
+      (this.m_startRow === this.m_frozenRowIndex + 1 || rangeStartRow < this.m_frozenRowIndex + 1)
+    ) {
+      // eslint-disable-next-line no-param-reassign
+      startRow = 0;
+    }
+    if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+      if (endRow < rangeStartRow || (rangeEndRow > this.m_frozenRowIndex && rangeEndRow < startRow)) {
+        return null;
+      }
+    } else if (endRow < rangeStartRow || rangeEndRow < startRow) {
       return null;
     }
 
+    let colStart = this.m_startCol;
     if (!isNaN(startIndex.column) && !isNaN(endIndex.column)) {
       rangeStartColumn = startIndex.column;
       rangeEndColumn = endIndex.column;
@@ -21889,7 +24214,22 @@ var __oj_data_grid_metadata =
       }
 
       // check if in the rendered range
-      if (this.m_endCol + 1 < rangeStartColumn || rangeEndColumn < this.m_startCol) {
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenColumns() &&
+        (this.m_startCol === this.m_frozenColIndex + 1 ||
+          rangeStartColumn < this.m_frozenColIndex + 1)
+      ) {
+        colStart = 0;
+      }
+      if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+        if (
+          this.m_endCol + 1 < rangeStartColumn ||
+          (rangeEndColumn > this.m_frozenColIndex && rangeEndColumn < colStart)
+        ) {
+          return null;
+        }
+      } else if (this.m_endCol + 1 < rangeStartColumn || rangeEndColumn < this.m_startCol) {
         return null;
       }
     }
@@ -21902,12 +24242,16 @@ var __oj_data_grid_metadata =
     }
 
     // the range is within the databody, calculate the relative position
-    rangeStartRow = Math.max(this.m_startRow, rangeStartRow);
+    rangeStartRow = !this._isHighWatermarkScrolling()
+      ? Math.max(startRow, rangeStartRow)
+      : Math.max(this.m_startRow, rangeStartRow);
     rangeEndRow = Math.min(this.m_endRow, rangeEndRow);
 
     // cell case
     if (!isNaN(rangeStartColumn) && !isNaN(rangeEndColumn)) {
-      rangeStartColumn = Math.max(this.m_startCol, rangeStartColumn);
+      rangeStartColumn = !this._isHighWatermarkScrolling()
+        ? Math.max(colStart, rangeStartColumn)
+        : Math.max(this.m_startCol, rangeStartColumn);
       rangeEndColumn = Math.min(this.m_endCol, rangeEndColumn);
       for (i = rangeStartRow; i <= rangeEndRow; i += 1) {
         for (j = rangeStartColumn; j <= rangeEndColumn; j += 1) {
@@ -21926,6 +24270,22 @@ var __oj_data_grid_metadata =
           cell = this._getCellByIndex(this.createIndex(i, j));
           if (cell != null && nodes.indexOf(cell) === -1) {
             nodes.push(cell);
+          }
+        }
+      }
+      // frozen case with virtual scroll
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenColumns() &&
+        isNaN(startIndex.column) &&
+        isNaN(endIndex.column)
+      ) {
+        for (i = rangeStartRow; i <= rangeEndRow; i += 1) {
+          for (j = 0; j <= this.m_frozenColIndex; j += 1) {
+            cell = this._getCellByIndex(this.createIndex(i, j));
+            if (cell != null && nodes.indexOf(cell) === -1) {
+              nodes.push(cell);
+            }
           }
         }
       }
@@ -21951,7 +24311,18 @@ var __oj_data_grid_metadata =
       rangeEndColumn = Number.MAX_VALUE;
     }
 
-    rangeStartRow = Math.max(this.m_startRow, rangeStartRow);
+    let rowStart = this.m_startRow;
+    if (
+      !this._isHighWatermarkScrolling() &&
+      this._hasFrozenRows() &&
+      (this.m_startRow === this.m_frozenRowIndex + 1 ||
+        endIndex.row === -1 ||
+        rangeStartRow < this.m_frozenRowIndex + 1)
+    ) {
+      rowStart = 0;
+    }
+
+    rangeStartRow = Math.max(rowStart, rangeStartRow);
     rangeEndRow = Math.min(this.m_endRow, rangeEndRow);
 
     if (isNaN(startIndex.column) || isNaN(endIndex.column)) {
@@ -21959,7 +24330,17 @@ var __oj_data_grid_metadata =
       rangeEndColumn = Math.max(rangeStartColumn, this.m_endCol);
     }
 
-    rangeStartColumn = Math.max(this.m_startCol, rangeStartColumn);
+    let colStart = this.m_startCol;
+    if (
+      !this._isHighWatermarkScrolling() &&
+      this._hasFrozenColumns() &&
+      (this.m_startCol === this.m_frozenColIndex + 1 ||
+        endIndex.column === -1 ||
+        rangeStartColumn < this.m_frozenColIndex + 1)
+    ) {
+      colStart = 0;
+    }
+    rangeStartColumn = Math.max(colStart, rangeStartColumn);
     rangeEndColumn = Math.min(this.m_endCol, rangeEndColumn);
 
     return this.createRange(
@@ -21998,6 +24379,14 @@ var __oj_data_grid_metadata =
       ? rangeStartColumn
       : this.getVisibleCellIndexInDirection('column', rangeStartColumn - 1, { left: true });
     let endBorderColumnIndex = rangeEndColumn;
+    if (
+      this.m_options.getSelectionMode() === 'row' &&
+      !this._isHighWatermarkScrolling() &&
+      this._hasFrozenColumns()
+    ) {
+      startBorderColumnIndex = 0;
+      isFirstColumn = true;
+    }
 
     for (let i = rangeStartRow; i <= rangeEndRow; i++) {
       let startCell = this._getCellByIndex(this.createIndex(i, startBorderColumnIndex));
@@ -22028,6 +24417,27 @@ var __oj_data_grid_metadata =
       } else {
         this._unhighlightElement(startCell, [startClass]);
         this._unhighlightElement(endCell, [endClass]);
+      }
+    }
+    if (
+      this.m_options.getSelectionMode() === 'row' &&
+      !this._isHighWatermarkScrolling() &&
+      this._hasFrozenColumns()
+    ) {
+      for (let i = 0; i <= this.m_frozenColIndex; i++) {
+        let startCell = this._getCellByIndex(this.createIndex(startBorderRowIndex, i));
+        let endCell = this._getCellByIndex(this.createIndex(endBorderRowIndex, i));
+        let startClassPrefix = isFirstRow ? 'top' : 'bottom';
+        let endClassPrefix = 'bottom';
+        let startClass = startClassPrefix + classSuffix;
+        let endClass = endClassPrefix + classSuffix;
+        if (shouldAddClasses) {
+          this._highlightElement(startCell, [startClass]);
+          this._highlightElement(endCell, [endClass]);
+        } else {
+          this._unhighlightElement(startCell, [startClass]);
+          this._unhighlightElement(endCell, [endClass]);
+        }
       }
     }
   };
@@ -22361,6 +24771,20 @@ var __oj_data_grid_metadata =
       start = this.m_startRowEndHeader;
       levelCount = this.m_rowEndHeaderLevelCount;
     }
+    if (
+      (axis === 'row' || axis === 'rowEnd') &&
+      !this._isHighWatermarkScrolling() &&
+      this._hasFrozenRows()
+    ) {
+      start = 0;
+    }
+    if (
+      (axis === 'column' || axis === 'columnEnd') &&
+      !this._isHighWatermarkScrolling() &&
+      this._hasFrozenColumns()
+    ) {
+      start = 0;
+    }
 
     switch (keyCode) {
       case this.keyCodes.DOWN_KEY:
@@ -22451,6 +24875,9 @@ var __oj_data_grid_metadata =
             this._setActive(newElement, { type: 'label', level: level + 1, axis: axis }, event);
           } else if (level === levelCount - 1) {
             newIndex = axis === 'row' ? this.m_startColHeader : this.m_endColHeader;
+            if (axis === 'row' && !this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+              newIndex = 0;
+            }
             while (this.isHidden('column', newIndex)) {
               newIndex = axis === 'row' ? newIndex + 1 : newIndex - 1;
             }
@@ -22734,7 +25161,13 @@ var __oj_data_grid_metadata =
             if (newIndex < 0) {
               break;
             }
-
+            if (
+              !this._isHighWatermarkScrolling() &&
+              this._hasFrozenColumns() &&
+              newIndex <= this.m_frozenColIndex
+            ) {
+              start = 0;
+            }
             if (isExtend) {
               this.extendSelectionHeader(newElement, event, true);
             } else if (newIndex < start) {
@@ -23013,7 +25446,17 @@ var __oj_data_grid_metadata =
               ? this._getAttribute(elem.parentNode, 'start', true) +
                 this._getAttribute(elem.parentNode, 'extent', true)
               : index + 1;
-          newElement = this._getHeaderByIndex(newIndex, axis, level);
+          if (
+            !this._isHighWatermarkScrolling() &&
+            this._hasFrozenColumns() &&
+            newIndex > this.m_frozenColIndex &&
+            newIndex < this.m_startCol
+          ) {
+            newIndex = this.m_options.getScrollPosition().columnIndex;
+            newElement = newIndex != null ? this._getHeaderByIndex(newIndex, axis, level) : index + 1;
+          } else {
+            newElement = this._getHeaderByIndex(newIndex, axis, level);
+          }
 
           // iterate through headers to find the visible element to focus
           while (newElement != null && this.isHeaderHidden(newElement)) {
@@ -23124,7 +25567,13 @@ var __oj_data_grid_metadata =
             if (newIndex < 0) {
               break;
             }
-
+            if (
+              !this._isHighWatermarkScrolling() &&
+              this._hasFrozenRows() &&
+              newIndex <= this.m_frozenRowIndex
+            ) {
+              start = 0;
+            }
             if (isExtend) {
               this.extendSelectionHeader(newElement, event, true);
             } else if (newIndex < start) {
@@ -23389,7 +25838,17 @@ var __oj_data_grid_metadata =
               ? this._getAttribute(elem.parentNode, 'start', true) +
                 this._getAttribute(elem.parentNode, 'extent', true)
               : index + 1;
-          newElement = this._getHeaderByIndex(newIndex, axis, level);
+          if (
+            !this._isHighWatermarkScrolling() &&
+            this._hasFrozenRows() &&
+            newIndex > this.m_frozenRowIndex &&
+            newIndex < this.m_startRow
+          ) {
+            newIndex = this.m_options.getScrollPosition().rowIndex;
+            newElement = newIndex != null ? this._getHeaderByIndex(newIndex, axis, level) : index + 1;
+          } else {
+            newElement = this._getHeaderByIndex(newIndex, axis, level);
+          }
 
           // iterate through headers to find the visible element to focus
           while (newElement != null && this.isHeaderHidden(newElement)) {
@@ -24056,9 +26515,21 @@ var __oj_data_grid_metadata =
             this._setActiveByIndex(newCellIndex, event);
           } else {
             if (isExtend) {
-              newCellIndex = this.createIndex(row, column - 1);
-              this.extendSelection(newCellIndex, event, keyCode);
-            } else if (column - 1 < this.m_startCol) {
+              let newColIndex = this.getVisibleCellIndexInDirection('column', column - 1, {
+                left: true
+              });
+              if (newColIndex !== column && newColIndex !== -1) {
+                newCellIndex = this.createIndex(row, newColIndex);
+                this.extendSelection(newCellIndex, event, keyCode);
+              }
+            } else if (
+              column - 1 < this.m_startCol &&
+              !(
+                !this._isHighWatermarkScrolling() &&
+                this._hasFrozenColumns() &&
+                column - 1 <= this.m_frozenColIndex
+              )
+            ) {
               this._scrollSkeletonCellsIntoViewport(row, column, 'column', false);
             } else {
               let visibleColumnIndex = column - 1;
@@ -24187,8 +26658,13 @@ var __oj_data_grid_metadata =
             this._setActiveByIndex(newCellIndex, event);
           } else {
             if (isExtend) {
-              newCellIndex = this.createIndex(row, column + 1);
-              this.extendSelection(newCellIndex, event, keyCode);
+              let newColIndex = this.getVisibleCellIndexInDirection('column', column + 1, {
+                right: true
+              });
+              if (newColIndex !== column) {
+                newCellIndex = this.createIndex(row, newColIndex);
+                this.extendSelection(newCellIndex, event, keyCode);
+              }
             } else {
               let visibleColumnIndex = column + columnExtent;
               let rowEndHeader = false;
@@ -24307,9 +26783,19 @@ var __oj_data_grid_metadata =
           }
         } else if (row > 0 && !(jumpToHeaders && this.m_endColHeader !== -1)) {
           if (isExtend) {
-            newCellIndex = this.createIndex(row - 1, column);
-            this.extendSelection(newCellIndex, event, keyCode);
-          } else if (row - 1 < this.m_startRow) {
+            let newRowIndex = this.getVisibleCellIndexInDirection('row', row - 1, { up: true });
+            if (newRowIndex !== row && newRowIndex !== -1) {
+              newCellIndex = this.createIndex(newRowIndex, column);
+              this.extendSelection(newCellIndex, event, keyCode);
+            }
+          } else if (
+            row - 1 < this.m_startRow &&
+            !(
+              !this._isHighWatermarkScrolling() &&
+              this._hasFrozenRows() &&
+              row - 1 <= this.m_frozenRowIndex
+            )
+          ) {
             this._scrollSkeletonCellsIntoViewport(row, column, 'row', false);
           } else {
             let visibleRowIndex = this.getVisibleCellIndexInDirection('row', row - 1, { up: true });
@@ -24415,8 +26901,11 @@ var __oj_data_grid_metadata =
           !(jumpToHeaders && this.m_endColEndHeader !== -1)
         ) {
           if (isExtend) {
-            newCellIndex = this.createIndex(row + 1, column);
-            this.extendSelection(newCellIndex, event, keyCode);
+            let newRowIndex = this.getVisibleCellIndexInDirection('row', row + 1, { down: true });
+            if (newRowIndex !== row) {
+              newCellIndex = this.createIndex(newRowIndex, column);
+              this.extendSelection(newCellIndex, event, keyCode);
+            }
           } else {
             let visibleRowIndex = this.getVisibleCellIndexInDirection('row', row + rowExtent, {
               down: true
@@ -24608,6 +27097,16 @@ var __oj_data_grid_metadata =
       var scrollTop;
       if (row < this.m_startRow) {
         scrollTop = this.m_avgRowHeight * row;
+        if (
+          !this._isHighWatermarkScrolling() &&
+          this._hasFrozenRows() &&
+          row <= this.m_frozenRowIndex
+        ) {
+          scrollTop = this.m_currentScrollTop;
+        }
+        if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+          scrollTop = this.m_avgRowHeight * (row - (this.m_frozenRowIndex + 1));
+        }
       } else {
         scrollTop = this.m_avgRowHeight * (row + 1) - viewportBottom + viewportTop;
       }
@@ -24615,7 +27114,11 @@ var __oj_data_grid_metadata =
 
       // remember to focus on the row after fetch
       this.m_scrollIndexAfterFetch = index;
-      scrollRows = true;
+      if (
+        !(!this._isHighWatermarkScrolling() && this._hasFrozenRows() && row <= this.m_frozenRowIndex)
+      ) {
+        scrollRows = true;
+      }
     } else {
       // it's rendered, find location and scroll to it
       cell = this._getCellByIndex(index);
@@ -24667,6 +27170,16 @@ var __oj_data_grid_metadata =
           hiddenColumnsInDirection = this.hiddenColumnsInDirection(column, { left: true });
           hiddenLength = hiddenColumnsInDirection.length;
           scrollLeft = this.m_avgColWidth * (column - hiddenLength);
+          if (
+            !this._isHighWatermarkScrolling() &&
+            this._hasFrozenColumns() &&
+            column <= this.m_frozenColIndex
+          ) {
+            scrollLeft = this.m_currentScrollLeft;
+          }
+          if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+            scrollLeft = this.m_avgColWidth * (column - (this.m_frozenColIndex + 1) - hiddenLength);
+          }
         } else {
           hiddenColumnsInDirection = this.hiddenColumnsInDirection(column, { right: true });
           hiddenLength = hiddenColumnsInDirection.length;
@@ -24793,6 +27306,18 @@ var __oj_data_grid_metadata =
     if (index < startIndex || index > endIndex) {
       if (index < startIndex) {
         newScroll = averageDiff * index;
+        if (!this._isHighWatermarkScrolling()) {
+          if (
+            ((axis === 'column' || axis === 'columnEnd') &&
+              this._hasFrozenColumns() &&
+              index <= this.m_frozenColIndex) ||
+            ((axis === 'row' || axis === 'rowEnd') &&
+              this._hasFrozenRows() &&
+              index <= this.m_frozenRowIndex)
+          ) {
+            newScroll = currentScroll;
+          }
+        }
       } else {
         newScroll = averageDiff * (index + 1) - viewportDiff;
       }
@@ -25916,7 +28441,7 @@ var __oj_data_grid_metadata =
           if (element) {
             this.m_shouldFocus = false;
             const active = this._createActiveObject(element);
-            this._setActive(element, active, event, null, null, null, true);
+            this._setActive(element, active, event, null, null, true, true);
             DataCollectionUtils.enableAllFocusableElements(element);
             this._enterActionableMode(element, null, false);
           }
@@ -26098,11 +28623,7 @@ var __oj_data_grid_metadata =
    * @return {boolean} true if the databody is empty
    */
   DvtDataGrid.prototype._databodyEmpty = function () {
-    if (
-      (this.m_databody.firstChild == null || this.m_databody.firstChild.firstChild == null) &&
-      !this._hasFrozenColumns() &&
-      !this._hasFrozenRows()
-    ) {
+    if (this.m_databody.firstChild == null || this.m_databody.firstChild.firstChild == null) {
       return true;
     }
     return false;
@@ -26453,6 +28974,12 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype._getAxisCellsByIndex = function (index, axis, breakOnFirstFind) {
     var start = axis === 'row' ? this.m_startCol : this.m_startRow;
     var end = axis === 'row' ? this.m_endCol : this.m_endRow;
+    if (
+      !this._isHighWatermarkScrolling() &&
+      ((axis === 'row' && this._hasFrozenRows()) || (axis === 'column' && this._hasFrozenColumns()))
+    ) {
+      start = 0;
+    }
     var axisExtent;
     var cells = [];
 
@@ -26856,21 +29383,33 @@ var __oj_data_grid_metadata =
    * @returns {boolean} false
    */
   DvtDataGrid.prototype._handleDataEntry = function (event, element) {
+    this._beforeEditFocusCallbackDetails = null;
     var details = {
       event: event,
       ui: {
         cell: element,
-        cellContext: element[this.getResources().getMappedAttribute('context')]
+        cellContext: element[this.getResources().getMappedAttribute('context')],
+        focusCallback: this._beforeEditFocusCallback.bind(this)
       }
     };
 
     var isReadOnly = this._getAttribute(element, 'readOnly');
     var rerender = !isReadOnly ? this.fireEvent('beforeEdit', details) : false;
 
+    let _beforeEditFocusCallbackDetails = this._beforeEditFocusCallbackDetails;
+    this._beforeEditFocusCallbackDetails = null;
+
     if (rerender) {
       this._removeFloodFillAffordance();
       this._reRenderCell(element, 'edit', this.getMappedStyle('cellEdit'), this.m_editableClone);
-      if (this._setFocusToFirstFocusableElement(element, undefined, true)) {
+      if (
+        this._setFocusToFirstFocusableElement(
+          element,
+          undefined,
+          true,
+          _beforeEditFocusCallbackDetails
+        )
+      ) {
         this.m_currentMode = 'edit';
       } else {
         // if there was nothing to edit remove the edit class
@@ -26882,6 +29421,10 @@ var __oj_data_grid_metadata =
     return false;
   };
 
+  DvtDataGrid.prototype._beforeEditFocusCallback = function (details) {
+    this._beforeEditFocusCallbackDetails = details;
+  };
+
   /**
    * Enter edit mode
    * @param {Event} event the event triggering edit mode
@@ -26890,26 +29433,47 @@ var __oj_data_grid_metadata =
    * @returns {boolean} true if edit mode entered
    */
   DvtDataGrid.prototype._handleEdit = function (event, element, shouldSelect) {
+    this._beforeEditFocusCallbackDetails = null;
     var details = {
       event: event,
       ui: {
         cell: element,
-        cellContext: element[this.getResources().getMappedAttribute('context')]
+        cellContext: element[this.getResources().getMappedAttribute('context')],
+        focusCallback: this._beforeEditFocusCallback.bind(this)
       }
     };
     var isReadOnly = this._getAttribute(element, 'readOnly');
     var rerender = !isReadOnly ? this.fireEvent('beforeEdit', details) : false;
+
+    let _beforeEditFocusCallbackDetails = this._beforeEditFocusCallbackDetails;
+    this._beforeEditFocusCallbackDetails = null;
 
     if (rerender) {
       this._removeFloodFillAffordance();
       this._reRenderCell(element, 'edit', this.getMappedStyle('cellEdit'), this.m_editableClone);
       this.m_currentMode = 'edit';
       this._updateEdgeCellBorders('');
+      this.m_editCell = {
+        indexes: element[this.getResources().getMappedAttribute('context')].indexes
+      };
+      details = {
+        event: event,
+        ui: {
+          editCell: this.m_editCell
+        }
+      };
+
+      this.fireEvent('editCell', details);
       var self = this;
       var busyContext = Context.getContext(element).getBusyContext();
       busyContext.whenReady().then(function () {
         // focus on first focusable item in the cell
-        var setFocus = self._setFocusToFirstFocusableElement(element, undefined, shouldSelect);
+        var setFocus = self._setFocusToFirstFocusableElement(
+          element,
+          undefined,
+          shouldSelect,
+          _beforeEditFocusCallbackDetails
+        );
         if (!setFocus) {
           // if there was nothing to edit remove the edit class
           self.m_utils.removeCSSClassName(element, self.getMappedStyle('cellEdit'));
@@ -26918,9 +29482,20 @@ var __oj_data_grid_metadata =
       });
     } else {
       rerender = false;
-      this._enterActionableMode(element, null, true);
-      if (!this.isActionableMode()) {
-        this._showToolTip(element, this.getResources().getTranslatedText('msgReadOnly'), true);
+      if (!isReadOnly) {
+        this.m_editCell = null;
+        details = {
+          event: event,
+          ui: {
+            editCell: this.m_editCell
+          }
+        };
+        this.fireEvent('editCell', details);
+      } else {
+        this._enterActionableMode(element, null, true);
+        if (!this.isActionableMode()) {
+          this._showToolTip(element, this.getResources().getTranslatedText('msgReadOnly'), true);
+        }
       }
     }
     return rerender;
@@ -26987,6 +29562,14 @@ var __oj_data_grid_metadata =
     var rerender = this.fireEvent('beforeEditEnd', details);
     if (rerender) {
       this.m_currentMode = 'navigation';
+      this.m_editCell = null;
+      details = {
+        event: event,
+        ui: {
+          editCell: this.m_editCell
+        }
+      };
+      this.fireEvent('editCell', details);
       DataCollectionUtils.disableAllFocusableElements(element);
       if (shouldFocus === false) {
         this.m_shouldFocus = shouldFocus;
@@ -29297,7 +31880,7 @@ var __oj_data_grid_metadata =
       var deltaX = 0;
       var deltaY = 0;
 
-      // if the visible window plus the scrollLeft is bigger than the scrollable region maximum, rescroll the window
+      // if the visible window plus the scrollLeft is bigger than the scrollable region maximum, re-scroll the window
       if (this.m_currentScrollLeft > this.m_scrollWidth) {
         deltaX = this.m_scrollWidth - this.m_currentScrollLeft;
       }
@@ -29307,10 +31890,6 @@ var __oj_data_grid_metadata =
       }
 
       if (deltaX !== 0 || deltaY !== 0) {
-        if (this.m_utils.isTouchDeviceNotIOS()) {
-          // eliminate bounce back for touch scroll
-          this._disableTouchScrollAnimation();
-        }
         var delta = this.adjustTouchScroll(deltaX, deltaY);
         deltaX = delta[0];
         deltaY = delta[1];
@@ -29322,7 +31901,7 @@ var __oj_data_grid_metadata =
 
   /**
    * Resizes all cell in the resizing element's column, and updates the left(right)
-   * postion on the cells and column headers that follow(preceed) that column.
+   * position on the cells and column headers that follow(precede) that column.
    * @param {number} widthChange - the change in width of the resizing element
    */
   DvtDataGrid.prototype.resizeColumnWidthAndShift = function (widthChange) {
@@ -29466,10 +32045,19 @@ var __oj_data_grid_metadata =
       if (axisEndValue === undefined) {
         axisEndValue = this.m_endRow;
       }
-      startOuterLoop =
-        this.m_frozenColIndex !== null && this.m_frozenColndex !== -1 && !corner
-          ? this.m_frozenColIndex + 1
-          : this.m_startCol;
+      startOuterLoop = this.m_startCol;
+      if (
+        this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() &&
+          this._hasFrozenColumns() &&
+          this.m_startCol <= this.m_frozenColIndex)
+      ) {
+        startOuterLoop =
+          this._hasFrozenColumns() && !corner ? this.m_frozenColIndex + 1 : this.m_startCol;
+      }
+      if (corner === true && !this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+        startOuterLoop = 0;
+      }
       endOuterLoop = this.m_endCol;
     } else {
       dimension = 'width';
@@ -29477,7 +32065,19 @@ var __oj_data_grid_metadata =
       if (axisEndValue === undefined) {
         axisEndValue = this.m_endCol;
       }
-      startOuterLoop = this._hasFrozenRows() && !corner ? this.m_frozenRowIndex + 1 : this.m_startRow;
+      startOuterLoop = this.m_startRow;
+      if (
+        this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() &&
+          this._hasFrozenRows() &&
+          this.m_startRow <= this.m_frozenRowIndex)
+      ) {
+        startOuterLoop =
+          this._hasFrozenRows() && !corner ? this.m_frozenRowIndex + 1 : this.m_startRow;
+      }
+      if (corner === true && !this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+        startOuterLoop = 0;
+      }
       endOuterLoop = this.m_endRow;
     }
 
@@ -29577,14 +32177,34 @@ var __oj_data_grid_metadata =
     if (axis === 'row') {
       dir = 'top';
       endAxisChange = this.m_endRow;
-      startOuterLoop = this.m_startCol;
+      startOuterLoop = 0;
       endOuterLoop = this.m_frozenColIndex;
+      if (
+        !this._isHighWatermarkScrolling() &&
+        (this.m_frozenColIndex === -1 || this.m_frozenColIndex === null)
+      ) {
+        startOuterLoop = this.m_startCol;
+        endOuterLoop = this.m_endCol;
+      }
+      if (!this._isHighWatermarkScrolling() && !this._hasFrozenColumns()) {
+        endOuterLoop = this.m_endCol;
+      }
       dimension = 'height';
     } else {
       dir = this.getResources().isRTLMode() ? 'right' : 'left';
       endAxisChange = this.m_endCol;
-      startOuterLoop = this.m_startRow;
+      startOuterLoop = 0;
       endOuterLoop = this.m_frozenRowIndex;
+      if (
+        !this._isHighWatermarkScrolling() &&
+        (this.m_frozenRowIndex === -1 || this.m_frozenRowIndex === null)
+      ) {
+        startOuterLoop = this.m_startRow;
+        endOuterLoop = this.m_endRow;
+      }
+      if (!this._isHighWatermarkScrolling() && !this._hasFrozenRows()) {
+        endOuterLoop = this.m_endRow;
+      }
       dimension = 'width';
     }
     for (let i = startOuterLoop; i <= endOuterLoop; i++) {
@@ -30723,6 +33343,21 @@ var __oj_data_grid_metadata =
    */
   DvtDataGrid.prototype.unhighlightRange = function (range) {
     var elems = this.getElementsInRange(range);
+    if (!this._isHighWatermarkScrolling() && elems !== null) {
+      if (range.endIndex.row === -1 && this._hasFrozenRows()) {
+        for (let i = range.startIndex.column; i <= range.endIndex.column; i++) {
+          for (let j = 0; j < this.m_frozenRowIndex + 1; j++) {
+            elems.push(this._getCellByIndex({ row: j, column: i }));
+          }
+        }
+      } else if (range.endIndex.column === -1 && this._hasFrozenColumns()) {
+        for (let i = range.startIndex.row; i <= range.endIndex.row; i++) {
+          for (let j = 0; j < this.m_frozenColIndex + 1; j++) {
+            elems.push(this._getCellByIndex({ row: i, column: j }));
+          }
+        }
+      }
+    }
     this.unhighlightElems(elems);
     this._applyBorderClassesAroundRange(elems, range, false, 'Selected');
   };
@@ -30735,9 +33370,38 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype.highlightRange = function (range, updateAccInfo) {
     const rowHeadersInRange = this.getHeadersByRange(range, 'row');
     const colHeadersInRange = this.getHeadersByRange(range, 'column');
+    if (!this._isHighWatermarkScrolling()) {
+      if (range.endIndex.row === -1 && this._hasFrozenRows()) {
+        for (let j = 0; j < this.m_frozenRowIndex + 1; j++) {
+          this._getHeadersByIndex(j, 'row').forEach((item) => rowHeadersInRange.add(item));
+          this._getHeadersByIndex(j, 'rowEnd').forEach((item) => rowHeadersInRange.add(item));
+        }
+      }
+      if (range.endIndex.column === -1 && this._hasFrozenColumns()) {
+        for (let j = 0; j < this.m_frozenColIndex + 1; j++) {
+          this._getHeadersByIndex(j, 'column').forEach((item) => colHeadersInRange.add(item));
+          this._getHeadersByIndex(j, 'columnEnd').forEach((item) => colHeadersInRange.add(item));
+        }
+      }
+    }
     this._highlightHeaders(range, rowHeadersInRange, colHeadersInRange);
 
     var elems = this.getElementsInRange(range);
+    if (!this._isHighWatermarkScrolling()) {
+      if (range.endIndex.row === -1 && this._hasFrozenRows()) {
+        for (let i = range.startIndex.column; i <= range.endIndex.column; i++) {
+          for (let j = 0; j < this.m_frozenRowIndex + 1; j++) {
+            elems.push(this._getCellByIndex({ row: j, column: i }));
+          }
+        }
+      } else if (range.endIndex.column === -1 && this._hasFrozenColumns()) {
+        for (let i = range.startIndex.row; i <= range.endIndex.row; i++) {
+          for (let j = 0; j < this.m_frozenColIndex + 1; j++) {
+            elems.push(this._getCellByIndex({ row: i, column: j }));
+          }
+        }
+      }
+    }
     this.highlightElems(elems, range);
     this._applyBorderClassesAroundRange(elems, range, true, 'Selected');
 
@@ -30774,9 +33438,20 @@ var __oj_data_grid_metadata =
       } else if (endIndex === -1 || range.startIndex.row == null) {
         endIndex = this.m_endRowHeader;
       }
+      let startRowHeader = this.m_startRowHeader;
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenRows() &&
+        this.m_startRowHeader === this.m_frozenRowIndex + 1
+      ) {
+        startRowHeader = 0;
+      }
       let rangeStartRow = range.startIndex.row
-        ? Math.max(this.m_startRowHeader, range.startIndex.row)
+        ? Math.max(startRowHeader, range.startIndex.row)
         : this.m_startRowHeader;
+      if (!this._isHighWatermarkScrolling() && this._hasFrozenRows() && range.startIndex.row === 0) {
+        rangeStartRow = Math.max(startRowHeader, range.startIndex.row);
+      }
       for (i = rangeStartRow; i <= endIndex; i++) {
         headers = this._getHeadersByIndex(i, axis);
         for (j = 0; j < headers.length; j++) {
@@ -30792,9 +33467,24 @@ var __oj_data_grid_metadata =
       } else if (endIndex === -1 || range.startIndex.column == null) {
         endIndex = this.m_endColHeader;
       }
+      let startColHeader = this.m_startColHeader;
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenColumns() &&
+        this.m_startColHeader === this.m_frozenColIndex + 1
+      ) {
+        startColHeader = 0;
+      }
       let rangeStartColumn = range.startIndex.column
-        ? Math.max(this.m_startColHeader, range.startIndex.column)
+        ? Math.max(startColHeader, range.startIndex.column)
         : this.m_startColHeader;
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenColumns() &&
+        range.startIndex.column === 0
+      ) {
+        rangeStartColumn = Math.max(startColHeader, range.startIndex.column);
+      }
       for (i = rangeStartColumn; i <= endIndex; i++) {
         headers = this._getHeadersByIndex(i, axis);
         for (j = 0; j < headers.length; j++) {
@@ -30811,9 +33501,21 @@ var __oj_data_grid_metadata =
       } else if (endIndex === -1 || range.startIndex.row == null) {
         endIndex = this.m_endRowHeader;
       }
+      let startRowEndHeader = this.m_startRowEndHeader;
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenRows() &&
+        this.m_startRowEndHeader === this.m_frozenRowIndex + 1
+      ) {
+        startRowEndHeader = 0;
+      }
       let rangeStartRow = range.startIndex.row
-        ? Math.max(this.m_startRowEndHeader, range.startIndex.row)
+        ? Math.max(startRowEndHeader, range.startIndex.row)
         : this.m_startRowEndHeader;
+
+      if (!this._isHighWatermarkScrolling() && this._hasFrozenRows() && range.startIndex.row === 0) {
+        rangeStartRow = Math.max(startRowEndHeader, range.startIndex.row);
+      }
       for (i = rangeStartRow; i <= endIndex; i++) {
         headers = this._getHeadersByIndex(i, 'rowEnd');
         for (j = 0; j < headers.length; j++) {
@@ -30829,9 +33531,24 @@ var __oj_data_grid_metadata =
       } else if (endIndex === -1 || range.startIndex.column == null) {
         endIndex = this.m_endColHeader;
       }
+      let startColEndHeader = this.m_startColEndHeader;
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenColumns() &&
+        this.m_startColEndHeader === this.m_frozenColIndex + 1
+      ) {
+        startColEndHeader = 0;
+      }
       let rangeStartColumn = range.startIndex.column
-        ? Math.max(this.m_startColEndHeader, range.startIndex.column)
+        ? Math.max(startColEndHeader, range.startIndex.column)
         : this.m_startColEndHeader;
+      if (
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenColumns() &&
+        range.startIndex.column === 0
+      ) {
+        rangeStartColumn = Math.max(startColEndHeader, range.startIndex.column);
+      }
       for (i = rangeStartColumn; i <= endIndex; i++) {
         headers = this._getHeadersByIndex(i, 'columnEnd');
         for (j = 0; j < headers.length; j++) {
@@ -31044,7 +33761,7 @@ var __oj_data_grid_metadata =
     var ctrlKey = this.m_utils.ctrlEquivalent(event);
 
     if (!(shiftKey && multi) && header) {
-      this._setActive(header, this._createActiveObject(header), event);
+      this._setActive(header, this._createActiveObject(header), event, null, null, true);
     }
 
     // no selection if header was not selected or if cell is active and shiftkey is not selected when selectin gheader
@@ -31202,7 +33919,14 @@ var __oj_data_grid_metadata =
           (targetStart >= sourceParentStart && targetEnd <= sourceParentEnd)
         ) {
           // if moving levels, and we are a parent or child of current cell, just reset active to the parent/child.
-          this._setActive(targetElement, this._createActiveObject(targetElement), event);
+          this._setActive(
+            targetElement,
+            this._createActiveObject(targetElement),
+            event,
+            null,
+            null,
+            true
+          );
         }
       } else if (
         targetStart !== targetEnd &&
@@ -31210,7 +33934,14 @@ var __oj_data_grid_metadata =
         sourceParentStart <= targetEnd
       ) {
         // if moving levels, and we are a parent or child of current cell, just reset active to the parent/child.
-        this._setActive(targetElement, this._createActiveObject(targetElement), event);
+        this._setActive(
+          targetElement,
+          this._createActiveObject(targetElement),
+          event,
+          null,
+          null,
+          true
+        );
       }
     }
   };
@@ -31255,7 +33986,8 @@ var __oj_data_grid_metadata =
           this.selectAndFocus(index, event, false);
         } else if (!ctrlKey) {
           if (!shiftKey) {
-            this.selectAndFocus(index, event, false);
+            let shouldNotScroll = true;
+            this.selectAndFocus(index, event, false, shouldNotScroll);
           } else {
             this.extendSelection(index, event);
           }
@@ -31855,7 +34587,7 @@ var __oj_data_grid_metadata =
    */
   DvtDataGrid.prototype.extendSelection = function (index, event, direction) {
     // prevent cell selection when extending a row/column selection
-    if (this.m_active.type === 'header') {
+    if (!this.m_active || this.m_active.type === 'header') {
       return;
     }
 
@@ -31932,7 +34664,7 @@ var __oj_data_grid_metadata =
    */
   DvtDataGrid.prototype.extendSelectionHeader = function (target, event, isExtend, isDeselect) {
     // no target so just return
-    if (target === null) {
+    if (target == null) {
       return;
     }
 
@@ -32498,8 +35230,10 @@ var __oj_data_grid_metadata =
 
     // get indices and select rows/columns underneath header
     if (
-      (axis.indexOf('row') !== -1 && this.m_rowHeaderLevelCount - 1 === level) ||
-      (axis.indexOf('column') !== -1 && this.m_columnHeaderLevelCount - 1 === level)
+      (axis === 'row' && this.m_rowHeaderLevelCount - 1 === level) ||
+      (axis === 'rowEnd' && this.m_rowEndHeaderLevelCount - 1 === level) ||
+      (axis === 'column' && this.m_columnHeaderLevelCount - 1 === level) ||
+      (axis === 'columnEnd' && this.m_columnEndHeaderLevelCount - 1 === level)
     ) {
       start = index;
       end = index;
@@ -32596,7 +35330,7 @@ var __oj_data_grid_metadata =
    * @param {Event=} event - the event causing the selection and setting active
    * @param {boolean=} augment - true if we are augmenting the selecition, default to false
    */
-  DvtDataGrid.prototype.selectAndFocus = function (index, event, augment) {
+  DvtDataGrid.prototype.selectAndFocus = function (index, event, augment, shouldNotScroll) {
     if (augment == null) {
       // eslint-disable-next-line no-param-reassign
       augment = false;
@@ -32606,7 +35340,7 @@ var __oj_data_grid_metadata =
 
     // update active cell
     // if virtual we will still want the new selection to be applied
-    this._setActiveByIndex(index, event);
+    this._setActiveByIndex(index, event, null, null, shouldNotScroll);
 
     if (this.m_options.getSelectionMode() === 'row') {
       // eslint-disable-next-line no-param-reassign
@@ -33150,7 +35884,8 @@ var __oj_data_grid_metadata =
       if (sortContainer) {
         this.m_utils.removeCSSClassName(sortContainer, this.getMappedStyle('hover'));
         this.m_utils.removeCSSClassName(sortContainer, this.getMappedStyle('selected'));
-        if (sortIcon &&
+        if (
+          sortIcon &&
           !this.m_utils.containsCSSClassName(sortIcon, this.getMappedStyle('sortdescending')) &&
           !this.m_utils.containsCSSClassName(sortIcon, this.getMappedStyle('sortascending'))
         ) {
@@ -33931,16 +36666,10 @@ var __oj_data_grid_metadata =
     if (scroll === true) {
       // disable animation on virtual scrolling
       animate = this._isHighWatermarkScrolling();
-      if (!this.m_utils.isTouchDeviceNotIOS()) {
-        // scroll the databody
-        this.m_silentScroll = true;
-        this.m_databody.scrollTop = this.m_currentScrollTop;
-        this._syncScroller();
-      } else {
-        // for touch we'll call scrollTo directly instead of relying on scroll event to fire due to performance
-        this._disableTouchScrollAnimation();
-        this.scrollTo(this.m_currentScrollLeft, this.m_currentScrollTop);
-      }
+      // scroll the databody
+      this.m_silentScroll = true;
+      this.m_databody.scrollTop = this.m_currentScrollTop;
+      this._syncScroller();
     }
 
     // if there's only one row we don't need to animate
@@ -35532,6 +38261,938 @@ var __oj_data_grid_metadata =
     return ojtranslationbundleutils.loadAllPendingBundles();
   }
 
+  /**
+   * @constructor
+   * @private
+   */
+  const DataGridProviderFrozenDataGridDataSource = function (datagridprovider) {
+    this.datagridprovider = datagridprovider;
+
+    this.pendingHeaderCallback = {};
+
+    this._registerEventListeners();
+    this.totalRowCount = -1;
+    this.totalColumnCount = -1;
+    this.totalFrozenRowCount = -1;
+    this.totalFrozenColumnCount = -1;
+
+    this.rowKeyMap = new DataGridProviderFrozenDataGridDataSourceKeyMap();
+    this.columnKeyMap = new DataGridProviderFrozenDataGridDataSourceKeyMap();
+
+    DataGridProviderFrozenDataGridDataSource.superclass.constructor.call(this);
+  };
+
+  oj.Object.createSubclass(
+    DataGridProviderFrozenDataGridDataSource,
+    oj.DataGridDataSource,
+    'DataGridProviderFrozenDataGridDataSource'
+  );
+
+  DataGridProviderFrozenDataGridDataSource.prototype.fetchHeaders = function (
+    headerRange,
+    callbacks,
+    callbackObjects,
+    frozenHeaderRange
+  ) {
+    if (callbacks != null) {
+      var axis = headerRange?.axis ? headerRange.axis : frozenHeaderRange.axis;
+      var callback = {
+        headerRange: headerRange,
+        callbacks: callbacks,
+        callbackObjects: callbackObjects,
+        frozenHeaderRange: frozenHeaderRange
+      };
+      this.pendingHeaderCallback[axis] = callback;
+    }
+  };
+  DataGridProviderFrozenDataGridDataSource.prototype.fetchCells = async function (
+    cellRanges,
+    callbacks,
+    callbackObjects,
+    frozenCellRanges
+  ) {
+    let rowOffset;
+    let rowCount;
+    let columnOffset;
+    let columnCount;
+    let frozenRowOffset;
+    let frozenRowCount;
+    let frozenRowColOffset;
+    let frozenRowColCount;
+    let frozenColumnOffset;
+    let frozenColumnCount;
+    let frozenColumnRowOffset;
+    let frozenColumnRowCount;
+    let frozenCornerColOffset;
+    let frozenCornerRowOffset;
+    let frozenCornerColCount;
+    let frozenCornerRowCount;
+    for (let i = 0; i < cellRanges.length; i += 1) {
+      let cellRange = cellRanges[i];
+      if (cellRange.axis === 'row') {
+        rowOffset = cellRange.start;
+        rowCount = cellRange.count;
+      } else if (cellRange.axis === 'column') {
+        columnOffset = cellRange.start;
+        columnCount = cellRange.count;
+      }
+    }
+
+    for (let i = 0; i < frozenCellRanges.length; i++) {
+      let frozenCellRange = frozenCellRanges[i];
+      if (frozenCellRange.axis === 'row') {
+        frozenRowOffset = frozenCellRange.rowStart;
+        frozenRowCount = frozenCellRange.rowCount;
+        frozenRowColOffset = frozenCellRange.colStart;
+        frozenRowColCount = frozenCellRange.colCount;
+      } else if (frozenCellRange.axis === 'column') {
+        frozenColumnOffset = frozenCellRange.colStart;
+        frozenColumnCount = frozenCellRange.colCount;
+        frozenColumnRowOffset = frozenCellRange.rowStart;
+        frozenColumnRowCount = frozenCellRange.rowCount;
+      } else if (frozenCellRange.axis === 'corner') {
+        frozenCornerColOffset = frozenCellRange.colStart === undefined ? 0 : frozenCellRange.colStart;
+        frozenCornerRowOffset = frozenCellRange.rowStart === undefined ? 0 : frozenCellRange.rowStart;
+        frozenCornerColCount =
+          frozenColumnCount === undefined ? frozenCellRange.colCount : frozenColumnCount;
+        frozenCornerRowCount =
+          frozenCornerRowCount === undefined ? frozenCellRange.rowCount : frozenRowCount;
+      }
+    }
+
+    let fetchRowCallback = this.pendingHeaderCallback.row;
+    let fetchColumnCallback = this.pendingHeaderCallback.column;
+
+    this.pendingHeaderCallback = {};
+
+    let fetchArray;
+    if (fetchRowCallback && fetchColumnCallback) {
+      fetchArray = ['all'];
+    } else if (fetchRowCallback) {
+      fetchArray = ['databody', 'rowHeader', 'rowEndHeader', 'rowHeaderLabel', 'rowEndHeaderLabel'];
+    } else if (fetchColumnCallback) {
+      fetchArray = [
+        'databody',
+        'columnHeader',
+        'columnEndHeader',
+        'columnHeaderLabel',
+        'columnEndHeaderLabel'
+      ];
+    } else {
+      fetchArray = ['databody'];
+    }
+
+    let fetchParameters = {
+      rowOffset: rowOffset,
+      columnOffset: columnOffset,
+      rowCount: rowCount,
+      columnCount: columnCount,
+      fetchRegions: new Set(fetchArray)
+    };
+
+    let frozenRowFetchParameters;
+    if (frozenRowOffset !== undefined) {
+      frozenRowFetchParameters = {
+        rowOffset: frozenRowOffset,
+        rowCount: frozenRowCount,
+        columnOffset: frozenRowColOffset,
+        columnCount: frozenRowColCount,
+        fetchRegions: new Set(fetchArray)
+      };
+    }
+
+    let frozenColFetchParameters;
+    if (frozenColumnOffset !== undefined) {
+      frozenColFetchParameters = {
+        rowOffset: frozenColumnRowOffset,
+        rowCount: frozenColumnRowCount,
+        columnOffset: frozenColumnOffset,
+        columnCount: frozenColumnCount,
+        fetchRegions: new Set(fetchArray)
+      };
+    }
+
+    let frozenCornerFetchParameters;
+    if (
+      (frozenCornerRowCount !== undefined && frozenCornerColCount !== undefined) ||
+      (frozenCornerRowOffset !== undefined && frozenCornerColOffset !== undefined)
+    ) {
+      frozenCornerFetchParameters = {
+        rowOffset: frozenCornerRowOffset,
+        columnOffset: frozenCornerColOffset,
+        rowCount: frozenCornerRowCount,
+        columnCount: frozenCornerColCount,
+        fetchRegions: new Set(fetchArray)
+      };
+    }
+
+    let fetchByOffsetHandler = async (
+      results,
+      newResults,
+      frozenRowResults,
+      frozenColResults,
+      frozenCornerResults
+    ) => {
+      let next;
+      let frozenRowNext;
+      let frozenColNext;
+      let frozenCornerNext;
+      if (frozenRowResults?.results === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        frozenRowResults = undefined;
+      }
+      if (frozenColResults?.results === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        frozenColResults = undefined;
+      }
+      if (frozenCornerResults?.results === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        frozenCornerResults = undefined;
+      }
+      if (newResults != null) {
+        // eslint-disable-next-line no-param-reassign
+        results.results = Object.assign({}, results.results, newResults.results);
+        if (newResults.next != null) {
+          next = newResults.next;
+        }
+      } else if (results.next != null) {
+        next = results.next;
+      }
+      if (frozenRowResults?.next != null) {
+        frozenRowNext = frozenRowResults.next;
+      }
+      if (frozenColResults?.next != null) {
+        frozenColNext = frozenColResults.next;
+      }
+      if (frozenCornerResults?.next != null) {
+        frozenCornerNext = frozenCornerResults.next;
+      }
+
+      this.totalRowCount = results.totalRowCount;
+      this.totalColumnCount = results.totalColumnCount;
+      this.totalFrozenRowCount = frozenRowResults?.rowCount;
+      this.totalFrozenColumnCount = frozenColResults?.columnCount;
+
+      let headerCallbacks;
+      let headerCallbackObjects;
+      let result = results.results;
+      let frozenColResult = frozenColResults?.results;
+      let frozenRowResult = frozenRowResults?.results;
+
+      if (
+        (fetchColumnCallback &&
+          (!next ||
+            (result.columnHeader != null &&
+              result.columnEndHeader != null &&
+              result.columnHeaderLabel != null &&
+              result.columnEndHeaderLabel != null))) ||
+        !next ||
+        (frozenColResult.columnHeader != null &&
+          frozenColResult.columnEndHeader != null &&
+          frozenColResult.columnHeaderLabel != null &&
+          frozenColResult.columnEndHeaderLabel != null)
+      ) {
+        headerCallbacks = fetchColumnCallback?.callbacks;
+        let startColumnHeaderSet;
+        let endColumnHeaderSet;
+        let startFrozenColumnHeaderSet;
+        let endFrozenColumnHeaderSet;
+        if (headerCallbacks != null && headerCallbacks.success != null) {
+          headerCallbackObjects = fetchColumnCallback.callbackObjects;
+          if (Object.keys(fetchColumnCallback.headerRange).length) {
+            if (result.columnHeader != null) {
+              startColumnHeaderSet = new DataGridProviderHeaderSet$1(
+                results,
+                'column',
+                this.columnKeyMap
+              );
+            }
+            if (result.columnEndHeader != null) {
+              endColumnHeaderSet = new DataGridProviderHeaderSet$1(
+                results,
+                'columnEnd',
+                this.columnKeyMap
+              );
+            }
+          }
+          if (frozenColResult?.columnHeader != null) {
+            startFrozenColumnHeaderSet = new DataGridProviderHeaderSet$1(
+              frozenColResults,
+              'column',
+              this.columnKeyMap,
+              true
+            );
+          }
+          if (frozenColResult?.columnEndHeader != null) {
+            endFrozenColumnHeaderSet = new DataGridProviderHeaderSet$1(
+              frozenColResults,
+              'columnEnd',
+              this.columnKeyMap,
+              true
+            );
+          }
+        }
+        if (fetchColumnCallback != null) {
+          headerCallbacks.success.call(
+            headerCallbackObjects.success,
+            startColumnHeaderSet,
+            fetchColumnCallback.headerRange,
+            endColumnHeaderSet,
+            false,
+            startFrozenColumnHeaderSet,
+            fetchColumnCallback?.frozenHeaderRange,
+            endFrozenColumnHeaderSet
+          );
+          fetchColumnCallback = null;
+        }
+      }
+
+      if (
+        (fetchRowCallback &&
+          (!next ||
+            (result.rowHeader != null &&
+              result.rowEndHeader != null &&
+              result.rowHeaderLabel != null &&
+              result.rowEndHeaderLabel != null))) ||
+        !next ||
+        (frozenRowResult.rowHeader != null &&
+          frozenRowResult.rowEndHeader != null &&
+          frozenRowResult.rowHeaderLabel != null &&
+          frozenRowResult.rowEndHeaderLabel != null)
+      ) {
+        headerCallbacks = fetchRowCallback?.callbacks;
+        let startRowHeaderSet;
+        let endRowHeaderSet;
+        let startFrozenRowHeaderSet;
+        let endFrozenRowHeaderSet;
+
+        if (headerCallbacks != null && headerCallbacks.success != null) {
+          headerCallbackObjects = fetchRowCallback.callbackObjects;
+          if (Object.keys(fetchRowCallback.headerRange).length) {
+            if (result.rowHeader != null) {
+              startRowHeaderSet = new DataGridProviderHeaderSet$1(results, 'row', this.rowKeyMap);
+            }
+            if (result.rowEndHeader != null) {
+              endRowHeaderSet = new DataGridProviderHeaderSet$1(results, 'rowEnd', this.rowKeyMap);
+            }
+          }
+          if (frozenRowResult?.rowHeader != null) {
+            startFrozenRowHeaderSet = new DataGridProviderHeaderSet$1(
+              frozenRowResults,
+              'row',
+              this.rowKeyMap,
+              true
+            );
+          }
+          if (frozenRowResult?.rowEndHeader != null) {
+            endFrozenRowHeaderSet = new DataGridProviderHeaderSet$1(
+              frozenRowResults,
+              'rowEnd',
+              this.rowKeyMap,
+              true
+            );
+          }
+        }
+        if (fetchRowCallback != null) {
+          headerCallbacks.success.call(
+            headerCallbackObjects?.success,
+            startRowHeaderSet,
+            fetchRowCallback?.headerRange,
+            endRowHeaderSet,
+            false,
+            startFrozenRowHeaderSet,
+            fetchRowCallback?.frozenHeaderRange,
+            endFrozenRowHeaderSet
+          );
+          fetchRowCallback = null;
+        }
+      }
+
+      if (callbacks != null && callbacks.success != null && !next) {
+        let cellSet = new DataGridProviderCellSet$1(results, this.rowKeyMap, this.columnKeyMap);
+        let frozenRowCellSet;
+        let frozenColumnCellSet;
+        if (frozenRowResults) {
+          frozenRowCellSet = new DataGridProviderCellSet$1(
+            frozenRowResults,
+            this.rowKeyMap,
+            this.columnKeyMap
+          );
+        }
+        if (frozenColResults) {
+          frozenColumnCellSet = new DataGridProviderCellSet$1(
+            frozenColResults,
+            this.rowKeyMap,
+            this.columnKeyMap
+          );
+        }
+        let frozenCornerCellSet;
+        if (frozenCornerResults) {
+          frozenCornerCellSet = new DataGridProviderCellSet$1(
+            frozenCornerResults,
+            this.rowKeyMap,
+            this.columnKeyMap
+          );
+        }
+        callbacks.success.call(
+          callbackObjects.success,
+          cellSet,
+          cellRanges,
+          undefined,
+          frozenCellRanges,
+          frozenRowCellSet,
+          frozenColumnCellSet,
+          frozenCornerCellSet
+        );
+      }
+
+      if (next) {
+        // eslint-disable-next-line no-unused-vars
+        let res = await next;
+        if (res != null) {
+          // eslint-disable-next-line no-param-reassign
+          results.results = Object.assign({}, results.results, res.results);
+          // eslint-disable-next-line no-param-reassign
+          results.next = res.next;
+        }
+      }
+      if (frozenRowNext) {
+        let frozenRowNextResult = await frozenRowNext;
+        if (frozenRowNextResult != null) {
+          // eslint-disable-next-line no-param-reassign
+          frozenRowResults.results = Object.assign(
+            {},
+            frozenRowResults.results,
+            frozenRowNextResult.results
+          );
+          // eslint-disable-next-line no-param-reassign
+          frozenRowResults.next = frozenRowNextResult.next;
+        }
+      }
+      if (frozenColNext) {
+        let frozenColNextResult = await frozenColNext;
+        if (frozenColNextResult != null) {
+          // eslint-disable-next-line no-param-reassign
+          frozenColResults.results = Object.assign(
+            {},
+            frozenColResults.results,
+            frozenColNextResult.results
+          );
+          // eslint-disable-next-line no-param-reassign
+          frozenColResults.next = frozenColNextResult.next;
+        }
+      }
+      if (frozenCornerNext) {
+        let frozenCornerNextResult = await frozenCornerNext;
+        if (frozenCornerNextResult != null) {
+          // eslint-disable-next-line no-param-reassign
+          frozenCornerResults.results = Object.assign(
+            {},
+            frozenCornerResults.results,
+            frozenCornerNextResult.results
+          );
+          // eslint-disable-next-line no-param-reassign
+          frozenCornerResults.next = frozenCornerNextResult.next;
+        }
+      }
+      if (next || frozenRowNext || frozenColNext || frozenCornerNext) {
+        fetchByOffsetHandler(results, null, frozenRowResults, frozenColResults, frozenCornerResults);
+      }
+    };
+
+    let rejectionHandler = (rejection) => {
+      if (fetchColumnCallback?.callbacks?.error) {
+        fetchColumnCallback.callbacks.error.call(
+          fetchColumnCallback.callbackObjects?.error,
+          rejection,
+          fetchColumnCallback.headerRange
+        );
+        fetchColumnCallback = null;
+      }
+
+      if (fetchRowCallback?.callbacks?.error) {
+        fetchRowCallback.callbacks.error.call(
+          fetchRowCallback.callbackObjects?.error,
+          rejection,
+          fetchRowCallback.headerRange
+        );
+        fetchRowCallback = null;
+      }
+
+      if (callbacks?.error) {
+        callbacks.error.call(callbackObjects?.error, rejection, cellRanges);
+      }
+    };
+
+    let fetchPromiseArray = [this.datagridprovider.fetchByOffset(fetchParameters)];
+    if (frozenRowFetchParameters) {
+      fetchPromiseArray.push(this.datagridprovider.fetchByOffset(frozenRowFetchParameters));
+    } else {
+      fetchPromiseArray.push([]);
+    }
+
+    if (frozenColFetchParameters) {
+      fetchPromiseArray.push(this.datagridprovider.fetchByOffset(frozenColFetchParameters));
+    } else {
+      fetchPromiseArray.push([]);
+    }
+
+    if (frozenCornerFetchParameters) {
+      fetchPromiseArray.push(this.datagridprovider.fetchByOffset(frozenCornerFetchParameters));
+    }
+
+    fetchPromiseArray.push(getPreactTranslationPromise$1());
+
+    Promise.all(fetchPromiseArray).then((results) => {
+      fetchByOffsetHandler(results[0], null, results[1], results[2], results[3]);
+    }, rejectionHandler);
+  };
+
+  DataGridProviderFrozenDataGridDataSource.prototype.getCapability = function (feature) {
+    if (feature === 'sort') {
+      return 'full';
+    }
+    if (feature === 'sort' || feature === 'move') {
+      return 'none';
+    }
+    return null;
+  };
+
+  DataGridProviderFrozenDataGridDataSource.prototype.getCount = function (axis) {
+    if (axis === 'row') {
+      return this.totalRowCount;
+    } else if (axis === 'column') {
+      return this.totalColumnCount;
+    }
+    return -1;
+  };
+  DataGridProviderFrozenDataGridDataSource.prototype.getCountPrecision = function () {
+    return 'exact';
+  };
+  DataGridProviderFrozenDataGridDataSource.prototype.indexes = function () {
+    return { row: -1, column: -1 };
+  };
+  DataGridProviderFrozenDataGridDataSource.prototype.keys = function () {
+    return { row: null, column: null };
+  };
+  DataGridProviderFrozenDataGridDataSource.prototype.move = function () {};
+  DataGridProviderFrozenDataGridDataSource.prototype.moveOK = function () {
+    return 'invalid';
+  };
+  DataGridProviderFrozenDataGridDataSource.prototype.sort = function () {};
+
+  DataGridProviderFrozenDataGridDataSource.prototype._registerEventListeners = function () {
+    this._addListener = this._handleDataGridProviderAddEvent.bind(this);
+    this._removeListener = this._handleDataGridProviderRemoveEvent.bind(this);
+    this._updateListener = this._handleDataGridProviderUpdateEvent.bind(this);
+    this._refreshListener = this._handleDataGridProviderRefreshEvent.bind(this);
+
+    this.datagridprovider.addEventListener('add', this._addListener);
+    this.datagridprovider.addEventListener('remove', this._removeListener);
+    this.datagridprovider.addEventListener('update', this._updateListener);
+    this.datagridprovider.addEventListener('refresh', this._refreshListener);
+  };
+
+  DataGridProviderFrozenDataGridDataSource.prototype.Destroy = function () {
+    this.datagridprovider.removeEventListener('add', this._addListener);
+    this.datagridprovider.removeEventListener('remove', this._removeListener);
+    this.datagridprovider.removeEventListener('update', this._updateListener);
+    this.datagridprovider.removeEventListener('refresh', this._refreshListener);
+  };
+
+  DataGridProviderFrozenDataGridDataSource.prototype.updateTotalCount = function (
+    ranges,
+    axis,
+    modifier
+  ) {
+    if (axis === 'row' && this.totalRowCount === -1) {
+      return;
+    }
+    if (axis === 'column' && this.totalColumnCount === -1) {
+      return;
+    }
+    ranges.forEach((range) => {
+      let change = modifier * range.count;
+      if (axis === 'row') {
+        this.totalRowCount += change;
+      } else if (axis === 'column') {
+        this.totalColumnCount += change;
+      }
+    });
+  };
+
+  DataGridProviderFrozenDataGridDataSource.prototype._handleDataGridProviderAddEvent = function (
+    event
+  ) {
+    var newEvent = { source: this, operation: 'insert', detail: event.detail };
+    let relevantKeyMap = event.detail.axis === 'row' ? this.rowKeyMap : this.columnKeyMap;
+    relevantKeyMap.handleChange(event.detail.ranges, false);
+    this.updateTotalCount(event.detail.ranges, event.detail.axis, 1);
+    this.handleEvent('change', newEvent);
+  };
+
+  DataGridProviderFrozenDataGridDataSource.prototype._handleDataGridProviderRemoveEvent = function (
+    event
+  ) {
+    var newEvent = { source: this, operation: 'delete', detail: event.detail };
+    let relevantKeyMap = event.detail.axis === 'row' ? this.rowKeyMap : this.columnKeyMap;
+    relevantKeyMap.handleChange(event.detail.ranges, true);
+    this.updateTotalCount(event.detail.ranges, event.detail.axis, -1);
+    this.handleEvent('change', newEvent);
+  };
+
+  DataGridProviderFrozenDataGridDataSource.prototype._handleDataGridProviderUpdateEvent = function (
+    event
+  ) {
+    var newEvent = { source: this, operation: 'update', detail: event.detail };
+    this.handleEvent('change', newEvent);
+  };
+
+  DataGridProviderFrozenDataGridDataSource.prototype._handleDataGridProviderRefreshEvent = function (
+    event
+  ) {
+    let fullRefresh = true;
+    if (event && event.detail != null) {
+      const detail = event.detail;
+      if (detail.disregardAfterColumnOffset != null) {
+        const offset = detail.disregardAfterColumnOffset + 1;
+        this.columnKeyMap.handleOffsetChange(offset);
+        fullRefresh = false;
+      }
+      if (detail.disregardAfterRowOffset != null) {
+        const offset = detail.disregardAfterRowOffset + 1;
+        this.rowKeyMap.handleOffsetChange(offset);
+        fullRefresh = false;
+      }
+    }
+    if (fullRefresh) {
+      this.columnKeyMap = new DataGridProviderFrozenDataGridDataSourceKeyMap();
+      this.rowKeyMap = new DataGridProviderFrozenDataGridDataSourceKeyMap();
+    }
+    const newEvent = { source: this, operation: 'refresh', detail: event.detail };
+    this.handleEvent('change', newEvent);
+  };
+
+  function DataGridProviderCellSet$1(results, rowKeyMap, columnKeyMap) {
+    this.results = results;
+    this.rowKeyMap = rowKeyMap;
+    this.columnKeyMap = columnKeyMap;
+    this.databodyResults = results.results.databody;
+    this.rowStart = this.results.rowOffset;
+    this.rowCount = this.results.rowCount;
+    this.rowEnd = this.rowStart + this.rowCount - 1;
+    this.columnStart = this.results.columnOffset;
+    this.columnCount = this.results.columnCount;
+    this.columnEnd = this.columnStart + this.columnCount - 1;
+    this.lastItem = null;
+  }
+  DataGridProviderCellSet$1.prototype.getData = function (indexes) {
+    let item = this._findItemByIndex(indexes.row, indexes.column);
+    return item.data;
+  };
+  DataGridProviderCellSet$1.prototype.getMetadata = function (indexes) {
+    let item = this._findItemByIndex(indexes.row, indexes.column);
+    return {
+      metadata: item.metadata,
+      keys: {
+        row: this.rowKeyMap.get(item.rowIndex),
+        column: this.columnKeyMap.get(item.columnIndex)
+      }
+    };
+  };
+  DataGridProviderCellSet$1.prototype.getCount = function (axis) {
+    if (this.databodyResults != null) {
+      if (axis === 'row') {
+        return this.rowCount;
+      }
+      if (axis === 'column') {
+        return this.columnCount;
+      }
+    }
+    return 0;
+  };
+  DataGridProviderCellSet$1.prototype.getExtent = function (indexes) {
+    let rowBefore = false;
+    let rowAfter = false;
+    let columnBefore = false;
+    let columnAfter = false;
+
+    let item = this._findItemByIndex(indexes.row, indexes.column);
+    let rowStart = item.rowIndex;
+    let rowExtent = item.rowExtent;
+    let rowEnd = rowStart + rowExtent - 1;
+    let columnStart = item.columnIndex;
+    let columnExtent = item.columnExtent;
+    let columnEnd = columnStart + columnExtent - 1;
+
+    if (rowStart < this.rowStart) {
+      rowExtent -= this.rowStart - rowStart;
+      rowBefore = true;
+    }
+    if (rowEnd > this.rowEnd) {
+      rowExtent -= rowEnd - this.rowEnd;
+      rowAfter = true;
+    }
+
+    if (columnStart < this.columnStart) {
+      columnExtent -= this.columnStart - columnStart;
+      columnBefore = true;
+    }
+    if (columnEnd > this.columnEnd) {
+      columnExtent -= columnEnd - this.columnEnd;
+      columnAfter = true;
+    }
+
+    return {
+      row: { extent: rowExtent, more: { before: rowBefore, after: rowAfter } },
+      column: { extent: columnExtent, more: { before: columnBefore, after: columnAfter } }
+    };
+  };
+  DataGridProviderCellSet$1.prototype._findItemByIndex = function (rowIndex, columnIndex) {
+    let checkfunction = (item) => {
+      let itemRowIndex = item.rowIndex;
+      let itemRowExtent = item.rowExtent;
+      let itemColumnIndex = item.columnIndex;
+      let itemColumnExtent = item.columnExtent;
+      if (
+        rowIndex >= itemRowIndex &&
+        rowIndex < itemRowIndex + itemRowExtent &&
+        columnIndex >= itemColumnIndex &&
+        columnIndex < itemColumnIndex + itemColumnExtent
+      ) {
+        return true;
+      }
+      return false;
+    };
+
+    if (this.lastItem != null && checkfunction(this.lastItem)) {
+      return this.lastItem;
+    }
+    this.lastItem = this.databodyResults.find(checkfunction);
+    return this.lastItem;
+  };
+
+  function DataGridProviderHeaderSet$1(results, axis, keyMap) {
+    this.results = results;
+    this.axis = axis;
+    this.axisResults = results.results[this.axis + 'Header'];
+    this.axisLabels = results.results[this.axis + 'HeaderLabel'];
+    if (this.axis === 'row' || this.axis === 'rowEnd') {
+      this.start = this.results.rowOffset;
+      this.count = this.results.rowCount;
+    } else {
+      this.start = this.results.columnOffset;
+      this.count = this.results.columnCount;
+    }
+    this.end = this.start + this.count - 1;
+    this.lastItem = null;
+    this.keyMap = keyMap;
+    this.levelCount = null;
+  }
+  DataGridProviderHeaderSet$1.prototype.getData = function (index, level) {
+    let item = this._findItemByIndexLevel(index, level);
+    return item.data;
+  };
+  DataGridProviderHeaderSet$1.prototype.getMetadata = function (index, level) {
+    let item = this._findItemByIndexLevel(index, level);
+    let sortDirection = item.metadata.sortDirection;
+    if (sortDirection != null) {
+      sortDirection = item.metadata.sortDirection === 'unsorted' ? null : sortDirection;
+    }
+    return {
+      metadata: item.metadata,
+      key: this.keyMap.get(item.index, item.level, this.getLevelCount(), item.depth),
+      sortDirection: sortDirection
+    };
+  };
+  DataGridProviderHeaderSet$1.prototype.getLevelCount = function () {
+    if (this.levelCount == null) {
+      let maxLevel = 0;
+      if (this.axisResults != null) {
+        this.axisResults.forEach((item) => {
+          let itemMaxLevel = item.level + item.depth - 1;
+          if (itemMaxLevel > maxLevel) {
+            maxLevel = itemMaxLevel;
+          }
+        });
+      }
+      this.levelCount = maxLevel + 1;
+    }
+    return this.levelCount;
+  };
+  DataGridProviderHeaderSet$1.prototype.getExtent = function (index, level) {
+    let item = this._findItemByIndexLevel(index, level);
+    let extent = item.extent;
+    let start = item.index;
+    let end = item.index + extent - 1;
+    let before = false;
+    let after = false;
+    if (start < this.start) {
+      extent -= this.start - start;
+      before = true;
+    }
+    if (end > this.end) {
+      extent -= end - this.end;
+      after = true;
+    }
+    return { extent: extent, more: { before: before, after: after } };
+  };
+  DataGridProviderHeaderSet$1.prototype.getLabel = function (index) {
+    if (this.axisLabels != null) {
+      return this.axisLabels[index].data;
+    }
+    return null;
+  };
+  DataGridProviderHeaderSet$1.prototype.getLabelMetadata = function (index) {
+    if (this.axisLabels != null) {
+      return { metadata: this.axisLabels[index].metadata };
+    }
+    return null;
+  };
+  DataGridProviderHeaderSet$1.prototype.getDepth = function (index, level) {
+    let item = this._findItemByIndexLevel(index, level);
+    return item.depth;
+  };
+  DataGridProviderHeaderSet$1.prototype.getCount = function () {
+    if (this.axisResults != null) {
+      return this.count;
+    }
+    return 0;
+  };
+  DataGridProviderHeaderSet$1.prototype._findItemByIndexLevel = function (index, level) {
+    let checkfunction = (item) => {
+      let itemIndex = item.index;
+      let itemExtent = item.extent;
+      let itemLevel = item.level;
+      let itemDepth = item.depth;
+      if (
+        index >= itemIndex &&
+        index < itemIndex + itemExtent &&
+        level >= itemLevel &&
+        level < itemLevel + itemDepth
+      ) {
+        return true;
+      }
+      return false;
+    };
+
+    if (this.lastItem != null && checkfunction(this.lastItem)) {
+      return this.lastItem;
+    }
+    this.lastItem = this.axisResults.find(checkfunction);
+    return this.lastItem;
+  };
+
+  /**
+   * @constructor
+   * @private
+   */
+  function DataGridProviderFrozenDataGridDataSourceKeyMap() {
+    this.keyMap = new Map();
+    this.nextKey = 0;
+
+    this.set = (index, level, totalLevels, depth) => {
+      // use string keys to avoid == check issues
+      const newKey = '' + this.nextKey;
+      if (depth == null) {
+        // eslint-disable-next-line no-param-reassign
+        depth = 1;
+      }
+      for (let i = 0; i < depth; i++) {
+        let levelCalc = level == null ? level : level + i;
+        let indexLevelPair = this.pairIndexLevel(index, levelCalc, totalLevels);
+        this.keyMap.set(indexLevelPair, newKey);
+      }
+      this.nextKey += 1;
+      return newKey;
+    };
+
+    this.get = (index, level, totalLevels, depth) => {
+      const indexLevelPair = this.pairIndexLevel(index, level, totalLevels);
+      let key = this.keyMap.get(indexLevelPair);
+      if (key == null) {
+        key = this.set(index, level, totalLevels, depth);
+      }
+      return key;
+    };
+
+    this.pairIndexLevel = (index, level, totalLevels) => {
+      if (level == null || (totalLevels != null && level === totalLevels - 1)) {
+        return '' + index;
+      }
+      return index + ',' + level;
+    };
+
+    this.handleOffsetChange = (offset) => {
+      let newKeyMap = new Map();
+      const keys = [...this.keyMap.keys()];
+      for (let i = 0; i < keys.length; i++) {
+        let parseKey = keys[i].split(',');
+        let index = parseInt(parseKey[0], 10);
+        if (index < offset) {
+          newKeyMap.set(keys[i], this.keyMap.get(keys[i]));
+        }
+      }
+      this.keyMap = newKeyMap;
+    };
+
+    this.handleChange = (ranges, remove) => {
+      let indexSet = new Set();
+      ranges.forEach(function (range) {
+        let start = range.offset;
+        let count = range.count;
+        for (var i = 0; i < count; i++) {
+          indexSet.add(start + i);
+        }
+      });
+      let indexes = Array.from(indexSet);
+      indexes.sort(function (a, b) {
+        return a - b;
+      });
+
+      let newKeyMap = new Map();
+      let oldKeyMap = this.keyMap;
+
+      oldKeyMap.forEach((value, key) => {
+        let parseKey = key.split(',');
+        let index = parseInt(parseKey[0], 10);
+        let level = parseKey[1];
+
+        if (
+          remove &&
+          indexes.some((changedIndex) => {
+            return changedIndex === index;
+          })
+        ) {
+          return;
+        }
+
+        let countBefore = 0;
+        if (index >= indexes[0]) {
+          let tempCompareIndex = index;
+          countBefore = indexes.findIndex((changedIndex) => {
+            if (!remove && tempCompareIndex >= changedIndex) {
+              tempCompareIndex += 1;
+            }
+            return changedIndex > tempCompareIndex;
+          });
+          if (countBefore === -1) {
+            countBefore = indexes.length;
+          }
+        }
+        let newIndex = remove ? index - countBefore : index + countBefore;
+        let newPair = this.pairIndexLevel(newIndex, level);
+        newKeyMap.set(newPair, value);
+      });
+
+      this.keyMap = newKeyMap;
+    };
+  }
+
+  async function getPreactTranslationPromise$1() {
+    return ojtranslationbundleutils.loadAllPendingBundles();
+  }
+
   // import { ImmutableSet } from 'ojs/ojkeyset';
   // import { DataGridProvider } from 'ojs/ojdatagridprovider';
 
@@ -36825,6 +40486,13 @@ var __oj_data_grid_metadata =
        * @typedef {Object} oj.ojDataGrid.Range Range description.
        * @ojsignature [{ target:"Type",
        *                 value:"{startIndex: {row: number, column?: number}, endIndex: {row: number, column?: number}}"
+       *               }]
+       */
+
+      /**
+       * @typedef {Object} oj.ojDataGrid.EditCell Edit cell description.
+       * @ojsignature [{ target:"Type",
+       *                 value:"{indexes: {row: number, column: number}}"
        *               }]
        */
 
@@ -38438,6 +42106,34 @@ var __oj_data_grid_metadata =
        * myDataGrid.editMode = 'cellEdit';
        */
       editMode: 'none',
+
+      /**
+       * <p>The information about the cell that is currently being edited.
+       * Note that the cell that is currently being edited is also the current focused cell. Therefore, when this value is updated, the value of currentCell is updated also.
+       * In addition, editCell update can be cancelled if beforeCurrentCell event is vetoed.
+       * @expose
+       * @memberof oj.ojDataGrid
+       * @instance
+       * @type {Object}
+       * @default null
+       * @ojwriteback
+       * @ojshortdesc Specifies the cell currently being edited.
+       * @ojsignature { target: "Type",
+       *                value: "oj.ojDataGrid.EditCell",
+       *                jsDocOverride:true }
+       *
+       * @example <caption>Initialize the DataGrid with the <code class="prettyprint">editCell</code> attribute specified:</caption>
+       * &lt;!-- Using JSON notation -->
+       * &lt;oj-data-grid editCell='{"indexes": {"row": 1, "column": 1}}'>&lt;/oj-data-grid>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">editCell</code> property after initialization:</caption>
+       * // Getter
+       * var editCellValue = myDataGrid.editCell;
+       *
+       * // Setter
+       * myDataGrid.editCelll = {indexes: {row: 1, column: 1}};
+       */
+      editCell: null,
 
       /**
        * The header attribute contains a subset of attributes for row and column headers.
@@ -41292,8 +44988,12 @@ var __oj_data_grid_metadata =
        * @ojshortdesc Triggered before the DataGrid is going to enter edit mode.
        * @instance
        * @property {Object} cellContext the cellContext of the cell that editing is going to be performed on
+       * @property {function} focusCallback the focusCallback should be called with a single param of type object with optional properties locator and action.
+       * Currently action supports a single enum: focusAndOpen. Currently locator should be set to a locator that cell.querySelector will return the relevant
+       * content to call the private focusAndOpen contract on. Note this is only exposed for oj-select-single today. Other usages are discouraged.
        * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"},
-       *               {target:"Type", value:"oj.ojDataGrid.CellContext<K,D>", for:"cellContext", jsdocOverride:true}]
+       *               {target:"Type", value:"oj.ojDataGrid.CellContext<K,D>", for:"cellContext", jsdocOverride:true},
+       *               {target:"Type", value:"(detail:{locator?: string, action?: 'focusAndOpen'}) => void", for:"focusCallback", jsdocOverride: true}]
        */
       beforeEdit: null,
 
@@ -41593,6 +45293,10 @@ var __oj_data_grid_metadata =
       this.contextMenuEvent = null;
 
       this._removeAllChildren();
+
+      // this is the minimal change to ensure a fix to not handling fetches after a release resources
+      // doing more such as resetInternal can cause other events handled release to error
+      this.grid.m_fetching = null;
     },
 
     _registerEventListeners: function () {
@@ -41710,6 +45414,15 @@ var __oj_data_grid_metadata =
       });
       this.grid.addListener('filterRequest', function (details) {
         return self._trigger('filterRequest', details.event, details.ui);
+      });
+      this.grid.addListener('editCell', function (details) {
+        self.option('editCell', details.ui.editCell, {
+          _context: {
+            originalEvent: details.event,
+            internalSet: true
+          },
+          changed: true
+        });
       });
     },
 
@@ -41981,6 +45694,7 @@ var __oj_data_grid_metadata =
           case 'frozenRowCount':
           case 'hiddenColumns':
           case 'hiddenRows':
+          case 'editCell':
             // just set returnVal in case another option is refresh at
             // the wrapper level
             returnVal = 'pass';
@@ -43226,7 +46940,15 @@ var __oj_data_grid_metadata =
      */
     _setDataSource: function () {
       if (this.options.data != null) {
-        if (this.options.data.fetchByOffset && !this.options.data.fetchFirst) {
+        if (
+          this.options.scrollPolicy === 'scroll' &&
+          (this._isFreezeEnabled('row') ||
+            this._isFreezeEnabled('column') ||
+            this.options.frozenColumnCount > 0 ||
+            this.options.frozenRowCount > 0)
+        ) {
+          this.datasource = new DataGridProviderFrozenDataGridDataSource(this.options.data);
+        } else if (this.options.data.fetchByOffset && !this.options.data.fetchFirst) {
           if (this.datasource != null && this.datasource.Destroy) {
             this.datasource.Destroy();
           }
@@ -44217,6 +47939,7 @@ var __oj_data_grid_metadata =
           let elems = this.getElementsInRange(selection[i]);
           if (elems?.length) {
             this._draggedElements.push(...elems);
+            this._draggedElements.push(...allHeadersWithinSelection);
             for (let j = 0; j < elems.length; j++) {
               this._highlightElement(elems[j], ['dragSourceOpaque']);
             }
@@ -44377,7 +48100,10 @@ var __oj_data_grid_metadata =
       let header = this._getHeaderByIndex(adjustedRowIndex, axis, this.m_rowHeaderLevelCount - 1);
       let isHeaderWithinSelection = this._isHeaderWithinSelection(header, axis);
       if (rowIndex !== undefined && this.m_dragIndex !== rowIndex) {
-        if (this.m_utils.containsCSSClassName(header, this.getMappedStyle('disabledElement'))) {
+        if (
+          this.m_utils.containsCSSClassName(header, this.getMappedStyle('disabledElement')) ||
+          this.m_utils.containsCSSClassName(header, this.getMappedStyle('dragSourceOpaque'))
+        ) {
           this._removeDropTargetLine(axis);
           this._removeDropTargetClass();
           this.m_dropRowIndex = null;
@@ -44781,7 +48507,10 @@ var __oj_data_grid_metadata =
       let adjustedColIndex = colIndex === -1 ? 0 : colIndex;
       let dir = this.getResources().isRTLMode() ? 'right' : 'left';
       let header = this._getHeaderByIndex(adjustedColIndex, axis, this.m_columnHeaderLevelCount - 1);
-      if (this.m_utils.containsCSSClassName(header, this.getMappedStyle('disabledElement'))) {
+      if (
+        this.m_utils.containsCSSClassName(header, this.getMappedStyle('disabledElement')) ||
+        this.m_utils.containsCSSClassName(header, this.getMappedStyle('dragSourceOpaque'))
+      ) {
         this._removeDropTargetLine(axis);
         this._removeDropTargetClass();
         this.m_dropColumnIndex = null;
@@ -46022,11 +49751,8 @@ var __oj_data_grid_metadata =
     );
     this._populateDatabody(container, frozenFragment);
     if (!this.m_initialized) {
-      this._setScrollerDimension(
-        container.parentElement,
-        addResult.totalRowHeight,
-        addResult.totalColumnWidth
-      );
+      this.setElementHeight(container.parentElement, addResult.totalRowHeight);
+      this.setElementWidth(container.parentElement, addResult.totalColumnWidth);
     }
     return addResult;
   };
@@ -46228,15 +49954,12 @@ var __oj_data_grid_metadata =
         databodyFrozenColumnWidth = width - rowHeaderWidth - rowEndHeaderWidth;
       }
       if (
-        !databodyFrozenColumnWidth &&
+        (databodyFrozenColumnWidth == null ||
+          (databodyFrozenColumnWidth === 0 && this._databodyEmptyState())) &&
         (this.m_endColHeader !== -1 || this.m_endColEndHeader !== -1)
       ) {
-        const frozenHeader =
-          this.m_endColHeader !== -1 ? this.m_colHeaderFrozen : this.m_colEndHeaderFrozen;
-        for (let i = 0; i < frozenHeader.firstChild.childElementCount; i++) {
-          let child = frozenHeader.firstChild.childNodes[i];
-          databodyFrozenColumnWidth += this.getElementWidth(child);
-        }
+        let axis = this.m_endColHeader !== -1 ? 'column' : 'columnEnd';
+        databodyFrozenColumnWidth += this._computeHeaderDimension(axis, true, 'width');
       }
     }
     if (this._hasFrozenRows()) {
@@ -46245,13 +49968,13 @@ var __oj_data_grid_metadata =
       if (colHeaderHeight + colEndHeaderHeight + databodyFrozenRowHeight > height) {
         databodyFrozenRowHeight = height - colHeaderHeight - colEndHeaderHeight;
       }
-      if (!databodyFrozenRowHeight && (this.m_endRowHeader !== -1 || this.m_endRowEndHeader !== -1)) {
-        const frozenHeader =
-          this.m_endRowHeader !== -1 ? this.m_rowHeaderFrozen : this.m_rowEndHeaderFrozen;
-        for (let i = 0; i < frozenHeader.firstChild.childElementCount; i++) {
-          let child = frozenHeader.firstChild.childNodes[i];
-          databodyFrozenRowHeight += this.getElementHeight(child);
-        }
+      if (
+        (databodyFrozenRowHeight == null ||
+          (databodyFrozenRowHeight === 0 && this._databodyEmptyState())) &&
+        (this.m_endRowHeader !== -1 || this.m_endRowEndHeader !== -1)
+      ) {
+        let axis = this.m_endRowHeader !== -1 ? 'row' : 'rowEnd';
+        databodyFrozenRowHeight += this._computeHeaderDimension(axis, true, 'height');
       }
     }
 
@@ -46260,10 +49983,10 @@ var __oj_data_grid_metadata =
         databodyFrozenRowHeight || this.getElementHeight(databodyFrozenCorner);
       databodyFrozenCornerWidth =
         databodyFrozenColumnWidth || this.getElementWidth(databodyFrozenCorner);
-      if (!databodyFrozenColumnWidth) {
+      if (databodyFrozenColumnWidth == null) {
         databodyFrozenColumnWidth = databodyFrozenCornerWidth;
       }
-      if (!databodyFrozenRowHeight) {
+      if (databodyFrozenRowHeight == null) {
         databodyFrozenRowHeight = databodyFrozenCornerHeight;
       }
     }
@@ -46431,7 +50154,13 @@ var __oj_data_grid_metadata =
    * @param {Object} endResults a headerSet object returned from the data source
    * @private
    */
-  DvtDataGrid.prototype._buildFrozenHeaders = function (axis, startResults, endResults, headerRange) {
+  DvtDataGrid.prototype._buildFrozenHeaders = function (
+    axis,
+    startResults,
+    endResults,
+    headerRange,
+    isHWSFreeze
+  ) {
     let start = headerRange.start;
     let returnObj = {
       headerStart: headerRange.start,
@@ -46486,7 +50215,14 @@ var __oj_data_grid_metadata =
       }
       return returnObj;
     }
-    returnObj = this._buildFrozenAxisHeaders(axis, startResults, endResults, headerRange, returnObj);
+    returnObj = this._buildFrozenAxisHeaders(
+      axis,
+      startResults,
+      endResults,
+      headerRange,
+      isHWSFreeze,
+      returnObj
+    );
     return returnObj;
   };
 
@@ -46605,6 +50341,7 @@ var __oj_data_grid_metadata =
     startResults,
     endResults,
     headerRange,
+    isHWSFreeze,
     returnObj
   ) {
     let start = headerRange.start;
@@ -46614,6 +50351,7 @@ var __oj_data_grid_metadata =
     let frozenIndex = this.m_frozenRowIndex;
     let frozenHeader = this.m_rowHeaderFrozen;
     let frozenEndHeader = this.m_rowEndHeaderFrozen;
+    let scrollPosition = this.m_options.getScrollPosition();
     if (axis === 'column') {
       frozenIndex = this.m_frozenColIndex;
       frozenHeader = this.m_colHeaderFrozen;
@@ -46627,11 +50365,22 @@ var __oj_data_grid_metadata =
 
       returnObj.headerFetchCount = fetchCount;
       if (frozenIndex !== null && frozenIndex !== -1) {
-        if (this.m_initialized === false) {
+        if (this.m_initialized === false && isHWSFreeze) {
           fetchCount -= frozenIndex + 1;
         }
+        let fetchSize = frozenIndex + 1;
+        if (
+          !this._isHighWatermarkScrolling() &&
+          scrollPosition.rowIndex !== undefined &&
+          scrollPosition.rowIndex !== 0 &&
+          scrollPosition.columnIndex !== undefined &&
+          scrollPosition.columnIndex !== 0 &&
+          fetchCount > frozenIndex + 1
+        ) {
+          fetchSize = fetchCount;
+        }
         if (frozenHeader && frozenHeader.firstChild && !frozenHeader.firstChild.childNodes.length) {
-          buildHeaders(frozenHeader, startResults, start, count, false, false, frozenIndex + 1, true);
+          buildHeaders(frozenHeader, startResults, start, count, false, false, fetchSize, true);
 
           let groupingContainer = frozenHeader.firstChild.querySelectorAll(
             `.${this.getMappedStyle('groupingcontainer')}`
@@ -46641,10 +50390,18 @@ var __oj_data_grid_metadata =
           // to adjust for regular headers to start from 0.
           if (axis === 'column') {
             this.m_endColHeaderPixel = 0;
-            this.m_frozenColIndex = start - 1;
+            if (isHWSFreeze) {
+              this.m_frozenColIndex = start - 1;
+            } else {
+              this.m_frozenColIndex = startResults.getCount() - 1;
+            }
           } else {
             this.m_endRowHeaderPixel = 0;
-            this.m_frozenRowIndex = start - 1;
+            if (isHWSFreeze) {
+              this.m_frozenRowIndex = start - 1;
+            } else {
+              this.m_frozenRowIndex = startResults.getCount() - 1;
+            }
           }
           returnObj.headerFetchCount = fetchCount;
           returnObj.headerStart = start;
@@ -46655,7 +50412,7 @@ var __oj_data_grid_metadata =
       let fetchCount = endResults.getCount();
       returnObj.endHeaderFetchCount = fetchCount;
       if (frozenIndex !== null && frozenIndex !== -1) {
-        if (this.m_initialized === false) {
+        if (this.m_initialized === false && isHWSFreeze) {
           fetchCount -= frozenIndex + 1;
         }
         if (
@@ -46663,17 +50420,19 @@ var __oj_data_grid_metadata =
           frozenEndHeader.firstChild &&
           !frozenEndHeader.firstChild.childNodes.length
         ) {
+          let fetchSize = frozenIndex + 1;
+          if (
+            !this._isHighWatermarkScrolling() &&
+            scrollPosition.rowIndex !== undefined &&
+            scrollPosition.rowIndex !== 0 &&
+            scrollPosition.columnIndex !== undefined &&
+            scrollPosition.columnIndex !== 0 &&
+            fetchCount > frozenIndex + 1
+          ) {
+            fetchSize = fetchCount;
+          }
           start = headerRange.start;
-          buildEndHeaders(
-            frozenEndHeader,
-            endResults,
-            start,
-            count,
-            false,
-            false,
-            frozenIndex + 1,
-            true
-          );
+          buildEndHeaders(frozenEndHeader, endResults, start, count, false, false, fetchSize, true);
           // to adjust for regular headers to start from 0.
           if (axis === 'column') {
             this.m_endColEndHeaderPixel = 0;
@@ -46686,14 +50445,23 @@ var __oj_data_grid_metadata =
           let groupingContainer = frozenEndHeader.firstChild.querySelectorAll(
             `.${this.getMappedStyle('groupingcontainer')}`
           );
-          start = this._calculateFrozenIndex(frozenIndex + 1, groupingContainer);
+          if (groupingContainer.length) {
+            start = this._calculateFrozenIndex(frozenIndex + 1, groupingContainer);
+          }
           fetchCount = endResults.getCount() - start;
           returnObj.endHeaderFetchCount = fetchCount;
           returnObj.endHeaderStart = start;
           if (axis === 'column') {
-            this.m_frozenColIndex = start - 1;
+            if (isHWSFreeze) {
+              this.m_frozenColIndex = start - 1;
+            } else {
+              this.m_frozenColIndex = endResults.getCount() - 1;
+            }
           } else {
-            this.m_frozenRowIndex = start - 1;
+            this.m_frozenRowIndex = endResults.getCount() - 1;
+            if (isHWSFreeze) {
+              this.m_frozenRowIndex = start - 1;
+            }
           }
         }
       }
@@ -46735,6 +50503,7 @@ var __oj_data_grid_metadata =
     let cell;
     let isFeasible = true;
     const context = this.getResources().getMappedAttribute('context');
+    let withinFrozen = false;
     if (header === null) {
       let headerIndex;
       let endHeaderIndex;
@@ -46748,11 +50517,9 @@ var __oj_data_grid_metadata =
         cell = this._getCellByIndex(this.m_selection[0].endIndex);
       }
       const index = cell[context].indexes;
-      let withinFrozen = false;
       if (index.row < this.m_frozenRowIndex + 1) {
         withinFrozen = true;
       }
-
       if (this.m_endRowHeader !== -1 && this.m_endRowEndHeader !== -1) {
         let returnObj = this._isDynamicFreezeFeasible(index.row, axis, withinFrozen);
         isFeasible = returnObj.isFeasible;
@@ -46770,7 +50537,6 @@ var __oj_data_grid_metadata =
     } else {
       let headerIndex = header[context].index;
       let endHeaderIndex;
-      let withinFrozen = false;
       if (headerIndex < this.m_frozenRowIndex + 1) {
         withinFrozen = true;
       }
@@ -46783,8 +50549,33 @@ var __oj_data_grid_metadata =
         header = this._getMaxExtentNestedHeader(axis, headerIndex, endHeaderIndex, withinFrozen);
       }
     }
+    if (
+      !this._isHighWatermarkScrolling() &&
+      !withinFrozen &&
+      ((this._hasFrozenColumns() && this.m_startCol > this.m_frozenColIndex + 1) ||
+        (this._hasFrozenRows() && this.m_startRow > this.m_frozenRowIndex + 1) ||
+        (this._hasFrozenColumns() &&
+          this._hasFrozenRows() &&
+          (this.m_startCol > this.m_frozenColIndex + 1 ||
+            this.m_startRow > this.m_frozenRowIndex + 1)) ||
+        (!this._hasFrozenRows() && this.m_startRow > 0))
+    ) {
+      return;
+    }
     if (isFeasible) {
       this._mutateRowFrozenContainer(header, cell, axis);
+      if (!this._isHighWatermarkScrolling()) {
+        const scrollLeft = this.m_currentScrollLeft;
+        const dir = this.getResources().isRTLMode() ? 'right' : 'left';
+        // adjust the scroller to be in the same dimension as databody.
+        // useful when a new frozen section is created at a random scroll position.
+        if (this.m_databodyFrozenRow?.firstChild) {
+          this.setElementDir(this.m_databodyFrozenRow.firstChild, -scrollLeft, dir);
+        }
+        this.m_startRow = this.m_frozenRowIndex + 1;
+        this.m_startRowHeader = this.m_frozenRowIndex + 1;
+        this.m_startRowEndHeader = this.m_frozenRowIndex + 1;
+      }
       this.deleteAndApplyHiddenIndicators();
       let details = {
         event: event,
@@ -46828,6 +50619,7 @@ var __oj_data_grid_metadata =
     let axis = 'column';
     let cell;
     let isFeasible = true;
+    let withinFrozen = false;
     const context = this.getResources().getMappedAttribute('context');
     if (header === null) {
       cell = this.findCell(event.target);
@@ -46842,7 +50634,6 @@ var __oj_data_grid_metadata =
       let index = cell[context].indexes;
       let headerIndex;
       let endHeaderIndex;
-      let withinFrozen = false;
       if (index.column < this.m_frozenColIndex + 1) {
         withinFrozen = true;
       }
@@ -46864,7 +50655,6 @@ var __oj_data_grid_metadata =
     } else {
       let headerIndex = header[context].index;
       let endHeaderIndex;
-      let withinFrozen = false;
       if (headerIndex < this.m_frozenColIndex + 1) {
         withinFrozen = true;
       }
@@ -46877,8 +50667,32 @@ var __oj_data_grid_metadata =
         header = this._getMaxExtentNestedHeader(axis, headerIndex, endHeaderIndex, withinFrozen);
       }
     }
+    if (
+      !this._isHighWatermarkScrolling() &&
+      !withinFrozen &&
+      ((this._hasFrozenColumns() && this.m_startCol > this.m_frozenColIndex + 1) ||
+        (this._hasFrozenRows() && this.m_startRow > this.m_frozenRowIndex + 1) ||
+        (this._hasFrozenColumns() &&
+          this._hasFrozenRows() &&
+          (this.m_startCol > this.m_frozenColIndex + 1 ||
+            this.m_startRow > this.m_frozenRowIndex + 1)) ||
+        (!this._hasFrozenColumns() && this.m_startCol > 0))
+    ) {
+      return;
+    }
     if (isFeasible) {
       this._mutateColumnFrozenContainer(header, cell, axis);
+      if (!this._isHighWatermarkScrolling()) {
+        // adjust the scroller to be in the same dimension as databody.
+        // useful when a new frozen section is created at a random scroll position.
+        const scrollTop = this.m_currentScrollTop;
+        if (this.m_databodyFrozenCol?.firstChild) {
+          this.setElementDir(this.m_databodyFrozenCol.firstChild, -scrollTop, 'top');
+        }
+        this.m_startCol = this.m_frozenColIndex + 1;
+        this.m_startColHeader = this.m_frozenColIndex + 1;
+        this.m_startColEndHeader = this.m_frozenColIndex + 1;
+      }
       this.deleteAndApplyHiddenIndicators();
       let details = {
         event: event,
@@ -46964,7 +50778,7 @@ var __oj_data_grid_metadata =
       endHeaderLevelCount = this.m_columnEndHeaderLevelCount;
     }
 
-    if (!withinFrozenContainer) {
+    if (!withinFrozenContainer && frozenIndex != null) {
       if (headerLevelCount === 1) {
         adjustedHeaderIndex = index - (frozenIndex + 1);
       }
@@ -47050,6 +50864,7 @@ var __oj_data_grid_metadata =
 
   DvtDataGrid.prototype._mutateColumnFrozenContainer = function (header, cell, axis) {
     const context = this.getResources().getMappedAttribute('context');
+    const dir = this.getResources().isRTLMode() ? 'right' : 'left';
     if (header) {
       // eslint-disable-next-line no-param-reassign
       header = this._getOutermostHeaderFromNestedHeaders(header);
@@ -47064,6 +50879,8 @@ var __oj_data_grid_metadata =
         header,
         this.getMappedStyle('frozenHeader')
       );
+      let shouldNotScroll;
+      let shouldNotFocusIn;
       if (this._hasFrozenColumns()) {
         if (!isWithinFrozen) {
           this._appendCellsToFrozenColumnContainer(headerIndex, header, false);
@@ -47072,10 +50889,26 @@ var __oj_data_grid_metadata =
         }
       } else if (this.m_frozenColIndex === null || this.m_frozenColIndex === -1) {
         this._createColumnFrozenSectionAndMutate(axis, headerIndex, header);
+        shouldNotFocusIn = true;
+        shouldNotScroll = true;
+        this.m_shouldFocus = false;
       }
       // find current active cell, and set it active to retain focus back to grid.
       let activeCell = this._getElementFromActiveObject(this.m_active);
-      this._setActive(activeCell, this.m_active);
+      if (
+        activeCell &&
+        this.getElementDir(activeCell, dir) < this.getElementWidth(this.m_colHeaderFrozen)
+      ) {
+        this._setActive(
+          activeCell,
+          this.m_active,
+          null,
+          null,
+          null,
+          shouldNotScroll,
+          shouldNotFocusIn
+        );
+      }
     } else {
       const cellContext = cell[context];
       let index = cellContext.indexes.column;
@@ -47098,8 +50931,22 @@ var __oj_data_grid_metadata =
         } else {
           this._appendCellsToFrozenColumnContainer(index, null, false);
         }
+        let shouldNotScroll;
+        let shouldNotFocusIn;
+        if (!this.getElementWidth(this.m_databody)) {
+          shouldNotScroll = true;
+          shouldNotFocusIn = true;
+        }
         // set the cell from which the event is triggered as active to retain focus back in the grid.
-        this._setActive(cell, this._createActiveObject(cell));
+        this._setActive(
+          cell,
+          this._createActiveObject(cell),
+          null,
+          null,
+          null,
+          shouldNotScroll,
+          shouldNotFocusIn
+        );
       }
     }
     if (this._isSelectionEnabled() && this.m_utils.isTouchDevice() && this.m_selection.length > 0) {
@@ -47141,6 +50988,8 @@ var __oj_data_grid_metadata =
         header,
         this.getMappedStyle('frozenHeader')
       );
+      let shouldNotScroll;
+      let shouldNotFocusIn;
       if (this._hasFrozenRows()) {
         if (!isWithinFrozen) {
           this._appendCellsToFrozenRowContainer(headerIndex, header, false);
@@ -47149,10 +50998,26 @@ var __oj_data_grid_metadata =
         }
       } else if (this.m_frozenRowIndex === null || this.m_frozenRowIndex === -1) {
         this._createRowFrozenSectionAndMutate(axis, headerIndex, header);
+        shouldNotFocusIn = true;
+        shouldNotScroll = true;
+        this.m_shouldFocus = false;
       }
       // find current active cell, and set it active to retain focus back to grid.
       let activeCell = this._getElementFromActiveObject(this.m_active);
-      this._setActive(activeCell, this.m_active);
+      if (
+        activeCell &&
+        this.getElementDir(activeCell, 'top') < this.getElementHeight(this.m_rowHeaderFrozen)
+      ) {
+        this._setActive(
+          activeCell,
+          this.m_active,
+          null,
+          null,
+          null,
+          shouldNotScroll,
+          shouldNotFocusIn
+        );
+      }
     } else {
       const cellContext = cell[context];
       let index = cellContext.indexes.row;
@@ -47175,8 +51040,14 @@ var __oj_data_grid_metadata =
           this._appendCellsToFrozenRowContainer(index, null, false);
         }
       }
+      let shouldNotScroll;
+      let shouldNotFocusIn;
+      if (!this.getElementHeight(this.m_databody)) {
+        shouldNotScroll = true;
+        shouldNotFocusIn = true;
+      }
       // set the cell from which the event is triggered as active to retain focus back in the grid.
-      this._setActive(cell, this.m_active);
+      this._setActive(cell, this.m_active, null, null, null, shouldNotScroll, shouldNotFocusIn);
     }
     if (this._isSelectionEnabled() && this.m_utils.isTouchDevice() && this.m_selection.length > 0) {
       this._moveTouchSelectionAffordance();
@@ -47205,9 +51076,26 @@ var __oj_data_grid_metadata =
     if (frozenIndex === -1 || frozenIndex == null) {
       this._handleUnFreeze(axis);
     } else if (this.m_options.isFreezeEnabled(axis)) {
+      if (
+        (!this._isHighWatermarkScrolling() &&
+          axis === 'row' &&
+          frozenIndex > this.m_frozenRowIndex + 1 &&
+          this.m_startRow > this.m_frozenRowIndex + 1) ||
+        (axis === 'column' &&
+          frozenIndex > this.m_frozenColIndex + 1 &&
+          this.m_startCol > this.m_frozenColIndex + 1)
+      ) {
+        return;
+      }
       let index = this.createIndex(0, frozenIndex);
       if (axis === 'row') {
         index = this.createIndex(frozenIndex, 0);
+      }
+      if (!this._isHighWatermarkScrolling()) {
+        index =
+          axis === 'row'
+            ? this.createIndex(frozenIndex, this.m_startCol)
+            : this.createIndex(this.m_startRow, frozenIndex);
       }
       let header = null;
       let cell = this._getCellByIndex(index);
@@ -47233,6 +51121,11 @@ var __oj_data_grid_metadata =
         }
         if (isFeasible) {
           this._mutateColumnFrozenContainer(header, cell, axis);
+          if (!this._isHighWatermarkScrolling()) {
+            this.m_startCol = this.m_frozenColIndex + 1;
+            this.m_startColHeader = this.m_frozenColIndex + 1;
+            this.m_startColEndHeader = this.m_frozenColIndex + 1;
+          }
         }
       } else {
         if (frozenIndex < this.m_frozenRowIndex + 1) {
@@ -47252,6 +51145,11 @@ var __oj_data_grid_metadata =
         }
         if (isFeasible) {
           this._mutateRowFrozenContainer(header, cell, axis);
+          if (!this._isHighWatermarkScrolling()) {
+            this.m_startRow = this.m_frozenRowIndex + 1;
+            this.m_startRowHeader = this.m_frozenRowIndex + 1;
+            this.m_startRowEndHeader = this.m_frozenRowIndex + 1;
+          }
         }
       }
     }
@@ -47384,6 +51282,15 @@ var __oj_data_grid_metadata =
         this._shiftFrozenCellsAlongAxis(axis, -cellsWidthToAdjust, endIndex + 1, true);
       }
 
+      // scrollPosition set to random point and scroll to the start.
+      // startCol will be greater than 0.
+      // adjust headerShiftIndex to startCol
+      const context = this.getResources().getMappedAttribute('context');
+      let headerExtent = header ? header[context].extent : 1;
+      if (!this._isHighWatermarkScrolling() && this.m_startCol > 0 && headerExtent === 1) {
+        headerShiftStartIndex = this.m_startCol;
+        endHeaderShiftStartIndex = this.m_startCol;
+      }
       this._shiftHeadersAlongAxisInContainer(
         this.m_colHeader.firstChild,
         headerShiftStartIndex,
@@ -47604,6 +51511,16 @@ var __oj_data_grid_metadata =
       this._shiftCellsAlongAxis(axis, -cellsHeightToAdjust, endIndex + 1, true);
       if (this.m_databodyFrozenCol && this._hasFrozenColumns() && cells.length > 0) {
         this._shiftFrozenCellsAlongAxis(axis, -cellsHeightToAdjust, endIndex + 1, true);
+      }
+
+      // scrollPosition set to random point and scroll to the start.
+      // startRow will be greater than 0.
+      // adjust headerShiftIndex to startRow
+      const context = this.getResources().getMappedAttribute('context');
+      let headerExtent = header ? header[context].extent : 1;
+      if (!this._isHighWatermarkScrolling() && this.m_startRow > 0 && headerExtent === 1) {
+        headerShiftStartIndex = this.m_startRow;
+        endHeaderShiftStartIndex = this.m_startRow;
       }
       this._shiftHeadersAlongAxisInContainer(
         this.m_rowHeader.firstChild,
@@ -47926,12 +51843,20 @@ var __oj_data_grid_metadata =
 
     let headerShiftStartIndex = this.m_columnHeaderLevelCount > 1 ? frozenIndex + 1 : index + 1;
     let endHeaderShiftStartIndex = this.m_columnEndHeaderLevelCount > 1 ? frozenIndex + 1 : index + 1;
-
+    if (!this._isHighWatermarkScrolling() && this.m_startCol > 0) {
+      headerShiftStartIndex = this.m_startCol;
+      endHeaderShiftStartIndex = this.m_startCol;
+    }
     let { headers, endHeaders } = this._getColumnHeadersToUnFreeze(index + 1);
 
     let startLoop = 0;
     if (this.m_frozenRowIndex !== null) {
       startLoop = this.m_frozenRowIndex + 1;
+      if (!this._isHighWatermarkScrolling() && this.m_startRow > 0) {
+        startLoop = this.m_startRow;
+      }
+    } else if (!this._isHighWatermarkScrolling()) {
+      startLoop = this.m_startRow;
     }
     for (let i = startLoop; i <= this.m_endRow; i++) {
       for (let j = index + 1; j <= this.m_frozenColIndex; j++) {
@@ -47964,18 +51889,30 @@ var __oj_data_grid_metadata =
 
     let dirValue = 0;
     if (this.m_databodyFrozenCorner) {
-      let databodyFrozenRowReferenceNode = this.m_databodyFrozenRow.firstChild.firstChild;
       frozenCornerCells = this._getFrozenAxisCells(axis, index + 1, true);
-      for (let i = 0; i < frozenCornerCells.length; i++) {
-        this.setElementDir(frozenCornerCells[i], dirValue, dir);
-        this.m_databodyFrozenRow.firstChild.insertBefore(
-          frozenCornerCells[i],
-          databodyFrozenRowReferenceNode
-        );
-        if (i % indexDifference === indexDifference - 1) {
-          dirValue = 0;
-        } else {
-          dirValue += this.getElementWidth(frozenCornerCells[i]);
+      if (!this._isHighWatermarkScrolling() && this.m_startCol > this.m_frozenColIndex + 1) {
+        for (let i = 0; i < frozenCornerCells.length; i++) {
+          frozenCornerCells[i].remove();
+        }
+      } else {
+        let databodyFrozenRowReferenceNode = this.m_databodyFrozenRow.firstChild.firstChild;
+        if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+          databodyFrozenRowReferenceNode = this._getCellByIndex({
+            row: 0,
+            column: this.m_frozenColIndex + 1
+          });
+        }
+        for (let i = 0; i < frozenCornerCells.length; i++) {
+          this.setElementDir(frozenCornerCells[i], dirValue, dir);
+          this.m_databodyFrozenRow.firstChild.insertBefore(
+            frozenCornerCells[i],
+            databodyFrozenRowReferenceNode
+          );
+          if (i % indexDifference === indexDifference - 1) {
+            dirValue = 0;
+          } else {
+            dirValue += this.getElementWidth(frozenCornerCells[i]);
+          }
         }
       }
     }
@@ -47989,6 +51926,20 @@ var __oj_data_grid_metadata =
 
     dirValue = 0;
     let referenceDatabodyNode = this.m_databody.firstChild.firstChild;
+    if (!this._isHighWatermarkScrolling()) {
+      let referenceRowIndex = 0;
+      let referenceColIndex = 0;
+      if (this._hasFrozenColumns()) {
+        referenceColIndex = this.m_frozenColIndex + 1;
+      }
+      if (this._hasFrozenRows()) {
+        referenceRowIndex = this.m_frozenRowIndex + 1;
+      }
+      referenceDatabodyNode = this._getCellByIndex({
+        row: referenceRowIndex,
+        column: referenceColIndex
+      });
+    }
     if (cells.length !== 0) {
       for (let i = 0; i < cells.length; i++) {
         this.setElementDir(cells[i], dirValue, dir);
@@ -48000,7 +51951,7 @@ var __oj_data_grid_metadata =
           dirValue += this.getElementWidth(cells[i]);
         }
       }
-    } else {
+    } else if (headers.length !== 0 || endHeaders.length !== 0) {
       if (headers.length !== 0) {
         headers.forEach((frozenHeader) => {
           totalFrozenCellsWidth += this.getElementWidth(frozenHeader);
@@ -48022,64 +51973,105 @@ var __oj_data_grid_metadata =
     if (this.m_columnHeaderLevelCount > 1) {
       dirValue = -frozenSectionWidth;
     }
-    this._insertFrozenElementsToContainer(
-      axis,
-      headers,
-      this.m_colHeader,
-      referenceHeaderNode,
-      dirValue,
-      dir,
-      frozenHeaderStyle,
-      indexDifference
-    );
-    if (this.m_colEndHeader) {
-      dirValue = -cellsWidthToAdjust;
-      if (this.m_columnEndHeaderLevelCount > 1) {
-        dirValue = -frozenSectionWidth;
+    if (!this._isHighWatermarkScrolling() && this.m_startCol > this.m_frozenColIndex + 1) {
+      for (let i = 0; i < headers.length; i++) {
+        headers[i].remove();
       }
-      let referenceEndHeaderNode = this.m_colEndHeader.firstChild.firstChild;
+    } else {
       this._insertFrozenElementsToContainer(
         axis,
-        endHeaders,
-        this.m_colEndHeader,
-        referenceEndHeaderNode,
+        headers,
+        this.m_colHeader,
+        referenceHeaderNode,
         dirValue,
         dir,
         frozenHeaderStyle,
         indexDifference
       );
     }
+    if (this.m_colEndHeader) {
+      if (!this._isHighWatermarkScrolling() && this.m_startCol > this.m_frozenColIndex + 1) {
+        for (let i = 0; i < endHeaders.length; i++) {
+          endHeaders[i].remove();
+        }
+      } else {
+        dirValue = -cellsWidthToAdjust;
+        if (this.m_columnEndHeaderLevelCount > 1) {
+          dirValue = -frozenSectionWidth;
+        }
+        let referenceEndHeaderNode = this.m_colEndHeader.firstChild.firstChild;
+        this._insertFrozenElementsToContainer(
+          axis,
+          endHeaders,
+          this.m_colEndHeader,
+          referenceEndHeaderNode,
+          dirValue,
+          dir,
+          frozenHeaderStyle,
+          indexDifference
+        );
+      }
+    }
 
-    if (frozenIndex + 1 <= this.m_endCol) {
+    if (
+      (this._isHighWatermarkScrolling() && frozenIndex + 1 <= this.m_endCol) ||
+      (!this._isHighWatermarkScrolling() &&
+        (this.m_startCol === 0 || this.m_startCol <= this.m_frozenColIndex + 1))
+    ) {
       this._shiftCellsAlongAxis(axis, cellsWidthToAdjust, frozenIndex + 1, true);
       if (this.m_databodyFrozenRow) {
         this._shiftFrozenCellsAlongAxis(axis, cellsWidthToAdjust, frozenIndex + 1, true);
       }
     }
-    this._shiftHeadersAlongAxisInContainer(
-      this.m_colHeader.firstChild,
-      headerShiftStartIndex,
-      cellsWidthToAdjust,
-      this.getResources().isRTLMode() ? 'right' : 'left',
-      this.getMappedStyle('colheadercell')
-    );
-    this._shiftHeadersAlongAxisInContainer(
-      this.m_colEndHeader.firstChild,
-      endHeaderShiftStartIndex,
-      cellsWidthToAdjust,
-      this.getResources().isRTLMode() ? 'right' : 'left',
-      this.getMappedStyle('colendheadercell')
-    );
+    if (
+      this._isHighWatermarkScrolling() ||
+      (!this._isHighWatermarkScrolling() && this.m_startCol === 0) ||
+      this.m_startCol <= this.m_frozenColIndex + 1
+    ) {
+      this._shiftHeadersAlongAxisInContainer(
+        this.m_colHeader.firstChild,
+        headerShiftStartIndex,
+        cellsWidthToAdjust,
+        this.getResources().isRTLMode() ? 'right' : 'left',
+        this.getMappedStyle('colheadercell')
+      );
+      this._shiftHeadersAlongAxisInContainer(
+        this.m_colEndHeader.firstChild,
+        endHeaderShiftStartIndex,
+        cellsWidthToAdjust,
+        this.getResources().isRTLMode() ? 'right' : 'left',
+        this.getMappedStyle('colendheadercell')
+      );
+    }
+    if (
+      this._isHighWatermarkScrolling() ||
+      (!this._isHighWatermarkScrolling() && this.m_startCol <= this.m_frozenColIndex + 1)
+    ) {
+      this.m_endColPixel += cellsWidthToAdjust;
+      this.m_endColHeaderPixel += cellsWidthToAdjust;
+      this.m_endColEndHeaderPixel += cellsWidthToAdjust;
+    }
 
-    this.m_endColPixel += cellsWidthToAdjust;
-    this.m_endColHeaderPixel += cellsWidthToAdjust;
-    this.m_endColEndHeaderPixel += cellsWidthToAdjust;
+    // set startCol to 0 when unfreeze is called.
+    if (
+      !this._isHighWatermarkScrolling() &&
+      index === -1 &&
+      this.m_startCol <= this.m_frozenColIndex + 1
+    ) {
+      this.m_startCol = 0;
+      this.m_startColHeader = 0;
+      this.m_startColEndHeader = 0;
+    }
 
     let newColDir;
     let newColWidth;
     if (cells.length !== 0) {
       newColDir = frozenSectionWidth + databodyFrozenColDirValue;
       newColWidth = databodyFrozenRowWidth + cellsWidthToAdjust;
+      // adjust databody section width based on availability.
+      if (newColDir + newColWidth > this.getWidth()) {
+        newColWidth = this.getWidth() - newColDir;
+      }
     } else {
       const currentFrozenRegionWidth = this.m_colHeaderFrozen
         ? this.getElementWidth(this.m_colHeaderFrozen)
@@ -48152,10 +52144,18 @@ var __oj_data_grid_metadata =
     let { headers, endHeaders } = this._getRowHeadersToUnFreeze(index + 1);
     let headerShiftStartIndex = this.m_rowHeaderLevelCount > 1 ? frozenIndex + 1 : index + 1;
     let endHeaderShiftStartIndex = this.m_rowEndHeaderLevelCount > 1 ? frozenIndex + 1 : index + 1;
-
+    if (!this._isHighWatermarkScrolling() && this.m_startRow > 0) {
+      headerShiftStartIndex = this.m_startRow;
+      endHeaderShiftStartIndex = this.m_startRow;
+    }
     let startLoop = 0;
     if (this._hasFrozenColumns()) {
       startLoop = this.m_frozenColIndex + 1;
+      if (!this._isHighWatermarkScrolling() && this.m_startCol > 0) {
+        startLoop = this.m_startCol;
+      }
+    } else if (!this._isHighWatermarkScrolling()) {
+      startLoop = this.m_startCol;
     }
     for (let i = index + 1; i <= this.m_frozenRowIndex; i++) {
       for (let j = startLoop; j <= this.m_endCol; j++) {
@@ -48188,16 +52188,28 @@ var __oj_data_grid_metadata =
 
     let dirValue = 0;
     if (this.m_databodyFrozenCorner) {
-      let databodyFrozenColReferenceNode = this.m_databodyFrozenCol.firstChild.firstChild;
       frozenCornerCells = this._getFrozenAxisCells(axis, index + 1, true);
-      for (let i = 0; i < frozenCornerCells.length; i++) {
-        this.setElementDir(frozenCornerCells[i], dirValue, 'top');
-        this.m_databodyFrozenCol.firstChild.insertBefore(
-          frozenCornerCells[i],
-          databodyFrozenColReferenceNode
-        );
-        if ((i + 1) % (this.m_frozenColIndex + 1) === 0) {
-          dirValue += this.getElementHeight(frozenCornerCells[i]);
+      if (!this._isHighWatermarkScrolling() && this.m_startRow > this.m_frozenRowIndex + 1) {
+        for (let i = 0; i < frozenCornerCells.length; i++) {
+          frozenCornerCells[i].remove();
+        }
+      } else {
+        let databodyFrozenColReferenceNode = this.m_databodyFrozenCol.firstChild.firstChild;
+        if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+          databodyFrozenColReferenceNode = this._getCellByIndex({
+            row: this.m_frozenRowIndex + 1,
+            column: 0
+          });
+        }
+        for (let i = 0; i < frozenCornerCells.length; i++) {
+          this.setElementDir(frozenCornerCells[i], dirValue, 'top');
+          this.m_databodyFrozenCol.firstChild.insertBefore(
+            frozenCornerCells[i],
+            databodyFrozenColReferenceNode
+          );
+          if ((i + 1) % (this.m_frozenColIndex + 1) === 0) {
+            dirValue += this.getElementHeight(frozenCornerCells[i]);
+          }
         }
       }
     }
@@ -48211,16 +52223,36 @@ var __oj_data_grid_metadata =
 
     dirValue = 0;
     let referenceDatabodyNode = this.m_databody.firstChild.firstChild;
+    if (!this._isHighWatermarkScrolling()) {
+      let referenceRowIndex = 0;
+      let referenceColIndex = 0;
+      if (this._hasFrozenColumns()) {
+        referenceColIndex = this.m_frozenColIndex + 1;
+      }
+      if (this._hasFrozenRows()) {
+        referenceRowIndex = this.m_frozenRowIndex + 1;
+      }
+      referenceDatabodyNode = this._getCellByIndex({
+        row: referenceRowIndex,
+        column: referenceColIndex
+      });
+    }
     if (cells.length !== 0) {
-      for (let i = 0; i < cells.length; i++) {
-        this.setElementDir(cells[i], dirValue, 'top');
-        this.m_utils.removeCSSClassName(cells[i], this.getMappedStyle('frozenCell'));
-        this.m_databody.firstChild.insertBefore(cells[i], referenceDatabodyNode);
-        if ((i + 1) % Math.floor(cells.length / indexDifference) === 0) {
-          dirValue += this.getElementHeight(cells[i]);
+      if (!this._isHighWatermarkScrolling() && this.m_startRow > this.m_frozenRowIndex + 1) {
+        for (let i = 0; i < cells.length; i++) {
+          cells[i].remove();
+        }
+      } else {
+        for (let i = 0; i < cells.length; i++) {
+          this.setElementDir(cells[i], dirValue, 'top');
+          this.m_utils.removeCSSClassName(cells[i], this.getMappedStyle('frozenCell'));
+          this.m_databody.firstChild.insertBefore(cells[i], referenceDatabodyNode);
+          if ((i + 1) % Math.floor(cells.length / indexDifference) === 0) {
+            dirValue += this.getElementHeight(cells[i]);
+          }
         }
       }
-    } else {
+    } else if (headers.length !== 0 || endHeaders.length !== 0) {
       if (headers.length !== 0) {
         headers.forEach((frozenHeader) => {
           totalFrozenCellsHeight += this.getElementHeight(frozenHeader);
@@ -48242,61 +52274,87 @@ var __oj_data_grid_metadata =
     if (this.m_rowHeaderLevelCount > 1) {
       dirValue = -frozenSectionHeight;
     }
-    this._insertFrozenElementsToContainer(
-      axis,
-      headers,
-      this.m_rowHeader,
-      referenceHeaderNode,
-      dirValue,
-      'top',
-      frozenHeaderStyle,
-      indexDifference
-    );
-    if (this.m_rowEndHeader) {
-      dirValue = -cellsHeightToAdjust;
-
-      if (this.m_rowEndHeaderLevelCount > 1) {
-        dirValue = -frozenSectionHeight;
+    if (!this._isHighWatermarkScrolling() && this.m_startRow > this.m_frozenRowIndex + 1) {
+      for (let i = 0; i < headers.length; i++) {
+        headers[i].remove();
       }
-      let referenceEndHeaderNode = this.m_rowEndHeader.firstChild.firstChild;
+    } else {
       this._insertFrozenElementsToContainer(
         axis,
-        endHeaders,
-        this.m_rowEndHeader,
-        referenceEndHeaderNode,
+        headers,
+        this.m_rowHeader,
+        referenceHeaderNode,
         dirValue,
         'top',
         frozenHeaderStyle,
         indexDifference
       );
     }
+    if (this.m_rowEndHeader) {
+      if (!this._isHighWatermarkScrolling() && this.m_startRow > this.m_frozenRowIndex + 1) {
+        for (let i = 0; i < endHeaders.length; i++) {
+          endHeaders[i].remove();
+        }
+      } else {
+        dirValue = -cellsHeightToAdjust;
 
-    if (frozenIndex + 1 <= this.m_endRow) {
+        if (this.m_rowEndHeaderLevelCount > 1) {
+          dirValue = -frozenSectionHeight;
+        }
+        let referenceEndHeaderNode = this.m_rowEndHeader.firstChild.firstChild;
+        this._insertFrozenElementsToContainer(
+          axis,
+          endHeaders,
+          this.m_rowEndHeader,
+          referenceEndHeaderNode,
+          dirValue,
+          'top',
+          frozenHeaderStyle,
+          indexDifference
+        );
+      }
+    }
+
+    if (
+      (this._isHighWatermarkScrolling() && frozenIndex + 1 <= this.m_endRow) ||
+      (!this._isHighWatermarkScrolling() &&
+        (this.m_startRow === 0 || this.m_startRow <= this.m_frozenRowIndex + 1))
+    ) {
       this._shiftCellsAlongAxis(axis, cellsHeightToAdjust, frozenIndex + 1, true);
       if (this.m_databodyFrozenCol) {
         this._shiftFrozenCellsAlongAxis(axis, cellsHeightToAdjust, frozenIndex + 1, true);
       }
     }
-    this._shiftHeadersAlongAxisInContainer(
-      this.m_rowHeader.firstChild,
-      headerShiftStartIndex,
-      cellsHeightToAdjust,
-      'top',
-      this.getMappedStyle('rowheadercell')
-    );
-    this._shiftHeadersAlongAxisInContainer(
-      this.m_rowEndHeader.firstChild,
-      endHeaderShiftStartIndex,
-      cellsHeightToAdjust,
-      'top',
-      this.getMappedStyle('rowendheadercell')
-    );
+    if (
+      this._isHighWatermarkScrolling() ||
+      (!this._isHighWatermarkScrolling() && this.m_startRow === 0) ||
+      this.m_startRow <= this.m_frozenRowIndex + 1
+    ) {
+      this._shiftHeadersAlongAxisInContainer(
+        this.m_rowHeader.firstChild,
+        headerShiftStartIndex,
+        cellsHeightToAdjust,
+        'top',
+        this.getMappedStyle('rowheadercell')
+      );
+      this._shiftHeadersAlongAxisInContainer(
+        this.m_rowEndHeader.firstChild,
+        endHeaderShiftStartIndex,
+        cellsHeightToAdjust,
+        'top',
+        this.getMappedStyle('rowendheadercell')
+      );
+    }
 
     let newRowTop;
     let newRowHeight;
     if (cells.length !== 0) {
       newRowTop = frozenSectionHeight + databodyFrozenRowTop;
       newRowHeight = databodyFrozenColHeight + cellsHeightToAdjust;
+      // adjust databody section height based on availability.
+      if (newRowTop + newRowHeight > this.getHeight()) {
+        newRowHeight = this.getHeight() - newRowTop;
+      }
     } else {
       const currentFrozenRegionHeight = this.m_rowHeaderFrozen
         ? this.getElementHeight(this.m_rowHeaderFrozen)
@@ -48316,9 +52374,25 @@ var __oj_data_grid_metadata =
           : newRowHeight;
     }
 
-    this.m_endRowPixel += cellsHeightToAdjust;
-    this.m_endRowHeaderPixel += cellsHeightToAdjust;
-    this.m_endRowEndHeaderPixel += cellsHeightToAdjust;
+    if (
+      this._isHighWatermarkScrolling() ||
+      (!this._isHighWatermarkScrolling() && this.m_startRow <= this.m_frozenRowIndex + 1)
+    ) {
+      this.m_endRowPixel += cellsHeightToAdjust;
+      this.m_endRowHeaderPixel += cellsHeightToAdjust;
+      this.m_endRowEndHeaderPixel += cellsHeightToAdjust;
+    }
+
+    // set startRow to 0 when unfreeze is called.
+    if (
+      !this._isHighWatermarkScrolling() &&
+      index === -1 &&
+      this.m_startRow <= this.m_frozenRowIndex + 1
+    ) {
+      this.m_startRow = 0;
+      this.m_startRowHeader = 0;
+      this.m_startRowEndHeader = 0;
+    }
 
     this._setElementDimension(this.m_databody, newRowTop, null, newRowHeight, null);
     this._setElementDimension(this.m_rowHeader, newRowTop, null, newRowHeight, null);
@@ -48610,9 +52684,7 @@ var __oj_data_grid_metadata =
    * @private
    */
   DvtDataGrid.prototype._createFrozenHeaderElements = function (axis, styleClass, endStyleClass) {
-    const scrollerClassName =
-      this.getMappedStyle('scroller') +
-      (this.m_utils.isTouchDeviceNotIOS() ? ' ' + this.getMappedStyle('scroller-mobile') : '');
+    const scrollerClassName = this.getMappedStyle('scroller');
 
     let frozenHeaderAxis;
     if (axis === 'column') {
@@ -48878,6 +52950,17 @@ var __oj_data_grid_metadata =
 
   DvtDataGrid.prototype.handleFreezeIndicatorDrop = function (index, axis, event) {
     this._clearFreezeIndicatorDrag(axis);
+    if (
+      (!this._isHighWatermarkScrolling() &&
+        axis === 'row' &&
+        index > this.m_frozenRowIndex + 1 &&
+        this.m_startRow > this.m_frozenRowIndex + 1) ||
+      (axis === 'column' &&
+        index > this.m_frozenColIndex + 1 &&
+        this.m_startCol > this.m_frozenColIndex + 1)
+    ) {
+      return;
+    }
     this._updateFrozenSection(index, axis);
     if (axis === 'row') {
       const details = {
@@ -49528,11 +53611,19 @@ var __oj_data_grid_metadata =
     // based on current scroll position check whether more skeletons are need to be rendered
     if (this.m_prevScrollLeft > scrollLeft && skeletonColStartPixel > viewportLeft) {
       // scroll to left of data region or currently rendered skeletons
-      row = rowStart;
+      row =
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenRows() &&
+        rowStart === this.m_frozenRowIndex + 1
+          ? 0
+          : rowStart;
       top = rowStartPixel;
       rowCount =
         Math.max(skeletonRowEnd, this._getMaxBottom(), 0) - Math.min(skeletonRowStart, row) + 1;
       column = Math.min(skeletonColStart - columnCount, columnStart);
+      if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+        column = column <= this.m_frozenColIndex ? this.m_frozenColIndex + 1 : column;
+      }
       left = Math.min(
         skeletonColStartPixel,
         columnStartPixel + columnCount * this.getDefaultColumnWidth()
@@ -49557,7 +53648,7 @@ var __oj_data_grid_metadata =
         top = this._getMaxTopPixel();
         left = columnAppend ? this._getMaxRightPixel() : this._getMaxLeftPixel();
       } else {
-        row = rowStart;
+        row = this._hasFrozenRows() && rowStart === this.m_frozenRowIndex + 1 ? 0 : rowStart;
         top = rowStartPixel;
         rowCount =
           Math.max(skeletonRowEnd, this._getMaxBottom(), 0) - Math.min(skeletonRowStart, row) + 1;
@@ -49568,11 +53659,19 @@ var __oj_data_grid_metadata =
       axis = 'column';
     } else if (this.m_prevScrollTop > scrollTop && skeletonRowStartPixel > viewportTop) {
       // scroll above the data region or currently rendered skeletons
-      column = columnStart;
+      column =
+        !this._isHighWatermarkScrolling() &&
+        this._hasFrozenColumns() &&
+        columnStart === this.m_frozenColIndex + 1
+          ? 0
+          : columnStart;
       left = columnStartPixel;
       columnCount =
         Math.max(skeletonColEnd, this._getMaxRight(), 0) - Math.min(skeletonColStart, column) + 1;
       row = Math.min(skeletonRowStart - rowCount, rowStart);
+      if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+        row = row <= this.m_frozenRowIndex ? this.m_frozenRowIndex + 1 : row;
+      }
       top = Math.min(skeletonRowStartPixel, rowStartPixel + rowCount * this.getDefaultRowHeight());
       rowAppend = false;
       axis = 'row';
@@ -49596,7 +53695,8 @@ var __oj_data_grid_metadata =
         rowCount = DvtDataGrid.SKELETON_DEFAULT_COUNT;
         columnCount = this._getMaxRight() - this._getMaxLeft() + 1;
       } else {
-        column = columnStart;
+        column =
+          this._hasFrozenColumns() && columnStart === this.m_frozenColIndex + 1 ? 0 : columnStart;
         left = columnStartPixel;
         columnCount =
           Math.max(skeletonColEnd, this._getMaxRight(), 0) - Math.min(skeletonColStart, column) + 1;
@@ -49693,6 +53793,34 @@ var __oj_data_grid_metadata =
         rowAppend,
         columnAppend
       );
+      if (axis === 'row' && !this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+        this.addSkeletonCells(
+          axis,
+          rowCount,
+          this.m_frozenColIndex + 1,
+          rowStart,
+          0,
+          top,
+          left,
+          true,
+          rowAppend,
+          columnAppend
+        );
+      }
+      if (axis === 'column' && !this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+        this.addSkeletonCells(
+          axis,
+          this.m_frozenRowIndex + 1,
+          columnCount,
+          0,
+          columnStart,
+          top,
+          left,
+          true,
+          rowAppend,
+          columnAppend
+        );
+      }
     }
   };
 
@@ -50783,7 +54911,6 @@ var __oj_data_grid_metadata =
     let hiddenItemsCopy = axis === 'column' ? this.m_hiddenColumns : this.m_hiddenRows;
 
     let fragments = {};
-
     for (let i = startAxis; i <= endAxis; i++) {
       if (hiddenItemsCopy.includes(i)) {
         let adjustedAxisIndex = i === -1 ? 0 : i;
@@ -50856,12 +54983,12 @@ var __oj_data_grid_metadata =
     if (fragments.databody) {
       this.m_databody.firstChild.appendChild(fragments.databody); // @HTMLUpdateOK
     }
-    if (fragments.frozenCornerDatabody) {
-      this.m_databodyFrozenCorner.firstChild.appendChild(fragments.frozenCornerDatabody); // @HTMLUpdateOK
-    }
     if (fragments.frozenDatabody) {
       let databodyElem = axis === 'column' ? this.m_databodyFrozenCol : this.m_databodyFrozenRow;
       databodyElem.firstChild.appendChild(fragments.frozenDatabody); // @HTMLUpdateOK
+    }
+    if (fragments.frozenCornerDatabody) {
+      this.m_databodyFrozenCorner.firstChild.appendChild(fragments.frozenCornerDatabody); // @HTMLUpdateOK
     }
     if (fragments.frozenRowDatabody) {
       this.m_databodyFrozenRow.firstChild.appendChild(fragments.frozenRowDatabody); // @HTMLUpdateOK
@@ -51100,21 +55227,6 @@ var __oj_data_grid_metadata =
   /* eslint-enable no-param-reassign */
 
   /**
-   * Returns true if the given cell is hidden
-   * @param {Element} cell
-   */
-  DvtDataGrid.prototype.isCellHidden = function (cell) {
-    let indexes = this.getCellIndexes(cell);
-    let rowIndex = indexes.row;
-    let columnIndex = indexes.column;
-    if (this.isHidden('column', columnIndex) || this.isHidden('row', rowIndex)) {
-      return true;
-    }
-
-    return false;
-  };
-
-  /**
    * Returns true if the current index of given axis is hidden
    * @param {string} axis
    * @param {number} index
@@ -51129,6 +55241,21 @@ var __oj_data_grid_metadata =
     }
 
     if (hiddenItems.includes(index)) {
+      return true;
+    }
+
+    return false;
+  };
+
+  /**
+   * Returns true if the given cell is hidden
+   * @param {Element} cell
+   */
+  DvtDataGrid.prototype.isCellHidden = function (cell) {
+    let indexes = this.getCellIndexes(cell);
+    let rowIndex = indexes.row;
+    let columnIndex = indexes.column;
+    if (this.isHidden('column', columnIndex) || this.isHidden('row', rowIndex)) {
       return true;
     }
 
@@ -51521,20 +55648,22 @@ var __oj_data_grid_metadata =
       this.m_hiddenRows = updatedHiddenArray;
     }
 
-    for (let i = 0; i < latestHidden.length; i++) {
-      let index = latestHidden[i];
-      /* eslint-disable-next-line no-unused-expressions */
-      this.shiftAxisForHidability(index, true, axis);
-    }
+    if (this.m_initialized) {
+      for (let i = 0; i < latestHidden.length; i++) {
+        let index = latestHidden[i];
+        /* eslint-disable-next-line no-unused-expressions */
+        this.shiftAxisForHidability(index, true, axis);
+      }
 
-    // looping each index if any to unhide and shift axis
-    for (let i = 0; i < unHideArray.length; i++) {
-      let index = unHideArray[i];
-      this.shiftAxisForHidability(index, false, axis);
-    }
+      // looping each index if any to unhide and shift axis
+      for (let i = 0; i < unHideArray.length; i++) {
+        let index = unHideArray[i];
+        this.shiftAxisForHidability(index, false, axis);
+      }
 
-    this.deleteAndApplyHiddenIndicators(latestHidden, axis);
-    this.fillViewport();
+      this.deleteAndApplyHiddenIndicators(latestHidden, axis);
+      this.fillViewport();
+    }
 
     if (this.m_active && (axis === 'row' || axis === 'column')) {
       const direction = axis === 'row' ? { down: true } : { right: true };
@@ -51967,6 +56096,14 @@ var __oj_data_grid_metadata =
     } else {
       this.applyHiddenIndicatorToRange(this.m_startCol, this.m_endCol, newHideArray, 'column');
       this.applyHiddenIndicatorToRange(this.m_startRow, this.m_endRow, newHideArray, 'row');
+    }
+    if (!this._isHighWatermarkScrolling()) {
+      if (this._hasFrozenColumns()) {
+        this.applyHiddenIndicatorToRange(0, this.m_frozenColIndex + 1, newHideArray, 'column');
+      }
+      if (this._hasFrozenRows()) {
+        this.applyHiddenIndicatorToRange(0, this.m_frozenRowIndex + 1, newHideArray, 'row');
+      }
     }
   };
 

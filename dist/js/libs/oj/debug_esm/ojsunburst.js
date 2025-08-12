@@ -702,7 +702,7 @@ var __oj_sunburst_metadata =
       "value": ""
     },
     "data": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -1302,7 +1302,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent, {
      * @ojshortdesc Specifies the DataProvider for the sunburst. See the Help documentation for more information.
      * @memberof oj.ojSunburst
      * @instance
-     * @type {Object|null}
+     * @type {DataProvider|null}
      * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
      * @default null
      * @ojwebelementstatus {type: "unsupported", since: "13.0.0",

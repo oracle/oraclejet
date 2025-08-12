@@ -1,5 +1,5 @@
-import { ComponentChildren } from 'preact';
-import { HTMLAttributesSignalExcluded } from '@oracle/oraclejet-preact/utils/UNSAFE_attributeUtils';
+import { ComponentChildren, JSX } from 'preact';
+import { UnpackSignals } from '@oracle/oraclejet-preact/utils/UNSAFE_attributeUtils';
 export type Slot = ComponentChildren;
 export type TemplateSlot<Data extends object> = (data: Data) => Slot;
 export type DynamicSlots = Record<string, Slot>;
@@ -7,17 +7,18 @@ export type DynamicTemplateSlots<Data> = Record<string, Data extends object ? Te
 export type ImplicitBusyContext = unknown;
 export type PropertyChanged<T> = (value: T) => void;
 export type ReadOnlyPropertyChanged<T> = (value: T) => void;
-export type Action<Detail extends object = {}> = [keyof Detail] extends [never] ? (detail?: Detail) => void : (detail: Detail) => void;
+export type Action<Detail = {}> = [keyof Detail] extends [never] ? (detail?: Detail) => void : (detail: Detail) => void;
 export type CancelableAction<Detail extends object = {}> = [keyof Detail] extends [never] ? (detail?: Detail) => Promise<void> : (detail: Detail) => Promise<void>;
 export type Bubbles = {};
+/** @deprecated Use the ReadOnlyPropertyChanged type instead. */
 export type ElementReadOnly<T> = T;
 type GlobalEventHandlerProps = 'onBlur' | 'onBlurCapture' | 'onClick' | 'onClickCapture' | 'onContextMenu' | 'onContextMenuCapture' | 'onDblClick' | 'onDblClickCapture' | 'onDrag' | 'onDragCapture' | 'onDragEnd' | 'onDragEndCapture' | 'onDragEnter' | 'onDragEnterCapture' | 'onDragExit' | 'onDragExitCapture' | 'onDragLeave' | 'onDragLeaveCapture' | 'onDragOver' | 'onDragOverCapture' | 'onDragStart' | 'onDragStartCapture' | 'onDrop' | 'onDropCapture' | 'onFocus' | 'onFocusCapture' | 'onKeyDown' | 'onKeyDownCapture' | 'onKeyPress' | 'onKeyPressCapture' | 'onKeyUp' | 'onKeyUpCapture' | 'onMouseDown' | 'onMouseDownCapture' | 'onMouseEnter' | 'onMouseEnterCapture' | 'onMouseLeave' | 'onMouseLeaveCapture' | 'onMouseMove' | 'onMouseMoveCapture' | 'onMouseOut' | 'onMouseOutCapture' | 'onMouseOver' | 'onMouseOverCapture' | 'onMouseUp' | 'onMouseUpCapture' | 'onPointerOver' | 'onPointerOverCapture' | 'onPointerEnter' | 'onPointerEnterCapture' | 'onPointerDown' | 'onPointerDownCapture' | 'onPointerMove' | 'onPointerMoveCapture' | 'onPointerUp' | 'onPointerUpCapture' | 'onPointerCancel' | 'onPointerCancelCapture' | 'onPointerOut' | 'onPointerOutCapture' | 'onPointerLeave' | 'onPointerLeaveCapture' | 'onTouchCancel' | 'onTouchCancelCapture' | 'onTouchEnd' | 'onTouchEndCapture' | 'onTouchMove' | 'onTouchMoveCapture' | 'onTouchStart' | 'onTouchStartCapture' | 'onWheel' | 'onWheelCapture' | 'onFocusIn' | 'onFocusInCapture' | 'onFocusOut' | 'onFocusOutCapture';
-export type GlobalProps = Readonly<Pick<HTMLAttributesSignalExcluded, 'accesskey' | 'accessKey' | 'autocapitalize' | 'autoCapitalize' | 'autofocus' | 'autoFocus' | 'class' | 'contenteditable' | 'contentEditable' | 'dir' | 'draggable' | 'enterkeyhint' | 'hidden' | 'id' | 'inputmode' | 'inputMode' | 'lang' | 'role' | 'slot' | 'spellcheck' | 'style' | 'tabindex' | 'tabIndex' | 'title' | 'translate' | 'aria-activedescendant' | 'aria-atomic' | 'aria-autocomplete' | 'aria-busy' | 'aria-checked' | 'aria-colcount' | 'aria-colindex' | 'aria-colspan' | 'aria-controls' | 'aria-current' | 'aria-describedby' | 'aria-details' | 'aria-disabled' | 'aria-errormessage' | 'aria-expanded' | 'aria-flowto' | 'aria-haspopup' | 'aria-hidden' | 'aria-invalid' | 'aria-keyshortcuts' | 'aria-label' | 'aria-labelledby' | 'aria-level' | 'aria-live' | 'aria-modal' | 'aria-multiline' | 'aria-multiselectable' | 'aria-orientation' | 'aria-owns' | 'aria-placeholder' | 'aria-posinset' | 'aria-pressed' | 'aria-readonly' | 'aria-relevant' | 'aria-required' | 'aria-roledescription' | 'aria-rowcount' | 'aria-rowindex' | 'aria-rowspan' | 'aria-selected' | 'aria-setsize' | 'aria-sort' | 'aria-valuemax' | 'aria-valuemin' | 'aria-valuenow' | 'aria-valuetext' | GlobalEventHandlerProps> & {
-    enterKeyHint?: HTMLAttributesSignalExcluded['enterkeyhint'];
-    onfocusin?: HTMLAttributesSignalExcluded['onFocusIn'];
-    onfocusinCapture?: HTMLAttributesSignalExcluded['onFocusInCapture'];
-    onfocusout?: HTMLAttributesSignalExcluded['onFocusOut'];
-    onfocusoutCapture?: HTMLAttributesSignalExcluded['onFocusOutCapture'];
+export type GlobalProps = Readonly<Pick<UnpackSignals<JSX.HTMLAttributes>, 'accesskey' | 'accessKey' | 'autocapitalize' | 'autoCapitalize' | 'autofocus' | 'autoFocus' | 'class' | 'contenteditable' | 'contentEditable' | 'dir' | 'draggable' | 'enterkeyhint' | 'hidden' | 'id' | 'inputmode' | 'inputMode' | 'lang' | 'role' | 'slot' | 'spellcheck' | 'style' | 'tabindex' | 'tabIndex' | 'title' | 'translate' | 'aria-activedescendant' | 'aria-atomic' | 'aria-autocomplete' | 'aria-busy' | 'aria-checked' | 'aria-colcount' | 'aria-colindex' | 'aria-colspan' | 'aria-controls' | 'aria-current' | 'aria-describedby' | 'aria-details' | 'aria-disabled' | 'aria-errormessage' | 'aria-expanded' | 'aria-flowto' | 'aria-haspopup' | 'aria-hidden' | 'aria-invalid' | 'aria-keyshortcuts' | 'aria-label' | 'aria-labelledby' | 'aria-level' | 'aria-live' | 'aria-modal' | 'aria-multiline' | 'aria-multiselectable' | 'aria-orientation' | 'aria-owns' | 'aria-placeholder' | 'aria-posinset' | 'aria-pressed' | 'aria-readonly' | 'aria-relevant' | 'aria-required' | 'aria-roledescription' | 'aria-rowcount' | 'aria-rowindex' | 'aria-rowspan' | 'aria-selected' | 'aria-setsize' | 'aria-sort' | 'aria-valuemax' | 'aria-valuemin' | 'aria-valuenow' | 'aria-valuetext' | GlobalEventHandlerProps> & {
+    enterKeyHint?: UnpackSignals<JSX.HTMLAttributes>['enterkeyhint'];
+    onfocusin?: UnpackSignals<JSX.HTMLAttributes>['onFocusIn'];
+    onfocusinCapture?: UnpackSignals<JSX.HTMLAttributes>['onFocusInCapture'];
+    onfocusout?: UnpackSignals<JSX.HTMLAttributes>['onFocusOut'];
+    onfocusoutCapture?: UnpackSignals<JSX.HTMLAttributes>['onFocusOutCapture'];
 }>;
 type GlobalEventHandlerPropsExtended = GlobalEventHandlerProps | 'onfocusin' | 'onfocusinCapture' | 'onfocusout' | 'onfocusoutCapture';
 export type ObservedGlobalProps<U extends Exclude<keyof GlobalProps, 'class' | 'style' | GlobalEventHandlerPropsExtended>> = Pick<GlobalProps, U>;

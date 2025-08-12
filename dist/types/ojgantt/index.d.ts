@@ -711,6 +711,8 @@ export namespace ojGantt {
     type RenderTaskTemplate = import('ojs/ojvcomponent').TemplateSlot<TaskTemplateContext>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K2 = any, D2 = any, K3 = any, D3 = any> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K2, D2, K3, D3>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K2 = any, D2 = any, K3 = any, D3 = any> = TooltipContext<K2, D2, K3, D3>;
 }
 export interface ojGanttEventMap<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any, K3, D3 extends ojGantt.DataRow |
    any> extends dvtTimeComponentEventMap<ojGanttSettableProperties<K1, K2, D1, D2, K3, D3>> {
@@ -1772,6 +1774,8 @@ export namespace GanttElement {
     type RenderTaskTemplate = import('ojs/ojvcomponent').TemplateSlot<TaskTemplateContext>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K2 = any, D2 = any, K3 = any, D3 = any> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K2, D2, K3, D3>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K2 = any, D2 = any, K3 = any, D3 = any> = TooltipContext<K2, D2, K3, D3>;
 }
 export namespace GanttDependencyElement {
     // tslint:disable-next-line interface-over-type-literal

@@ -20,6 +20,9 @@ import { ExpParser, TEMPLATE_ELEMENT, TEMPLATE_LITERAL, NEW_EXP, ARROW_EXP, RETU
  * @ignore
  */
 
+// Used by VTemplateEngine
+const PROXY_SYMBOL = Symbol('proxy');
+
 /**
  * @ignore
  * @constructor
@@ -56,7 +59,7 @@ const CspExpressionEvaluatorInternal = function (options) {
           scopes = contexts.concat([extraScope]);
         }
         try {
-          ret = _evaluate(parsed, scopes);
+          ret = _evaluateAndUnwrap(parsed, scopes);
         } catch (e) {
           _throwErrorWithExpression(e, expressionText);
         }
@@ -71,7 +74,7 @@ const CspExpressionEvaluatorInternal = function (options) {
    * @ignore
    */
   this.evaluate = function (ast, context) {
-    return _evaluate(ast, [context]);
+    return _evaluateAndUnwrap(ast, [context]);
   };
 
   // Note, for logical && and || operators the right hand expression
@@ -180,6 +183,13 @@ const CspExpressionEvaluatorInternal = function (options) {
     };
   }
 
+  // Unwrap value if exists and it is a Proxy created by
+  // VTemplateEngine around properties.
+  function _evaluateAndUnwrap(node, contexts) {
+    const value = _evaluate(node, contexts);
+    return value?.[PROXY_SYMBOL] ?? value;
+  }
+
   // eslint-disable-next-line consistent-return
   function _evaluate(node, contexts) {
     switch (node.type) {
@@ -204,7 +214,7 @@ const CspExpressionEvaluatorInternal = function (options) {
             assign = _evaluateMember(node.callee, contexts);
             break;
           default:
-            fn = _evaluate(node.callee, contexts);
+            fn = _evaluateAndUnwrap(node.callee, contexts);
         }
         if (!fn && Array.isArray(assign)) {
           caller = assign[0];
@@ -218,7 +228,7 @@ const CspExpressionEvaluatorInternal = function (options) {
       case UNARY_EXP:
         var testValue;
         try {
-          testValue = _evaluate(node.argument, contexts);
+          testValue = _evaluateAndUnwrap(node.argument, contexts);
         } catch (e) {
           // Undefined identifier will throw an error, don't report it
           if (node.argument.type !== IDENTIFIER) {
@@ -229,22 +239,22 @@ const CspExpressionEvaluatorInternal = function (options) {
 
       case BINARY_EXP:
         if (node.operator === '=') {
-          return _evaluateAssignment(node.left, contexts, _evaluate(node.right, contexts));
+          return _evaluateAssignment(node.left, contexts, _evaluateAndUnwrap(node.right, contexts));
         }
         return _binops[node.operator](
-          _evaluate(node.left, contexts),
-          _evaluate(node.right, contexts)
+          _evaluateAndUnwrap(node.left, contexts),
+          _evaluateAndUnwrap(node.right, contexts)
         );
 
       case LOGICAL_EXP:
-        return _binops[node.operator](_evaluate(node.left, contexts), function () {
-          return _evaluate(node.right, contexts);
+        return _binops[node.operator](_evaluateAndUnwrap(node.left, contexts), function () {
+          return _evaluateAndUnwrap(node.right, contexts);
         });
 
       case CONDITIONAL_EXP:
-        return _evaluate(node.test, contexts)
-          ? _evaluate(node.consequent, contexts)
-          : _evaluate(node.alternate, contexts);
+        return _evaluateAndUnwrap(node.test, contexts)
+          ? _evaluateAndUnwrap(node.consequent, contexts)
+          : _evaluateAndUnwrap(node.alternate, contexts);
 
       case ARRAY_EXP:
         return _evaluateArray(node.elements, contexts);
@@ -272,7 +282,7 @@ const CspExpressionEvaluatorInternal = function (options) {
 
   function _evaluateArray(list, contexts) {
     return list.reduce((acc, v) => {
-      const elem = _evaluate(v, contexts);
+      const elem = _evaluateAndUnwrap(v, contexts);
       if (elem instanceof _Spread) {
         acc.push(...elem.items());
       } else {
@@ -296,7 +306,7 @@ const CspExpressionEvaluatorInternal = function (options) {
   function _evaluateObjectExpression(node, contexts) {
     return node.properties.reduce(function (acc, curr) {
       const key = getKeyValue(curr.key);
-      acc[key] = _evaluate(curr.value, contexts);
+      acc[key] = _evaluateAndUnwrap(curr.value, contexts);
       return acc;
     }, {});
   }
@@ -330,7 +340,7 @@ const CspExpressionEvaluatorInternal = function (options) {
         target[name] = val;
         break;
       case MEMBER_EXP:
-        var key = node.computed ? _evaluate(node.property, contexts) : node.property.name;
+        var key = node.computed ? _evaluateAndUnwrap(node.property, contexts) : node.property.name;
         _evaluateMember(node, contexts)[0][key] = val;
         break;
       default:
@@ -356,7 +366,7 @@ const CspExpressionEvaluatorInternal = function (options) {
         // Expect to get node.body.body = {type: 'ReturnStatement', argument: <node to evaluate>} || <node to evaluate>
         const hasReturn = node.body.body.type === RETURN_STATEMENT;
         const codeBlock = hasReturn ? node.body.body.argument : node.body.body;
-        const val = _evaluate(codeBlock, [argScope].concat(contexts));
+        const val = _evaluateAndUnwrap(codeBlock, [argScope].concat(contexts));
         return hasReturn ? val : undefined;
       } catch (e) {
         _throwErrorWithExpression(e, node.body.expr);
@@ -366,7 +376,7 @@ const CspExpressionEvaluatorInternal = function (options) {
   }
 
   function _evaluateConstructorExpression(node, contexts) {
-    var constrObj = _evaluate(node.callee, contexts);
+    var constrObj = _evaluateAndUnwrap(node.callee, contexts);
     if (!(constrObj instanceof Function)) {
       _throwError('Node of type ' + node.callee.type + ' is not evaluated into a constructor');
     }
@@ -379,9 +389,9 @@ const CspExpressionEvaluatorInternal = function (options) {
   }
 
   function _evaluateTemplateLiteral(node, contexts) {
-    const resolvedExpressions = node.expressions.map((expr) => _evaluate(expr, contexts));
+    const resolvedExpressions = node.expressions.map((expr) => _evaluateAndUnwrap(expr, contexts));
     const result = node.quasis.reduce((acc, curVal, curIndex) => {
-      acc.push(_evaluate(curVal, contexts));
+      acc.push(_evaluateAndUnwrap(curVal, contexts));
       if (curIndex < resolvedExpressions.length) {
         acc.push(resolvedExpressions[curIndex]);
       }
@@ -408,4 +418,4 @@ const CspExpressionEvaluatorInternal = function (options) {
   }
 };
 
-export { CspExpressionEvaluatorInternal };
+export { CspExpressionEvaluatorInternal, PROXY_SYMBOL };

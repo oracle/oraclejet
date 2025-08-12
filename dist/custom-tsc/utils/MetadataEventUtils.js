@@ -40,10 +40,17 @@ const MetaTypes = __importStar(require("./MetadataTypes"));
 const TypeUtils = __importStar(require("./MetadataTypeUtils"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
 const TransformerError_1 = require("./TransformerError");
+const ImportMaps_1 = require("../shared/ImportMaps");
+const Utils_1 = require("../shared/Utils");
+// NOTE:  need to differentiate between 'once' and 'onFoo'!
 const _REGEX_RESERVED_EVENT_PREFIX = new RegExp(/^on[A-Z]/);
+// 'details' key for singleton event payloads (i.e., primitives or
+// objects whose sub-properties are "not walkable", such as arrays,
+// tuples, Maps, Sets, etc.
+const SINGLETON_KEY = '';
 function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
     let isEvent = false;
-    const exportToAlias = metaUtilObj.progImportMaps.getMap(MetaTypes.IMAP.exportToAlias, propDeclaration);
+    const exportToAlias = metaUtilObj.progImportMaps.getMap(ImportMaps_1.IMAP.exportToAlias, propDeclaration);
     const types = TypeUtils.getPropertyTypes(propDeclaration);
     const typeNames = Object.keys(types);
     const rtEventMeta = {};
@@ -56,6 +63,7 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
                 rtEventMeta.bubbles = true;
                 break;
             case `${exportToAlias.CancelableAction}`:
+                // Mark as cancelable, and then fall through to finish processing the event
                 rtEventMeta.cancelable = true;
             case `${exportToAlias.Action}`:
                 isEvent = true;
@@ -77,6 +85,8 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
         metaUtilObj.rtMetadata.events[eventProp] = rtEventMeta;
         metaUtilObj.fullMetadata.events[eventProp] = Object.assign({}, rtEventMeta, getDtMetadataForEvent(propDeclaration, eventTypeNode, rtEventMeta.cancelable ?? false, metaUtilObj));
     }
+    // Otherwise, if this is not an Event, check whether the property name begins with
+    // the reserved 'on' prefix.
     else {
         if (memberKey.match(_REGEX_RESERVED_EVENT_PREFIX)) {
             TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.RESERVED_CUSTOM_EVENT_PREFIX, TransformerError_1.ExceptionType.WARN_IF_DISABLED, metaUtilObj.componentName, `'${memberKey}' - property names beginning with the 'on' prefix are reserved for custom element Events.`, propDeclaration);
@@ -88,8 +98,8 @@ function getDtMetadataForEvent(propDeclaration, typeNode, isCancelable, metaUtil
     const checker = metaUtilObj.typeChecker;
     const dt = MetaUtils.getDtMetadata(propDeclaration, MetaTypes.MDContext.EVENT, null, metaUtilObj);
     const typeRefNode = typeNode;
-    let cancelableDetail = null;
-    let detailObj = null;
+    let cancelableDetail;
+    let detailObj;
     if (isCancelable) {
         cancelableDetail = {
             accept: {
@@ -99,14 +109,33 @@ function getDtMetadataForEvent(propDeclaration, typeNode, isCancelable, metaUtil
             }
         };
     }
+    // check now the detail object
     if (typeRefNode?.typeArguments && typeRefNode.typeArguments.length) {
         const detailNode = typeRefNode.typeArguments[0];
-        if (ts.isTypeReferenceNode(detailNode)) {
-            const typeObject = checker.getTypeAtLocation(detailNode);
-            const mappedTypesInfo = MetaUtils.getMappedTypesInfo(typeObject, checker, false, detailNode);
+        const typeObject = checker.getTypeAtLocation(detailNode);
+        let eventDetailName;
+        let genericsInfo;
+        let mappedTypesInfo;
+        // We need the eventDetailName (and any generics) for generating
+        // event interfaces for the custom element types in the d.ts files.
+        if (ts.isTypeReferenceNode(detailNode) ||
+            ts.isArrayTypeNode(detailNode) ||
+            ts.isTupleTypeNode(detailNode)) {
+            if (!MetaUtils.isRecordType(typeObject)) {
+                mappedTypesInfo = MetaUtils.getMappedTypesInfo(typeObject, checker, false, detailNode);
+            }
+            // Special processing for MappedTypes?
             if (mappedTypesInfo && mappedTypesInfo.wrappedTypeNode) {
                 const innerTypeObject = checker.getTypeAtLocation(mappedTypesInfo.wrappedTypeNode);
-                const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(innerTypeObject, mappedTypesInfo.wrappedTypeNode, metaUtilObj);
+                const innerDeclaration = innerTypeObject.aliasSymbol?.getDeclarations()?.[0] ??
+                    innerTypeObject.symbol?.getDeclarations()?.[0];
+                if (innerDeclaration &&
+                    (ts.isTypeAliasDeclaration(innerDeclaration) ||
+                        ts.isInterfaceDeclaration(innerDeclaration) ||
+                        ts.isClassDeclaration(innerDeclaration))) {
+                    eventDetailName = innerDeclaration.name.getText();
+                }
+                genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(innerTypeObject, mappedTypesInfo.wrappedTypeNode, metaUtilObj);
                 if (genericsInfo) {
                     dt['evnDetailTypeParamsDeclaration'] = genericsInfo.genericsDeclaration;
                     dt['evnDetailTypeParams'] = genericsInfo.resolvedGenericParams;
@@ -120,8 +149,8 @@ function getDtMetadataForEvent(propDeclaration, typeNode, isCancelable, metaUtil
                     (ts.isTypeAliasDeclaration(declaration) ||
                         ts.isInterfaceDeclaration(declaration) ||
                         ts.isClassDeclaration(declaration))) {
-                    const eventDetailName = declaration.name.getText();
-                    const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(typeObject, detailNode, metaUtilObj);
+                    eventDetailName = declaration.name.getText();
+                    genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(typeObject, detailNode, metaUtilObj);
                     if (genericsInfo) {
                         dt['evnDetailTypeParamsDeclaration'] = genericsInfo.genericsDeclaration;
                         dt['evnDetailTypeParams'] = genericsInfo.resolvedGenericParams;
@@ -133,10 +162,32 @@ function getDtMetadataForEvent(propDeclaration, typeNode, isCancelable, metaUtil
                 }
             }
         }
-        detailObj = getEventDetails(detailNode, metaUtilObj);
+        if (MetaUtils.isWalkableObjectType(typeObject, checker)) {
+            detailObj = getEventDetails(detailNode, eventDetailName, metaUtilObj);
+        }
+        else {
+            if (isCancelable) {
+                TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.UNSUPPORTED_CANCELABLE_ACTION_DETAIL_OBJ, TransformerError_1.ExceptionType.WARN_IF_DISABLED, metaUtilObj.componentName, `A CancelableAction's optional 'Detail' type parameter must extend a plain JavaScript object type - array, tuple, Map, and Set types are not supported.`, detailNode);
+            }
+            // In order to apply DT metadata to the singleton EventDetailItem, we allow
+            // @ojmetadata tags with keys using dot notation (e.g., 'detail.description')
+            // -- these would have been processed by the MetaUtils.getDtMetadata call at
+            // the beginning and hosted directly on the top-level 'dt' metadata object.
+            //
+            // We need to transfer any of this detail MD off of the top-level metadata object,
+            // and then pass it over to the utility that creates the singleton EventDetailItem
+            // so that it can be properly rehosted.
+            const detailMD = getTransferredDetailMD(dt);
+            detailObj = getEventSingletonDetail(typeObject, eventDetailName, detailMD, metaUtilObj);
+            // if non-generic, set this up for the dtsTransformer
+            if (!genericsInfo) {
+                dt['evnDetailNameTypeParams'] = detailObj[SINGLETON_KEY].type;
+            }
+        }
         if (detailObj) {
-            if (ts.isTypeReferenceNode(detailNode) && TypeUtils.isLocalExport(detailNode, metaUtilObj)) {
-                const typeDefName = TypeUtils.getTypeNameFromTypeReference(detailNode);
+            const checkNode = mappedTypesInfo?.wrappedTypeNode ?? detailNode;
+            if (ts.isTypeReferenceNode(checkNode) && TypeUtils.isLocalExport(checkNode, metaUtilObj)) {
+                const typeDefName = (0, Utils_1.getTypeNameFromTypeReference)(checkNode);
                 dt['jsdoc'] = dt['jsdoc'] || {};
                 dt['jsdoc']['typedef'] = typeDefName;
             }
@@ -147,36 +198,85 @@ function getDtMetadataForEvent(propDeclaration, typeNode, isCancelable, metaUtil
     }
     return dt;
 }
-function getEventDetails(detailNode, metaUtilObj) {
+/**
+ * Returns the event detail metadata.
+ * @param detailType The symbol reference to the type that defines the event details
+ */
+function getEventDetails(detailNode, eventDetailName, metaUtilObj) {
     let details;
-    if (detailNode?.kind !== ts.SyntaxKind.NullKeyword) {
-        let detailName;
-        if (ts.isTypeReferenceNode(detailNode)) {
-            detailName = TypeUtils.getTypeNameFromTypeReference(detailNode);
+    MetaUtils.walkTypeNodeMembers(detailNode, metaUtilObj, (symbol, key, mappedTypeSymbol) => {
+        const propSignature = symbol.valueDeclaration;
+        // if the symbol is an interface (as opposed to a type alias), generics will be part of members
+        if (!propSignature) {
+            return;
         }
-        MetaUtils.walkTypeNodeMembers(detailNode, metaUtilObj, (symbol, key, mappedTypeSymbol) => {
-            const propSignature = symbol.valueDeclaration;
-            if (!propSignature) {
-                return;
+        const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(symbol, propSignature);
+        if (ts.isPropertySignature(propSignature) || ts.isPropertyDeclaration(propSignature)) {
+            const property = key.toString();
+            const propertyPath = [property];
+            const eventDetailMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MDScope.DT, MetaTypes.MDContext.EVENT | MetaTypes.MDContext.EVENT_DETAIL, propertyPath, symbol, metaUtilObj);
+            const propSym = mappedTypeSymbol ?? symbol;
+            eventDetailMetadata['optional'] = propSym.flags & ts.SymbolFlags.Optional ? true : false;
+            // assign top level metadata
+            details = details || {};
+            details[property] = eventDetailMetadata;
+            let nestedArrayStack = [];
+            if (eventDetailMetadata.type === 'Array<object>') {
+                nestedArrayStack.push(key);
             }
-            const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(symbol, propSignature);
-            if (ts.isPropertySignature(propSignature) || ts.isPropertyDeclaration(propSignature)) {
-                const property = key.toString();
-                const propertyPath = [property];
-                const eventDetailMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MDScope.DT, MetaTypes.MDContext.EVENT | MetaTypes.MDContext.EVENT_DETAIL, propertyPath, symbol, metaUtilObj);
-                const propSym = mappedTypeSymbol ?? symbol;
-                eventDetailMetadata['optional'] = propSym.flags & ts.SymbolFlags.Optional ? true : false;
-                details = details || {};
-                details[property] = eventDetailMetadata;
-                let nestedArrayStack = [];
-                if (eventDetailMetadata.type === 'Array<object>') {
-                    nestedArrayStack.push(key);
-                }
-                const complexMD = TypeUtils.getComplexPropertyMetadata(symbol, eventDetailMetadata, detailName, MetaTypes.MDScope.DT, MetaTypes.MDContext.EVENT | MetaTypes.MDContext.EVENT_DETAIL, propertyPath, nestedArrayStack, metaUtilObj);
-                TypeUtils.processComplexPropertyMetadata(property, eventDetailMetadata, complexMD, details[property]);
-            }
-        });
-    }
+            // check to see if we have sub properties
+            const complexMD = TypeUtils.getComplexPropertyMetadata(symbol, eventDetailMetadata, eventDetailName, MetaTypes.MDScope.DT, MetaTypes.MDContext.EVENT | MetaTypes.MDContext.EVENT_DETAIL, propertyPath, nestedArrayStack, metaUtilObj);
+            // process the returned complex property metadata
+            TypeUtils.processComplexPropertyMetadata(property, eventDetailMetadata, complexMD, details[property]);
+        }
+    });
     return details;
+}
+/**
+ * Returns the event detail metadata for a primitive type or for an object type
+ * whose sub-properties are "not walkable" (e.g., arrays, tuples, Maps, Sets, etc.)
+ */
+function getEventSingletonDetail(detailType, detailName, detailMD, metaUtilObj) {
+    const typeObj = TypeUtils.getSignatureFromType(detailType, MetaTypes.MDContext.EVENT | MetaTypes.MDContext.EVENT_DETAIL, MetaTypes.MDScope.DT, false, null, metaUtilObj);
+    let detail = {};
+    detail[SINGLETON_KEY] = {
+        type: typeObj.type
+    };
+    if (typeObj.enumValues) {
+        detail[SINGLETON_KEY].enumValues = [...typeObj.enumValues];
+    }
+    // apply any transferred DT metadata to the singleton EventDetailItem
+    Object.assign(detail[SINGLETON_KEY], detailMD);
+    let nestedArrayStack = [];
+    if (typeObj.type === 'Array<object>') {
+        nestedArrayStack.push(SINGLETON_KEY);
+    }
+    // check to see if we have sub properties
+    const complexMD = TypeUtils.getComplexPropertyMetadataForType(detailType, typeObj, detailName, MetaTypes.MDScope.DT, MetaTypes.MDContext.EVENT | MetaTypes.MDContext.EVENT_DETAIL, [SINGLETON_KEY], nestedArrayStack, metaUtilObj);
+    // process the returned complex property metadata
+    TypeUtils.processComplexPropertyMetadata(SINGLETON_KEY, typeObj, complexMD, detail[SINGLETON_KEY]);
+    return detail;
+}
+/**
+ * Loops over the keys of a top-level Event DT metadata object, looking for dot notation keys
+ * targeting a singleton EventDetailItem. It transfers these items off of the top-level metadata
+ * object onto a new return object, stripping the 'detail.' prefix from the key in the process.
+ *
+ * @param eventDT The top-level Event DT metadata object
+ * @returns MD object with the metadata items that have been transferred from the top-level object
+ */
+function getTransferredDetailMD(eventDT) {
+    const transferredMD = {};
+    const topLevelKeys = Object.keys(eventDT);
+    for (const key of topLevelKeys) {
+        if (key.startsWith('detail.')) {
+            const transferKey = key.substring(key.lastIndexOf('.') + 1);
+            if (transferKey) {
+                transferredMD[transferKey] = eventDT[key];
+                eventDT[key] = undefined;
+            }
+        }
+    }
+    return transferredMD;
 }
 //# sourceMappingURL=MetadataEventUtils.js.map

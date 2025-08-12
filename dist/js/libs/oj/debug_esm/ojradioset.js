@@ -457,6 +457,14 @@ var __oj_radioset_metadata =
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
    *
+   * <h5>LabelledBy attribute</h5>
+   * <p>
+   * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
+   * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
+   * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
+   * to add a label for the form component.
+   * </p>
+   *
    * <h5>DescribedBy attribute</h5>
    * <p>
    * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
@@ -476,6 +484,11 @@ var __oj_radioset_metadata =
    * <h5>Usage in Dynamic Form</h5>
    * <p>
    * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+   * </p>
+   *
+   * <h5>Disabling individual options</h5>
+   * <p>
+   * Disabling individual options is not supported within the core pack component. Items that aren't selectable should be removed from the set of options.
    * </p>
    *
    * @example <caption>Initialize the radioset with no options specified:</caption>
@@ -633,6 +646,7 @@ var __oj_radioset_metadata =
    * Use this styleclass if you don't want the chrome around the set.
    * @ojstyleclass oj-radioset-no-chrome
    * @ojdisplayname No Chrome
+   * @ojdeprecated [{since: "19.0.0", description: "For Redwood applications, this is not a recommended pattern."}]
    * @memberof oj.ojRadioset
    * @ojtsexample
    * &lt;oj-radioset id="radiosetId" class='oj-radioset-no-chrome'>
@@ -643,6 +657,7 @@ var __oj_radioset_metadata =
    * Use this styleclass to order the radio at the start and label text at the end even if a theme has a different default order.
    * @ojstyleclass oj-radioset-input-start
    * @ojdisplayname Input Start
+   * @ojdeprecated [{since: "19.0.0", description: "For Redwood applications, this is not a recommended pattern."}]
    * @memberof oj.ojRadioset
    * @ojtsexample
    * &lt;oj-radioset id="radiosetId" class='oj-radioset-input-start'>
@@ -653,6 +668,7 @@ var __oj_radioset_metadata =
    * Use this styleclass to order the radio at the end and the label text at the start even if a theme has a different default order.
    * @ojstyleclass oj-radioset-input-end
    * @ojdisplayname Input End
+   * @ojdeprecated [{since: "19.0.0", description: "For Redwood applications, this is not a recommended pattern."}]
    * @memberof oj.ojRadioset
    * @ojtsexample
    * &lt;oj-radioset id="radiosetId" class='oj-radioset-input-end'>

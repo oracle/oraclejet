@@ -7,7 +7,7 @@
  */
 import $ from 'jquery';
 import 'ojs/ojjquery-hammer';
-import { PopupWhenReadyMediator } from 'ojs/ojpopupcore';
+import { PositionUtils, ZOrderUtils, PopupService, PopupWhenReadyMediator } from 'ojs/ojpopupcore';
 import 'ojs/ojoption';
 import oj from 'ojs/ojcore-base';
 import { Swipe, DIRECTION_HORIZONTAL } from 'hammerjs';
@@ -19,6 +19,7 @@ import { warn } from 'ojs/ojlogger';
 import { getDeviceRenderMode } from 'ojs/ojconfig';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 import { isElementRegistered } from 'ojs/ojcustomelement-registry';
+import { getTranslatedString } from 'ojs/ojtranslation';
 
 (function () {
   // -----------------------------------------------------------------------------
@@ -98,10 +99,6 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
   };
 
   var _SUBID_CANCEL = 'oj-menu-cancel-command';
-
-  // Submenu's y offset is equal to 0.5rem margin + 1px border of menu divider
-  let remInPixels = parseInt(window.getComputedStyle(document.documentElement).fontSize, 10);
-  const Y_SUBMENU_OFFSET = -(0.5 * remInPixels + 1);
 
   function _findImmediateMenuItems(activeMenu) {
     var menuItems = [];
@@ -1344,7 +1341,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
         this.element.hide(); // insist menu is initially hidden
         // fixup the position option if custom element menu or submenu
         var options = this.options;
-        options.openOptions.position = oj.PositionUtils.coerceToJet(options.openOptions.position);
+        options.openOptions.position = PositionUtils.coerceToJet(options.openOptions.position);
 
         var deferredChild = this.element[0].querySelector('oj-defer');
         if (deferredChild) {
@@ -1732,7 +1729,6 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
 
         // create 'a' tag
         var a = document.createElement('a');
-        a.setAttribute('href', '#');
 
         // tag with ojmenu attribute to identify it later
         a.setAttribute('ojmenu', 'opt');
@@ -2293,7 +2289,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
         createInitializedSubmenus(this);
         this._setup();
       }
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         var busyContext = Context.getContext(this.element[0]).getBusyContext();
         var resolveBusyState = busyContext.addBusyState({
           description: 'Waiting for menu to be rendered with new DOM correctly'
@@ -2302,14 +2298,19 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
         requestAnimationFrame(() => {
           resolveBusyState();
           this._reposition(true);
+          if (this._closeHiddenButton) {
+            // Hidden link position needs to be updated when items are refreshed
+            this._closeHiddenButton.style.top =
+              this.element[0].getBoundingClientRect().top - 1 + 'px';
+          }
         });
       }
     },
 
     /*
-    Reposition is called on 3 cases. After opening on ios due to some issues with searchbar, on popupservice refresh(events[oj.PopupService.EVENT.POPUP_REFRESH] = this._reposition.bind(this)) and
+    Reposition is called on 3 cases. After opening on ios due to some issues with searchbar, on popupservice refresh(events[PopupService.EVENT.POPUP_REFRESH] = this._reposition.bind(this)) and
     on menu refresh. When menu refresh we need to force repositioning even if menu is larger than viewport. This condition was added
-    due to some issues when using keyboard and menu is scrolled: https://bug.oraclecorp.com/pls/bug/webbug_print.show?c_rptno=28729711
+    due to some issues when using keyboard and menu is scrolled: 
     Since reposition is called via popupservice refresh on that bug we can keep that condition working as in the past without adding a new bug,
     just changing condition when reposition is called via menu refresh.
     */
@@ -2754,26 +2755,26 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       }
 
       // no-op for a closed menu
-      var status = oj.ZOrderUtils.getStatus(this.element);
-      if (status !== oj.ZOrderUtils.STATUS.OPEN) {
+      var status = ZOrderUtils.getStatus(this.element);
+      if (status !== ZOrderUtils.STATUS.OPEN) {
         return;
       }
 
       var isOpen = this.element.is(':visible');
       this._setWhenReady('close');
 
-      /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+      /** @type {!Object.<PopupService.OPTION, ?>} */
       var psOptions = {};
-      psOptions[oj.PopupService.OPTION.POPUP] = this.element;
+      psOptions[PopupService.OPTION.POPUP] = this.element;
 
       // capture local state in a context used by the after close callback
-      psOptions[oj.PopupService.OPTION.CONTEXT] = {
+      psOptions[PopupService.OPTION.CONTEXT] = {
         event: event,
         selectUi: selectUi,
         isOpen: isOpen
       };
 
-      oj.PopupService.getInstance().close(psOptions);
+      PopupService.getInstance().close(psOptions);
     },
 
     /**
@@ -2858,17 +2859,17 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
      * @memberof! oj.ojMenu
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the menu
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for closing the menu
      * @return {Promise|void}
      */
     _beforeCloseHandler: function (psOptions) {
-      var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
+      var rootElement = psOptions[PopupService.OPTION.POPUP];
 
       // For custom element:
       // Fire action event before menu closed, so that app action handlers can do their thing
       // without waiting for the animation to finish.
       if (this._IsCustomElement()) {
-        var context = psOptions[oj.PopupService.OPTION.CONTEXT];
+        var context = psOptions[PopupService.OPTION.CONTEXT];
         var selectUi = context.selectUi;
 
         // trigger action event on the oj-option element
@@ -2907,7 +2908,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       var promise = startAnimation(
         rootElement[0],
         'close',
-        oj.PositionUtils.addTransformOriginAnimationEffectsOption(rootElement, animationOptions),
+        PositionUtils.addTransformOriginAnimationEffectsOption(rootElement, animationOptions),
         this
       );
 
@@ -2924,12 +2925,12 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
      * @memberof! oj.ojMenu
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the menu
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for closing the menu
      * @return {void}
      */
     _afterCloseHandler: function (psOptions) {
       // restore local variable state from #__dismiss
-      var context = psOptions[oj.PopupService.OPTION.CONTEXT];
+      var context = psOptions[PopupService.OPTION.CONTEXT];
       var event = context.event;
       var selectUi = context.selectUi;
       var isOpen = context.isOpen;
@@ -2968,6 +2969,8 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       // Remove menu from openPopupMenus list
       var i = _openPopupMenus.indexOf(this);
       _openPopupMenus.splice(i, 1);
+
+      this._removeSheetMenuCloseHiddenButton();
     },
 
     /**
@@ -3028,7 +3031,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
      * @return {void}
      */
     _closeMenuIfOpen: function (oldOpenOptions, beforeOpenResults, menuOpenOptions) {
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         // Disable animation since we'll be reopening the menu
         this._disableAnimation = true;
 
@@ -3133,7 +3136,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
         var oldOpenOptions = this._currentOpenOptions;
         this._currentOpenOptions = menuOpenOptions;
 
-        oj.PositionUtils._normalizeEventForPosition(menuEvent); // see callee doc
+        PositionUtils._normalizeEventForPosition(menuEvent); // see callee doc
 
         // Hack:  __openingContextMenu is set and unset by baseComponent._OpenContextMenu(), since Menu needs to know whether the
         // menu is open as a context menu vs. some other kind of menu including menu button,
@@ -3183,7 +3186,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
           // vary by launch when there are submenus.
           this.element.addClass('oj-menu-dropdown').removeClass('oj-menu-sheet');
           modality = _DROPDOWN_MODALITY;
-          var openOptionsPosition = oj.PositionUtils.normalizeHorizontalAlignment(
+          var openOptionsPosition = PositionUtils.normalizeHorizontalAlignment(
             menuOpenOptions.position,
             this.isRtl
           );
@@ -3203,17 +3206,17 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
           // convert the position option back to JQuery format if custom element menu or submenu
           if (this._IsCustomElement()) {
             // fixup the position option if custom element menu or submenu
-            openOptionsPosition = oj.PositionUtils.coerceToJet(
+            openOptionsPosition = PositionUtils.coerceToJet(
               openOptionsPosition,
               this.options.openOptions.position
             );
             this._referenceOpenPosition = openOptionsPosition;
-            position = oj.PositionUtils.coerceToJqUi(openOptionsPosition);
+            position = PositionUtils.coerceToJqUi(openOptionsPosition);
           } else {
             this._referenceOpenPosition = openOptionsPosition;
             position = openOptionsPosition;
           }
-          position.of = oj.PositionUtils.normalizePositionOf(position.of, launcher, menuEvent);
+          position.of = PositionUtils.normalizePositionOf(position.of, launcher, menuEvent);
         } else {
           // sheet menu, implying no submenus
           this.element.addClass('oj-menu-sheet').removeClass('oj-menu-dropdown');
@@ -3239,7 +3242,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
         });
 
         // cache the merged value for use while the (outer) menu is still open
-        this._submenuPosition = oj.PositionUtils.normalizeHorizontalAlignment(
+        this._submenuPosition = PositionUtils.normalizeHorizontalAlignment(
           submenuOpenOptions.position,
           this.isRtl
         );
@@ -3259,25 +3262,25 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
 
         this._setWhenReady('open');
 
-        /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+        /** @type {!Object.<PopupService.OPTION, ?>} */
         var psOptions = {};
-        psOptions[oj.PopupService.OPTION.POPUP] = this.element;
-        psOptions[oj.PopupService.OPTION.LAUNCHER] = launcher;
-        psOptions[oj.PopupService.OPTION.POSITION] = position;
-        psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
-        psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = 'oj-menu-layer';
-        psOptions[oj.PopupService.OPTION.MODALITY] = modality;
+        psOptions[PopupService.OPTION.POPUP] = this.element;
+        psOptions[PopupService.OPTION.LAUNCHER] = launcher;
+        psOptions[PopupService.OPTION.POSITION] = position;
+        psOptions[PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
+        psOptions[PopupService.OPTION.LAYER_SELECTORS] = 'oj-menu-layer';
+        psOptions[PopupService.OPTION.MODALITY] = modality;
 
         // local variables passed to the before and after open callbacks.
-        psOptions[oj.PopupService.OPTION.CONTEXT] = {
+        psOptions[PopupService.OPTION.CONTEXT] = {
           event: menuEvent,
           initialFocus: menuOpenOptions.initialFocus,
           launcher: launcher,
           isDropDown: isDropDown
         };
-        psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
+        psOptions[PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
 
-        var popupService = oj.PopupService.getInstance();
+        var popupService = PopupService.getInstance();
         var openCallback = popupService.open.bind(popupService, psOptions);
         var deferredChild = this.element[0].querySelector('oj-defer');
         if (deferredChild) {
@@ -3319,7 +3322,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       // new position extends the existing object
       // covert to jet internal position format
 
-      options.openOptions.position = oj.PositionUtils.coerceToJet(
+      options.openOptions.position = PositionUtils.coerceToJet(
         position,
         options.openOptions.position
       );
@@ -3331,14 +3334,14 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
      * @memberof! oj.ojMenu
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the menu
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for opening the menu
      * @return {Promise|void}
      */
     _beforeOpenHandler: function (psOptions) {
       var promise;
-      var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
-      var position = psOptions[oj.PopupService.OPTION.POSITION];
-      var context = psOptions[oj.PopupService.OPTION.CONTEXT];
+      var rootElement = psOptions[PopupService.OPTION.POPUP];
+      var position = psOptions[PopupService.OPTION.POSITION];
+      var context = psOptions[PopupService.OPTION.CONTEXT];
       var event = context.event;
       var isDropDown = context.isDropDown;
       var initialFocus = context.initialFocus;
@@ -3379,7 +3382,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
         promise = startAnimation(
           rootElement[0],
           'open',
-          oj.PositionUtils.addTransformOriginAnimationEffectsOption(rootElement, animationOptions),
+          PositionUtils.addTransformOriginAnimationEffectsOption(rootElement, animationOptions),
           this
         );
       }
@@ -3401,7 +3404,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       }
       this._referenceOpenPosition.offset.x = scrollbarWidth * -1;
       if (this._IsCustomElement()) {
-        var newPo = oj.PositionUtils.coerceToJqUi(this._referenceOpenPosition);
+        var newPo = PositionUtils.coerceToJqUi(this._referenceOpenPosition);
         return Object.assign(position, { my: newPo.my });
       }
       return Object.assign(position, { offset: { my: scrollbarWidth * -1 } });
@@ -3415,7 +3418,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       const isSafari = oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI;
       // Max height will apply will only certain condition
       // In this case maxHeight is not updated if menu is not dropdown and if its height is smaller than viewport one.
-      // Not supported on safari for now. 
+      // Not supported on safari for now. 8134
       if (
         !isDropdown ||
         elem.offsetHeight < window.innerHeight ||
@@ -3454,13 +3457,13 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
      * @memberof! oj.ojMenu
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the menu
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for opening the menu
      * @return {Promise|void}
      */
     _afterOpenHandler: function (psOptions) {
-      var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
+      var rootElement = psOptions[PopupService.OPTION.POPUP];
       // From the context passed from the open restore local variable state.
-      var context = psOptions[oj.PopupService.OPTION.CONTEXT];
+      var context = psOptions[PopupService.OPTION.CONTEXT];
       var event = context.event;
       var launcher = context.launcher;
       var isDropDown = context.isDropDown;
@@ -3486,6 +3489,9 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       delete this.initialWidth;
       delete this.initialHeight;
 
+      // Sheet menu hidden link is added if needed. JET-66064
+      this._createSheetMenuCloseHiddenButton(psOptions);
+
       if (initialFocus === 'firstItem' || initialFocus === 'menu') {
         var focusElement;
         focusElement = this.element;
@@ -3508,6 +3514,45 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       }
 
       this._trigger('open', event, {});
+    },
+    _createSheetMenuCloseHiddenButton: function (psOptions) {
+      const rootElement = psOptions[PopupService.OPTION.POPUP];
+      // From the context passed from the open restore local variable state.
+      const context = psOptions[PopupService.OPTION.CONTEXT];
+      const isDropDown = context.isDropDown;
+
+      if (!isDropDown) {
+        const menuLayerElement = oj.ZOrderUtils.getOpenPopupLayer(rootElement)[0];
+        const menuElement = rootElement[0];
+        if (menuLayerElement && menuElement) {
+          // Creation of hidden link element. This element can't be a child of oj-menu since represents an acc problem (adding a child of menu that is not a menu item)
+          const hiddenButton = document.createElement('a');
+          hiddenButton.tabIndex = -1;
+          hiddenButton.role = 'button';
+          // Getting translated text from dialog since we don't want to expose a new tranlsation attribute
+          const translatedAriaLabel = getTranslatedString(
+            'oj-ojDialog.labelCloseIcon'
+          );
+          hiddenButton.ariaLabel = translatedAriaLabel;
+          hiddenButton.addEventListener('click', (e) => {
+            this.__collapseAll(e, true);
+            this._focusLauncherAndDismiss(e);
+          });
+          hiddenButton.classList.add('oj-menu-sheet-hidden-button');
+          hiddenButton.style.top = menuElement.getBoundingClientRect().top - 1 + 'px';
+
+          this._closeHiddenButton = hiddenButton;
+
+          // Insertion of the hidden link element
+          menuLayerElement.insertBefore(hiddenButton, menuElement);
+        }
+      }
+    },
+    _removeSheetMenuCloseHiddenButton: function () {
+      if (this._closeHiddenButton) {
+        this._closeHiddenButton.remove();
+        delete this._closeHiddenButton;
+      }
     },
 
     _getFirstItem: function () {
@@ -3556,12 +3601,22 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
         if (!beforeOpenResults.proceed) {
           return;
         }
+
+        // pixels need to be recalculated in each opening since zoom can change value of rem in pixels
+        const remInPixels = parseInt(
+          window.getComputedStyle(document.documentElement).fontSize,
+          10
+        );
+        // Submenu's y offset is equal to 0.5rem margin + 1px top border of submenu
+        const Y_SUBMENU_OFFSET = -(0.5 * remInPixels + 1);
+        const X_SUBMENU_OFFSET = -(0.5 * remInPixels);
+
         let submenuPosition = Object.assign(submenuWidget.options.openOptions.position, {
-          offset: { x: 0, y: Y_SUBMENU_OFFSET }
+          offset: { x: X_SUBMENU_OFFSET, y: Y_SUBMENU_OFFSET }
         });
 
-        position = oj.PositionUtils.coerceToJqUi(submenuPosition);
-        position = oj.PositionUtils.normalizeHorizontalAlignment(position, this.isRtl);
+        position = PositionUtils.coerceToJqUi(submenuPosition);
+        position = PositionUtils.normalizeHorizontalAlignment(position, this.isRtl);
       } else {
         position = this._submenuPosition;
       }
@@ -3956,7 +4011,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
     _surrogateRemoveHandler: function () {
       // In all cases except when the dialog is already open, removal of the
       // surrogate during opening or closing will result in implicit removal.
-      // 1) CLOSING: Handled in oj.ZOrderUtils.removeFromAncestorLayer.  If the
+      // 1) CLOSING: Handled in ZOrderUtils.removeFromAncestorLayer.  If the
       //    surrogate doesn't exist the layer containing the popup dom is detached.
       // 2) OPENING: in the PopupServiceImpl#open _finalize, if the surrogate doesn't
       //    exist after in the open state, this remove callback is invoked.
@@ -3965,8 +4020,8 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       // but jquery UI instances will invoke the _destory method.
 
       var element = this.element;
-      var status = oj.ZOrderUtils.getStatus(element);
-      if (status === oj.ZOrderUtils.STATUS.OPEN) {
+      var status = ZOrderUtils.getStatus(element);
+      if (status === ZOrderUtils.STATUS.OPEN) {
         CustomElementUtils.cleanComponentBindings(element[0]);
         element.remove();
       }
@@ -3975,21 +4030,21 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
     /**
      * @instance
      * @private
-     * @return {!Object.<oj.PopupService.EVENT, function(...)>}
+     * @return {!Object.<PopupService.EVENT, function(...)>}
      */
     _getPopupServiceEvents: function () {
       if (!this._popupServiceEvents) {
-        /** @type {!Object.<oj.PopupService.EVENT, function(...)>} **/
+        /** @type {!Object.<PopupService.EVENT, function(...)>} **/
         var events = {};
         this._popupServiceEvents = events;
-        events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeAll.bind(this);
-        events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_REFRESH] = this._reposition.bind(this);
-        events[oj.PopupService.EVENT.POPUP_AUTODISMISS] = this._clickAwayHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_AFTER_CLOSE] = this._afterCloseHandler.bind(this);
+        events[PopupService.EVENT.POPUP_CLOSE] = this._closeAll.bind(this);
+        events[PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
+        events[PopupService.EVENT.POPUP_REFRESH] = this._reposition.bind(this);
+        events[PopupService.EVENT.POPUP_AUTODISMISS] = this._clickAwayHandler.bind(this);
+        events[PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
+        events[PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
+        events[PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);
+        events[PopupService.EVENT.POPUP_AFTER_CLOSE] = this._afterCloseHandler.bind(this);
       }
       return this._popupServiceEvents;
     },
@@ -4021,7 +4076,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       rootMenu.css(pos);
 
       // Capture the position data so that we can set transform-origin later on
-      oj.PositionUtils.captureTransformOriginAnimationEffectsOption(rootMenu, props);
+      PositionUtils.captureTransformOriginAnimationEffectsOption(rootMenu, props);
 
       // call on the original using
       var position = rootMenu.data(_POSITION_DATA);
@@ -4031,7 +4086,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
       }
 
       // implicitly dismiss the menu when the position.of is clipped in an overflow container.
-      if (oj.PositionUtils.isAligningPositionClipped(props)) {
+      if (PositionUtils.isAligningPositionClipped(props)) {
         this._clearCloseDelayTimer = this._setTimer(
           this._closeAll,
           this._getSubmenuBusyStateDescription('closing'),
@@ -4132,7 +4187,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
     _getCancelDom: function () {
       if (!this._cancelDom) {
         var divider = $('<li></li>', this.document[0]); // trusted string
-        var a = $("<a href='#'></a>", this.document[0]) // trusted string
+        var a = $('<a></a>', this.document[0]) // trusted string
           .text(this.options.translations.labelCancel);
         $(
           "<span class='oj-menu-item-icon oj-component-icon oj-menu-cancel-icon'></span>",
@@ -4311,7 +4366,7 @@ import { isElementRegistered } from 'ojs/ojcustomelement-registry';
      */
     _NotifyDetached: function () {
       // detaching an open menu results in implicit dismissal
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         this._closeAll();
       }
 

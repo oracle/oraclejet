@@ -252,7 +252,7 @@ var __oj_diagram_metadata =
       }
     },
     "linkData": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -305,7 +305,7 @@ var __oj_diagram_metadata =
       }
     },
     "nodeData": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -2345,10 +2345,9 @@ var __oj_diagram_link_metadata =
          * <p><b>Note</b> that a link can be represented by any SVG content. However if an application
          * wants to take advantage of built-in path animation provided by the Diagram component,
          * then the main shape of a link should be represented by a single path element and that
-         * path element should be marked by <i>oj-diagram-link-path</i> class. When the class
-         * is applied to the path element, its <i>d</i> attribute value will be populated by the
-         * component and the path transformation will be applied to the element during data change
-         * animation. Fade-in animation will be used for other elements of the link.</p>
+         * path element should be marked by <i>oj-diagram-link-path</i> class. When the class is applied to the path element, its <i>d</i>  attribute value will be populated
+         * by the component using points that were passed through in the layout function and the path
+         * transformation will be applied to the element during data change animation. Fade-in animation will be used for other elements of the link.</p>
          * <p>When the <i>oj-diagram-link-path</i> class is not used for any element of the link, then
          * the entire custom content will fade-in during data change animation.<p>
          *
@@ -2767,7 +2766,7 @@ var __oj_diagram_link_metadata =
        * @ojshortdesc Specifies the DataProvider for the diagram links. See the Help documentation for more information.
        * @memberof oj.ojDiagram
        * @instance
-       * @type {(Object|null)=}
+       * @type {(DataProvider|null)=}
        * @ojsignature {target: "Type", value: "DataProvider<K2, D2>|null", jsdocOverride:true}
        * @default null
        * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
@@ -2797,7 +2796,7 @@ var __oj_diagram_link_metadata =
        * @ojshortdesc Specifies the DataProvider for the diagram nodes. See the Help documentation for more information.
        * @memberof oj.ojDiagram
        * @instance
-       * @type {Object|null}
+       * @type {DataProvider|null}
        * @ojsignature {target: "Type", value: "DataProvider<K1, D1>|null", jsdocOverride:true}
        * @default null
        * @ojwebelementstatus {type: "unsupported", since: "13.0.0",

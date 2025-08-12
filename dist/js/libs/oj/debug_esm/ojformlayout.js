@@ -1194,7 +1194,11 @@ function ojFormLayout(context) {
    * Return true if the label is handled by the child element; false otherwise.
    */
   function _isLabelByChild(child) {
-    return element.labelEdge === 'inside' || child.labelEdge !== 'provided';
+    return (
+      element.labelEdge === 'inside' ||
+      child.labelEdge !== 'provided' ||
+      child.hasAttribute('data-oj-renders-label')
+    );
   }
 
   /**

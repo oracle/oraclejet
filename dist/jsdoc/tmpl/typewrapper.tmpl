@@ -55,7 +55,7 @@
     tsdeprecations.forEach(function(deprecation){
       if (deprecation.target === 'parameterType' || deprecation.target ==='propertyType'){
           since = deprecation.since;
-          removeBasedonSince = !since || self.convertSemverToInt32(since) <= self.convertSemverToInt32('6.0.0');
+          removeBasedonSince = !since || self.isBeforeJet6(since);
           if(removeBasedonSince){
             //is it deprecated prior to typescript? if so, it goes only in jsdoc.
             jsDeprecations.push(deprecation);

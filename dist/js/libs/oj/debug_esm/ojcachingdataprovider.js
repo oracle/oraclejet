@@ -55,6 +55,7 @@ var FetchDirection;
     FetchDirection[FetchDirection["UP"] = 0] = "UP";
     FetchDirection[FetchDirection["DOWN"] = 1] = "DOWN";
 })(FetchDirection || (FetchDirection = {}));
+// A DataProvider wrapper that supports caching
 class CachingDataProvider {
     constructor(dataProvider, cache, options) {
         this.dataProvider = dataProvider;
@@ -78,21 +79,36 @@ class CachingDataProvider {
             this.dataProvider.removeEventListener('refresh', this.modelEventHandler);
         }
     }
+    /**
+     * Fetch the first block of data
+     */
     fetchFirst(params) {
+        // clear cache
         this._resetCache();
         const result = this.dataProvider.fetchFirst(params);
         return new AsyncIterableWrapper(result, this.cache, this.cacheQueue);
     }
+    /**
+     * Fetch rows by keys
+     */
     fetchByKeys(params) {
         return this.dataProvider.fetchByKeys(params);
     }
+    /**
+     * Check if rows are contained by keys
+     */
     containsKeys(params) {
         return this.dataProvider.containsKeys(params);
     }
+    /**
+     * Fetch rows by offset
+     * This is also used by this DataProvider to know what the active range is so that it can purge its cache accordingly
+     */
     fetchByOffset(params) {
         if (this.proximity === undefined) {
             this.proximity = params.size;
         }
+        // direction serves as a hint of where to pre-fetch
         let direction = FetchDirection.UP;
         const start = params.offset;
         const end = start + params.size;
@@ -132,12 +148,14 @@ class CachingDataProvider {
                     });
                     const results = this._getFetchByOffsetResult(start, end);
                     resolve({ results, fetchParameters: params, done: false });
+                    // see if we need to pre-fetch more
                     this._recalibrateCache(start, end, direction);
                 });
             });
             return this.fetchByOffsetPromise;
         }
         this._updateCacheEntries(start, end);
+        // must be called before cache is recalibrated
         const results = this._getFetchByOffsetResult(start, end);
         this._recalibrateCache(start, end, direction);
         return Promise.resolve({ results, fetchParameters: params, done: false });
@@ -163,15 +181,26 @@ class CachingDataProvider {
         }
         return results;
     }
+    /**
+     * Returns the total size of the data
+     */
     getTotalSize() {
         return this.dataProvider.getTotalSize();
     }
+    /**
+     * Returns a string that indicates if this data provider is empty.
+     * Returns "unknown" if the dataProvider has not resolved yet.
+     */
     isEmpty() {
         return this.dataProvider.isEmpty();
     }
+    /**
+     * Determines whether this DataProvider supports certain feature.
+     */
     getCapability(capabilityName) {
         return this.dataProvider.getCapability(capabilityName);
     }
+    /** EVENT TARGET IMPLEMENTATION **/
     addEventListener(eventType, listener) {
         this.dataProvider.addEventListener(eventType, listener);
     }
@@ -186,6 +215,7 @@ class CachingDataProvider {
             this._handleRowsRefreshed();
         }
         else if (event.type === 'mutate') {
+            // todo: don't need this if evt is correctly typed
             const detail = event['detail'];
             if (detail.add) {
                 this._handleRowsAdded(detail.add);
@@ -209,11 +239,13 @@ class CachingDataProvider {
         if (this.strategy === CacheEvictionStrategy.NEVER) {
             return;
         }
+        // first purge the cache that are LRU whose outside of current proximity range
         this.cacheQueue.forEach((cacheInfo) => {
             if (cacheInfo.status === CacheStatus.READY &&
                 cacheInfo.miss >= this.CACHE_MISS_THRESHOLD &&
                 (cacheInfo.end < start - this.proximity || cacheInfo.start > end + this.proximity)) {
                 this._log(`Purging cache range: ${cacheInfo.start} to ${cacheInfo.end}`);
+                // for now we are just nulling out the data/metadata, todo: reduce the array if it's possible
                 for (let i = cacheInfo.start; i <= cacheInfo.end; i++) {
                     this.cache.data[i] = null;
                     this.cache.metadata[i] = null;
@@ -225,7 +257,9 @@ class CachingDataProvider {
         if (this.prefetching === false) {
             return;
         }
+        // next pre-fetch to populate cache in anticipation of the next fetch
         for (const entry of this.cacheQueue) {
+            // find the right CacheEntry of what the next fetch might be
             if (direction === FetchDirection.UP && entry.start < start && entry.end > start) {
                 if (entry.status === CacheStatus.PURGED || !this._isInCache(entry.start, entry.end)) {
                     entry.status = CacheStatus.FETCHING;
@@ -278,12 +312,20 @@ class CachingDataProvider {
         }
         return true;
     }
+    /**
+     * Helper method for handling mutation event
+     * @param detail
+     * @param keyField
+     * @param callback1
+     * @param callback2
+     */
     _handleRowsMutated(detail, keyField, callback1, callback2) {
         const indexes = detail.indexes;
         if (indexes != null) {
             indexes.forEach((index, i) => {
                 if (index < this.cache.startIndex + this.cache.data.length) {
                     if (index >= this.cache.startIndex) {
+                        // within fetched range, update cache
                         const data = detail.data != null ? detail.data[i] : null;
                         const metadata = detail.metadata != null ? detail.metadata[i] : null;
                         callback1(index, data, metadata);
@@ -294,6 +336,8 @@ class CachingDataProvider {
                         }
                     }
                 }
+                // if it's after the current cache range then we don't need to do anything as it gets
+                // re-populated correctly when the next set of data is fetched
             });
         }
     }

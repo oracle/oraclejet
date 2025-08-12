@@ -7,7 +7,7 @@
  */
 import $ from 'jquery';
 import oj from 'ojs/ojcore-base';
-import 'ojs/ojpopupcore';
+import { ZOrderUtils } from 'ojs/ojpopupcore';
 import { getLogicalParent } from 'ojs/ojdomutils';
 
 /**
@@ -226,7 +226,7 @@ const enableAllFocusableElements = function (element, includeSelf) {
  * @ignore
  */
 const getLogicalChildPopup = function (componentElement) {
-  var popups = oj.ZOrderUtils.findOpenPopups();
+  var popups = ZOrderUtils.findOpenPopups();
   for (var i = 0; i < popups.length; i++) {
     // Get the launcher of the popup.
     // popups[i] is just a wrapper with the real popup as its child.
@@ -236,7 +236,7 @@ const getLogicalChildPopup = function (componentElement) {
     // Check if the component contains the launcher
     if (launcher != null && $(componentElement).has(launcher.get(0)).length > 0) {
       // only return the popup if the child popup is currently open
-      if (oj.ZOrderUtils.getStatus(popupElem) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(popupElem) === ZOrderUtils.STATUS.OPEN) {
         return popupElem;
       }
     }
@@ -255,7 +255,7 @@ const getLogicalChildPopup = function (componentElement) {
  */
 const getAllLogicalChildPopups = function (componentElement) {
   var allPopups = {
-    popups: oj.ZOrderUtils.findOpenPopups()
+    popups: ZOrderUtils.findOpenPopups()
   };
 
   var _getLogicalChildPopups = function (parentElement) {

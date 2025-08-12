@@ -526,17 +526,6 @@
             height: 100%;
         }
 
-        /* Styles used to optimize scolling on touch devices used to optimize translate
-           3d swiping on touch and engage hardware acceleration, they are not for animation changes*/
-        .oj-datagrid-scroller-touch {
-            transition: 0.5s;
-            transition-timing-function: ease-out;
-
-              @include oj-backface-visibility-property (hidden);
-
-            perspective: 1000;
-        }
-
         /* Styling on header cells when hovered both for rows and columns */
         .oj-datagrid-header-label.oj-hover,
         .oj-datagrid-header-cell.oj-hover,

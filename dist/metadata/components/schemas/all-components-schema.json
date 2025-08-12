@@ -13,6 +13,12 @@
     "version": {
       "$ref": "component-schema.json#/definitions/semverExactDef"
     },
+    "date": {
+      "type": "string"
+    },
+    "time": {
+      "type": "string"
+    },
     "components": {
       "type": "object",
       "patternProperties": {

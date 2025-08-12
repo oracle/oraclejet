@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'ojs/ojthemeutils', 'jquery', 'ojs/ojdomutils', 'ojs/ojnavigationlistdnd', 'ojs/ojlistview', 'ojs/ojdatacollection-common', 'ojs/ojcontext', 'ojs/ojmenu', 'ojs/ojbutton'], function (oj, Components, ThemeUtils, $, DomUtils, ojnavigationlistdnd, ojlistview, DataCollectionUtils, Context, ojmenu, ojbutton) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'ojs/ojthemeutils', 'jquery', 'ojs/ojdomutils', 'ojs/ojdatacollection-common', 'ojs/ojnavigationlistdnd', 'ojs/ojlistview', 'ojs/ojcontext', 'ojs/ojmenu', 'ojs/ojbutton'], function (oj, Components, ThemeUtils, $, DomUtils, DataCollectionUtils, ojnavigationlistdnd, ojlistview, Context, ojmenu, ojbutton) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -257,7 +257,19 @@ var __oj_tab_bar_metadata =
         "accessibleReorderTouchInstructionText": {
           "type": "string"
         },
+        "labelActions": {
+          "type": "string"
+        },
+        "labelContextMenu": {
+          "type": "string"
+        },
         "labelCut": {
+          "type": "string"
+        },
+        "labelMoveLeft": {
+          "type": "string"
+        },
+        "labelMoveRight": {
           "type": "string"
         },
         "labelPasteAfter": {
@@ -326,6 +338,8 @@ var __oj_tab_bar_metadata =
 
   const _ARIA_HIDDEN = 'aria-hidden';
   const _ARIA_LABEL = 'aria-label';
+  const _ARIA_DESCRBIEDBY = 'aria-describedby';
+  const _ARIA_HASPOPUP = 'aria-haspopup';
   const _OJ_DEFAULT = 'oj-default';
   const _OJ_DISABLED = 'oj-disabled';
 
@@ -912,7 +926,7 @@ var __oj_tab_bar_metadata =
 
         element.addClass(this.getNavListStyleClass());
 
-        if (DomUtils.isTouchSupported()) {
+        if (DataCollectionUtils.isMobileTouchDevice()) {
           element.addClass(this.getNavListTouchStyleClass());
         }
 
@@ -1038,6 +1052,34 @@ var __oj_tab_bar_metadata =
         }
       },
 
+      _createContextMenuContainer: function () {
+        if (this.isTabBar() && DomUtils.isTouchSupported()) {
+          var menuContainer = this.ojContext._GetContextMenu();
+          const tabbar = this.GetRootElement()[0];
+          if (menuContainer === null && this.ojContext._IsCustomElement()) {
+            menuContainer = document.createElement('oj-menu');
+            menuContainer.setAttribute('slot', 'contextMenu'); // @HTMLUpdateOK
+            menuContainer.setAttribute('data-oj-binding-provider', 'none'); // @HTMLUpdateOK
+            menuContainer.style.display = 'none';
+            menuContainer.setAttribute('data-oj-tabbar-default-context-menu', 'defaultContextMenu'); // @HTMLUpdateOK
+            const actionText = this.ojContext.getTranslatedString('labelActions');
+            menuContainer.setAttribute(_ARIA_LABEL, actionText); // @HTMLUpdateOK
+            tabbar.appendChild(menuContainer);
+            tabbar.setAttribute(_ARIA_HASPOPUP, 'true'); // @HTMLUpdateOK
+            const contextMenuDescription = this.ojContext.getTranslatedString('labelContextMenu');
+            const descriptionContainer = document.createElement('span');
+            descriptionContainer.append(document.createTextNode(contextMenuDescription)); // @HTMLUpdateOK
+            const containerId = this._createSubId('contextMenuDesc');
+            descriptionContainer.setAttribute('id', containerId); // @HTMLUpdateOK
+            this.getListContainer().append(descriptionContainer); // @HTMLUpdateOK
+            descriptionContainer.classList.add('oj-helper-hidden-accessible');
+            tabbar.setAttribute(_ARIA_DESCRBIEDBY, containerId); // @HTMLUpdateOK
+          }
+          return menuContainer;
+        }
+        return undefined;
+      },
+
       /**
        * Initialize the listview after creation
        * @override
@@ -1045,6 +1087,17 @@ var __oj_tab_bar_metadata =
       afterCreate: function () {
         this._initListHandler();
         _ojNavigationListView.superclass.afterCreate.apply(this, arguments);
+      },
+
+      /**
+       * Add a default context menu to the tabbar if there is none. If there is a context menu set on the tabbar options we use that one
+       */
+      getDefaultContextMenu: function () {
+        if (this.defaultContextMenu) {
+          return this.defaultContextMenu;
+        }
+        this.defaultContextMenu = this._createContextMenuContainer();
+        return this.defaultContextMenu;
       },
 
       /**
@@ -1569,8 +1622,8 @@ var __oj_tab_bar_metadata =
               this._skipSelectionAction = false;
             });
           }
-
-          if (processed) {
+          // Need to prevent default even when enter key is used to fire selection action so we reuse the flag
+          if (processed || this._skipSelectionAction) {
             event.preventDefault();
           }
         }
@@ -2032,6 +2085,29 @@ var __oj_tab_bar_metadata =
       },
 
       /**
+       * Creates menu item for move operation
+       * @param {string} moveDirection 'forward' or 'backward'
+       * @returns {HTMLElement} moveRight or moveLeft item
+       * @private
+       */
+      _createMoveMenuItem: function (moveDirection) {
+        const isRtl = this.isRtl();
+        const moveItem = document.createElement('oj-option');
+        let moveRightTextNode = this.ojContext.getTranslatedString('labelMoveRight');
+        let moveLeftTextNode = this.ojContext.getTranslatedString('labelMoveLeft');
+        const moveRightCommand = 'oj-tabbar-move-right';
+        const moveLeftCommand = 'oj-tabbar-move-left';
+        if (moveDirection === 'forward') {
+          moveItem.setAttribute('data-oj-command', isRtl ? moveLeftCommand : moveRightCommand); // @HTMLUpdateOK
+          moveItem.append(document.createTextNode(isRtl ? moveLeftTextNode : moveRightTextNode)); // @HTMLUpdateOK
+        } else {
+          moveItem.setAttribute('data-oj-command', isRtl ? moveRightCommand : moveLeftCommand); // @HTMLUpdateOK
+          moveItem.append(document.createTextNode(isRtl ? moveRightTextNode : moveLeftTextNode)); // @HTMLUpdateOK
+        }
+        return moveItem;
+      },
+
+      /**
        * Retrieves the root element
        * @override
        * @return {jQuery} root element
@@ -2073,38 +2149,96 @@ var __oj_tab_bar_metadata =
       },
 
       /**
-       * Override to decorate remove menu item
+       * Override to decorate remove menu item and default context menu items.
        * @param {jQuery} item  Item
        * @override
        * @ignore
        */
       PrepareContextMenu: function (item) {
         var contextMenu = this.ojContext._GetContextMenu();
+        // We should open context menu only when it is defined
+        let shouldOpenContextMenu = contextMenu != null;
+        let shouldUseDefaultContextMenu = false;
+        // _GetContextMenu returns either the default context menu for remove or dnd or a custom context menu. The data identifier for the default context menu for remove action is data-oj-tabbar-default-context-menu.
+        let isContextMenuUpdated = false;
+        if (contextMenu != null && contextMenu.getAttribute('data-oj-tabbar-default-context-menu')) {
+          shouldUseDefaultContextMenu = true;
+          // If there are existing default context menu items we remove them
+          contextMenu.textContent = '';
+        }
 
         if (this.m_dndContext != null && contextMenu) {
-          this.m_dndContext.prepareContextMenu(contextMenu);
+          // We setup default move right/left context menu item(s) if default context menu is to bw used
+          if (shouldUseDefaultContextMenu && this.m_dndContext.IsItemReOrdering()) {
+            const isFirstItem = item[0] === this.element[0].firstElementChild;
+            const isLastItem = item[0] === this.element[0].lastElementChild;
+            // If it is the firstitem or lastItem we only need show moveRight or moveLeft respectively as it is not possible to move both ways in an end item (for rtl we need to the opposite). For other cases we need to show both moveRight and moveLeft
+            switch (true) {
+              case isFirstItem:
+                contextMenu.appendChild(this._createMoveMenuItem('forward'));
+                break;
+              case isLastItem:
+                contextMenu.appendChild(this._createMoveMenuItem('backward'));
+                break;
+              default:
+                contextMenu.appendChild(this._createMoveMenuItem('forward'));
+                contextMenu.appendChild(this._createMoveMenuItem('backward'));
+            }
+            isContextMenuUpdated = true;
+            // Element that is going to be moved within the tab bar
+            this.m_contextMenuItem = item;
+          } else {
+            this.m_dndContext.prepareContextMenu(contextMenu);
+          }
         }
 
         if (item.hasClass(this.getRemovableStyleClass()) && contextMenu) {
-          if (this.m_contextMenu !== contextMenu) {
-            this.m_contextMenu = contextMenu;
-            contextMenu.addEventListener('ojAction', this._handleContextMenuSelect.bind(this));
-          }
-
           // Element that is going to be removed from the tab bar
           this.m_contextMenuItem = item;
 
-          var removeItem = $(contextMenu).find(
-            '[data-oj-command=' + this.getNavListRemoveCommand() + ']'
-          );
           var textNode = this.ojContext.getTranslatedString('labelRemove');
-          if (!this.ojContext._IsCustomElement()) {
-            removeItem.empty().append($('<a href="#"></a>').text(textNode)); // @HTMLUpdateOK
+          // If there is no remove item in default context menu then it needs to be added
+          if (shouldUseDefaultContextMenu) {
+            // If default context has been updated previously, then they are indeed move items and we need to add a separator between them and remove item if there is no existing separator
+            if (isContextMenuUpdated) {
+              const separator = document.createElement('oj-option');
+              contextMenu.append(separator); // @HTMLUpdateOK
+            }
+            const removeMenuItem = document.createElement('oj-option');
+            removeMenuItem.setAttribute('data-oj-command', this.getNavListRemoveCommand()); // @HTMLUpdateOK
+            removeMenuItem.append(document.createTextNode(textNode)); // @HTMLUpdateOK
+            contextMenu.appendChild(removeMenuItem);
+            isContextMenuUpdated = true;
           } else {
-            removeItem.empty().append(document.createTextNode(textNode)); // @HTMLUpdateOK
+            var removeItem = $(contextMenu).find(
+              '[data-oj-command=' + this.getNavListRemoveCommand() + ']'
+            );
+            if (!this.ojContext._IsCustomElement()) {
+              removeItem.empty().append($('<a href="#"></a>').text(textNode)); // @HTMLUpdateOK
+            } else {
+              removeItem.empty().append(document.createTextNode(textNode)); // @HTMLUpdateOK
+            }
+            contextMenu.refresh();
           }
-          contextMenu.refresh();
+        } else if (!item.hasClass(this.getRemovableStyleClass()) && shouldUseDefaultContextMenu) {
+          // If there are no removable items but there is a default context menu (i.e it is created always) then we should not open it given there are no reorderable items as well.
+          shouldOpenContextMenu = this.m_dndContext.IsItemReOrdering();
         }
+
+        // We add the context menu listener if either the item is removable or dnd context is available and a context menu is defined (irrespective of default or custom).
+        if (
+          (this.m_dndContext != null || item.hasClass(this.getRemovableStyleClass())) &&
+          contextMenu &&
+          this.m_contextMenu !== contextMenu
+        ) {
+          // If we have updated items for a default menu, only then we want to call refresh.
+          if (isContextMenuUpdated) {
+            contextMenu.refresh();
+          }
+          this.m_contextMenu = contextMenu;
+          contextMenu.addEventListener('ojAction', this._handleContextMenuSelect.bind(this));
+        }
+        return shouldOpenContextMenu;
       },
 
       _handleContextMenuSelect: function (event) {
@@ -2112,11 +2246,55 @@ var __oj_tab_bar_metadata =
         if (item.attr('data-oj-command') === this.getNavListRemoveCommand()) {
           this._handleRemove(event, this.m_contextMenuItem);
         }
+        // If there exists an oj-tabbar-move-* command then we obtain position and call _handleTabBarMove
+        let position;
+        const isRtl = this.isRtl();
+        if (item.attr('data-oj-command') === 'oj-tabbar-move-left') {
+          position = isRtl ? 'after' : 'before';
+        } else if (item.attr('data-oj-command') === 'oj-tabbar-move-right') {
+          position = isRtl ? 'before' : 'after';
+        }
+        if (position != null) {
+          this._handleTabBarMove(event, this.m_contextMenuItem, position);
+        }
       },
 
       _handleRemove: function (event, item) {
         if (item.hasClass(this.getRemovableStyleClass())) {
           this._fireRemoveEvent(event, item);
+        }
+      },
+
+      /**
+       * Handles the move operation
+       * @param {Event} event the context menu action event which will be passed to trigger reorder event
+       * @param {jQuery} item the item being moved
+       * @param {string} position 'before' or 'after'
+       * @private
+       */
+      _handleTabBarMove: function (event, item, position) {
+        const currentItem = item.get(0);
+        let referenceItem;
+        // The immediate sibling of tabbar items are dividers so we need to get its sibling to obtain the previous/next items
+        if (position === 'before') {
+          const previousSibling = currentItem.previousElementSibling;
+          referenceItem = previousSibling?.previousElementSibling;
+        } else if (position === 'after') {
+          const nextSibling = currentItem.nextElementSibling;
+          referenceItem = nextSibling?.nextElementSibling;
+        }
+
+        // If the returned item is a tabbar item only then we want to trigger reorder event
+        if (
+          referenceItem != null &&
+          referenceItem?.classList.contains(this.getItemElementStyleClass())
+        ) {
+          // fire reorder event
+          this.Trigger(
+            'reorder',
+            event,
+            this.m_dndContext.CreateReorderPayload(item, position, referenceItem)
+          );
         }
       },
 
@@ -3332,6 +3510,7 @@ var __oj_tab_bar_metadata =
      * @ojstylevariable oj-navigation-list-item-min-height {description: "Navigation list item minimum height", formats: ["length"], help: "#css-variables"}
      * @ojstylevariable oj-navigation-list-item-margin {description: "Navigation list item margin", formats: ["length"], help: "#css-variables"}
      * @ojstylevariable oj-navigation-list-item-padding {description: "Navigation list item padding", formats: ["length"], help: "#css-variables"}
+     * @ojstylevariable oj-navigation-list-item-indent-width {description: "Navigation list item indentation for child items", formats: ["length"], help: "#css-variables"}
      * @memberof oj.ojNavigationList
      */
     /**
@@ -3930,6 +4109,7 @@ var __oj_tab_bar_metadata =
       _ComponentCreate: function () {
         this._super();
         this._setup();
+        this._batchOptionUpdate = false;
       },
       /**
        * Initialize the NavigationList after creation
@@ -3965,6 +4145,14 @@ var __oj_tab_bar_metadata =
        */
       _NotifyContextMenuGesture: function (menu, event, eventType) {
         this.navlist.notifyContextMenuGesture(menu, event, eventType);
+      },
+
+      /**
+       * Override method for framework's GetDefaultContextMenu.
+       * @private
+       */
+      _GetDefaultContextMenu: function () {
+        return this.navlist.getDefaultContextMenu();
       },
 
       /**
@@ -4076,6 +4264,8 @@ var __oj_tab_bar_metadata =
       },
 
       _validateOptionsForIconsOnlyAndHorizontalList: function (drillMode, display, edge) {
+        // Skip validation if it is a batch update for drillmode with display or edge.
+        if (this._batchOptionUpdate) return;
         if (drillMode !== this.navlist.OPTION_DRILL_MODE_NONE) {
           if (display === this.navlist.OPTION_DISPLAY_ICONS) {
             throw new Error("Icon only navigation list should have drillMode set to 'none'.");
@@ -4171,6 +4361,7 @@ var __oj_tab_bar_metadata =
           default:
             break;
         }
+
         this.navlist.updateListViewOption(key, value);
         if (flags) {
           return this._super(key, value, flags);
@@ -4191,11 +4382,18 @@ var __oj_tab_bar_metadata =
           this._super(options, flags);
           return this;
         }
-
         var result = this.navlist.setOptions(options, flags);
 
         var nonSkippedOptions = {};
         var keys = Object.keys(options);
+        // If more than one option is being updated and it includes drillmode and display or edge we want to consider it a batch update so that when it calls _validateOptionsForIconsOnlyAndHorizontalList for the first update it skips throwing the error and it will only validate during the last call.
+        if (
+          keys.length > 1 &&
+          this.navlist.OPTION_DRILL_MODE in options &&
+          (this.navlist.OPTION_DISPLAY in options || this.navlist.OPTION_EDGE in options)
+        ) {
+          this._batchOptionUpdate = true;
+        }
         for (var i = 0; i < keys.length; i++) {
           var key = keys[i];
           if (result.skipOptions.indexOf(key) < 0) {
@@ -4205,6 +4403,8 @@ var __oj_tab_bar_metadata =
         // Should call _super as that's where the old and new option value checking
         // logic lives. _setOption should not be called directly.
         this._super(nonSkippedOptions, flags);
+        // Reset batch update flag
+        this._batchOptionUpdate = false;
 
         if (result.needRefresh) {
           this.navlist.refresh();
@@ -4348,6 +4548,13 @@ var __oj_tab_bar_metadata =
    * @augments oj.baseComponent
    * @ojimportmembers oj.ojSharedContextMenu
    * @since 4.0.0
+   * @ojdeprecated [
+   *   {
+   *     type: "maintenance",
+   *     since: "19.0.0",
+   *     value: ["oj-c-tab-bar"]
+   *   }
+   * ]
    * @ojrole tablist
    * @ojsignature [{
    *                target: "Type",
@@ -4498,11 +4705,6 @@ var __oj_tab_bar_metadata =
    *
    * <p>To migrate from oj-tab-bar to oj-c-tab-bar, you need to revise the import statement and references to oj-c-tab-bar in your app. Please note the changes between the two components below.</p>
    *
-   * <p>These features are not yet available in oj-c-tab-bar, they will be available in a forthcoming version.</p>
-   * <ul>
-   *    <li>Context Menu Support</li>
-   * </ul>
-   *
    * <p>The first step is to determine if your tab bar requires any of the not yet released features (see above list).</p>
    *
    * <p>The next step is to determine compatibility with your data source.  Here are some changes.</p>
@@ -4545,6 +4747,7 @@ var __oj_tab_bar_metadata =
    * <li><code>oj-tabbar-item-label</code> is not supported, instead applications should provide label field as part of the data for the tab.  See <a href="oj-c.TabBar.html#TabData">TabData</a> for details.</li>
    * <li><code>oj-tabbar-item-title</code> is not supported, instead applications should provide label field as part of the data for the tab.  See <a href="oj-c.TabBar.html#TabData">TabData</a> for details.</li>
    * <li><code>oj-tabbar-nofollow-link</code> is not supported, instead applications should provide href field as part of the data for the tab.  See <a href="oj-c.TabBar.html#TabLinkItemData">TabLinkItemData</a> for details.</li>
+   * <li><code>oj-tabbar-hide-remove-icon</code> is not supported, instead applications should not provide isRemovable field with a value of true as part of the data for the tab.  See <a href="oj-c.TabBar.html#TabData">TabData</a> for details.</li>
    * </ul>
    *
    * <h5>itemTemplate slot</h5>
@@ -4570,12 +4773,6 @@ var __oj_tab_bar_metadata =
    *
    * <h5>ojDeselect event</h5>
    * <p>Application should be able to do the same with the ojBeforeSelect event.</p>
-   *
-   * <h5>The following features are not yet supported</h5>
-   * <ul>
-   *   <li>Custom contextMenu support</li>
-   *   <li>Support for rendering links in overflowing items</li>
-   * </ul>
    *
    * <p></p>
    * <h3 id="perf-section">
@@ -4862,6 +5059,7 @@ var __oj_tab_bar_metadata =
    * @ojstyleclass oj-tabbar-hide-remove-icon
    * @ojdisplayname Hide Remove Icon
    * @memberof oj.ojTabBar
+   * @ojdeprecated {since: '19.0.0', description: "This style class will no longer be supported, In order to hide the remove icon or for it not to be rendered, applications should not provide isRemovable field with a value of true as part of the data for the tab. However remove functionality can be achieved by setting up a context menu for the tab."}
    * @ojtsexample
    * &lt;oj-tab-bar class="oj-tabbar-hide-remove-icon" >
    *   &lt;ul>
@@ -6977,19 +7175,23 @@ var __oj_tab_bar_metadata =
       var rect = overFlowMenuButton.getBoundingClientRect();
       const overFlowMenuButtonComputedStyle = window.getComputedStyle(overFlowMenuButton);
       let margin = 0;
-      // NavigationList overflow icon has a left margin in ltr and right margin in rtl
-      // NavigationList overflow "more" item has no margin in any case so this calculated margin= 0px.
-      if (!this._navlistHandler._isTabBar() && this._display === 'icons') {
+      // NavigationList icons have a left margin in rtl and right margin in ltr
+      if (!this._navlistHandler._isTabBar()) {
         margin =
           readingDirection === 'ltr'
-            ? overFlowMenuButtonComputedStyle.marginLeft
-            : overFlowMenuButtonComputedStyle.marginRight;
+            ? overFlowMenuButtonComputedStyle.marginRight
+            : overFlowMenuButtonComputedStyle.marginLeft;
       }
-      // TabBar overflow menu cases (icon and "more" item) has a right margin only in rtl
+      // TabBar overflow menu cases ("more" item icon) has a right margin only in rtl
       if (this._navlistHandler._isTabBar() && readingDirection === 'rtl') {
         margin = overFlowMenuButtonComputedStyle.marginRight;
       }
-      overflowItemWidth = rect.width + parseInt(margin, 10);
+
+      // The computed nor the bounding client width properties at this point in render do not account for the invisible borders so we add them.
+      const borderLeft = overFlowMenuButtonComputedStyle.borderLeftWidth;
+      const borderRight = overFlowMenuButtonComputedStyle.borderRightWidth;
+      overflowItemWidth =
+        rect.width + parseInt(margin, 10) + parseInt(borderLeft, 10) + parseInt(borderRight, 10);
     }
     // Since this is last item it does not have a margin added to item edge
     var itemEdge = item[0].getBoundingClientRect()[edge];
@@ -7097,9 +7299,12 @@ var __oj_tab_bar_metadata =
     var items = this._items;
     var self = this;
 
-    // Initial maxWidth is based on container size and number of items so it is an average width each label can have
-    var labelMaxWidth = overflowData.containerWidth / items.length - overflowData.itemNonTextWidth;
-
+    // Make use of an item other than items[0] (first item) as in rtl it has no right margin. Do not use the last item in ltr as it does not have a right margin. Hence choose an item that is not items[0] unless the there is only one item.
+    const itemIndex = items.length > 1 ? 1 : 0;
+    const itemMargin = window.getComputedStyle(items[itemIndex]).marginRight;
+    var labelMaxWidth =
+      overflowData.containerWidth / items.length -
+      (overflowData.itemNonTextWidth + parseInt(itemMargin, 10));
     var surplusWidth = 0;
     var sumOfLongItemsWidth = 0;
     var minLabelWidth = 0;

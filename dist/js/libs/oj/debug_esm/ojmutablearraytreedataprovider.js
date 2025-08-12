@@ -6,7 +6,6 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import $ from 'jquery';
 import ArrayDataProvider from 'ojs/ojarraydataprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 import { warn } from 'ojs/ojlogger';
@@ -393,10 +392,13 @@ import { warn } from 'ojs/ojlogger';
  * @property {string=} enforceKeyStringify - Optionally specify whether keys should be stringified version of keypath from root. Supported values:<br>
  *                                  <ul>
  *                                    <li>'off': the key values are returned as it is.
- *                                    <li>'on': the key values are stringified version of keypath from root.
+ *                                    <li>'on': the key values are stringified version of keypath from root unless useKeyPath is set to 'off'.
  *                                  </ul>
  *                                Default is 'off'.
  *                                Key stringify will directly call JSON.stringify on all keys passed out of the DataProvider. Use JSON.parse if you need to convert the key back to a complex type.
+ *                                When used with useKeyPaths the JSON.stringify will happen after the pathing is finished. JSON.parse will then result in an K[]
+ * @property {string=} useKeyPaths - Optionally indicate to the TreeDataProvider to generate key paths. Key paths will be represented as an array of type K[] (unless used with enforceKeyStringify - see enforceKeyStringify for more details)
+ * with elements ordered according to their depth. Specifically, the first element in the array corresponds to the least depth, and subsequent elements represent increasing depths.
  * @ojsignature [
  *  {target: "Type", value: "<D>", for: "genericTypeParameters"},
  *  {target: "Type", value: "ArrayDataProvider.SortComparators<D>", for: "sortComparators"},
@@ -404,7 +406,8 @@ import { warn } from 'ojs/ojlogger';
  *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
  *  {target: "Type", value: "'siblings' | 'global'", for: "keyAttributeScope"},
  *  {target: "Type", value: "string", for: "childrenAttribute"},
- *  {target: "Type", value: "'off' | 'on'", for: "enforceKeyStringify"}
+ *  {target: "Type", value: "'off' | 'on'", for: "enforceKeyStringify"},
+ *  {target: "Type", value: "'off' | 'on'", for: "useKeyPaths"}
  * ]
  */
 
@@ -568,7 +571,7 @@ class MutableArrayTreeDataProvider {
                 oldData != undefined &&
                 oldData.length > 0) ||
             this._data.length !== oldData.length) {
-            this._keys = null;
+            // need to update baseDataProvider since root data changes
             this._baseDataProvider = new ArrayDataProvider(this._data, this._baseDPOptions);
             this._dataRefreshed(null, null);
         }
@@ -576,6 +579,7 @@ class MutableArrayTreeDataProvider {
             const changes = this.findDiffNodes(this._data, oldData, [], '', {}, {});
             const updates = changes.add;
             const { refresh } = changes;
+            // need to update baseDataProvider since root data may changes, ex: immutable.js
             this._baseDataProvider = new ArrayDataProvider(this._data, this._baseDPOptions);
             if (updates.length > 0 || refresh.length > 0) {
                 const { mutationEvent, refreshEvent } = this._dataMutated(updates, changes.refresh);
@@ -639,9 +643,6 @@ class MutableArrayTreeDataProvider {
             if (options.childrenAttribute) {
                 this._baseDPOptions.childrenAttribute = options.childrenAttribute;
             }
-            if (options.enforceKeyStringify) {
-                this._baseDPOptions.enforceKeyStringify = options.enforceKeyStringify;
-            }
         }
         this._baseDataProvider = new ArrayDataProvider(data, this._baseDPOptions);
         this._childrenAttr =
@@ -684,6 +685,7 @@ class MutableArrayTreeDataProvider {
         params = this._applyLeafNodeFilter(params);
         const basePromise = this._baseDataProvider.fetchByOffset(params);
         return basePromise.then((result) => {
+            // Repackage the results with tree node metadata
             const results = result.results;
             const newResults = [];
             for (const result of results) {
@@ -725,6 +727,17 @@ class MutableArrayTreeDataProvider {
         });
     }
     getCapability(capabilityName) {
+        if (capabilityName === 'key') {
+            const isStringifiedOn = this.options?.enforceKeyStringify === 'on';
+            const isKeyPathingOn = this.options?.useKeyPaths === 'on' || (isStringifiedOn && !this.options?.useKeyPaths);
+            if (isKeyPathingOn) {
+                if (isStringifiedOn) {
+                    return { structure: 'pathArrayString' };
+                }
+                return { structure: 'pathArray' };
+            }
+            return { structure: 'none' };
+        }
         return this._baseDataProvider.getCapability(capabilityName);
     }
     getTotalSize() {
@@ -733,9 +746,15 @@ class MutableArrayTreeDataProvider {
     isEmpty() {
         return this._baseDataProvider.isEmpty();
     }
+    /**
+     * Return an empty Set which is optimized to store keys
+     */
     createOptimizedKeySet(initialSet) {
         return this._baseDataProvider.createOptimizedKeySet(initialSet);
     }
+    /**
+     * Returns an empty Map which will efficiently store Keys returned by the DataProvider
+     */
     createOptimizedKeyMap(initialMap) {
         return this._baseDataProvider.createOptimizedKeyMap(initialMap);
     }
@@ -793,14 +812,22 @@ class MutableArrayTreeDataProvider {
             keyPath.push(key);
         }
         if (this.options &&
-            (this.options['keyAttributeScope'] === 'siblings' || enforceKeyStringify === 'on')) {
+            (this.options['keyAttributeScope'] === 'siblings' ||
+                (enforceKeyStringify === 'on' && !this.options.useKeyPaths) ||
+                this.options.useKeyPaths === 'on')) {
+            // If the id is only unique among siblings, we use the id path of the
+            // node as the key.
             key = enforceKeyStringify === 'on' ? JSON.stringify(keyPath) : keyPath;
         }
         return { key, keyPath };
     }
     _getChildren(node) {
+        // Pass true to _getVal so that we keep children in the same form
         return this._getVal(node, this._childrenAttr, true);
     }
+    /**
+     * Get value for attribute
+     */
     _getVal(val, attr, keepFunc) {
         if (typeof attr === 'string') {
             const dotIndex = attr.indexOf('.');
@@ -813,11 +840,16 @@ class MutableArrayTreeDataProvider {
                 }
             }
         }
+        // If keepFunc is true, don't resolve any function value.
+        // e.g. Caller may want to preserve any observableArray for other operations.
         if (keepFunc !== true && typeof val[attr] === 'function') {
             return val[attr]();
         }
         return val[attr];
     }
+    /**
+     * Get id value for row
+     */
     _getId(row) {
         let id;
         const keyAttributes = this.keyAttribute;
@@ -833,6 +865,9 @@ class MutableArrayTreeDataProvider {
         }
         return id;
     }
+    /**
+     * Get all values in a row
+     */
     _getAllVals(val) {
         if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
             return val;
@@ -857,7 +892,7 @@ class MutableArrayTreeDataProvider {
     }
     _applyLeafNodeFilter(params) {
         if (params && params.filterCriterion) {
-            const paramsClone = $.extend({}, params);
+            const paramsClone = { ...params };
             paramsClone.filterCriterion = this._getLeafNodeFilter(paramsClone.filterCriterion);
             paramsClone.filterCriterion.filter = params.filterCriterion.filter;
             params = paramsClone;
@@ -879,6 +914,8 @@ class MutableArrayTreeDataProvider {
         const newPath = parentKeyPath.slice();
         newPath.pop();
         if ((!newArray && oldArray) || (newArray && !oldArray)) {
+            // non-leaf node to leaf node or leaf node to non-leaf node
+            // need to refresh on node's parent node
             changes.refresh.push({
                 parentKey: newPath[newPath.length - 1],
                 rootNode,
@@ -909,6 +946,7 @@ class MutableArrayTreeDataProvider {
                 return changes;
             }
             else if (diffCount > 1) {
+                // need to refresh parent node's data
                 changes.refresh.push({
                     parentKey: newPath[newPath.length - 1],
                     rootNode,
@@ -917,9 +955,11 @@ class MutableArrayTreeDataProvider {
                 return changes;
             }
             else {
+                // compare old node and new old
                 const newDiffNode = newArray[diffNodeIndex];
                 const oldDiffNode = oldArray[diffNodeIndex];
                 if (parentKey === '') {
+                    // set root node
                     rootNode = newDiffNode;
                     oldRootNode = oldDiffNode;
                 }
@@ -931,6 +971,7 @@ class MutableArrayTreeDataProvider {
         }
     }
     compareNode(newNode, oldNode, diffNodeIndex, parentKeyPath, parentChildList, rootNode, oldRootNode) {
+        // for update event, need parentKeyPath, parent's children list
         const changes = { add: [], refresh: [] };
         const newKeys = Object.keys(newNode);
         if (newNode === oldNode) {
@@ -940,6 +981,8 @@ class MutableArrayTreeDataProvider {
             oldNode === null ||
             ['number', 'string', 'undefined'].indexOf(typeof newNode) >= 0 ||
             ['number', 'string', 'undefined'].indexOf(typeof oldNode) >= 0) {
+            // a string/number/undefined/null node
+            // update node, not immutable, no need to go deep
             changes.add.push({
                 index: diffNodeIndex,
                 value: newNode,
@@ -971,6 +1014,7 @@ class MutableArrayTreeDataProvider {
         return changes;
     }
     _dataMutated(changes, refresh) {
+        // for each node in changes, need to find the parent key
         let i, dataArray = [], keyArray = [], indexArray = [], metadataArray = [];
         let mutationEvent = null;
         let refreshEvent = null;
@@ -982,7 +1026,10 @@ class MutableArrayTreeDataProvider {
         const dataJS = this._data;
         for (let index = 0; index < refresh.length; index++) {
             if (refresh[index]) {
+                // empty key for root level list
+                // update node
                 if (!refresh[index].parentKey) {
+                    // top-level node changes
                     this._getRootDataProvider()._flushMaps();
                     this._getRootDataProvider()._processTreeArray(dataJS, []);
                     refreshEvent = new oj.DataProviderRefreshEvent();
@@ -1016,6 +1063,7 @@ class MutableArrayTreeDataProvider {
                 updateMetadataArray.push({ key: keyObj.key });
             }
         }
+        // Prepare the "update" event detail
         if (changes.length > 0) {
             const updateKeySet = new Set();
             updateKeyArray.forEach((key) => {
@@ -1035,6 +1083,7 @@ class MutableArrayTreeDataProvider {
                 update: operationUpdateEventDetail
             });
         }
+        // Prepare refresh subtree
         if (refreshKeySet.size || refresh.length) {
             refreshEvent = new oj.DataProviderRefreshEvent({ keys: refreshKeySet });
         }
@@ -1055,22 +1104,22 @@ class MutableArrayTreeDataProvider {
             this._getRootDataProvider().dispatchEvent(new oj.DataProviderRefreshEvent());
         }
     }
+    // Get tree array metadata from flat array metadata/data
     _getTreeMetadata(metadata, data) {
         let keyIsPath = false;
         let treeKey = metadata.key;
         if (this.options &&
-            (this.options.keyAttributeScope == 'siblings' || this.options.enforceKeyStringify === 'on')) {
+            (this.options.keyAttributeScope == 'siblings' ||
+                (this.options.enforceKeyStringify === 'on' && !this.options.useKeyPaths) ||
+                this.options.useKeyPaths === 'on')) {
             keyIsPath = true;
         }
         if (keyIsPath) {
             treeKey = this._parentNodePath ? this._parentNodePath.slice() : [];
-            if (this.options?.enforceKeyStringify === 'on') {
-                treeKey.push(JSON.parse(metadata.key));
-                treeKey = JSON.stringify(treeKey);
-            }
-            else {
-                treeKey.push(metadata.key);
-            }
+            treeKey.push(metadata.key);
+        }
+        if (this.options?.enforceKeyStringify === 'on') {
+            treeKey = JSON.stringify(treeKey);
         }
         metadata = this._getNodeMetadata(this._getNodeForKey(treeKey));
         return metadata;

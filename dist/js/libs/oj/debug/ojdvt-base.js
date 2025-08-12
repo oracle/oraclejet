@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojmap', 'ojs/ojlocaledata', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojkeysetimpl', 'ojs/ojdomutils', 'ojs/ojattributegrouphandler', 'ojs/ojlogger', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojmetadatautils', 'ojs/ojthemeutils', 'ojdnd'], function (oj, dvt, Context, Config, ojMap, LocaleData, Components, $, KeySetImpl, DomUtils, attributeGroupHandler, Logger, ojcustomelement, ojcustomelementUtils, MetadataUtils, ThemeUtils, ojdnd) { 'use strict';
+define(['ojs/ojdataprovider', 'ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojmap', 'ojs/ojlocaledata', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojkeysetimpl', 'ojs/ojdomutils', 'ojs/ojattributegrouphandler', 'ojs/ojlogger', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojmetadatautils', 'ojs/ojthemeutils', 'ojdnd'], function (ojdataprovider, oj, dvt, Context, Config, ojMap, LocaleData, Components, $, KeySetImpl, DomUtils, attributeGroupHandler, Logger, ojcustomelement, ojcustomelementUtils, MetadataUtils, ThemeUtils, ojdnd) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;

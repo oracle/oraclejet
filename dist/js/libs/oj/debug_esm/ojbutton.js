@@ -337,6 +337,14 @@ if (oj.ButtonLegacy) {
    * @ojvbmincolumns 1
    *
    * @ojuxspecs ['button']
+   * @ojlegacymetadata requirements [
+   *    {
+   *      type: "anyOf",
+   *      label: "accessibility",
+   *      properties: ["label", "aria-label", "aria-labelledby", "aria-describedby"],
+   *      slots: [""]
+   *    }
+   * ]
    *
    * @classdesc
    * <h3 id="buttonOverview-section">
@@ -1060,7 +1068,7 @@ if (oj.ButtonLegacy) {
           this.options.menu &&
           (!constructorOptions.icons || constructorOptions.icons.end === undefined)
         ) {
-          this.option('icons.end', 'oj-component-icon oj-button-menu-dropdown-icon', {
+          this.option('icons.end', 'oj-component-icon oj-ux-ico-chevron-down', {
             _context: { writeback: true, internalSet: true }
           });
         }
@@ -1527,7 +1535,7 @@ if (oj.ButtonLegacy) {
               self.menuSlot = '#' + node.id;
               if (slots.endIcon === undefined) {
                 var dropDownElem = document.createElement('span');
-                var dropdownIconClass = 'oj-button-menu-dropdown-icon';
+                var dropdownIconClass = 'oj-ux-ico-chevron-down';
                 if (slots.startIcon === undefined && self.options.display === 'icons') {
                   dropdownIconClass = 'oj-button-menu-icon-only-dropdown-icon';
                 }
@@ -2628,6 +2636,14 @@ if (oj.ButtonLegacy) {
    *
    * @ojoracleicon 'oj-ux-ico-menu-button'
    * @ojuxspecs ['menu-button']
+   * @ojlegacymetadata requirements [
+   *    {
+   *      type: "anyOf",
+   *      label: "accessibility",
+   *      properties: ["label", "aria-label", "aria-labelledby"],
+   *      slots: [""]
+   *    }
+   * ]
    *
    * @classdesc
    * <h3 id="menubuttonOverview-section">
@@ -2775,6 +2791,14 @@ if (oj.ButtonLegacy) {
    *
    * @ojoracleicon 'oj-ux-ico-button-set-one'
    * @ojuxspecs ['toggle-button']
+   * @ojlegacymetadata requirements [
+   *    {
+   *      type: "anyOf",
+   *      label: "accessibility",
+   *      properties: ["describedBy", "labelledBy", "aria-label"],
+   *      slots: [""]
+   *    }
+   * ]
    *
    * @classdesc
    * <h3 id="buttonsetOverview-section">
@@ -2891,6 +2915,14 @@ if (oj.ButtonLegacy) {
    *
    * @ojoracleicon 'oj-ux-ico-button-set-many'
    * @ojuxspecs ['toggle-button']
+   * @ojlegacymetadata requirements [
+   *    {
+   *      type: "anyOf",
+   *      label: "accessibility",
+   *      properties: ["describedBy", "labelledBy", "aria-label"],
+   *      slots: [""]
+   *    }
+   * ]
    *
    * @classdesc
    * <h3 id="buttonsetOverview-section">

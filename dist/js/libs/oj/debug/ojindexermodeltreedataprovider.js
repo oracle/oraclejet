@@ -210,6 +210,8 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
             sections.push(oj.IndexerModel.SECTION_OTHERS);
             let strategy = options.groupingStrategy;
             if (strategy == null) {
+                // if no grouping strategy is specified, use the default which groups based on the first charactor
+                // of the data
                 const field = this.options.groupingAttribute;
                 strategy = (value) => {
                     const content = value[field] ? value[field] : value;
@@ -225,6 +227,7 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
                 return index1 - index2;
             });
             let current;
+            // figure out the position of the buckets for quick lookup
             for (let i = 0; i < this.data.length; i++) {
                 const section = strategy(this.data[i]);
                 if (current !== section) {
@@ -238,6 +241,7 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
             this.sections = sections;
             this.baseDataProvider = new ArrayDataProvider(available, { keys: available });
         }
+        // TODO: use Map when we can use it for all supported platforms
         _set(key, value) {
             if (this.pos == null) {
                 this.pos = [];
@@ -255,12 +259,15 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
             }
             return null;
         }
+        /** **************** IndexerModel *******************/
         getIndexableSections() {
+            // remove other sections from this.sections
             return this.sections.slice(0, this.sections.length - 1);
         }
         getMissingSections() {
             if (this.missing == null) {
                 const missing = [];
+                // figure out what's missing, skip the others section since it's always available
                 for (let i = 0; i < this.sections.length - 1; i++) {
                     const section = this.sections[i];
                     if (this._get(section) == null) {
@@ -277,6 +284,7 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
             }
             return Promise.resolve(section);
         }
+        /** **************** TreeDataProvider *******************/
         _getData(pos, index) {
             let next = this.sections[index];
             let nextPos = this._get(next);
@@ -300,6 +308,7 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
                 let childData;
                 const pos = this._get(parentKey);
                 if (pos != null) {
+                    // if it's the last section
                     if (index === this.sections.length - 1) {
                         childData = this.data.slice(pos);
                     }
@@ -350,6 +359,7 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
             return this.baseDataProvider.dispatchEvent(evt);
         }
     }
+    // make it available internally for backward compatibility and norequire case
     oj._registerLegacyNamespaceProp('IndexerModelTreeDataProvider', IndexerModelTreeDataProvider);
 
     return IndexerModelTreeDataProvider;

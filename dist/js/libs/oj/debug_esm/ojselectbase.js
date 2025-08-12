@@ -6,7 +6,7 @@
  * @ignore
  */
 import { EditableValueUtils } from 'ojs/ojeditablevalue';
-import 'ojs/ojpopupcore';
+import { PositionUtils, PopupService } from 'ojs/ojpopupcore';
 import 'ojs/ojinputtext';
 import 'ojs/ojlistview';
 import 'ojs/ojhighlighttext';
@@ -17,9 +17,8 @@ import { warn, error } from 'ojs/ojlogger';
 import { getDeviceType, getDeviceRenderMode, __getTemplateEngine } from 'ojs/ojconfig';
 import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
 import FocusUtils from 'ojs/ojfocusutils';
-import { DataProviderRefreshEvent } from 'ojs/ojdataprovider';
+import { DataProviderRefreshEvent, DataProviderFeatureChecker } from 'ojs/ojdataprovider';
 import Context from 'ojs/ojcontext';
-import { DataProviderFeatureChecker } from 'ojs/ojcomponentcore';
 import { KeySetImpl } from 'ojs/ojkeyset';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 import { getEnhancedDataProvider } from 'ojs/ojdataproviderfactory';
@@ -106,7 +105,7 @@ AbstractLovBase.prototype.isDropdownOpen = function () {
 
 AbstractLovBase.prototype._usingHandler = function (pos, props) {
   // if the input part of the component is clipped in overflow, implicitly close the dropdown popup.
-  if (oj.PositionUtils.isAligningPositionClipped(props)) {
+  if (PositionUtils.isAligningPositionClipped(props)) {
     // add busy state
     var resolveBusyState = this._addBusyStateFunc('closing popup');
     // prettier-ignore
@@ -124,7 +123,7 @@ AbstractLovBase.prototype._usingHandler = function (pos, props) {
 
     // JET-34367 - remove code to update popup position on refresh
     // get the space available to the popup after the popup service has run its collision logic
-    var availableSpace = oj.PositionUtils.calcAvailablePopupSize(pos, props);
+    var availableSpace = PositionUtils.calcAvailablePopupSize(pos, props);
 
     // constrain the dropdown size to the available space
     var dropdownElemStyle = dropdownElem.style;
@@ -163,7 +162,7 @@ AbstractLovBase.prototype.getDropdownPosition = function (excludeUsingHandler) {
       of: window,
       offset: { x: scrollX, y: scrollY }
     };
-    position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+    position = PositionUtils.normalizeHorizontalAlignment(position, isRtl);
   } else {
     // The element on which we want to position the listbox-dropdown.  We don't
     // want it to be the container because we add the inline messages to the container
@@ -180,10 +179,10 @@ AbstractLovBase.prototype.getDropdownPosition = function (excludeUsingHandler) {
     if (!excludeUsingHandler) {
       defPosition.using = this._usingHandler.bind(this);
     }
-    position = oj.PositionUtils.normalizeHorizontalAlignment(defPosition, isRtl);
+    position = PositionUtils.normalizeHorizontalAlignment(defPosition, isRtl);
     // need to coerce to Jet and then JqUi in order for vertical offset to work
-    position = oj.PositionUtils.coerceToJet(position);
-    position = oj.PositionUtils.coerceToJqUi(position);
+    position = PositionUtils.coerceToJet(position);
+    position = PositionUtils.coerceToJqUi(position);
     // set the position.of again to be the element, because coerceToJet will change it to a
     // string selector, which can then result in an error being thrown from jqueryui
     // position.js getDimensions(elem) method if the element has been removed from the DOM
@@ -1918,10 +1917,10 @@ LovDropdown.prototype.close = function () {
   // Add data-oj-suspend so that dropdown collections go into suspended mode when the dropdown is closed
   this._containerElem.attr('data-oj-suspend', '');
 
-  /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+  /** @type {!Object.<PopupService.OPTION, ?>} */
   var psOptions = {};
-  psOptions[oj.PopupService.OPTION.POPUP] = this._containerElem;
-  oj.PopupService.getInstance().close(psOptions);
+  psOptions[PopupService.OPTION.POPUP] = this._containerElem;
+  PopupService.getInstance().close(psOptions);
 
   // this._containerElem.removeAttr('id');
 
@@ -1950,15 +1949,15 @@ LovDropdown.prototype.open = function () {
   // TODO: we should use oj-popup instead of using the popup service directly, and then oj-popup
   // could handle some of the focus functionality, like trapping TABS
   var psEvents = {};
-  psEvents[oj.PopupService.EVENT.POPUP_CLOSE] = function () {
+  psEvents[PopupService.EVENT.POPUP_CLOSE] = function () {
     this._dispatchEvent('closeDropdown', { trigger: 'popupCloseEvent' });
   }.bind(this);
-  psEvents[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
-  psEvents[oj.PopupService.EVENT.POPUP_AUTODISMISS] = this._clickAwayHandler.bind(this);
-  psEvents[oj.PopupService.EVENT.POPUP_REFRESH] = function () {
+  psEvents[PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
+  psEvents[PopupService.EVENT.POPUP_AUTODISMISS] = this._clickAwayHandler.bind(this);
+  psEvents[PopupService.EVENT.POPUP_REFRESH] = function () {
     this._sizeAndAdjustPosition(containerElem[0]);
   }.bind(this);
-  psEvents[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = function (event) {
+  psEvents[PopupService.EVENT.POPUP_AFTER_OPEN] = function (event) {
     var dropdownElem = event.popup[0];
     this._sizeAndAdjustPosition(dropdownElem);
 
@@ -1972,14 +1971,14 @@ LovDropdown.prototype.open = function () {
     this._dropdownOpen = true;
   }.bind(this);
 
-  /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+  /** @type {!Object.<PopupService.OPTION, ?>} */
   var psOptions = {};
-  psOptions[oj.PopupService.OPTION.POPUP] = containerElem;
-  psOptions[oj.PopupService.OPTION.EVENTS] = psEvents;
-  psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = 'oj-listbox-drop-layer';
-  psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = true;
+  psOptions[PopupService.OPTION.POPUP] = containerElem;
+  psOptions[PopupService.OPTION.EVENTS] = psEvents;
+  psOptions[PopupService.OPTION.LAYER_SELECTORS] = 'oj-listbox-drop-layer';
+  psOptions[PopupService.OPTION.CUSTOM_ELEMENT] = true;
   if (this._fullScreenPopup) {
-    psOptions[oj.PopupService.OPTION.MODALITY] = oj.PopupService.MODALITY.MODAL;
+    psOptions[PopupService.OPTION.MODALITY] = PopupService.MODALITY.MODAL;
   }
 
   this._dispatchEvent('openPopup', { psOptions: psOptions });
@@ -3263,7 +3262,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
 
     this._initContainer(className, idSuffix, readonly);
 
-    // Bug JET-35402 - help.instruction does not display after oj-select-single went from disabled
+    //  - help.instruction does not display after oj-select-single went from disabled
     // to enabled
     // Pass in the existing main field input element if it already exists.
     var outerWrapperAriaControls = OuterWrapper.getAttribute('aria-controls');
@@ -3829,7 +3828,16 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
    * @protected
    */
   _SetFilterFieldText: function (text) {
-    this._ignoreFilterFieldRawValueChanged = true;
+    // JET-74708 - Select-Single + DataGrid does not filter on first keypress
+    // See if we need to filter for the data-grid use case where a user starts
+    // typing in a cell and the cell then goes into edit mode with the select
+    // dropdown open and filtered.  Normally, the text coming in from the main
+    // field input should be the same as the selected display value, in which
+    // case we don't want to filter.  If the text is different, it may be the
+    // data-grid edit case.
+    if (text == null || text.length === 0 || this._LastInputElemDisplayValue === text) {
+      this._ignoreFilterFieldRawValueChanged = true;
+    }
 
     this._filterInputText.value = text;
     // if the filter field is in the mobile dropdown and the dropdown is not currently in
@@ -4106,6 +4114,8 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
           abstractLovBase.cancel();
           // prevent the page from scrolling
           event.preventDefault();
+          // JET-62254 Stopping the propagation of the event to the parent/container component
+          event.stopPropagation();
         }
         break;
 
@@ -4303,9 +4313,9 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
         break;
       case 'openPopup':
         var psOptions = detail.psOptions;
-        psOptions[oj.PopupService.OPTION.LAUNCHER] = this.element;
-        psOptions[oj.PopupService.OPTION.POSITION] = abstractLovBase.getDropdownPosition();
-        oj.PopupService.getInstance().open(psOptions);
+        psOptions[PopupService.OPTION.LAUNCHER] = this.element;
+        psOptions[PopupService.OPTION.POSITION] = abstractLovBase.getDropdownPosition();
+        PopupService.getInstance().open(psOptions);
         break;
       case 'handleSelection':
         this._HandleLovDropdownEventSelection(event);
@@ -4896,7 +4906,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
     this._super();
     this._bSuperRefreshing = false;
 
-    // Bug JET-35402 - help.instruction does not display after oj-select-single went from disabled to enabled
+    //  - help.instruction does not display after oj-select-single went from disabled to enabled
     // We will be reusing the main field's input element, so we need to retain it along
     // with the data it holds.
     this._ReleaseSelectResources(true);

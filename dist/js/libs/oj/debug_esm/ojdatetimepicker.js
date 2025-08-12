@@ -28,6 +28,7 @@ import Context from 'ojs/ojcontext';
 import FocusUtils from 'ojs/ojfocusutils';
 import { makeFocusable, isTouchSupported } from 'ojs/ojdomutils';
 import LabeledByUtils from 'ojs/ojlabelledbyutils';
+import { PositionUtils } from 'ojs/ojpopupcore';
 
 (function () {
   var bindingMeta = {
@@ -55,7 +56,7 @@ var __oj_input_time_metadata =
     },
     "autocomplete": {
       "type": "string",
-      "value": "on",
+      "value": "off",
       "extension": {
         "_COPY_TO_INNER_ELEM": true
       }
@@ -221,7 +222,7 @@ var __oj_input_time_metadata =
             "image",
             "userFocus"
           ],
-          "value": "focus"
+          "value": "image"
         },
         "timeIncrement": {
           "type": "string",
@@ -2014,6 +2015,34 @@ function toJSDateFullYear(year, month, day) {
  * </ul>
  * </p>
  *
+ * <h5>MaxWidth attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-max-width-sm maps to 'sm'
+ * </li>
+ * <li>
+ * .oj-form-control-max-width-md maps to 'md'
+ * </li>
+ * </ul>
+ * </p>
+ *
+ * <h5>Width attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-width-sm and oj-form-control-width-md is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-width-sm maps to 'sm'
+ * </li>
+ * <li>
+ * .oj-form-control-width-md maps to 'md'
+ * </li>
+ * </ul>
+ * </p>
+ *
  * <h5>Translations attribute</h5>
  * <h6>translations.date-restriction.message-detail</h6>
  * <p>
@@ -2105,6 +2134,14 @@ function toJSDateFullYear(year, month, day) {
  * <p>
  * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
  * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+ * </p>
+ *
+ * <h5>LabelledBy attribute</h5>
+ * <p>
+ * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
+ * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
+ * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
+ * to add a label for the form component.
  * </p>
  *
  * <h5>DescribedBy attribute</h5>
@@ -5117,6 +5154,10 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         this._redirectFocusToInputContainer = true;
         this._inputContainer.find('input')[0].focus(true);
       }
+    } else {
+      // JET-63922 in oj-input-date on element touch, focus should be set on input field.
+      this._redirectFocusToInputContainer = false;
+      this._inputContainer.find('input')[0].focus();
     }
   },
 
@@ -8424,10 +8465,10 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @private
    */
   _getDropdownPosition: function (defPosition, isRtl) {
-    let position = oj.PositionUtils.normalizeHorizontalAlignment(defPosition, isRtl);
+    let position = PositionUtils.normalizeHorizontalAlignment(defPosition, isRtl);
     // need to coerce to Jet and then JqUi in order for vertical offset to work
-    position = oj.PositionUtils.coerceToJet(position);
-    position = oj.PositionUtils.coerceToJqUi(position);
+    position = PositionUtils.coerceToJet(position);
+    position = PositionUtils.coerceToJqUi(position);
     // set the position.of again to be the element, because coerceToJet will change it to a
     // string selector, which can then result in an error being thrown from jqueryui
     // position.js getDimensions(elem) method if the element has been removed from the DOM
@@ -10549,6 +10590,224 @@ function _getTimeDefaultConverter() {
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
+ * <h3 id="migration-section">
+ *   Migration
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+ * </h3>
+ * <p>
+ * To migrate from oj-input-time to oj-c-input-time-mask, you need to revise the import statement and references
+ * to oj-c-input-time-mask in your app. Please note the changes between the components below.
+ * </p>
+ *
+ * <h5>Text Field</h5>
+ * <p>
+ * The oj-c-input-time-mask has segments representing the hour, minute,
+ * (and optionally the second, millisecond and dayPeriod) fields of the time
+ * instead of a text field. A user can individually edit, step, or spin the values of the time fields
+ * using these segments.
+ * </p>
+ *
+ * <h5>Global attributes</h5>
+ * <p>
+ * The following global attributes are no longer supported:
+ * <ul>
+ * <li>accesskey - not considered accessible</li>
+ * <li>tabindex - not considered accessible</li>
+ * <li>
+ * aria-label - use label-hint instead. If you do not want a visible label set label-edge="none".
+ * </li>
+ * </ul>
+ * </p>
+ *
+ * <h5>Converter attribute</h5>
+ * <p>
+ * The converter is not supported by the oj-c-input-time-mask component. oj-c-input-time-mask shows the time in segments,
+ * and the segments are in the format of the locale. oj-c-input-time-mask has properties to configure the time format.
+ * </p>
+ * <h6>hour12 property</h6>
+ * <p>
+ * If you use the converter's hour12 property, then set oj-c-input-time-mask's hourClock property.
+ * If hour12: false, set hourClock to '24'. If hour12: true, set hourClock to '12'.
+ * </p>
+ * <h6>second</h6>
+ * <p>
+ * If you use the converter's timeFormat: 'medium' or second property, then set oj-c-input-time-mask's granularity property to 'second'.
+ * </p>
+ * <h6>millisecond</h6>
+ * <p>
+ * If you use the converter's millisecond property, then set oj-c-input-time-mask's granularity property to 'millisecond'.
+ * </p>
+ *
+ * <h5>LabelEdge attribute</h5>
+ * <p>
+ * The enum values for the label-edge attribute have been changed from 'inside', 'provided', and 'none' to 'start', 'inside', 'top', and 'none'.
+ * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+ * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+ * attribute to the corresponding value.
+ * </p>
+ *
+ * <h5>MessagesCustom attribute</h5>
+ * <p>
+ * The type of the <code class="prettyprint">severity</code> property of the messages in the
+ * array has changed from
+ * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+ * essentially <code class="prettyprint">string | number</code>, to simply
+ * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+ * values are the same as the previously supported string values.
+ * The application can no longer specify severity as a number, including hardcoded numbers,
+ * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+ * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+ * </p>
+ *
+ * <h5>Min and Max attributes</h5>
+ * <p>For oj-c-input-time-mask the min and max attributes must be a local time-only ISO string.
+ * </p>
+ * <p>If you are using oj-input-time with a min and/or max attribute that is not a local time-only ISO string,
+ * then you must convert it into a local time-only ISO
+ * string before passing it to oj-c-input-time-mask.
+ * </p>
+ *
+ * <h5>Raw Value</h5>
+ * <p>
+ * The oj-c-input-time-mask's raw-value attribute is an Object of type <code>Time</code>.
+ * <code>{ hour?: number, minute?: number, second?: number, millisecond?: number }</code>. If you have code that handles raw-value or
+ * onRawValueChanged it will need to be updated.
+ * </p>
+ *
+ *
+ * <h5>TextAlign attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start, and oj-form-control-text-align-end is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-text-align-right maps to 'right'
+ * </li>
+ * <li>
+ * .oj-form-control-text-align-start maps to 'start'
+ * </li>
+ * <li>
+ * .oj-form-control-text-align-end maps to 'end'
+ * </li>
+ * </ul>
+ * </p>
+ *
+ * <h5>MaxWidth attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-max-width-sm maps to 'sm'
+ * </li>
+ * <li>
+ * .oj-form-control-max-width-md maps to 'md'
+ * </li>
+ * </ul>
+ * </p>
+ *
+ * <h5>Width attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-width-sm and oj-form-control-width-md is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-width-sm maps to 'sm'
+ * </li>
+ * <li>
+ * .oj-form-control-width-md maps to 'md'
+ * </li>
+ * </ul>
+ * </p>
+ *
+ * <h5>Translations attribute</h5>
+ *
+ * <h6>translations.date-time-range.message-detail.range-overflow</h6>
+ * <p>
+ * In oj-c-input-time-mask, this attribute is changed to time-range-overflow-message-detail. Also, the oj-c-input-time-mask's
+ * time-range-overflow-message-detail attribute takes a function that returns a string instead of a string. The function receives
+ * an object of type <code>{ max: string, value: string }</code> for input. If you were using tokens in the
+ * translation string of the oj-input-time, you need to replace it with the values from the input object of this function.
+ * </p>
+ *
+ *
+ * <h6>translations.date-time-range.message-detail.range-underflow</h6>
+ * <p>
+ * In oj-c-input-time-mask, this attribute is changed to time-range-underflow-message-detail. Also, the oj-c-input-time-mask's
+ * time-range-underflow-message-detail attribute takes a function that returns a string instead of a string. The function receives
+ * an object of type <code>{ min: string, value: string }</code> for input. If you were using tokens in the
+ * translation string of the oj-input-time, you need to replace it with the values from the input object of this function.
+ * </p>
+ *
+ * <h6>translations.required.message-detail</h6>
+ * <p>
+ * In oj-c-input-time-mask, this attribute is changed to required-message-detail.
+ * </p>
+ *
+ * <h5>Validators</h5>
+ * <p>
+ * Only the required validator is run for an empty field, and only if required is true. The component's other validators
+ * are no longer run when the field is empty.
+ * If you created your own validator to check that the field was filled in, it will not run if the
+ * field is empty. Set the required attribute to true instead which conforms to the Redwood UX design.
+ * </p>
+ *
+ * <h5>Value attribute</h5>
+ * <h6>Clearing the field</h6>
+ * <p>
+ * Clearing the field and committing the value will now set the value attribute to <code>null</code>
+ * instead of <code>''</code>.
+ * </p>
+ *
+ * <h6>Local time-only ISO string</h6>
+ * <p>
+ * oj-input-time's value can be timezone aware, and oj-c-input-time-mask's value is not timezone aware.
+ * </p>
+ * <p>
+ * oj-input-time's initial value may contain a date, but once the user interacts with the
+ * field the parsed value is a time-only ISO string.
+ * Depending upon the converter's configuration, the value will be a local time-only ISO string like 'T21:00:00'
+ * or a timezone-aware time-only ISO string like 'T21:00:00-07:00' or zulu like 'T04:00:00Z'.
+ * </p>
+ * <p>For oj-c-input-time-mask the value must be a local time-only ISO string.
+ * </p>
+ * <p>If you are using oj-input-time with a value that is not a local time-only ISO string,
+ * then you must convert it into a local time-only ISO
+ * string before passing it to oj-c-input-time-mask.
+ * </p>
+ *
+ * <h5>Refresh method</h5>
+ * <p>
+ * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+ * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+ * </p>
+ *
+ * <h5>Animation Events</h5>
+ * <p>
+ * ojAnimateStart and ojAnimateEnd events are no longer supported.
+ * </p>
+ *
+ * <h5>Custom Label</h5>
+ * <p>
+ * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+ * label-hint attribute to add a label for the form component.
+ * </p>
+ * <p>
+ * The application should no longer need to use an &lt;oj-label-value> component to layout the form component. The application
+ * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+ * </p>
+ *
+ *
+ * <h5>DescribedBy attribute</h5>
+ * <p>
+ * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+ * This attribute is not carried forward to the core pack component.
+ * </p>
+ *
+ * <h5>Formatted messages</h5>
+ * <p>
+ * Formatting messages using HTML tags is not supported in the core pack component.
+ * </p>
  */
 // --------------------------------------------------- oj.ojInputTime Styling Start ------------------------------------------------------------
 /**
@@ -10691,6 +10950,68 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
 
   options: {
     /**
+     * Dictates component's autocomplete state.
+     * This attribute indicates whether the value of the control can be automatically
+     * completed by the browser. The common values are "on" and "off".
+     * <p>Since this attribute passes through to the input element
+     * unchanged, you can look at the html specs for detailed information for how browsers behave
+     * and what values besides "on" and "off" you can set. The html spec says the default is "on",
+     * so when autocomplete is not explicitly set, the browsers treat it as "on".
+     * </p>
+     * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input}
+     * @see {@link https://caniuse.com/#feat=input-autocomplete-onoff}
+     * @see {@link https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls:-the-autocomplete-attribute}
+     *
+     * @example <caption>Initialize component with <code class="prettyprint">autocomplete</code> attribute:</caption>
+     * &lt;oj-some-element autocomplete="on">&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">autocomplete</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.autocomplete;
+     *
+     * // setter
+     * myComp.autocomplete = "on";
+     * @name autocomplete
+     * @ojshortdesc Specifies a component's autocomplete state. See the Help documentation for more information.
+     * @expose
+     * @type {"on"|"off"|string=}
+     * @default "off"
+     * @instance
+     * @since 4.0.0
+     * @memberof oj.ojInputTime
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     * @ojdeprecated {since: '19.0.0', description: 'The time field in corepack contains mask segments instead of a general input, so autocomplete is not supported.'}
+     */
+    autocomplete: 'off',
+    /**
+     * Autofocus is a Boolean that reflects the autofocus attribute, If it is set to true
+     * then the associated component  will get input focus when the page is loaded.
+     * Setting this property doesn't set the focus to the component:
+     * it tells the browser to focus to it when the element is inserted in the document.
+     *
+     * @example <caption>Initialize component with <code class="prettyprint">autofocus</code> attribute:</caption>
+     * &lt;oj-some-element autofocus>&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">autofocus</code> property after initialization:</caption>
+     * // getter
+     * var ro = myComp.autofocus;
+     *
+     * // setter
+     * myComp.autofocus = false;
+     *
+     * @expose
+     * @type {boolean}
+     * @alias autofocus
+     * @default false
+     * @instance
+     * @since 4.0.0
+     * @memberof oj.ojInputTime
+     * @name autofocus
+     * @ojshortdesc Specifies whether the component will get input focus when the page is loaded. See the Help documentation for more information.
+     * @ojextension {_COPY_TO_INNER_ELEM: true}
+     * @ojdeprecated {since: '19.0.0', description: 'This is not recommended for accessibility reasons.'}
+     */
+    /**
      * A datetime converter instance or one that duck types {@link oj.DateTimeConverter}.
      * <p>If the timezone option is provided in the converter, the Now button will highlight the current time based on the timezone specified in the converter.
      * <p>
@@ -10727,7 +11048,133 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      * @default new DateTimeConverter({ formatType: 'time', timeFormat: 'short' })
      */
     converter: undefined,
-
+    /**
+     * Display options for auxiliary content that determines whether or not it should be displayed.
+     *
+     * <p>
+     * In the Redwood theme, the sub-properties of the display-options configure whether or not the
+     * types of information is shown. The values of these sub-properties are either
+     * 'display' or 'none'.
+     * </p>
+     * <p>
+     * When display-options changes due to programmatic intervention, the component updates its
+     * display to reflect the updated choices. For example, if you don't want to show the converter
+     * hint, set the display-options.converter-hint to 'none'.
+     * </p>
+     * <p>
+     * A side note: help.instruction and message detail text can include formatted HTML text, whereas
+     * hints and message summary text cannot. If you use formatted text, it should be accessible
+     * and make sense to the user if formatting wasn't there.
+     * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * To format the help.instruction, you could do this:
+     * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
+     * </p>
+     * @ojshortdesc Display options for auxiliary content that determines whether or not it should be displayed.
+     * @expose
+     * @member
+     * @name displayOptions
+     * @ojsharedmembers
+     * @access public
+     * @instance
+     * @type {Object=}
+     * @memberof oj.ojInputTime
+     * @since 0.7
+     */
+    /**
+     * Display options for auxiliary converter hint text. The supported attribute values are theme dependent.
+     * <p>
+     * In the Redwood theme, this attribute determines whether or not the converter hint should be displayed.
+     * The supported values are 'display' and 'none'.
+     * If you don't want to show the converter hint, set display-options.converter-hint to 'none'.
+     * It defaults to 'display'.
+     * To control where the hints display, e.g., inline or in a notewindow,
+     * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+     * attribute.
+     * </p>
+     *
+     * @access public
+     * @ojsharedmembers
+     * @expose
+     * @name displayOptions.converterHint
+     * @ojshortdesc Display options for auxiliary converter hint text that determines whether it should be displayed.
+     * @instance
+     * @type {(Array<string> | string)=}
+     * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+     *               {target: "Type", value: "Array<'placeholder'|'notewindow'|'none'>|'placeholder'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'placeholder'|'notewindow'|'none'>", "'placeholder'", "'notewindow'"],
+     *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+     * @ojdeprecated {since: '19.0.0', value: [''], description: "Please use help-hints instead."}
+     * @memberof! oj.ojInputTime
+     * @since 0.7
+     */
+    /**
+     * Display options for auxiliary help instruction text that determines where it should be displayed
+     * in relation to the component.
+     * @ojshortdesc Display options for auxiliary help instruction text that determines whether it should be displayed.
+     * @access public
+     * @ojsharedmembers
+     * @expose
+     * @name displayOptions.helpInstruction
+     * @instance
+     * @type {(Array<string> | string)=}
+     * @ojsignature {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'none'", jsdocOverride: true}
+     * @memberof! oj.ojInputTime
+     * @ojdeprecated [{since: '9.0.0', description: 'If you want none, remove help-instruction attribute.'}]
+     * @default ['notewindow']
+     * @since 0.7
+     */
+    /**
+     * Display options for auxiliary message text. The supported attribute values are theme dependent.
+     * <p>
+     * In the Redwood theme, this attribute determines whether or not the messages should be displayed.
+     * The supported values are 'display' and 'none'.
+     * If you don't want to show messages, set display-options.messages to 'none'.
+     * It defaults to 'display'.
+     * To control where the messages display, e.g., inline or in a notewindow,
+     * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+     * attribute.
+     * </p>
+     *
+     * @ojshortdesc Display options for auxiliary message text that determines whether it should be displayed.
+     * @access public
+     * @ojsharedmembers
+     * @expose
+     * @name displayOptions.messages
+     * @instance
+     * @type {(Array<string> | string)=}
+     * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+     *               {target: "Type", value: "Array<'inline'|'notewindow'|'none'>|'inline'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'inline'|'notewindow'|'none'>", "'inline'", "'notewindow'"],
+     *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+     * @memberof! oj.ojInputTime
+     * @since 0.7
+     */
+    /**
+     * Display options for auxiliary validator hint text. The supported attribute values are theme dependent.
+     * <p>
+     * In the Redwood theme, this attribute determines whether or not the validator hint should be displayed.
+     * The supported values are 'display' and 'none'.
+     * If you don't want to show the validator hint, set display-options.validator-hint to 'none'.
+     * It defaults to 'display'.
+     * To control where the hints display, e.g., inline or in a notewindow,
+     * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+     * attribute.
+     * </p>
+     *
+     * @ojshortdesc Display options for auxiliary validator hint text that determines whether it should be displayed.
+     * @access public
+     * @ojsharedmembers
+     * @expose
+     * @name displayOptions.validatorHint
+     * @instance
+     * @type {(Array<string> | string)=}
+     * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+     *               {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'display'|'none'",  consumedBy: 'tsdep'}]
+     * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'notewindow'|'none'>", "'notewindow'"],
+     *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+     * @memberof! oj.ojInputTime
+     * @since 0.7
+     */
     /**
      * Determines if keyboard entry of the text is allowed.
      * When disabled the picker must be used to select a time.
@@ -10755,9 +11202,49 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      *
      * @example <caption>Set the default in the theme (SCSS)</caption>
      * $inputDateTimeKeyboardEditOptionDefault: disabled !default;
+     * @ojdeprecated {since: '19.0.0', description: 'This is not supported in the Redwood UX specification.'}
      */
     keyboardEdit: 'enabled',
-
+    /**
+     * <p>
+     * The oj-label sets the labelledBy property programmatically on the form component
+     * to make it easy for the form component to find its oj-label component (a
+     * document.getElementById call.)
+     * </p>
+     * <p>
+     * The application developer should use the 'for'/'id api
+     * to link the oj-label with the form component;
+     * the 'for' on the oj-label to point to the 'id' on the input form component.
+     * This is the most performant way for the oj-label to find its form component.
+     * </p>
+     *
+     * @example <caption>Initialize component with <code class="prettyprint">for</code> attribute:</caption>
+     * &lt;oj-label for="textId">Name:&lt;/oj-label>
+     * &lt;oj-input-text id="textId">
+     * &lt;/oj-input-text>
+     * // ojLabel then writes the labelled-by attribute on the oj-input-text.
+     * &lt;oj-label id="labelId" for="textId">Name:&lt;/oj-label>
+     * &lt;oj-input-text id="textId" labelled-by"labelId">
+     * &lt;/oj-input-text>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
+     * // getter
+     * var labelledBy = myComp.labelledBy;
+     *
+     * // setter
+     * myComp.labelledBy = "labelId";
+     *
+     * @name labelledBy
+     * @expose
+     * @ojshortdesc The oj-label sets the labelledBy property programmatically on the form component. See the Help documentation for more information.
+     * @type {string|null}
+     * @default null
+     * @public
+     * @instance
+     * @since 7.0.0
+     * @memberof oj.ojInputTime
+     * @ojdeprecated {since: '19.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
+     */
     /**
      * The maximum selectable time, in ISO string format. When set to null, there is no maximum.
      * min and max must be in the same ISO string format as value (local,
@@ -10844,6 +11331,8 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      * @memberof! oj.ojInputTime
      * @ojshortdesc Specifies attributes to be set on the picker DOM element when it is launched. See the Help documentation for more information.
      * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead."}
+     * @ojdeprecated {target: "property", for: "class", since: "19.0.0", description: "We are recommending not to change the Class property of pickerAttribute as it leads to an inconsistent UI."}
+     * @ojdeprecated {since: '19.0.0', description: "Changing the Class or Style property is not recommended, as it leads to an inconsistent UI."}
      * @instance
      * @type {?Object}
      * @default null
@@ -10893,6 +11382,32 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      * $inputDateTimeRenderModeOptionDefault: native !default;
      */
     renderMode: 'jet',
+    /**
+     * The placeholder text to set on the element.
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">placeholder</code> attribute:</caption>
+     * &lt;oj-some-element placeholder="User Name">&lt;/oj-some-element>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">placeholder</code> property after initialization:</caption>
+     * // getter
+     * var myPh = myComp.placeholder;
+     *
+     * // setter
+     * myComp.placeholder = myPlaceholder;
+     *
+     * If the attribute is not set and if a converter is set then the
+     * converter hint is used. See displayOptions for details.
+     *
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @memberof! oj.ojInputTime
+     * @name placeholder
+     * @type {string}
+     * @ojtranslatable
+     * @ojdeprecated {since: '19.0.0', description: "The time field in corepack contains mask segments instead of a general input, so placeholder is not supported."}
+     */
 
     /**
      * Note that Jet framework prohibits setting subset of properties which are object types.<br/><br/>
@@ -10931,6 +11446,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      *     showOn: 'image',
      *     footerLayout: 'now'
      * };
+     * @ojdeprecated {since: '19.0.0', description: "The time field does not have a picker."}
      */
     timePicker: {
       /**
@@ -10964,6 +11480,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
        * @instance
        * @type {string=}
        * @default "00:05:00:00"
+       * @ojdeprecated {since: "19.0.0", description: "The time field in corepack contains a mask and not a picker."}
        */
       timeIncrement: '00:05:00:00',
 
@@ -10982,13 +11499,13 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
        * @ojvalue {string} 'userFocus' when the element receives focus from a user action (such as tab key press)
        *   or the calendar image is clicked.  Programmatic calls to .focus() do not show the picker.
        * @ojvalue {string} 'image' when the trigger clock image is clicked
-       * @default "focus"
+       * @default "image"
+       * @ojdeprecated {since: "19.0.0", description: "This is not supported in the Redwood UX specification."}
        */
-      showOn: 'focus'
+      showOn: 'image'
     }
 
     // DOCLETS
-
     /**
      * List of validators, synchronous or asynchronous,
      * used by component along with asynchronous validators from the deprecated async-validators option
@@ -11946,6 +12463,10 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
           }
         }
       }
+    } else {
+      // JET-63922 in oj-input-time on element touch, focus should be set on input field.
+      this._redirectFocusToInputContainer = false;
+      this._inputContainer.find('input')[0].focus();
     }
   },
 
@@ -12174,6 +12695,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
    * @instance
    * @return {void}
    * @memberof! oj.ojInputTime
+   * @ojdeprecated {since: '19.0.0', description: 'This is not supported in the Redwood UX specification.'}
    */
   show: function () {
     if (this._timepickerShowing() || this.options.disabled || this.options.readOnly) {
@@ -12304,6 +12826,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
    * @expose
    * @instance
    * @memberof! oj.ojInputTime
+   * @ojdeprecated {since: '19.0.0', description: 'This is not supported in the Redwood UX specification.'}
    * @return {void}
    */
   hide: function () {
@@ -12370,6 +12893,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
    * @instance
    * @memberof oj.ojInputTime
    * @return {void}
+   * @ojdeprecated {since: '19.0.0', description: 'This is not supported in Core Pack components.'}
    */
   refresh: function () {
     if (this._triggerNode) {
@@ -13096,7 +13620,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
       // we need to give it the focus
       this._wheelGroup.children().first().focus();
     } else {
-      var position = oj.PositionUtils.normalizeHorizontalAlignment(
+      var position = PositionUtils.normalizeHorizontalAlignment(
         {
           my: 'start top',
           at: 'start bottom',

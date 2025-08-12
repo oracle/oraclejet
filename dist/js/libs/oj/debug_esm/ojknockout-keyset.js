@@ -11,14 +11,20 @@ import { ExpandedKeySet, KeySetImpl } from 'ojs/ojkeyset';
 class ObservableExpandedKeySet {
     constructor(initialValue) {
         this._proto = Object.create(observable.fn);
+        // by default if initialValue wasn't specified then we create a ExpandedKeySet
         const _initialValue = initialValue || new ExpandedKeySet();
         const _result = observable(_initialValue);
         const self = this;
+        // mutation functions (needed to leave as function calls for arguments scope correctly)
         utils.arrayForEach(['add', 'addAll', 'clear', 'delete'], function (methodName) {
             self._proto[methodName] = function () {
+                // Use "peek" to avoid creating a subscription in any computed that we're executing in the context of
+                // (for consistency with mutating regular observables)
                 const underlyingKeySet = this.peek();
                 const methodCallResult = underlyingKeySet[methodName].apply(underlyingKeySet, arguments);
+                // this should call valueWillMutate, update latestValue, valueHasMutate
                 this(methodCallResult);
+                // the mutation methods always return a new KeySet so we should return the ObservableExpandedKeySet itself
                 return this;
             };
         });
@@ -95,14 +101,20 @@ class ObservableExpandedKeySet {
 class ObservableKeySet {
     constructor(initialValue) {
         this._proto = Object.create(observable.fn);
+        // by default if initialValue wasn't specified then we create a KeySetImpl
         const _initialValue = initialValue || new KeySetImpl();
         const _result = observable(_initialValue);
         const self = this;
+        // mutation functions (needed to leave as function calls for arguments scope correctly)
         utils.arrayForEach(['add', 'addAll', 'clear', 'delete'], function (methodName) {
             self._proto[methodName] = function () {
+                // Use "peek" to avoid creating a subscription in any computed that we're executing in the context of
+                // (for consistency with mutating regular observables)
                 const underlyingKeySet = this.peek();
                 const methodCallResult = underlyingKeySet[methodName].apply(underlyingKeySet, arguments);
+                // this should call valueWillMutate, update latestValue, valueHasMutate
                 this(methodCallResult);
+                // the mutation methods always return a new KeySet so we should return the ObservableKeySet itself
                 return this;
             };
         });

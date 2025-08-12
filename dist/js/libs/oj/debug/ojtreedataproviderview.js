@@ -188,12 +188,20 @@ define(['ojs/ojcore-base', 'ojs/ojlistdataproviderview'], function (oj, ListData
 
     // end of jsdoc
 
+    /**
+     * Class which provides list based optimizations
+     */
     class TreeDataProviderView {
         constructor(dataProvider, options) {
             this.dataProvider = dataProvider;
             this.options = options;
             this._listDataProviderView = new ListDataProviderView(dataProvider, options);
         }
+        /*
+         * Get the data provider for the children of the node identified by parentKey.
+         * This should return null for node that cannot have children.
+         * This should return a TreeDataProvider for node that can (but doesn't have to) have children.
+         */
         getChildDataProvider(parentKey, options) {
             let childDataProvider = this.dataProvider.getChildDataProvider(parentKey);
             if (childDataProvider) {

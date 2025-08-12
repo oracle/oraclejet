@@ -13,6 +13,7 @@ define(function () { 'use strict';
             if (!options.max) {
                 throw new Error("length filter's max option cannot be less than 1. max option is " + options.max);
             }
+            // check that the max make sense, otherwise throw an error
             if (isNaN(options.max)) {
                 throw new Error("length filter's max option is not a number. max option is " + options.max);
             }
@@ -37,15 +38,28 @@ define(function () { 'use strict';
             let surrogateLength = 0;
             switch (countBy) {
                 case 'codePoint':
+                    // if countBy is "codePoint", then count supplementary characters as length of one
+                    // For UTF-16, a "Unicode  surrogate pair" represents a single supplementary character.
+                    // The first (high) surrogate is a 16-bit code value in the range U+D800 to U+DBFF.
+                    // The second (low) surrogate is a 16-bit code value in the range U+DC00 to U+DFFF.
+                    // This code figures out if a charCode is a high or low surrogate and if so,
+                    // increments surrogateLength
                     for (let i = 0; i < codeUnitLength; i++) {
+                        // eslint-disable-next-line no-bitwise
                         if ((text.charCodeAt(i) & 0xf800) === 0xd800) {
                             surrogateLength += 1;
                         }
                     }
+                    // e.g., if the string is two supplementary characters, codeUnitLength is 4, and the
+                    // surrogateLength is 4, so we will return two.
+                    // oj.Assert.assert(surrogateLength % 2 === 0,
+                    // 'the number of surrogate chars must be an even number.');
                     length = codeUnitLength - surrogateLength / 2;
                     break;
                 case 'codeUnit':
                 default:
+                    // Javascript's length function counts # of code units.
+                    // A supplementary character has a length of 2 code units.
                     length = codeUnitLength;
             }
             return length;

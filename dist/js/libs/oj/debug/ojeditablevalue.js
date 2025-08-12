@@ -9469,8 +9469,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'ojs/ojpopup', 'ojs
         effect,
         this.GetComponent()
       ).then(() => {
-        // As of v12.0.0 we are removing the dom instead of using css.
-        this._removeHelpHintsContainerAndContent();
+        // JET-74006 - DFF INSTRUCTION/DEFINTION HELP TEXT INCONSISTENT VISIBILITY
+        // if the component has been focused again before this function is called, don't
+        // remove the help (but do clear the busy state)
+        if (!self._focusIn) {
+          // As of v12.0.0 we are removing the dom instead of using css.
+          this._removeHelpHintsContainerAndContent();
+        }
         self._clearBusyState();
       });
     }

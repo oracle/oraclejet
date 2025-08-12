@@ -28,6 +28,7 @@ declare namespace ArrayTreeDataProvider {
         keyAttributesScope?: 'siblings' | 'global';
         sortComparators?: ArrayDataProvider.SortComparators<D>;
         textFilterAttributes?: string[];
+        useKeyPaths?: 'off' | 'on';
     };
 }
 export = ArrayTreeDataProvider;

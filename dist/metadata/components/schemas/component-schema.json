@@ -147,7 +147,11 @@
         "status": {
           "$ref": "#/definitions/statusDef"
         },
+        "templateSlotAlias": {
+          "type": "string"
+        },
         "templateSlotRenderType": {
+          "$comment": "deprecated since 19.0.0 - use templateSlotAlias instead",
           "type": "string"
         },
         "translatable": {
@@ -159,6 +163,25 @@
         "visible": {
           "type": "boolean"
         }
+      }
+    },
+
+    "commonVdomPropsMetadataDef": {
+      "$comment": "definitions of common Property metadata properties for vdom components, hook/util param elements, and hook/util return elements",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/definitions/statusDef"
+        },
+        "value": true
       }
     },
 
@@ -218,7 +241,8 @@
           },
           "required": ["type"]
         }
-      }
+      },
+      "additionalProperties": false
     },
 
     "extensionDef": {
@@ -365,6 +389,7 @@
                 "propertyGroup": {},
                 "required": {},
                 "status": {},
+                "templateSlotAlias": {},
                 "templateSlotRenderType": {},
                 "translatable": {},
                 "units": {},
@@ -377,7 +402,39 @@
       },
       "additionalProperties": false
     },
-    
+
+    "extensionVdomSubPropsDef": {
+      "type": "object",
+
+      "$comment": "relaxed definition for nested extension vdom (Preact) Properties; property names follow JavaScript identifer naming restrictions",
+      "patternProperties": {
+        "^[a-zA-Z_$][0-9a-zA-Z_$]*$": {
+          "type": "object",
+          "allOf": [
+            { "$ref": "#/definitions/commonVdomPropsMetadataDef" },
+            {
+              "$comment": "list of properties with empty schemas MUST be kept in sync with commonVdomPropsMetadataDef!!",
+              "properties": {
+                "type": {},
+                "description": {},
+                "optional": {},
+                "status": {},
+                "value": {},
+                "properties": {
+                  "$ref": "#/definitions/extensionVdomSubPropsDef"
+                },
+                "keyedProperties": {
+                  "$ref": "#/definitions/extensionKeyedPropsDef"
+                }
+              },
+              "required": ["type"]
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+
     "extensionPropsDef": {
       "type": "object",
       "properties": {
@@ -415,22 +472,28 @@
       }
     },
 
+    "extensionVdomPropsDef": {
+      "type": "object",
+      "properties": {
+        "vbdt": {
+          "type": "object",
+          "properties" : {
+            "itemProperties": {
+              "$ref": "#/definitions/extensionVdomSubPropsDef"
+            },
+            "keyedProperties": {
+              "$ref": "#/definitions/extensionVdomKeyedPropsDef"
+            }
+          }
+        }
+      }
+    },
+
     "extensionKeyedPropsDef": {
       "type": "object",
       "properties": {
         "keys": {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string"
-            },
-            "enumValues": {
-              "type": "array",
-              "items": {
-                  "type": ["string", "number"]
-              }
-            }
-          }
+          "$ref": "#/definitions/keyedPropsKeysDef"
         },
         "values": {
           "type": "object",
@@ -443,6 +506,29 @@
             },
             "keyedProperties": {
               "$ref": "#/definitions/extensionKeyedPropsDef"
+            }
+          }
+        }
+      }
+    },
+
+    "extensionVdomKeyedPropsDef": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "$ref": "#/definitions/keyedPropsKeysDef"
+        },
+        "values": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "properties": {
+              "$ref": "#/definitions/extensionVdomSubPropsDef"
+            },
+            "keyedProperties": {
+              "$ref": "#/definitions/extensionVdomKeyedPropsDef"
             }
           }
         }
@@ -516,6 +602,12 @@
             "docUrl": {
               "type": "string",
               "format": "uri"
+            },
+            "export": {
+              "type": "string"
+            },
+            "main": {
+              "type": "string"
             }
           }
         }
@@ -588,7 +680,22 @@
       "additionalProperties": false
     },
 
-    "paramsDef": {
+    "keyedPropsKeysDef": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "enumValues": {
+          "type": "array",
+          "items": {
+              "type": ["string", "number"]
+          }
+        }
+      }
+    },
+
+    "methodParamsDef": {
       "type": "array",
       "items": {
         "type": "object",
@@ -614,6 +721,41 @@
       }
     },
 
+    "paramsDef": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "extension": {
+            "$ref": "#/definitions/extensionVdomPropsDef"
+          },
+          "name": {
+            "type": "string"
+          },
+          "optional": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/definitions/statusDef"
+          },
+          "type": {
+            "type": "string"
+          },
+          "value": {
+            "$comment": "Allow ANY default value for a hook, util parameter"
+          },
+          "properties": {
+            "$ref": "#/definitions/vdomPropsDef"
+          }
+        },
+        "required": ["name", "type"],
+        "additionalProperties": false
+      }
+    },
+
     "returnDef": {
       "type": "object",
       "properties": {
@@ -623,29 +765,17 @@
         "description": {
           "type": "string"
         },
+        "extension": {
+          "$ref": "#/definitions/extensionVdomPropsDef"
+        },
         "status": {
           "$ref": "#/definitions/statusDef"
         },
         "properties": {
-          "patternProperties": {
-            "^[a-zA-Z_$][0-9a-zA-Z_$]*$": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                },
-                "status": {
-                  "$ref": "#/definitions/statusDef"
-                }
-              },
-              "additionalProperties": false
-            }
-          }
+          "$ref": "#/definitions/vdomPropsDef"
         }
       },
+      "required": ["type"],
       "additionalProperties": false
     },
 
@@ -747,10 +877,44 @@
                 "propertyGroup": {},
                 "required": {},
                 "status": {},
+                "templateSlotAlias": {},
                 "templateSlotRenderType": {},
                 "translatable": {},
                 "units": {},
                 "visible": {}
+              },
+              "required": ["type"],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "vdomPropsDef": {
+      "type": "object",
+
+      "$comment": "strict definition for nested vdom (Preact) Properties; property names follow JavaScript identifer naming restrictions",
+      "patternProperties": {
+        "^[a-zA-Z_$][0-9a-zA-Z_$]*$": {
+          "type": "object",
+          "allOf": [
+            { "$ref": "#/definitions/commonVdomPropsMetadataDef" },
+            {
+              "$comment": "list of properties with empty schemas MUST be kept in sync with commonVdomPropsMetadataDef!!",
+              "properties": {
+                "type": {},
+                "description": {},
+                "extension": {
+                  "$ref": "#/definitions/extensionVdomPropsDef"
+                },
+                "optional": {},
+                "status": {},
+                "value": {},
+                "properties": {
+                  "$ref": "#/definitions/vdomPropsDef"
+                }
               },
               "required": ["type"],
               "additionalProperties": false
@@ -796,7 +960,7 @@
               "type": "string"
             },
             "params": {
-              "$ref": "#/definitions/paramsDef"
+              "$ref": "#/definitions/methodParamsDef"
             },
             "return": {
               "type": "string"
@@ -831,9 +995,10 @@
               "type": "string"
             },
             "detail": {
+              "$comment": "we allow the 'detail' key to be an empty string to represent an event payload of a primitive type, array type, etc.",
               "type": "object",
               "patternProperties": {
-                "^([A-Za-z0-9_\u002d])+$": {
+                "^([A-Za-z0-9_\u002d])*$": {
                   "type": "object",
                   "properties": {
                     "description": {
@@ -963,7 +1128,11 @@
             "status": {
               "$ref": "#/definitions/statusDef"
             },
+            "templateSlotAlias": {
+              "type": "string"
+            },
             "templateSlotRenderType": {
+              "$comment": "deprecated since 19.0.0 - use templateSlotAlias instead",
               "type": "string"
             },
             "visible": {
@@ -1039,7 +1208,10 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["anyOf"]
+          "enum": ["anyOf", "not"]
+        },
+        "label": {
+          "type": "string"
         },
         "description": {
           "type": "string"
@@ -1057,7 +1229,7 @@
           }
         }
       },
-      "required": ["type"],
+      "required": ["type", "label"],
       "additionalProperties": false
     },
 
@@ -1522,12 +1694,12 @@
         },
 
         {
-          "$comment": "if the content type is not explicitly set to 'vdom', 'hook', 'vbcs-pattern', or 'vbcs-fragment' then 'metadata' is invalid",
+          "$comment": "if the content type is not explicitly set to 'vbcs-pattern' or 'vbcs-fragment' then 'metadata' is invalid",
           "if": {
             "properties": {
               "type": {
                 "not": {
-                  "enum": ["vdom", "hook", "vbcs-pattern", "vbcs-fragment"]
+                  "enum": ["vbcs-pattern", "vbcs-fragment"]
                 }
               }
             },
@@ -1568,11 +1740,7 @@
     "contentsDef": {
       "type": "array",
       "items": {
-        "$comment": "either an @contents@ token string OR a contentItems object",
-        "oneOf": [
-          { "const": "@contents@" },
-          { "$ref": "#/definitions/contentItemsDef" }
-        ]
+        "$ref": "#/definitions/contentItemsDef"
       }
     },
 
@@ -1620,7 +1788,7 @@
       "$ref": "#/definitions/semverRangeDef"
     },
     "actionParams": {
-      "$ref":  "#/definitions/paramsDef"
+      "$ref":  "#/definitions/methodParamsDef"
     },
     "actionResult": {
       "type": "string"
@@ -1676,7 +1844,7 @@
       "type": "string"
     },
     "properties": {
-      "$ref": "#/definitions/propsDef"
+      "$comment": "see conditional validation rules below for component type-specific definition of 'properties' metadata"
     },
     "methods": {
       "$ref": "#/definitions/methodsDef"
@@ -1724,7 +1892,7 @@
       "type": "string"
     },
     "params": {
-      "$comment": "needed for 'hook' type",
+      "$comment": "needed for 'hook', 'util' types",
       "$ref": "#/definitions/paramsDef"
     },
     "paths": {
@@ -1757,7 +1925,7 @@
       }
     },
     "return": {
-      "$comment": "needed for 'hook' type",
+      "$comment": "needed for 'hook', 'util' types",
       "$ref": "#/definitions/returnDef"
     },
     "since": {
@@ -1788,7 +1956,7 @@
     "type": {
       "type": "string",
       "enum": ["composite", "core", "pack", "mono-pack", "reference", "resource",
-                "demo", "stripe", "vdom", "hook",
+                "demo", "stripe", "vdom", "hook", "util",
                 "vbcs-pattern", "vbcs-template", "vbcs-action", "vbcs-fragment"
               ]
     },
@@ -1806,6 +1974,33 @@
 
   "$comment": "the following 'allOf' array entries specify conditional validation rules, per JSON Schema draft-07",
   "allOf": [
+
+    {
+      "$comment": "if the 'type' property is explicity set to 'vdom', 'hook', or 'util', then 'main' is required AND use 'vdomPropsDef' definition for 'properties' metadata; else use 'propsDef' definition",
+      "if": {
+        "properties": {
+          "type": {
+            "enum": ["vdom", "hook", "util"]
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/definitions/vdomPropsDef"
+          }
+        },
+        "required": ["main"]
+      },
+      "else": {
+        "properties": {
+          "properties": {
+            "$ref": "#/definitions/propsDef"
+          }
+        }
+      }
+    },
 
     {
       "$comment": "if the 'type' property is explicitly set to anything other than 'composite' or 'core', then 'implements','preferredParent', and 'requirements' are invalid",
@@ -1829,12 +2024,12 @@
     },
 
     {
-      "$comment": "if the 'type' property is explicitly set to anything other than 'composite', 'core', 'vdom' or 'hook', then 'main' is invalid",
+      "$comment": "if the 'type' property is explicitly set to anything other than 'composite', 'core', 'vdom', 'hook' or 'util', then 'export' and 'main' are invalid",
       "if": {
         "properties": {
           "type": {
             "not": {
-              "enum": ["core", "composite", "vdom", "hook"]
+              "enum": ["core", "composite", "vdom", "hook", "util"]
             }
           }
         },
@@ -1843,7 +2038,7 @@
       "then": {
         "propertyNames": {
           "not": {
-            "enum": ["main"]
+            "enum": ["export", "main"]
           }
         }
       }
@@ -2037,7 +2232,7 @@
       "if": {
         "properties": {
           "type": {
-            "const": ["reference"]
+            "const": "reference"
           }
         },
         "required": ["type"]
@@ -2083,41 +2278,21 @@
         "required": ["type"]
       },
       "then": {
-        "allOf": [
-          {
-            "propertyNames": {
-              "anyOf": [
-                { "$ref": "#/definitions/commonContentsPropNamesDef" },
-                { "enum": ["properties"] }
-              ]
-            }
-          },
-          {
-            "properties": {
-              "properties": {
-                "$comment": "vdom (Preact) property names follow JavaScript identifer naming restrictions",
-                "patternProperties": {
-                  "^[a-zA-Z_$][0-9a-zA-Z_$]*$": {
-                    "type": "object",
-                    "$comment": "only support a subset of metadata properties for vdom (Preact) Props",
-                    "propertyNames": {
-                      "enum": ["type", "description", "required", "status", "value"]
-                    }
-                  }
-                }
-              }
-            }
-          }
-        ]
+        "propertyNames": {
+          "anyOf": [
+            { "$ref": "#/definitions/commonContentsPropNamesDef" },
+            { "enum": ["properties"] }
+          ]
+        }
       }
     },
 
     {
-      "$comment": "if the component type is explicitly set to 'hook', then only a subset of metadata properties are supported",
+      "$comment": "if the component type is explicitly set to 'hook' or 'util', then only a subset of metadata properties are supported",
       "if": {
         "properties": {
           "type": {
-            "const": "hook"
+            "enum": ["hook", "util"]
           }
         },
         "required": ["type"]
@@ -2128,10 +2303,11 @@
             { "$ref": "#/definitions/commonContentsPropNamesDef" },
             { "enum": ["params", "return"] }
           ]
-        }
+        },
+        "required": ["params", "return"]
       },
       "else": {
-        "$comment": "otherwise, the 'params' and 'return' properties are invalid (reserved for 'hooks')",
+        "$comment": "otherwise, the 'params' and 'return' properties are invalid (reserved for 'hook' and 'util')",
         "propertyNames": {
           "not": {
             "enum": ["params", "return"]
@@ -2141,26 +2317,19 @@
     },
 
     {
-      "$comment": "if the component type is explicitly neither 'vdom' nor 'hook', then the 'defaultExport' and 'export' properties are invalid",
+      "$comment": "if the component type is explicitly NOT 'util', then the 'defaultExport' property is invalid",
       "if": {
-        "oneOf": [
-          {"not": { "required": ["type"] }},
-          {
-            "properties": {
-              "type": {
-                "not": {
-                  "enum": ["vdom", "hook"]
-                }
-              }
-            },
-            "required": ["type"]
+        "properties": {
+          "type": {
+            "not": { "const": "util" }
           }
-        ]
+        },
+        "required": ["type"]
       },
       "then": {
         "propertyNames": {
           "not": {
-            "enum": ["defaultExport", "export"]
+            "enum": ["defaultExport"]
           }
         }
       }

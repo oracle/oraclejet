@@ -69,3 +69,48 @@ ModuleRouterAdapter example:
 Note that the 'match', 'addExtension' and 'prefix' settings for views and viewModels can be sparse. i.e. you only need to specify settings that are different from the View and ViewModel settings in ojModuleResources configuration of WebpackRequireFixupPlugin (see step 4)
 
 5) Run webpack as you would do for any other project (normally 'npx webpack').
+
+
+Instructions for enabling multiple locale support with the JET Webpack Build (V1 bundles)
+================================================================================================
+
+If you running Webpack with your own config file WITHOUT Jet CLI
+----------------------------------------------------------------
+
+1. Configure the ojL10n-loader to use "multi" for the locale parameter:
+   resolveLoader: {
+    // This adds "./loaders/" to the list of folders where Webpack is looking for loaders
+      modules: ['node_modules', path.resolve(__dirname, './loaders')],
+      alias: {
+        ojL10n: "ojL10n-loader",
+      }
+   },
+   plugins: [
+    new webpack.LoaderOptionsPlugin({
+      options: {
+        ojL10nLoader: {
+          locale: "multi"
+        }
+      }
+    }
+    )
+   ],
+
+2. Crete an alias (path mapping) for oraclejet oin Webpack:
+  resolve: {
+    alias: {
+      oraclejet: path.resolve(__dirname, 'node_modules/@oracle/oraclejet')
+    }
+  }
+
+3. Import loadTranslationBundles in your startup code, then await on the loadTranslationBundles() before starting your application. You can pass a single 
+   preferred locale, or you can rely on loadTranslationBundles() getting the first entry from navigator.languages
+
+   import {loadTranslationBundles} from 'oraclejet/dist/webpack-tools/src-multi-locale/bootstrap';
+  
+    (async ()=> {
+      await loadTranslationBundles("de-DE");
+      // dynamically import application's start module
+      import("./app");
+
+    })();

@@ -5,10 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarget', 'ojs/ojlogger'], function (oj, $, ArrayDataProvider, ojeventtarget, Logger) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojarraydataprovider', 'ojs/ojeventtarget', 'ojs/ojlogger'], function (oj, ArrayDataProvider, ojeventtarget, Logger) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
-  $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   ArrayDataProvider = ArrayDataProvider && Object.prototype.hasOwnProperty.call(ArrayDataProvider, 'default') ? ArrayDataProvider['default'] : ArrayDataProvider;
 
   /**
@@ -25,10 +24,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
    * @final
    * @class ArrayTreeDataProvider
    * @implements TreeDataProvider
-   * @classdesc This class implements {@link TreeDataProvider} and is used to represent hierachical data available from an array.<br><br>
+   * @classdesc Note usage of {@link MutableArrayTreeDataProvider} is preferred over ArrayTreeDataProvider as it removes the dependency on knockout.
+   *            This class implements {@link TreeDataProvider} and is used to represent hierarchical data available from an array.<br><br>
    *            Each array element represents a tree node, which can contain nested child object array for its subtree.
    *            Array elements can be in any shape and form, but is usually an object with a "children" property.  The name of the "children" property
-   *            can optionaly be specified with the "childrenAttribute" option.<br><br>
+   *            can optionally be specified with the "childrenAttribute" option.<br><br>
    *            For nodes that cannot have children, the "children" property should not be set.
    *            For nodes that can but don't have children, the "children" property should be set to an empty array.<br><br>
    *            Data can be passed as a regular array or a Knockout observableArray.  If a Knockout observableArray is
@@ -114,7 +114,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
    *     <tr>
    *       <td><kbd>add a child to a leaf node </kbd></td>
          <td>The node doesn't have any children (null or undefined),
-    action is an 'update' on the observableArray containting the node
+    action is an 'update' on the observableArray containing the node
     which replaces the node with a new node of the same value plus the child under it.</td>
    *       <td>Add a child under 'News'</td>
    *       <td>const newNode = obData.slice(0,1);<br/>
@@ -126,22 +126,22 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
    *     <tr>
    *       <td><kbd>Add a child to a non-leaf node </kbd></td>
    *       <td>The node already has children (including []) which is an observableArray,
-   action is actually 'add a sibling to a node' where the node is one of the chidren node</td>
+   action is actually 'add a sibling to a node' where the node is one of the children node</td>
    *       <td>Add another child under 'News'</td>
    *       <td>obData()[0].children.push({title: "Child2", id: "child2"});</td>
    *       <td>'mutate' with 'add' for child</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>Update a node without children changes</kbd></td>
-   *       <td>Action is an 'update' on the observableArray containg the node.</td>
+   *       <td>Action is an 'update' on the observableArray containing the node.</td>
    *       <td>Update node 'News' to 'OldNews'</td>
    *       <td>obData.splice(0,1,{title: "OldNews", id: "news"});</td>
    *       <td>'mutate' with 'update' for node</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>Update a node with children changes</kbd></td>
-   *       <td>Action is an 'update' on the observableArray containg the node. Refer to the above 'Add a child to a node' as an example.
-   The children changes could be any changes in the chidren of the node.</td>
+   *       <td>Action is an 'update' on the observableArray containing the node. Refer to the above 'Add a child to a node' as an example.
+   The children changes could be any changes in the children of the node.</td>
    *       <td></td>
    *       <td></td>
    *       <td>'mutate' with 'update' for parent<br/>
@@ -149,7 +149,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
    *     </tr>
    *     <tr>
    *       <td><kbd>Reorder or move a node</kbd></td>
-   *       <td>Action is a 'remove' on the original observableArray containging the node, and an 'add a child to a leaf node'
+   *       <td>Action is a 'remove' on the original observableArray containing the node, and an 'add a child to a leaf node'
    if new parent is a leaf node, or 'Add a child to a non-leaf node' if the new parent is a non-leaf node.</td>
    *       <td>Move node 'Today' from 'Blogs' to 'News'</td>
    *       <td>const moveNode = obData()[1].children.splice(0,1);<br/>
@@ -186,7 +186,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
    * }
    * </code></pre>
    *
-   * <i>Example of when 'mutate' or 'feresh' event will be fired:</i>
+   * <i>Example of when 'mutate' or 'refresh' event will be fired:</i>
    * <pre class="prettyprint"><code>
    * // initiate a nested observable array
    * const obData = ko.observableArray([
@@ -216,7 +216,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
    * </code></pre>
    *
    * <p>Observe that these two ways of mutating data result to the same final data.  The observableArray methods apply to different observableArray
-   * results to differnt events fired.
+   * results to different events fired.
    * </p>
    *
    * @param {(Array|function():Array)} data data supported by the components
@@ -269,8 +269,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
    * This option is not used for cases where we want the ArrayDataProvider to apply a sort on initial fetch.
    * For those cases, please wrap in a ListDataProviderView and set the sortCriteria property on it.
    * @property {string=} keyAttributes - Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
-   *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
-   *                                                  use all attributes as key. @index is the default.
+   *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will
+   *                                                  build an array of values from all enumerable attributes found on the data as the key. @index is the default.
    *                                                  <p>With "@index", the key generation is based on the item index only initially.  The key for an item, once assigned,
    *                                                  will not change even if the item index changes (e.g. by inserting/removing items from the array).  Assigned keys will
    *                                                  never be reassigned.  If the array is replaced with new items, the new items will be assigned keys that are different
@@ -288,10 +288,13 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
    * @property {string=} enforceKeyStringify - Optionally specify whether keys should be stringified version of keypath from root. Supported values:<br>
    *                                  <ul>
    *                                    <li>'off': the key values are returned as it is.
-   *                                    <li>'on': the key values are stringified version of keypath from root.
+   *                                    <li>'on': the key values are stringified version of keypath from root unless useKeyPath is set to 'off'.
    *                                  </ul>
    *                                Default is 'off'.
    *                                Key stringify will directly call JSON.stringify on all keys passed out of the DataProvider. Use JSON.parse if you need to convert the key back to a complex type.
+   *                                When used with useKeyPaths the JSON.stringify will happen after the pathing is finished. JSON.parse will then result in an K[]
+   * @property {string=} useKeyPaths - Optionally indicate to the TreeDataProvider to generate key paths. Key paths will be represented as an array of type K[] (unless used with enforceKeyStringify - see enforceKeyStringify for more details)
+   * with elements ordered according to their depth. Specifically, the first element in the array corresponds to the least depth, and subsequent elements represent increasing depths.
    * @ojsignature [
    *  {target: "Type", value: "<D>", for: "genericTypeParameters"},
    *  {target: "Type", value: "ArrayDataProvider.SortComparators<D>", for: "sortComparators"},
@@ -300,7 +303,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
    *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
    *  {target: "Type", value: "'siblings' | 'global'", for: "keyAttributesScope"},
    *  {target: "Type", value: "string", for: "childrenAttribute"},
-   *  {target: "Type", value: "'off' | 'on'", for: "enforceKeyStringify"}
+   *  {target: "Type", value: "'off' | 'on'", for: "enforceKeyStringify"},
+   *  {target: "Type", value: "'off' | 'on'", for: "useKeyPaths"}
    * ]
    */
 
@@ -444,7 +448,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
               },
               Symbol.asyncIterator,
               _a);
-          this._baseDataProvider = new ArrayDataProvider(treeData, options);
+          const adpOptions = { ...options };
+          if (this.options?.enforceKeyStringify === 'on') {
+              adpOptions.enforceKeyStringify = 'off';
+          }
+          this._baseDataProvider = new ArrayDataProvider(treeData, adpOptions);
           this._mapKeyToNode = new Map();
           this._mapNodeToKey = new Map();
           this._mapArrayToSequenceNum = new Map();
@@ -455,6 +463,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
               this.options && this.options['childrenAttribute']
                   ? this.options['childrenAttribute']
                   : 'children';
+          // Subscribe to all children observableArray at the top-level
           if (_rootDataProvider == null) {
               this._parentNodePath = [];
               this._processTreeArray(treeData, []);
@@ -475,6 +484,19 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
           });
       }
       getCapability(capabilityName) {
+          if (capabilityName === 'key') {
+              const isStringifiedOn = this.options?.enforceKeyStringify === 'on';
+              const isKeyPathingOn = this.options?.useKeyPaths === 'on' ||
+                  this.options?.keyAttributesScope === 'siblings' ||
+                  (isStringifiedOn && !this.options?.useKeyPaths);
+              if (isKeyPathingOn) {
+                  if (isStringifiedOn) {
+                      return { structure: 'pathArrayString' };
+                  }
+                  return { structure: 'pathArray' };
+              }
+              return { structure: 'none' };
+          }
           return this._baseDataProvider.getCapability(capabilityName);
       }
       getTotalSize() {
@@ -483,9 +505,15 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
       isEmpty() {
           return this._baseDataProvider.isEmpty();
       }
+      /**
+       * Return an empty Set which is optimized to store keys
+       */
       createOptimizedKeySet(initialSet) {
           return this._baseDataProvider.createOptimizedKeySet(initialSet);
       }
+      /**
+       * Returns an empty Map which will efficiently store Keys returned by the DataProvider
+       */
       createOptimizedKeyMap(initialMap) {
           return this._baseDataProvider.createOptimizedKeyMap(initialMap);
       }
@@ -521,6 +549,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
           params = this._applyLeafNodeFilter(params);
           const basePromise = this._baseDataProvider.fetchByOffset(params);
           return basePromise.then((result) => {
+              // Repackage the results with tree node metadata
               const results = result.results;
               const newResults = [];
               for (const result of results) {
@@ -563,6 +592,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
           }
       }
       _getChildren(node) {
+          // Pass true to _getVal so that we keep observableArray children in the same form
           return this._getVal(node, this._childrenAttr, true);
       }
       _getRootDataProvider() {
@@ -577,11 +607,13 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
           if (!(typeof treeData === 'function' &&
               treeData.subscribe &&
               treeData['destroyAll'] !== undefined)) {
+              // we only support Array or ko.observableArray
               throw new Error('Invalid data type. ArrayTreeDataProvider only supports Array or observableArray.');
           }
           let mutationEvent = null;
           let refreshEvent = null;
           const subscriptions = new Array(2);
+          // subscribe to observableArray arrayChange event to get individual updates
           subscriptions[0] = treeData['subscribe']((changes) => {
               let i, dataArray = [], keyArray = [], indexArray = [], metadataArray = [];
               let j, index;
@@ -590,7 +622,9 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
               let operationAddEventDetail = null;
               let operationRemoveEventDetail = null;
               const refreshKeySet = new Set();
+              // squash deletes and adds into updates
               const removeDuplicate = [];
+              // update index for delete/add
               const changesCopy = [];
               for (let i = 0; i < changes.length; i++) {
                   changesCopy[i] = { index: changes[i]['index'], status: changes[i]['status'] };
@@ -624,6 +658,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
                               status !== changesCopy[j]['status'] &&
                               updatedIndexes.indexOf(i) < 0 &&
                               removeDuplicate.indexOf(i) < 0) {
+                              // Squash delete and add only if they have the same index and same key
                               const jKey = this._getId(changes[j].value);
                               if (oj.Object.compareValues(iKey, jKey)) {
                                   if (status === 'deleted') {
@@ -643,6 +678,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
                       }
                   }
               }
+              // Prepare the "remove" event detail
               for (i = 0; i < changes.length; i++) {
                   if (changes[i]['status'] === 'deleted' &&
                       updatedIndexes.indexOf(i) < 0 &&
@@ -670,6 +706,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
                       metadata: metadataArray
                   };
               }
+              // Preprocessing for the "add" and "update" event detail
               dataArray = [];
               keyArray = [];
               indexArray = [];
@@ -697,6 +734,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
                       }
                   }
               }
+              // Prepare the "add" event detail
               if (keyArray.length > 0) {
                   const keySet = new Set();
                   keyArray.forEach((key) => {
@@ -710,9 +748,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
                       this.options.keyAttributes &&
                       this.options.keyAttributesScope !== 'siblings' &&
                       this.options.enforceKeyStringify !== 'on') {
+                      // For global key, the last part of the parentKeyPath is the parent key
                       parentKey = parentKeyPath.length > 0 ? parentKeyPath[parentKeyPath.length - 1] : null;
                   }
                   else {
+                      // For non-global key, the entire parentKeyPath is the parent key
                       parentKey = parentKeyPath.length > 0 ? parentKeyPath : null;
                   }
                   indexArray.forEach((addIndex) => {
@@ -737,6 +777,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
                       metadata: metadataArray
                   };
               }
+              // Prepare the "update" event detail
               if (updateKeyArray.length > 0) {
                   const updateKeySet = new Set();
                   updateKeyArray.forEach((key) => {
@@ -756,6 +797,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
                       update: operationUpdateEventDetail
                   });
               }
+              // Prepare refresh subtree
               if (refreshKeySet.size) {
                   refreshEvent = new oj.DataProviderRefreshEvent({ keys: refreshKeySet });
               }
@@ -800,6 +842,9 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
               }
           }
       }
+      /**
+       * If observableArray, then subscribe to it
+       */
       _processTreeArray(treeData, parentKeyPath) {
           let dataArray;
           if (treeData instanceof Array) {
@@ -852,6 +897,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
           const keyPath = parentKeyPath ? parentKeyPath.slice() : [];
           const enforceKeyStringify = this.options?.enforceKeyStringify;
           if (key == null) {
+              // _getId returns null if keyAttributes is not specified or invalid.  In this case we
+              // use the index path of the node as the key.
+              // However, if this is called after initialization, we can't use index
+              // any more because node position can shift, so we need to keep track of
+              // a sequence number.
               this._setUseIndexAsKey(true);
               keyPath.push(this._incrementSequenceNum(treeData));
               key = enforceKeyStringify === 'on' ? JSON.stringify(keyPath) : keyPath;
@@ -864,12 +914,19 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
                   keyPath.push(key);
               }
               if (this.options &&
-                  (this.options['keyAttributesScope'] === 'siblings' || enforceKeyStringify === 'on')) {
+                  (this.options['keyAttributesScope'] === 'siblings' ||
+                      (enforceKeyStringify === 'on' && !this.options.useKeyPaths) ||
+                      this.options.useKeyPaths === 'on')) {
+                  // If the id is only unique among siblings, we use the id path of the
+                  // node as the key.
                   key = enforceKeyStringify === 'on' ? JSON.stringify(keyPath) : keyPath;
               }
           }
           return { key, keyPath };
       }
+      /**
+       * Get id value for row
+       */
       _getId(row) {
           let id;
           const keyAttributes = this.options != null ? this.options['keyAttributes'] : null;
@@ -896,6 +953,9 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
               return null;
           }
       }
+      /**
+       * Get value for attribute
+       */
       _getVal(val, attr, keepFunc) {
           if (typeof attr === 'string') {
               const dotIndex = attr.indexOf('.');
@@ -908,11 +968,16 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
                   }
               }
           }
+          // If keepFunc is true, don't resolve any function value.
+          // e.g. Caller may want to preserve any observableArray for other operations.
           if (keepFunc !== true && typeof val[attr] === 'function') {
               return val[attr]();
           }
           return val[attr];
       }
+      /**
+       * Get all values in a row
+       */
       _getAllVals(val) {
           if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
               return val;
@@ -955,6 +1020,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
           const rootDataProvider = this._getRootDataProvider();
           const seqNum = rootDataProvider._mapArrayToSequenceNum.get(treeData) || 0;
           rootDataProvider._mapArrayToSequenceNum.set(treeData, seqNum + 1);
+          // Return the previous sequence number
           return seqNum;
       }
       _getUseIndexAsKey() {
@@ -974,13 +1040,14 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
       }
       _applyLeafNodeFilter(params) {
           if (params && params.filterCriterion) {
-              const paramsClone = $.extend({}, params);
+              const paramsClone = { ...params };
               paramsClone.filterCriterion = this._getLeafNodeFilter(paramsClone.filterCriterion);
               paramsClone.filterCriterion.filter = params.filterCriterion.filter;
               params = paramsClone;
           }
           return params;
       }
+      // Get tree array metadata from flat array metadata/data
       _getTreeMetadata(metadata, data) {
           let keyIsPath = false;
           let treeKey = metadata.key;
@@ -989,23 +1056,23 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
               this.options.keyAttributesScope == 'siblings' ||
               this.options.keyAttributes == '@index' ||
               this._getUseIndexAsKey() ||
-              this.options.enforceKeyStringify === 'on') {
+              (this.options.enforceKeyStringify === 'on' && !this.options.useKeyPaths) ||
+              this.options.useKeyPaths === 'on') {
               keyIsPath = true;
           }
           if (keyIsPath) {
               treeKey = this._parentNodePath ? this._parentNodePath.slice() : [];
-              if (this.options?.enforceKeyStringify === 'on') {
-                  treeKey.push(JSON.parse(metadata.key));
-                  treeKey = JSON.stringify(treeKey);
-              }
-              else {
-                  treeKey.push(metadata.key);
-              }
+              treeKey.push(metadata.key);
+          }
+          if (this.options?.enforceKeyStringify === 'on') {
+              treeKey = JSON.stringify(treeKey);
           }
           metadata = this._getNodeMetadata(this._getNodeForKey(treeKey));
           return metadata;
       }
       _compareChildren(node1, node2) {
+          // this node has been updated.
+          // check if children of each node are the same
           let bSame = true;
           const nodeChildren1 = node1[this._childrenAttr];
           const nodeChildren2 = node2[this._childrenAttr];
@@ -1019,6 +1086,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojarraydataprovider', 'ojs/ojeventtarg
                   bSame = false;
               }
               else {
+                  //children has same length
                   for (let i = 0; i < children1.length; i++) {
                       if (!oj.Object.compareValues(children1[i], children2[i])) {
                           bSame = false;

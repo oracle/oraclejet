@@ -6,7 +6,7 @@
  * @ignore
  */
 import oj from 'ojs/ojcore';
-import $ from 'jquery';
+import $, { error as error$1 } from 'jquery';
 import { error } from 'ojs/ojlogger';
 import 'ojdnd';
 import 'ojs/ojlistview';
@@ -1364,6 +1364,110 @@ ListViewDndContext.prototype._handleDrop = function (event) {
   }
 
   return returnValue;
+};
+
+/**
+ * exposing this on the custom element so that it can be called by the Webelement
+ * @private
+ * @returns {Object} reorder object
+ */
+ListViewDndContext.prototype._doReorderHelper = function (event, key, position) {
+  let itemArray = [];
+  let referenceItem;
+  let destKey;
+  let groupHeader;
+  let movePosition = 'before';
+  const item = this.listview.FindElementByKey(key);
+  if (item == null) {
+    throw new Error('invaild key');
+  }
+
+  itemArray.push(item);
+
+  if ('groupKey' in position) {
+    groupHeader = this.listview.FindElementByKey(position.groupKey);
+    if (groupHeader == null) {
+      throw error$1('invalid group key');
+    }
+  }
+
+  if ('groupIndex' in position && position.groupIndex) {
+    let groupHeaderItems = this.listview.element[0].querySelectorAll(
+      '.oj-listview-element > .' +
+        this.listview.getItemElementStyleClass() +
+        '> .' +
+        this.listview.getGroupStyleClass()
+    );
+    for (let j = 0; j < position.groupIndex.length; j++) {
+      groupHeader = groupHeaderItems[position.groupIndex[j]];
+      if (groupHeader == null) {
+        throw error$1('invaild group index ');
+      }
+      groupHeaderItems = groupHeader.querySelectorAll(
+        '.' + this.listview.getItemElementStyleClass() + '> .' + this.listview.getGroupStyleClass()
+      );
+    }
+  }
+
+  if (groupHeader) {
+    let leaves = groupHeader.querySelectorAll('ul > .' + this.listview.getItemElementStyleClass());
+    if (leaves.length === 0) {
+      movePosition = 'inside';
+      destKey = this.listview.GetKey(groupHeader);
+    }
+    if ('itemIndex' in position && position.itemIndex) {
+      for (let i = 0; i < leaves.length; i++) {
+        if (position.itemIndex === i) {
+          destKey = this.listview.GetKey(leaves[i]);
+          break;
+        }
+      }
+      if (destKey == null) {
+        throw error$1('invalid itemIndex');
+      }
+    } else if (destKey == null) {
+      destKey = this.listview.GetKey(leaves[leaves.length - 1]);
+      movePosition = 'after';
+    }
+  }
+
+  if (destKey == null && 'key' in position) {
+    let items = this.listview.element[0].querySelectorAll(
+      'ul > .' + this.listview.getItemElementStyleClass()
+    );
+    if (position.key !== null) {
+      destKey = position.key;
+    } else {
+      destKey = this.listview.GetKey(items[items.length - 1]);
+      movePosition = 'after';
+    }
+  }
+
+  if (destKey == null && 'index' in position && position.index) {
+    let items = this.listview.element[0].querySelectorAll(
+      '.' + this.listview.GetStyleClass() + ' > .' + this.listview.getItemElementStyleClass()
+    );
+    for (let i = 0; i < items.length; i++) {
+      if (position.index === i) {
+        destKey = this.listview.GetKey(items[i]);
+        break;
+      }
+    }
+  }
+
+  if (destKey !== null) {
+    referenceItem = this.listview.FindElementByKey(destKey);
+  }
+
+  if (referenceItem == null) {
+    throw new Error('invaild reference position');
+  }
+
+  this.listview.Trigger(
+    'reorder',
+    event,
+    this.CreateReorderPayload(itemArray, movePosition, referenceItem)
+  );
 };
 
 /**

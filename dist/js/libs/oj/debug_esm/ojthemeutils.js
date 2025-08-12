@@ -330,6 +330,11 @@ ThemeUtils.verifyThemeVersion = (() => {
   return () => {
     if (!verified && typeof window !== 'undefined' && true) {
       verified = true;
+      if (ThemeUtils.getThemeName() === 'alta') {
+        const message =
+          'The Alta theme has been deprecated since JET 10.0 (January 2021), please move to either the Redwood or Stable theme ASAP. All Alta CSS and SCSS files will be removed in JET 21.0 (August 2026)';
+        warn(message);
+      }
       // Compare JET version with theme version
       const jetVersions = oj.version.split('.');
       let themeMap;
@@ -346,8 +351,8 @@ ThemeUtils.verifyThemeVersion = (() => {
 
       // Log error if major/minor mismatch, warning for patch mismatch
       const message = `Your CSS file is incompatible with this version of JET (${oj.version}).
-  Please see the Migration section of the Developer's Guide for how to update it.
-      `;
+      Please see the Migration section of the Developer's Guide for how to update it.
+        `;
       if (jetVersions[0] !== themeVersions[0] || jetVersions[1] !== themeVersions[1]) {
         error(message);
       } else if (jetVersions[2] !== themeVersions[2]) {

@@ -6,7 +6,6 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import $ from 'jquery';
 
 /**
  * Constructs a message object.
@@ -244,16 +243,12 @@ Message.getSeverityType = function (level) {
  * @public
  */
 Message.getMaxSeverity = function (messages) {
-  var maxLevel = -1;
-
-  if (messages && messages.length > 0) {
-    $.each(messages, function (i, message) {
-      var currLevel = Message.getSeverityLevel(message.severity);
-      maxLevel = maxLevel < currLevel ? currLevel : maxLevel;
-    });
+  if (!messages || messages.length === 0) {
+    return -1;
   }
 
-  return maxLevel;
+  const severityLevels = messages.map((message) => Message.getSeverityLevel(message.severity));
+  return Math.max(...severityLevels);
 };
 
 /**
@@ -354,7 +349,7 @@ ComponentMessage._DEFAULT_OPTIONS = {
 ComponentMessage.prototype.Init = function (summary, detail, severity, options) {
   ComponentMessage.superclass.Init.call(this, summary, detail, severity);
 
-  this._options = $.extend({}, ComponentMessage._DEFAULT_OPTIONS, options);
+  this._options = { ...ComponentMessage._DEFAULT_OPTIONS, ...options };
 };
 
 /**
@@ -421,6 +416,11 @@ ComponentMessage.prototype._isMessageAddedByComponent = function () {
   return false;
 };
 
+// use default export here for Message to retain same content that was previously returned from AMD.
+// Default export will wrap the exported functions and properties. In case non-es6 modules won't go down the default export,
+// only use default export here instead of both named export and default export.
+// So put ComponentMessage as a property under Message then the reference to ComponentMessage will be Message.ComponentMessage.
+// Can't put this inside Message.js which will cause circular dependency.
 Message.ComponentMessage = ComponentMessage;
 
 export default Message;

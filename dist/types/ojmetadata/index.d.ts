@@ -20,12 +20,14 @@ export type ComponentMetadata = {
     events?: {
         [key: string]: ComponentMetadataEvents;
     };
+    export?: string;
     extension?: object;
     help?: string;
     icon?: Icon;
     implements?: string[];
     jetVersion: string;
     license?: string;
+    main?: string;
     methods?: {
         [key: string]: ComponentMetadataMethods;
     };
@@ -106,6 +108,8 @@ export type ComponentMetadataProperties = {
     readOnly?: boolean;
     required?: boolean;
     status?: Status[];
+    templateSlotAlias?: string;
+    /** @deprecated since 19.0.0 - Use the 'templateSlotAlias' metadata property instead. */
     templateSlotRenderType?: string;
     translatable?: boolean;
     type: string;
@@ -128,6 +132,8 @@ export type ComponentMetadataSlots = {
     minItems?: number;
     preferredContent?: string[];
     status?: Status[];
+    templateSlotAlias?: string;
+    /** @deprecated since 19.0.0 - Use the 'templateSlotAlias' metadata property instead. */
     templateSlotRenderType?: string;
     visible?: boolean;
 };
@@ -200,9 +206,10 @@ export type ProvideProperty = {
 // tslint:disable-next-line interface-over-type-literal
 export type Requirement = {
     description?: string;
+    label: string;
     properties?: string[];
     slots?: string[];
-    type: 'anyOf';
+    type: 'anyOf' | 'not';
 };
 // tslint:disable-next-line interface-over-type-literal
 export type SlotDataVariable = {

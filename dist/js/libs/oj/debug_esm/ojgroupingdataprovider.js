@@ -6,7 +6,6 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import $ from 'jquery';
 import { observableArray } from 'knockout';
 import ArrayTreeDataProvider from 'ojs/ojarraytreedataprovider';
 import ArrayDataProvider from 'ojs/ojarraydataprovider';
@@ -287,6 +286,7 @@ class GroupingDataProvider {
                 this._params = _params;
             }
             ['next']() {
+                // skip fetch if we have at least one section that's prefetched.
                 let currentFetchedRootOffset = 0;
                 if (this._parent._currentRootSection) {
                     currentFetchedRootOffset = Object.keys(this._parent._sections).indexOf(this._parent._currentRootSection);
@@ -294,6 +294,7 @@ class GroupingDataProvider {
                 const skipFetch = this._parent._currentBaseOffset < currentFetchedRootOffset;
                 const doneOrSkip = skipFetch || this._parent._dataFetchComplete;
                 return this._parent._getDataFromDataProvider(this._params, 'root', doneOrSkip).then((res) => {
+                    // JET-45601 refresh occur and fetch was canceled. Rejecting request
                     if (res === 'error') {
                         return Promise.reject('Fetch interrupted due to refresh event');
                     }
@@ -308,10 +309,13 @@ class GroupingDataProvider {
                             return value['metadata'];
                         });
                         for (let i = 0; i < metadata.length; i++) {
+                            // Replace flat array metadata with tree array metadata
                             metadata[i] = this._parent._getNodeMetadata(result[i].data);
                             data[i] = this._parent.sectionRenderer(metadata[i].key);
                         }
+                        // update internal base offset value
                         this._parent._currentBaseOffset = this._parent._currentBaseOffset + data.length;
+                        // Protocol Change: done flag returns true only when data is empty
                         if (res.done && this._parent._dataFetchComplete && data.length === 0) {
                             return Promise.resolve(new this._parent.AsyncIteratorReturnResult(this._parent, new this._parent.FetchListResult(this._parent, this._params, data, metadata)));
                         }
@@ -333,11 +337,14 @@ class GroupingDataProvider {
                 const internalOffset = this._parent._getIteratorOffset(this);
                 const updatedParams = new this._parent.FetchByOffsetParameters(this._parent, internalOffset.offset, this._params.size, this._params.sortCriteria, this._params.filterCriterion);
                 const totalSectionSize = this._parent._sections[this._parentKey].children().length;
+                // if there's any data in the cache, skip pre-fetch
+                // or if the iterator has already returned done true
                 const skipFetch = totalSectionSize - internalOffset.offset > 0;
                 const doneOrSkip = skipFetch || this._parent._dataFetchComplete;
                 return this._parent
                     ._getDataFromDataProvider(this._params, this._parentKey, doneOrSkip)
                     .then((value) => {
+                    // JET-45601 refresh occur and fetch was canceled. Rejecting request
                     if (value === 'error') {
                         return Promise.reject('Fetch interrupted due to refresh event');
                     }
@@ -351,6 +358,7 @@ class GroupingDataProvider {
                             return value['data'];
                         });
                         const metadata = result.map((value) => {
+                            // Replace flat array metadata with tree array metadata
                             return this._parent._getNodeMetadata(value['data']);
                         });
                         if (this._isParentSection) {
@@ -358,14 +366,22 @@ class GroupingDataProvider {
                                 data[i] = this._parent.sectionRenderer(metadata[i].key);
                             }
                         }
+                        // update internal base offset value
                         this._parent._updateIteratorOffset(this, internalOffset.offset + data.length);
+                        // if we skipped, check if there is another section after this one.
+                        // if there is no next section, set done to false in case there is
+                        // more data in this section
                         if (skipFetch && doneValue) {
                             const nextSectionId = this._parent._sections[this._parentKey].next;
                             if (!nextSectionId) {
                                 doneValue = false;
                             }
                         }
+                        // Protocol change: only return done = true if data is empty
                         if (doneValue && data.length === 0) {
+                            // done with fetching, clear offsets
+                            // EDIT: removing the unregister since iterators may be called
+                            // self._parent._unregisterIteratorOffset(self);
                             return Promise.resolve(new this._parent.AsyncIteratorReturnResult(this._parent, new this._parent.FetchListResult(this._parent, this._params, data, metadata)));
                         }
                         return Promise.resolve(new this._parent.AsyncIteratorYieldResult(this._parent, new this._parent.FetchListResult(this._parent, this._params, data, metadata)));
@@ -451,6 +467,7 @@ class GroupingDataProvider {
         });
     }
     getCapability(capabilityName) {
+        // No filtering support yet
         if (capabilityName === 'filter') {
             return null;
         }
@@ -493,7 +510,8 @@ class GroupingDataProvider {
                 };
                 this.fetchFirst = function (params) {
                     if (params && params.filterCriterion) {
-                        params = $.extend({}, params);
+                        // clear out filterCriterion until support for filtering is added
+                        params = { ...params };
                         params.filterCriterion = null;
                     }
                     const baseDataProvider = this._baseDataProvider;
@@ -534,16 +552,19 @@ class GroupingDataProvider {
     }
     fetchFirst(params) {
         if (params && params.filterCriterion) {
-            params = $.extend({}, params);
+            // clear out filterCriterion until support for filtering is added
+            params = { ...params };
             params.filterCriterion = null;
         }
         const baseIterable = this._baseDataProvider.fetchFirst(params);
+        // reset current cache since we are refetching data from the base dp
         this._initializeTreeCache();
         return this._getGroupIterator(baseIterable, this._baseDataProvider, params);
     }
     fetchByOffset(params) {
         const basePromise = this._baseDataProvider.fetchByOffset(params);
         return basePromise.then((result) => {
+            // Repackage the results with tree node metadata
             const results = result.results;
             const newResults = [];
             for (const result of results) {
@@ -592,6 +613,7 @@ class GroupingDataProvider {
             if (parentSection &&
                 parentSection.children().length > 0 &&
                 this._sections[parentSection.children()[0]]) {
+                // check if first child is in the section keys
                 return true;
             }
         }
@@ -605,6 +627,7 @@ class GroupingDataProvider {
         this._sectionRootData = observableArray();
         this._dataFetchComplete = false;
         this._internalIterator = null;
+        // initialize base treeData as observable array to track root nodes
         this.treeData = observableArray([]);
         this._initializeTreeCache();
         this._createSections();
@@ -639,20 +662,30 @@ class GroupingDataProvider {
         originalValue.offset = newOffset;
         this._iteratorOffsets.set(dataprovider, originalValue);
     }
+    /* iterators are currently not being deleted
+    private _unregisterIteratorOffset(dataprovider) {
+      this._iteratorOffsets.delete(dataprovider);
+    }
+    */
     _getRootDataProvider() {
         return this;
     }
     _getDataFromDataProvider(params, source, skipFetch) {
+        // Check if we need to grab more data.
+        // Applicable if the current fetched section or any of its parent sections is being called for fetching
         if (!this._inCurrentFetchingSection(source) || skipFetch) {
             return Promise.resolve('skip');
         }
         let iterator = this._internalIterator;
         if (!this._internalIterator) {
+            // track the current iterator.
             iterator = this._dataProvider.fetchFirst(params)[Symbol.asyncIterator]();
             this._internalIterator = iterator;
             this._previousTotalSize = 0;
             this._internalIteratorCacheLength = 0;
         }
+        // if the previousTotalSize and the current totalSize don't match, reset the cache length
+        // to ensure that we fill the fetchSize.
         if (this._previousTotalSize !== this._treeData.length) {
             this._internalIteratorCacheLength = 0;
         }
@@ -660,7 +693,10 @@ class GroupingDataProvider {
             this._internalIteratorResolve = resolve;
             const helperFunction = (storedDataLength, iterator) => {
                 return this._internalIterator.next().then((result) => {
+                    // if the resolve is null, then we already cleared, so this doesn't matter
+                    // jet-45601: if refresh event is triggered while fetch is occuring fetch should be vetoed
                     if (this._internalIterator != null && this._internalIterator === iterator) {
+                        // concat the data
                         this._treeData = this._treeData.concat(result['value']['data']);
                         this._treeMetadata = this._treeMetadata.concat(result['value']['metadata']);
                         result['value']['metadata'].forEach((val) => {
@@ -674,6 +710,8 @@ class GroupingDataProvider {
                             this._dataFetchComplete = false;
                         }
                         if (result['done'] || storedDataLength >= result['value']['fetchParameters']['size']) {
+                            // we have all the data or we hit the fetchSize
+                            // cache the chunk length from before if there is extra data
                             const remainder = storedDataLength - result['value']['fetchParameters']['size'];
                             this._internalIteratorCacheLength = Math.max(0, remainder);
                             this._previousTotalSize = this._treeData.length;
@@ -689,6 +727,8 @@ class GroupingDataProvider {
             return helperFunction(this._internalIteratorCacheLength, iterator);
         });
     }
+    // Returns a boolean about whether or not the source value
+    // is the same as the current section key
     _inCurrentFetchingSection(source) {
         if (source === 'root') {
             return true;
@@ -754,6 +794,7 @@ class GroupingDataProvider {
                 return this._getVal(item, this.options.groupByStrategy);
             };
         }
+        // need to notify that value has changed
         if (this.treeData) {
             this.treeData.valueHasMutated();
         }
@@ -761,6 +802,7 @@ class GroupingDataProvider {
     _getSectionKeyFromArray(label) {
         if (label) {
             if (Array.isArray(label) && label.length > 0) {
+                // last item should be the section key
                 return label[label.length - 1];
             }
             else if (typeof label === 'string') {
@@ -811,44 +853,56 @@ class GroupingDataProvider {
         let nextLeaf = null;
         const leafNode = depth === this._getDepth(sectionMapping);
         let rootNode = false;
+        // if leaf node, keep track of previous and next leaf
         if (leafNode) {
             previousLeaf = previousKey;
             nextLeaf = nextKey;
         }
         if (parentKey != null) {
             if (!(parentKey in this._sections && this._sections[parentKey].active)) {
+                // parent doesn't exist, need to create it.
                 this._createNewSection(parentKey, needsMutationEvent, sectionMapping, previousKey, nextKey);
+                // If we need to create a parent, we can just use that as the mutation event
                 if (needsMutationEvent) {
                     needsMutationEvent = false;
                 }
             }
+            // parent does exist now. Extract the relevant data from it
             parentSectionChildrenArray = this._sections[parentKey].children;
             parentSectionChildDataArray = this._sections[parentKey].childData;
         }
         else {
+            // this is a root node. Go to sectionRoots for the correct data
             parentSectionChildrenArray = this._sectionRoots;
             parentSectionChildDataArray = this._sectionRootData;
             rootNode = true;
         }
+        // get the appropriate previous node for the level
         let previousNode = null;
+        // Usually can just use previous key to determine placement of section level.
         if (nextKey == null) {
+            // Grab the previous Key and add current key to the array if null previousKey
             if (previousKey == null) {
                 if (parentSectionChildrenArray().length > 0) {
                     previousKey = parentSectionChildrenArray()[parentSectionChildrenArray().length - 1];
+                    // if leaf node, update previous leaf
                     if (leafNode) {
                         previousLeaf = previousKey;
                     }
                 }
+                // splice in the new sectionKey based on location
                 parentSectionChildrenArray.push(newSectionKey);
                 parentSectionChildDataArray.push(this.sectionRenderer(newSectionKey));
             }
             else {
+                // get the appropriate previous node for the level
                 previousNode = this._sections[previousKey];
                 while (previousNode.depth > depth) {
                     previousNode = this._sections[this._sections[previousKey].parent];
                 }
                 if (previousNode.depth === depth) {
                     previousKey = previousNode.key;
+                    // splice in the new sectionKey based on location
                     const newIndex = parentSectionChildrenArray.indexOf(previousKey);
                     if (newIndex >= 0) {
                         parentSectionChildrenArray.splice(newIndex + 1, 0, newSectionKey);
@@ -861,20 +915,26 @@ class GroupingDataProvider {
                     nextKey = previousNode.next;
                 }
                 else {
+                    // no previous node at this level so leave both previous and next as null
                     previousKey = null;
                     nextKey = null;
+                    // push to parent
                     parentSectionChildrenArray.push(newSectionKey);
                     parentSectionChildDataArray.push(this.sectionRenderer(newSectionKey));
                 }
             }
         }
         else {
+            // previousKey is null so we need to go off next key
+            // get the appropriate next node for the level
             let nextNode = this._sections[nextKey];
+            // For non-leaf containing sections, we need to align the depths
             while (nextNode.depth > depth) {
                 nextNode = this._sections[this._sections[nextKey].parent];
             }
             if (nextNode.depth === depth) {
                 nextKey = nextNode.key;
+                // splice in the new sectionKey based on location
                 const newIndex = parentSectionChildrenArray.indexOf(nextKey);
                 if (newIndex >= 0) {
                     parentSectionChildrenArray.splice(newIndex, 0, newSectionKey);
@@ -887,16 +947,20 @@ class GroupingDataProvider {
                 previousKey = nextNode.previous;
             }
             else {
+                // no next node at this level so leave both previous and next as null
                 previousKey = null;
                 nextKey = null;
+                // push to parent
                 parentSectionChildrenArray.push(newSectionKey);
                 parentSectionChildDataArray.push(this.sectionRenderer(newSectionKey));
             }
         }
+        // create the section if it doesn't exist
         if (!(newSectionKey in this._sections)) {
             this._insertSection({ newKey: newSectionKey, parentKey, previousKey, nextKey }, { previousLeaf, nextLeaf }, depth);
         }
         else {
+            // already exists, just need to activate and update methods
             this._sections[newSectionKey].active = true;
             this._sections[newSectionKey].previous = previousKey;
             this._sections[newSectionKey].next = nextKey;
@@ -904,13 +968,16 @@ class GroupingDataProvider {
             this._sections[newSectionKey].nextLeaf = nextLeaf;
             this._sections[newSectionKey].parent = parentKey;
         }
+        // update previous section's next
         if (previousKey != null) {
             this._sections[previousKey].next = newSectionKey;
         }
+        // update next section's previous
         if (nextKey != null) {
             this._sections[nextKey].previous = newSectionKey;
         }
         if (depth === this._getDepth(sectionMapping)) {
+            // update leaf references
             if (previousLeaf != null) {
                 this._sections[previousLeaf].nextLeaf = newSectionKey;
             }
@@ -920,6 +987,7 @@ class GroupingDataProvider {
         }
         if (depth === this._getDepth(sectionMapping) &&
             (nextKey == this._currentFirstSection || this._currentFirstSection == null)) {
+            // if current first section is null or considered the next section, update current first section
             this._currentFirstSection = newSectionKey;
         }
         let addBeforeKeys = null;
@@ -930,6 +998,7 @@ class GroupingDataProvider {
         this._processNode(data, [], newSectionKey);
         if (needsMutationEvent &&
             this._storedAddSectionKeys.indexOf(this._sections[newSectionKey].parent) === -1) {
+            // Check if parent event already being fired
             const keys = newSectionKey;
             const metadata = {
                 key: newSectionKey
@@ -950,10 +1019,14 @@ class GroupingDataProvider {
             });
             this._storedAddSection.push(mutationEvent);
             this._storedAddSectionKeys.push(newSectionKey);
+            // need to increment the currentbaseoffset value to adjust fetch parameters if we're still fetching
+            // and we are mutating root level nodes and new item index is before current offsets
             if (!this._dataFetchComplete && rootNode && this._currentBaseOffset > index) {
                 this._currentBaseOffset++;
             }
             if (!this._dataFetchComplete) {
+                // check current iterators if parentKey section is being fetched from
+                // need to update its internal offset if new item index is before current offsets
                 for (const [key, value] of this._iteratorOffsets) {
                     if (value.parentKey === parentKey && value.offset > index) {
                         value.offset++;
@@ -962,16 +1035,20 @@ class GroupingDataProvider {
                 }
             }
         }
+        // need to notify that value has changed
         this.treeData.valueHasMutated();
     }
     _removeSection(sectionKey) {
         const sectionData = this._sections[sectionKey];
+        // update previous, next, and parent sections to
+        // properly kill off all empty sections and keep references current
         const parent = sectionData.parent;
         const previous = sectionData.previous;
         const next = sectionData.next;
         const previousLeaf = sectionData.previousLeaf;
         const nextLeaf = sectionData.nextLeaf;
         let needsMutationEvent = true;
+        // update previous and next
         if (this._sections[next] && this._sections[next].previous === sectionKey) {
             this._sections[next].previous = sectionData.previous;
         }
@@ -984,9 +1061,12 @@ class GroupingDataProvider {
         if (this._sections[previousLeaf] && this._sections[previousLeaf].nextLeaf === sectionKey) {
             this._sections[previousLeaf].nextLeaf = sectionData.nextLeaf;
         }
+        // resolve parent. May need to delete
         if (this._sections[parent] && this._sections[parent].children.indexOf(sectionKey) !== -1) {
             const childIndex = this._sections[parent].children.indexOf(sectionKey);
             if (!this._dataFetchComplete) {
+                // check current iterators if parentKey section is being fetched from
+                // need to update its internal offset
                 for (const [key, value] of this._iteratorOffsets) {
                     if (value.parentKey === parent && value.offset > childIndex) {
                         value.offset--;
@@ -996,25 +1076,33 @@ class GroupingDataProvider {
             }
             this._sections[parent].children.splice(childIndex, 1);
             this._sections[parent].childData.splice(childIndex, 1);
+            // If a section no longer has children, we should remove it.
             if (this._sections[parent].children().length === 0) {
                 this._removeSection(parent);
+                // If we need to remove a parent, we can just use that as the mutation event
                 if (needsMutationEvent) {
                     needsMutationEvent = false;
                 }
             }
         }
+        // Don't delete section. Instead 'soft delete' by setting inactive
+        // That way we retain the data for the section and can add it back in as needed
         this._sections[sectionKey].active = false;
         this._sections[sectionKey].children([]);
         this._sections[sectionKey].childData([]);
         if (this._sections[sectionKey].parent == null) {
+            // if no parent, remove it also from root nodes
             const rootIndex = this._sectionRoots.indexOf(sectionKey);
             this._sectionRoots.splice(rootIndex, 1);
             this._sectionRootData.splice(rootIndex, 1);
+            // need to decrement the currentbaseoffset value to adjust fetch parameters if we're still fetching
+            // and rootIndex < base offset
             if (!this._dataFetchComplete && this._currentBaseOffset > rootIndex) {
                 this._currentBaseOffset--;
             }
         }
         if (sectionKey === this._currentFirstSection) {
+            // removing first section, so set as its next section
             this._currentFirstSection = next;
         }
         if (needsMutationEvent) {
@@ -1036,6 +1124,7 @@ class GroupingDataProvider {
             });
             this._storedRemoveSection.push(mutationEvent);
         }
+        // need to notify that value has changed
         this.treeData.valueHasMutated();
     }
     _updateSectionIndex() {
@@ -1046,6 +1135,7 @@ class GroupingDataProvider {
             const newSectionLabel = this._groupingFunction(data);
             const itemSectionKey = this._getSectionKeyFromArray(newSectionLabel);
             if (this._currentSectionKey == null) {
+                // initialize
                 if (!(itemSectionKey in this._sections)) {
                     this._createNewSection(itemSectionKey, false, newSectionLabel, this._currentSectionKey, null);
                 }
@@ -1057,6 +1147,8 @@ class GroupingDataProvider {
             }
             else {
                 if (!(itemSectionKey in this._sections && this._sections[itemSectionKey].active)) {
+                    // if key doesn't exist, need to initialize
+                    // if it is inactive, also need to initialize
                     this._createNewSection(itemSectionKey, false, newSectionLabel, this._currentSectionKey, null);
                 }
                 this._sections[this._currentSectionKey].children(this._currentSectionData);
@@ -1065,12 +1157,14 @@ class GroupingDataProvider {
                 this._currentRootSection = this._getSectionArray(newSectionLabel)[0];
                 this._currentSectionData = [data];
             }
+            // increment our offset position
             this._currentOffset++;
         }
         if (this._currentSectionData.length > 0) {
             this._sections[this._currentSectionKey].children(this._currentSectionData);
             this._sections[this._currentSectionKey].childData(this._getChildDataFromChildren(this._currentSectionKey));
         }
+        // update root nodes
         const rootSections = [];
         for (const sectionKey in this._sections) {
             if (this._sections[sectionKey].parent == null) {
@@ -1082,9 +1176,11 @@ class GroupingDataProvider {
     }
     _getSectionArray(sectionMapping) {
         if (Array.isArray(sectionMapping)) {
+            // if it's an array, return 1 less than the length
             return sectionMapping;
         }
         else {
+            // it can be a string, so depth 0
             return [sectionMapping];
         }
     }
@@ -1098,14 +1194,19 @@ class GroupingDataProvider {
     _getKeyAttribute() {
         let keyAttributes = this.options != null ? this.options['keyAttributes'] : null;
         if (!keyAttributes) {
+            //default to id
             keyAttributes = 'id';
         }
         return keyAttributes;
     }
+    /**
+     * Get id value for row
+     */
     _getId(row) {
         let id;
         let keyAttributes = this.options != null ? this.options['keyAttributes'] : null;
         if (!keyAttributes) {
+            //default to id
             keyAttributes = 'id';
         }
         if (keyAttributes != null) {
@@ -1128,14 +1229,22 @@ class GroupingDataProvider {
             return null;
         }
     }
+    /**
+     * Get depth of a section. Sections right below root are depth 0, increasing for number of levels
+     */
     _getDepth(sectionMapping) {
         if (Array.isArray(sectionMapping)) {
+            // if it's an array, return 1 less than the length
             return sectionMapping.length - 1;
         }
         else {
+            // it can be a string, so depth 0
             return 0;
         }
     }
+    /**
+     * Get value for attribute
+     */
     _getVal(val, attr, keepFunc = false) {
         if (typeof attr === 'string') {
             const dotIndex = attr.indexOf('.');
@@ -1148,11 +1257,16 @@ class GroupingDataProvider {
                 }
             }
         }
+        // If keepFunc is true, don't resolve any function value.
+        // e.g. Caller may want to preserve any observableArray for other operations.
         if (keepFunc !== true && typeof val[attr] === 'function') {
             return val[attr]();
         }
         return val[attr];
     }
+    /**
+     * Get all values in a row
+     */
     _getAllVals(val) {
         return Object.keys(val).map((key) => {
             return this._getVal(val, key);
@@ -1178,16 +1292,19 @@ class GroupingDataProvider {
         rootDataProvider._mapKeyToNode.set(JSON.stringify(key), node);
         rootDataProvider._mapNodeToKey.set(node, key);
     }
+    // sortComparator(a, b): returns true if a goes before b, false otherwise.
     _addData(event) {
         const data = event.data;
         const metadata = event.metadata;
         let addBeforeKeys = event.addBeforeKeys;
         const indexes = event.indexes;
         const keys = [];
+        // get key array
         event.keys.forEach((key) => {
             keys.push(key);
         });
         if (indexes != null && indexes.length > 0) {
+            // if indexes exist, we can use them.
             const sortedIndexes = indexes.slice(0).sort();
             for (const sortedIndex of sortedIndexes) {
                 const originalIndex = indexes.indexOf(sortedIndex);
@@ -1204,11 +1321,14 @@ class GroupingDataProvider {
             }
         }
         else {
+            // Don't have indexes.
+            // Insert items based on sort comparator
             const orderedData = [];
             const orderedMetaData = [];
             const orderedKeys = [];
             let counter = 0;
             let added = false;
+            // order the incoming data reverse chronologically
             data.forEach((value, ind) => {
                 added = false;
                 if (orderedData.length !== 0) {
@@ -1230,6 +1350,7 @@ class GroupingDataProvider {
                     orderedKeys.push(keys[ind]);
                 }
             });
+            // add the new data/metadata/key in
             counter = this._treeData.length - 1;
             const addBeforeKeysMap = {};
             orderedData.forEach((value, ind) => {
@@ -1274,7 +1395,9 @@ class GroupingDataProvider {
     }
     _handleAdd(event) {
         const newData = [];
+        // add the new data, metadata, keys into treeData, treeMetadata, treeKeyMap
         const addBeforeKeys = this._addData(event);
+        // Make sure addBeforeKeys = [] case is also covered
         if (!event.addBeforeKeys || event.addBeforeKeys.length === 0) {
             event.addBeforeKeys = addBeforeKeys;
         }
@@ -1288,6 +1411,7 @@ class GroupingDataProvider {
         const newAddedSections = [];
         const keepInd = [];
         const indexMap = this._getIndexFromKeys(event.keys);
+        // Make sure indexes = [] case is also covered
         if (!event.indexes || event.indexes.length === 0) {
             event.indexes = [];
         }
@@ -1298,6 +1422,7 @@ class GroupingDataProvider {
             let previousSectionId;
             let nextSectionId;
             if (!(sectionId in this._sections && this._sections[sectionId].active)) {
+                // New Section
                 if (indexMap[ind] !== 0) {
                     previousSectionId = this._getSectionKeyFromArray(this._groupingFunction(this._treeData[indexMap[ind] - 1]));
                     nextSectionId = this._sections[previousSectionId].nextLeaf;
@@ -1306,6 +1431,7 @@ class GroupingDataProvider {
                     previousSectionId = null;
                 }
                 if (indexMap[ind] + 1 < this._treeData.length && previousSectionId == null) {
+                    // This should be a new section in front
                     nextSectionId = this._currentFirstSection;
                 }
                 this._createNewSection(sectionId, true, sectionLabel, previousSectionId, nextSectionId);
@@ -1329,11 +1455,15 @@ class GroupingDataProvider {
             if (event.addBeforeKeys[ind] != null && ind === event.data.length - 1) {
                 const addBeforeDataSection = this._getSectionKeyFromArray(this._groupingFunction(this._treeData[this._treeKeyMap.indexOf(event.addBeforeKeys[ind])]));
                 if (addBeforeDataSection !== sectionId) {
+                    // For each new add event, we need to check the last addBeforeKeys
+                    // If the key and addBeforeKey are in two different sections
+                    // addBeforeKeys should be null
                     event.addBeforeKeys[ind] = null;
                 }
             }
         });
         event.parentKeys = parentKeys;
+        // If we need to create any new Sections, skip events that pertain to the new Section
         if (newAddedSections.length > 0) {
             let counter = 0;
             const newData = [];
@@ -1370,6 +1500,8 @@ class GroupingDataProvider {
         return event;
     }
     _handleRemove(event) {
+        // remove data entries from our internal data array
+        // remove unneeded keys from our mapping
         const indexMap = this._getIndexFromKeys(event.keys);
         this._removeKeys(event.keys);
         const removeDataIndex = [];
@@ -1399,6 +1531,7 @@ class GroupingDataProvider {
             const sectionId = removeDataIndex[i].sectionId;
             const dataArray = this._sections[sectionId].children;
             dataArray.splice(removeDataIndex[i].ind, 1);
+            // Remove Section since doesn't exist anymore
             if (dataArray().length === 0) {
                 this._removeSection(sectionId);
             }
@@ -1407,6 +1540,7 @@ class GroupingDataProvider {
         }
     }
     _handleUpdate(event) {
+        // need to update our internal data array with the new data
         const indexMap = this._getIndexFromKeys(event.keys);
         event.data.forEach((value, ind) => {
             const updateInd = indexMap[ind];
@@ -1426,6 +1560,7 @@ class GroupingDataProvider {
             this._treeData[updateInd] = value;
         });
     }
+    // used in insertSection
     _getCutoffIndex(sectionKey) {
         if (sectionKey != null) {
             return this._sections[sectionKey].cutoffIndex();
@@ -1440,6 +1575,7 @@ class GroupingDataProvider {
         return indexMap;
     }
     _removeKeys(keys) {
+        // Remove unneeded key/index mappings.
         keys.forEach((key) => {
             this._treeKeyMap.splice(this._treeKeyMap.indexOf(key), 1);
         });
@@ -1449,10 +1585,12 @@ class GroupingDataProvider {
         let keyIndex = 0;
         event.keys.forEach((val) => {
             if (indexMap[keyIndex] === -1) {
+                // key is not in the set, so ignore it
                 event.keys.delete(val);
             }
             keyIndex++;
         });
+        // remove optional elements if they exist
         for (let ind = indexMap.length - 1; ind >= 0; ind--) {
             if (indexMap[ind] === -1) {
                 if (event.data) {
@@ -1473,20 +1611,26 @@ class GroupingDataProvider {
         const indexes = event.indexes;
         const keys = [];
         const cleanItems = [];
+        // get key array
         event.keys.forEach((key) => {
             keys.push(key);
         });
         if (indexes != null) {
+            // if indexes exist, we can use them.
             const sortedIndexes = indexes.slice(0).sort();
             for (let i = 0; i < sortedIndexes.length; i++) {
                 const currentIndex = sortedIndexes[i];
                 const originalIndex = indexes.indexOf(currentIndex);
+                // check total length + all newly added items
                 if (this._treeData.length + i - cleanItems.length < currentIndex) {
+                    // currentIndex is out of scope, add it to the cleanItems for removal
                     cleanItems.push(originalIndex);
                 }
             }
         }
         else if (addBeforeKeys != null) {
+            // check each addBeforeKeys. If an addBeforeKey value is not
+            // in treeKeyMap, and is also not in event.keys, it is out of scope
             const sortedKeys = addBeforeKeys.slice(0).sort();
             for (const currentKey of sortedKeys) {
                 const originalKeyIndex = addBeforeKeys.indexOf(currentKey);
@@ -1497,10 +1641,13 @@ class GroupingDataProvider {
                     else if (this._treeKeyMap.indexOf(currentKey) === -1 &&
                         keys.indexOf(currentKey) !== -1 &&
                         cleanItems.indexOf(keys.indexOf(currentKey)) === -1) {
+                        // If addBeforeKey value is in event.keys, but that key
+                        // belongs to an out of scope value already, it is also out of scope
                         cleanItems.push(originalKeyIndex);
                     }
                 }
                 else {
+                    // if key is null, it just needs to be added to the end if at the end already
                     if (!this._dataFetchComplete) {
                         cleanItems.push(originalKeyIndex);
                     }
@@ -1510,11 +1657,13 @@ class GroupingDataProvider {
         let keyIndex = 0;
         event.keys.forEach((val) => {
             if (cleanItems.indexOf(keyIndex) !== -1) {
+                // key is not in the set, so ignore it
                 event.keys.delete(val);
             }
             keyIndex++;
         });
         const sortedCleanItems = cleanItems.splice(0).sort();
+        // remove optional elements if they exist
         for (let ind = sortedCleanItems.length - 1; ind >= 0; ind--) {
             if (event.data) {
                 event.data.splice(sortedCleanItems[ind], 1);
@@ -1541,6 +1690,7 @@ class GroupingDataProvider {
                 this._internalIteratorResolve('error');
                 this._internalIteratorResolve = null;
                 window.requestAnimationFrame(() => {
+                    // 0 timeout to allow gdp to handle the fetch reject event
                     this.dispatchEvent(new DataProviderRefreshEvent());
                 });
             }
@@ -1549,6 +1699,9 @@ class GroupingDataProvider {
             }
         });
         dataprovider.addEventListener('mutate', (event) => {
+            // For now assume that mutation events have event.keys and event.data
+            // We can handle no data events later (e.g. perform fetchByKeys extra step)
+            // convert add event to update event
             if (event.detail.add) {
                 event.detail.add = this._cleanAddEvent(event.detail.add);
                 if (event.detail.add.keys.size !== 0) {

@@ -46,11 +46,13 @@ $labelPosition: $radioCheckboxLabelPosition) {
     @include oj-radiocheckbox-position-horizontal($position);
   }
 
+  /* Deprecated since 19.0.0: Using .oj-radioset-input-start and .oj-checkboxset-input-start for Redwood applications is not a recommended pattern. */
   .oj-radioset-input-start .oj-radio,
   .oj-checkboxset-input-start .oj-checkbox {
     @include oj-radiocheckbox-position-horizontal($position, "end");
   }
 
+  /* Deprecated since 19.0.0: Using .oj-radioset-input-end and .oj-checkboxset-input-end for Redwood applications is not a recommended pattern. */
   .oj-radioset-input-end .oj-radio,
   .oj-checkboxset-input-end .oj-checkbox {
     @include oj-radiocheckbox-position-horizontal($position, "start");
@@ -83,16 +85,19 @@ $labelPosition: $radioCheckboxLabelPosition) {
     // make a more specific selector than above if 
     // an input-start or input-end selector is set on the root dom
     // put the margin on the 'inside'.
+    /* Deprecated since 19.0.0: Using .oj-radioset-input-start and .oj-checkboxset-input-start for Redwood applications is not a recommended pattern. */
     .oj-radioset-input-start .oj-radiocheckbox-icon,
     .oj-checkboxset-input-start .oj-radiocheckbox-icon {
       @include oj-ltr() {
         margin: 0 $marginToText 0 $marginToEdge;      
       }
+
       @include oj-rtl() {
         margin: 0 $marginToEdge 0 $marginToText;
       }       
     }
 
+    /* Deprecated since 19.0.0: Using .oj-radioset-input-end and .oj-checkboxset-input-end for Redwood applications is not a recommended pattern. */
     .oj-radioset-input-end .oj-radiocheckbox-icon,
     .oj-checkboxset-input-end .oj-radiocheckbox-icon {
       @include oj-ltr() {
@@ -100,7 +105,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
       }
       @include oj-rtl() {
         margin: 0 $marginToText 0 $marginToEdge;
-      }       
+      }
     }
 }
 
@@ -243,6 +248,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
     }
 
     // no chrome
+    /* Deprecated since 19.0.0: Using .oj-checkboxset-no-chrome and .oj-radioset-no-chrome for Redwood applications is not a recommended pattern. */
     .oj-checkboxset-no-chrome .oj-checkboxset-wrapper,
     .oj-radioset-no-chrome .oj-radioset-wrapper {
       background-color: inherit;
@@ -268,10 +274,10 @@ $labelPosition: $radioCheckboxLabelPosition) {
         }
             
       }
-       // no chrome
+        // no chrome
+        /* Deprecated since 19.0.0: Using .oj-checkboxset-no-chrome and .oj-radioset-no-chrome for Redwood applications is not a recommended pattern. */
         .oj-checkboxset-no-chrome .oj-checkboxset-wrapper,
-        .oj-radioset-no-chrome .oj-radioset-wrapper,
-        {
+        .oj-radioset-no-chrome .oj-radioset-wrapper{
           border-width: 0;
         }
 
@@ -434,6 +440,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
       }
     }
 
+    /* Deprecated since 19.0.0: Using .oj-checkboxset-input-end and oj-radioset-input-end for Redwood applications is not a recommended pattern. */
     .oj-checkboxset-input-end .oj-radiocheckbox-label-text,
     .oj-checkboxset-input-end .oj-checkbox-label-nocomp,
     .oj-radioset-input-end .oj-radiocheckbox-label-text {
@@ -449,6 +456,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
     }
 
     // need the @ltr only so it overrides the padding selectors above
+    /* Deprecated since 19.0.0: Using .oj-radioset-input-start and .oj-checkboxset-input-start for Redwood applications is not a recommended pattern. */
     .oj-checkboxset-input-start .oj-radiocheckbox-label-text,
     .oj-checkboxset-input-start .oj-checkbox-label-nocomp,
     .oj-radioset-input-start .oj-radiocheckbox-label-text {
@@ -464,11 +472,13 @@ $labelPosition: $radioCheckboxLabelPosition) {
 
     // we wrap the oj-radio and oj-checkbox in a span with .oj-radiocheckbox-icon class on it.
     // in backgroundImage mode, this class has an icon, otherwise it does nothing and shows the input.
+    /* Deprecated since 19.0.0: Using .oj-radioset-input-end and .oj-checkboxset-input-end for Redwood applications is not a recommended pattern. */
     .oj-radioset-input-end .oj-radiocheckbox-icon,
     .oj-checkboxset-input-end .oj-radiocheckbox-icon {
       order: 1;
     }
 
+    /* Deprecated since 19.0.0: Using .oj-radioset-input-start and .oj-checkboxset-input-start for Redwood applications is not a recommended pattern. */
     .oj-radioset-input-start .oj-radio-label,
     .oj-checkboxset-input-start .oj-checkbox-label {
       order: 1;
@@ -619,6 +629,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
             }   
           }
         }
+        /* Deprecated since 19.0.0: Using .oj-radioset-input-start and .oj-checkboxset-input-start for Redwood applications is not a recommended pattern. */
         .oj-choice-direction-row.oj-radioset-input-start .oj-choice-item:not(:last-child) > .oj-radio-label,
         .oj-choice-direction-row.oj-checkboxset-input-start .oj-choice-item:not(:last-child) > .oj-checkbox-label,
         .oj-choice-direction-row.oj-checkboxset-input-start .oj-choice-item:not(:last-child) > .oj-checkbox-label-nocomp {
@@ -629,6 +640,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
             margin-left: $radioCheckboxDirectionRowInlinePadding;
           }   
         }
+        /* Deprecated since 19.0.0: Using .oj-radioset-input-end and .oj-checkboxset-input-end for Redwood applications is not a recommended pattern. */
         .oj-choice-direction-row.oj-radioset-input-end .oj-choice-item:not(:first-child) > .oj-radio-label,
         .oj-choice-direction-row.oj-checkboxset-input-end .oj-choice-item:not(:first-child) > .oj-checkbox-label,
         .oj-choice-direction-row.oj-checkboxset-input-end .oj-choice-item:not(:first-child) > .oj-checkbox-label-nocomp {
@@ -768,6 +780,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
         }
   
         // order the image and the label text. order 1 means it comes last
+        /* Deprecated since 19.0.0: Using .oj-radioset-input-end and .oj-checkboxset-input-end for Redwood applications is not a recommended pattern. */
         .oj-radioset-input-start .oj-radio-label,
         .oj-checkboxset-input-start .oj-checkbox-label,
         .oj-radioset-input-end .oj-radiocheckbox-icon,
@@ -775,6 +788,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
           order: 1;
         }
   
+        /* Deprecated since 19.0.0: Using .oj-radioset-input-start and .oj-checkboxset-input-start for Redwood applications is not a recommended pattern. */
         .oj-radioset-input-start .oj-radiocheckbox-icon,
         .oj-checkboxset-input-start .oj-radiocheckbox-icon,
         .oj-radioset-input-end .oj-radio-label,
@@ -856,6 +870,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
       }
       
 
+    /* Deprecated since 19.0.0: Using .oj-radioset-input-start and .oj-checkboxset-input-start for Redwood applications is not a recommended pattern. */
     .oj-choice-direction-row.oj-radioset-input-start .oj-choice-item:not(:first-child) > .oj-radio-label,
     .oj-choice-direction-row.oj-checkboxset-input-start .oj-choice-item:not(:first-child) > .oj-checkbox-label,
     .oj-choice-direction-row.oj-checkboxset-input-start .oj-choice-item:not(:first-child) > .oj-checkbox-label-nocomp {
@@ -866,6 +881,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
         margin-right: 0;
       }   
     }
+    /* Deprecated since 19.0.0: Using .oj-radioset-input-end and .oj-checkboxset-input-end for Redwood applications is not a recommended pattern. */
     .oj-choice-direction-row.oj-radioset-input-end .oj-choice-item:not(:last-child) > .oj-radio-label,
     .oj-choice-direction-row.oj-checkboxset-input-end .oj-choice-item:not(:last-child) > .oj-checkbox-label,
     .oj-choice-direction-row.oj-checkboxset-input-end .oj-choice-item:not(:last-child) > .oj-checkbox-label-nocomp {

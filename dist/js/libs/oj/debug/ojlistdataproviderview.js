@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function (oj, ojdataprovider, ojeventtarget) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojobservable'], function (oj, ojdataprovider, ojeventtarget, ojobservable) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
@@ -53,15 +53,44 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
      * @property {Array=} attributes - fetch attributes to apply
      * @property {DataFilter.Filter=} filterCriterion - filter criterion to apply. If the DataProvider does not support filtering then
      *        ListDataProviderView will do local filtering of the data.
+     * @property {string=} includeFilteredRowCount - Optionally specifies whether an observable need to be created for total filtered row count. Supported values:<br>
+     *                                  <ul>
+     *                                    <li>'enabled': observable for total filtered row count is created and getTotalFilteredRowCountObservable method can be used to get the observable. Also fetch parameter includeFilteredRowCount is set
+     *                                          to 'enabled' when calling fetchFirst and fetchByOffset on base dataprovider.
+     *                                    <li>'disabled': no observable is created for total filtered row count. getTotalFilteredRowCountObservable method returns null.
+     *                                  </ul>
      * @ojsignature [
      *  {target: "Type", value: "<K, D, Kin, Din>", for: "genericTypeParameters"},
-     *  {target: "Type", value: "Kin=", for: "from"},
-     *  {target: "Type", value: "number=", for: "offset"},
+     *  {target: "Type", value: "Kin", for: "from"},
+     *  {target: "Type", value: "number", for: "offset"},
      *  {target: "Type", value: "Array.<SortCriterion<D>>", for: "sortCriteria"},
      *  {target: "Type", value: "DataMapping<K, D, Kin, Din>", for: "dataMapping"},
      *  {target: "Type", value: "Array<string | FetchAttribute>", for: "attributes"},
-     *  {target: "Type", value: "DataFilter.Filter<D>=", for: "filterCriterion"}
+     *  {target: "Type", value: "DataFilter.Filter<D>", for: "filterCriterion"},
+     *  {target: "Type", value: "'enabled' | 'disabled'", for: "includeFilteredRowCount"},
      * ]
+     */
+
+    /**
+     * @typedef {Object} ListDataProviderView.NotFetchedRowCount
+     * @property {'notFetched'} type
+     */
+
+    /**
+     * @typedef {Object} ListDataProviderView.UnknownRowCount
+     * @property {'unknown'} type
+     */
+
+    /**
+     * @typedef {Object} ListDataProviderView.ExactRowCount
+     * @property {'exact'} type
+     * @property {number} count
+     */
+
+    /**
+     * @typedef {Object} ListDataProviderView.RowCount
+     * @ojsignature {target: "Type",
+     *               value: "ListDataProviderView.NotFetchedRowCount | ListDataProviderView.UnknownRowCount | ListDataProviderView.ExactRowCount"}
      */
 
     /**
@@ -173,6 +202,40 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
      * @instance
      * @method
      * @name dispatchEvent
+     */
+
+    /**
+     * Get the observable with information of totalFilterRowCount to subscribe to.
+     * Consumers can call subscribe and unsubscribe to receive changes to the totalFilterRowCount. Method returns observable only if <b>includeFilteredRowCount</b> option is set to 'enabled' otherwise it will return null.
+     * <p>On the first subscribe call, the initial value will be passed to the subscriber.
+     * <p>The observed value is an object of type {@link ListDataProviderView.RowCount}.
+     * RowCount type can be as follow based on different states:
+     * <ul>
+     *  <li>Initial value is {@link ListDataProviderView.NotFetchedRowCount}.</li>
+     *  <li>When fetch result is returned, if totalFilteredRowCount is -1 then RowCount will be {@link ListDataProviderView.UnknownRowCount} otherwise {@link ListDataProviderView.ExactRowCount}.<br/>
+     *      If underlying dataprovider doesn't support totalFilteredRowCount capability for fetch then RowCount will be set to {@link ListDataProviderView.UnknownRowCount}.</li>
+     *  <li>When a new fetch request is started, RowCount will be changed to {@link ListDataProviderView.NotFetchedRowCount}.</li>
+     *  <li>When filter criteria is changed, RowCount will be changed to {@link ListDataProviderView.NotFetchedRowCount}.</li>
+     * </ul>
+     *
+     * <i>Example of getting the observable and subscribing for totalFilteredRowCount change:</i>
+     * <pre class="prettyprint"><code>totalFilteredRowCountObservable = dataprovider.getTotalFilteredRowCountObservable();
+     * subscriber = getTotalFilteredRowCountObservable.subscribe(value => {
+     *  type = value.type;
+     *  rowCount = value.rowCount;
+     * });
+     * </code></pre>
+     * @return {Object | null} an object to call subscribe on to receive changes to totalFilteredRowCount. The subscribe function returns an object to call unsubscribe on.
+     *
+     * @export
+     * @expose
+     * @memberof ListDataProviderView
+     * @instance
+     * @method
+     * @name getTotalFilteredRowCountObservable
+     * @see {@link https://github.com/tc39/proposal-observable} for further information on Observable and Subscription.
+     * @ojsignature {target: "Type",
+     *               value: "():{ subscribe( subscriber : ((rowCount: ListDataProviderView.RowCount) => void) ): {unsubscribe(): void, closed(): boolean}} | null" }
      */
 
     /**
@@ -289,12 +352,16 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
 
     // end of jsdoc
 
+    /**
+     * Class which provides list based optimizations
+     */
     class ListDataProviderView {
         constructor(dataProvider, options) {
             var _a;
             this.dataProvider = dataProvider;
             this.options = options;
             this._noFilterSupport = false;
+            this._totalFilteredRowCountObservable = null;
             this.AsyncIterable = (_a = class {
                     constructor(_parent, _asyncIterator) {
                         this._parent = _parent;
@@ -369,7 +436,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                 }
             };
             this.FetchListParameters = class {
-                constructor(_parent, params, size, sortCriteria, filterCriterion, attributes, signal) {
+                constructor(_parent, params, size, sortCriteria, filterCriterion, attributes, signal, includeFilteredRowCount) {
                     this._parent = _parent;
                     this.params = params;
                     this.size = size;
@@ -377,6 +444,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                     this.filterCriterion = filterCriterion;
                     this.attributes = attributes;
                     this.signal = signal;
+                    this.includeFilteredRowCount = includeFilteredRowCount;
                     if (params) {
                         Object.keys(params).forEach((prop) => {
                             this[prop] = params[prop];
@@ -394,6 +462,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                     }
                     if (signal) {
                         this[ListDataProviderView._SIGNAL] = signal;
+                    }
+                    if (includeFilteredRowCount) {
+                        this[ListDataProviderView._INCLUDEFILTEREDROWCOUNT] = includeFilteredRowCount;
                     }
                 }
             };
@@ -417,7 +488,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                 }
             };
             this.FetchByOffsetParameters = class {
-                constructor(_parent, offset, params, size, sortCriteria, filterCriterion, attributes, signal) {
+                constructor(_parent, offset, params, size, sortCriteria, filterCriterion, attributes, signal, includeFilteredRowCount) {
                     this._parent = _parent;
                     this.offset = offset;
                     this.params = params;
@@ -426,6 +497,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                     this.filterCriterion = filterCriterion;
                     this.attributes = attributes;
                     this.signal = signal;
+                    this.includeFilteredRowCount = includeFilteredRowCount;
                     if (params) {
                         Object.keys(params).forEach((prop) => {
                             this[prop] = params[prop];
@@ -448,6 +520,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                     }
                     if (signal) {
                         this[ListDataProviderView._SIGNAL] = signal;
+                    }
+                    if (includeFilteredRowCount) {
+                        this[ListDataProviderView._INCLUDEFILTEREDROWCOUNT] = includeFilteredRowCount;
                     }
                 }
             };
@@ -501,6 +576,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             this[ListDataProviderView._INTERNAL_FILTERCRITERION] =
                 this.options == null ? null : this.options[ListDataProviderView._FILTERCRITERION];
             this._addEventListeners(dataProvider);
+            if (this.options?.includeFilteredRowCount === 'enabled') {
+                this._totalFilteredRowCountObservable = new ojobservable.BehaviorSubject({ type: 'notFetched' });
+            }
             if (dataProvider.getCapability && !dataProvider.getCapability('filter')) {
                 this._noFilterSupport = true;
             }
@@ -557,6 +635,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             Object.defineProperty(this, 'filterCriterion', {
                 set(value) {
                     this[ListDataProviderView._INTERNAL_FILTERCRITERION] = value;
+                    this.getTotalFilteredRowCountObservable()?.next({ type: 'notFetched' });
                     this.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
                 },
                 get() {
@@ -564,6 +643,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                 },
                 enumerable: true
             });
+        }
+        getTotalFilteredRowCountObservable() {
+            return this._totalFilteredRowCountObservable;
         }
         containsKeys(params) {
             if (this.dataProvider[ListDataProviderView._CONTAINSKEYS]) {
@@ -628,12 +710,13 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             if (sortCriteria == null) {
                 sortCriteria = this[ListDataProviderView._INTERNAL_SORTCRITERIA];
             }
+            this.getTotalFilteredRowCountObservable()?.next({ type: 'notFetched' });
             const mappedSortCriteria = this._getMappedSortCriteria(sortCriteria);
             const filterCriterion = this._combineFilters(params);
             const signal = params?.signal;
             const callback = (resolve) => {
                 const mappedFilterCriterion = this._getMappedFilterCriterion(filterCriterion);
-                const updatedParams = new this.FetchByOffsetParameters(this, offset, params, size, mappedSortCriteria, mappedFilterCriterion, fetchAttributes);
+                const updatedParams = new this.FetchByOffsetParameters(this, offset, params, size, mappedSortCriteria, mappedFilterCriterion, fetchAttributes, signal, this.options?.includeFilteredRowCount);
                 return resolve(this.dataProvider[ListDataProviderView._FETCHBYOFFSET](updatedParams).then((value) => {
                     const resultArray = value[ListDataProviderView._RESULTS];
                     const done = value[ListDataProviderView._DONE];
@@ -648,6 +731,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                     const resultFilterCriterion = resultFetchParams?.[ListDataProviderView._FILTERCRITERION];
                     const unmappedResultSortCriteria = this._getUnmappedSortCriteria(resultSortCriteria);
                     const unmappedResultFilterCriterion = this._getUnmappedFilterCriterion(resultFilterCriterion);
+                    this._updateFilteredRowCountObservable(totalFilteredRowCount, updatedParams);
                     return new this.FetchByOffsetResults(this, {
                         ...updatedParams,
                         sortCriteria: unmappedResultSortCriteria,
@@ -658,6 +742,10 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
         fetchFirst(params) {
+            // this fetchFirst applies the offset and from properties on the this.
+            // If fetchByOffset is supported by the underlying dataprovider then that is used for offset.
+            // Otherwise, fetches are made in chunks until from and offset are fulfilled.
+            this.getTotalFilteredRowCountObservable()?.next({ type: 'notFetched' });
             const cachedData = {};
             cachedData[ListDataProviderView._ITEMS] = [];
             cachedData[ListDataProviderView._DONE] = false;
@@ -681,13 +769,14 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                 let offset = this[ListDataProviderView._INTERNAL_OFFSET];
                 return new this.AsyncIterable(this, new this.AsyncIterator(this, ((cachedData) => {
                     return () => {
-                        const updatedParams = new this.FetchByOffsetParameters(this, offset, null, size, mappedSortCriteria, mappedFilterCriterion, fetchAttributes, signal);
+                        const updatedParams = new this.FetchByOffsetParameters(this, offset, null, size, mappedSortCriteria, mappedFilterCriterion, fetchAttributes, signal, this.options?.includeFilteredRowCount);
                         return this.dataProvider[ListDataProviderView._FETCHBYOFFSET](updatedParams).then((result) => {
                             const results = result['results'];
                             offset = offset + results.length;
                             const mappedResult = this._getMappedItems(results);
                             this._cacheResult(cachedData, mappedResult);
                             cachedData[ListDataProviderView._DONE] = result[ListDataProviderView._DONE];
+                            const totalFilteredRowCount = result[ListDataProviderView._TOTALFILTEREDROWCOUNT];
                             const data = mappedResult.map((value) => {
                                 return value[ListDataProviderView._DATA];
                             });
@@ -704,25 +793,33 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                             const unmappedResultSortCriteria = this._getUnmappedSortCriteria(resultSortCriteria);
                             const unmappedResultFilterCriterion = this._getUnmappedFilterCriterion(resultFilterCriterion);
                             const resultParams = new this.FetchByOffsetParameters(this, this[ListDataProviderView._INTERNAL_OFFSET], null, size, unmappedResultSortCriteria, unmappedResultFilterCriterion);
+                            this._updateFilteredRowCountObservable(totalFilteredRowCount, resultParams);
+                            // if the dataprovider supports fetchByOffset then we use that to do an offset based fetch
                             if (cachedData[ListDataProviderView._DONE]) {
-                                return Promise.resolve(new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, resultParams, data, metadata)));
+                                return Promise.resolve(new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, resultParams, data, metadata, totalFilteredRowCount)));
                             }
-                            return Promise.resolve(new this.AsyncIteratorYieldResult(this, new this.FetchListResult(this, resultParams, data, metadata)));
+                            return Promise.resolve(new this.AsyncIteratorYieldResult(this, new this.FetchListResult(this, resultParams, data, metadata, totalFilteredRowCount)));
                         });
                     };
                 })(cachedData), params));
             }
             else {
-                const updatedParams = new this.FetchListParameters(this, params, size, mappedSortCriteria, mappedFilterCriterion, fetchAttributes, signal);
+                const updatedParams = new this.FetchListParameters(this, params, size, mappedSortCriteria, mappedFilterCriterion, fetchAttributes, signal, this.options?.includeFilteredRowCount);
                 const cachedAsyncIterator = this.dataProvider[ListDataProviderView._FETCHFIRST](updatedParams)[Symbol.asyncIterator]();
                 return new this.AsyncIterable(this, new this.AsyncIterator(this, ((cachedData, cachedAsyncIterator) => {
                     return () => {
+                        // If the underlying DP has returned done=true with data in the last call,
+                        // we have modified it to returned done=false with the data.
+                        // So just return done=true with empty data on this call.
+                        // However, we want to reset _LASTDONEHASDATA because live iterator is
+                        // supposed to allow calling next again after done=true.
                         if (cachedData[ListDataProviderView._LASTDONEHASDATA]) {
                             cachedData[ListDataProviderView._LASTDONEHASDATA] = false;
                             return Promise.resolve(new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, params, [], [], this._totalFilteredRowCount)));
                         }
                         return cachedAsyncIterator.next().then((result) => {
                             let resultValue = result[ListDataProviderView._VALUE];
+                            // It's valid for iterator to return null value when done=true
                             if (!resultValue) {
                                 resultValue = { data: [], metadata: [], fetchParameters: null };
                             }
@@ -735,7 +832,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                             if (this._noFilterSupport) {
                                 this._filterResult(mappedFilterCriterion, items);
                             }
-                            this._totalFilteredRowCount = totalFilteredRowCount;
+                            // apply any mapping defined in the DataMapping parameter
                             const mappedResult = this._getMappedItems(items);
                             this._cacheResult(cachedData, mappedResult);
                             cachedData[ListDataProviderView._DONE] = result[ListDataProviderView._DONE];
@@ -769,6 +866,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
         isEmpty() {
             return this.dataProvider.isEmpty();
         }
+        /**
+         * Fetches the next block
+         */
         _fetchNextSet(params, dataProviderAsyncIterator, resultMap) {
             return dataProviderAsyncIterator.next().then((result) => {
                 let value = result[ListDataProviderView._VALUE];
@@ -801,18 +901,24 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                 }
             });
         }
+        /**
+         * Fetches until we find the key
+         */
         _fetchUntilKey(params, key, cachedData, cachedAsyncIterator) {
             if (key != null) {
+                // first check if the key is in our cache
                 const resultItems = cachedData[ListDataProviderView._ITEMS].filter((resultItem) => {
                     if (oj.KeyUtils.equals(resultItem[ListDataProviderView._METADATA][ListDataProviderView._KEY], key)) {
                         return true;
                     }
                 });
                 if (resultItems.length > 0) {
+                    // if the key is in our cache, then trim the cache so that it starts from the key
                     const itemIndex = cachedData[ListDataProviderView._ITEMS].indexOf(resultItems[0]);
                     cachedData[ListDataProviderView._ITEMS] = cachedData[ListDataProviderView._ITEMS].slice(itemIndex, cachedData[ListDataProviderView._ITEMS].length);
                 }
                 else if (!cachedData[ListDataProviderView._DONE]) {
+                    // if the key is not in our cache and we are not done then fetch the next block and call _fetchUntilKey again.
                     return cachedAsyncIterator.next().then((nextResult) => {
                         let value = nextResult[ListDataProviderView._VALUE];
                         if (!value) {
@@ -830,11 +936,15 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                     });
                 }
                 else {
+                    // if we are done then this means that the key is not in the entire data set
                     cachedData[ListDataProviderView._ITEMS] = [];
                 }
             }
             return Promise.resolve(null);
         }
+        /**
+         * Fetches until we fulfill the offset
+         */
         _fetchUntilOffset(params, offset, resultSize, cachedData, cachedAsyncIterator, totalFilteredRowCount) {
             const fetchSize = params != null
                 ? params[ListDataProviderView._SIZE] > 0
@@ -847,6 +957,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                 const mappedFilterCriterion = this._getMappedFilterCriterion(params[ListDataProviderView._FILTERCRITERION]);
                 this._filterResult(mappedFilterCriterion, cachedItems);
             }
+            // Only recurse if there is a size parameter we haven't satisified and the iterator is not done.
+            // Otherwise just return whatever data we've got.
             if (params &&
                 params[ListDataProviderView._SIZE] > 0 &&
                 cachedItems.length < fetchSize &&
@@ -866,6 +978,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                         this._filterResult(mappedFilterCriterion, items);
                     }
                     if (nextResult.done && items.length > 0) {
+                        // This is coming from a DP that doesn't follow AsyncIterable spec.
+                        // Just remember it and ignore the done flag for this call.
+                        // We will return done=true with empty data on the next call.
                         cachedData[ListDataProviderView._LASTDONEHASDATA] = true;
                     }
                     const mappedResult = this._getMappedItems(items);
@@ -885,17 +1000,25 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             const metadata = cachedItems.map((item) => {
                 return item[ListDataProviderView._METADATA];
             });
+            // 1. If the underlying DP returns done=true with data, it's not compliant with the AsyncIterable spec.
+            // We want to set done=false with data in this case and return done=true with empty data on the next call.
+            // 2. If the underlying DP returns done=false with empty data, it is a valid condition,
+            // so we want to return that as is.
             let isDone = false;
             if (cachedData[ListDataProviderView._DONE]) {
                 if (data.length === 0) {
                     isDone = true;
                 }
             }
+            this._updateFilteredRowCountObservable(totalFilteredRowCount, params);
             if (isDone) {
                 return Promise.resolve(new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, params, data, metadata, totalFilteredRowCount)));
             }
             return Promise.resolve(new this.AsyncIteratorYieldResult(this, new this.FetchListResult(this, params, data, metadata, totalFilteredRowCount)));
         }
+        /**
+         * Cache the data and keys
+         */
         _cacheResult(cachedData, items) {
             items.forEach((value) => {
                 cachedData[ListDataProviderView._ITEMS].push(value);
@@ -915,6 +1038,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
                 }
             }
         }
+        /**
+         * Apply DataMapping to the items
+         */
         _getMappedItems(items) {
             if (this[ListDataProviderView._INTERNAL_DATAMAPPING] != null) {
                 const mapFields = this[ListDataProviderView._INTERNAL_DATAMAPPING][ListDataProviderView._MAPFIELDS];
@@ -927,6 +1053,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             }
             return items;
         }
+        /**
+         * combine filters from various sources
+         */
         _combineFilters(params) {
             const filters = [];
             let i = 0;
@@ -949,6 +1078,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             }
             return filterCriterion;
         }
+        /**
+         * Apply mapping to the filterCriterion
+         */
         _getMappedFilterCriterion(filterCriterion) {
             if (this[ListDataProviderView._INTERNAL_DATAMAPPING] != null) {
                 const mappedFilterCriterion = this[ListDataProviderView._INTERNAL_DATAMAPPING][ListDataProviderView._MAPFILTERCRITERION];
@@ -958,6 +1090,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             }
             return filterCriterion;
         }
+        /**
+         * Apply mapping to the sortCriteria
+         */
         _getMappedSortCriteria(sortCriteria) {
             if (this[ListDataProviderView._INTERNAL_DATAMAPPING] != null) {
                 const mapSortCriteria = this[ListDataProviderView._INTERNAL_DATAMAPPING][ListDataProviderView._MAPSORTCRITERIA];
@@ -967,6 +1102,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             }
             return sortCriteria;
         }
+        /**
+         * Unmapping the sortCriteria
+         */
         _getUnmappedSortCriteria(sortCriteria) {
             if (this[ListDataProviderView._INTERNAL_DATAMAPPING] != null) {
                 const unmapSortCriteria = this[ListDataProviderView._INTERNAL_DATAMAPPING][ListDataProviderView._UNMAPSORTCRITERIA];
@@ -976,6 +1114,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             }
             return sortCriteria;
         }
+        /**
+         * Unmapping the FilterCriterion
+         */
         _getUnmappedFilterCriterion(filter) {
             if (this[ListDataProviderView._INTERNAL_DATAMAPPING] != null) {
                 const unmapFilterCriterion = this[ListDataProviderView._INTERNAL_DATAMAPPING][ListDataProviderView._UNMAPFILTERCRITERION];
@@ -985,6 +1126,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             }
             return filter;
         }
+        /**
+         * Add event listeners
+         */
         _addEventListeners(dataprovider) {
             dataprovider[ListDataProviderView._ADDEVENTLISTENER](ListDataProviderView._REFRESH, (event) => {
                 this.dispatchEvent(event);
@@ -992,6 +1136,24 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
             dataprovider[ListDataProviderView._ADDEVENTLISTENER](ListDataProviderView._MUTATE, (event) => {
                 this.dispatchEvent(event);
             });
+        }
+        /**
+         * Updates filtered row count observable
+         */
+        _updateFilteredRowCountObservable(totalFilteredRowCount, fetchParameters) {
+            if (this.options?.includeFilteredRowCount === 'enabled' ||
+                (fetchParameters && fetchParameters.includeFilteredRowCount === 'enabled')) {
+                let rowCount = {
+                    type: 'unknown'
+                };
+                if (totalFilteredRowCount != null && totalFilteredRowCount >= 0) {
+                    rowCount = {
+                        type: 'exact',
+                        count: totalFilteredRowCount
+                    };
+                }
+                this.getTotalFilteredRowCountObservable()?.next(rowCount);
+            }
         }
     }
     ListDataProviderView._KEY = 'key';
@@ -1035,6 +1197,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
     ListDataProviderView._FETCHATTRIBUTES = 'attributes';
     ListDataProviderView._TOTALFILTEREDROWCOUNT = 'totalFilteredRowCount';
     ListDataProviderView._SIGNAL = 'signal';
+    ListDataProviderView._INCLUDEFILTEREDROWCOUNT = 'includeFilteredRowCount';
     ojeventtarget.EventTargetMixin.applyMixin(ListDataProviderView);
     oj._registerLegacyNamespaceProp('ListDataProviderView', ListDataProviderView);
 

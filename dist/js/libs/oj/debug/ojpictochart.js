@@ -51,7 +51,7 @@ var __oj_picto_chart_metadata =
       "type": "number"
     },
     "data": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -525,7 +525,7 @@ var __oj_picto_chart_item_metadata =
        * @ojshortdesc Specifies the DataProvider for the picto chart. See the Help documentation for more information.
        * @memberof oj.ojPictoChart
        * @instance
-       * @type {Object|null}
+       * @type {DataProvider|null}
        * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
        * @default null
        * @ojwebelementstatus {type: "unsupported", since: "13.0.0",

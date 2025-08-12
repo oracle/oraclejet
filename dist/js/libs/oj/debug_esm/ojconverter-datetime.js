@@ -874,13 +874,7 @@ const IntlDateTimeConverter = function (options) {
   // the dateStyleShortYear option to the NativeDateTimeConverter.
   const mo = getMergedDateTimePreferencesWithOptions(mappedOptions);
 
-  if (
-    mo &&
-    mo.isoStrFormat === 'local' &&
-    mo.twoDigitYearStart === 1 &&
-    mo.timeZone !== undefined &&
-    mo.timeStyle === undefined
-  ) {
+  if (mo && mo.isoStrFormat === 'local' && mo.twoDigitYearStart=== 1 && mo.timeZone !== undefined && mo.timeStyle === undefined) {
     // This is to fix an issue with our input-date component with year < 100 and User Preferences with timeZone.
     // If we have a timeZone then our getOffset calculation is off with year < 100, causes our dates to be off by 1 day.
     // To fix this, we remove the explicitly set timezone.

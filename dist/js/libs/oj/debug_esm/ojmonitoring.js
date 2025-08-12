@@ -13,6 +13,9 @@ function getWritebackMonitor() {
 function setWritebackMonitor(monitor) {
     _MONITORS[_WRITEBACK_MONITOR] = monitor;
 }
+/**
+ * This method should be used exclusively by JET while performing writeback
+ */
 function performMonitoredWriteback(propName, writer, event, newValue) {
     if (writer) {
         const monitor = getWritebackMonitor();

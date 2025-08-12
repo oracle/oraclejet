@@ -8,7 +8,6 @@
 import oj from 'ojs/ojcore-base';
 import { wrapWithAbortHandling } from 'ojs/ojdataprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
-import 'ojs/ojcomponentcore';
 
 /**
  * @license
@@ -149,6 +148,12 @@ import 'ojs/ojcomponentcore';
 
 // end of jsdoc
 
+/**
+ * @license
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 class CachedIteratorResultsDataProvider {
     constructor(dataProvider, options) {
         var _a, _b;
@@ -161,25 +166,37 @@ class CachedIteratorResultsDataProvider {
                     this.params = params;
                     this.cache = cache;
                     this[_a] = () => {
-                        return new this._parent.CacheAsyncIterator(this._parent, this.dataProviderAsyncIterator, this.params, this.cache);
+                        return new this._parent.CacheAsyncIterator(this._parent, this.dataProviderAsyncIterator, this.params, this.cache, this._clientId);
                     };
+                    this._clientId = Symbol();
+                    this._parent._mapClientIdToIteratorInfo.set(this._clientId, 0);
                 }
             },
             _a = Symbol.asyncIterator,
             _b);
         this.CacheAsyncIterator = class {
-            constructor(_parent, asyncIterator, params, cache) {
+            constructor(_parent, asyncIterator, params, cache, _clientId) {
                 this._parent = _parent;
                 this.asyncIterator = asyncIterator;
                 this.params = params;
                 this.cache = cache;
-                this._cachedOffset = 0;
+                this._clientId = _clientId;
+                // offset in our cache
+                this._iteratorOffset = 0;
+                // We need to provide local row count if this capability has been requested through getEnhancedDataProvider,
+                // and the fetchFirst parameters indicates it wants row count for this iterator,
+                // and the base DataProvider does not have this capability.
                 this._needLocalRowCount =
                     _parent.options?.includeFilteredRowCount === 'enabled' &&
                         params?.includeFilteredRowCount === 'enabled' &&
                         _parent._baseFetchFirstCapability?.totalFilteredRowCount !== 'exact';
             }
+            _getIteratorOffset(clientId) {
+                return this._parent._mapClientIdToIteratorInfo.get(clientId);
+            }
+            // private helper to return results so far when a stale fetch is detected
             _getStaleResult(result) {
+                // if no result is already present, return an empty 'done' stub as this fetch is 'stale'
                 return result != null
                     ? result.value.data?.length > 0
                         ? new this._parent.CacheAsyncIteratorYieldResult(result.value, -1)
@@ -199,81 +216,42 @@ class CachedIteratorResultsDataProvider {
                 const size = params.size || -1;
                 const signal = params?.signal;
                 const callback = (resolve) => {
-                    if (this.asyncIterator !== this._parent._currentAsyncIterator) {
-                        return resolve(this._getStaleResult());
-                    }
-                    if (this._needLocalRowCount && this._cachedOffset === 0) {
-                        return resolve(this._checkCachedParamsAndIterate(params, -1).then((result) => {
-                            if (this.asyncIterator !== this._parent._currentAsyncIterator) {
-                                return this._getStaleResult(result);
-                            }
-                            return this._getResult(params, size, this._parent.cache.getSize());
-                        }));
-                    }
-                    else {
-                        return resolve(this._getResult(params, size, this._needLocalRowCount ? this._parent.cache.getSize() : undefined));
-                    }
+                    return resolve(this._getResult(params, size, this._needLocalRowCount ? this._parent.cache.getSize() : undefined));
                 };
                 return wrapWithAbortHandling(signal, callback, false);
             }
             _getResult(params, size, totalFilteredRowCount) {
+                // check if we have enough in the cache
                 let result;
-                if (size === -1) {
+                if (size === -1 ||
+                    (this._needLocalRowCount && this._getIteratorOffset(this._clientId) === 0)) {
+                    // we want to fetch everything
                     if (this.cache.isDone()) {
-                        result = this.cache.getDataList(params, this._cachedOffset);
-                        this._cachedOffset = this._cachedOffset + result.data.length;
+                        result = this.cache.getDataList(params, this._getIteratorOffset(this._clientId));
+                        // this._iteratorOffset = this._iteratorOffset + result.data.length;
+                        this._parent._mapClientIdToIteratorInfo.set(this._clientId, this._getIteratorOffset(this._clientId) + result.data.length);
                         return Promise.resolve(this._getFinalResult(result, totalFilteredRowCount));
+                    }
+                    else {
+                        const fetchUntilDone = () => {
+                            return this._checkCachedParamsAndIterate(params, -1).then((result) => {
+                                if (this.asyncIterator !== this._parent._currentAsyncIterator) {
+                                    return this._getStaleResult();
+                                }
+                                if (result.done) {
+                                    return Promise.resolve(this._getResult(params, size, this._parent.cache.getSize()));
+                                }
+                                else {
+                                    return fetchUntilDone();
+                                }
+                            });
+                        };
+                        return fetchUntilDone();
                     }
                 }
                 else {
-                    if (this.cache.getSize() >= this._cachedOffset + size || this.cache.isDone()) {
-                        result = this.cache.getDataList(params, this._cachedOffset);
-                        this._cachedOffset = this._cachedOffset + result.data.length;
-                        return Promise.resolve(this._getFinalResult(result, totalFilteredRowCount));
-                    }
-                    else if (this._cachedOffset > 0) {
-                        return new Promise((resolve, reject) => {
-                            if (this._parent._getSharedIteratorState().fetchOffset < this._cachedOffset) {
-                                const fetchUntilOffset = () => {
-                                    return this._checkCachedParamsAndIterate(params, size).then((result) => {
-                                        if (this.asyncIterator !== this._parent._currentAsyncIterator) {
-                                            resolve();
-                                        }
-                                        else if (this._parent._getSharedIteratorState().fetchOffset >= this._cachedOffset ||
-                                            result.done) {
-                                            resolve();
-                                        }
-                                        else {
-                                            return fetchUntilOffset();
-                                        }
-                                    });
-                                };
-                                return fetchUntilOffset();
-                            }
-                            else {
-                                resolve();
-                            }
-                        }).then(() => {
-                            if (this.asyncIterator !== this._parent._currentAsyncIterator) {
-                                return this._getStaleResult();
-                            }
-                            return this._checkCachedParamsAndIterate(params, size).then((result) => {
-                                if (this.asyncIterator !== this._parent._currentAsyncIterator) {
-                                    return this._getStaleResult(result);
-                                }
-                                this._cachedOffset = this._parent._getSharedIteratorState().fetchOffset;
-                                return Promise.resolve(this._getFinalResult(result.value, totalFilteredRowCount));
-                            });
-                        });
-                    }
+                    return this._fetchFromCacheAndIterate(params, size, totalFilteredRowCount);
                 }
-                return this._checkCachedParamsAndIterate(params, size).then((result) => {
-                    if (this.asyncIterator !== this._parent._currentAsyncIterator) {
-                        return this._getStaleResult(result);
-                    }
-                    this._cachedOffset = this._parent._getSharedIteratorState().fetchOffset;
-                    return Promise.resolve(this._getFinalResult(result.value, totalFilteredRowCount));
-                });
             }
             _getFinalResult(result, totalFilteredRowCount) {
                 if (this._parent._getSharedIteratorState().cachedFetchParams.sortCriteria &&
@@ -291,7 +269,7 @@ class CachedIteratorResultsDataProvider {
                 let firstIteratorCachedFetchOffset = this._parent._getSharedIteratorState().fetchOffset;
                 let firstIteratorCachedFetchPromise = this._parent._getSharedIteratorState().fetchPromise;
                 if (firstIteratorCachedFetchPromise &&
-                    this._cachedOffset === firstIteratorCachedFetchOffset &&
+                    this._getIteratorOffset(this._clientId) === firstIteratorCachedFetchOffset &&
                     CachedIteratorResultsDataProvider._compareCachedFetchParameters(params, firstIteratorCachedFetchParams)) {
                     asyncIteratorFetchPromise = firstIteratorCachedFetchPromise;
                 }
@@ -301,10 +279,14 @@ class CachedIteratorResultsDataProvider {
                     this._parent._getSharedIteratorState().fetchPromise = this.asyncIterator
                         .next()
                         .then((result) => {
+                        // only update the state variables of this data provider if results are not 'stale'
+                        // ie - the currentAsyncIterator instance did not change after the call was issued
                         if (this.asyncIterator !== this._parent._currentAsyncIterator) {
                             return this._getStaleResult(result);
                         }
                         else {
+                            // save sortCriteria from baseDP and will be used as part of return result
+                            // to reserve implicitSort from baseDP
                             if (result.value.fetchParameters?.sortCriteria) {
                                 this._parent._getSharedIteratorState().cachedFetchParams.sortCriteria =
                                     result.value.fetchParameters?.sortCriteria;
@@ -313,22 +295,50 @@ class CachedIteratorResultsDataProvider {
                                 this._parent._getSharedIteratorState().fetchOffset + result.value.data.length;
                             this._parent._getSharedIteratorState().fetchPromise = null;
                             this.cache.addListResult(result);
-                            if ((size === -1 && !this.cache.isDone()) ||
-                                (size > 0 && !this.cache.isDone() && result.value.data.length < size)) {
-                                return this.asyncIterator.next().then((finalResult) => {
-                                    if (this.asyncIterator !== this._parent._currentAsyncIterator) {
-                                        return this._getStaleResult(result);
-                                    }
-                                    this.cache.addListResult(finalResult);
-                                    return result;
-                                });
-                            }
                         }
                         return result;
                     });
                     asyncIteratorFetchPromise = this._parent._getSharedIteratorState().fetchPromise;
                 }
                 return asyncIteratorFetchPromise;
+            }
+            _fetchFromCacheAndIterate(params, size, totalFilteredRowCount) {
+                let result = this.cache.getDataList(params, this._getIteratorOffset(this._clientId));
+                if (this.cache.getSize() >= this._getIteratorOffset(this._clientId) + size ||
+                    this.cache.isDone()) {
+                    let iteratorOffset = this._getIteratorOffset(this._clientId) + result.data.length;
+                    this._parent._mapClientIdToIteratorInfo.set(this._clientId, iteratorOffset);
+                    return Promise.resolve(this._getFinalResult(result, totalFilteredRowCount));
+                }
+                else {
+                    let offset = 0;
+                    // count - remaining data to be fetched from iterator call
+                    let count = size - result.data.length;
+                    const fetchUntilOffset = () => {
+                        return this._checkCachedParamsAndIterate(params, size).then((finalResult) => {
+                            if (this.asyncIterator !== this._parent._currentAsyncIterator) {
+                                return this._getStaleResult();
+                            }
+                            else {
+                                let data = finalResult.value.data.slice(offset, count);
+                                count -= data.length;
+                                if (count === 0 || this.cache.isDone()) {
+                                    result = this.cache.getDataList(params, this._getIteratorOffset(this._clientId));
+                                    let iteratorOffset = this._getIteratorOffset(this._clientId) + result.data.length;
+                                    this._parent._mapClientIdToIteratorInfo.set(this._clientId, iteratorOffset);
+                                    let resultObj = Object.assign({}, finalResult);
+                                    resultObj.value.data = result.data;
+                                    resultObj.value.metadata = result.metadata;
+                                    return Promise.resolve(this._getFinalResult(resultObj.value, totalFilteredRowCount));
+                                }
+                                else {
+                                    return fetchUntilOffset();
+                                }
+                            }
+                        });
+                    };
+                    return fetchUntilOffset();
+                }
             }
         };
         this.CacheAsyncIteratorYieldResult = class {
@@ -356,22 +366,61 @@ class CachedIteratorResultsDataProvider {
             }
         };
         this.cache = new oj.DataCache();
+        this._mapClientIdToIteratorInfo = new Map();
         this._lastFetchParams = null;
+        this._firstIteratorState = null;
+        // Add createOptimizedKeyMap method to this DataProvider if the wrapped DataProvider supports it
         if (dataProvider.createOptimizedKeyMap) {
             this.createOptimizedKeyMap = (initialMap) => {
                 return dataProvider.createOptimizedKeyMap(initialMap);
             };
         }
+        // Add createOptimizedKeySet method to this DataProvider if the wrapped DataProvider supports it
         if (dataProvider.createOptimizedKeySet) {
             this.createOptimizedKeySet = (initialSet) => {
                 return dataProvider.createOptimizedKeySet(initialSet);
             };
         }
+        this.handleMutationOffsetUpdate = function (mutationType, indexes) {
+            if (mutationType === 'remove') {
+                let count = 0;
+                indexes.forEach((index) => {
+                    this._mapClientIdToIteratorInfo.forEach((offset, symbol) => {
+                        if (index < offset) {
+                            this._mapClientIdToIteratorInfo.set(symbol, offset - 1);
+                            count += 1;
+                        }
+                    });
+                });
+                if (this._firstIteratorState !== null) {
+                    this._firstIteratorState.fetchOffset -= count;
+                }
+            }
+            if (mutationType === 'add') {
+                let count = 0;
+                indexes.forEach((index) => {
+                    this._mapClientIdToIteratorInfo.forEach((offset, symbol) => {
+                        if (index < offset) {
+                            this._mapClientIdToIteratorInfo.set(symbol, offset + 1);
+                            count += 1;
+                        }
+                    });
+                });
+                if (this._firstIteratorState !== null) {
+                    this._firstIteratorState.fetchOffset += count;
+                }
+            }
+        }.bind(this);
+        // Listen to mutate event on wrapped DataProvider
         dataProvider.addEventListener(CachedIteratorResultsDataProvider._MUTATE, (event) => {
-            this.cache.processMutations(event.detail);
+            // First allow the cache to process the mutations, which may result in different detail
+            this.cache.processMutations(event.detail, this.handleMutationOffsetUpdate);
+            // Then fire mutate with new detail
             this.dispatchEvent(event);
         });
+        // Listen to refresh event on wrapped DataProvider
         dataProvider.addEventListener(CachedIteratorResultsDataProvider._REFRESH, (event) => {
+            // Invalidate the cache on refresh event
             this.cache.reset();
             this._lastFetchParams = null;
             this._firstIteratorState = null;
@@ -382,6 +431,7 @@ class CachedIteratorResultsDataProvider {
     containsKeys(params) {
         const finalResults = new Set();
         const neededKeys = new Set();
+        // First resolve any keys that can be found in the cache
         const cacheResults = this.cache.getDataByKeys(params);
         params.keys.forEach((key) => {
             const item = cacheResults.results.get(key);
@@ -393,9 +443,11 @@ class CachedIteratorResultsDataProvider {
             }
         });
         if (neededKeys.size === 0) {
+            // Return the result if all keys have been resolved from cache
             return Promise.resolve({ containsParameters: params, results: finalResults });
         }
         else {
+            // If there are unresolved keys, delegate to the wrapped DataProvider
             const newParams = { attributes: params.attributes, keys: neededKeys, scope: params.scope };
             return this.dataProvider.containsKeys(newParams).then((containsKeysResults) => {
                 containsKeysResults.results.forEach((key) => {
@@ -410,6 +462,7 @@ class CachedIteratorResultsDataProvider {
         const neededKeys = new Set();
         const signal = params?.signal;
         const callback = (resolve) => {
+            // First resolve any keys that can be found in the cache
             const cacheResults = this.cache.getDataByKeys(params);
             params.keys.forEach((key) => {
                 const item = cacheResults.results.get(key);
@@ -421,9 +474,11 @@ class CachedIteratorResultsDataProvider {
                 }
             });
             if (neededKeys.size === 0) {
+                // Return the result if all keys have been resolved from cache
                 return resolve({ fetchParameters: params, results: finalResults });
             }
             else {
+                // If there are unresolved keys, delegate to the wrapped DataProvider
                 const newParams = {
                     attributes: params.attributes,
                     keys: neededKeys,
@@ -440,17 +495,15 @@ class CachedIteratorResultsDataProvider {
         return wrapWithAbortHandling(signal, callback, false);
     }
     fetchByOffset(params) {
-        const size = params.size ? params.size : CachedIteratorResultsDataProvider._DEFAULT_SIZE;
+        // size is optional so use the default size if not specified
+        const size = params.size || CachedIteratorResultsDataProvider._DEFAULT_SIZE;
         const signal = params?.signal;
         const callback = (resolve) => {
+            // Use the cache if the attributes, filterCriterion, and sortCriteria match and the offset is in range
+            // We also need to check if the cached rows can satisfy the requested size.
             if (CachedIteratorResultsDataProvider._compareCachedFetchParameters(params, this._lastFetchParams) &&
                 params.offset + size <= this.cache.getSize()) {
-                const updatedParams = JSON.parse(JSON.stringify(params, (key, value) => {
-                    if (key.startsWith('_')) {
-                        return undefined;
-                    }
-                    return value;
-                }));
+                let updatedParams = { ...params };
                 updatedParams.size = size;
                 const results = this.cache.getDataByOffset(updatedParams);
                 if (results) {
@@ -463,18 +516,27 @@ class CachedIteratorResultsDataProvider {
     }
     fetchFirst(params) {
         if (params?.signal?.aborted) {
+            // signal is already aborted, no need to check
             const asyncIterable = this.dataProvider.fetchFirst(params);
             const asyncIterator = asyncIterable[Symbol.asyncIterator]();
             this._currentAsyncIterator = asyncIterator;
             return new this.CacheAsyncIterable(this, asyncIterator, null, null);
         }
+        // Invalidate the cache if fetchFirst is called with different fetch parameters from last call
         if (!this._getSharedIteratorState() ||
             !CachedIteratorResultsDataProvider._compareCachedFetchParameters(params, params && this._getSharedIteratorState()
                 ? this._getSharedIteratorState().cachedFetchParams
                 : this._lastFetchParams)) {
             this.cache.reset();
+            // Remember the last fetch parameters
             this._lastFetchParams = CachedIteratorResultsDataProvider._createCachedFetchParams(params);
-            const asyncIterable = this.dataProvider.fetchFirst(params);
+            let _underlyingDPParams = { ...params };
+            if (this.options?.includeFilteredRowCount === 'enabled' &&
+                params?.includeFilteredRowCount === 'enabled' &&
+                this._baseFetchFirstCapability?.totalFilteredRowCount !== 'exact') {
+                _underlyingDPParams.size = -1;
+            }
+            const asyncIterable = this.dataProvider.fetchFirst(_underlyingDPParams);
             const asyncIterator = asyncIterable[Symbol.asyncIterator]();
             this._firstIteratorState = {
                 cachedFetchParams: this._lastFetchParams,
@@ -488,21 +550,25 @@ class CachedIteratorResultsDataProvider {
     }
     getCapability(capabilityName) {
         const capability = this.dataProvider.getCapability(capabilityName);
-        if (capabilityName === 'fetchCapability') {
+        if (capabilityName === 'fetchCapability' || capabilityName === 'fetchFirst') {
             return { attributeFilter: capability?.attributeFilter, caching: 'visitedByCurrentIterator' };
         }
         return capability;
     }
     getTotalSize() {
+        // If there is no filterCriterion and the cache is complete, we can just return the cache size
         if (this._lastFetchParams != null && !this._lastFetchParams.filterDef && this.cache.isDone()) {
             return Promise.resolve(this.cache.getSize());
         }
+        // Otherwise delegate to the wrapped DataProvider
         return this.dataProvider.getTotalSize();
     }
     isEmpty() {
+        // If there is no filterCriterion and the cache is complete, we can just return this info based on the cache
         if (this._lastFetchParams != null && !this._lastFetchParams.filterDef && this.cache.isDone()) {
             return this.cache.getSize() === 0 ? 'yes' : 'no';
         }
+        // Otherwise delegate to the wrapped DataProvider
         return this.dataProvider.isEmpty();
     }
     _getSharedIteratorState() {
@@ -510,24 +576,31 @@ class CachedIteratorResultsDataProvider {
     }
     static _compareCachedFetchParameters(params, cachedParams) {
         params = params || {};
+        // prev aborted, curr not aborted
+        // ie first aborted, sec not aborted, return false to create a new iterator
+        // for case like first not aborted, sec aborted and third not aborted won't return false
+        // because sec aborted fetch won't update cachedParams if other params are same
         if (cachedParams != null && cachedParams.signal?.aborted && !params.signal?.aborted) {
             return false;
         }
+        // prev not aborted, curr aborted and other cases
         return (cachedParams != null &&
             oj.Object.compareValues(cachedParams.attributes, params.attributes || null) &&
-            oj.Object.compareValues(cachedParams.filterDef, CachedIteratorResultsDataProvider._getFilterDef(params.filterCriterion)) &&
+            oj.Object.compareValues(cachedParams.filterDef, params.filterCriterion
+                ? CachedIteratorResultsDataProvider._getFilterDef(params.filterCriterion)
+                : null) &&
             oj.Object.compareValues(cachedParams.sortCriteria, params.sortCriteria || null));
     }
     static _createCachedFetchParams(params) {
         params = params || {};
         const cachedFetchParams = {};
         cachedFetchParams.size = params.size;
-        cachedFetchParams.attributes = params.attributes
-            ? JSON.parse(JSON.stringify(params.attributes))
+        cachedFetchParams.attributes = params.attributes ? Object.assign({}, params.attributes) : null;
+        cachedFetchParams.filterDef = params.filterCriterion
+            ? CachedIteratorResultsDataProvider._getFilterDef(params.filterCriterion)
             : null;
-        cachedFetchParams.filterDef = CachedIteratorResultsDataProvider._getFilterDef(params.filterCriterion);
         cachedFetchParams.sortCriteria = params.sortCriteria
-            ? JSON.parse(JSON.stringify(params.sortCriteria))
+            ? Object.assign([], params.sortCriteria)
             : null;
         cachedFetchParams.signal = params.signal;
         return cachedFetchParams;
@@ -545,33 +618,19 @@ class CachedIteratorResultsDataProvider {
         return filterDef;
     }
 }
-CachedIteratorResultsDataProvider._KEY = 'key';
-CachedIteratorResultsDataProvider._KEYS = 'keys';
-CachedIteratorResultsDataProvider._DATA = 'data';
-CachedIteratorResultsDataProvider._STARTINDEX = 'startIndex';
-CachedIteratorResultsDataProvider._SORT = 'sort';
-CachedIteratorResultsDataProvider._SORTCRITERIA = 'sortCriteria';
-CachedIteratorResultsDataProvider._FILTERCRITERION = 'filterCriterion';
-CachedIteratorResultsDataProvider._METADATA = 'metadata';
-CachedIteratorResultsDataProvider._ITEMS = 'items';
-CachedIteratorResultsDataProvider._FROM = 'from';
-CachedIteratorResultsDataProvider._OFFSET = 'offset';
 CachedIteratorResultsDataProvider._REFRESH = 'refresh';
 CachedIteratorResultsDataProvider._MUTATE = 'mutate';
-CachedIteratorResultsDataProvider._SIZE = 'size';
-CachedIteratorResultsDataProvider._FETCHPARAMETERS = 'fetchParameters';
 CachedIteratorResultsDataProvider._VALUE = 'value';
 CachedIteratorResultsDataProvider._DONE = 'done';
-CachedIteratorResultsDataProvider._RESULTS = 'results';
-CachedIteratorResultsDataProvider._CONTAINSPARAMETERS = 'containsParameters';
 CachedIteratorResultsDataProvider._DEFAULT_SIZE = 25;
-CachedIteratorResultsDataProvider._CONTAINSKEYS = 'containsKeys';
-CachedIteratorResultsDataProvider._FETCHBYKEYS = 'fetchByKeys';
-CachedIteratorResultsDataProvider._FETCHBYOFFSET = 'fetchByOffset';
-CachedIteratorResultsDataProvider._FETCHFIRST = 'fetchFirst';
-CachedIteratorResultsDataProvider._ADDEVENTLISTENER = 'addEventListener';
-CachedIteratorResultsDataProvider._FETCHATTRIBUTES = 'attributes';
 EventTargetMixin.applyMixin(CachedIteratorResultsDataProvider);
 oj._registerLegacyNamespaceProp('CachedIteratorResultsDataProvider', CachedIteratorResultsDataProvider);
+
+/**
+ * @license
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 export default CachedIteratorResultsDataProvider;

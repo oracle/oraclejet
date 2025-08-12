@@ -2510,7 +2510,8 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
         var contentParentElem = null;
         if (options.contentParent) {
           // only use the first result returned from the contentParent selector
-          contentParentElem = $(options.contentParent)[0];
+          var safeSelector = normalizeSelectorForQuery(options.contentParent);
+          contentParentElem = this.element[0].querySelector(safeSelector);
         }
         callbackInfo.handleFocus = function (event) {
           // if focus is on the conveyorbelt itself do nothing
@@ -2524,11 +2525,12 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
             conveyorBeltItems = self.element[0].getElementsByClassName('oj-conveyorbelt-item');
           }
           for (var j = 0; j < conveyorBeltItems.length; j++) {
-            if (conveyorBeltItems[j].isEqualNode(event.target)) {
-              self.scrollElementIntoView(conveyorBeltItems[j]);
+            if (conveyorBeltItems[j].contains(event.target)) {
+              self.scrollElementIntoView(event.target);
               break;
             }
           }
+
         };
         this._cbCommon = new ConveyorBeltCommon(
           elem[0],
@@ -2944,6 +2946,22 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
       return null;
     },
 
+
+    /**
+     * Calculates real offsetLeft from the overflow container
+     *
+     * @param {Element} element element
+     * @returns {number} offsetLeft
+     * @memberof oj.ojConveyorBelt
+     * @instance
+     * @private
+     */
+    _getOffsetLeft: function (element) {
+      var elementBoundingRect = element.getBoundingClientRect();
+      var contentContainerBoundingRect = this._cbCommon._contentContainer.getBoundingClientRect();
+      return elementBoundingRect.x - contentContainerBoundingRect.x;
+    },
+
     /**
      * Scrolls child item of conveyor belt into the view.
      *
@@ -2968,9 +2986,7 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
       var currentViewportSize = this._cbCommon._getCurrViewportSize();
 
       var contentWidth = this._cbCommon._contentContainer.offsetWidth;
-   
-
-      var elementOffLeft = element.offsetLeft;
+      var elementOffLeft = this._getOffsetLeft(element);
 
       // if RTL, still want to save the start coords in logical, ascending order beginning with 0
       if (this._cbCommon._bRtl) {
@@ -2979,7 +2995,7 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
 
       // FIX : in IE, the conveyor items all report offsetTop=0,
       // so we need to get the offset from the parent wrapping table cell div
-      // instead 
+      // instead
       var elementOffTop = element.offsetTop;
       if (!this._cbCommon._contentParent && elementOffTop === 0) {
         elementOffTop = element.parentNode.offsetTop;
@@ -3066,3 +3082,14 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
     }
   });
 })(); // end of ConveyorBelt wrapper function
+
+// JET-75829: For querySelector, use [id="..."] if selector is an id starting with a digit
+function normalizeSelectorForQuery(selector) {
+  // If selector is an id starting with a digit, e.g. "#4n54be08ur7mgvx"
+  // Use [id="4n54be08ur7mgvx"]
+  const match = selector.match(/^#(\d[\w-]*)$/);
+  if (match) {
+    return `[id="${match[1]}"]`;
+  }
+  return selector;
+}

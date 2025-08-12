@@ -99,6 +99,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
                     const itemKey = value[TableDataSourceAdapter._KEY];
                     const data = value[TableDataSourceAdapter._DATA];
                     const itemMetadata = new self.ItemMetadata(self, itemKey);
+                    // tabledatasource get returns an index property
                     const index = value[TableDataSourceAdapter._INDEX];
                     self._extractMetaData(self.dataSource, index, itemMetadata);
                     results.set(itemKey, new self.Item(self, itemMetadata, data));
@@ -130,6 +131,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
                 resultsArray.push(new self.Item(self, new self.ItemMetadata(self, keys[index]), data[index]));
             });
             for (let i = 0; i < resultsArray.length; i++) {
+                // metadata is technically already in iteratorResults but reuse method for ease
                 self._extractMetaData(self.dataSource, i + offset, resultsArray[i][TableDataSourceAdapter._METADATA]);
             }
             return new self.FetchByOffsetResults(self, params, resultsArray, done);
@@ -160,6 +162,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
     isEmpty() {
         return this.tableDataSource.totalSize() > 0 ? 'no' : 'yes';
     }
+    // Start PagingModel APIs
     getPage() {
         if (this._isPagingModelTableDataSource()) {
             return this.tableDataSource.getPage();
@@ -202,6 +205,10 @@ class TableDataSourceAdapter extends DataSourceAdapter {
         }
         return null;
     }
+    // End PagingModel APIs
+    /**
+     * Get the function which performs the fetch
+     */
     _getFetchFunc(params, offset) {
         const self = this;
         if (params != null && params[TableDataSourceAdapter._SORTCRITERIA] != null) {
@@ -233,6 +240,9 @@ class TableDataSourceAdapter extends DataSourceAdapter {
             return this._getTableDataSourceFetch(params, offset);
         }
     }
+    /**
+     * Extract the datasource metadata to the result ItemMetadata.
+     */
     _extractMetaData(tableDataSource, index, itemMetadata) {
         let dataSource = tableDataSource;
         if (this._isPagingModelTableDataSource()) {
@@ -247,6 +257,9 @@ class TableDataSourceAdapter extends DataSourceAdapter {
             }
         }
     }
+    /**
+     * Get the function which invokes fetch() on TableDataSource
+     */
     _getTableDataSourceFetch(params, offset) {
         const self = this;
         return function (params, fetchFirst) {
@@ -259,6 +272,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
                 params != null && params[TableDataSourceAdapter._SIZE] > 0
                     ? params[TableDataSourceAdapter._SIZE]
                     : null;
+            // to maintain backward compatibility, Table will specify silent flag
             if (!self._isPagingModelTableDataSource() && params?.[TableDataSourceAdapter._SILENT]) {
                 options[TableDataSourceAdapter._SILENT] = params[TableDataSourceAdapter._SILENT];
             }
@@ -274,6 +288,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
                 self._fetchRejectFunc = reject;
                 self._fetchParams = params;
                 if (!self._requestEventTriggered) {
+                    // set a flag so that we can ignore request and sync events
                     if (!self._isPagingModelTableDataSource() && !options[TableDataSourceAdapter._SILENT]) {
                         self._ignoreDataSourceEvents.push(true);
                     }
@@ -285,6 +300,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
                         if (result !== null) {
                             self._isFetching = false;
                             if (result === undefined) {
+                                // fetch was not executed due to startFetch='disabled'
                                 result = {};
                                 result[TableDataSourceAdapter._KEYS] = [];
                                 result[TableDataSourceAdapter._DATA] = [];
@@ -337,11 +353,16 @@ class TableDataSourceAdapter extends DataSourceAdapter {
             });
         };
     }
+    /**
+     * Adjust the last offset for iterators.
+     */
     _adjustIteratorOffset(removeIndexes, addIndexes) {
+        // this._mapClientIdToOffset.forEach((offset, clientId) => {
         let offset = this._startIndex;
         let deleteCount = 0;
         if (removeIndexes) {
             removeIndexes.forEach(function (index) {
+                // only count the changes below the last offset
                 if (index < offset) {
                     ++deleteCount;
                 }
@@ -350,15 +371,19 @@ class TableDataSourceAdapter extends DataSourceAdapter {
         offset -= deleteCount;
         if (addIndexes) {
             addIndexes.forEach(function (index) {
+                // only count the changes below the last offset
                 if (index < offset) {
                     ++offset;
                 }
             });
         }
         this._startIndex = offset;
+        //   this._mapClientIdToOffset.set(clientId, offset);
+        // });
     }
     _handleSync(event) {
         const self = this;
+        // checks for sync triggered by own fetch
         if (self._ignoreDataSourceEvents.length > 0) {
             return;
         }
@@ -373,6 +398,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
                 return new self.ItemMetadata(self, value);
             });
             for (let i = 0; i < resultMetadata.length; i++) {
+                // expect startIndex to be set in sync event but null check
                 let indexToExtract = self._startIndex != null ? self._startIndex + i : i;
                 self._extractMetaData(self.dataSource, indexToExtract, resultMetadata[i]);
             }
@@ -427,6 +453,11 @@ class TableDataSourceAdapter extends DataSourceAdapter {
     }
     _handleReset(event) {
         const self = this;
+        // Dispatch a dataprovider refresh event except for the following situations:
+        // 1. If a datasource request event was triggered, a dataprovider refresh event has been dispatched;
+        // 2. If the datasource is a paging datasource, the pagingcontrol reset handler will indirectly trigger
+        //    a datasource request event, which in turn will dispatch a dataprovider refresh event.
+        //
         if (!self._requestEventTriggered && !self._isPagingModelTableDataSource()) {
             self._startIndex = 0;
             self.dispatchEvent(new DataProviderRefreshEvent());
@@ -456,6 +487,7 @@ class TableDataSourceAdapter extends DataSourceAdapter {
         const self = this;
         if (!self._isFetching && !self._requestEventTriggered) {
             if (event[TableDataSourceAdapter._OFFSET] != null) {
+                // reset _startIndex & offset for refresh event
                 self._startIndex = event[TableDataSourceAdapter._OFFSET];
                 if (self.tableDataSource._fetchType === 'loadMore') {
                     self.offset = event[TableDataSourceAdapter._OFFSET];
@@ -470,16 +502,25 @@ class TableDataSourceAdapter extends DataSourceAdapter {
     }
     _handleRequest(event) {
         const self = this;
+        // checks for sync triggered by own fetch
         if (self._ignoreDataSourceEvents.length > 0) {
             return;
         }
+        // to test backward compatibility we still need to be able to access Model from the oj namespace
         if (typeof Model !== 'undefined' && event instanceof Model) {
+            // ignore request events by Model. Those will be followed by row
+            // mutation events anyway
             return;
         }
         if (!self._isFetching) {
             if (event[TableDataSourceAdapter._STARTINDEX] > 0 && self.getStartItemIndex() === 0) {
                 self._startIndex = event[TableDataSourceAdapter._STARTINDEX];
             }
+            // dispatch a refresh event which will trigger a the component to
+            // do a fetchFirst. However, the fact that we are receiving a request
+            // event means that a fetch was already done on the underlying TableDataSource.
+            // So we don't need to do another fetch once a fetchFirst comes in, we can
+            // just resolve with the results from the paired sync event.
             self._requestEventTriggered = true;
             self.dispatchEvent(new DataProviderRefreshEvent());
         }
@@ -500,6 +541,9 @@ class TableDataSourceAdapter extends DataSourceAdapter {
         options['detail'] = event;
         self.dispatchEvent(new GenericEvent(oj.PagingModel.EventType['PAGE'], options));
     }
+    /**
+     * Add event listeners to TableDataSource
+     */
     _addTableDataSourceEventListeners() {
         this.removeAllListeners();
         this.addListener('sync', this._handleSync);
@@ -513,6 +557,9 @@ class TableDataSourceAdapter extends DataSourceAdapter {
         this.addListener('error', this._handleError);
         this.addListener('page', this._handlePage);
     }
+    /**
+     * Remove event listeners to TableDataSource
+     */
     _removeTableDataSourceEventListeners() {
         this.removeListener('sync');
         this.removeListener('add');
@@ -525,6 +572,9 @@ class TableDataSourceAdapter extends DataSourceAdapter {
         this.removeListener('error');
         this.removeListener('page');
     }
+    /**
+     * Check if it's a PagingModel TableDataSource
+     */
     _isPagingModelTableDataSource() {
         if (this.tableDataSource['getStartItemIndex'] != null) {
             return true;

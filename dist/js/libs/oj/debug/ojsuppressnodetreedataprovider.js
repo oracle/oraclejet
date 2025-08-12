@@ -382,6 +382,7 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function (exports
         _suppressChild(key, filterCriterion) {
             const child = this.getChildDataProvider(key);
             if (child == null || child.isEmpty() === 'yes') {
+                // do not suppress leaf node
                 return Promise.resolve(child === null ? false : true);
             }
             else {
@@ -395,6 +396,9 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function (exports
                     });
                 }
                 else if (child.isEmpty() === 'unknown') {
+                    // If unknown, as is the case with RESTTreeDataProvider, attempt to fetch
+                    // a small amount of data and check if anything is returned. If data is returned,
+                    // do not suppress and vice-versa
                     return child.fetchByOffset({ offset: 0, size: 1 }).then((childResult) => {
                         return childResult && childResult.results && childResult.results.length > 0
                             ? false

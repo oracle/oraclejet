@@ -7,6 +7,8 @@
  */
 define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime', 'ojs/ojlogger', '@oracle/oraclejet-preact/UNSAFE_IntlFormatParse'], function (exports, ojconfig, UNSAFE_IntlDateTime, Logger, UNSAFE_IntlFormatParse) { 'use strict';
 
+    // Internal class that delegates to the browser's Intl.DateTimeFormat for formatting.
+    // This is not a public api
     class NativeDateTimeConverter {
         constructor(options) {
             let opt = options ?? {};
@@ -16,17 +18,40 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime
             this.parserFunc = parserFunc;
             this.resOptions = resolvedOptions;
         }
+        /**
+         * Formats the iso string, and returns a formatted string.
+         * @param value the iso string to be formatted into a string
+         * @returns a formatted string, like 'December 14, 2021'
+         * @throws Error if undefined, null, or '' or not an iso string, or if something went
+         * wrong in the call to format.
+         */
         format(value) {
             return this.formatterFunc(value);
         }
+        /**
+         * Parses the formatted string, and returns an iso string.
+         * @param value a formatted string to be parsed into an iso string.
+         * @returns an iso string
+         * @throws Error if undefined, null, or '' or not an iso string, or if something went
+         * wrong in the call to parse.
+         */
         parse(str) {
             return this.parserFunc(str);
         }
+        /**
+         * Resolve options.
+         * @returns resolvedOptions
+         */
         resolvedOptions() {
             return this.resOptions;
         }
     }
 
+    // The NativeDateTimePatternConverter is used when we have
+    // IntlDateTimeConverter's deprecated pattern option or when we have a pattern from
+    // FA's use preference date and time patterns.
+    // Intl.DateTimeFormat does not have a pattern option, so in the case where we must
+    // support a patten, we cannot use the preferred NativeDateTimeConverter.
     class NativeDateTimePatternConverter {
         constructor(options) {
             this.intlFormatter = null;
@@ -43,20 +68,61 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime
             this.pattern = options.pattern;
             this.timeZone = this.resOptions.timeZone;
         }
+        // This method formats an isostring into a formatted string that matches a pattern.
+        // This method throws Error if undefined, null, or '' or not an iso string, or if something went
+        // wrong in the call to formatToParts.
+        //
+        // This method uses formatToParts and the tokens saved from the call to _getOptionsFromPattern
+        // from the constructor to figure out the formatted string. See _getOptionsFromPattern for details of what the tokens mean
+        // and how they are used to format an iso string to a formatted string that matches a pattern.
+        //
+        // This format method fills the tokensArray with actual values, for example format('2020-01-01T11:20:45').
+        // tokensArray at the start of this method will contain something like:
+        // [ null,	'-',	null,	'-',	null,	' ', null,	':',	null,	':',	null, ' ', 'null, null ]
+        // make the content of tokensArray as follow:
+        // [ '2020',	'-',	'01',	'-',	'01',	' ', '11',	':',	'20',	':',	45, ' ', 'America/Los_Angeles', ' (', '-08:00', ')' ]
         format(isostrvalue) {
             const isoStr = UNSAFE_IntlDateTime.normalizeIsoString(this.timeZone, isostrvalue);
             var date = new Date(isoStr);
+            // For details, see Intl.DateTimeFormat.formatToParts api doc.
             this.intlFormatter.formatToParts(date).map(({ type, value }) => {
+                // literal is the string used for separating date and time values,
+                // for example "/", ",", "o'clock", "de", etc.
+                // Since we are using the literals from the pattern that we stored in formatTokens.tokensArray,
+                // we can ignore these.
                 if (type !== 'literal') {
+                    // E.g., if type is 'month', indexOfTypeInFormatToPartsArray is the index in the array
+                    // where month is. this is useful information for when we piece back the pieces into
+                    // the place it should be based on the pattern option.
+                    // E.g., if pattern is 'yyyy-MM-dd hh:mm:ss.SSS a', tokensIndexes is:
+                    // {day: 4, dayPeriod: 14, fractionalSecond: 12, hour: 6, minute: 8, month: 2, second: 10, year: 0}
                     const indexOfTypeInPattern = this.formatTokens.tokensIndexes[type];
                     if (indexOfTypeInPattern !== undefined) {
+                        // tokensArray is what we are filling in.
+                        // E.g., if type is 'month', and we know the index into the tokensArray for month is 2,
+                        // fill the index 2 of tokensArray with the month (value from formatToParts for this type,
+                        // so for example, if isostrvalue is '2013-12-01T18:00:00.123Z', and in our constructor
+                        // we successfully returned the options for Intl.DateTimeFormat constructor to match the pattern,
+                        // then this.intlFormatter.formatToParts(new Date('2013-12-01T18:00:00.123Z') will return
+                        // value='12' for type='month')).
                         this.formatTokens.tokensArray[indexOfTypeInPattern] = value;
                     }
                 }
             });
+            // process X, XX, XXX, Z, ZZ, ZZZ and VV tokens because they are not covered by formatToParts
+            // tzOffsetArray will have a value if the pattern has one of these,
+            // e.g., yyyy-MM-dd hh:mm:ss.SSS a zzzz (X)
+            // This method will do nothing if tzOffsetsArray is empty.
             this._formatTimeZoneTokens(isoStr, this.timeZone);
             return this.formatTokens.tokensArray.join('');
         }
+        /**
+         * Parses the formatted string, and returns an iso string.
+         * @param value a formatted string to be parsed into an iso string.
+         * @returns an iso string
+         * @throws Error if undefined, null, or '' or not an iso string, or if something went
+         * wrong in the call to parse.
+         */
         parse(str) {
             if (str === undefined || str === null || str === '') {
                 throw new UNSAFE_IntlFormatParse.FormatParseError('The parse value cannot be empty.', {
@@ -64,7 +130,10 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime
                 });
             }
             const cal = UNSAFE_IntlDateTime.CalendarUtils.getCalendar(this.locale, this.resOptions.calendar);
-            const result = UNSAFE_IntlDateTime.NativeParserImpl.parseImpl(str, this.pattern, this.resOptions, cal);
+            // parseImpl might throw an error if the str cannot be parsed, and the converter that wraps
+            // this one can transform it as they like.
+            const result = UNSAFE_IntlDateTime.NativeParserImpl.parseImpl(str, this.pattern, // NativeDateTimePatternConverter uses its own pattern here.
+            this.resOptions, cal);
             const parsed = result.value;
             if (parsed) {
                 if (result.warning) {
@@ -73,12 +142,18 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime
             }
             return parsed;
         }
+        /**
+         * Resolve options.
+         * @returns resolvedOptions
+         */
         resolvedOptions() {
             if (!this.resOptions.patternFromOptions) {
                 this.resOptions.patternFromOptions = this.pattern;
             }
             return this.resOptions;
         }
+        // Figure out the options from a pattern and then append some other options.
+        // The final options can be used to create an instance of NativeDateTimeConverter/Intl.DateTimeFormat.
         static _processOptions(options) {
             const tokensObj = NativeDateTimePatternConverter._getOptionsFromPattern(options.pattern);
             if (options.timeZone) {
@@ -87,13 +162,17 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime
             if (options.hour12) {
                 tokensObj.opts.hour12 = options.hour12;
             }
+            // Always set numbering system to latn because IntlDateTimeConverter did not
+            // support other numbering systems. Also the only supported calendar was gregory
             tokensObj.opts.numberingSystem = 'latn';
             tokensObj.opts.calendar = 'gregory';
+            // the following attributes are not filled by getOptionsFromPattern, need to add them
             tokensObj.opts.isoStrFormat = options.isoStrFormat || 'auto';
             tokensObj.opts.twoDigitYearStart = options.twoDigitYearStart || 1950;
             tokensObj.opts.lenientParse = options.lenientParse || 'full';
             return tokensObj;
         }
+        // process X, XX, XXX, Z, ZZ, ZZZ and VV tokens because they are not covered by formatToParts
         _formatTimeZoneTokens(isoStr, timeZone) {
             const formatTokens = this.formatTokens;
             for (var idx = 0; idx < formatTokens.tzOffsetsArray.length; idx++) {
@@ -119,12 +198,14 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime
                 }
                 switch (key) {
                     case 'tzhm':
+                        // Time zone hours minutes: -0800
                         formatOffset =
                             (offset < 0 ? '-' : '+') +
                                 UNSAFE_IntlDateTime.DateTimeUtils.padZeros(Math.floor(Math.abs(offset / 60)), 2) +
                                 UNSAFE_IntlDateTime.DateTimeUtils.padZeros(Math.floor(Math.abs(offset % 60)), 2);
                         break;
                     case 'tzhsepm':
+                        // Time zone hours minutes: -08:00
                         formatOffset =
                             (offset < 0 ? '-' : '+') +
                                 UNSAFE_IntlDateTime.DateTimeUtils.padZeros(Math.floor(Math.abs(offset / 60)), 2) +
@@ -132,6 +213,7 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime
                                 UNSAFE_IntlDateTime.DateTimeUtils.padZeros(Math.floor(Math.abs(offset % 60)), 2);
                         break;
                     case 'tzh':
+                        // Time zone hours: -08
                         formatOffset =
                             (offset < 0 ? '-' : '+') +
                                 UNSAFE_IntlDateTime.DateTimeUtils.padZeros(Math.floor(Math.abs(offset / 60)), 2);
@@ -142,6 +224,9 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime
                 formatTokens.tokensArray[index] = formatOffset;
             }
         }
+        // appends pre and post token match strings while removing escaped
+        // characters. Returns a single quote count which is used to determine if the
+        // token occurs in a string literal.
         static _appendPreOrPostMatch(preMatch, pos, tokensArray) {
             let quoteCount = 0;
             let escaped = false;
@@ -174,6 +259,30 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime
             }
             return quoteCount;
         }
+        /*
+         * This method converts the pattern into options so that we can use IntlDateTimeFormat.formatToParts to format the pattern.
+         * We parse the pattern and save the generated date-time tokens into an array. We also use a map that stores the location
+         * of each token in the array. In format(value) we use formatToParts to place the actual values in the array by using the map.
+         * This method returns an object with four attributes described below:
+         * 1. tokensArray is an array that contains the tokens generated from the pattern
+         *  For example if the pattern is  'MM-dd-YYYY hh:mm:ss VV (ZZZ)' tokensArray will be the following:
+         * [ null,	'-',	null,	'-',	null,	' ',	null,	':',	null,	':',	null, ' ', null, ' (', null, ')'] The date-time tokens
+         * positions in the array are null because they will be filled by actual values from format method.
+         * 2. tzOffsetsArray is another array that holds timezone tokens because formatToParts cannot handle them,
+         * these tokens are X, XX, XXX, Z, ZZ, ZZZ and VV. tzOffsetsArray will look like:
+         * ['tzid', 'tzhsepm']
+         * 3. tokensIndexes is an object that contain the index of each date-time token in the tokensArray. It
+         * looks like this:
+         * { month: 0, day: 2, year: 4, hour: 6, minute: 8, second: 10, tzid: 12, tzhsepm: 14}
+         * 4. options are the ECMA options derived from the pattern and will be passed to the Intl.DateTimeFormat
+         * constructor in our constructor. In this example the options will be:
+         * {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-diigit', minute: '2-digit', second: '2-digit'}
+         * ZZZ and VV do not generate options because they are not supported by Intl object. They will be processed
+         * separately by formatTzTokens method.
+         * The format method fill the tokensArray with actual values, for example format('2020-01-01T11:20:45') will
+         * make the content of tokensArray as follow:
+         * [ '2020',	'-',	'01',	'-',	'01',	' ', '11',	':',	'20',	':',	45, ' ', 'America/Los_Angeles', ' (', '-08:00', ')' ]
+         */
         static _getOptionsFromPattern(pattern) {
             let quoteCount = 0;
             let pos = { count: 0 };
@@ -184,13 +293,18 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime
             let tzOffsetsArray = [];
             UNSAFE_IntlDateTime.NativeDateTimeConstants._TOKEN_REGEXP.lastIndex = 0;
             for (;;) {
+                // Save the current index
                 let index = UNSAFE_IntlDateTime.NativeDateTimeConstants._TOKEN_REGEXP.lastIndex;
+                // Look for the next pattern
                 const match = UNSAFE_IntlDateTime.NativeDateTimeConstants._TOKEN_REGEXP.exec(pattern);
+                // Append the text before the pattern (or the end of the string if
+                // not found)
                 const preMatch = pattern.slice(index, match ? match.index : pattern.length);
                 quoteCount += NativeDateTimePatternConverter._appendPreOrPostMatch(preMatch, pos, tokensArray);
                 if (!match) {
                     break;
                 }
+                // do not replace any matches that occur inside a string literal.
                 if (quoteCount % 2) {
                     tokensArray.push(match[0]);
                     pos.count++;
@@ -202,6 +316,8 @@ define(['exports', 'ojs/ojconfig', '@oracle/oraclejet-preact/UNSAFE_IntlDateTime
                         const key = UNSAFE_IntlDateTime.NativeDateTimeConstants._PROPERTIES_MAP[m].key;
                         const type = UNSAFE_IntlDateTime.NativeDateTimeConstants._PROPERTIES_MAP[m].type;
                         if (key !== undefined) {
+                            // In the new converter we use fractional second digits instead of
+                            // millisecond.
                             if (key === 'millisecond') {
                                 options[UNSAFE_IntlDateTime.NativeDateTimeConstants.FRACTIONAL_SECOND_MAP[m].key] =
                                     UNSAFE_IntlDateTime.NativeDateTimeConstants.FRACTIONAL_SECOND_MAP[m].value;

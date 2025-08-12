@@ -1,9 +1,11 @@
-import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, DataMapping, FetchListResult, FetchListParameters,
-   FetchAttribute, DataFilter, Item, ItemWithOptionalData, ItemMessage } from '../ojdataprovider';
+import { DataProvider, FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, FetchListResult, FetchListParameters, Item, ItemWithOptionalData,
+   ItemMessage } from '../ojdataprovider';
 declare class BufferingDataProvider<K, D> implements DataProvider<K, D> {
     constructor(dataProvider: DataProvider<K, D>, options?: BufferingDataProvider.Options<K, D>);
     addEventListener(eventType: string, listener: EventListener): void;
-    addItem(item: Item<K, D>): void;
+    addItem(item: Item<K, D>, addDetail?: {
+        addBeforeKey?: K | null;
+    }): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
     createOptimizedKeySet?(initialSet?: Set<K>): Set<K>;
@@ -17,9 +19,9 @@ declare class BufferingDataProvider<K, D> implements DataProvider<K, D> {
     isEmpty(): 'yes' | 'no' | 'unknown';
     removeEventListener(eventType: string, listener: EventListener): void;
     removeItem(item: ItemWithOptionalData<K, D>): void;
-    resetAllUnsubmittedItems(): any;
+    resetAllUnsubmittedItems(): void;
     resetUnsubmittedItem(key: K): void;
-    setItemStatus(editItem: BufferingDataProvider.EditItem<K, D>, newStatus: 'unsubmitted' | 'submitting' | 'submitted', error?: ItemMessage, mewKey?: K): void;
+    setItemStatus(editItem: BufferingDataProvider.EditItem<K, D>, newStatus: 'unsubmitted' | 'submitting' | 'submitted', error?: ItemMessage, newKey?: K): void;
     updateItem(item: Item<K, D>): void;
 }
 declare namespace BufferingDataProvider {

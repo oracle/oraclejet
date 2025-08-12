@@ -6,6 +6,7 @@
  * @ignore
  */
 import oj$1 from 'ojs/ojcore-base';
+import { error, warn } from 'ojs/ojlogger';
 import { GenericEvent } from 'ojs/ojeventtarget';
 
 /**
@@ -381,7 +382,7 @@ oj.DataProvider = function () {};
  *
  * @since 4.2.0
  * @param {string} capabilityName capability name. Defined capability names are:
- *                  "dedup", "eventFiltering", "fetchByKeys", "fetchByOffset", "fetchCapability", "fetchFirst", "filter", and "sort".
+ *                  "dedup", "eventFiltering", "fetchByKeys", "fetchByOffset", "fetchCapability", "fetchFirst", "filter", "sort" and "key".
  * @return {Object} capability information or null if undefined
  * <ul>
  *   <li>If capabilityName is "dedup", returns a {@link DedupCapability} object.</li>
@@ -393,6 +394,7 @@ oj.DataProvider = function () {};
  *   <li>If capabilityName is "fetchFirst", returns a {@link FetchFirstCapability} object.</li>
  *   <li>If capabilityName is "filter", returns a {@link FilterCapability} object.</li>
  *   <li>If capabilityName is "sort", returns a {@link SortCapability} object.</li>
+ *   <li>If capabilityName is "key", returns a {@link KeyCapability} object.</li>
  * </ul>
  * @export
  * @expose
@@ -734,135 +736,487 @@ var CompoundFilterOperator;
 })(CompoundFilterOperator || (CompoundFilterOperator = {}));
 oj$1._registerLegacyNamespaceProp('CompoundFilterOperator', CompoundFilterOperator);
 
-class DataCache {
-    constructor() {
-        this._handleMutationAdd = function (eventDetail) {
-            const eventDetailBeforeKeys = eventDetail[DataCache._BEFOREKEYS];
-            const eventDetailKeys = eventDetail[DataCache._KEYS];
-            const eventDetailKeysArray = [];
-            eventDetailKeys.forEach((key) => {
-                eventDetailKeysArray.push(key);
+var DataProviderUtils;
+(function (DataProviderUtils) {
+    DataProviderUtils.WARN_DUPLICATE_KEYS_DETAIL = 'Duplicate keys detected. Though this can occur due to race conditions, it is likely an indication that the underlying data set contains non-unique keys.';
+    /**
+     * Returns the resulting array of keys from the handling of an add event.
+     * @param {Array} initialKeys
+     * @param {Object} addEventDetail
+     * @param {boolean} isLoadAll
+     */
+    function getAddEventKeysResult(initialKeys, addEventDetail, isLoadAll) {
+        var i;
+        var beforeKey;
+        var eventKey;
+        var eventIndex;
+        var beforeIndex;
+        // returns an object that stores the required insertion information for a given key
+        function _createAddItem(itemKey, itemIndex) {
+            return { key: itemKey, index: itemIndex };
+        }
+        var returnKeys = initialKeys.slice();
+        var eventKeys = [];
+        addEventDetail.keys.forEach(function (key) {
+            eventKeys.push(key);
+        });
+        var eventBeforeKeys = [];
+        // afterKeys is deprecated, but continue to support it until we can remove it.
+        // forEach can be called on both array and set.
+        var beforeKeyIter = addEventDetail.addBeforeKeys
+            ? addEventDetail.addBeforeKeys
+            : addEventDetail.afterKeys;
+        if (beforeKeyIter != null) {
+            beforeKeyIter.forEach(function (key) {
+                eventBeforeKeys.push(key);
             });
-            const eventDetailData = eventDetail[DataCache._DATA] ? eventDetail[DataCache._DATA] : [];
-            const eventDetailMetadata = this._deriveMetadataFromKey(eventDetail[DataCache._METADATA], eventDetailKeys);
-            const eventDetailIndexes = eventDetail[DataCache._INDEXES];
-            if (eventDetailKeysArray && eventDetailKeysArray.length > 0) {
-                if (eventDetailIndexes) {
-                    eventDetailKeysArray.forEach((key, index) => {
-                        this._items.splice(eventDetailIndexes[index], 0, new this.Item(eventDetailMetadata[index], eventDetailData[index]));
-                    });
-                }
-                else if (eventDetailBeforeKeys) {
-                    const eventDetailBeforeKeysClone = Object.assign([], eventDetailBeforeKeys);
-                    const eventDetailKeysClone = Object.assign(new Set(), eventDetail[DataCache._KEYS]);
-                    const eventDetailDataClone = Object.assign([], eventDetailData);
-                    const eventDetailMetadataClone = Object.assign([], eventDetailMetadata);
-                    const outOfRangeKeys = [];
-                    let key, findKey, outOfRange;
-                    for (const beforeKey of eventDetailBeforeKeys) {
-                        key = beforeKey;
-                        outOfRange = true;
-                        if (key != null) {
-                            for (const keyArray of eventDetailKeysArray) {
-                                if (oj$1.Object.compareValues(keyArray, key)) {
-                                    outOfRange = false;
-                                    break;
+        }
+        var foundDuplicate = false;
+        var eventIndexes = addEventDetail.indexes;
+        // if beforeKeys are specified, they take precedence over index values.
+        if (eventBeforeKeys.length === eventKeys.length) {
+            // loop through the beforeKeys, and perform insertions as we find them.
+            // some beforeKeys may be in our list of keys to add, so we need to continuously loop through our adds until no insertions are made.
+            // at that point, any left over rows are out of our rendered viewport, and we can safely ignore them in not isLoadAll.
+            var leftOverLength = 0;
+            var requiresAdditionalLooping = true;
+            while (requiresAdditionalLooping) {
+                while (eventKeys.length !== leftOverLength) {
+                    leftOverLength = eventKeys.length;
+                    // loop through in reverse order as most DP impls have an increasing global index order in their events.
+                    for (i = eventKeys.length - 1; i >= 0; i--) {
+                        eventKey = eventKeys[i];
+                        // ensure the key does not already exist in the data set.
+                        if (!containsKey(returnKeys, eventKey)) {
+                            beforeKey = eventBeforeKeys[i];
+                            if (beforeKey != null) {
+                                beforeIndex = _indexOfKey(returnKeys, beforeKey);
+                                if (beforeIndex !== -1) {
+                                    returnKeys.splice(beforeIndex, 0, eventKey);
+                                    eventBeforeKeys.splice(i, 1);
+                                    eventKeys.splice(i, 1);
                                 }
                             }
-                            if (outOfRange) {
-                                for (const item of this._items) {
-                                    if (oj$1.Object.compareValues(item?.metadata?.key, key)) {
-                                        outOfRange = false;
-                                        break;
-                                    }
-                                }
+                            else if (isLoadAll) {
+                                // null beforeKey is at the end of the data set, only add if isLoadAll
+                                returnKeys.push(eventKey);
+                                eventBeforeKeys.splice(i, 1);
+                                eventKeys.splice(i, 1);
                             }
                         }
                         else {
-                            outOfRange = false;
-                        }
-                        if (outOfRange) {
-                            outOfRangeKeys.push(key);
+                            // if duplicate key detected, just remove that key from the set to be added
+                            eventBeforeKeys.splice(i, 1);
+                            eventKeys.splice(i, 1);
+                            foundDuplicate = true;
                         }
                     }
-                    let keysToCheck = eventDetailBeforeKeys.length;
-                    while (keysToCheck > 0) {
-                        for (const beforeKey of eventDetailBeforeKeys) {
-                            findKey = beforeKey;
-                            if (outOfRangeKeys.indexOf(findKey) >= 0) {
-                                outOfRangeKeys.push(findKey);
+                }
+                // if before keys were not continuous, just do our best to add the remaining ones at the end when isLoadAll
+                if (isLoadAll && eventKeys.length !== 0) {
+                    error('Invalid "beforeKey" value detected in "add" event.');
+                    returnKeys.push(eventKeys[0]);
+                    eventBeforeKeys.splice(0, 1);
+                    eventKeys.splice(0, 1);
+                    requiresAdditionalLooping = eventKeys.length !== 0;
+                }
+                else {
+                    requiresAdditionalLooping = false;
+                }
+            }
+        }
+        else if (eventIndexes != null && eventIndexes.length === eventKeys.length) {
+            // if beforeKeys are not specified, we need to rely on the index values.
+            // in order to be safely added, we need to ensure they are ordered in ascending order
+            var indexItems = [];
+            for (i = 0; i < eventKeys.length; i++) {
+                eventKey = eventKeys[i];
+                // ensure the key does not already exist in the data set
+                if (!containsKey(returnKeys, eventKey)) {
+                    eventIndex = eventIndexes[i];
+                    if (eventIndex != null) {
+                        var added = false;
+                        for (var j = 0; j < indexItems.length; j++) {
+                            // this is the absolute event index once all updates are made - store it (sorted low to high) and add after
+                            if (indexItems[j].index > eventIndex) {
+                                indexItems.splice(j, 0, _createAddItem(eventKey, eventIndex));
+                                added = true;
                                 break;
                             }
                         }
-                        keysToCheck--;
-                    }
-                    for (let i = eventDetailBeforeKeysClone.length - 1; i >= 0; i--) {
-                        if (outOfRangeKeys.indexOf(eventDetailBeforeKeysClone[i]) >= 0) {
-                            delete eventDetailBeforeKeysClone[i];
-                            eventDetailKeysClone.delete(eventDetailBeforeKeysClone[i]);
-                            delete eventDetailDataClone[i];
-                            delete eventDetailMetadataClone[i];
+                        if (!added) {
+                            indexItems.push(_createAddItem(eventKey, eventIndex));
                         }
                     }
-                    eventDetailBeforeKeysClone.forEach((beforeKey, beforeKeyIndex) => {
-                        if (beforeKey === null) {
-                            this._items.push(new this.Item(eventDetailMetadata[beforeKeyIndex], eventDetailData[beforeKeyIndex]));
-                        }
-                        else {
-                            for (let i = 0; i < this._items.length; i++) {
-                                if (oj$1.Object.compareValues(this._items[i]?.metadata?.key, beforeKey)) {
-                                    this._items.splice(i, 0, new this.Item(eventDetailMetadata[beforeKeyIndex], eventDetailData[beforeKeyIndex]));
-                                    break;
-                                }
-                            }
-                        }
-                    });
+                    else if (isLoadAll) {
+                        // null index is at the end of the data set, only add if isLoadAll
+                        returnKeys.push(eventKey);
+                    }
                 }
                 else {
-                    if (this._fetchParams && this._fetchParams.sortCriteria != null) {
-                        const sortCriteria = this._fetchParams.sortCriteria;
-                        if (sortCriteria) {
-                            const comparator = this._getSortComparator(sortCriteria);
-                            let i, currentData, currentCompare;
-                            const insertedIndexes = [];
-                            eventDetailData.forEach((data, index) => {
-                                for (i = 0; i < this._items.length; i++) {
-                                    currentData = this._items[i].data;
-                                    currentCompare = comparator(data, currentData);
-                                    if (currentCompare < 0) {
-                                        this._items.splice(i, 0, new this.Item(eventDetailMetadata[index], eventDetailData[index]));
-                                        insertedIndexes.push(index);
-                                        break;
-                                    }
-                                }
-                            });
-                            eventDetailData.forEach((data, index) => {
-                                if (insertedIndexes.indexOf(index) < 0) {
-                                    this._items.push(new this.Item(eventDetailMetadata[index], eventDetailData[index]));
-                                }
-                            });
-                        }
+                    foundDuplicate = true;
+                }
+            }
+            // add the sorted items by index to ensure final index values are correct
+            for (i = 0; i < indexItems.length; i++) {
+                var indexItem = indexItems[i];
+                if (indexItem.index < returnKeys.length) {
+                    returnKeys.splice(indexItem.index, 0, indexItem.key);
+                }
+                else if (isLoadAll) {
+                    if (indexItem.index !== returnKeys.length) {
+                        // log error if index values are not correct
+                        error('Invalid "index" value detected in "add" event.');
                     }
-                    else {
-                        eventDetailData.forEach((data, index) => {
-                            this._items.push(new this.Item(eventDetailMetadata[index], eventDetailData[index]));
-                        });
+                    // add remaining rows to the end when isLoadAll
+                    returnKeys.push(indexItem.key);
+                }
+            }
+        }
+        else if (isLoadAll) {
+            // if neither beforeKeys nor indexes are specified, just add all keys to the end in the current order
+            eventKeys.forEach(function (key) {
+                returnKeys.push(key);
+            });
+        }
+        if (foundDuplicate) {
+            warn(DataProviderUtils.WARN_DUPLICATE_KEYS_DETAIL);
+        }
+        // return updated keys since any remaining beforeKey rows and index rows are not connected to the viewport
+        return returnKeys;
+    }
+    DataProviderUtils.getAddEventKeysResult = getAddEventKeysResult;
+    function doesAttributeExistInFilterCriterion(attributeName, filterCriterion) {
+        // handle text filter
+        if (filterCriterion.text) {
+            return true;
+        }
+        // handle Nested Filter
+        if (filterCriterion.attribute && filterCriterion.op && filterCriterion.op === '$exists') {
+            if (this.doesAttributeExistInFilterCriterion(attributeName, filterCriterion.criterion)) {
+                return true;
+            }
+        }
+        // handle AttributeExpression filter
+        else if (filterCriterion.attribute) {
+            if (filterCriterion.attribute === '*') {
+                return true;
+            }
+            else if (filterCriterion.attribute === attributeName) {
+                return true;
+            }
+        }
+        // handle Attribute filter
+        // eslint-disable-next-line no-prototype-builtins
+        else if (filterCriterion.value && filterCriterion.value.hasOwnProperty(attributeName)) {
+            return true;
+        }
+        // handle Compound Filter
+        else if (filterCriterion.criteria && filterCriterion.criteria.length > 0) {
+            for (let i = 0; i < filterCriterion.criteria.length; i++) {
+                if (this.doesAttributeExistInFilterCriterion(attributeName, filterCriterion.criteria[i])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    DataProviderUtils.doesAttributeExistInFilterCriterion = doesAttributeExistInFilterCriterion;
+    /**
+     * @private
+     */
+    function containsKey(array, key) {
+        for (var i = 0; i < array.length; i++) {
+            if (oj$1.KeyUtils.equals(array[i], key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * @private
+     */
+    function _indexOfKey(array, key) {
+        for (var i = 0; i < array.length; i++) {
+            if (oj$1.KeyUtils.equals(array[i], key)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+})(DataProviderUtils || (DataProviderUtils = {}));
+
+/**
+ * @ignore
+ * @namespace SortUtils
+ */
+var SortUtils;
+(function (SortUtils) {
+    /**
+     * Helper function that returns a comparator which does natural sort
+     * @method
+     * @name getNaturalSortCriteriaComparator
+     * @memberof! SortUtils
+     * @static
+     * @param {Array<SortCriterion>} sortCriteria The sortCriterion for the comparator
+     * @returns {function} comparator
+     */
+    function getNaturalSortCriteriaComparator(sortCriteria) {
+        return (x, y) => {
+            for (const sort of sortCriteria) {
+                const compareResult = getNaturalSortCriterionComparator(sort)(x, y);
+                if (compareResult !== 0) {
+                    return compareResult;
+                }
+            }
+            return 0;
+        };
+    }
+    SortUtils.getNaturalSortCriteriaComparator = getNaturalSortCriteriaComparator;
+    /**
+     * Helper function that returns a comparator which does natural sort
+     * @method
+     * @name getNaturalSortCriteriaComparator
+     * @memberof! SortUtils
+     * @static
+     * @param {Array<SortCriterion>} sortCriteria The sortCriterion for the comparator
+     * @returns {function} comparator
+     */
+    function getNaturalSortCriterionComparator(sortCriterion) {
+        const _getVal = (val, attr) => {
+            if (val === null || typeof val === 'undefined') {
+                return val;
+            }
+            if (typeof attr === 'string') {
+                const dotIndex = attr.indexOf('.');
+                if (dotIndex > 0) {
+                    const startAttr = attr.substring(0, dotIndex);
+                    const endAttr = attr.substring(dotIndex + 1);
+                    const subObj = val[startAttr];
+                    if (subObj) {
+                        return _getVal(subObj, endAttr);
                     }
                 }
             }
+            if (typeof val[attr] === 'function') {
+                return val[attr]();
+            }
+            return val[attr];
         };
-        this._handleMutationRemove = function (eventDetail) {
-            const eventDetailKeys = eventDetail[DataCache._KEYS];
-            if (eventDetailKeys && eventDetailKeys.size > 0) {
-                let i;
-                eventDetailKeys.forEach((key) => {
-                    for (i = this._items.length - 1; i >= 0; i--) {
-                        if (oj$1.Object.compareValues(this._items[i].metadata.key, key)) {
-                            this._items.splice(i, 1);
-                            break;
+        return (x, y) => {
+            let direction, attribute, xval, yval;
+            direction = sortCriterion['direction'];
+            attribute = sortCriterion['attribute'];
+            xval = _getVal(x, attribute);
+            yval = _getVal(y, attribute);
+            let compareResult = 0;
+            const comparator = getNaturalSortComparator();
+            if (direction === 'ascending') {
+                compareResult = comparator(xval, yval);
+            }
+            else {
+                compareResult = comparator(yval, xval);
+            }
+            if (compareResult !== 0) {
+                return compareResult;
+            }
+            return 0;
+        };
+    }
+    SortUtils.getNaturalSortCriterionComparator = getNaturalSortCriterionComparator;
+    /**
+     * Helper function that returns a comparator which does natural sort
+     * @method
+     * @name getNaturalSortCriteriaComparator
+     * @memberof! SortUtils
+     * @static
+     * @param {Array<SortCriterion>} sortCriteria The sortCriterion for the comparator
+     * @returns {function} comparator
+     */
+    function getNaturalSortComparator() {
+        return (xval, yval) => {
+            if (xval === null || typeof xval === 'undefined') {
+                return 1;
+            }
+            if (yval === null || typeof yval === 'undefined') {
+                return -1;
+            }
+            let compareResult = 0;
+            const strX = typeof xval === 'string' ? xval : String(xval).toString();
+            const strY = typeof yval === 'string' ? yval : String(yval).toString();
+            compareResult = strX.localeCompare(strY, undefined, {
+                numeric: true,
+                sensitivity: 'base'
+            });
+            if (compareResult !== 0) {
+                return compareResult;
+            }
+            return 0;
+        };
+    }
+    SortUtils.getNaturalSortComparator = getNaturalSortComparator;
+})(SortUtils || (SortUtils = {}));
+
+/**
+ * @license
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+class DataCache {
+    constructor() {
+        this._handleMutationAdd = function (eventDetail, callback) {
+            let indexes = [];
+            const eventsMap = new Map();
+            const keysInCache = [];
+            let keyIndex = 0;
+            eventDetail[DataCache._KEYS].forEach((key) => {
+                eventsMap.set(key, {
+                    data: eventDetail[DataCache._DATA]?.[keyIndex],
+                    metadata: eventDetail[DataCache._METADATA]?.[keyIndex]
+                });
+                keyIndex++;
+            });
+            const filterCriterion = this._fetchParams?.filterCriterion;
+            // if sortCriteria is provided, we need to insert the new data in the correct order
+            if (this._fetchParams?.sortCriteria?.length > 0) {
+                const sortComparator = SortUtils.getNaturalSortCriteriaComparator(this._fetchParams.sortCriteria);
+                // create array of eventdetail data and sort it based on sortCriterion
+                const eventDetailDataArray = [];
+                eventDetail[DataCache._DATA]?.forEach((data, index) => {
+                    eventDetailDataArray.push({
+                        data: data,
+                        metadata: eventDetail[DataCache._METADATA][index]
+                    });
+                });
+                eventDetailDataArray.sort((a, b) => {
+                    return sortComparator(a.data, b.data);
+                });
+                // merge two sorted arrays i.e. eventDetailDataArray and this._items
+                let cacheIndex = 0;
+                let dataArrayIndex = 0;
+                while (dataArrayIndex < eventDetailDataArray.length &&
+                    cacheIndex < this._items.length &&
+                    this._items[cacheIndex] != undefined) {
+                    // if filterCriterion is provided, then insert data only if it matches the filterCriterion
+                    if (filterCriterion && !filterCriterion.filter(eventDetailDataArray[dataArrayIndex].data)) {
+                        dataArrayIndex++;
+                        continue;
+                    }
+                    let currentCompare = sortComparator(eventDetailDataArray[dataArrayIndex].data, this._items[cacheIndex]?.data);
+                    if (currentCompare < 0) {
+                        this._items.splice(cacheIndex, 0, new this.Item(eventDetailDataArray[dataArrayIndex].metadata, eventDetailDataArray[dataArrayIndex].data));
+                        indexes.push(cacheIndex);
+                        dataArrayIndex++;
+                        cacheIndex++;
+                    }
+                    else {
+                        cacheIndex++;
+                    }
+                }
+                // eventDetailDataArray still has data which is not handled
+                if (dataArrayIndex < eventDetailDataArray.length) {
+                    // if this._items contains undefined then it is sparse array and truncate cache at that index
+                    if (cacheIndex < this._items.length && this._items[cacheIndex] === undefined) {
+                        this._items.length = cacheIndex;
+                        this._done = false;
+                    }
+                    else if (this.isDone()) {
+                        while (dataArrayIndex < eventDetailDataArray.length) {
+                            // if filterCriterion is provided, then insert data only if it matches the filterCriterion
+                            if (filterCriterion &&
+                                !filterCriterion.filter(eventDetailDataArray[dataArrayIndex].data)) {
+                                dataArrayIndex++;
+                                continue;
+                            }
+                            this._items.push(new this.Item(eventDetailDataArray[dataArrayIndex].metadata, eventDetailDataArray[dataArrayIndex].data));
+                            indexes.push(this._items.length - 1);
+                            dataArrayIndex++;
                         }
                     }
+                }
+            }
+            else {
+                // create new eventDetail object which contains only filtered data
+                let eventDetailCopy = {
+                    addBeforeKeys: eventDetail[DataCache._BEFOREKEYS] ? [] : eventDetail[DataCache._BEFOREKEYS],
+                    data: eventDetail[DataCache._DATA] ? [] : eventDetail[DataCache._DATA],
+                    indexes: eventDetail[DataCache._INDEXES] ? [] : eventDetail[DataCache._INDEXES],
+                    keys: new Set(),
+                    metadata: eventDetail[DataCache._METADATA] ? [] : eventDetail[DataCache._METADATA],
+                    parentKeys: eventDetail.parentKeys ? [] : eventDetail.parentKeys,
+                    transient: eventDetail.transient
+                };
+                let index = 0;
+                eventDetail[DataCache._KEYS].forEach((key) => {
+                    if (!filterCriterion ||
+                        (filterCriterion && filterCriterion.filter(eventDetail[DataCache._DATA][index]))) {
+                        eventDetailCopy.addBeforeKeys?.push(eventDetail[DataCache._BEFOREKEYS][index]);
+                        eventDetailCopy.data?.push(eventDetail[DataCache._DATA][index]);
+                        eventDetailCopy.indexes?.push(eventDetail[DataCache._INDEXES][index]);
+                        eventDetailCopy.metadata?.push(eventDetail[DataCache._METADATA][index]);
+                        eventDetailCopy.parentKeys?.push(eventDetail.parentKeys[index]);
+                        eventDetailCopy.keys.add(key);
+                    }
+                    index++;
                 });
+                for (let i = 0; i < this._items.length; i++) {
+                    keysInCache.push(this._items[i]?.metadata?.key);
+                }
+                const finalKeys = DataProviderUtils.getAddEventKeysResult(keysInCache, eventDetailCopy, this.isDone() && this.getSparseIndex() === -1);
+                let initialSparseIndex = -1;
+                finalKeys.forEach((key, index) => {
+                    if (key === undefined && initialSparseIndex === -1) {
+                        initialSparseIndex = index;
+                    }
+                    if (!oj$1.Object.compareValues(key, this._items[index]?.metadata?.key) &&
+                        eventsMap.has(key)) {
+                        let eventData = eventsMap.get(key);
+                        this._items.splice(index, 0, new this.Item(eventData.metadata, eventData.data));
+                        indexes.push(index);
+                        eventsMap.delete(key);
+                    }
+                });
+                if (eventsMap.size > 0 && initialSparseIndex > -1) {
+                    this._items.length = initialSparseIndex;
+                    this._done = false;
+                }
+                if (callback) {
+                    callback('add', indexes);
+                }
+            }
+        };
+        this._handleMutationRemove = function (eventDetail, callback) {
+            let indexes = [];
+            const eventDetailKeys = eventDetail[DataCache._KEYS];
+            const keysNotInCache = [];
+            if (eventDetailKeys == null || eventDetailKeys.size === 0) {
+                return;
+            }
+            let index = 0;
+            eventDetailKeys.forEach((key) => {
+                let keyFound = false;
+                for (let i = this._items.length - 1; i >= 0; i--) {
+                    if (this._items[i] && oj$1.Object.compareValues(this._items[i]?.metadata?.key, key)) {
+                        this._items.splice(i, 1);
+                        indexes.push(i);
+                        keyFound = true;
+                        break;
+                    }
+                }
+                if (!keyFound) {
+                    keysNotInCache.push(key);
+                }
+                index++;
+            });
+            let sparseIndex = this.getSparseIndex();
+            if (keysNotInCache.length > 0 && sparseIndex > -1) {
+                // discarding all contents after an empty item
+                this._items.length = sparseIndex;
+                this._done = false;
+            }
+            if (callback) {
+                callback('remove', indexes);
             }
         };
         this._handleMutationUpdate = function (eventDetail) {
@@ -873,7 +1227,7 @@ class DataCache {
                 let i, index = 0;
                 eventDetailKeys.forEach((key) => {
                     for (i = this._items.length - 1; i >= 0; i--) {
-                        if (oj$1.Object.compareValues(this._items[i].metadata.key, key)) {
+                        if (oj$1.Object.compareValues(this._items[i]?.metadata?.key, key)) {
                             this._items.splice(i, 1, new this.Item(eventDetailMetadata[index], eventDetailData[index]));
                             break;
                         }
@@ -947,7 +1301,7 @@ class DataCache {
         if (params && params.keys) {
             params.keys.forEach((key) => {
                 for (const item of this._items) {
-                    if (item.metadata.key === key) {
+                    if (item?.metadata?.key === key) {
                         results.set(key, item);
                         break;
                     }
@@ -957,19 +1311,35 @@ class DataCache {
         return new this.FetchByKeysResults(params, results);
     }
     getDataByOffset(params) {
+        this._fetchParams = params;
         let results = [];
-        const done = params.offset + params.size >= this.getSize() && this.isDone();
-        if (params) {
-            results = this._items.slice(params.offset, params.offset + params.size);
+        let done;
+        if (params.size === -1) {
+            done = this.isDone();
+            results = this._items.slice(params.offset);
+        }
+        else {
+            const size = params.size || DataCache._DEFAULT_SIZE;
+            // all data is cached and fetchByOffset is trying to get data larger than data's total size
+            // then done is true
+            done = params.offset + size >= this.getSize() && this.isDone();
+            results = this._items.slice(params.offset, params.offset + size);
         }
         return new this.FetchByOffsetResults(params, results, done, this.getSize());
     }
-    processMutations(detail) {
+    addFetchByOffsetResult(result) {
+        const offset = result.fetchParameters.offset || 0;
+        result.results.forEach((data, index) => {
+            this._items[offset + index] = data;
+        });
+        this._done = this._done || result.done;
+    }
+    processMutations(detail, callback = null) {
         if (detail.remove != null) {
-            this._handleMutationRemove(detail.remove);
+            this._handleMutationRemove(detail.remove, callback);
         }
         if (detail.add != null) {
-            this._handleMutationAdd(detail.add);
+            this._handleMutationAdd(detail.add, callback);
         }
         if (detail.update != null) {
             this._handleMutationUpdate(detail.update);
@@ -985,7 +1355,16 @@ class DataCache {
     isDone() {
         return this._done;
     }
+    getSparseIndex(start = 0, end = this._items.length) {
+        for (let i = start; i < end; i++) {
+            if (this._items[i] === undefined) {
+                return i;
+            }
+        }
+        return -1;
+    }
     _deriveMetadataFromKey(metadata, keys) {
+        // when metadata is not provided, derive it from key
         if (!metadata || metadata.length != keys.size) {
             metadata = [];
             keys.forEach((key) => {
@@ -993,53 +1372,6 @@ class DataCache {
             });
         }
         return metadata;
-    }
-    _getSortComparator(sortCriteria) {
-        return (x, y) => {
-            let direction, attribute, xval, yval;
-            for (const sort of sortCriteria) {
-                direction = sort[DataCache._DIRECTION];
-                attribute = sort[DataCache._ATTRIBUTE];
-                xval = this._getVal(x, attribute);
-                yval = this._getVal(y, attribute);
-                let compareResult = 0;
-                const strX = typeof xval === 'string' ? xval : String(xval).toString();
-                const strY = typeof yval === 'string' ? yval : String(yval).toString();
-                if (direction === 'ascending') {
-                    compareResult = strX.localeCompare(strY, undefined, {
-                        numeric: true,
-                        sensitivity: 'base'
-                    });
-                }
-                else {
-                    compareResult = strY.localeCompare(strX, undefined, {
-                        numeric: true,
-                        sensitivity: 'base'
-                    });
-                }
-                if (compareResult !== 0) {
-                    return compareResult;
-                }
-            }
-            return 0;
-        };
-    }
-    _getVal(val, attr) {
-        if (typeof attr === 'string') {
-            const dotIndex = attr.indexOf('.');
-            if (dotIndex > 0) {
-                const startAttr = attr.substring(0, dotIndex);
-                const endAttr = attr.substring(dotIndex + 1);
-                const subObj = val[startAttr];
-                if (subObj) {
-                    return this._getVal(subObj, endAttr);
-                }
-            }
-        }
-        if (typeof val[attr] === 'function') {
-            return val[attr]();
-        }
-        return val[attr];
     }
 }
 DataCache._DATA = 'data';
@@ -1069,6 +1401,9 @@ DataCache._FETCHFIRST = 'fetchFirst';
 DataCache._FETCHATTRIBUTES = 'attributes';
 oj$1._registerLegacyNamespaceProp('DataCache', DataCache);
 
+/**
+ * The class for DataProviderMutationEvent
+ */
 class DataProviderMutationEvent extends GenericEvent {
     constructor(detail) {
         const eventOptions = {};
@@ -1079,6 +1414,9 @@ class DataProviderMutationEvent extends GenericEvent {
 DataProviderMutationEvent._DETAIL = 'detail';
 oj$1._registerLegacyNamespaceProp('DataProviderMutationEvent', DataProviderMutationEvent);
 
+/**
+ * The class for DataProviderRefreshEvent
+ */
 class DataProviderRefreshEvent extends GenericEvent {
     constructor(detail) {
         const eventOptions = {};
@@ -1089,6 +1427,9 @@ class DataProviderRefreshEvent extends GenericEvent {
 oj$1._registerLegacyNamespaceProp('DataProviderRefreshEvent', DataProviderRefreshEvent);
 
 class FetchByKeysMixin {
+    /**
+     * Fetch rows by keys
+     */
     fetchByKeys(params) {
         let fetched = 0;
         const limit = this['getIterationLimit'] ? this['getIterationLimit']() : -1;
@@ -1117,9 +1458,12 @@ class FetchByKeysMixin {
                         foundAllKeys = false;
                     }
                 });
+                // Keep track of how many rows we have fetched
                 fetched += data.length;
+                // Keep iterating if we haven't found all keys and there are more data
                 if (!foundAllKeys && !result['done']) {
                     if (limit != -1 && fetched >= limit) {
+                        // If we have reached the limit, just return the results
                         return resultMap;
                     }
                     else {
@@ -1140,6 +1484,9 @@ class FetchByKeysMixin {
             return { fetchParameters: params, results: mappedResultMap };
         });
     }
+    /**
+     * Check if rows are contained by keys
+     */
     containsKeys(params) {
         return this.fetchByKeys(params).then(function (fetchByKeysResult) {
             const results = new Set();
@@ -1158,10 +1505,12 @@ class FetchByKeysMixin {
         let cap = null;
         if (this['_ojSkipLastCapability'] !== true) {
             this['_ojSkipLastCapability'] = true;
+            // Find the index for the very last _ojLastGetCapability
             let index = 1;
             while (this['_ojLastGetCapability' + index]) {
                 ++index;
             }
+            // Iterate through the _ojLastGetCapability(n) in reverse order
             for (--index; index > 0; index--) {
                 cap = this['_ojLastGetCapability' + index](capabilityName);
                 if (cap) {
@@ -1173,6 +1522,7 @@ class FetchByKeysMixin {
         return cap;
     }
     static applyMixin(derivedCtor) {
+        // Save the current getCapability
         const _lastGetCapability = derivedCtor.prototype['getCapability'];
         const baseCtors = [FetchByKeysMixin];
         baseCtors.forEach((baseCtor) => {
@@ -1194,6 +1544,9 @@ class FetchByKeysMixin {
 oj$1._registerLegacyNamespaceProp('FetchByKeysMixin', FetchByKeysMixin);
 
 class FetchByOffsetMixin {
+    /**
+     * Fetch rows by offset
+     */
     fetchByOffset(params) {
         const size = params && params['size'] > 0 ? params['size'] : 25;
         const sortCriteria = params ? params['sortCriteria'] : null;
@@ -1225,6 +1578,7 @@ class FetchByOffsetMixin {
                 fetched += dataLen;
                 if (resultArray.length < size && !done) {
                     if (limit !== -1 && fetched >= limit) {
+                        // If we have reached the limit, just return the results
                         return resultArray;
                     }
                     else {
@@ -1247,10 +1601,12 @@ class FetchByOffsetMixin {
         let cap = null;
         if (this['_ojSkipLastCapability'] !== true) {
             this['_ojSkipLastCapability'] = true;
+            // Find the index for the very last _ojLastGetCapability
             let index = 1;
             while (this['_ojLastGetCapability' + index]) {
                 ++index;
             }
+            // Iterate through the _ojLastGetCapability(n) in reverse order
             for (--index; index > 0; index--) {
                 cap = this['_ojLastGetCapability' + index](capabilityName);
                 if (cap) {
@@ -1262,6 +1618,7 @@ class FetchByOffsetMixin {
         return cap;
     }
     static applyMixin(derivedCtor) {
+        // Save the current getCapability
         const _lastGetCapability = derivedCtor.prototype['getCapability'];
         const baseCtors = [FetchByOffsetMixin];
         baseCtors.forEach((baseCtor) => {
@@ -1282,10 +1639,30 @@ class FetchByOffsetMixin {
 }
 oj$1._registerLegacyNamespaceProp('FetchByOffsetMixin', FetchByOffsetMixin);
 
+/* eslint-disable */
+/**
+ * @ignore
+ * @namespace FilterUtils
+ */
 var FilterUtils;
 (function (FilterUtils) {
+    /**
+     * Helper function that checks if itemData satisfies the search criteria
+     * defined by selector or not. Undefined selector means everything is
+     * selected.
+     * @method
+     * @name satisfy
+     * @memberof! FilterUtils
+     * @static
+     * @param {string} selector Rule that defines whether an object is selected
+     *                          or not.
+     * @param {object} itemData The value to check with.
+     * @returns {boolean} true if itemData satisfies search criteria defined
+     *                         by selector, and false otherwise.
+     */
     function satisfy(selector, itemData) {
         if (!selector) {
+            // undefined selector means select everything.
             return true;
         }
         else {
@@ -1294,28 +1671,52 @@ var FilterUtils;
         }
     }
     FilterUtils.satisfy = satisfy;
+    /**
+     * Helper function that validates whether the filterCriterion matches the DataProvider's capability.
+     * Currently, we only validate the usage of NestedFilter and TextFilter with matchBy value set.
+     * Will throw an error if filterCriterion includes unsupported filter and matchBy value.
+     * @method
+     * @name validateFilterCapabilities
+     * @memberof! FilterUtils
+     * @static
+     * @param {FilterCapability} supportedCapability filter capability of data provider
+     * @param {DataFilter.Filter} filterCriterion The filterCriterion that needs to be checked.
+     */
     function validateFilterCapabilities(supportedCapability, filterCriterion) {
         let matchBy;
         const supportedMatchBy = supportedCapability?.textFilterMatching?.matchBy;
         if (filterCriterion) {
+            // text filter
             if (filterCriterion.text) {
                 matchBy = filterCriterion.matchBy;
                 if (matchBy && (!supportedMatchBy || supportedMatchBy.indexOf(matchBy) < 0)) {
                     throw new Error('This data provider does not support TextFilter with matchBy value ' + matchBy);
                 }
             }
+            // Multiple text filter or ExtendedCompoundFilter
             if (filterCriterion.criteria?.length > 0) {
                 for (let index = 0; index < filterCriterion.criteria.length; index++) {
                     const item = filterCriterion.criteria[index];
                     validateFilterCapabilities(supportedCapability, item);
                 }
             }
+            // nested filter
             if (filterCriterion.criterion) {
                 validateFilterCapabilities(supportedCapability, filterCriterion.criterion);
             }
         }
     }
     FilterUtils.validateFilterCapabilities = validateFilterCapabilities;
+    /**
+     * Helper function used by {@link _satisfy} to build an expression tree
+     * based on expression object for easier evaluation later.
+     * @method
+     * @name _buildExpressionTree
+     * @memberof! FilterUtils
+     * @static
+     * @param {object} expression The expression that used to filter an object.
+     * @returns {object} The tree representation of the passed-in expression.
+     */
     function _buildExpressionTree(expression, collationOptions = undefined) {
         let subTree;
         const itemTreeArray = [];
@@ -1383,6 +1784,17 @@ var FilterUtils;
         }
         return subTree;
     }
+    /**
+     * Helper function used by {@link _buildExpressionTree} to complete the
+     * right side of an expression tree.
+     * @method
+     * @name _completePartialTree
+     * @memberof! FilterUtils
+     * @static
+     * @param {object} partialTree The tree representation of an expression.
+     * @param {object} expression The object to evaluate the expression tree
+     *                          against.
+     */
     function _completePartialTree(partialTree, expression) {
         let found = false;
         for (const key in expression) {
@@ -1397,6 +1809,19 @@ var FilterUtils;
             }
         }
     }
+    /**
+     * Helper function used by {@link find} to apply an expression tree to
+     * an object to check if this object satisfies the expression tree or not.
+     * @method
+     * @name _evaluateExpressionTree
+     * @memberof! FilterUtils
+     * @tatic
+     * @param {object} expTree The tree representation of an expression.
+     * @param {object} itemData The object to evaluate the expression tree
+     *                          against.
+     * @returns {boolean} true if itemData satisfies expression tree, false
+     *                    otherwise.
+     */
     function _evaluateExpressionTree(expTree, itemData) {
         const operator = expTree.operator;
         const { collationOptions } = expTree;
@@ -1457,7 +1882,21 @@ var FilterUtils;
             throw new Error('not a valid expression!' + expTree);
         }
     }
+    /**
+     * Helper function to evaluate a single selector expression.
+     * @method
+     * @name _evaluateSingleSelectorExpression
+     * @memberof! FilterUtils
+     * @static
+     * @param {string} operator The operator of an expression.
+     * @param {object} value The value.
+     * @param {object} itemValue The object to evaluate the expression tree
+     *                          against.
+     * @returns {boolean} true if itemData satisfies expression, false
+     *                    otherwise.
+     */
     function _evaluateSingleSelectorExpression(operator, value, itemValue, collationOptions) {
+        // Use Intl.Collator if there is a collationOptions and the values being compared are both strings.
         if (collationOptions &&
             ['base', 'accent', 'case', 'variant'].indexOf(collationOptions.sensitivity) < 0) {
             throw new Error('not a valid sensitivity! ' + collationOptions.sensitivity);
@@ -1503,22 +1942,33 @@ var FilterUtils;
             if (itemValue != null) {
                 if (!(typeof itemValue === 'string') && !(itemValue instanceof String)) {
                     if (!(itemValue instanceof Object)) {
+                        // primitive so coerce to a string
                         itemValue = new String(itemValue);
                     }
                     else {
+                        // call toString() on objects. Check if it returns just the default
+                        // return value for toString(). If so, then we can't do anything so
+                        // return false
                         itemValue = itemValue.toString();
                         if (itemValue == '[object Object]') {
                             return false;
                         }
                     }
                 }
+                // Convert the values if necessary.  This is only needed when $regex
+                // is generated internally from $co, $ew, and $ew.
+                // If the $regex is from text filter, there is no collationOptions.
+                // If the $regex is from attribute filter, caller shouldn't need collationOptions.
                 const sensitivity = collationOptions?.sensitivity;
                 let option = undefined;
                 if (sensitivity === 'base' || sensitivity === 'case') {
+                    // replace accent combining diacritical marks
                     itemValue = itemValue.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                     value = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                 }
                 if (sensitivity === 'base' || sensitivity === 'accent') {
+                    // regex option
+                    // it is not safe to convert regex with toLowerCase()
                     option = 'i';
                 }
                 const matchResult = itemValue.match(new RegExp(value, option));
@@ -1539,9 +1989,31 @@ var FilterUtils;
         }
         return false;
     }
+    /**
+     * Helper function that checks if the token is a multiple selector operator
+     * or not.
+     * @method
+     * @name _isMultiSelector
+     * @memberof! FilterUtils
+     * @static
+     * @param {string} token The token to check against.
+     * @returns {boolean} true if the token is the supported multiple selector
+     *                    operator, false otherwise.
+     */
     function _isMultiSelector(token) {
         return token === '$and' || token === '$or';
     }
+    /**
+     * Helper function that checks if the token is a single selector operator
+     * or not.
+     * @method
+     * @name _isSingleSelector
+     * @memberof! FilterUtils
+     * @static
+     * @param {string} token The token to check against.
+     * @returns {boolean} true if the token is the supported single selector
+     *                    operator, false otherwise.
+     */
     function _isSingleSelector(token) {
         return (token === '$lt' ||
             token === '$gt' ||
@@ -1552,15 +2024,53 @@ var FilterUtils;
             token === '$regex' ||
             token === '$exists');
     }
+    /**
+     * Helper function that checks if this is nested selector or not.
+     * @method
+     * @name _isNestedSelector
+     * @memberof! FilterUtils
+     * @static
+     * @param {string} token The token to check against.
+     * @returns {boolean} true if the token is the supported nested selector
+     *                    operator, false otherwise.
+     */
     function _isNestedSelector(token) {
         return token === '$nestedAttr';
     }
+    /**
+     * Helper function that checks if the token is a literal or not.
+     * @method
+     * @name _isLiteral
+     * @memberof! FilterUtils
+     * @static
+     * @param {string} token The token to check against.
+     * @returns {boolean} true if the token is a literal, false otherwise.
+     */
     function _isLiteral(token) {
         return typeof token !== 'object';
     }
+    /**
+     * Helper function that checks if the token is a string
+     * @method
+     * @name _isSring
+     * @memberof! FilterUtils
+     * @static
+     * @param {string} token The token to check against.
+     * @returns {boolean} true if the token is a string, false otherwise.
+     */
     function _isString(token) {
         return token != null && (token instanceof String || typeof token === 'string');
     }
+    /**
+     * Helper function that sets null literals to empty string for string comparison
+     * @method
+     * @name _fixNullForString
+     * @memberof! FilterUtils
+     * @static
+     * @param {string} leftToken left hand token
+     * @param {string} rightToken right hand token
+     * @returns {Array} Array of left and right hand tokens
+     */
     function _fixNullForString(leftToken, rightToken) {
         if (_isString(leftToken) && rightToken == null) {
             rightToken = '';
@@ -1570,6 +2080,22 @@ var FilterUtils;
         }
         return [leftToken, rightToken];
     }
+    /**
+     * Helper function that retrieves the value of a property from an object.
+     * The object can have nested properties, and the property name could be
+     * a path to the leaf property.
+     * @method
+     * @name getValue
+     * @memberof! FilterUtils
+     * @static
+     * @param {string} path The chain of the property names from the root to
+     *                      the leaf when the object has nested properties.
+     * @param {object} itemValue The object to retrieve the property value
+     *                           from.
+     * @returns {object} the object that contains all the properties defined
+     *                   in fieldsExpression array, the corresponding property
+     *                   value is obtained from itemData.
+     */
     function getValue(path, itemValue) {
         const paths = path.split('.');
         let returnValue = itemValue;
@@ -1580,6 +2106,9 @@ var FilterUtils;
     }
 })(FilterUtils || (FilterUtils = {}));
 
+/**
+ * The class for FilterFactory<D>
+ */
 class FilterImpl {
     constructor(options) {
         options = options || {};
@@ -1625,6 +2154,7 @@ class FilterImpl {
             let filterValue;
             const collationOptions = filter.collationOptions;
             if (op === '$exists' && filter['attribute'] && filter['criterion']) {
+                // NestedFilter
                 transformedExpr = {};
                 transformedExpr['$nestedAttr'] = filter['attribute'];
                 transformedExpr['criterion'] = FilterImpl._transformFilter(FilterFactory.getFilter({ filterDef: filter['criterion'] }));
@@ -1634,6 +2164,7 @@ class FilterImpl {
                 op = '$regex';
             }
             else {
+                // offline has slightly different names for some operators
                 if (op === '$le') {
                     op = '$lte';
                 }
@@ -1647,6 +2178,9 @@ class FilterImpl {
             if (op !== '$and' && op !== '$or') {
                 if (filter['text']) {
                     if (filter['matchBy'] === 'phrase') {
+                        // 1. Escape special characters
+                        // 2. Remove single and double quotes
+                        // 3. Add word boundary and wild cards for phrase matching
                         filterValue = new RegExp(`${'\\b' +
                             filter['text']
                                 .replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&')
@@ -1657,6 +2191,8 @@ class FilterImpl {
                         filterValue = new RegExp(`^${filter['text'].replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&')}`, 'i');
                     }
                     else {
+                        // 'contains' | 'fuzzy' | 'unknown'
+                        // Escape special characters without change filter['text'] which is the original filter string by default
                         filterValue = new RegExp(filter['text'].replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'), 'i');
                     }
                 }
@@ -1666,7 +2202,9 @@ class FilterImpl {
                 transformedExpr = {};
                 const attributeExpr = filter.attribute;
                 if (attributeExpr) {
+                    // handle AttributeExprFilterDef
                     const operatorExpr = {};
+                    // need express sw and ew as regex
                     if (op === '$sw' || op === '$ew' || op === '$co') {
                         filterValue = FilterImpl._fixStringExpr(op, filterValue);
                         op = '$regex';
@@ -1675,6 +2213,7 @@ class FilterImpl {
                     transformedExpr[attributeExpr] = operatorExpr;
                 }
                 else if (filter['text']) {
+                    // handle TextFilterDef
                     const operatorExpr = {};
                     operatorExpr[op] = filterValue;
                     if (filter._textFilterAttributes && filter._textFilterAttributes.length > 0) {
@@ -1691,6 +2230,8 @@ class FilterImpl {
                     }
                 }
                 else {
+                    // handle AttributeFilterDef
+                    // the field/value combos are specified in the value itself
                     const criteriaArray = [];
                     if (filterValue == undefined) {
                         throw new Error('attribute cannot be empty');
@@ -1700,6 +2241,7 @@ class FilterImpl {
                 }
             }
             else {
+                // handle ExtendedCompoundFilterDef
                 const criteriaArray = [];
                 filter.criteria.forEach(function (compCriteria) {
                     if (compCriteria && compCriteria['text'] && filter._textFilterAttributes) {
@@ -1722,6 +2264,7 @@ class FilterImpl {
                 const fieldAttributePath = path ? path + '.' + fieldAttribute : fieldAttribute;
                 if (!(fieldValue instanceof Object)) {
                     const operatorExpr = {};
+                    // need express co, sw and ew as regex
                     if (op === '$sw' || op === '$ew' || op === '$co') {
                         fieldValue = FilterImpl._fixStringExpr(op, fieldValue);
                         op = '$regex';
@@ -1763,86 +2306,6 @@ class FilterFactory {
 }
 oj$1._registerLegacyNamespaceProp('FilterFactory', FilterFactory);
 
-var SortUtils;
-(function (SortUtils) {
-    function getNaturalSortCriteriaComparator(sortCriteria) {
-        return (x, y) => {
-            for (const sort of sortCriteria) {
-                const compareResult = getNaturalSortCriterionComparator(sort)(x, y);
-                if (compareResult !== 0) {
-                    return compareResult;
-                }
-            }
-            return 0;
-        };
-    }
-    SortUtils.getNaturalSortCriteriaComparator = getNaturalSortCriteriaComparator;
-    function getNaturalSortCriterionComparator(sortCriterion) {
-        const _getVal = (val, attr) => {
-            if (val === null || typeof val === 'undefined') {
-                return val;
-            }
-            if (typeof attr === 'string') {
-                const dotIndex = attr.indexOf('.');
-                if (dotIndex > 0) {
-                    const startAttr = attr.substring(0, dotIndex);
-                    const endAttr = attr.substring(dotIndex + 1);
-                    const subObj = val[startAttr];
-                    if (subObj) {
-                        return _getVal(subObj, endAttr);
-                    }
-                }
-            }
-            if (typeof val[attr] === 'function') {
-                return val[attr]();
-            }
-            return val[attr];
-        };
-        return (x, y) => {
-            let direction, attribute, xval, yval;
-            direction = sortCriterion['direction'];
-            attribute = sortCriterion['attribute'];
-            xval = _getVal(x, attribute);
-            yval = _getVal(y, attribute);
-            let compareResult = 0;
-            const comparator = getNaturalSortComparator();
-            if (direction === 'ascending') {
-                compareResult = comparator(xval, yval);
-            }
-            else {
-                compareResult = comparator(yval, xval);
-            }
-            if (compareResult !== 0) {
-                return compareResult;
-            }
-            return 0;
-        };
-    }
-    SortUtils.getNaturalSortCriterionComparator = getNaturalSortCriterionComparator;
-    function getNaturalSortComparator() {
-        return (xval, yval) => {
-            if (xval === null || typeof xval === 'undefined') {
-                return 1;
-            }
-            if (yval === null || typeof yval === 'undefined') {
-                return -1;
-            }
-            let compareResult = 0;
-            const strX = typeof xval === 'string' ? xval : String(xval).toString();
-            const strY = typeof yval === 'string' ? yval : String(yval).toString();
-            compareResult = strX.localeCompare(strY, undefined, {
-                numeric: true,
-                sensitivity: 'base'
-            });
-            if (compareResult !== 0) {
-                return compareResult;
-            }
-            return 0;
-        };
-    }
-    SortUtils.getNaturalSortComparator = getNaturalSortComparator;
-})(SortUtils || (SortUtils = {}));
-
 const createAbortRejectionValue = (signal) => {
     return signal.reason instanceof DOMException
         ? signal.reason
@@ -1865,4 +2328,20 @@ const wrapWithAbortHandling = (signal, wrapped, catchAndRejectErrors) => {
     });
 };
 
-export { AttributeFilterOperator, CompoundFilterOperator, DataCache, DataProviderMutationEvent, DataProviderRefreshEvent, FetchByKeysMixin, FetchByOffsetMixin, FilterFactory, FilterUtils, SortUtils, wrapWithAbortHandling };
+class DataProviderFeatureChecker {
+    static isDataProvider(dataprovider) {
+        if (dataprovider && dataprovider['fetchFirst']) {
+            return true;
+        }
+        return false;
+    }
+    static isTreeDataProvider(dataprovider) {
+        if (dataprovider && dataprovider['getChildDataProvider']) {
+            return true;
+        }
+        return false;
+    }
+}
+oj$1._registerLegacyNamespaceProp('DataProviderFeatureChecker', DataProviderFeatureChecker);
+
+export { AttributeFilterOperator, CompoundFilterOperator, DataCache, DataProviderFeatureChecker, DataProviderMutationEvent, DataProviderRefreshEvent, DataProviderUtils, FetchByKeysMixin, FetchByOffsetMixin, FilterFactory, FilterUtils, SortUtils, wrapWithAbortHandling };

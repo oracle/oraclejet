@@ -7,6 +7,8 @@
  */
 define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict';
 
+    // @ts-ignore
+    // @ts-ignore
     const ojet = oj;
     class DrawerConstants {
         static get DrawerLayoutStyleSurrogate() {
@@ -18,6 +20,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
         static styleDisplayMode(resolvedDisplayMode) {
             return `${this.stringOjDrawer}${this.charDash}${resolvedDisplayMode}`;
         }
+        // Opened
         static get styleOpened() {
             return `${this.stringOjDrawer}${this.charDash}${this.stringOpened}`;
         }
@@ -30,6 +33,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
         static get clippingAreaSelector() {
             return `${this.stringOjDrawer}${this.charDash}${this.stringClippingArea}`;
         }
+        // Edge
         static get styleStartDrawer() {
             return `${this.stringOjDrawer}${this.charDash}${this.stringStart}`;
         }
@@ -45,6 +49,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
         static get mainContentSelector() {
             return `${this.stringOjDrawer}${this.charDash}${this.stringMainContent}`;
         }
+        // Display mode
         static get styleReflow() {
             return `${this.stringOjDrawer}${this.charDash}${this.stringReflow}`;
         }
@@ -58,6 +63,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
     DrawerConstants.charDash = '-';
     DrawerConstants.charSpace = ' ';
     DrawerConstants.stringOjDrawer = 'oj-drawer';
+    // Area
     DrawerConstants.stringStart = 'start';
     DrawerConstants.stringEnd = 'end';
     DrawerConstants.stringTop = 'top';
@@ -66,20 +72,25 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
     DrawerConstants.stringMainContent = `layout-main-content`;
     DrawerConstants.stringClippingArea = `clipping-area`;
     DrawerConstants.stringStyleClassDisableOverflow = `oj-drawer-disable-body-overflow`;
+    // Surrogate
     DrawerConstants.stringSurrogate = 'surrogate';
+    // State
     DrawerConstants.stringOpened = 'opened';
     DrawerConstants.stringClosed = 'closed';
     DrawerConstants.stringClosedWithEsc = `ClosedWithEsc`;
     DrawerConstants.stringShouldChangeDisplayMode = `ShouldChangeDisplayMode`;
     DrawerConstants.stringStateToChangeTo = `StateToChangeTo`;
     DrawerConstants.stringPrevState = `PrevState`;
+    // Display mode
     DrawerConstants.stringReflow = 'reflow';
     DrawerConstants.stringOverlay = 'overlay';
     DrawerConstants.stringFullOverlay = 'full-overlay';
     DrawerConstants.stringDisplay = 'Display';
     DrawerConstants.stringResize = 'resize';
+    // Margin helpers
     DrawerConstants.stringLeft = 'left';
     DrawerConstants.stringRight = 'right';
+    // Animation
     DrawerConstants.stringOpen = 'open';
     DrawerConstants.stringClose = 'close';
     DrawerConstants.stringSlideIn = 'slideIn';
@@ -133,6 +144,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
             let safeFocusablesSelector = '';
             for (let i = 0; i < elementsCount; i++) {
                 const elSelector = `${defaultFocusableElements[i]}${selectorSuffix}`;
+                // Last item can not be followed by 'comma and space'
                 safeFocusablesSelector += i < elementsCount - 1 ? `${elSelector}, ` : `${elSelector}`;
             }
             const focusableCandidates = Array.from(element.querySelectorAll(safeFocusablesSelector));
@@ -142,18 +154,38 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
             return focusables;
         }
         static isHidden(element) {
+            // Case: display: 'none'
+            // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent
+            // Note: offsetParent returns null in the following situations:
+            // The element or any ancestor has the display property set to none.
+            // The element has the position property set to fixed (Firefox returns <body>).
+            // ...
+            // To check the latter - whether the element has fixed position
+            // we would have to call expensive getComputedStyle()
+            // As we have not seen a fixed position tabbable element within a drawer
+            // we intentionally don't do that until we got a usecase
+            // Most hidden elements are hidden using display none which
+            // can be checked cheap using following:
             if (element.offsetParent === null) {
                 return true;
             }
+            // ...and the Firefox case. Again (see previous comments):
+            // The element has the position property set to fixed (Firefox returns <body>).
             if (ojet.AgentUtils.getAgentInfo().browser === ojet.AgentUtils.BROWSER.FIREFOX) {
                 if (element.offsetParent === document.body) {
                     return true;
                 }
             }
+            // Case: visibility: 'hidden'
+            // getComputedStyle() correctly computes visibility even it is inherited.
+            // https://developer.mozilla.org/en-US/docs/Web/API/Window/getComputedStyle
+            // The Window.getComputedStyle() method returns an object containing the values of all CSS properties of an element,
+            // after applying active stylesheets and resolving any basic computation those values may contain.
             const style = window.getComputedStyle(element);
             return style.visibility === 'hidden';
         }
         static isFocusable(element) {
+            // JET-53053 - element can be disconnected from DOM
             if (!element || !element.parentElement) {
                 return false;
             }
@@ -163,6 +195,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
         }
         static isObjectEmpty(object) {
             if (typeof object === 'object') {
+                // Because Object.keys(new Date()).length === 0; we have to do some additional check
                 return Object.keys(object).length === 0 && object.constructor === Object;
             }
             return true;
@@ -181,6 +214,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
                         direction = this.isRTL() ? DrawerConstants.stringRight : DrawerConstants.stringLeft;
                     }
                     else {
+                        // expand/collapse
                         direction = DrawerConstants.stringWidth;
                     }
                     break;
@@ -192,6 +226,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
                         direction = this.isRTL() ? DrawerConstants.stringLeft : DrawerConstants.stringRight;
                     }
                     else {
+                        // expand/collapse
                         direction = DrawerConstants.stringWidth;
                     }
                     break;
@@ -203,6 +238,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
                         direction = DrawerConstants.stringBottom;
                     }
                     else {
+                        // expand/collapse
                         direction = DrawerConstants.stringHeight;
                     }
             }
@@ -213,6 +249,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
         }
         static getCommonStyleClasses(edge) {
             return {
+                // Edge: e.g. 'oj-drawer-start
                 [DrawerConstants.styleStartDrawer]: edge === DrawerConstants.stringStart,
                 [DrawerConstants.styleEndDrawer]: edge === DrawerConstants.stringEnd,
                 [DrawerConstants.styleBottomDrawer]: edge === DrawerConstants.stringBottom
@@ -229,12 +266,14 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
         }
         static getViewportWidth() {
             if (ojet.AgentUtils.getAgentInfo().os === ojet.AgentUtils.OS.IOS) {
+                // On ios window.innerWidth is not recommended way of measuring the viewport
                 return document.documentElement.clientWidth;
             }
             return window.innerWidth;
         }
         static getViewportHeight() {
             if (ojet.AgentUtils.getAgentInfo().os === ojet.AgentUtils.OS.IOS) {
+                // On ios window.innerWidth is not recommended way of measuring the viewport
                 return document.documentElement.clientHeight;
             }
             return window.innerHeight;
@@ -244,7 +283,12 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
                 element.focus();
             }
             else {
+                // If the drawer opener is not focusable, focus the nearest focusable ancestor.
                 let nearestAncestor = element.parentElement;
+                // In case the drawer opener was removed (e.g. drawer opener
+                // was an option of a temporary popup - combobox's dropdown)
+                // the focus ends on <body> which ancestor is <html>
+                // In this case stop looking for the nearest ancestor
                 while (nearestAncestor &&
                     nearestAncestor.nodeName !== 'HTML' &&
                     !DrawerUtils.isFocusable(nearestAncestor)) {
@@ -256,6 +300,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
             }
         }
         static wrapDrawerWithClippingArea(drawerElement, position) {
+            // prettier-ignore
             const clippingAreaEl = $(drawerElement)
                 .wrap(function () {
                 const div = document.createElement('div');
@@ -267,6 +312,7 @@ define(['exports', 'ojs/ojdomutils'], function (exports, DomUtils) { 'use strict
                 .parent()[0];
             clippingAreaEl.style.setProperty('height', DrawerUtils.getElementHeight(drawerElement) + 'px');
             clippingAreaEl.style.setProperty('width', DrawerUtils.getElementWidth(drawerElement) + 'px');
+            // @ts-ignore
             $(clippingAreaEl).position(position);
             drawerElement.style.setProperty('position', 'static');
         }

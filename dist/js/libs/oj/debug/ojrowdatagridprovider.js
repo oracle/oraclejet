@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarget', 'ojs/ojdatacollection-common'], function (exports, oj, ojdatagridprovider, ojeventtarget, DataCollectionUtils) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarget', 'ojs/ojdataprovider', 'ojs/ojkeyset'], function (exports, oj, ojdatagridprovider, ojeventtarget, ojdataprovider, ojkeyset) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
@@ -67,19 +67,61 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
                     this.next = next;
                 }
             };
+            // Layout
             this.sortable = options?.sortable;
             this.sortCriteria = null;
             this.filterable = options?.filterable;
             this.filterCriteria = null;
+            // Fetch
             this.supportsFilteredRowCount =
                 dataProvider.getCapability('fetchFirst')?.totalFilteredRowCount === 'exact';
+            // Tree
             if (options?.expandedObservable) {
                 const expandedObservable = options?.expandedObservable.subscribe((value) => {
-                    this.expandedState = value.value;
+                    const completionPromise = value.completionPromise;
+                    completionPromise?.then(() => {
+                        const oldExpandedKeySet = this.expandedState?.keys || new ojkeyset.KeySetImpl([]);
+                        this.expandedState = value.value;
+                        const newExpandedKeySet = this.expandedState.keys;
+                        // if all is true in oldExpandedKeySet and false in newExpandedKeySet or vise versa then
+                        // need not do anything. Headers will be updated by the refresh event triggered by FTDPV
+                        if (oldExpandedKeySet.all === newExpandedKeySet.all) {
+                            // Refresh the rows with keys either in oldExpandedKeySet or in newExpandedKeySet but not in both
+                            const oldKeys = oldExpandedKeySet.all === true
+                                ? oldExpandedKeySet.deletedKeys
+                                : oldExpandedKeySet.keys;
+                            const newKeys = newExpandedKeySet.all === true
+                                ? newExpandedKeySet.deletedKeys
+                                : newExpandedKeySet.keys;
+                            const headerKeysToUpdate = oldKeys.symmetricDifference(newKeys);
+                            const ranges = [];
+                            headerKeysToUpdate.forEach((key) => {
+                                const keyCacheIndex = this._getKeyCacheIndexByKey(key);
+                                if (keyCacheIndex !== -1) {
+                                    ranges.push({
+                                        rowOffset: keyCacheIndex,
+                                        rowCount: 1,
+                                        columnOffset: 0,
+                                        columnCount: -1
+                                    });
+                                }
+                            });
+                            if (ranges.length > 0) {
+                                this.version++;
+                                const updateEventDetail = {
+                                    ranges,
+                                    version: this.version
+                                };
+                                this.dispatchEvent(new ojdatagridprovider.DataGridProviderUpdateEvent(updateEventDetail));
+                            }
+                        }
+                    });
                 });
             }
+            // Mutation
             dataProvider.addEventListener('mutate', this._handleUnderlyingMutation.bind(this));
             dataProvider.addEventListener('refresh', this._handleUnderlyingRefresh.bind(this));
+            // Validation
             if (options?.itemMetadata) {
                 this.itemMetadata = options?.itemMetadata;
             }
@@ -116,7 +158,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             const columnCount = Math.max(Math.min(parameters.columnCount, this.columns.databody.length - columnOffset), 0);
             rowCount = Math.min(parameters.rowCount, fetchResult.results.length);
             const rowDone = fetchResult.done;
-            this.lastRowKeyCached = fetchResult.done;
+            this.lastRowKeyCached = this.lastRowKeyCached || fetchResult.done;
             const version = this.version;
             const requestSet = parameters.fetchRegions;
             const isAll = requestSet == null || requestSet.has('all');
@@ -190,16 +232,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
             }
             return false;
         }
+        // helper method to determine if the criteria is the same
         isSameFetchParameters(fetchParameters) {
             let sortCriterion = fetchParameters?.sortCriteria;
             let filterCriterion = fetchParameters?.filterCriterion;
             let currentSortCriterion = this.currentFetchParameters?.sortCriteria;
             let currentFilterCriterion = this.currentFetchParameters?.filterCriterion;
+            // if sortCriterion is null and currentSortCriterion is undefined or viceversa then it is considered as criteria is same
             if (!((sortCriterion == null || currentSortCriterion == null) &&
                 sortCriterion == currentSortCriterion) &&
                 !oj.Object.compareValues(sortCriterion, currentSortCriterion)) {
                 return false;
             }
+            // if filterCriterion is null and currentFilterCriterion is undefined or viceversa then it is considered as criteria is same
             if (!((filterCriterion == null || currentSortCriterion == null) &&
                 filterCriterion == currentFilterCriterion) &&
                 !oj.Object.compareValues(filterCriterion, currentFilterCriterion)) {
@@ -392,6 +437,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
                 sortAttribute = this.headerLabels[axis][index];
             }
             if (this.sortCriteria && this.sortCriteria.length > 0 && sortAttribute) {
+                // this would handle multiple sort criteria if the component should support that in the future
+                // let criterion = this.sortCriteria.find((sortCriterion)=>{
+                //   return sortCriterion.attribute === columnAttribute
+                // });
                 let criterion = this.sortCriteria[0];
                 if (criterion.attribute === sortAttribute) {
                     return criterion.direction;
@@ -408,7 +457,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
                 filterAttribute = this.headerLabels[axis][index];
             }
             if (this.filterCriteria && filterAttribute) {
-                if (DataCollectionUtils.doesAttributeExistInFilterCriterion(filterAttribute, this.filterCriteria)) {
+                if (ojdataprovider.DataProviderUtils.doesAttributeExistInFilterCriterion(filterAttribute, this.filterCriteria)) {
                     return 'filtered';
                 }
             }
@@ -582,10 +631,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
                 }
             });
             if (!needsRefresh && detail.add && detail.add.keys.size > 0) {
-                let finalKeys = DataCollectionUtils.getAddEventKeysResult(this.keyCache, detail.add, allLoaded);
+                const finalKeys = ojdataprovider.DataProviderUtils.getAddEventKeysResult(this.keyCache, detail.add, allLoaded);
                 needsRefresh = isSparse && finalKeys.length !== this.keyCache.length + detail.add.keys.size;
                 if (!needsRefresh) {
                     let ranges = [];
+                    // loop final keys, see if in detail,
                     detail.add.keys.forEach((key) => {
                         let index = finalKeys.indexOf(key);
                         let range = ranges.find((r) => {
@@ -679,6 +729,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatagridprovider', 'ojs/ojeventtarg
                     fullRefresh = false;
                 }
                 else if (!isSparse) {
+                    // we did not find this key and we don't have everything -> best to just ignore
                     return;
                 }
             }

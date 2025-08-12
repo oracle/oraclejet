@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcomponentcore'], function (oj, ojdataprovider, ojcomponentcore) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdataprovider'], function (oj, ojdataprovider) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
@@ -203,12 +203,18 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcomponentcore'], functio
                 }
             };
         }
+        /**
+         * Fetch the first block of data
+         */
         fetchFirst(params) {
             const asyncIteratorPromise = this._getDataProvider().then((dataProvider) => {
                 return dataProvider.fetchFirst(params)[Symbol.asyncIterator]();
             });
             return new this.AsyncIterable(new this.AsyncIterator(asyncIteratorPromise));
         }
+        /**
+         * Fetch rows by keys
+         */
         fetchByKeys(params) {
             const signal = params?.signal;
             const callback = (resolve) => {
@@ -218,6 +224,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcomponentcore'], functio
             };
             return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
+        /**
+         * Check if rows are contained by keys
+         */
         containsKeys(params) {
             const signal = params?.signal;
             const callback = (resolve) => {
@@ -227,27 +236,41 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcomponentcore'], functio
             };
             return ojdataprovider.wrapWithAbortHandling(signal, callback, false);
         }
+        /**
+         * Fetch rows by offset
+         */
         fetchByOffset(params) {
             return this._getDataProvider().then((dataProvider) => {
                 return dataProvider.fetchByOffset(params);
             });
         }
+        /**
+         * Returns the total size of the data
+         */
         getTotalSize() {
             return this._getDataProvider().then((dataProvider) => {
                 return dataProvider.getTotalSize();
             });
         }
+        /**
+         * Returns a string that indicates if this data provider is empty.
+         * Returns "unknown" if the dataProvider has not resolved yet.
+         */
         isEmpty() {
             if (!this[this._DATAPROVIDER])
                 return 'unknown';
             else
                 return this[this._DATAPROVIDER].isEmpty();
         }
+        /**
+         * Determines whether this DataProvider supports certain feature.
+         */
         getCapability(capabilityName) {
             if (this._capabilityFunc)
                 return this._capabilityFunc(capabilityName);
             return null;
         }
+        /** EVENT TARGET IMPLEMENTATION **/
         addEventListener(eventType, listener) {
             this._getDataProvider().then((dataProvider) => {
                 dataProvider.addEventListener(eventType, listener);
@@ -263,9 +286,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcomponentcore'], functio
                 return false;
             return this[this._DATAPROVIDER].dispatchEvent(evt);
         }
+        /**
+         * Returns the resolved dataProvider for this instance
+         */
         _getDataProvider() {
             return this._dataProvider.then((dataProvider) => {
-                if (ojcomponentcore.DataProviderFeatureChecker.isDataProvider(dataProvider)) {
+                if (ojdataprovider.DataProviderFeatureChecker.isDataProvider(dataProvider)) {
                     if (!this[this._DATAPROVIDER]) {
                         this[this._DATAPROVIDER] = dataProvider;
                     }

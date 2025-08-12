@@ -17,9 +17,14 @@ define(['exports', 'ojs/ojtranslation'], function (exports, Translations) { 'use
         }
         let summary;
         let detail;
+        // Get the translated summary and detail for the error.
         if (e instanceof RangeError && errorCode) {
             const paramMapPropName = parameterMap.propertyName;
             const propName = Translations.getTranslatedString('oj-converter.datetime.datetimeOutOfRange.' + paramMapPropName);
+            // this error happens during format via LocalOraI18nUtils._IsoStrParts
+            // if timezone !== localtimezone and value is local and isostring has an invalid day, month, hour, etc.
+            // This is not from a user error.
+            // The detail might say Enter a value between '1' and '31'.
             if (errorCode === 'isoStringOutOfRange') {
                 summary = Translations.getTranslatedString('oj-converter.datetime.invalidISOString.invalidRangeSummary', {
                     isoStr: parameterMap.isoStr,
@@ -32,6 +37,9 @@ define(['exports', 'ojs/ojtranslation'], function (exports, Translations) { 'use
                 });
             }
             else if (errorCode === 'datetimeOutOfRange') {
+                // These errors happen during parse. A user would see this error
+                // if they entered an out-of-range date, like October 40, 2023.
+                // The detail is Enter a value between '1' and '31'.
                 summary = Translations.getTranslatedString('oj-converter.datetime.datetimeOutOfRange.summary', {
                     propertyName: propName,
                     value: parameterMap.value
@@ -43,11 +51,14 @@ define(['exports', 'ojs/ojtranslation'], function (exports, Translations) { 'use
             }
         }
         else if (e instanceof Error && errorCode) {
+            // Most of these are user errors.
             let resourceKey;
             if (errorCode === 'dateFormatMismatch') {
+                // The '{value}' does not match the expected date format '{format}'.
                 resourceKey = 'oj-converter.datetime.dateFormatMismatch.summary';
             }
             else if (errorCode === 'timeFormatMismatch') {
+                // The {value} does not match the expected time format {format}.
                 resourceKey = 'oj-converter.datetime.timeFormatMismatch.summary';
             }
             else if (errorCode === 'datetimeFormatMismatch') {
@@ -58,6 +69,7 @@ define(['exports', 'ojs/ojtranslation'], function (exports, Translations) { 'use
                 detail = Translations.getTranslatedString('oj-converter.datetime.dateToWeekdayMismatch.detail');
             }
             else if (errorCode === 'invalidISOString') {
+                // This is not a user error. It is from an app error where they provided an invalid iso string to the format function.
                 summary = Translations.getTranslatedString('oj-converter.datetime.invalidISOString.summary', {
                     isoStr: parameterMap.isoStr
                 });
@@ -73,6 +85,8 @@ define(['exports', 'ojs/ojtranslation'], function (exports, Translations) { 'use
                 });
             }
         }
+        // Return summary and detail, and the calling converter can create the Error. Older converters throw the oj.Converter error
+        // but newer converters will throw Error(translatedMessage); from their parse and format functions.
         if (summary || detail) {
             return { summary, detail };
         }
@@ -80,6 +94,7 @@ define(['exports', 'ojs/ojtranslation'], function (exports, Translations) { 'use
     };
     const _getHintValue = (formatter, exampleType = 'date') => {
         const now = new Date();
+        // getFullYear returns the year for the date according to local time.
         const currentYear = now.getFullYear();
         const DEFAULT_DATE = exampleType === 'datetime' ? `${currentYear}-11-29T15:45:31` : `${currentYear}-11-29`;
         let value = '';

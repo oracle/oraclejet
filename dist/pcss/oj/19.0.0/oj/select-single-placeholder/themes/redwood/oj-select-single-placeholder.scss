@@ -1,0 +1,9 @@
+// import classes defined in the base directory
+@import "../base/_oj-select-single-placeholder.scss";
+
+@import "../../../button/themes/redwood/oj-button.cssvars.scss";
+@import "../../../form-control/themes/redwood/_oj-form-control-ignore.cssvars.scss";
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+
+@include module-include-once("redwood.selectsingleplaceholder") {}

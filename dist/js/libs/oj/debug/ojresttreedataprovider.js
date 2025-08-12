@@ -5,21 +5,35 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdataprovider', 'ojs/ojcomponentcore'], function (exports, ojeventtarget, ojrestdataprovider, ojdataprovider, ojcomponentcore) { 'use strict';
+define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojmap'], function (exports, ojeventtarget, ojrestdataprovider, ojdataprovider, ojSet, ojMap) { 'use strict';
+
+    ojSet = ojSet && Object.prototype.hasOwnProperty.call(ojSet, 'default') ? ojSet['default'] : ojSet;
+    ojMap = ojMap && Object.prototype.hasOwnProperty.call(ojMap, 'default') ? ojMap['default'] : ojMap;
 
     class RESTTreeDataProvider {
         constructor(options) {
             var _a;
             this.options = options;
             this.TreeAsyncIterator = class {
-                constructor(_rootDataProvider, _baseIterable) {
+                constructor(_rootDataProvider, _baseIterable, currentRestTreeDataProvider, _shouldKeyPath, _shouldStringify) {
                     this._rootDataProvider = _rootDataProvider;
                     this._baseIterable = _baseIterable;
+                    this.currentRestTreeDataProvider = currentRestTreeDataProvider;
+                    this._shouldKeyPath = _shouldKeyPath;
+                    this._shouldStringify = _shouldStringify;
                 }
-                async ['next']() {
+                async next() {
                     const result = await this._baseIterable[Symbol.asyncIterator]().next();
                     for (let i = 0; i < result.value.data.length; i++) {
-                        this._rootDataProvider._setMapEntry(result.value.metadata[i].key, {
+                        let tempKey = result.value.metadata[i].key;
+                        if (this._shouldKeyPath) {
+                            tempKey = this.currentRestTreeDataProvider.createKeyPath(result.value.metadata[i].key);
+                        }
+                        if (this._shouldStringify) {
+                            tempKey = JSON.stringify(tempKey);
+                        }
+                        result.value.metadata[i].key = tempKey;
+                        this._rootDataProvider._setMapEntry(tempKey, {
                             data: result.value.data[i],
                             metadata: result.value.metadata[i]
                         });
@@ -37,50 +51,209 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
                 },
                 Symbol.asyncIterator,
                 _a);
-            this._baseDataProvider = new ojrestdataprovider.RESTDataProvider(options);
-            this._mapKeyToItem = new Map();
+            const baseDPOptions = { ...options, enforceKeyStringify: 'off' };
+            this._baseDataProvider = new ojrestdataprovider.RESTDataProvider(baseDPOptions);
+            // This map is used as an internal cache to look up the Item<K,D> corresponding to a node by
+            // its key. It is needed in order to pass an item to options.getChildDataProvider, the goal
+            // being to provide applications as much information as possible in order to return a child
+            // data provider or null. Item<K,D> values have a "data" field containing the node and a "metadata"
+            // field containing the metadata of the node such as whether it is a leaf. The "metadata" can be populated
+            // from the REST endpoint via the response fetch response.
+            // This map is available on every RESTTreeDataProvider but only populated and updated on the
+            // root / top-level RESTTreeDataProvider (see _getRootDataProvider) in order to have a single
+            // source of truth. In a future version, we should provide a public interface for
+            // accessing the map instead of allowing child data providers to access the root data providers
+            // private properties
+            this._mapKeyToItem = new ojMap();
+        }
+        _shouldKeyPath() {
+            const options = this._getRootDataProvider().options;
+            return options?.useKeyPaths === 'on';
+        }
+        _shouldStringify() {
+            const options = this._getRootDataProvider().options;
+            return options?.enforceKeyStringify === 'on';
+        }
+        _getParentPath() {
+            return this.options.rootDataProvider ? this[Symbol.for('parentKey')] : [];
+        }
+        createKeyPath(key) {
+            return [...this._getParentPath(), key];
         }
         fetchFirst(fetchParameters) {
             const baseIterable = this._baseDataProvider.fetchFirst(fetchParameters);
             const rootDataProvider = this._getRootDataProvider();
-            return new this.TreeAsyncIterable(new this.TreeAsyncIterator(rootDataProvider, baseIterable));
+            return new this.TreeAsyncIterable(new this.TreeAsyncIterator(rootDataProvider, baseIterable, this, this._shouldKeyPath(), this._shouldStringify()));
+        }
+        isKeyPathDescendant(keyPath) {
+            const parentKeyPath = this._getParentPath();
+            if (parentKeyPath.length >= keyPath.length) {
+                return false;
+            }
+            for (let i = 0; i < parentKeyPath.length; i++) {
+                if (parentKeyPath[i] !== keyPath[i]) {
+                    return false;
+                }
+            }
+            return true;
         }
         async fetchByKeys(parameters) {
             const unCachedKeys = new Set();
             const results = new Map();
-            parameters.keys.forEach((key) => {
+            const shouldKeyPath = this._shouldKeyPath();
+            parameters.keys.forEach((currentKey) => {
+                let key = currentKey;
                 const item = this._getItemFromKey(key);
                 if (item) {
-                    results.set(key, item);
+                    if (!shouldKeyPath || (shouldKeyPath && this.isKeyPathDescendant(key))) {
+                        results.set(key, item);
+                    }
                 }
                 else {
+                    if (this._shouldStringify()) {
+                        key = JSON.parse(currentKey);
+                    }
                     unCachedKeys.add(key);
                 }
             });
             if (unCachedKeys.size) {
-                const fetchByKeysResult = await this._baseDataProvider.fetchByKeys({
-                    ...parameters,
-                    keys: unCachedKeys
-                });
-                fetchByKeysResult.results.forEach((item) => {
-                    this._setMapEntry(item.metadata.key, item);
-                    results.set(item.metadata.key, item);
-                });
+                if (shouldKeyPath) {
+                    for (const key of unCachedKeys) {
+                        const findResults = await this.findKeys(key.slice(), key.slice(), parameters, this);
+                        const item = findResults.fetchByKeysResults.results.get(findResults.lastKey);
+                        if (item) {
+                            let tempKey = key;
+                            if (this._shouldStringify()) {
+                                tempKey = JSON.stringify(key);
+                            }
+                            const updatedItem = {
+                                data: item.data,
+                                metadata: { ...item.metadata, key: tempKey }
+                            };
+                            this._setMapEntry(tempKey, updatedItem);
+                            results.set(tempKey, updatedItem);
+                        }
+                    }
+                }
+                else {
+                    const fetchByKeysResult = await this._baseDataProvider.fetchByKeys({
+                        ...parameters,
+                        keys: unCachedKeys
+                    });
+                    fetchByKeysResult.results.forEach((item) => {
+                        let tempKey = item.metadata.key;
+                        if (this._shouldStringify()) {
+                            tempKey = JSON.stringify(tempKey);
+                        }
+                        const updatedItem = {
+                            data: item.data,
+                            metadata: { ...item.metadata, key: tempKey }
+                        };
+                        this._setMapEntry(tempKey, updatedItem);
+                        results.set(tempKey, updatedItem);
+                    });
+                }
             }
             return {
                 fetchParameters: parameters,
                 results
             };
         }
+        async findKeys(currentKeyPath, originalKeyPath, params, dataProvider) {
+            if (currentKeyPath.length === 1) {
+                let lastKey = currentKeyPath[0];
+                const convertedFetchParameters = { ...params };
+                convertedFetchParameters.keys = new Set();
+                convertedFetchParameters.keys.add(lastKey);
+                return {
+                    fetchByKeysResults: await dataProvider._baseDataProvider.fetchByKeys(convertedFetchParameters),
+                    lastKey: lastKey
+                };
+            }
+            else {
+                let firstKey = [currentKeyPath.shift()];
+                const firstItem = this._getItemFromKey(firstKey);
+                let childDataProvider;
+                if (firstItem) {
+                    childDataProvider = dataProvider.getChildDataProvider(firstKey);
+                }
+                else {
+                    firstKey = firstKey[0];
+                    const newFetchParameters = { ...params };
+                    newFetchParameters.keys = new Set();
+                    newFetchParameters.keys.add(firstKey);
+                    const fetchByKeysResults = await dataProvider._baseDataProvider.fetchByKeys(newFetchParameters);
+                    if (fetchByKeysResults.results.size > 0) {
+                        const indexOfKey = originalKeyPath.indexOf(firstKey);
+                        const keyPath = originalKeyPath.slice(0, indexOfKey + 1);
+                        fetchByKeysResults.results.forEach((value) => {
+                            const item = {
+                                data: value.data,
+                                metadata: { ...value.metadata, key: keyPath }
+                            };
+                            this._setMapEntry(keyPath, item);
+                        });
+                        childDataProvider = dataProvider.getChildDataProvider(keyPath);
+                    }
+                }
+                if (childDataProvider) {
+                    return this.findKeys(currentKeyPath, originalKeyPath, params, childDataProvider);
+                }
+                else {
+                    return null;
+                }
+            }
+        }
         async fetchByOffset(parameters) {
             const fetchByOffsetResult = await this._baseDataProvider.fetchByOffset(parameters);
+            const newOffsetResults = { ...fetchByOffsetResult };
+            newOffsetResults.results = [];
             fetchByOffsetResult.results.forEach((item) => {
-                this._setMapEntry(item.metadata.key, item);
+                let tempKey = item.metadata.key;
+                if (this._shouldKeyPath()) {
+                    tempKey = this.createKeyPath(item.metadata.key);
+                }
+                if (this._shouldStringify()) {
+                    tempKey = JSON.stringify(tempKey);
+                }
+                const updatedItem = {
+                    data: item.data,
+                    metadata: { ...item.metadata, key: tempKey }
+                };
+                newOffsetResults.results.push(updatedItem);
+                this._setMapEntry(tempKey, updatedItem);
             });
-            return fetchByOffsetResult;
+            return newOffsetResults;
         }
-        async containsKeys(containsParameters) {
-            return this._baseDataProvider.containsKeys(containsParameters);
+        async containsKeys(fetchParameters) {
+            if (this._shouldKeyPath()) {
+                const results = new ojSet();
+                const fetchByKeysResults = await this.fetchByKeys(fetchParameters);
+                fetchParameters.keys.forEach((key) => {
+                    if (fetchByKeysResults.results.get(key) != null) {
+                        results.add(key);
+                    }
+                });
+                return { containsParameters: fetchParameters, results };
+            }
+            if (this._shouldStringify()) {
+                const results = new ojSet();
+                const newFetchParameters = { ...fetchParameters };
+                if (this._shouldStringify()) {
+                    newFetchParameters.keys = new Set();
+                    fetchParameters.keys.forEach((key) => {
+                        newFetchParameters.keys.add(JSON.parse(key));
+                    });
+                }
+                const containsResults = await this._baseDataProvider.containsKeys(newFetchParameters);
+                fetchParameters.keys.forEach((key) => {
+                    if (containsResults.results.has(JSON.parse(key))) {
+                        results.add(key);
+                    }
+                });
+                return { containsParameters: fetchParameters, results };
+            }
+            return this._baseDataProvider.containsKeys(fetchParameters);
         }
         createOptimizedKeySet(initialSet) {
             return this._baseDataProvider.createOptimizedKeySet(initialSet);
@@ -92,6 +265,15 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
             return this._baseDataProvider.isEmpty();
         }
         getCapability(capabilityName) {
+            if (capabilityName === 'key') {
+                if (this._shouldKeyPath()) {
+                    if (this._shouldStringify()) {
+                        return { structure: 'pathArrayString' };
+                    }
+                    return { structure: 'pathArray' };
+                }
+                return { structure: 'none' };
+            }
             return this._baseDataProvider.getCapability(capabilityName);
         }
         getTotalSize() {
@@ -121,9 +303,13 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
             if (!dataprovider) {
                 return null;
             }
-            return ojcomponentcore.DataProviderFeatureChecker.isTreeDataProvider(dataprovider)
+            const treeDataProvider = ojdataprovider.DataProviderFeatureChecker.isTreeDataProvider(dataprovider)
                 ? dataprovider
                 : new TreeDataProviderWrapper(dataprovider);
+            if (this._shouldKeyPath()) {
+                treeDataProvider[Symbol.for('parentKey')] = key;
+            }
+            return treeDataProvider;
         }
         _getItemFromKey(key) {
             const rootDataProvider = this._getRootDataProvider();
@@ -215,6 +401,8 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
             return this.dataprovider.createOptimizedKeyMap(initialMap);
         }
         isEmpty() {
+            // DataProvider contract specifies that isEmpty returns
+            // 'string' so 'yes' | 'no' | 'unknown' is not accepted by Typescript
             const isEmpty = this.dataprovider.isEmpty();
             if (isEmpty === 'yes') {
                 return 'yes';
@@ -230,7 +418,7 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojrestdataprovider', 'ojs/ojdatapro
         getTotalSize() {
             return this.dataprovider.getTotalSize();
         }
-        getChildDataProvider(key) {
+        getChildDataProvider(_key) {
             return null;
         }
         addEventListener(event, listener) {

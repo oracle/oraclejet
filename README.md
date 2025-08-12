@@ -1,4 +1,4 @@
-# Oracle JET version 18.1.0
+# Oracle JET version 19.0.0
 
 ## About Oracle JET
 
@@ -39,7 +39,7 @@ npm install -g @oracle/ojet-cli
 ojet create <app name>
 ```
 
-See the [Oracle JET Developer Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1810&id=homepage) for complete installation details, including prerequisites.
+See the [Oracle JET Developer Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1900&id=homepage) for complete installation details, including prerequisites.
 
 ## Related GitHub Projects
 
@@ -47,7 +47,7 @@ All related projects on GitHub are associated under the [oracle-jet topic](https
 
 ## Documentation
 
-Oracle JET comes with a full [Developers Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1810&id=homepage) to help with Getting Started and many common issues.
+Oracle JET comes with a full [Developers Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1900&id=homepage) to help with Getting Started and many common issues.
 
 ## Contributing
 

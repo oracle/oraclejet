@@ -51,7 +51,7 @@ define(['exports', 'ojs/ojcustomelement-utils'], function (exports, ojcustomelem
             const sc = {
                 traceId: '',
                 spanId: '',
-                traceFlags: 0
+                traceFlags: 0 // Need numeric instead of code constant to avoid third party
             };
             return sc;
         }
@@ -105,6 +105,7 @@ define(['exports', 'ojs/ojcustomelement-utils'], function (exports, ojcustomelem
         }
     }
 
+    // Return some descriptive text to help identify this element for the Tracer
     function getDescriptiveText(element) {
         const state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
         return state?.getDescriptiveText() ?? '';
@@ -119,10 +120,16 @@ define(['exports', 'ojs/ojcustomelement-utils'], function (exports, ojcustomelem
         }
         return tracerProvider;
     }
+    function endRecordMode() { }
+    function startRecordMode(config) {
+        return null;
+    }
 
+    exports.endRecordMode = endRecordMode;
     exports.getDescriptiveText = getDescriptiveText;
     exports.getTracerProvider = getTracerProvider;
     exports.setTracerProvider = setTracerProvider;
+    exports.startRecordMode = startRecordMode;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

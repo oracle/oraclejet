@@ -37,6 +37,11 @@ exports.default = importTransformWrapper;
 const ts = __importStar(require("typescript"));
 const MetaUtils = __importStar(require("./utils/MetadataUtils"));
 let _BUILD_OPTIONS;
+/**
+ * Transformer run after the metadata transformer and before the code
+ * is compiled to JavaScript so we can add any missing import statements.
+ * @param buildOptions
+ */
 function importTransformWrapper(buildOptions) {
     _BUILD_OPTIONS = buildOptions;
     const importTransformer = (context) => {

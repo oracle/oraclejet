@@ -1388,7 +1388,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       //remove content if the new and old content do not match, the new content might be null
       if (this._customLinkContent && processedContent != this._customLinkContent) {
-        // BUG: JET-31495 - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
+        //  - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
         // When renderer function creates content which is different from the initial content, the initial content
         // is removed from the DOM which breaks the touch events.
         // To fix this, the initial content is added to the touch event container before it can be safely destroyed
@@ -2209,12 +2209,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
           animationHandler.getAnimDur()
         );
         for (var ix = 0; ix < fadeInItems.length; ix++) {
-          var item = fadeInItems[ix];
+          const item = fadeInItems[ix];
           dvt.ToolkitUtils.setAttrNullNS(item, 'opacity', '0');
-          var opacitySetter = (val) => {
+          const opacitySetter = (val) => {
             dvt.ToolkitUtils.setAttrNullNS(item, 'opacity', val);
           };
-          var opacityGetter = () => {
+          const opacityGetter = () => {
             var value = dvt.ToolkitUtils.getAttrNullNS(item, 'opacity');
             return Number(value);
           };
@@ -3570,7 +3570,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
 
       //remove content if the new and old content do not match, the new content might be null
       if (this._customNodeContent && nodeContent != this._customNodeContent) {
-        // BUG: JET-31495 - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
+        //  - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
         // When renderer function creates content which is different from the initial content, the initial content
         // is removed from the DOM which breaks the touch events.
         // To fix this, the initial content is added to the touch event container before it can be safely destroyed
@@ -10061,7 +10061,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojkeyboa
       this._nodesPane = new dvt.Container(context);
       this._topPane = new dvt.Container(context);
 
-      // BUG JET-31495 - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
+      //  - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
       // Create a layer for storing touch event source elements temporarily when needed
       // so as to not break the events
       if (dvt.Agent.isTouchDevice()) {

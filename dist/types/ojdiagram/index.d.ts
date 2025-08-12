@@ -66,7 +66,6 @@ export interface DvtDiagramLayoutContextLink<K1, K2, D2 extends ojDiagram.Link<K
         y: number;
     };
     getLabelValign(): 'top' | 'middle' | 'bottom' | 'baseline';
-    getLayoutAttributes(): object;
     getLinkWidth(): number;
     getPoints(): any[];
     getSelected(): boolean;
@@ -121,7 +120,6 @@ export interface DvtDiagramLayoutContextNode<K1, D1 extends ojDiagram.Node<K1> |
         y: number;
     };
     getLabelValign(): 'top' | 'middle' | 'bottom' | 'baseline';
-    getLayoutAttributes(): object;
     getPosition(): {
         x: number;
         y: number;
@@ -848,6 +846,8 @@ export namespace ojDiagram {
     type RenderNodeTemplate<K1, D1> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K1, D1>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K1, K2, D1, D2> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K1, K2, D1, D2>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K1, K2, D1, D2> = TooltipContext<K1, K2, D1, D2>;
 }
 export interface ojDiagramEventMap<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponentEventMap<ojDiagramSettableProperties<K1, K2, D1, D2>> {
     'ojBeforeCollapse': ojDiagram.ojBeforeCollapse<K1>;
@@ -1312,6 +1312,7 @@ export interface ojDiagramLinkSettablePropertiesLenient<K1 = any, K2 = any, D2 =
 }
 export interface ojDiagramNode<K1 = any, D1 = any> extends dvtBaseComponent<ojDiagramNodeSettableProperties<K1, D1>> {
     categories?: string[];
+    /** @deprecated since 19.0.0 - Descendant Connectivity has been deprecated. */
     descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
     icon?: {
         borderColor?: string;
@@ -1390,6 +1391,7 @@ export interface ojDiagramNodeEventMap<K1 = any, D1 = any> extends dvtBaseCompon
 }
 export interface ojDiagramNodeSettableProperties<K1 = any, D1 = any> extends dvtBaseComponentSettableProperties {
     categories?: string[];
+    /** @deprecated since 19.0.0 - Descendant Connectivity has been deprecated. */
     descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
     icon?: {
         borderColor?: string;
@@ -1815,6 +1817,8 @@ export namespace DiagramElement {
     type RenderNodeTemplate<K1, D1> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K1, D1>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K1, K2, D1, D2> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K1, K2, D1, D2>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K1, K2, D1, D2> = TooltipContext<K1, K2, D1, D2>;
 }
 export namespace DiagramLinkElement {
     // tslint:disable-next-line interface-over-type-literal
@@ -1933,7 +1937,7 @@ export interface DiagramLinkIntrinsicProps extends Partial<Readonly<ojDiagramLin
 }
 export interface DiagramNodeIntrinsicProps extends Partial<Readonly<ojDiagramNodeSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     oncategoriesChanged?: (value: ojDiagramNodeEventMap<any, any>['categoriesChanged']) => void;
-    ondescendantsConnectivityChanged?: (value: ojDiagramNodeEventMap<any, any>['descendantsConnectivityChanged']) => void;
+    /** @deprecated since 19.0.0 */ ondescendantsConnectivityChanged?: (value: ojDiagramNodeEventMap<any, any>['descendantsConnectivityChanged']) => void;
     oniconChanged?: (value: ojDiagramNodeEventMap<any, any>['iconChanged']) => void;
     onlabelChanged?: (value: ojDiagramNodeEventMap<any, any>['labelChanged']) => void;
     onlabelStyleChanged?: (value: ojDiagramNodeEventMap<any, any>['labelStyleChanged']) => void;

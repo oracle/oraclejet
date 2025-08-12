@@ -184,6 +184,8 @@ export namespace ojPictoChart {
     type RenderItemTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K> = TooltipContext<K>;
 }
 export interface ojPictoChartEventMap<K, D extends ojPictoChart.Item<K> | any> extends dvtBaseComponentEventMap<ojPictoChartSettableProperties<K, D>> {
     'ojDrill': ojPictoChart.ojDrill;
@@ -493,6 +495,8 @@ export namespace PictoChartElement {
     type RenderItemTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K> = TooltipContext<K>;
 }
 export namespace PictoChartItemElement {
     // tslint:disable-next-line interface-over-type-literal

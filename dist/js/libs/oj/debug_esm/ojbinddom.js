@@ -283,3 +283,10 @@ bindingHandlers._ojBindDom_ = {
 
 // Allow _ojBindDom_ binding on virtual elements (comment nodes) which is done during knockout's preprocessNode method
 virtualElements.allowedBindings._ojBindDom_ = true;
+
+/**
+ * @license
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */

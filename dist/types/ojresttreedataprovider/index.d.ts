@@ -1,7 +1,7 @@
 import { RESTDataProvider } from '../ojrestdataprovider';
 import TreeDataProvider = require('../ojtreedataprovider');
 import { FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, FetchListResult, FetchListParameters, DataProviderMutationEventDetail, Item,
-   FetchByKeysCapability, FetchByOffsetCapability, FilterCapability, SortCapability, ItemMetadata, SortCriterion, DataProvider } from '../ojdataprovider';
+   FetchByKeysCapability, FetchByOffsetCapability, FilterCapability, SortCapability, ItemMetadata, SortCriterion, DataProvider, KeyCapability } from '../ojdataprovider';
 export class RESTTreeDataProvider<K, D> implements TreeDataProvider<K, D> {
     constructor(options: RESTTreeDataProvider.Options<K, D>);
     addEventListener(eventType: string, listener: EventListener): void;
@@ -26,6 +26,7 @@ export namespace RESTTreeDataProvider {
         fetchByKeys?: FetchByKeysCapability;
         fetchByOffset?: FetchByOffsetCapability;
         filter?: FilterCapability;
+        key?: KeyCapability;
         sort?: SortCapability;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -92,15 +93,22 @@ export namespace RESTTreeDataProvider {
     // tslint:disable-next-line interface-over-type-literal
     type Options<K, D> = {
         capabilities?: Capabilities;
-        error?: ((response: FetchErrorDetail<K, D> | FetchResponseErrorDetail<K, D>) => void);
-        getChildDataProvider: (item: Item<K, D>) => DataProvider<K, D> | null;
+        enforceKeyStringify?: 'off' | 'on';
+        error?: (response: FetchErrorDetail<K, D> | FetchResponseErrorDetail<K, D>) => void;
+        getChildDataProvider: (item: Item<K, D> | undefined) => DataProvider<K, D> | null;
         implicitSort?: Array<SortCriterion<D>>;
         iterationLimit?: number;
         keyAttributes: string | string[];
+        restHelper?: {
+            fetchFirst: (options: RESTDataProvider.RESTHelperFetchByOffsetRequestOptions<K, D>) => Promise<RESTDataProvider.RESTHelperResponse<K, D>>;
+            fetchByOffset?: (options: RESTDataProvider.RESTHelperFetchByOffsetRequestOptions<K, D>) => Promise<RESTDataProvider.RESTHelperResponse<K, D>>;
+            fetchByKeys?: (options: RESTDataProvider.RESTHelperFetchByKeysRequestOptions<K, D>) => Promise<RESTDataProvider.RESTHelperResponse<K, D>>;
+        };
         rootDataProvider?: RESTTreeDataProvider<K, D>;
         textFilterAttributes?: string[];
-        transforms: Transforms<K, D>;
-        url: string;
+        transforms?: Transforms<K, D>;
+        url?: string;
+        useKeyPaths?: 'off' | 'on';
     };
     // tslint:disable-next-line interface-over-type-literal
     type Transforms<K, D> = {

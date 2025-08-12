@@ -6,8 +6,12 @@ export type CapabilityConfigurations = {
     eventFiltering?: {
         type?: "iterator";
     };
+    fetchByOffset?: {
+        caching?: "visitedByOffset";
+    };
     fetchFirst?: {
         caching?: "visitedByCurrentIterator";
+        forceLocalCaching?: "enabled";
         totalFilteredRowCount?: "exact";
     };
 };

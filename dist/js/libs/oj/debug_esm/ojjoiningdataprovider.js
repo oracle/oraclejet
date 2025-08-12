@@ -249,9 +249,10 @@ class JoiningDataProvider {
         this.baseDataProvider = baseDataProvider;
         this.options = options;
         this._mapJoinAttributes = new Map();
-        this._fks = [];
-        this._transform = [];
-        this._joinDPs = [];
+        // There maybe multiple joins.  The array vars are for the array of joins info
+        this._fks = []; // foreignKeyMapping.foreignKey(s)
+        this._transform = []; // foreignKeyMapping.transform - functions mapping values to a fk
+        this._joinDPs = []; // joinedDataProvider which could be JoiningDP itself
         this.JoiningAsyncIterable = (_b = class {
                 constructor(_parent, params, _asyncIterator) {
                     this._parent = _parent;
@@ -343,7 +344,7 @@ class JoiningDataProvider {
             baseParams = { ...params, attributes: this._separateBaseJoinAttributes(params) };
         }
         else {
-            this._mapJoinAttributes = null;
+            this._mapJoinAttributes = null; // indicate no attributes are specified
         }
         const asyncIterable = this.baseDataProvider.fetchFirst(baseParams);
         return new this.JoiningAsyncIterable(this, params, asyncIterable[Symbol.asyncIterator]());
@@ -359,7 +360,7 @@ class JoiningDataProvider {
             };
         }
         else {
-            this._mapJoinAttributes = null;
+            this._mapJoinAttributes = null; // indicate no attributes are specified
         }
         const signal = params?.signal;
         const callback = (resolve) => {
@@ -405,7 +406,7 @@ class JoiningDataProvider {
             };
         }
         else {
-            this._mapJoinAttributes = null;
+            this._mapJoinAttributes = null; // indicate no attributes are specified
         }
         const signal = params?.signal;
         const callback = (resolve) => {
@@ -437,6 +438,7 @@ class JoiningDataProvider {
         });
     }
     getTotalSize() {
+        // Start with the total size from underlying DataProvider
         return this.baseDataProvider.getTotalSize().then((totalSize) => {
             return totalSize;
         });
@@ -452,9 +454,15 @@ class JoiningDataProvider {
             return this.baseDataProvider.getCapability(capabilityName);
         }
     }
+    /**
+     * Return an empty Set which is optimized to store keys
+     */
     createOptimizedKeySet(initialSet) {
         return new ojSet(initialSet);
     }
+    /**
+     * Returns an empty Map which will efficiently store Keys returned by the DataProvider
+     */
     createOptimizedKeyMap(initialMap) {
         if (initialMap) {
             const map = new ojMap();
@@ -496,6 +504,7 @@ class JoiningDataProvider {
         }
     }
     _separateBaseJoinAttributes(params) {
+        // attributes are specified, seperate them by baseDP and joinedDP(s)
         this._mapJoinAttributes = new Map();
         const origAttr = params.attributes;
         let iBase = 0;
@@ -538,10 +547,12 @@ class JoiningDataProvider {
                 iBase++;
             }
         }
+        // make sure fks are included in base DP attributes
         for (let k = 0; this._fks != null && k < this._fks.length; k++) {
             const fk = this._fks[k];
             if (!baseAttributes.includes(fk)) {
                 if (fk instanceof Array) {
+                    // multiple fks
                     baseAttributes = baseAttributes.concat(fk);
                 }
                 else {
@@ -556,9 +567,10 @@ class JoiningDataProvider {
         if (baseData == undefined || baseData.length == 0 || options.joins == undefined) {
             return Promise.resolve(baseData);
         }
-        const fkValues = [];
+        const fkValues = []; // values of fks from joinDPs
         const promises = [];
         this._getFKValues(baseData, this._fks, this._transform, fkValues);
+        // use fkValues as keys to fetch data from joinDPs
         for (let i = 0; i < this._joinAlias.length; i++) {
             const joinDP = this._joinDPs[i];
             const capability = joinDP.getCapability('fetchByKeys');
@@ -570,12 +582,15 @@ class JoiningDataProvider {
             }
             else {
                 if (this._mapJoinAttributes == null) {
+                    // no attributes specified, fetch all
                     promises[i] = joinDP.fetchByKeys({ keys: fkValues[i] });
                 }
                 else if (!this._mapJoinAttributes.has(this._joinAlias[i])) {
+                    // attributes specified but this joinDP not included, skip the fetch
                     promises[i] = null;
                 }
                 else {
+                    // attributes specified for this joinDP, fetch only specified
                     const attr = this._mapJoinAttributes.get(this._joinAlias[i]);
                     promises[i] = joinDP.fetchByKeys({
                         keys: fkValues[i],
@@ -589,6 +604,7 @@ class JoiningDataProvider {
             const resultData = [];
             for (let i = 0; results != null && i < results.length; i++) {
                 if (this._mapJoinAttributes == null || this._mapJoinAttributes.has(this._joinAlias[i])) {
+                    // assign alias data only if attributes are undefined or they are included in attributes
                     this._fetchByKeyResultsToArray(results[i], fkValues[i], resultMetadata, resultData);
                     this._assignAliasData(baseData, this._joinAlias[i], resultData);
                 }

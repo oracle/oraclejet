@@ -19,8 +19,9 @@ import { parseJSONFromFontFamily, getCachedCSSVarValues } from 'ojs/ojthemeutils
 import Context from 'ojs/ojcontext';
 import ListDataProviderView from 'ojs/ojlistdataproviderview';
 import TreeDataProviderView from 'ojs/ojtreedataproviderview';
-import { getAbortReason } from 'ojs/ojdatacollection-common';
+import { getAbortReason } from 'ojs/ojabortreason';
 import { DebouncingDataProviderView } from 'ojs/ojdebouncingdataproviderview';
+import { PositionUtils, ZOrderUtils, PopupService } from 'ojs/ojpopupcore';
 import { getTranslatedString } from 'ojs/ojtranslation';
 import { warn, info, error } from 'ojs/ojlogger';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
@@ -4190,17 +4191,39 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object, {
     // JET-71536 - If the dropdown container element has role='dialog' (oj-select-many), set aria-labelledby for the dialog as well, per OATB rules.
     const dropdownWithDialogRole = this.results.closest('.oj-listbox-drop[role="dialog"]');
 
+    // JET-66611 - READONLY SELECT MANY/COMBOBOX MANY DOES NOT CORRECTLY ASSOCIATE THE FOCUS
+    // ELEMENT WITH THE LABEL.
+    // when readonly, include the aria-label or aria-labelledby on the readonly element
+    const isReadonly = _ComboUtils.isReadonly(this.ojContext) || this._readonly;
+    const isCombobox = this._classNm === 'oj-combobox';
+    const isSelect = this._classNm === 'oj-select';
+    const isMultiple = this.ojContext.multiple && (isCombobox || isSelect);
+
     if (alabel) {
       // Update dropdown
       this.results.attr('aria-label', alabel);
       if (dropdownWithDialogRole.length) {
         dropdownWithDialogRole.attr('aria-label', alabel);
       }
+
+      if (isMultiple) {
+        if (isReadonly) {
+          this.selection.attr('aria-label', alabel);
+        } else if (isCombobox) {
+          // only remove the attribute in combobox-many because the focus element is different
+          // between enabled and readonly
+          this.selection.removeAttr('aria-label');
+        }
+      }
     } else {
       // Update dropdown
       this.results.removeAttr('aria-label');
       if (dropdownWithDialogRole.length) {
         dropdownWithDialogRole.removeAttr('aria-label');
+      }
+
+      if (isMultiple) {
+        this.selection.removeAttr('aria-label');
       }
     }
   },
@@ -4219,16 +4242,38 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object, {
     // JET-71536 - If the dropdown container element has role='dialog' (oj-select-many), set aria-labelledby for the dialog as well, per OATB rules.
     const dropdownWithDialogRole = this.results.closest('.oj-listbox-drop[role="dialog"]');
 
+    // JET-66611 - READONLY SELECT MANY/COMBOBOX MANY DOES NOT CORRECTLY ASSOCIATE THE FOCUS
+    // ELEMENT WITH THE LABEL.
+    // when readonly, include the aria-label or aria-labelledby on the readonly element
+    const isReadonly = _ComboUtils.isReadonly(this.ojContext) || this._readonly;
+    const isCombobox = this._classNm === 'oj-combobox';
+    const isSelect = this._classNm === 'oj-select';
+    const isMultiple = this.ojContext.multiple && (isCombobox || isSelect);
+
     // Update the aria attributes of the dropdown.
     if (ariaLabelledBy) {
       this.results.attr('aria-labelledby', ariaLabelledBy);
       if (dropdownWithDialogRole.length) {
         dropdownWithDialogRole.attr('aria-labelledby', ariaLabelledBy);
       }
+
+      if (isMultiple) {
+        if (isReadonly) {
+          this.selection.attr('aria-labelledby', ariaLabelledBy);
+        } else if (isCombobox) {
+          // only remove the attribute in combobox-many because the focus element is different
+          // between enabled and readonly
+          this.selection.removeAttr('aria-labelledby');
+        }
+      }
     } else {
       this.results.removeAttr('aria-labelledby');
       if (dropdownWithDialogRole.length) {
         dropdownWithDialogRole.removeAttr('aria-labelledby');
+      }
+
+      if (isMultiple) {
+        this.selection.removeAttr('aria-labelledby');
       }
     }
   },
@@ -4763,7 +4808,7 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object, {
             for (i = 0, l = results.length; i < l; i++) {
               result = results[i];
               disabled = result.disabled === true;
-              // Bug JET-31662 - ISSUE WITH AUTOMATIC SCROLLING IN A JET SELECT LIST WITH A LARGE CUSTOMER-SUPPLIED DATA SET
+              //  - ISSUE WITH AUTOMATIC SCROLLING IN A JET SELECT LIST WITH A LARGE CUSTOMER-SUPPLIED DATA SET
               // A node will be selectable only if it is a leaf node. For a node to be a leaf node, when using a
               // tree data provider, it should have not have the flag _jetUnSelectable set. When using an
               // observable array, it should not be disabled, should have a non-null value and should not have
@@ -5258,7 +5303,7 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object, {
   // _AbstractOjChoice
   _usingHandler: function (pos, props) {
     // if the input part of the component is clipped in overflow, implicitly close the dropdown popup.
-    if (oj.PositionUtils.isAligningPositionClipped(props)) {
+    if (PositionUtils.isAligningPositionClipped(props)) {
       // add busy state
       var resolveBusyState = _ComboUtils._addBusyState(this.container, 'closing popup');
       // prettier-ignore
@@ -5278,7 +5323,7 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object, {
     const $results = this.results;
 
     // Resize dropdown if it overflows
-    const availableSize = oj.PositionUtils.calcAvailablePopupSize(pos, props);
+    const availableSize = PositionUtils.calcAvailablePopupSize(pos, props);
 
     // We need to use the dropdown height for calculating the avialable height.
     // But the dropdown contains 3 parts in it. The message container, the search
@@ -5329,10 +5374,10 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object, {
       defPosition.using = this._usingHandler.bind(this);
     }
     var isRtl = getReadingDirection() === 'rtl';
-    var position = oj.PositionUtils.normalizeHorizontalAlignment(defPosition, isRtl);
+    var position = PositionUtils.normalizeHorizontalAlignment(defPosition, isRtl);
     // need to coerce to Jet and then JqUi in order for vertical offset to work
-    position = oj.PositionUtils.coerceToJet(position);
-    position = oj.PositionUtils.coerceToJqUi(position);
+    position = PositionUtils.coerceToJet(position);
+    position = PositionUtils.coerceToJqUi(position);
     // set the position.of again to be the element, because coerceToJet will change it to a
     // string selector, which can then result in an error being thrown from jqueryui
     // position.js getDimensions(elem) method if the element has been removed from the DOM
@@ -5441,12 +5486,12 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object, {
 
     // Check if the popup already exists and is open, if so trigger refresh event on the descendents.
     // If not, create and open a new popup.
-    const dropdownStatus = oj.ZOrderUtils.getStatus(this.dropdown);
-    if (dropdownStatus === oj.ZOrderUtils.STATUS.OPEN) {
+    const dropdownStatus = ZOrderUtils.getStatus(this.dropdown);
+    if (dropdownStatus === ZOrderUtils.STATUS.OPEN) {
       // trigger the POPUP_REFRESH event on the dropdown element
-      oj.PopupService.getInstance().triggerOnDescendents(
+      PopupService.getInstance().triggerOnDescendents(
         this.dropdown,
-        oj.PopupService.EVENT.POPUP_REFRESH
+        PopupService.EVENT.POPUP_REFRESH
       );
     } else {
       if (this.dropdown[0] !== this.body().children().last()[0]) {
@@ -5461,20 +5506,20 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object, {
       }
 
       var psEvents = {};
-      psEvents[oj.PopupService.EVENT.POPUP_CLOSE] = $.proxy(this.close, this);
-      psEvents[oj.PopupService.EVENT.POPUP_REMOVE] = $.proxy(this._surrogateRemoveHandler, this);
-      psEvents[oj.PopupService.EVENT.POPUP_AUTODISMISS] = $.proxy(this._clickAwayHandler, this);
-      psEvents[oj.PopupService.EVENT.POPUP_REFRESH] = $.proxy(this._positionDropdown, this);
+      psEvents[PopupService.EVENT.POPUP_CLOSE] = $.proxy(this.close, this);
+      psEvents[PopupService.EVENT.POPUP_REMOVE] = $.proxy(this._surrogateRemoveHandler, this);
+      psEvents[PopupService.EVENT.POPUP_AUTODISMISS] = $.proxy(this._clickAwayHandler, this);
+      psEvents[PopupService.EVENT.POPUP_REFRESH] = $.proxy(this._positionDropdown, this);
 
-      /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+      /** @type {!Object.<PopupService.OPTION, ?>} */
       var psOptions = {};
-      psOptions[oj.PopupService.OPTION.POPUP] = this.dropdown;
-      psOptions[oj.PopupService.OPTION.LAUNCHER] = this.opts.element;
-      psOptions[oj.PopupService.OPTION.EVENTS] = psEvents;
-      psOptions[oj.PopupService.OPTION.POSITION] = this._getDropdownPosition();
-      psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = 'oj-listbox-drop-layer';
-      psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this.ojContext._IsCustomElement();
-      oj.PopupService.getInstance().open(psOptions);
+      psOptions[PopupService.OPTION.POPUP] = this.dropdown;
+      psOptions[PopupService.OPTION.LAUNCHER] = this.opts.element;
+      psOptions[PopupService.OPTION.EVENTS] = psEvents;
+      psOptions[PopupService.OPTION.POSITION] = this._getDropdownPosition();
+      psOptions[PopupService.OPTION.LAYER_SELECTORS] = 'oj-listbox-drop-layer';
+      psOptions[PopupService.OPTION.CUSTOM_ELEMENT] = this.ojContext._IsCustomElement();
+      PopupService.getInstance().open(psOptions);
 
       // move the global id to the correct dropdown
       $('#oj-listbox-drop').removeAttr('id');
@@ -5525,10 +5570,10 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object, {
 
     this._clearDropdownAlignmentPreference();
 
-    /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+    /** @type {!Object.<PopupService.OPTION, ?>} */
     var psOptions = {};
-    psOptions[oj.PopupService.OPTION.POPUP] = this.dropdown;
-    oj.PopupService.getInstance().close(psOptions);
+    psOptions[PopupService.OPTION.POPUP] = this.dropdown;
+    PopupService.getInstance().close(psOptions);
 
     if (this.header) {
       // When popup opened header will be shown in the popup.
@@ -6943,6 +6988,58 @@ const _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     // We need to rerender the selected options to render the choices in readonly mode
     // apply the current valueOptions
     _ComboUtils.applyValueOptions(this, this.opts);
+
+    // JET-66611 - READONLY SELECT MANY/COMBOBOX MANY DOES NOT CORRECTLY ASSOCIATE THE FOCUS
+    // ELEMENT WITH THE LABEL.
+    // when readonly, set role="listbox" or role="textbox" and aria-readonly="true"
+    // on the focusable element, as well as including the aria-label or aria-labelledby
+    const isReadonly = _ComboUtils.isReadonly(this.ojContext) || this._readonly;
+    const isCombobox = this._classNm === 'oj-combobox';
+    const isSelect = this._classNm === 'oj-select';
+    if (isCombobox || isSelect) {
+      if (isReadonly) {
+        this.selection.attr('aria-readonly', 'true');
+        if (isCombobox) {
+          // set role='listbox' so that we can also set aria-readonly
+          this.selection.attr('role', 'listbox');
+          // need to set role='option' on the listbox children
+          const liChildren = this.selection.children('li');
+          liChildren.attr('role', 'option');
+        } else if (isSelect) {
+          // set role='textbox' so that we can also set aria-readonly
+          this.selection.attr('role', 'textbox');
+
+          // In select-many, the presence of the ul and li elements underneath the textbox
+          // causes JAWS not to read out the textbox correctly.  Setting role='presentation'
+          // on the ul results in JAWS correctly reading out the textbox.
+          const ulChild = this.selection.children('ul');
+          ulChild.attr('role', 'presentation');
+        }
+      } else {
+        this.selection.removeAttr('aria-readonly');
+        if (isCombobox) {
+          // remove the 'listbox' role from the ul in combobox-many
+          this.selection.removeAttr('role');
+          // remove role='option' from the listbox children
+          const liChildren = this.selection.children('li');
+          liChildren.removeAttr('role');
+        } else if (isSelect) {
+          // restore the original 'combobox' role in select-many
+          this.selection.attr('role', 'combobox');
+
+          // remove the role from the ul in select-many
+          const ulChild = this.selection.children('ul');
+          ulChild.removeAttr('role');
+        }
+      }
+
+      const labelledBy = this.ojContext.options.labelledBy;
+      const ariaLabelledBy = labelledBy
+        ? EditableValueUtils._getOjLabelAriaLabelledBy(labelledBy, `${this.uuid}_Label`)
+        : undefined;
+      this.updateAriaLabelIfNeeded();
+      this.updateAriaLabelledByIfNeeded(ariaLabelledBy);
+    }
   },
 
   _prepareOpts: function () {
@@ -7428,8 +7525,8 @@ const _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
           var onSelectReturn = this._onSelect(data, options, e);
 
-          // BUG JET-37212 - oj-combobox-many: input text is not cleared on blur
-          // The clearing part was removed while fixing the bug JET-28569. But this part is
+          //  - oj-combobox-many: input text is not cleared on blur
+          // The clearing part was removed while fixing the . But this part is
           // needed to clear the search box under certain cases like typing in a value that is already
           // present and then blurring out.
           if (onSelectReturn instanceof Promise) {
@@ -8069,7 +8166,15 @@ const _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
           '</li>'
       );
     } else if (isReadOnly) {
-      $choice = $("<li class='" + this._classNm + "-selected-choice'>    <div></div></li>");
+      // JET-66611 - READONLY SELECT MANY/COMBOBOX MANY DOES NOT CORRECTLY ASSOCIATE THE FOCUS
+      // ELEMENT WITH THE LABEL.
+      // need to set role='option' on the li elements in combobox-many because they are contained
+      // by a ul with role='listbox'
+      const isCombobox = this._classNm === 'oj-combobox';
+      const role = isCombobox ? ' role="option"' : '';
+      $choice = $(
+        "<li class='" + this._classNm + "-selected-choice'" + role + '>    <div></div></li>'
+      );
       // if it is not the last choice, add the separator span
       if (!isLastChoice) {
         var separator = getTranslatedString('oj-converter.plural-separator');
@@ -15800,7 +15905,7 @@ const _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice, {
       "      <div class='oj-text-field-container oj-text-field-has-end-slot'>",
       "        <div class='oj-listbox-search oj-text-field-middle'>",
       "          <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'",
-      "                 spellcheck='false' class='oj-listbox-input oj-text-field-input' title='Search field' ",
+      "                 spellcheck='false' class='oj-listbox-input oj-text-field-input'",
       "                 role='combobox' aria-expanded='false' aria-autocomplete='list' />",
       '        </div>',
       "        <span class='oj-listbox-spyglass-box oj-text-field-end'>",
@@ -15920,6 +16025,12 @@ const _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice, {
       this._showSearchBox(searchText);
     }
 
+    // JET-70360 - improved oj-select-many behavior with oj-listbox-search title
+    // Fixed by dynamically setting a more informative 'title' using the component's label.
+    var labelText = this.ojContext._getLabelText() || '';
+    var searchTitle = this.ojContext.getTranslatedString('searchField', { label: labelText });
+    this.search.attr('title', searchTitle);
+
     if (!dontUpdateResults) {
       if (searchText) {
         this._updateResults();
@@ -15949,7 +16060,7 @@ const _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice, {
       this._userTyping = false;
     }
 
-    // Bug JET-34119 - focus is not returned to oj-select-one after selecting an option from the dropdown
+    //  - focus is not returned to oj-select-one after selecting an option from the dropdown
     // return the focus to the select if the event.target is in the dropdown.
 
     // We need to determine whether the focus has to be returned to the select or not
@@ -16125,7 +16236,7 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
 
     //  - ojselect input field grabs focus on paste
     // don't set focus on the select box if event target is not select element
-    // Bug JET-34119 - focus is not returned to oj-select-one after selecting an option from the dropdown
+    //  - focus is not returned to oj-select-one after selecting an option from the dropdown
     // return the focus to the select if the event.target is in the dropdown.
 
     // We need to determine whether the focus has to be returned to the select or not
@@ -16194,6 +16305,11 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
       // select: focus still stay on the selectBox if open dropdown by mouse click
       this._showSearchBox(searchText);
     }
+    // JET-70360 - improved oj-select-many and oj-select-one behavior with oj-listbox-search title
+    // Fixed by dynamically setting a more informative 'title' using the component's label.
+    var labelText = this.ojContext._getLabelText() || '';
+    var searchTitle = this.ojContext.getTranslatedString('searchField', { label: labelText });
+    this.search.attr('title', searchTitle);
 
     if (!dontUpdateResults) {
       if (searchText) {
@@ -16248,9 +16364,6 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
 
     this.search.on('keydown', this._bind(this._containerKeydownHandler));
     this.search.on('keyup-change input', this._bind(this._containerKeyupHandler));
-
-    //  - nls: hardcoded string 'search field' in select component
-    this.search.attr('title', this.ojContext.getTranslatedString('searchField'));
 
     //  - required validation err is not displayed when user tabs out
     var self = this;
@@ -17158,6 +17271,35 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
  *   </li>
  * </ul>
  * </p>
+ *
+ * <h5>MaxWidth attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-max-width-sm maps to 'sm'
+ * </li>
+ * <li>
+ * .oj-form-control-max-width-md maps to 'md'
+ * </li>
+ * </ul>
+ * </p>
+ *
+ * <h5>Width attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-width-sm and oj-form-control-width-md is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-width-sm maps to 'sm'
+ * </li>
+ * <li>
+ * .oj-form-control-width-md maps to 'md'
+ * </li>
+ * </ul>
+ * </p>
+ *
  * <h5>Translations attribute</h5>
  * <p>
  * The translations.required.message-detail attribute has changed to required-message-detail. Other component-level translations are not supported.
@@ -17193,6 +17335,14 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
  * <p>
  * The application should no longer need to use the &lt;oj-label-value> component to layout the form component. The application
  * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+ * </p>
+ *
+ * <h5>LabelledBy attribute</h5>
+ * <p>
+ * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
+ * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
+ * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
+ * to add a label for the form component.
  * </p>
  *
  * <h5>DescribedBy attribute</h5>
@@ -17477,6 +17627,35 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
  *   </li>
  * </ul>
  * </p>
+ *
+ * <h5>MaxWidth attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-max-width-sm maps to 'sm'
+ * </li>
+ * <li>
+ * .oj-form-control-max-width-md maps to 'md'
+ * </li>
+ * </ul>
+ * </p>
+ *
+ * <h5>Width attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-width-sm and oj-form-control-width-md is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-width-sm maps to 'sm'
+ * </li>
+ * <li>
+ * .oj-form-control-width-md maps to 'md'
+ * </li>
+ * </ul>
+ * </p>
+ *
  * <h5>Translations attribute</h5>
  * <p>
  * The translations.required.message-detail attribute has changed to required-message-detail.

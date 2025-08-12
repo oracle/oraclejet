@@ -29,15 +29,19 @@ define(['exports', 'ojs/ojcustomelement-registry'], function (exports, ojcustome
                 entry.set(pName, [provideMeta, consumeMeta]);
             }
         });
+        // For internal use only, we also support unconditional providing of values through binding propagation
+        // via root metadata extension._BINDING.provide
         const staticProvideMeta = compMetadata.extension?.['_BINDING']?.provide;
         if (staticProvideMeta) {
             entry = entry ?? new Map();
+            // Normalize key/value pairs from the given map into the common format - {name, default}
             const provideMap = new Map();
             staticProvideMeta.forEach((value, key) => {
                 provideMap.set(key, { name: key, default: value });
             });
             entry.set(STATIC_PROPAGATION, [provideMap, undefined]);
         }
+        // Add an entry for consumed context for convenient access, if exists
         const consumedContexts = ojcustomelementRegistry.getElementRegistration(elemName)?.cache?.contexts;
         if (consumedContexts) {
             entry.set(CONSUMED_CONTEXT, [undefined, consumedContexts]);

@@ -1,0 +1,51 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example select-single-placeholder/themes/redwood/oj-select-single-placeholder.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.bidi.scss";
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+
+@include module-include-once("common.selectsingleplaceholder") {
+
+    oj-select-single-placeholder {
+        display: inline-block;
+        width: 100%;
+    }
+
+    oj-select-single-placeholder:not(.oj-complete) {
+        visibility: hidden;
+    }
+
+    oj-select-single-placeholder .oj-searchselect-arrow {
+        cursor: pointer;
+        width: var(--oj-button-sm-height);
+        height: var(--oj-button-sm-height);
+        line-height: var(--oj-button-sm-height);
+        margin-inline-start: calc((var(--oj-text-field-height) - var(--oj-button-sm-height) - 2px) / 2);
+    }
+
+    oj-select-single-placeholder .oj-searchselect-arrow:hover {
+        color: var(--oj-private-text-field-button-icon-color-hover)
+    }
+
+    oj-select-single-placeholder .oj-text-field-middle {
+        overflow: hidden;
+        
+        @include oj-ltr {
+            margin-right: var(--oj-private-text-field-text-to-end-slot-padding);
+        }
+
+        @include oj-rtl() {
+            margin-left: var(--oj-private-text-field-text-to-end-slot-padding);
+        }
+    }
+
+    .oj-select-single-placeholder-container {
+        display: flex;
+        align-items: center;
+    }
+}

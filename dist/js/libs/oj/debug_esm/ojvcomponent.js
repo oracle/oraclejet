@@ -10,23 +10,49 @@ import { jsx } from 'preact/jsx-runtime';
 import { h, options, Component, createRef, render, cloneElement, Fragment, createContext } from 'preact';
 import { JetElementError, CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, publicToPrivateName, toSymbolizedValue, LifecycleElementState, addPrivatePropGetterSetters } from 'ojs/ojcustomelement-utils';
 import { getElementRegistration, isElementRegistered, isVComponent, getElementDescriptor, registerElement as registerElement$1 } from 'ojs/ojcustomelement-registry';
-import { useLayoutEffect, useContext, useMemo } from 'preact/hooks';
+import { useLayoutEffect, useContext, useMemo, useCallback } from 'preact/hooks';
 import { EnvironmentContext, RootEnvironmentProvider } from '@oracle/oraclejet-preact/UNSAFE_Environment';
 import oj from 'ojs/ojcore-base';
 import { patchSlotParent, OJ_SLOT_REMOVE } from 'ojs/ojpreact-patch';
+import { error, info, warn } from 'ojs/ojlogger';
 import { getPropertyMetadata, getComplexPropertyMetadata, checkEnumValues, getFlattenedAttributes, deepFreeze } from 'ojs/ojmetadatautils';
 import { LayerContext } from '@oracle/oraclejet-preact/UNSAFE_Layer';
+import { getLayerContext } from 'ojs/ojlayerutils';
 import { getLocale } from 'ojs/ojconfig';
-import { info, warn } from 'ojs/ojlogger';
 import Context from 'ojs/ojcontext';
 import { getTranslationBundlePromise, registerTranslationBundleLoaders } from 'ojs/ojtranslationbundleutils';
+import { BusyStateContext } from '@oracle/oraclejet-preact/hooks/UNSAFE_useBusyStateContext';
 
 let _slotIdCount = 0;
 let _originalCreateElementNS;
+// A map of host elements to the set of active slot Ids. Note the the same slot
+// node with an Id may be shared by several components if the parent componenent
+// redistributes slots to a child component.
+// Although the parent and child are not really being re-rendered on the same tick together today,
+// each VComponent will get a different VNode for the redistributed slot, and it seems safer to
+// account for active slots on a per-host-component basis.
 const _ACTIVE_SLOTS_PER_ELEMENT = new Map();
+// Active Slot nodes to support the .createElement() override. See the comment above for _ACTIVE_SLOTS_PER_ELEMENT for the
+// explanation on how the same slot node may be rendered by more than one VComponent and may have more than one VNode
+// associated with it.
+// This map will maintain each slot node while its VNodes are being rendered. All slot nodes will be removed together when
+// all their associated VNodes are done rendering.
 const _ACTIVE_SLOTS = new Map();
 const _OJ_SLOT_ID = Symbol();
 const _OJ_SLOT_PREFIX = '@oj_s';
+/**
+ * Wraps a live DOM node in a VNode, so that a custom element slot can be
+ * inserted inside of a component that has a VDom-based renderer.
+ * The overall strategy is as follows:
+ * 1. Generate a unique id for each slot element.
+ * 2. Temporarily place slot element into a static map under its unique id.
+ * 3. With the unique id from (1), generate a unique, fake element name that we are going to pass into Preact
+ *    as VNode's type.
+ * 4. Temporarily patch document.createElement() for 'fake' names that follow a certain pattern.
+ * 5. When we see attempts to create the fake element, instead of actually creating a new element, return the existing slot element.
+ * 6. Remove our document.createElement patch and remove slot elements from the static map as soon as Preact reaches the commit phase.
+ * @ignore
+ */
 function convertToVNode(hostElement, node, handleSlotMount, handleSlotUnmount) {
     const key = _getSlotKey(node);
     let _refCount = 0;
@@ -42,13 +68,28 @@ function convertToVNode(hostElement, node, handleSlotMount, handleSlotUnmount) {
             handleSlotUnmount(node);
         }
         else {
+            // Recent Preact versions invoke unmount callbacks for removed nodes before invoking
+            // mount callbacks for added nodes.
+            // Note that we have been always patching the parent element in the mount callback.
+            // The patching is done to short-circuit .removeChild() for a slot whose ref count
+            // indicates that it has already been re-inserted elsewhere. The code below is now calling patchSlotParent()
+            // in the *unmount* callback to handle the case where it is invoked when the slot has already been
+            // moved to the new location.
+            // Note that patchSlotParent() is safe to call on the same element multiple times (it will be a no-op). It will
+            // also not affect removal of child elements that are not slots.
             const parent = node.parentElement;
+            // The fact that we check for .parentElement here and are not making the check in the mount case is intentional:
+            // if Preact restores the old behavior with mounts always coming first, the slot element may be relocated to the
+            // new location before the unmount callback for the old location is invoked. Also, want to see the exception in the
+            // mount case if our assumptions are wrong.
             if (parent) {
                 patchSlotParent(parent);
             }
         }
     }
     const slotRemoveHandler = () => {
+        // The only way the slots should be removed if by parking, so
+        // short-circuit all removes here
         return null;
     };
     node[OJ_SLOT_REMOVE] = slotRemoveHandler;
@@ -62,8 +103,15 @@ function convertToVNode(hostElement, node, handleSlotMount, handleSlotUnmount) {
             _decrementRefCount();
         }
     };
+    // The slot's VNode is a render function that always returns a VNode
+    // with the ref and key from the closure scope
+    // Using a function is needed because Preact does not copy the 'ref' property
+    // when it clones a VNode with an existing DOM element. This scenario occurs when
+    // the slot is being moved to a different parent element upon component's re-render
     return h(() => {
         _registerSlot(hostElement, key, node);
+        // we need to increment ref count on rendering to accommodate a change in Preact
+        // where the unmounts get reported before mounts
         _incrementRefCount();
         useLayoutEffect(() => {
             _unregisterSlot(hostElement, key);
@@ -79,19 +127,28 @@ function _registerSlot(hostElement, id, node) {
         activeSlots = new Set();
         _ACTIVE_SLOTS_PER_ELEMENT.set(hostElement, activeSlots);
     }
+    else if (activeSlots.has(id)) {
+        _logInvalidSlotRenderError(hostElement, node);
+    }
     activeSlots.add(id);
     _ACTIVE_SLOTS.set(id, node);
     if (wasEmpty) {
         _patchCreateElement();
     }
 }
+function _logInvalidSlotRenderError(hostElement, node) {
+    const slotName = node.nodeType === Node.ELEMENT_NODE ? node.getAttribute('slot') ?? '' : '';
+    error(`Custom Element "<${hostElement.localName}>" with id "${hostElement.id}" 
+  is distributing slot "${slotName}" more than once`);
+}
 function _unregisterSlot(hostElement, id) {
     const activeSlots = _ACTIVE_SLOTS_PER_ELEMENT.get(hostElement);
-    activeSlots.delete(id);
-    if (activeSlots.size === 0) {
+    activeSlots?.delete(id);
+    if (activeSlots?.size === 0) {
         _ACTIVE_SLOTS_PER_ELEMENT.delete(hostElement);
     }
     if (_ACTIVE_SLOTS_PER_ELEMENT.size === 0) {
+        // empty the map by recreating it
         _ACTIVE_SLOTS.clear();
         _restoreCreateElement();
     }
@@ -122,6 +179,10 @@ class Parking {
     parkNode(node) {
         this._getLot().appendChild(node);
     }
+    /**
+     * Called when bindings are disposed on the host component
+     * @ignore
+     */
     disposeNodes(nodeMap, cleanFunc) {
         Parking._iterateSlots(nodeMap, (node) => {
             const parent = node.parentElement;
@@ -130,10 +191,16 @@ class Parking {
                 this._lot.__removeChild(node);
             }
             else if (!parent) {
+                // Completely disconnected slots should be cleaned when bindings are disposed.
+                // Slots that are still connected to the component will be disposed together with their parent
                 cleanFunc(node);
             }
         });
     }
+    /**
+     * Called when the host component is verifiably disconnected
+     * @ignore
+     */
     disconnectNodes(nodeMap) {
         Parking._iterateSlots(nodeMap, (node) => {
             if (this._lot === node.parentElement) {
@@ -141,6 +208,10 @@ class Parking {
             }
         });
     }
+    /**
+     * Called when the host component is reconnected
+     * @ignore
+     */
     reconnectNodes(nodeMap) {
         Parking._iterateSlots(nodeMap, (node) => {
             if (!node.parentElement) {
@@ -148,12 +219,18 @@ class Parking {
             }
         });
     }
+    /**
+     * Rerurns true if a node is parked, false otherwise
+     * @ignore
+     */
     isParked(n) {
         return n?.parentElement === this._lot;
     }
     _getLot() {
         if (!this._lot) {
             const div = document.createElement('div');
+            // Disallow removeChild() calls from outside to deal
+            // with Preact trying to remove the node after the unmount callback
             div.__removeChild = div.removeChild;
             div.removeChild = (n) => n;
             div.style.display = 'none';
@@ -174,11 +251,23 @@ class Parking {
 }
 const ParkingLot = new Parking();
 
+/* MODIFIED: defined internal Preact constant */
 const IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;
+/**
+ * Diff the old and new properties of a VNode and apply changes to the DOM node
+ * @param {import('../internal').PreactElement} dom The DOM node to apply
+ * changes to
+ * @param {object} newProps The new props
+ * @param {object} oldProps The old props
+ * @param {boolean} isSvg Whether or not this node is an SVG node
+ * @param {boolean} hydrate Whether or not we are in hydration mode
+ */
+/* MODIFIED: added setPropertyOverrides parameter to take over handling of certain properties */
 function diffProps(dom, newProps, oldProps, isSvg, hydrate, setPropertyOverrides) {
     let i;
     for (i in oldProps) {
         if (i !== 'children' && i !== 'key' && !(i in newProps)) {
+            /* MODIFIED: call setPropertyOverrides() to take over handling of certain properties */
             setPropertyOverrides(dom, i, null, oldProps[i], isSvg) ||
                 setProperty(dom, i, null, oldProps[i], isSvg);
         }
@@ -190,6 +279,7 @@ function diffProps(dom, newProps, oldProps, isSvg, hydrate, setPropertyOverrides
             i !== 'value' &&
             i !== 'checked' &&
             oldProps[i] !== newProps[i]) {
+            /* MODIFIED: call setPropertyOverrides() to take over handling of certain properties */
             setPropertyOverrides(dom, i, newProps[i], oldProps[i], isSvg) ||
                 setProperty(dom, i, newProps[i], oldProps[i], isSvg);
         }
@@ -209,6 +299,14 @@ function setStyle(style, key, value) {
         style[key] = value + 'px';
     }
 }
+/**
+ * Set a property value on a DOM node
+ * @param {import('../internal').PreactElement} dom The DOM node to modify
+ * @param {string} name The name of the property to set
+ * @param {*} value The value to set the property to
+ * @param {*} oldValue The old value the property had
+ * @param {boolean} isSvg Whether or not this DOM node is an SVG node or not
+ */
 function setProperty(dom, name, value, oldValue, isSvg) {
     let useCapture;
     o: if (name === 'style') {
@@ -235,8 +333,10 @@ function setProperty(dom, name, value, oldValue, isSvg) {
             }
         }
     }
+    // Benchmark for comparison: https://esbench.com/bench/574c954bdb965b9a00965ac6
     else if (name[0] === 'o' && name[1] === 'n') {
         useCapture = name !== (name = name.replace(/(PointerCapture)$|Capture$/i, '$1'));
+        // Infer correct casing for DOM built-in events:
         if (name.toLowerCase() in dom || name === 'onFocusOut' || name === 'onFocusIn')
             name = name.toLowerCase().slice(2);
         else
@@ -257,6 +357,9 @@ function setProperty(dom, name, value, oldValue, isSvg) {
     }
     else if (name !== 'dangerouslySetInnerHTML') {
         if (isSvg) {
+            // Normalize incorrect prop usage for SVG:
+            // - xlink:href / xlinkHref --> href (xlink:href was removed from SVG and isn't needed)
+            // - className --> class
             name = name.replace(/xlink[H:h]/, 'h').replace(/sName$/, 's');
         }
         else if (name != 'width' &&
@@ -264,6 +367,8 @@ function setProperty(dom, name, value, oldValue, isSvg) {
             name !== 'href' &&
             name !== 'list' &&
             name !== 'form' &&
+            // Default value in browsers is `-1` and an empty string is
+            // cast to `0` instead
             name != 'tabIndex' &&
             name != 'download' &&
             name != 'rowSpan' &&
@@ -273,20 +378,33 @@ function setProperty(dom, name, value, oldValue, isSvg) {
             name in dom) {
             try {
                 dom[name] = value == null ? '' : value;
+                // labelled break is 1b smaller here than a return statement (sorry)
                 break o;
             }
             catch (e) { }
         }
+        // ARIA-attributes have a different notion of boolean values.
+        // The value `false` is different from the attribute not
+        // existing on the DOM, so we can't remove it. For non-boolean
+        // ARIA-attributes we could treat false as a removal, but the
+        // amount of exceptions would cost us too many bytes. On top of
+        // that other VDOM frameworks also always stringify `false`.
         if (typeof value == 'function') {
+            // never serialize functions as attribute values
         }
         else if (value != null && (value !== false || name[4] === '-')) {
-            dom.setAttribute(name, name == 'popover' && value == true ? '' : value);
+            dom.setAttribute(name, name == 'popover' && value == true ? '' : value); // @HTMLUpdateOK
         }
         else {
             dom.removeAttribute(name);
         }
     }
 }
+/**
+ * Proxy an event to hooked event handlers
+ * @param {Event} e The event object from the browser
+ * @private
+ */
 function eventProxy(e) {
     this._listeners[e.type + false](options.event ? options.event(e) : e);
 }
@@ -294,42 +412,36 @@ function eventProxyCapture(e) {
     this._listeners[e.type + true](options.event ? options.event(e) : e);
 }
 
-const NEW_DEFAULT_LAYER_ID = '__root_layer_host';
-const getLayerHost = (element, level, priority) => {
-    let parentLayerHost = null;
-    if (level === 'nearestAncestor') {
-        parentLayerHost = element.closest('[data-oj-layer]');
-    }
-    if (parentLayerHost) {
-        return parentLayerHost;
-    }
-    let rootLayerHost = document.getElementById(NEW_DEFAULT_LAYER_ID);
-    if (!rootLayerHost) {
-        rootLayerHost = document.createElement('div');
-        rootLayerHost.setAttribute('id', NEW_DEFAULT_LAYER_ID);
-        rootLayerHost.setAttribute('data-oj-binding-provider', 'preact');
-        rootLayerHost.style.position = 'relative';
-        rootLayerHost.style.zIndex = '999';
-        document.body.prepend(rootLayerHost);
-    }
-    return rootLayerHost;
-};
-const getLayerContext = (baseElem) => {
-    const layerHostResolver = oj.VLayerUtils ? oj.VLayerUtils.getLayerHost : getLayerHost;
-    const onLayerUnmountResolver = oj.VLayerUtils ? oj.VLayerUtils.onLayerUnmount : null;
-    return {
-        getRootLayerHost: layerHostResolver.bind(null, baseElem, 'topLevel'),
-        getLayerHost: layerHostResolver.bind(null, baseElem, 'nearestAncestor'),
-        onLayerUnmount: onLayerUnmountResolver?.bind(null, baseElem)
-    };
-};
-
 const ELEMENT_REF = Symbol();
 const ROOT_VNODE_PATCH = Symbol();
+// This is a wrapper around base component represented by IntrincicElement.
+// The base component is wrapped into necessary context providers - LayerContext, EnvironmentProvider and
+// any other custom provider requested by the component.
+// The wrapper is also used to deliver updates on property changes. The updates are triggered
+// by this component state update.
 class ComponentWithContexts extends Component {
     constructor(props) {
         super(props);
+        /**
+         * Method creates or updates an Environment object that is stored on instance as
+         * _rootEnvironment property. The object is needed for providing environment context
+         * this component.
+         */
         this.getEnvironmentContextObj = (currentEnv, env, colorScheme, scale, translationBundleMap) => {
+            /**
+             * The logic of this method is based on the assumption that the element will have
+             * either an EnvironmentContext value in __oj_private_contexts (when used in JSX) or
+             * __oj_private_color_scheme/__oj_private_scale (when used in HTML) or nothing.
+             * We do not expect the element to have all 3 private properties at the same time.
+             *
+             * Initially the _rootEnvironment property will be set to existing __oj_private_contexts property
+             * or created as a new object with the available values. The translation property will be extended with
+             * values from translationBundleMap to cover the case that custom element has an extra bundle
+             * that was not passed from environment.
+             *
+             * On updates we check whether env or colorScheme/scale are changed. If they are changed the _rootEnvironment
+             * will be updated.
+             */
             let newEnv = currentEnv;
             if (!newEnv) {
                 newEnv = env || {
@@ -349,22 +461,38 @@ class ComponentWithContexts extends Component {
             }
             return newEnv;
         };
+        /**
+         * Merges translations specified on custom element into translation property
+         * on environment object.
+         */
         this.extendTranslationBundleMap = (env, translationBundleMap) => {
             if (!env.translations) {
                 env.translations = translationBundleMap;
             }
             else if (env.translations !== translationBundleMap) {
                 Object.keys(translationBundleMap).forEach((key) => {
+                    // Note, the code just compares keys but does not merge the bundles.
                     if (!env.translations[key]) {
                         env.translations[key] = translationBundleMap[key];
                     }
                 });
             }
         };
-        this.state = { compProps: props.initialCompProps };
+        this.state = { compProps: props.initialCompProps, renderCount: 0, connected: true };
         this._layerContext = getLayerContext(props.baseElem);
     }
+    shouldComponentUpdate(nextProps, nextState) {
+        // this component's props are never mutated so we can ignore that, just need to compare the contents
+        // of state to ensure that either the connected state has changed, or IntrinsicElement has
+        // queued a new render
+        return (this.state.renderCount !== nextState.renderCount ||
+            this.state.connected !== nextState.connected);
+    }
     render(props) {
+        // Unmount content if we're disconnected
+        if (!this.state.connected) {
+            return null;
+        }
         const compProps = this.state.compProps;
         const BaseComponent = props.baseComp;
         const componentVDom = jsx(BaseComponent, { ...compProps });
@@ -374,22 +502,32 @@ class ComponentWithContexts extends Component {
             props.baseElem['__oj_private_scale'],
             props.translationBundleMap
         ]);
+        // Wrap VDom in Providers for any propagated contexts
         const contexts = props.baseElem['__oj_private_contexts'];
         const contextWrappers = contexts
             ? Array.from(contexts).reduce((acc, [context, value]) => {
                 if (context === EnvironmentContext) {
+                    // Skip, RootEnvironmentProvider is handled separately
                     return acc;
                 }
                 const provider = jsx(context.Provider, { value: value, children: acc });
                 return provider;
             }, componentVDom)
             : componentVDom;
+        // Add additional props based on Symbol that we could not add during initial creation.
         const vdomProps = componentVDom.props;
         vdomProps[ELEMENT_REF] = props.baseElem;
+        // Pass the root VNode patching implementation to the render override
         vdomProps[ROOT_VNODE_PATCH] = props.rootPatchCallback;
         return (jsx(LayerContext.Provider, { value: this._layerContext, children: jsx(RootEnvironmentProvider, { environment: rootEnv, children: contextWrappers }) }));
     }
 }
+/**
+ * Custom memoization function
+ * @param fn Callback for getting the value
+ * @param args arguments to compare
+ * @returns new value
+ */
 const customMemo = (fn, args) => {
     if (!fn.memoState) {
         fn.memoState = {
@@ -403,6 +541,10 @@ const customMemo = (fn, args) => {
     }
     return fn.memoState.value;
 };
+/**
+ * Function to compare old and new args arrays
+ * @returns if args changed
+ */
 const argsChanged = (oldArgs, newArgs) => {
     return (!oldArgs ||
         oldArgs.length !== newArgs.length ||
@@ -412,7 +554,7 @@ const argsChanged = (oldArgs, newArgs) => {
 const applyRef = (ref, value) => {
     if (ref) {
         if (typeof ref == 'function') {
-            ref(value);
+            return ref(value);
         }
         else {
             ref.current = value;
@@ -427,12 +569,17 @@ const _PROP_CHANGE = 'propChange';
 const _ACTION = 'action';
 class IntrinsicElement {
     constructor(element, component, metadata, rootAttributes, rootProperties, defaultProps) {
+        // The Preact Component instance
         this.ref = createRef();
         this._compWithContextsRef = createRef();
         this._initialized = false;
+        // Flag to prevent us from queueing a render during patching of virtual to live DOM
         this._isPatching = false;
-        this._props = { ref: this.ref };
+        this._props = { ref: this.ref }; // used for initial render
+        // Used to verify a true connect/disconnect vs a reparent
         this._verifyingState = ConnectionState.Unset;
+        // We track property sets before bindings have resolved so we can play these
+        // back after binding property sets occur to ensure property ordering
         this._earlySets = [];
         this._eventQueue = [];
         this._isRenderQueued = false;
@@ -444,6 +591,7 @@ class IntrinsicElement {
         this._controlledAttrs = rootAttributes?.length > 0 ? new Set(rootAttributes) : _EMPTY_SET;
         this._defaultProps = defaultProps;
         this._rootPatchCallback = this._patchRootElement.bind(this);
+        this._renderCount = 0;
     }
     connectedCallback() {
         this._verifyConnectDisconnect(ConnectionState.Connect);
@@ -452,9 +600,15 @@ class IntrinsicElement {
         this._verifyConnectDisconnect(ConnectionState.Disconnect);
     }
     attributeChangedCallback(name, oldValue, newValue) {
+        // This callback is called when the component is instantiated and before the connected
+        // callback. We need to walk up the DOM tree to determine the binding provider so in order
+        // to skip data bound attributes, delay handling until component is created
+        // and initialize properties from DOM for component creation instead of this handler.
         if (!this._isPatching && this._state.canHandleAttributes()) {
             const propName = AttributeUtils.attributeToPropertyName(name);
             const topProp = propName.split('.')[0];
+            // Note that we need to check whether the property has been marked dirty
+            // since we don't reflect property values back to the DOM attribute.
             if (this._state.dirtyProps.has(topProp)) {
                 this._state.dirtyProps.delete(topProp);
             }
@@ -465,6 +619,7 @@ class IntrinsicElement {
                 newValue = undefined;
             }
             if ('knockout' === this._state.getBindingProviderType()) {
+                // The CustomElementBinding listens for these events
                 if (!AttributeUtils.isGlobalOrData(propName)) {
                     this._element.dispatchEvent(new CustomEvent('attribute-changed', {
                         detail: { attribute: name, value: newValue, previousValue: oldValue }
@@ -484,6 +639,7 @@ class IntrinsicElement {
         }
         else {
             let value = CustomElementUtils.getPropertyValue(this._props, name);
+            // Check for the value in defaultProps if not defined
             if (value === undefined && this._defaultProps) {
                 value = CustomElementUtils.getPropertyValue(this._defaultProps, name);
             }
@@ -491,15 +647,21 @@ class IntrinsicElement {
         }
     }
     setProperty(name, value) {
+        // Component property setters, data bound attributes,
+        // and direct setProperty/setProperties method calls go
+        // through here
         if (this._isPatching)
             return;
         const { prop: propMeta, subProp: subPropMeta } = getComplexPropertyMetadata(name, this._metadata?.properties);
         if (!propMeta) {
+            // If not a JET component property, just set the value directly on the element
             this._element[name] = value;
         }
         else {
             if (this._state.allowPropertySets()) {
+                // eslint-disable-next-line no-param-reassign
                 value = transformPreactValue(this._element, name, subPropMeta, value);
+                // Property triggered renders are asynchronous, but values are updated synchronously
                 this._updatePropsAndQueueRenderAsNeeded(name, value, propMeta, subPropMeta);
             }
             else {
@@ -518,6 +680,8 @@ class IntrinsicElement {
     getProps() {
         return this._props;
     }
+    // we want to suppress property change events during early property sets, which get played back
+    // immediately before this._vdom is created
     isInitialized() {
         return !!this._vdom;
     }
@@ -529,6 +693,10 @@ class IntrinsicElement {
     }
     insertBeforeHelper(element, newNode, refNode) {
         if (CustomElementUtils.canRelocateNode(element, newNode)) {
+            // In case of slot nodes the refNode might be moved by the parent component
+            // and it is not a direct child of that parent component anymore.
+            // Preact is not aware of this movement so it uses incorrect parent for inserting a node.
+            // Lets use the correct parent of refNode to insert newNode before it.
             if (refNode && refNode.parentNode !== element) {
                 info(`Using insertBefore where ${element.tagName} is not a parent of ${refNode.tagName}`);
             }
@@ -542,7 +710,16 @@ class IntrinsicElement {
     _render() {
         if (!this._initialized) {
             this._initialized = true;
+            // We delay initializing properties until the first connected callback
+            // due to the fact that the binding provider isn't known when the custom element
+            // is first instantiated so an attribute value coming as "[[hello]]" could be either
+            // bound to a hello knockout variable or be the literal string "[[hello]]".
+            // Another reason to delay initializing properties is to avoid type coercion for
+            // components that may never be connected to the DOM, e.g. those inside an oj-bind-if.
             this._initializePropsFromDom();
+            // After initializing properties from DOM attributes, go through
+            // event metadata and writeback properties to add action and
+            // writeback callbacks
             const eventsMeta = this._metadata.events;
             if (eventsMeta) {
                 this._initializeActionCallbacks(eventsMeta);
@@ -551,6 +728,10 @@ class IntrinsicElement {
             if (writebackProps) {
                 this._initializeWritebackCallbacks(writebackProps);
             }
+            // Property sets need to be saved and played back since they may occur during knocout
+            // bindings of disconnected DOM like in the case of an oj-bind-for-each.
+            // TODO: 04/11/2024 - Potentially we don't need early property set at all for VComponents
+            // and can rely on the correct order of this._props.
             this._playbackEarlyPropertySets();
         }
         if (!this._vdom) {
@@ -561,7 +742,15 @@ class IntrinsicElement {
             throw new Error(`Unexpected render call for already rendered component ${this._element.tagName}`);
         }
     }
+    /**
+     * Returns an object with property path, value, property and subproperty metadata if the attribute is either a
+     * controlled root property or a non readOnly component property.
+     * Otherwise, an empty object will be returned.
+     * @param attrName
+     * @param attrValue
+     */
     _getPropValueInfo(attrName, attrValue) {
+        // Skip data bound attributes
         if ('knockout' !== this._state.getBindingProviderType() ||
             !AttributeUtils.getExpressionInfo(attrValue).expr) {
             const propPath = AttributeUtils.attributeToPropertyName(attrName);
@@ -577,6 +766,8 @@ class IntrinsicElement {
                     subPropMeta
                 };
             }
+            // Try and get the property so the type is correct, if not available
+            // get the attribute value, e.g. data-, aria-, tabindex (since property is tabIndex)
             const globalPropName = AttributeUtils.getGlobalPropForAttr(attrName);
             if (this._controlledProps.has(globalPropName)) {
                 return {
@@ -599,14 +790,19 @@ class IntrinsicElement {
         const propArray = propPath.split('.');
         const topProp = propArray[0];
         const isSubprop = propArray.length > 1;
+        // If the top level property is an object, make a copy otherwise the old/new values
+        // will be the same.
         let topPropPrevValue = this.getProperty(topProp);
         if (oj.CollectionUtils.isPlainObject(topPropPrevValue)) {
             topPropPrevValue = oj.CollectionUtils.copyInto({}, topPropPrevValue, undefined, true);
         }
+        // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
         if (isOuter) {
             this._verifyProps(propPath, value, propMeta, subPropMeta);
         }
         this._updateProps(propArray, value);
+        // We may need to update a component property or a controlled root property.
+        // We do not need to trigger property changed events for the latter.
         if (!isOuter ||
             (this._state.allowPropertyChangedEvents() && !AttributeUtils.isGlobalOrData(propPath))) {
             this._state.dirtyProps.add(topProp);
@@ -635,13 +831,26 @@ class IntrinsicElement {
                     });
                     return { type, detail: mergedDetail, collapse: collapseFunc, kind: _PROP_CHANGE };
                 };
+            // Both property change event firing and re-rendering are queued as microtasks.
+            // Since busy state resolves using window.setImmediate, we don't need to register
+            // busy states. Preact also uses microtasks for rendering.
             this._queueFireEventsTask({ type, detail, collapse: collapseFunc, kind: _PROP_CHANGE });
         }
+        // Ensure that Preact knows the latest values of the controlled properties when they have
+        // been set directly on the custom element (custom-element-first case).
+        // Otherwise, preact diffing will be comparing against an old value that is no longer reflected
+        // in the DOM
         const oldProps = this._oldRootProps;
         if (oldProps && this._controlledProps.has(propPath)) {
             oldProps[propPath] = value;
         }
+        // TODO handle interrupted render
+        // Skip rendering if prop update is a readOnly property
         if (this._vdom && !propMeta?.readOnly) {
+            // JET-56604: We have to handle a scenario when a component updates a property in
+            // its constructor. In this case the component is connected, _vdom is created,
+            // but the component is not mounted and the ref is not set yet. Wait a tick
+            // before setState() call.
             if (!this._compWithContextsRef?.current) {
                 window.queueMicrotask(() => {
                     this._queueRender();
@@ -654,16 +863,22 @@ class IntrinsicElement {
     }
     _queueRender() {
         if (this._compWithContextsRef?.current) {
-            this._compWithContextsRef.current.setState({ compProps: this._props });
+            this._renderCount++;
+            this._compWithContextsRef.current.setState({
+                compProps: this._props,
+                renderCount: this._renderCount
+            });
         }
         else {
             throw new Error(`Render requested for a disconnected component ${this._element.tagName}`);
         }
     }
     _verifyProps(prop, value, propMeta, subPropMeta) {
+        // Skip verification step for global properties
         if (!propMeta) {
             return;
         }
+        // Check readOnly property for top level property
         if (propMeta.readOnly) {
             throw new JetElementError(this._element, `Read-only property '${prop}' cannot be set.`);
         }
@@ -677,7 +892,9 @@ class IntrinsicElement {
     _updateProps(propPath, value) {
         const topProp = propPath[0];
         let propsObj = this._props;
+        // Set subproperty, initializing parent objects along the way
         if (propPath.length > 1) {
+            // Make a copy of the current value or default value
             const currentValue = this._props[topProp] ?? this._defaultProps?.[topProp];
             if (currentValue && oj.CollectionUtils.isPlainObject(currentValue)) {
                 propsObj[topProp] = oj.CollectionUtils.copyInto({}, currentValue, undefined, true);
@@ -686,6 +903,7 @@ class IntrinsicElement {
                 propsObj[topProp] = {};
             }
         }
+        // Walk to the correct location
         while (propPath.length) {
             const subprop = propPath.shift();
             if (propPath.length === 0) {
@@ -697,6 +915,12 @@ class IntrinsicElement {
             propsObj = propsObj[subprop];
         }
     }
+    /**
+     * Queues events to be fired asynchronously and returns the queued event Promise to be used
+     * for dealing with cancelable events.
+     * @param eventDef Definition of the event to queue
+     * @private
+     */
     _queueFireEventsTask(eventDef) {
         let newDef = eventDef;
         const collapseInfo = this._getEventCollapseInfo(eventDef, this._eventQueue);
@@ -727,6 +951,9 @@ class IntrinsicElement {
         }
         return this._queuedEvents;
     }
+    // If the new event can be combined with an existing event in the queue, this method will
+    // return the index of that existing event and the definition of the combined event.
+    // Otherwise the method will return null
     _getEventCollapseInfo(newDef, queue) {
         if (newDef.kind !== _PROP_CHANGE) {
             return null;
@@ -740,8 +967,20 @@ class IntrinsicElement {
         return null;
     }
     _verifyConnectDisconnect(state) {
+        if (this._state.isComplete()) {
+            // Notify ComponentWithContexts of the change in connection state so that any queued
+            // Preact renders can either render or short-circuit appropriately
+            // Reparents will not result in rerenders due to shouldComponentUpdate in ComponentWithContexts
+            this._compWithContextsRef?.current?.setState({
+                connected: state === ConnectionState.Connect
+            });
+        }
         if (this._verifyingState === ConnectionState.Unset) {
             window.queueMicrotask(() => {
+                // This checks that we don't call any lifecycle hooks
+                // for reparent case where _verifyingState has been
+                // updated but the initial state we called
+                // this Promise with is different
                 if (this._verifyingState === state) {
                     if (this._verifyingState === ConnectionState.Connect) {
                         this._verifiedConnect();
@@ -760,9 +999,18 @@ class IntrinsicElement {
             this._reconnectSlots();
         }
         else {
+            // If the component has not finished its creation cycle,
+            // attempt to create it vs handling as a reattached since
+            // the component could have finished in an error state.
+            // The element state will no-op the creation process if
+            // the component is already in an error state.
             this._state.startCreationCycle();
             if (this._state.isCreating()) {
                 const createComponentCallback = () => {
+                    // Set a non enumerable flag that this element owns a preact subtree
+                    // for when we walk up the parent hierarchy to determine the binding
+                    // provider for any custom element children rendered by this preact
+                    // component.
                     this._element[CHILD_BINDING_PROVIDER] = 'preact';
                     let slotMap = this._state.getSlotMap();
                     if (!slotMap) {
@@ -789,16 +1037,28 @@ class IntrinsicElement {
             render(null, this._element);
             applyRef(this.ref, null);
             applyRef(this._compWithContextsRef, null);
+            if (typeof this._oldRootCleanupCallback == 'function') {
+                this._oldRootCleanupCallback();
+                this._oldRootCleanupCallback = undefined;
+            }
             applyRef(this._oldRootRef, null);
             this._oldRootRef = undefined;
+            // We need to recreate our parent stub the next time we reconnect since Preact
+            // stashes the last rendered vdom tree in a private variable and will assume
+            // we are picking up from that spot instead of starting over.
             this._vdom = null;
         }
         else {
             this._state.pauseCreationCycle();
         }
     }
+    /**
+     * Initialize this._props from DOM attributes
+     */
     _initializePropsFromDom() {
         const attrs = this._element.attributes;
+        // Pass everything through, the overridden component render
+        // will patch uncontrolled properties back to the custom element
         for (let i = 0; i < attrs.length; i++) {
             const { name, value } = attrs[i];
             const { propPath, propValue, propMeta, subPropMeta } = this._getPropValueInfo(name, value);
@@ -809,6 +1069,9 @@ class IntrinsicElement {
         }
     }
     _playbackEarlyPropertySets() {
+        // Once the binding provider has resolved and we are about
+        // to render the component, we no longer need to track early
+        // property sets to avoid overriding data bound DOM attributes
         while (this._earlySets.length) {
             const setObj = this._earlySets.shift();
             const meta = getPropertyMetadata(setObj.property, this._metadata?.properties);
@@ -828,18 +1091,30 @@ class IntrinsicElement {
         }
         const newRef = newVNode.ref;
         if (this._oldRootRef !== newRef) {
-            applyRef(newRef, this._element);
+            if (typeof this._oldRootCleanupCallback == 'function') {
+                this._oldRootCleanupCallback();
+            }
+            this._oldRootCleanupCallback = applyRef(newRef, this._element);
+            // reset the old ref if the new one is not null
             if (newRef) {
-                this._oldRootRef?.(null);
+                applyRef(this._oldRootRef, null);
             }
         }
         this._oldRootProps = newProps;
         this._oldRootRef = newRef;
     }
+    /**
+     * Customizations for the setProperty behavior in Preact's diffProps()
+     * License header above
+     * Return true if the property has been handled, false otherwise
+     * @ignore
+     */
     static _setPropertyOverrides(dom, name, value, oldValue) {
         if (name === 'style' && typeof value == 'string') {
             throw new Error('CSS style must be an object. CSS text is not supported');
         }
+        // Mutate classes in a non-destructive way using classList instead of className to allow
+        // classes being set from outside
         if (name === 'class' || name === 'className') {
             const oldClasses = oldValue == null ? _EMPTY_SET : CustomElementUtils.getClassSet(oldValue);
             const newClasses = value == null ? _EMPTY_SET : CustomElementUtils.getClassSet(value);
@@ -857,6 +1132,7 @@ class IntrinsicElement {
         }
         else if (name[0] === 'o' && name[1] === 'n') {
             const useCapture = name !== (name = name.replace(/(PointerCapture)$|Capture$/i, '$1'));
+            // Infer correct casing for DOM built-in events:
             if (name.toLowerCase() in dom || name === 'onFocusOut' || name === 'onFocusIn')
                 name = name.toLowerCase().slice(2);
             else
@@ -873,8 +1149,12 @@ class IntrinsicElement {
             return true;
         }
         else if (name === 'role') {
+            // Safari doesn't fire the custom element reaction synchronously when role is set as a property
+            // (unlike other global props or even like 'role' when set as an attribute).  Overriding preact's
+            // default behavior here to always patch role as an attribute (note this is already the behavior
+            // in Firefox where 'role' isn't a global prop)
             if (value) {
-                dom.setAttribute(name, value);
+                dom.setAttribute(name, value); // @HTMLUpdateOK
             }
             else {
                 dom.removeAttribute(name);
@@ -891,8 +1171,12 @@ class IntrinsicElement {
         }
         return listeners;
     }
+    // Populate initial root props with values of the controlled properties, so that
+    // they can be overridden by the component's render
     _getInitialRootProps() {
         const props = {};
+        // Controlled property values have already been copied into cthe component props
+        // by _initializePropsFromDom(), so we can just copy them from _props here
         for (const name of this._controlledProps.values()) {
             if (name in this._props) {
                 props[name] = this._props[name];
@@ -900,7 +1184,11 @@ class IntrinsicElement {
         }
         return props;
     }
+    /**
+     * Removes component's slot children and converts them to properties
+     */
     _removeAndConvertSlotsToProps(slotMap) {
+        // dynamicSlot is an object of form { prop: [propName], isTemplate: [1 for true and 0 for false]}
         const dynamicSlotMetadata = this._metadata.extension?._DYNAMIC_SLOT;
         const dynamicSlotProp = dynamicSlotMetadata?.prop;
         const slotsMetadata = this._metadata?.slots;
@@ -915,11 +1203,18 @@ class IntrinsicElement {
                 });
                 const slotMetadata = getPropertyMetadata(slot, slotsMetadata);
                 if (slotMetadata) {
+                    // static slot or templateSlot
                     const isTemplateSlot = !!slotMetadata?.data;
                     const slotProperty = !isTemplateSlot && slot === '' ? 'children' : slot;
                     this._assignSlotProperty(slotProps, slotProperty, undefined, slot, isTemplateSlot, slotNodes);
                 }
                 else {
+                    // dynamic slot or templateSlot
+                    // Stop processing if node doesn't match any named slots and component
+                    // does not define a dynamic slot.
+                    // TODO do we throw an error or log a warning if we encounter a slot item
+                    // that should go into a dynamic prop but there's no dynamic prop, basically
+                    // meaning the slot content was marked incorrectly?
                     if (!dynamicSlotProp) {
                         return;
                     }
@@ -932,10 +1227,12 @@ class IntrinsicElement {
             });
         }
         if (this._state.getBindingProviderType() === 'knockout') {
+            // Remove and clean non-slot children (comment nodes, etc.) to prevent them from being
+            // removed by Preact without being cleaned
             let child;
             while ((child = this._element.firstChild)) {
                 this._state.getBindingProviderCleanNode()(child);
-                child.remove();
+                child.remove(); // No ts definition for remove() yet
             }
         }
         return slotProps;
@@ -944,10 +1241,12 @@ class IntrinsicElement {
         const propContainer = containerPropName ? slotProps[containerPropName] : slotProps;
         if (isTemplateSlot) {
             if (slotNodes[0]?.nodeName === 'TEMPLATE') {
+                // Handle template slots
                 const templateNode = slotNodes[0];
                 let renderer = templateNode['render'];
                 if (renderer) {
                     propContainer[propName] = renderer;
+                    // Handle the case where the renderer gets updated on the template
                     Object.defineProperties(templateNode, {
                         render: {
                             enumerable: true,
@@ -1005,13 +1304,19 @@ class IntrinsicElement {
         ParkingLot.reconnectNodes(this._state.getSlotMap());
     }
     _propagateSubtreeHidden(node) {
+        // Notiify legacy JET components within the slot that they are now in a hidden subtree
         if (node.nodeType === Node.ELEMENT_NODE) {
             CustomElementUtils.subtreeHidden(node);
         }
     }
     _handleSlotUnmount(node) {
-        if (this._state.isPostCreateCallbackOrComplete()) {
+        // Check for complete state to avoid parking slots when the entire component
+        // is unmounted
+        if (this._state.isPostCreateCallbackOrComplete() && this._element.isConnected) {
             ParkingLot.parkNode(node);
+            // Check if the node is still parked after a microtask
+            // to avoid .subtreeHidden traversal for slots that get
+            // redistributed to a new parent
             window.queueMicrotask(() => {
                 if (ParkingLot.isParked(node)) {
                     this._propagateSubtreeHidden(node);
@@ -1020,12 +1325,15 @@ class IntrinsicElement {
         }
     }
     _handleSlotMount(node) {
+        // Notiify legacy JET components within the slot that they are no longer in a hidden subtree
         const handleMount = CustomElementUtils.subtreeShown;
         if (handleMount && node.nodeType === Node.ELEMENT_NODE) {
             if (node.isConnected) {
                 handleMount(node);
             }
             else {
+                // Since legacy JET expects the node to be fully connected with when subtreeShown is invoked,
+                // invoke the callback when Preact's diff is done
                 window.queueMicrotask(() => handleMount(node));
             }
         }
@@ -1039,9 +1347,15 @@ class IntrinsicElement {
     _initializeActionCallbacks(eventsMeta) {
         Object.keys(eventsMeta).forEach((event) => {
             const eventMeta = eventsMeta[event];
+            // Preact expects jsx custom event listeners to be of the form
+            // on[eventType], e.g. onojAction which is different than our DOM
+            // event listener syntax of on[EventType], e.g. onOjAction.
             const eventProp = AttributeUtils.eventTypeToEventListenerProperty(event);
             this._props[eventProp] = (detailObj) => {
                 const detail = Object.assign({}, detailObj);
+                // If we're firing a cancelable event, inject an accept function into
+                // the event detail so the consumer can asynchronously cancel the event.
+                // We only support an asynchronously cancelable event at the moment.
                 const cancelable = !!eventMeta.cancelable;
                 const acceptPromises = [];
                 if (cancelable) {
@@ -1065,9 +1379,12 @@ class IntrinsicElement {
     }
     _initializeWritebackCallbacks(writebackProps) {
         writebackProps.forEach((propPath) => {
+            // e.g. value -> onValueChanged
             const callbackProp = AttributeUtils.propertyNameToChangedCallback(propPath);
             const { prop: propMeta, subProp: subPropMeta } = getComplexPropertyMetadata(propPath, this._metadata?.properties);
             this._props[callbackProp] = (value) => {
+                // The inner set will trigger a call to _updateProperty
+                // to mutate the property and queue the property changed event
                 this._updatePropsAndQueueRenderAsNeeded(propPath, value, propMeta, subPropMeta, false);
             };
         });
@@ -1080,16 +1397,41 @@ var ConnectionState;
     ConnectionState[ConnectionState["Unset"] = 2] = "Unset";
 })(ConnectionState || (ConnectionState = {}));
 
+// This method is added to support ref cleanup feature. It is added for the future use
+// when the outer component will need to pass a ref with cleanup callback.
+// Currently both refs wrapped by EnvironmentWrapper are created by JET
+// and do not have cleanup callbacks - the 'ref' added by ManageTabStops component and
+// child.ref added by VComponentTemplate.
+const getCleanupFunc = (c1, c2) => {
+    return c1 || c2
+        ? () => {
+            if (typeof c1 == 'function') {
+                c1();
+            }
+            if (typeof c2 == 'function') {
+                c2();
+            }
+        }
+        : undefined;
+};
 const EnvironmentWrapper = forwardRef((props, ref) => {
+    // The props.children is guaranteed to be a single IntrinsicElement.
+    // See how EnvironmentWrapper is used in preactOptions.
     let child = props.children;
+    // This list will never change, so we're not using any hooks on a conditional basis
     const contexts = getElementRegistration(child.type).cache
         .contexts;
     const allContexts = [EnvironmentContext, ...(contexts ?? [])];
     const allValues = allContexts.map((context) => {
+        // Get the provided value from __oj_provided_contexts property.
+        // Use provided if exists, otherwise use the value from Preact context.
+        // Note, that __oj_provided_contexts might be assigned via VTemplateEngine code.
         const ctxValue = useContext(context);
         const providedValue = child.props.__oj_provided_contexts?.get(context);
         return providedValue !== undefined ? providedValue : ctxValue;
     });
+    // use memo here so that we only push a new value into __oj_private_contexts if there's actually been a change
+    // to one of the Context values
     const contextMap = useMemo(() => {
         const map = new Map();
         for (let i = 0; i < allContexts.length; i++) {
@@ -1099,15 +1441,24 @@ const EnvironmentWrapper = forwardRef((props, ref) => {
     }, allValues);
     if (child.props.__oj_private_contexts !== undefined &&
         child.props.__oj_private_contexts !== contextMap) {
+        // Clone the memoized child to trigger child rendering in preact.
+        // The cloneElement(child) will wrap the child in another EnvironmentWrapper, so we need to take a child of the wrapper.
         child = cloneElement(child).props.children;
     }
     child.props.__oj_private_contexts = contextMap;
+    // We need this code to handle ManageTabStops component that will wrap the EnvironmentWrapper and
+    // wants to set a ref on a child component to access it for updating tabindex. See JET-54400 for details.
+    // See note for getCleanupFunc().
     if (ref) {
         if (child.ref) {
             const originalRef = child.ref;
             child.ref = (el) => {
-                applyRef(originalRef, el);
-                applyRef(ref, el);
+                let cleanup1, cleanup2;
+                // Process original ref from this child element
+                cleanup1 = applyRef(originalRef, el);
+                // Process new ref passed to the EnvironmentWrapper
+                cleanup2 = applyRef(ref, el);
+                return getCleanupFunc(cleanup1, cleanup2);
             };
         }
         else {
@@ -1126,9 +1477,24 @@ const injectSymbols = (props, property) => {
     }
 };
 const oldVNodeHook = options.vnode;
-let isCloningElement = false;
+let isCloningElement = false; // flag to avoid infinite loop
 options.vnode = (vnode) => {
     const type = vnode.type;
+    // preact/compat coerces null property values to undefined.  this tends not
+    // to matter in most cases since preact's diffing checks tend to rely on ==
+    // comparison rather than ===.  however, for the 'value' and 'checked' properties,
+    // preact itself ignores undefined values in a props object.  as a result,
+    // there's no way to set a custom element property to null or undefined.
+    //
+    // this will hopefully be addressed via preact issue https://github.com/preactjs/preact/issues/3276
+    // but in the meantime we replace these values with Symbols that we can recognize
+    // in our custom element property setters so that we can honor the JSX author's
+    // original intent.
+    //
+    // specifically checking for known JET custom elements rather than a more
+    // generic check for the '-' character to avoid injecting our JET-specific
+    // Symbols into some third party component which won't know what to do with them
+    // (and all this call does is a map lookup)
     if (typeof type === 'string' && isElementRegistered(type)) {
         const props = vnode.props;
         injectSymbols(props, 'value');
@@ -1147,9 +1513,11 @@ options.vnode = (vnode) => {
     }
     oldVNodeHook?.(vnode);
 };
+// Replace requestAnimationFrame option to add JET busy context logic.
 const RAF_TIMEOUT = 100;
 const originalRAF = options.requestAnimationFrame;
 function _requestAnimationFrame(task) {
+    // Create RAF promise that mimics Preact RAF timeout logic.
     const rafPromise = new Promise((res) => {
         const callback = () => {
             res();
@@ -1169,14 +1537,29 @@ function _requestAnimationFrame(task) {
             const raf = requestAnimationFrame(done);
         }
     });
+    // Add the the promise to the map of preact promises.
     Context.__addPreactPromise(rafPromise, 'Preact requestAnimationFrame');
 }
 options.requestAnimationFrame = _requestAnimationFrame;
 
+// Override for preact options used by preact/debug to check validity of the component hook.
+// The preact/debug logic is based on a global 'hooksAllowed' flag that does not check
+// which component uses the hook. The hook check logic can be broken, when
+// the render flow is interrupted by independent preact.render() calls.
+// This override is an attempt to fix the problem for JET applications that might
+// use preact.render() to clean legacy component templates as necessary.
+// Specifically the fix is related to JET-69144 - a vcomponent based on oj-tree-view updates DP
+// in useEffect() that triggeres templates clean for oj-tree-view.
 const opts = options;
 let isPreactDebugEnabled = opts.__m || opts._hydrationMismatch;
 if (isPreactDebugEnabled) {
     const componentStack = [];
+    // It is possible to have two versions of _render option.
+    // The preact-devtools extension defines both variants, but if preact/compat was
+    // loaded after preact-devtools it will override one of those.
+    // It is not the case for _catchError or _hook.
+    // Lets store both of them but call only one based on the knowledge
+    // whether preact is mangled or not (vcomponent._component property)
     const isPreactMangled = opts._hydrationMismatch ? false : true;
     const oldRender = isPreactMangled ? opts.__r : opts._render;
     const oldCatchError = isPreactMangled ? opts.__e : opts._catchError;
@@ -1188,23 +1571,27 @@ if (isPreactDebugEnabled) {
             componentStack.pop();
         }
     };
+    // options._render
     opts._render = opts.__r = (vnode) => {
         const comp = isPreactMangled ? vnode.__c : vnode._component;
         componentStack.push(comp);
         if (oldRender)
             oldRender(vnode);
     };
+    // options._hook
     opts._hook = opts.__h = (comp, index, type) => {
         const testComp = componentStack[componentStack.length - 1];
         if (!comp || testComp !== comp) {
             throw new Error('Hook can only be invoked from render methods.');
         }
     };
+    // options._catchError
     opts._catchError = opts.__e = (error, vnode, oldVNode, errorInfo) => {
         removeCompFromStack(vnode);
         if (oldCatchError)
             oldCatchError(error, vnode, oldVNode, errorInfo);
     };
+    // options.diffed
     opts.diffed = (vnode) => {
         removeCompFromStack(vnode);
         if (oldDiffed)
@@ -1597,7 +1984,7 @@ if (isPreactDebugEnabled) {
  * }
  * </code></pre>
  * <p>
- *   TemplateSlot is a function type that takes a single  parameter:
+ *   TemplateSlot is a function type that takes a single parameter:
  *   the context that is passed in when the template slot is
  *   rendered.  The VComponent invokes the template slot function
  *   with this context and embeds the results in the virtual DOM tree:
@@ -1613,6 +2000,16 @@ if (isPreactDebugEnabled) {
  * }
  * &lt;/li&gt;
  * </code></pre>
+ * <p>For each template slot, type alias definitions representing the context and renderer function signature are generated
+ * at build time as part of the corresponding custom element namespace. The names of these type alias definitions
+ * are derived from a base which, by default, is the template slot name. This base is converted from <i>camelCase</i> to
+ * <i>PascalCase</i> to determine a <code>&lt;RootName&gt;</code>, and then the resulting type alias names are
+ * '<code>&lt;RootName&gt;</code>Context' for the context type and 'Render<code>&lt;RootName&gt;</code>' for the
+ * renderer function signature type. In addition:
+ * <ul><li>if a template slot is defined with an empty context object, then no corresponding context type alias definition will
+ * be generated;</li>
+ * <li>the VComponent author can override the default base used to derive a particular template slot's type alias definition names
+ * by specifying a value for an optional <code>templateSlotAlias</code> metadata property associated with that template slot.</li></ul></p>
  * <p>Note that while component consumers specify the contents for a template slot using a
  * &lt;template> element and standard HTML markup, the component implementation sees template slots as functions
  * that return virtual DOM nodes.  This transformation between live DOM and virtual DOM is performed
@@ -1988,7 +2385,7 @@ if (isPreactDebugEnabled) {
  * @ojexports
  * @memberof ojvcomponent
  * @ojsignature [
- *   {target:"Type", value:"<Detail extends object = {}>", for:"genericTypeParameters"},
+ *   {target:"Type", value:"<Detail = {}>", for:"genericTypeParameters"},
  *   {target: "Type", value: "[keyof Detail] extends [never] ? (detail?: Detail) => void : (detail: Detail) => void"}
  * ]
  */
@@ -2913,6 +3310,13 @@ class HTMLJetElement extends HTMLElement {
         this._helper?.disconnectedCallback();
     }
     attributeChangedCallback(name, oldValue, newValue) {
+        // The _getHelper call will instantiate either a class that either no-ops for DOM calls
+        // or suppors the custom element first case. We decide which class to instantiate by checking
+        // the DOM for an attribute flag which if we call it at the first attributeChangedCallback call,
+        // may not yet be in the DOM since this callback is called for all element attributes when it's first
+        // instantiated. To prevent instantiating the wrong helper class and since we don't need to handle
+        // the initial DOM attribute sets, we check if helper is already instantiated first by either the connected
+        // or setProperty calls.
         this._helper?.attributeChangedCallback(name, oldValue, newValue);
     }
     getProperty(name) {
@@ -2930,6 +3334,8 @@ class HTMLJetElement extends HTMLElement {
     insertBefore(newNode, refNode) {
         return this._getHelper().insertBeforeHelper(this, newNode, refNode);
     }
+    // Override set/removeAttribute to only allow toggling of classes applied by application/parent component
+    // This is necessary to work with Preact's class patching logic
     setAttribute(qualifiedName, value) {
         if (qualifiedName === 'class') {
             const outerClasses = CustomElementUtils.getClassSet(value);
@@ -2948,9 +3354,12 @@ class HTMLJetElement extends HTMLElement {
         }
     }
     _getHelper() {
+        // Decide which helper to instantiate after the first connected
+        // callback
         if (!this._helper) {
             if (this.hasAttribute('data-oj-jsx')) {
                 this.removeAttribute('data-oj-jsx');
+                // We won't go through the complete component cycle so just add oj-complete here
                 this.classList.add('oj-complete');
                 this._helper = valueBasedElement;
             }
@@ -2966,11 +3375,13 @@ const getDescriptiveTransferAttributeValue = (element, attrName) => {
     if (elementVal) {
         return elementVal;
     }
+    // cast as any to access private _getHelper metod
     const helper = element._getHelper();
     const vprops = helper.getProps?.() || {};
     return vprops[attrName];
 };
 const isInitialized = (element) => {
+    // cast as any to access private _getHelper metod
     const helper = element._getHelper();
     return !!helper.isInitialized?.();
 };
@@ -2981,11 +3392,21 @@ function isGlobalProperty(prop, metadata) {
         AttributeUtils.isGlobalOrData(prop) ||
         isGlobalEventListenerProperty(prop, metadata));
 }
+// Although an expression with negative lookbehind like /^on([A-Za-z])([A-Za-z]*)(?<!Changed)$/
+// would be cleaner, we have to use negative lookahead because negative lookbehind is
+// not yet supported by Safari
 const _GLOBAL_EVENT_MATCH_EXP = /^on(?!.*Changed$)([A-Za-z])([A-Za-z]*)$/;
 function isGlobalEventListenerProperty(prop, metadata) {
+    // A VComponent could have a non-event listener component property that
+    // matches our regular expression below (eg. "once" or "only"). To avoid
+    // treating these like global event listeners, we first check to see whether the
+    // prop corresponds to a component property.
     if (metadata?.properties?.[prop]) {
         return false;
     }
+    // Any property name starting with "on" followed by at least one character
+    // and not ending with 'Changed' will be considered a global event property
+    // unless the event type matches component's action callback property
     const match = prop.match(_GLOBAL_EVENT_MATCH_EXP);
     if (match) {
         const eventType = match[1].toLowerCase() + match[2];
@@ -2994,23 +3415,40 @@ function isGlobalEventListenerProperty(prop, metadata) {
     return false;
 }
 
+/*
+ * This component is used when the VComponent is not taking any responsibility for managing the Root element
+ */
 const InternalRoot = ({ children }) => {
-    const { tagName, metadata, isElementFirst, vcompProps } = useContext(RootContext);
+    const { tagName, metadata, isElementFirst, vcompProps, elemRefObj } = useContext(RootContext);
     if (isElementFirst) {
+        // When the component chooses not to render the root node in custom-element-first scenario,
+        // we will be rendering implementation VDOM into the custom element 'as is'. No reconciliation
+        // of custom element propewrties will occur.
         return children;
     }
+    // For VComponent first, the framework is responsible for making sure global
+    // attributes are rendered on the root vnode
     const refFunc = function (ref) {
+        // Create a ref callback so that we can store the properties object onto
+        // the element. Needed for WebElement property retrieval
         if (ref) {
             ref[CustomElementUtils.VCOMP_INSTANCE] = {
                 props: vcompProps
             };
         }
+        elemRefObj.current = ref; // Used by BusyContextProvider
     };
+    // We don't have a reference to the element so we need to render something onto the DOM
+    // to let the custom element logic know not to instantiate the vcomponent and to act as a
+    // shell where most APIs are no-ops
     const globalPropKeys = Object.keys(vcompProps).filter((prop) => isGlobalProperty(prop, metadata));
     const globalProps = globalPropKeys.reduce((acc, cur) => {
         acc[cur] = vcompProps[cur];
         return acc;
     }, {});
+    // We want to prevent creation of unnecessary EnvironmentWrapper component around element
+    // represented by the tagName. In order to do so let's render into a 'div' and change the type
+    // after that.
     const elem = (jsx("div", { ref: refFunc, "data-oj-jsx": "", ...globalProps, children: children }));
     elem.type = tagName;
     return elem;
@@ -3018,14 +3456,18 @@ const InternalRoot = ({ children }) => {
 
 const _CLASS = 'class';
 const Root = forwardRef((props, ref) => {
-    const { tagName, metadata, isElementFirst, vcompProps, observedPropsSet } = useContext(RootContext);
+    const { tagName, metadata, isElementFirst, vcompProps, observedPropsSet, elemRefObj } = useContext(RootContext);
     if (isElementFirst) {
+        // Invoke root VNode's patch implementation passed by the IntrinsicElement
+        // This will ensure that root element refs are set before the componentDidMount() callback
+        // is invoked
         const artificialRoot = jsx("div", { ...props, ref: ref });
         artificialRoot.type = tagName;
         vcompProps[ROOT_VNODE_PATCH](artificialRoot);
         return jsx(Fragment, { children: props.children });
     }
     const propFixups = {};
+    // Merge style values with those in the DOM.
     if (vcompProps.style && props['style']) {
         propFixups['style'] = Object.assign({}, vcompProps.style, props['style']);
     }
@@ -3034,65 +3476,100 @@ const Root = forwardRef((props, ref) => {
         const nodeClass = props[_CLASS] || '';
         propFixups[_CLASS] = `${componentClass} ${nodeClass}`;
     }
+    // Merge back global attributes not overidden by component
+    // to root vnode since the component won't render these, but
+    // they are set by parent and should show up in the DOM.
     const parentGlobalKeys = Object.keys(vcompProps).filter((prop) => !(prop in props) && !observedPropsSet.has(prop) && isGlobalProperty(prop, metadata));
     const parentGlobals = parentGlobalKeys.reduce((acc, cur) => {
         acc[cur] = vcompProps[cur];
         return acc;
     }, {});
+    // Create a ref callback so that we can store the properties object onto
+    // the element. Needed for WebElement property retrieval.
     const refFunc = (el) => {
+        let cleanupFunc;
         if (ref) {
-            applyRef(ref, el);
+            cleanupFunc = applyRef(ref, el);
         }
         if (el) {
             el[CustomElementUtils.VCOMP_INSTANCE] = {
                 props: vcompProps
             };
         }
+        elemRefObj.current = el; // Used by BusyContextProvider
+        return cleanupFunc;
     };
     const elem = jsx("div", { ...props, ...propFixups, ...parentGlobals, ref: refFunc, "data-oj-jsx": "" });
     elem.type = tagName;
     return elem;
 });
 
+/**
+ * @ignore
+ */
 class VComponentState extends LifecycleElementState {
     constructor(element) {
         super(element);
         this._translationBundleMap = {};
     }
+    /**
+     * Gets translation bundle map
+     */
     getTranslationBundleMap() {
         return this._translationBundleMap;
     }
+    /**
+     * @override
+     */
     getTemplateEngine() {
         return VComponentState._cachedTemplateEngine;
     }
+    /**
+     * @override
+     */
     getTrackChildrenOption() {
         return 'immediate';
     }
+    /**
+     * @override
+     */
     allowPropertyChangedEvents() {
         return super.allowPropertyChangedEvents() && isInitialized(this.Element);
     }
+    /**
+     * @override
+     */
     allowPropertySets() {
         return this._allowPropertySets || super.allowPropertySets();
     }
+    /**
+     * @override
+     */
     resetCreationCycle() {
         this._allowPropertySets = super.allowPropertySets();
         super.resetCreationCycle();
     }
+    /**
+     * Dispose cached entries that might be stored on a template slot
+     */
     disposeTemplateCache() {
         const slotMap = this.getSlotMap();
         const slots = Object.keys(slotMap);
         const metadata = getElementDescriptor(this.Element.tagName).metadata;
+        // dynamicSlot is an object of form { prop: [propName], isTemplate: [1 for true and 0 for false]}
         const dynamicSlotMetadata = metadata?.extension?._DYNAMIC_SLOT;
         const hasDynamicTemplateSlots = !!dynamicSlotMetadata?.isTemplate;
         const templateSlots = slots.filter((slot) => {
             const slotMetadata = getPropertyMetadata(slot, metadata?.slots);
             if (slotMetadata) {
                 if (slotMetadata.data) {
+                    // static template slot
                     return true;
                 }
             }
             else {
                 if (hasDynamicTemplateSlots) {
+                    // dynamic template slot
                     return true;
                 }
             }
@@ -3105,22 +3582,40 @@ class VComponentState extends LifecycleElementState {
             }
         });
     }
+    /**
+     * @override
+     */
     GetPreCreatedPromise() {
         let translationPromise;
         let templateEnginePromise;
+        // If the element requests translation bundles, lets load them using best fitted locale.
+        // Delay component creation until bundles are loaded.
         if (this.Element.constructor.translationBundleMap) {
             translationPromise = this._getTranslationBundlesPromise();
         }
+        // If the template engine has not yet been loaded, and we have have some template elements as direct children,
+        // chain the base class's pre-create promise with the promise for the template engine becoming
+        // loaded and cached
+        // eslint-disable-next-line no-use-before-define
         if (!VComponentState._cachedTemplateEngine && this._hasDirectTemplateChildren()) {
             templateEnginePromise = this._getTemplateEnginePromise();
         }
+        // The isConnected check is made because the translationPromise and templateEnginePromise might
+        // take longer than a microtask to resolve and the element might disconnect while waiting for the promises.
+        // This makes the binding provider promise a) irrelevant and b) likely to blow up if we proceeded.
         return Promise.all([translationPromise, templateEnginePromise]).then(() => {
             return this.Element.isConnected ? super.GetPreCreatedPromise() : Promise.reject();
         });
     }
+    /**
+     * @override
+     */
     IsTransferAttribute(attrName) {
         return this.Element.constructor.rootObservedAttrSet.has(attrName);
     }
+    /**
+     * @override
+     */
     GetDescriptiveTransferAttributeValue(attrName) {
         return getDescriptiveTransferAttributeValue(this.Element, attrName);
     }
@@ -3137,11 +3632,19 @@ class VComponentState extends LifecycleElementState {
             });
         });
     }
+    /**
+     * Returns a Promise for when the template engine is loaded.
+     * Once loaded, the template engine is cached in a class variable.
+     */
     _getTemplateEnginePromise() {
         return import('ojs/ojvcomponent-template').then((eng) => {
             VComponentState._cachedTemplateEngine = eng;
         });
     }
+    /**
+     * Helper to determine whether the custom element has
+     * template children.
+     */
     _hasDirectTemplateChildren() {
         const childNodeList = this.Element.childNodes;
         for (let i = 0; i < childNodeList.length; i++) {
@@ -3154,7 +3657,22 @@ class VComponentState extends LifecycleElementState {
     }
 }
 
+function BusyContextProvider({ elemRefObj, children }) {
+    const addBusyState = useCallback((description) => {
+        // If the component is not mounted, return a noop
+        if (elemRefObj.current) {
+            const baseDescription = `${elemRefObj.current.tagName.toLowerCase()}: `;
+            const busyContext = Context.getContext(elemRefObj.current).getBusyContext();
+            return busyContext.addBusyState({ description: `${baseDescription}${description}` });
+        }
+        throw new Error(`Cannot call addBusyState() when the component is not connected to the DOM. Ensure the component is mounted before attempting to add a busy state.`);
+    }, [elemRefObj]);
+    const busyContext = useMemo(() => ({ addBusyState }), [addBusyState]);
+    return jsx(BusyStateContext.Provider, { value: busyContext, children: children });
+}
+
 const FUNCTIONAL_COMPONENT = Symbol('functional component');
+const ELEMENT_REF_OBJ = Symbol(); // Symbol for passing element RefObject to support BusyContextProvider
 function customElement(tagName) {
     return function (constructor) {
         const metadata = constructor['_metadata'] || constructor['metadata'] || {};
@@ -3168,6 +3686,13 @@ function customElement(tagName) {
         }
     };
 }
+/**
+ * Register a functional component for the custom element
+ * @param {string} tagName The element tag name to register
+ * @param {function} fcomp The functional component
+ * @param {object?} options Additional options for the functional VComponent
+ * @returns A Component class which encapsulates the renderer
+ */
 function registerCustomElement(tagName, fcomp, options) {
     class VCompWrapper extends Component {
         constructor() {
@@ -3177,12 +3702,15 @@ function registerCustomElement(tagName, fcomp, options) {
                     this.__vcompRef.current = instance;
                 }
                 const innerRef = this.props['innerRef'];
-                applyRef(innerRef, instance);
+                return applyRef(innerRef, instance);
             };
             if (VCompWrapper._metadata?.['methods']) {
                 this.__vcompRef = createRef();
+                // NOTE:  RT methods metadata will not include standard methods for
+                //        getting/setting properties - those only get included in the DT metadata
                 const rtMethodMD = VCompWrapper._metadata['methods'];
                 const extendableInstance = this;
+                // Set up pass-through methods
                 for (let mName in rtMethodMD) {
                     extendableInstance[mName] = (...args) => this.__vcompRef.current?.[mName].apply(this.__vcompRef.current, args);
                 }
@@ -3193,19 +3721,40 @@ function registerCustomElement(tagName, fcomp, options) {
             return fcomp(arguments[0]);
         }
     }
+    // NOTE:  If the optional 'options' argument was supplied, custom-tsc
+    //        already processed and incorporated the PropertyBinding and/or
+    //        Methods metadata into the undocumented 'metadata' argument, so the
+    //        optional argument was removed from the arguments array!
+    //
+    //        If, at some later point, we decide that we DO need to pass along
+    //        the 'options' argument to the VComponent framework during
+    //        registration, then we will need to make adjustments both here
+    //        and in custom-tsc.
+    // 'displayName' is passed by custom-tsc as a 3rd argument. Use it to
+    // set a default value for the returned class's displayName property.
     VCompWrapper.displayName = arguments[2];
+    // 'metadata' is passed by custom-tsc as an optional 4th argument. Assign the
+    // runtime metadata to the class so that customElement can find it.
     if (arguments.length >= 4 && arguments[3]) {
         VCompWrapper._metadata = arguments[3];
+        // 'defaultProps' is passed by custom-tsc as an optional 5th argument.
         if (arguments.length >= 5 && arguments[4]) {
             VCompWrapper._defaultProps = arguments[4];
         }
     }
+    // A 'translationBundleMap' (object mapping bundleIDs to loader functions)
+    // is passed by custom-tsc as an optional 6th argument. Assign the object map
+    // to the class so that customElement can find it.
     if (arguments.length >= 6) {
         VCompWrapper._translationBundleMap = arguments[5];
     }
+    // A Contexts map (of type Options<P,M>['contexts']) is passed by custom-tsc
+    // as an optional 7th argument. Assign the consumed Contexts to the class
+    // so that customElement can find it.
     if (arguments.length >= 7) {
         VCompWrapper['_consumedContexts'] = arguments[6]['consume'];
     }
+    // Mark this class so that we can identify functional vcomponents
     VCompWrapper[FUNCTIONAL_COMPONENT] = true;
     customElement(tagName)(VCompWrapper);
     return forwardRef((props, ref) => jsx(VCompWrapper, { ...props, innerRef: ref }));
@@ -3214,6 +3763,10 @@ function extendMetadata(metadata) {
     if (!metadata.properties) {
         metadata.properties = {};
     }
+    // Add __oj_private_color_scheme and __oj_private_scale properties
+    // to support binding propagation of colorScheme/scale values
+    // in VComponents used in HTML. The values will be passed to the
+    // EnvironmentProvider.
     metadata.properties.__oj_private_color_scheme = {
         type: 'string',
         binding: { consume: { name: 'colorScheme' } }
@@ -3222,11 +3775,32 @@ function extendMetadata(metadata) {
         type: 'string',
         binding: { consume: { name: 'scale' } }
     };
+    // Add __oj_private_contexts property to support
+    // propagation of Context objects to VComponents.
+    // Without this, there won't be a setter and Preact
+    // will call setAttribute, which isn't what we want.
+    //
+    // EnvironmentContext will only be passed here within JSX trees.
+    // Other Contexts may be propagated both within JSX + HTML trees.
     metadata.properties.__oj_private_contexts = {
         type: 'object'
     };
+    // The member is used to pass provided context from VComponentTemplate
+    // to EnvironmentWrapper component.
     metadata.properties.__oj_provided_contexts = {
         type: 'object'
+    };
+    // Add __oj_private_identifier_to_* properties to ensure correct behavior
+    // during VComponentTemplate compilation. These properties help preserve
+    // non-primitive property values on the JET components that remain essentially
+    // unchanged when templates are updated.
+    metadata.properties.__oj_private_identifier_to_prop = {
+        type: 'object',
+        writeback: true // set writeback key to true to force deep compare in comparePropertyValues().
+    };
+    metadata.properties.__oj_private_identifier_to_value = {
+        type: 'object',
+        writeback: true // set writeback key to true to force deep compare in comparePropertyValues().
     };
 }
 function registerElement(tagName, metadata, constructor, observedProps, observedAttrs, translationBundleMap) {
@@ -3244,6 +3818,7 @@ function registerElement(tagName, metadata, constructor, observedProps, observed
         ? deepFreeze(constructor['defaultProps'] || constructor['_defaultProps'])
         : null;
     HTMLPreactElement.translationBundleMap = translationBundleMap;
+    // Define getters/setters for metadata properties
     addPropGetterSetters(HTMLPreactElement.prototype, metadata?.properties);
     addMethods(HTMLPreactElement.prototype, metadata?.methods);
     registerElement$1(tagName, {
@@ -3253,44 +3828,86 @@ function registerElement(tagName, metadata, constructor, observedProps, observed
         cache: { contexts: constructor['_consumedContexts'] }
     }, HTMLPreactElement);
 }
+const InternalComp = ({ instance, tagName, metadata, baseRender, props, state, context }) => {
+    let vdom = baseRender.call(instance, props, state, context);
+    // The various cases to handle:
+    // 1) The VComponent directly returns the Root component
+    // 2) The VComponent directly returns the custom element tag (not recommended, but still supported)
+    //    This case will be converted to case 1
+    // 3) The VComponent returns only the children of the custom element (note that they may or may not be wrapped in a forwardRef)
+    //    This case should be wrapped in the InternalRoot component
+    // 4) The VComponent is a functional component that is exposing methods
+    //    a) *must* be wrapped in (at least) a top-level forwardRef
+    //    b) *must* ultimately return the Root component
+    // Fixing infinite recursion for case 2.
+    // The root element will be wrapped into EnvironmentWrapper component. We should discard
+    // the wrapper component in this case.
+    //
+    // Also convert into case 1 -- i.e. <custom-element/> -> <Root/>
+    if (vdom?.type?.['__ojIsEnvironmentWrapper'] && vdom.props.children.type === tagName) {
+        // props.children for EnvironmentWrapper contains a single element
+        const customElementNode = vdom.props.children;
+        // the simple thing here would be to clone and change the type of the clone to Root.
+        // however, cloning the custom element directly will trigger an infinite loop of unwrapping/wrapping
+        // instead, we'll mutate the original to Root, clone, and then restore the original.
+        customElementNode.type = Root;
+        try {
+            vdom = cloneElement(customElementNode);
+        }
+        finally {
+            customElementNode.type = tagName;
+        }
+    }
+    const vdomType = vdom?.type;
+    if (vdomType !== Root) {
+        if (!isForwardRef(vdomType) ||
+            !vdomType[FUNCTIONAL_COMPONENT] ||
+            Object.keys(metadata.methods || {}).length === 0) {
+            // Case 3
+            vdom = jsx(InternalRoot, { children: vdom });
+        }
+    }
+    return vdom;
+};
 function overrideRender(tagName, constructor, metadata, observedPropsSet) {
+    // Save the original component render method
     const componentRender = constructor.prototype.render;
+    // Override the component render to know how to handle the dual mounting case
     constructor.prototype.render = function (props, state, context) {
+        // We need to remove readOnly properties so they're not available to VComponents in this.props.
+        // We don't want components relying on readOnly props because props come from the parent and parent components
+        // will not be updating readOnly properties
         const readOnlyProps = metadata?.extension?.['_READ_ONLY_PROPS'];
         if (readOnlyProps) {
             readOnlyProps.forEach((prop) => delete props[prop]);
         }
+        // If a flag isn't passed through the props indicating that the custom
+        // element initiated the render, we will add a marker attribute indicating that
+        // the component has already been rendered so the custom element won't try and
+        // instantiate the component again on connected
         const element = props[ELEMENT_REF];
         const isElementFirst = !!element;
         if (isElementFirst) {
             CustomElementUtils.getElementState(element).disposeTemplateCache();
         }
+        // Fix for Preact 10.21.0 (https://github.com/preactjs/preact/pull/4337).
+        // Prior to the optimization Symbols were filtered from vnode props, but after
+        // the optiomization JET added Symbols can sip into child properties. We want to avoid this and
+        // filter the Symbols out from property object before rendering.
         let componentProps = props;
         if (props[ELEMENT_REF]) {
             const { [ELEMENT_REF]: remove1, [ROOT_VNODE_PATCH]: remove2, ...keep } = props;
             componentProps = keep;
         }
-        let vdom = componentRender.call(this, componentProps, state, context);
-        if (vdom?.type?.['__ojIsEnvironmentWrapper'] &&
-            vdom.props.children.type === tagName) {
-            const customElementNode = vdom.props.children;
-            customElementNode.type = Root;
-            try {
-                vdom = cloneElement(customElementNode);
-            }
-            finally {
-                customElementNode.type = tagName;
-            }
-        }
-        const vdomType = vdom?.type;
-        if (vdomType !== Root) {
-            if (!isForwardRef(vdomType) ||
-                !vdomType[FUNCTIONAL_COMPONENT] ||
-                Object.keys(metadata.methods || {}).length === 0) {
-                vdom = jsx(InternalRoot, { children: vdom });
-            }
-        }
-        return (jsx(RootContext.Provider, { value: { tagName, metadata, isElementFirst, vcompProps: props, observedPropsSet }, children: vdom }));
+        this[ELEMENT_REF_OBJ] = this[ELEMENT_REF_OBJ] || { current: props[ELEMENT_REF] };
+        return (jsx(RootContext.Provider, { value: {
+                tagName,
+                metadata,
+                isElementFirst,
+                vcompProps: props,
+                observedPropsSet,
+                elemRefObj: this[ELEMENT_REF_OBJ]
+            }, children: jsx(BusyContextProvider, { elemRefObj: this[ELEMENT_REF_OBJ], children: jsx(InternalComp, { instance: this, baseRender: componentRender, props: componentProps, state: state, context: context, tagName: tagName, metadata: metadata }) }) }));
     };
 }
 function addPropGetterSetters(proto, properties) {
@@ -3316,6 +3933,11 @@ function addMethods(proto, methods) {
             if (this._helper === valueBasedElement) {
                 throw new JetElementError(this, 'Cannot access element methods when rendered as a value based element.');
             }
+            // The VComponent is asynchronously instantiated by CreateComponent so we
+            // need to check that this has happened before we call any methods defined on it.
+            // Custom elements are upgraded synchronously meaning the method will be available
+            // on the HTMLElement, but we tell applications to wait on the component busy context
+            // before accessing properties and methods due to the asynch CreateComponent call.
             const comp = this._helper.ref.current;
             if (!comp) {
                 throw new JetElementError(this, 'Cannot access methods before element is upgraded.');
@@ -3324,6 +3946,9 @@ function addMethods(proto, methods) {
         };
     }
 }
+// in preact/compat/src/forwardRef, the $$typeof expando is added for react compatibility.
+// we're relying on the fact that this is unobfuscated to identify the internal Forwarded
+// component that preact/compat creates
 function isForwardRef(type) {
     return get$$typeof(type) === getForwardRef$$typeof();
 }
@@ -3338,12 +3963,21 @@ function getForwardRef$$typeof() {
     return forwardRefSymbol;
 }
 
+// The following are decorator stubs needed for component imports, but
+// that are removed at compile time and will not show up in the js code.
 function method(target, propertyKey, descriptor) { }
 function consumedContexts(contexts) {
     return function (constructor) { };
 }
 
 (function () {
+    /**
+     * Preact checks to see that a property is defined on an element before
+     * calling the property setter so we will add the render property to the template
+     * element prototype so we can set the render function on the template instance
+     * when using the template engine in vdom logic.
+     * @ignore
+     */
     if (typeof window !== 'undefined') {
         if (!HTMLTemplateElement.prototype.hasOwnProperty('render')) {
             Object.defineProperty(HTMLTemplateElement.prototype, 'render', {

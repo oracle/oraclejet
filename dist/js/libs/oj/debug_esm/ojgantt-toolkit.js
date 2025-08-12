@@ -11725,7 +11725,7 @@ class DvtGanttTaskNode extends Container {
     // Update linear dependency line rendering, because the marker styling depends on task selection state
     // If selectionBehavior is 'highlightDependencies', then skip updating the rendering here because it will be
     // done in the condition below via renderViewportDependencyLines() anyway.
-    // Another reason to skip is Bug JET-50792. If animation is on, and a viewport change happen, then it's possible for
+    // Another reason to skip is . If animation is on, and a viewport change happen, then it's possible for
     // the predecessor or successor task to move out of view. Due to a combination of horizontal virtualization (where out of view stuff are removed)
     // and lazy line rendering optimization, and nuances with how animation works, it's possible to encounter the console errors reported in the bug.
     // In the animation case, we want to skip the logic below, rely on the condition below to perform renderViewportDependencyLines(),
@@ -17743,7 +17743,7 @@ const DvtGanttRenderer = {
     // remove any empty text first if present
     gantt.removeEmptyText();
 
-    if (gantt.hasValidOptions()) {
+    if (gantt.hasValidOptions(true)) {
       DvtGanttRenderer._prepareTaskFillFilters(gantt);
 
       gantt.renderTimeZoomCanvas(gantt._canvas);
@@ -19894,7 +19894,7 @@ class Gantt extends TimeComponent {
 
     this.applyStyleValues();
 
-    var hasValidOptions = this.hasValidOptions();
+    var hasValidOptions = this.hasValidOptions(false);
     if (hasValidOptions) {
       DvtGanttRenderer.renderRowAxis(this);
     }
@@ -20015,7 +20015,7 @@ class Gantt extends TimeComponent {
    */
   HandleMouseWheel(event) {
     super.HandleMouseWheel(event);
-    if (this.hasValidOptions()) {
+    if (this.hasValidOptions(false)) {
       // not ctrl key pressed and not touch device; check if should scroll
       if (event && !event.ctrlKey && !Agent.isTouchDevice()) {
         var wheelDeltaY = event.wheelDelta
@@ -21124,7 +21124,7 @@ class Gantt extends TimeComponent {
    * Helper method to decide whether or not the options are valid.
    * @return {boolean} Whether this Gantt chart has valid options.
    */
-  hasValidOptions() {
+  hasValidOptions(validateData) {
     var hasValidMajorScale = this._majorAxis ? this._majorAxis.hasValidOptions() : true; // major axis optional
     var hasValidMinorScale = this._minorAxis && this._minorAxis.hasValidOptions();
     var hasValidStartAndEnd = this._start && this._end && this._end > this._start;
@@ -21137,16 +21137,63 @@ class Gantt extends TimeComponent {
       ? this._viewEndTime > this._start && this._viewEndTime <= this._end
       : true;
 
-    return (
+    var hasValidTasks = validateData ? this._isValidTasks() : this._hasValidTasks;
+    this._hasValidTasks = hasValidTasks;
+    var result =
       hasValidMajorScale &&
       hasValidMinorScale &&
       hasValidStartAndEnd &&
       hasValidViewport &&
       hasValidViewStart &&
-      hasValidViewEnd
-    );
+      hasValidViewEnd &&
+      hasValidTasks;
+
+    return result;
   }
 
+  _isValidTask(taskObj) {
+    const isValidTimeRange = (startTime, endTime) => {
+      if (startTime != null && endTime != null) {
+        return endTime >= startTime;
+      }
+      return true;
+    };
+    if (
+      (taskObj.startTime == null && taskObj.endTime == null) ||
+      !isValidTimeRange(taskObj.startTime, taskObj.endTime)
+    ) {
+      return false;
+    }
+
+    if (!isValidTimeRange(taskObj.baselineStartTime, taskObj.baselineEndTime)) {
+      return false;
+    }
+
+    if (!isValidTimeRange(taskObj.downtimeStartTime, taskObj.downtimeEndTime)) {
+      return false;
+    }
+
+    if (!isValidTimeRange(taskObj.overtimeStartTime, taskObj.overtimeEndTime)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  _isValidTasks() {
+    const rowObjs = this.getRowLayoutObjs();
+    for (let i = 0; i < rowObjs.length; i++) {
+      const rowObj = rowObjs[i];
+      const taskObjs = rowObj.taskObjs;
+      for (let j = 0; j < taskObjs.length; j++) {
+        const taskObj = taskObjs[j];
+        if (!this._isValidTask(taskObj)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
   /** ****************** Selection **********************/
   /**
    * Gets selection handler

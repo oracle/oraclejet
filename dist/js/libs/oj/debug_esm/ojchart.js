@@ -793,6 +793,15 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * <p>
  * The default height of the component will now respond to scaling with the current height equal to when scaling equals 'lg'.
  * </p>
+ * <h5>Drag mode icons</h5>
+ * <p>
+ * Corepack chart components (oj-c-line-chart, oj-c-area-chart) will use Redwood icons and JET buttons instead of the custom SVG buttons in oj-chart.
+ * </p>
+ * <h5> track-resize </h5>
+ * <p> For the initial version of oj-c-line-chart and oj-c-area-chart, track-resize attribute is not supported. The component will itself resize on change in dimension. </p>
+ * <h5 id="context-menu-migration"></h5>
+ * <h5> Context menu affordance </h5>
+ * <p> Corepack chart components (oj-c-line-chart, oj-c-area-chart) will have visual interaction affordance and keyboard support for context menus which does not exist in oj-chart. </p>
  * <h5>animation-on-data-change</h5>
  * <p>
  * For the initial version of oj-c-line-chart and oj-c-area-chart, animaton-on-data-change attribute is not supported. We plan on supporting this use case in a future release.
@@ -809,7 +818,6 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * <p>
  * For the initial version of oj-c-line-chart and oj-c-area-chart, coordinate-system attribute is not supported. We plan on supporting this use case in a future release.
  * </p>
- * <h5 id="context-menu-migration"></h5>
  * <h5>data-label</h5>
  * <p>
  * For the initial version of oj-c-line-chart and oj-c-area-chart, data-label attribute is not supported. We plan on supporting this use case in a future release.
@@ -817,10 +825,6 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * <h5>dnd</h5>
  * <p>
  * For the initial version of oj-c-line-chart and oj-c-area-chart, dnd attribute is not supported. We plan on supporting this use case in a future release.
- * </p>
- * <h5>drag-mode</h5>
- * <p>
- * For the initial version of oj-c-line-chart and oj-c-area-chart, drag-mode attribute is not supported. We plan on supporting this use case in a future release.
  * </p>
  * <h5>initial-zooming</h5>
  * <p>
@@ -836,38 +840,40 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * <p>
  * For the initial version of oj-c-line-chart and oj-c-area-chart, sorting attribute is not supported. We plan on supporting this use case in a future release.
  * </p>
- * <h5>split-dual-y</h5>
- * <p>
- * For the initial version of oj-c-line-chart and oj-c-area-chart, split-dual-y attribute is not supported. We plan on supporting this use case in a future release.
- * </p>
- * <h5>splitter-position</h5>
- * <p>
- * For the initial version of oj-c-line-chart and oj-c-area-chart, splitter-position attribute is not supported. We plan on supporting this use case in a future release.
- * </p>
- * <h5>stack-label</h5>
- * <p>
- * For the initial version of oj-c-line-chart and oj-c-area-chart, stack-label attribute is not supported. We plan on supporting this use case in a future release.
- * </p>
- * <h5>stack-label-provider</h5>
- * <p>
- * For the initial version of oj-c-line-chart and oj-c-area-chart, stack-label-provider attribute is not supported. We plan on supporting this use case in a future release.
- * </p>
  * <h5>zoom-direction</h5>
  * <p>
  * For the initial version of oj-c-line-chart and oj-c-area-chart, zoom-direction attribute is not supported. We plan on supporting this use case in a future release.
  * </p>
- * <h5>type</h5>
- * <p>
- * Corepack chart components (oj-c-line-chart, oj-c-area-chart) will not support the type attribute. Each type of chart will be broken down into separate core pack component.
- * </p>
- * <h5>touch-response</h5>
- * <p>
- * For the initial version of oj-c-line-chart and oj-c-area-chart, coordinate-system attribute is not supported. We plan on supporting this use case in a future release.
- * </p>
- * <h5> track-resize </h5>
- * <p> For the initial version of oj-c-line-chart and oj-c-area-chart, track-resize attribute is not supported. The component will itself resize on change in dimension. </p>
  * <h5> tooltip attribute and tooltipTemplate slot </h5>
- * <p> For the initial version of oj-c-line-chart and oj-c-area-chart, tooltip attribute and the tooltipTemplate slot are not supported. We plan on supporting this use case in a future release. </p>
+ * <p> For the initial version of oj-c-line-chart and oj-c-area-chart, tooltip attribute and the tooltipTemplate slot are not supported. We plan on supporting this use case in a future release.
+ * </p>
+ * <h5> ojSelectInput event </h5>
+ * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, ojSelectInput event is not supported. We plan on supporting this use case in a future release.
+ * </p>
+ * <h5> ojViewportChangeInput event </h5>
+ * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, ojViewportChangeInput event is not supported. We plan on supporting this use case in a future release.
+ * </p>
+ * <h5> getLegend method </h5>
+ * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, getLegend method is not supported. We plan on supporting this use case in a future release.
+ * </p>
+ * <h5> getPlotArea method </h5>
+ * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, getPlotArea method is not supported. We plan on supporting this use case in a future release.
+ * </p>
+ * <h5> getValuesAt method </h5>
+ * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, getValuesAt method is not supported. We plan on supporting this use case in a future release.
+ * </p>
+ * <h5> getXAxis method </h5>
+ * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, getXAxis method is not supported. We plan on supporting this use case in a future release.
+ * </p>
+ * <h5> getY2Axis method </h5>
+ * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, getY2Axis method is not supported. We plan on supporting this use case in a future release.
+ * </p>
+ * <h5> getYAxis method </h5>
+ * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, getYAxis method is not supported. We plan on supporting this use case in a future release.
+ * </p>
+ * <h5> getContextByNode method </h5>
+ * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, getContextByNode method is not supported. We plan on supporting this use case in a future release.
+ * </p>
  * @ojfragment migrationDoc
  * @memberof oj.ojChart
  */
@@ -3337,6 +3343,30 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  */
 
 /**
+ * If set to "on", the chart will attempt to reposition labels to reduce visual overlap. If set to "off", labels will remain in their specified data label position and may overlap. Only applies to scatter chart.
+ * @expose
+ * @name resolveLabelOverlap
+ * @ojtypedefmember
+ * @memberof! oj.ojChart.StyleDefaults
+ * @type {string=}
+ * @ojvalue {string} "on" Chart will try to rearrange the labels to reduce visual overlap.
+ * @ojvalue {string} "off" Labels will remain in their specified data label position and may overlap.
+ * @default "off"
+ */
+
+/**
+ * Specifies whether labels will be hidden to avoid overlap. Only applies to scatter chart.
+ * @expose
+ * @name hideOverlappingLabels
+ * @ojtypedefmember
+ * @memberof! oj.ojChart.StyleDefaults
+ * @type {string=}
+ * @ojvalue {string} "on" Chart will hide the overlapped label.
+ * @ojvalue {string} "off" Labels might overlap and won’t be hidden.
+ * @default "off"
+ */
+
+/**
  * Object type that specifies tooltip behavior for the series.
  * @ojtypedef oj.ojChart.SeriesValueFormat
  * @ojimportmembers oj.ojChartTooltipBehaviorProperties
@@ -3386,6 +3416,29 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedef oj.ojChart.LabelValueFormat
  * @ojimportmembers oj.ojChartValueFormatsProperties
  * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", for: "converter", jsdocOverride: true}
+ */
+
+/**
+ * A string representing the label that is displayed before the value in the tooltip. Only applies to scatter chart.
+ * @expose
+ * @name tooltipLabel
+ * @ojtypedefmember
+ * @memberof! oj.ojChart.LabelValueFormat
+ * @type {(string)=}
+ * @default null
+ * @ojtranslatable
+ */
+
+/**
+ * Whether the label is displayed in the tooltip. Only applies to scatter chart.
+ * @expose
+ * @name tooltipDisplay
+ * @ojtypedefmember
+ * @memberof! oj.ojChart.LabelValueFormat
+ * @type {string=}
+ * @ojvalue {string} "off" Label will not be displayed in the tooltip.
+ * @ojvalue {string} "on" Label will be displayed in the tooltip if provided.
+ * @default "on"
  */
 
 /**
@@ -3989,7 +4042,7 @@ var __oj_chart_metadata =
       "value": "cartesian"
     },
     "data": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -4721,6 +4774,14 @@ var __oj_chart_metadata =
             }
           }
         },
+        "hideOverlappingLabels": {
+          "type": "string",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "value": "off"
+        },
         "hoverBehaviorDelay": {
           "type": "number"
         },
@@ -4790,6 +4851,14 @@ var __oj_chart_metadata =
         "pieInnerRadius": {
           "type": "number",
           "value": 0
+        },
+        "resolveLabelOverlap": {
+          "type": "string",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "value": "off"
         },
         "selectionEffect": {
           "type": "string",
@@ -4901,6 +4970,9 @@ var __oj_chart_metadata =
           "type": "string"
         },
         "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataLabel": {
           "type": "string"
         },
         "labelDataVisualization": {
@@ -5132,6 +5204,17 @@ var __oj_chart_metadata =
                 "trillion"
               ],
               "value": "auto"
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "off",
+                "on"
+              ],
+              "value": "on"
+            },
+            "tooltipLabel": {
+              "type": "string"
             }
           }
         },
@@ -6810,7 +6893,7 @@ var __oj_spark_chart_metadata =
       "type": "string"
     },
     "data": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -7440,13 +7523,14 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent, {
      * @memberof oj.ojChart
      * @ojshortdesc An object defining the series and groups, when using a DataProvider to populate the chart data. Also accepts a Promise for deferred data rendering.
      * @instance
-     * @type {Object|null}
+     * @type {DataProvider|null}
      * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
      * @default null
      * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
      *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
      */
     data: null,
+
     /**
      * An array of <a href="#Series">Series</a> objects, used to define series labels and override series styles.
      * Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.
@@ -7461,6 +7545,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent, {
      * @default null
      */
     series: null,
+
     /**
      * An array of strings identifying the group labels, or an array of <a href="#Group">Group</a> objects specifying group labels and styles. Also accepts a Promise for deferred data rendering.
      *
@@ -8568,7 +8653,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent, {
      * @ojshortdesc Specifies the data for the spark chart. See the Help documentation for more information.
      * @memberof oj.ojSparkChart
      * @instance
-     * @type {Object|null}
+     * @type {DataProvider|null}
      * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
      * @default null
      * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
@@ -8835,6 +8920,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent, {
      * @memberof oj.ojSparkChart
      * @instance
      * @type {string=}
+     * @ojdeprecated {since: "19.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
      * @default ""
      *
      * @example <caption>Initialize the spark chart with the <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
@@ -8860,7 +8946,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent, {
      * @type {Object=}
      * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
      * @default {}
-     *
+     * @ojdeprecated {since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
      * @example <caption>Initialize the spark chart with the <code class="prettyprint">svg-style</code> attribute specified:</caption>
      * &lt;oj-spark-chart svg-style='{"fill":"url(someURL#filterId)"}'>&lt;/oj-spark-chart>
      *

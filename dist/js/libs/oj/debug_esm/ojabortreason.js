@@ -5,6 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+const getAbortReason = (element) => {
+    const componentTagName = element ? `<${element.tagName.toLowerCase()}>: ` : '';
+    const message = `${componentTagName}Aborting stale fetch for performance – a newer request has been issued`;
+    const newDOMException = new DOMException(message, 'AbortError');
+    newDOMException.severity = 'info';
+    return newDOMException;
+};
+
 /**
  * The AbortReason interface defines the exception contract that will be provided when JET components abort fetch requests.
  *
@@ -51,3 +59,5 @@
  * @name severity
  * @type {('error' | 'warn' | 'log' | 'info' | 'none')}
  */
+
+export { getAbortReason };

@@ -10,14 +10,20 @@ define(['exports', 'knockout', 'ojs/ojkeyset'], function (exports, ko, ojkeyset)
     class ObservableExpandedKeySet {
         constructor(initialValue) {
             this._proto = Object.create(ko.observable.fn);
+            // by default if initialValue wasn't specified then we create a ExpandedKeySet
             const _initialValue = initialValue || new ojkeyset.ExpandedKeySet();
             const _result = ko.observable(_initialValue);
             const self = this;
+            // mutation functions (needed to leave as function calls for arguments scope correctly)
             ko.utils.arrayForEach(['add', 'addAll', 'clear', 'delete'], function (methodName) {
                 self._proto[methodName] = function () {
+                    // Use "peek" to avoid creating a subscription in any computed that we're executing in the context of
+                    // (for consistency with mutating regular observables)
                     const underlyingKeySet = this.peek();
                     const methodCallResult = underlyingKeySet[methodName].apply(underlyingKeySet, arguments);
+                    // this should call valueWillMutate, update latestValue, valueHasMutate
                     this(methodCallResult);
+                    // the mutation methods always return a new KeySet so we should return the ObservableExpandedKeySet itself
                     return this;
                 };
             });
@@ -94,14 +100,20 @@ define(['exports', 'knockout', 'ojs/ojkeyset'], function (exports, ko, ojkeyset)
     class ObservableKeySet {
         constructor(initialValue) {
             this._proto = Object.create(ko.observable.fn);
+            // by default if initialValue wasn't specified then we create a KeySetImpl
             const _initialValue = initialValue || new ojkeyset.KeySetImpl();
             const _result = ko.observable(_initialValue);
             const self = this;
+            // mutation functions (needed to leave as function calls for arguments scope correctly)
             ko.utils.arrayForEach(['add', 'addAll', 'clear', 'delete'], function (methodName) {
                 self._proto[methodName] = function () {
+                    // Use "peek" to avoid creating a subscription in any computed that we're executing in the context of
+                    // (for consistency with mutating regular observables)
                     const underlyingKeySet = this.peek();
                     const methodCallResult = underlyingKeySet[methodName].apply(underlyingKeySet, arguments);
+                    // this should call valueWillMutate, update latestValue, valueHasMutate
                     this(methodCallResult);
+                    // the mutation methods always return a new KeySet so we should return the ObservableKeySet itself
                     return this;
                 };
             });

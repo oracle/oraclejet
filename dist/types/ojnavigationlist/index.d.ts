@@ -241,8 +241,16 @@ export interface ojTabBar<K, D> extends baseComponent<ojTabBarSettableProperties
         accessibleReorderBeforeItem?: string;
         /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         accessibleReorderTouchInstructionText?: string;
+        /** @deprecated since 19.0.0 - The Redwood design system does not allow this to be customized. */
+        labelActions?: string;
+        /** @deprecated since 19.0.0 - The Redwood design system does not allow this to be customized. */
+        labelContextMenu?: string;
         /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelCut?: string;
+        /** @deprecated since 19.0.0 - The Redwood design system does not allow this to be customized. */
+        labelMoveLeft?: string;
+        /** @deprecated since 19.0.0 - The Redwood design system does not allow this to be customized. */
+        labelMoveRight?: string;
         /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelPasteAfter?: string;
         /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
@@ -425,8 +433,16 @@ export interface ojTabBarSettableProperties<K, D> extends baseComponentSettableP
         accessibleReorderBeforeItem?: string;
         /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         accessibleReorderTouchInstructionText?: string;
+        /** @deprecated since 19.0.0 - The Redwood design system does not allow this to be customized. */
+        labelActions?: string;
+        /** @deprecated since 19.0.0 - The Redwood design system does not allow this to be customized. */
+        labelContextMenu?: string;
         /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelCut?: string;
+        /** @deprecated since 19.0.0 - The Redwood design system does not allow this to be customized. */
+        labelMoveLeft?: string;
+        /** @deprecated since 19.0.0 - The Redwood design system does not allow this to be customized. */
+        labelMoveRight?: string;
         /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */
         labelPasteAfter?: string;
         /** @deprecated since 18.0.0 - The Redwood design system does not allow this to be customized. */

@@ -5,14 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { bindingHandlers, computed, utils, computedContext, virtualElements, applyBindingsToDescendants, version, unwrap, ignoreDependencies, isObservable, isWriteableObservable, contextFor, cleanNode, observable, pureComputed } from 'knockout';
 import BindingProviderImpl from 'ojs/ojkoshared';
 import oj$1 from 'ojs/ojcore';
 import { isElementRegistered, isComposite, isVComponent, getMetadata } from 'ojs/ojcustomelement-registry';
-import { version, utils, unwrap, ignoreDependencies, computed, isObservable, isWriteableObservable, contextFor, computedContext, cleanNode, bindingHandlers, applyBindingsToDescendants, observable, pureComputed, virtualElements } from 'knockout';
 import * as DomUtils from 'ojs/ojdomutils';
 import { setInKoCleanExternal } from 'ojs/ojdomutils';
 import { error, info } from 'ojs/ojlogger';
-import { AttributeUtils, CustomElementUtils, JetElementError, OJ_BIND_CONVERTED_NODE, ElementUtils } from 'ojs/ojcustomelement-utils';
+import { AttributeUtils, CustomElementUtils, JetElementError, KoBindingUtils, OJ_BIND_CONVERTED_NODE, ElementUtils } from 'ojs/ojcustomelement-utils';
 import { performMonitoredWriteback } from 'ojs/ojmonitoring';
 import { CONSUMED_CONTEXT, getPropagationMetadataViaCache, STATIC_PROPAGATION } from 'ojs/ojbindpropagation';
 import KeySetImpl from 'ojs/ojkeysetimpl';
@@ -132,6 +132,75 @@ import * as ResponsiveKnockoutUtils from 'ojs/ojresponsiveknockoututils';
  * @ojfragment bindingOverviewDoc
  * @memberof BindingOverview
  */
+
+/**
+ * @ignore
+ */
+(function () {
+  bindingHandlers._ojBindIf_V2_ = {
+    // Valid valueAccessors:
+    //    boolean || {test: boolean, nodes: Node[], ojDoNotUseProcessed: true}
+    //
+    // When the value is a boolean value, then it is a regular oj-if or oj-bind-if usage with nodes provided as part of a DOM.
+    // The case should be processed the same way is it is done by knockout in makeWithIfBinding() method -
+    // the nodes copy is saved in savedNodes and used when test toogles its value.
+    //
+    // When the value is an object value, then we can expect an array of nodes provided via 'nodes' property.
+    // When nodes are external there is no need to save them locally on savedNodes.
+    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+      let didDisplayOnLastUpdate;
+      let savedNodes;
+
+      computed(
+        function () {
+          const value = utils.unwrapObservable(valueAccessor());
+          const preprocessedValue = value?.ojDoNotUseProcessed;
+          // When ojDoNotUseProcessed flag is present, it means that the value was preprocessed by JET,
+          // 'test' and 'nodes' properties are expected to be available and the 'nodes' prop contains external nodes.
+          const gotExternalNodes = preprocessedValue ? value.nodes : false;
+          const shouldDisplay = preprocessedValue
+            ? !!utils.unwrapObservable(value.test)
+            : !!value;
+          const isInitial = !savedNodes && !gotExternalNodes;
+
+          if (shouldDisplay === didDisplayOnLastUpdate) {
+            return;
+          }
+
+          let nodes;
+          if (gotExternalNodes) {
+            nodes = value.nodes;
+          } else {
+            if (isInitial && computedContext.getDependenciesCount()) {
+              savedNodes = utils.cloneNodes(
+                virtualElements.childNodes(element),
+                true /* shouldCleanNodes */
+              );
+            }
+            nodes = savedNodes;
+          }
+
+          if (shouldDisplay) {
+            if (!isInitial) {
+              virtualElements.setDomNodeChildren(element, utils.cloneNodes(nodes));
+            }
+
+            applyBindingsToDescendants(bindingContext, element);
+          } else {
+            virtualElements.emptyNode(element);
+          }
+
+          didDisplayOnLastUpdate = shouldDisplay;
+        },
+        null,
+        { disposeWhenNodeIsRemoved: element }
+      );
+
+      return { controlsDescendantBindings: true };
+    }
+  };
+  virtualElements.allowedBindings._ojBindIf_V2_ = true;
+})();
 
 BindingProviderImpl.addPostprocessor({
   nodeHasBindings: function (node, wrappedReturn) {
@@ -1420,42 +1489,22 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
   });
 
   function _replaceWithKo(node, bindableAttr, nodeAttr, stringify) {
-    var expr = _getExpression(node.getAttribute(nodeAttr), stringify);
+    var expr = KoBindingUtils.getExpressionForAttr(node, nodeAttr, stringify);
     if (!expr) {
       return undefined;
     }
 
-    var binding = 'ko ' + bindableAttr + ':' + expr;
+    const handler = bindableAttr === 'if' ? '_ojBindIf_V2_' : bindableAttr;
+    const binding = 'ko ' + handler + ':' + expr;
     return _getReplacementNodes(node, bindableAttr, binding);
   }
 
   function _replaceWithKoForEach(node) {
-    var dataValue = node.getAttribute('data');
-    var dataExp = AttributeUtils.getExpressionInfo(dataValue).expr;
-    if (!dataExp) {
-      try {
-        var literalValue = JSON.parse(dataValue);
-        if (Array.isArray(literalValue)) {
-          dataExp = dataValue;
-        } else {
-          throw new Error('got value ' + dataValue);
-        }
-      } catch (e) {
-        throw new Error(
-          'The value on the oj-bind-for-each data attribute should be either a JSON array or an expression : ' +
-            e
-        );
-      }
-    }
-
-    var asExp = _getExpression(node.getAttribute('as'), true);
-    if (!dataExp) {
+    const bindingStr = KoBindingUtils.createBindForEachHandlerStr(node);
+    if (!bindingStr) {
       return undefined;
     }
-
-    var binding = 'ko _ojBindForEach_:{data:' + dataExp;
-    binding += asExp ? ',as:' + asExp + '}' : '}';
-    return _getReplacementNodes(node, '_ojBindForEach_', binding);
+    return _getReplacementNodes(node, '_ojBindForEach_', bindingStr);
   }
 
   function _getReplacementNodes(node, bindableAttr, binding) {
@@ -1463,19 +1512,7 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
     // with all of the attribute info that was on the original DOM node.
     // <!--oj-bind-for-each data='[[users]]' -->
     var nodeName = node.tagName.toLowerCase();
-    var ojcommenttext = nodeName;
-    var attrs = node.attributes;
-    for (var i = 0; i < attrs.length; i++) {
-      // jsperf says string concat is faster than array join, but
-      // varies across browsers whether text += or text = text + is faster
-      // the below method is fastest on Chrome and not bad on FF
-      var attr = attrs[i];
-      ojcommenttext += ' ';
-      ojcommenttext += attr.name;
-      ojcommenttext += "='";
-      ojcommenttext += attr.value;
-      ojcommenttext += "'";
-    }
+    var ojcommenttext = KoBindingUtils.getNodeReplacementCommentStr(node);
 
     var parent = node.parentNode;
     var ojOpenComment = document.createComment(ojcommenttext);
@@ -1511,22 +1548,6 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
     newNodes.push(ojCloseComment);
 
     return newNodes;
-  }
-
-  function _getExpression(attrValue, stringify) {
-    if (attrValue != null) {
-      var exp = AttributeUtils.getExpressionInfo(attrValue).expr;
-      if (exp == null) {
-        if (stringify) {
-          exp = "'" + attrValue + "'";
-        } else {
-          exp = attrValue;
-        }
-      }
-      return exp;
-    }
-
-    return null;
   }
 
   function _setClassEvaluator(wrappedReturn, elem, value, bindingContext) {
@@ -2678,10 +2699,14 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
     getBindingAccessors: function (node, bindingContext, _wrappedReturn) {
       let wrappedReturn = _wrappedReturn;
       if (node.nodeType === 1 && node.localName === 'oj-if') {
-        const evaluator = _getEvaluator(node, bindingContext);
+        const testEvaluator = _getEvaluator(node, 'test', bindingContext);
+        const nodesEvaluator = _getEvaluator(node, 'oj-private-do-not-use', bindingContext);
         wrappedReturn = wrappedReturn || {};
-        wrappedReturn.if = () => {
-          return unwrap(evaluator(bindingContext));
+        wrappedReturn._ojBindIf_V2_ = () => {
+          const nodes = nodesEvaluator ? unwrap(nodesEvaluator(bindingContext)) : null;
+          return nodes
+            ? { test: unwrap(testEvaluator(bindingContext)), nodes, ojDoNotUseProcessed: true }
+            : unwrap(testEvaluator(bindingContext));
         };
         wrappedReturn.style = () => {
           return { display: 'contents' };
@@ -2691,11 +2716,13 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
     }
   });
 
-  function _getEvaluator(node, bindingContext) {
-    if (!node.hasAttribute('test')) {
+  function _getEvaluator(node, attr, bindingContext) {
+    if (attr === 'test' && !node.hasAttribute(attr)) {
       throw new Error("Missing the required 'test' attribute on <oj-if>");
+    } else if (!node.hasAttribute(attr)) {
+      return null;
     }
-    const attrValue = node.getAttribute('test');
+    const attrValue = node.getAttribute(attr);
     const exprInfo = AttributeUtils.getExpressionInfo(attrValue);
     return BindingProviderImpl.createEvaluator(
       exprInfo.expr ? exprInfo.expr : attrValue,
@@ -2873,16 +2900,16 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
  * @ojmaxitems 1
  * @memberof oj.ojBindForEach
  * @ojtemplateslotprops {}
- * @ojtemplateslotrendertype "RenderNoDataTemplate"
+ * @ojlegacymetadata templateSlotAlias "noDataTemplate"
  *
  * @ojtsexample <caption>Initialize the oj-bind-for-each with a noData slot specified:</caption>
  * &lt;oj-bind-for-each>
  *   &lt;template>
  *    &lt;oj-bind-text value="[[$current.data.name]]">&lt;/oj-bind-text>
- *   &lt;template>
+ *   &lt;/template>
  *   &lt;template slot='noData'>
  *     &lt;span>&lt;oj-button>Add item&lt;/span>
- *   &lt;template>
+ *   &lt;/template>
  * &lt;/oj-bind-for-each>
  */
 
@@ -3001,6 +3028,14 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
  * &lt;span>
  *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
  * &lt;/span>
+ */
+
+/**
+ * @license
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
  */
 
 export { ComponentBinding, ComponentChangeTracker, __ExpressionUtils };

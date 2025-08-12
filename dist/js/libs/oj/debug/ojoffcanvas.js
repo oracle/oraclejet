@@ -683,7 +683,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
         }
 
         // if there is an open modal dialog, do not autoDismiss
-        if (oj.ZOrderUtils.hasModalDialogOpen()) {
+        if (ojpopupcore.ZOrderUtils.hasModalDialogOpen()) {
           return;
         }
 
@@ -1992,6 +1992,16 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
     $(outerWrapper)
       .ojHammer(mOptions)
       .on('panstart', function (event) {
+        if (proceed) {
+          // stop touch event from bubbling to prevent for example pull to refresh from happening
+          event.gesture.srcEvent.stopPropagation();
+          // prevent page from scrolling
+          event.gesture.srcEvent.preventDefault();
+          // stop bubbling
+          event.stopPropagation();
+          return;
+        }
+
         direction = null;
 
         switch (event.gesture.direction) {

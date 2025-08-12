@@ -10,6 +10,9 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
+    /**
+     * Class that interacts with DataProvider on behalf of the component
+     */
     class StreamListContentHandler extends ojvcollection.IteratingDataProviderContentHandler {
         constructor(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions) {
             super(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions);
@@ -18,10 +21,15 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             this.callback = callback;
             this.scrollPolicy = scrollPolicy;
             this.scrollPolicyOptions = scrollPolicyOptions;
+            /**
+             * Invoked when the children DOM are inserted
+             * @override
+             */
             this.postRender = () => {
                 if (this.viewportResolveFunc) {
                     return;
                 }
+                // replace old cache with the new one once render completes
                 this.vnodesCache = this.newVnodesCache;
                 this.newVnodesCache = new Map();
                 const itemsRoot = this.root.lastElementChild;
@@ -80,9 +88,17 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             this.vnodesCache.clear();
             super.handleModelRefresh();
         }
+        /**
+         * Add an item to the root
+         * @override
+         * @param key
+         * @param index
+         * @param data
+         */
         addItem(key, index, data, visible) {
             const initialFetch = this.isInitialFetch();
             const currentItem = this.callback.getCurrentItem();
+            // make the first item current if none has focus
             if (currentItem == null && initialFetch && index == 0) {
                 this.callback.setCurrentItem(key);
             }
@@ -90,6 +106,10 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             this.decorateItem(vnodes, key, index, initialFetch, visible);
             return vnodes[0];
         }
+        /**
+         * Note we do not need to purge the cache as the ContentHandler is recreated everytime
+         * when component is refresh with new data
+         */
         renderItem(key, index, data) {
             const renderer = this.callback.getItemRenderer();
             const vnodes = renderer({ data, key });
@@ -98,6 +118,9 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             this.newVnodesCache.set(key, { vnodes: prunedVnodes });
             return prunedVnodes;
         }
+        /**
+         * Add attributes and classes to an item element
+         */
         decorateItem(vnodes, key, index, initialFetch, visible) {
             const vnode = vnodes[0];
             if (vnode != null) {
@@ -112,18 +135,31 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 this.setStyleClass(vnode, styleClasses);
             }
         }
+        /**
+         * Determines the style class for the item
+         * @param visible
+         * @param isNew
+         * @param animate
+         */
         getItemStyleClass(visible, isNew, animate) {
             const styleClass = [];
             styleClass.push('oj-stream-list-item');
             if (animate) {
+                //styleClass.push('oj-stream-list-entrance-animation');
             }
             return styleClass;
         }
+        /**
+         * Render skeletons for load more cards at the bottom
+         */
         renderSkeletonsForLoadMore() {
             return this.callback.renderSkeletons(3);
         }
     }
 
+    /**
+     * Class that interacts with DataProvider on behalf of the component
+     */
     class StreamListTreeContentHandler extends ojvcollection.IteratingTreeDataProviderContentHandler {
         constructor(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions) {
             super(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions);
@@ -132,7 +168,12 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             this.callback = callback;
             this.scrollPolicy = scrollPolicy;
             this.scrollPolicyOptions = scrollPolicyOptions;
+            /**
+             * Invoked when the children DOM are inserted
+             * @override
+             */
             this.postRender = () => {
+                // replace old cache with the new one once render completes
                 this.vnodesCache = this.newVnodesCache;
                 this.newVnodesCache = new Map();
                 const itemsRoot = this.root.lastElementChild;
@@ -197,9 +238,17 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 });
             }
         }
+        /**
+         * Add an item to the root
+         * @override
+         * @param key
+         * @param index
+         * @param data
+         */
         addItem(metadata, index, data, visible) {
             const initialFetch = this.isInitialFetch();
             const currentItem = this.callback.getCurrentItem();
+            // make the first item current if none has focus
             if (currentItem == null && initialFetch && index == 0) {
                 this.callback.setCurrentItem(metadata.key);
             }
@@ -207,6 +256,10 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             this.decorateItem(vnodes, metadata, index, initialFetch, visible);
             return vnodes[0];
         }
+        /**
+         * Note we do not need to purge the cache as the ContentHandler is recreated everytime
+         * when component is refresh with new data
+         */
         renderItem(metadata, index, data) {
             const key = metadata.key;
             let renderer;
@@ -229,6 +282,9 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             this.newVnodesCache.set(key, { vnodes: prunedVnodes });
             return prunedVnodes;
         }
+        /**
+         * Add attributes and classes to an item element
+         */
         decorateItem(vnodes, metadata, index, initialFetch, visible) {
             const vnode = vnodes[0];
             if (vnode != null) {
@@ -253,6 +309,12 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 }
             }
         }
+        /**
+         * Determines the style class for the item
+         * @param visible
+         * @param isNew
+         * @param animate
+         */
         getItemStyleClass(metadata, visible, isNew, animate) {
             const styleClass = [];
             if (!metadata.isLeaf) {
@@ -262,12 +324,19 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 styleClass.push('oj-stream-list-item');
             }
             if (animate) {
+                //styleClass.push('oj-stream-list-entrance-animation');
             }
             return styleClass;
         }
+        /**
+         * Render skeletons for load more cards at the bottom
+         */
         renderSkeletonsForLoadMore() {
             return this.callback.renderSkeletons(3);
         }
+        /**
+         * Render skeletons for load more cards at the bottom
+         */
         renderSkeletonsForExpand(key) {
             return this.callback.renderSkeletons(this.getLoadMoreCount(), true, key);
         }
@@ -280,6 +349,120 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var StreamList_1;
+    /**
+     * @classdesc
+     * <h3 id="streamListOverview-section">
+     *   JET StreamList
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#streamListOverview-section"></a>
+     * </h3>
+     * <p>Description: The JET StreamList displays data in an activity stream feed.</p>
+     * <pre class="prettyprint">
+     * <code>//StreamList with a DataProvider
+     * &lt;oj-stream-list data="[[dataProvider]]">
+     * &lt;/oj-stream-list>
+     * </code></pre>
+     *  <h3 id="a11y-section">
+     *   Accessibility
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+     *  </h3>
+     *
+     * <h3 id="touch-section">
+     *   Touch End User Information
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+     * </h3>
+     *
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Gesture</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>Item</td>
+     *       <td><kbd>Tap</kbd></td>
+     *       <td>Focus on the item.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * <h3 id="keyboard-section">
+     *   Keyboard End User Information
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+     * </h3>
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Key</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td rowspan="6" nowrap>Item</td>
+     *       <td><kbd>UpArrow</kbd></td>
+     *       <td>Move focus to the previous item according to the data order.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>DownArrow</kbd></td>
+     *       <td>Move focus to the next item according to the data order.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>F2</kbd></td>
+     *       <td>Enters Actionable mode. This enables keyboard action on elements inside the item, including navigate between focusable elements inside the item. It can also be used to exit actionable mode if already in actionable mode.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Esc</kbd></td>
+     *       <td>Exits Actionable mode.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Tab</kbd></td>
+     *       <td>When in Actionable Mode, navigates to next focusable element within the item.  If the last focusable element is reached, shift focus back to the first focusable element.
+     *           When not in Actionable Mode, navigates to next focusable element on the page (outside of the component).</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Shift+Tab</kbd></td>
+     *       <td>When in Actionable Mode, navigates to previous focusable element within the item.  If the first focusable element is reached, shift focus back to the last focusable element.
+     *           When not in Actionable Mode, navigates to previous focusable element on the page (outside of the component).</td>
+     *     </tr>
+     *     <tr>
+     *       <td rowspan="2" nowrap>Group Item</td>
+     *       <td><kbd>LeftArrow</kbd></td>
+     *       <td>Collapse the current item if it is expanded and is collapsible.  For non-hierarchical data, do nothing.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>RightArrow</kbd></td>
+     *       <td>Expand the current item if it has children and is expandable.  For non-hierarchical data, do nothing.</td>
+     *     </tr>
+     *   </tbody>
+     *   </tbody>
+     * </table>
+     *
+     * @typeparam {object} K Type of key of the dataprovider
+     * @typeparam {object} D Type of data from the dataprovider
+     * @ojmetadata description "A stream list displays data in an activity stream feed."
+     * @ojmetadata displayName "Stream List"
+     * @ojmetadata main "ojs/ojstreamlist"
+     * @ojmetadata extension {
+     *   "oracle": {
+     *     "icon": "oj-ux-ico-tables-basic",
+     *     "uxSpecs": ["activity-stream"]
+     *   },
+     *   "vbdt": {
+     *     "module": "ojs/ojstreamlist"
+     *   },
+     *   "themes": {
+     *     "unsupportedThemes": [
+     *       "Alta"
+     *     ]
+     *   }
+     * }
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/19/reference-api/oj.ojStreamList.html"
+     * @ojmetadata since "9.0.0"
+     */
     exports.StreamList = StreamList_1 = class StreamList extends preact.Component {
         constructor(props) {
             super(props);
@@ -291,8 +474,10 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 this._clearFocusoutTimeout();
                 const target = event.target;
                 const item = target.closest('.oj-stream-list-item, .oj-stream-list-group');
+                // on focus in if we have a focusable element that is the target let it handle focus
                 if (item && this._isFocusable(target, item)) {
                     this._enterActionableMode(target);
+                    // otherwise if we have a currentItem and are not actionable make sure it is properly focused
                 }
                 else if (this.currentItem && !this.actionableMode) {
                     this.focusInHandler(this.currentItem);
@@ -301,9 +486,11 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             this._handleFocusOut = () => {
                 this._clearFocusoutTimeout();
                 if (this.actionableMode) {
+                    // set timeout to stay in editable/actionable mode if focus comes back into the listview
                     this._focusoutTimeout = setTimeout(function () {
                         this._doBlur();
                     }.bind(this), 100);
+                    // event.relatedTarget would be null if focus out of page
                 }
                 else if (!this._isFocusBlurTriggeredByDescendent(event)) {
                     this._doBlur();
@@ -327,6 +514,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                         case DataCollectionUtils.KEYBOARD_KEYS._LEFT_IE:
                         case DataCollectionUtils.KEYBOARD_KEYS._RIGHT:
                         case DataCollectionUtils.KEYBOARD_KEYS._RIGHT_IE: {
+                            // left/right arrow;
                             if (this.currentItem.classList.contains(this.getGroupStyleClass())) {
                                 const group = this.currentItem;
                                 const key = this.contentHandler.getKey(group);
@@ -344,6 +532,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                         }
                         case DataCollectionUtils.KEYBOARD_KEYS._UP:
                         case DataCollectionUtils.KEYBOARD_KEYS._UP_IE: {
+                            // up arrow;
                             if (this.actionableMode === false) {
                                 next = this.currentItem.previousElementSibling;
                                 while (next &&
@@ -356,6 +545,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                         }
                         case DataCollectionUtils.KEYBOARD_KEYS._DOWN:
                         case DataCollectionUtils.KEYBOARD_KEYS._DOWN_IE: {
+                            // down arrow;
                             if (this.actionableMode === false) {
                                 next = this.currentItem.nextElementSibling;
                                 while (next &&
@@ -367,6 +557,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                             break;
                         }
                         case DataCollectionUtils.KEYBOARD_KEYS._F2: {
+                            // F2;
                             event.stopPropagation();
                             if (this.actionableMode === false) {
                                 this._enterActionableMode();
@@ -378,12 +569,14 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                         }
                         case DataCollectionUtils.KEYBOARD_KEYS._ESCAPE:
                         case DataCollectionUtils.KEYBOARD_KEYS._ESCAPE_IE: {
+                            // esc;
                             if (this.actionableMode === true) {
                                 this._exitActionableMode(true);
                             }
                             break;
                         }
                         case DataCollectionUtils.KEYBOARD_KEYS._TAB: {
+                            // tab or shift+tab;
                             if (this.actionableMode === true && this.currentItem) {
                                 if (event.shiftKey) {
                                     if (DataCollectionUtils.handleActionablePrevTab(event, this.currentItem)) {
@@ -476,6 +669,8 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 }
                 else if (data != null) {
                     content = this.contentHandler.render(data);
+                    // before we render new data, check if we need to restore focus afterwards
+                    // don't want to reapply focus if it is actionable
                     if (this.currentItem &&
                         this.currentItem.contains(document.activeElement) &&
                         !this.actionableMode) {
@@ -490,17 +685,25 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 return (jsxRuntime.jsx(ojvcomponent.Root, { ref: this.setRootElement, children: jsxRuntime.jsx("div", { role: "list", "data-oj-context": true, tabIndex: 0, "aria-label": Translations.getTranslatedString('oj-ojStreamList.msgFetchingData'), children: content }) }));
             }
             else {
-                return (jsxRuntime.jsx(ojvcomponent.Root, { ref: this.setRootElement, children: jsxRuntime.jsx("div", { role: this._isTreeData() ? 'tree' : 'list', "data-oj-context": true, "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, children: content }) }));
+                return (jsxRuntime.jsx(ojvcomponent.Root, { ref: this.setRootElement, children: jsxRuntime.jsx("div", { role: this._isTreeData() ? 'tree' : 'list', "data-oj-context": true, "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'], "aria-describedby": this.props['aria-describedby'], onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, children: content }) }));
             }
         }
         _doBlur() {
             if (this.actionableMode) {
                 this._exitActionableMode(false);
             }
+            // on focus out from component remove relevant styles
             if (this.currentItem) {
                 this.focusOutHandler(this.currentItem);
             }
         }
+        /**
+         * Determine whether the event is triggered by interaction with element inside ListView
+         * Note that Firefox 48 does not support relatedTarget on blur event, see
+         * _supportRelatedTargetOnBlur method
+         * @param {Event} event the focus or blur event
+         * @return {boolean} true if focus/blur is triggered by interaction with element within listview, false otherwise.
+         */
         _isFocusBlurTriggeredByDescendent(event) {
             if (event.relatedTarget === undefined) {
                 return true;
@@ -512,6 +715,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
         }
         _renderInitialSkeletons(count, shouldScroll) {
             if (shouldScroll) {
+                // make sure we reset scroller in case of refresh
                 const scroller = this._getScroller();
                 if (scroller != null && scroller === this.root) {
                     scroller.scrollTop = 0;
@@ -535,11 +739,16 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             }
             return skeletons;
         }
+        /**
+         * Renders a single skeleton item
+         * @private
+         */
         _renderSkeleton(indented, key) {
             let className = 'oj-stream-list-skeleton';
             if (indented) {
                 className += ' oj-stream-list-child-skeleton';
             }
+            // key here is just for vdom so no need to set it on the actual DOM as no retrieval needed
             return (jsxRuntime.jsx("div", { class: className, children: jsxRuntime.jsx("div", { class: "oj-stream-list-skeleton-content oj-animation-skeleton" }) }, key));
         }
         _applySkeletonExitAnimation(skeletons) {
@@ -557,6 +766,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
         }
         _isTreeData() {
             const data = this.props.data;
+            //revisit the tree check pending the refactor Jira for DataProviderFeatureChecker
             return data != null && this.instanceOfTreeDataProvider(data);
         }
         instanceOfTreeDataProvider(object) {
@@ -573,8 +783,10 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 }.bind(this));
             }
             else if (data != null) {
+                // give ContentHandler a chance to do things like figuring out position of items
                 this.contentHandler.postRender();
             }
+            // vdom components can re-render often but that should not change actionable mode
             const items = this.root.querySelectorAll('.oj-stream-list-item, .oj-stream-list-group');
             if (!this.actionableMode) {
                 this._disableAllTabbableElements(items);
@@ -593,16 +805,20 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             return (...args) => {
                 const next = () => callback(...args);
                 clearTimeout(timeout);
-                timeout = setTimeout(next, wait);
+                timeout = setTimeout(next, wait); // @HTMLUpdateOK
             };
         }
         componentDidMount() {
             const data = this.props.data;
             if (this._isTreeData()) {
-                this.contentHandler = new StreamListTreeContentHandler(this.root, data, this, this.props.scrollPolicy, this._getScrollPolicyOptions());
+                this.contentHandler = new StreamListTreeContentHandler(this.root, data, 
+                // funky cast to avoid exposing interface methods as public API
+                this, this.props.scrollPolicy, this._getScrollPolicyOptions());
             }
             else if (data != null) {
-                this.contentHandler = new StreamListContentHandler(this.root, data, this, this.props.scrollPolicy, this._getScrollPolicyOptions());
+                this.contentHandler = new StreamListContentHandler(this.root, data, 
+                // funky cast to avoid exposing interface methods as public API
+                this, this.props.scrollPolicy, this._getScrollPolicyOptions());
             }
             this.height = this.root.clientHeight;
             const skeleton = this.root.querySelector('.oj-stream-list-skeleton');
@@ -610,6 +826,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 this.skeletonHeight = this.outerHeight(skeleton);
                 this._delayShowSkeletons();
             }
+            // register a ResizeObserver (note ResizeObserver is not in lib.dom.ts yet...)
             if (window['ResizeObserver']) {
                 const root = this.root;
                 const resizeObserver = new window['ResizeObserver'](this._debounce((entries) => {
@@ -629,6 +846,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 resizeObserver.observe(root);
                 this.resizeObserver = resizeObserver;
             }
+            // tie into the jet focusable contract for adding oj-focus and oj-focus-highlight
             DomUtils.makeFocusable({
                 applyHighlight: true,
                 setupHandlers: (focusInHandler, focusOutHandler) => {
@@ -637,6 +855,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                     this.focusOutHandler = noJQHandlers.focusOut;
                 }
             });
+            // add passive touchstart listener
             const root = this.getRootElement();
             if (root) {
                 root.addEventListener('touchstart', (event) => this._touchStartHandler(event), {
@@ -667,8 +886,11 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
         }
         _delayShowSkeletons() {
             window.setTimeout(() => {
+                // see if we have data yet, if not updateState to trigger rendering of skeletons
                 const data = this.getData();
                 if (data == null) {
+                    // 50 is the maximum number of skeletons that we will render, which should fill the viewport
+                    // we could reduce the number based on viewport height
                     this.setState({
                         initialSkeleton: true,
                         initialSkeletonCount: Math.max(1, Math.floor(this.height / this.skeletonHeight))
@@ -719,11 +941,17 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                     expandingKeys: new ojkeyset.KeySetImpl()
                 });
                 if (this._isTreeData()) {
-                    this.contentHandler = new StreamListTreeContentHandler(this.root, this.props.data, this, this.props.scrollPolicy, this._getScrollPolicyOptions());
+                    this.contentHandler = new StreamListTreeContentHandler(this.root, this.props.data, 
+                    // funky cast to avoid exposing interface methods as public API
+                    this, this.props.scrollPolicy, this._getScrollPolicyOptions());
+                    // show skeletons if delay has passed
                     this._delayShowSkeletons();
                 }
                 else if (this.props.data != null) {
-                    this.contentHandler = new StreamListContentHandler(this.root, this.props.data, this, this.props.scrollPolicy, this._getScrollPolicyOptions());
+                    this.contentHandler = new StreamListContentHandler(this.root, this.props.data, 
+                    // funky cast to avoid exposing interface methods as public API
+                    this, this.props.scrollPolicy, this._getScrollPolicyOptions());
+                    // show skeletons if delay has passed
                     this._delayShowSkeletons();
                 }
             }
@@ -734,6 +962,28 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                     !oj.Object.compareValues(this.props.scrollPosition, StreamList_1.defaultProps.scrollPosition))) {
                 this._syncScrollTopWithProps();
             }
+        }
+        // override to skip rendering if scrollPosition prop is the only thing that changed
+        shouldComponentUpdate(nextProps, nextState) {
+            if (nextProps.scrollPosition !== this.props.scrollPosition &&
+                this.lastInternalScrollPositionUpdate === nextProps.scrollPosition) {
+                Object.keys(nextProps).forEach((prop) => {
+                    if (prop !== 'scrollPosition' && this.props[prop] !== nextProps[prop]) {
+                        return true;
+                    }
+                });
+                Object.keys(nextState).forEach((state) => {
+                    if (this.state[state] !== nextState[state]) {
+                        // note toCollapse an new empty array is set all the time, see getDerivedStateFromProps
+                        if (state !== 'toCollapse' ||
+                            (Array.isArray(this.state[state]) && this.state[state].length > 0)) {
+                            return true;
+                        }
+                    }
+                });
+                return false;
+            }
+            return true;
         }
         static getDerivedStateFromProps(props, state) {
             let { expandedToggleKeys, expandingKeys, renderedData, expandedSkeletonKeys, lastExpanded } = state;
@@ -752,6 +1002,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                     const itemExpanded = itemMetadata.expanded;
                     const isExpanded = newExpanded.has(key);
                     if (itemExpanded && !isExpanded) {
+                        // don't remove on first loop
                         toCollapse.push(key);
                         itemMetadata.expanded = false;
                     }
@@ -819,12 +1070,13 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             const key = scrollPosition.key;
             if (key) {
                 const parent = scrollPosition.parentKey;
-                const item = this._getItemByKey(key, parent);
+                const item = this._getItemByKey(key, parent); // find element by key
                 if (item != null) {
                     const root = this.root;
                     scrollTop = item.offsetTop - root.offsetTop;
                 }
                 else {
+                    // does not exists or not fetched yet
                     return;
                 }
                 const offsetY = scrollPosition.offsetY;
@@ -838,10 +1090,12 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                     scrollTop = y;
                 }
                 else {
+                    // invalid value
                     return;
                 }
             }
             if (scrollTop > this._getScroller().scrollHeight) {
+                // invalid value
                 return;
             }
             this._getScroller().scrollTop = scrollTop;
@@ -873,6 +1127,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 if (typeof scroller === 'string') {
                     scroller = document.querySelector(scroller);
                 }
+                // only cross browser way to guarantee scroll events
                 if (scroller === document.body || scroller === document.documentElement) {
                     return window;
                 }
@@ -886,6 +1141,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 if (typeof scroller === 'string') {
                     scroller = document.querySelector(scroller);
                 }
+                // edge doesn't allow scrolling on documentElement
                 if (scroller === document.documentElement && scroller !== document.scrollingElement) {
                     return document.body;
                 }
@@ -920,6 +1176,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             }
             return elementDetail;
         }
+        // ContentHandlerCallback implementation
         isAvailable() {
             return this.contentHandler != null;
         }
@@ -1001,7 +1258,9 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 let next = this.currentItem.nextElementSibling;
                 if (!next)
                     next = this.currentItem.previousElementSibling;
+                // only update the focus if next is not null
                 if (next) {
+                    // set the focus to next only when active element is in streamlist
                     this._updateCurrentItemAndFocus(next, this.root.contains(document.activeElement));
                 }
             }
@@ -1010,6 +1269,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             const target = event.target;
             const item = target.closest('.oj-stream-list-item, .oj-stream-list-group');
             if (item) {
+                // click on input element inside item should trigger actionable mode
                 if (this._isFocusable(target, item)) {
                     this._updateCurrentItemAndFocus(item, false);
                     this._enterActionableMode(target);
@@ -1051,6 +1311,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             return found;
         }
         _resetFocus(item, resetActionable) {
+            // allow this method to be call commonly so entering actionable mode can remove tabindex and styles
             if (this.actionableMode && resetActionable) {
                 this._exitActionableMode(false);
             }
@@ -1060,6 +1321,9 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
         _setFocus(item, shouldFocus) {
             item.tabIndex = 0;
             if (shouldFocus) {
+                // note this can lead to a case where focus is going to apply style a second time
+                // need to call this here though for the case where the item is activeElement already
+                // but re-render called, in that case focus won't trigger focusin
                 this.focusInHandler(item);
                 item.focus();
             }
@@ -1073,16 +1337,25 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             this.setCurrentItem(newCurrentItemKey);
             this._setFocus(newCurrentItem, shouldFocus);
         }
+        /**
+         * Checks whether the item is in the viewport
+         * @param item
+         */
         _isInViewport(item) {
             const itemElem = item;
             const top = itemElem.offsetTop;
             const scrollTop = this._getScroller().scrollTop;
             return top >= scrollTop && top <= scrollTop + this.height;
         }
+        /**
+         * Restore the current item
+         * @param items an array of rendered items
+         */
         _restoreCurrentItem(items) {
             if (this.currentKey != null) {
                 for (const curr of items) {
                     const itemKey = this.contentHandler.getKey(curr);
+                    // when itemKey is given from dataset then it is a string, but currentkey can be a number
                     if (itemKey == this.currentKey) {
                         const elem = curr;
                         if (this.restoreFocus && this._isInViewport(elem)) {
@@ -1099,6 +1372,9 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             }
             this.restoreFocus = false;
         }
+        /**
+         * Update all tabbable elements within each item so they are no longer tabbable
+         */
         _disableAllTabbableElements(items) {
             items.forEach((item) => {
                 const busyContext = Context.getContext(item).getBusyContext();
@@ -1107,16 +1383,23 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
                 });
             });
         }
+        /**
+         * Enter the actionable mode where user can tab through all tabbable elements within the current item
+         */
         _enterActionableMode(target) {
             this.actionableMode = true;
             if (this.currentItem) {
                 const elems = DataCollectionUtils.enableAllFocusableElements(this.currentItem, true);
                 if (target == null && elems && elems.length > 0) {
                     elems[0].focus();
+                    // calls focusout handler and sets tabindex
                     this._resetFocus(this.currentItem, false);
                 }
             }
         }
+        /**
+         * Exit the actionable mode
+         */
         _exitActionableMode(shouldFocus) {
             this.actionableMode = false;
             if (this.currentItem) {
@@ -1156,7 +1439,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
             done: currentData.done
         };
     };
-    exports.StreamList._metadata = { "properties": { "data": { "type": "object" }, "expanded": { "type": "object", "writeback": true }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "string|Element" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "any" }, "offsetY": { "type": "number" }, "parentKey": { "type": "any" } }, "writeback": true } }, "slots": { "groupTemplate": { "data": {} }, "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["expanded", "scrollPosition"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "aria-labelledby"] } };
+    exports.StreamList._metadata = { "properties": { "data": { "type": "object" }, "expanded": { "type": "object", "writeback": true }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "string|Element" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "string|number" }, "offsetY": { "type": "number" }, "parentKey": { "type": "string|number" } }, "writeback": true } }, "slots": { "groupTemplate": { "data": {} }, "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["expanded", "scrollPosition"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "aria-labelledby", "aria-describedby"] } };
     exports.StreamList = StreamList_1 = __decorate([
         ojvcomponent.customElement('oj-stream-list')
     ], exports.StreamList);

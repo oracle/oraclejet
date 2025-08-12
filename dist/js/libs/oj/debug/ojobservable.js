@@ -7,6 +7,18 @@
  */
 define(['exports'], function (exports) { 'use strict';
 
+    /**
+     * A behavior subject implementation of observable
+     * @class BehaviorSubject
+     *
+     * @classdesc a internal class behavior subject implementation of observable
+     * @constructor
+     * @hideconstructor
+     * @ojignore
+     * @ojtsignore
+     * @param {any} value
+     * @since 7.0.0
+     */
     const BehaviorSubject = function (value) {
         this.observers = [];
         this._value = value;

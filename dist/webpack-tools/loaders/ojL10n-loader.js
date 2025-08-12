@@ -38,29 +38,50 @@
  */
 
 const path = require("path");
-const fs = require("fs");
+const hash = require('crypto');
 const vm = require('vm');
+
+const {setBundlesForId} = require('../shared/mediator');
+const {stringifyWithFunctions, isObject} = require('../shared/bundleUtils');
 
 
 module.exports = function ojL10nLoader(source) {
 
   const opts = this.options||{};
   const loaderOpts = opts.ojL10nLoader||{};
-  const locale = loaderOpts.locale||'en-US';
+  const locale = loaderOpts.locale ?? 'en-US';
 
+  const baseName = path.basename(this.resourcePath);
+  const dir = path.dirname(this.resourcePath);
 
   this.cacheable();
   // tell Webpack that this loader can be executed asynchronously. The results will be provided via the returned callback
   const callback = this.async();
 
+  if (locale === 'multi') {
+    // The bundle Id is constructed by concatenating the file name of the translation bundle with the hex hash computed from the bundle's path.
+    // This appraoch allows us to preserve the identifiable bundle name while turning the unique path into an opaque hash.
+    const id = `${baseName}_${hash.createHash('md5').update(dir).digest('hex')}`;
+
+    const mergedBundles = _mergeBundles(this, dir, baseName, source).then((bundleMap) => {
+      setBundlesForId(id, bundleMap);
+      callback(null, `import {getTranslationBundle} from '@oracle/oraclejet/dist/webpack-tools/src-multi-locale/bootstrap.js';
+      export default getTranslationBundle('${id}');`);
+    });
+    return;
+  }
+
+
+  // Otherwise execute old plugin code to merge and return the bundle for a particular locale.
+
   // Execute the root bundle as JavaScript
-  let bundle = _execBundle(source);
+
+  let bundle = _executeBundle(source);
 
   const parts = _getLocaleParts(locale);
 
-  let toMerge = [];
   let toLoad = [];
-  let root;
+  let root = {};
 
   const rootVal = bundle['root'];
   // Check whether the 'root' translations are specified inline or in a separate file
@@ -70,8 +91,6 @@ module.exports = function ojL10nLoader(source) {
   else {
     root = rootVal;
   }
-
-  root = root||{};
 
   let localeBlock = "";
   // Go through each locale part and check the corresponding flag in the root bundle
@@ -83,125 +102,20 @@ module.exports = function ojL10nLoader(source) {
     }
   });
 
-  let loadCount = toLoad.length;
 
-  // Store the private _ojLocale_ flag since the current Date converter implementation (incorrectly) relies on it
+  // Store the private _ojLocale_ flag that is used by Config.getConfig()
   root._ojLocale_ = parts.join('-');
 
-  if (loadCount === 0) {
+  if (toLoad.length === 0) {
     callback(null, _getModuleContent(root));
     return;
   }
 
-  let hasErrors = false;
+  toMergePromises = toLoad.map((loc) => _loadLocaleBundle(this, dir, baseName, loc));
 
-  const baseName = path.basename(this.resourcePath);
-  const dir = path.dirname(this.resourcePath);
+  Promise.all(toMergePromises).then((toMerge) =>
+      callback(null, _getModuleContent(_mergeDeep(root, toMerge)))).catch((err) => callback(err));
 
-  let index = 0;
-  toLoad.forEach(item=>{
-    let name = path.resolve(dir, item + '/' + baseName);
-    this.addDependency(name);
-
-    fs.readFile(name, "utf8", ((i/*index provided by the .bind() call*/, err, content)=>{
-      if (hasErrors) {
-        return;
-      }
-      if (err) {
-        hasErrors = true;
-        callback(err);
-        return;
-      }
-      toMerge[i] = _execBundle(content);
-      loadCount--;
-      // Once all bundles are read and executed as JavaScript, merge them together
-      if (loadCount === 0) {
-        callback(null, _getModuleContent(_mergeParts(root, toMerge)));
-      }
-    }).bind(null, index++) // current index will be provided as the first parameter to the callback
-    );
-  }
-  );
-
-}
-
-/**
- * Evaluates bundle source as JavaScript
- * @param {string} src
- */
-function _execBundle(src) {
-  const sandbox = {
-    define : ret => ret
-  };
-
-  const context = vm.createContext(sandbox);
-
-  const script = new vm.Script(src);
-  return script.runInContext(context);
-}
-
-/**
- * @return CommonJS-style source of the resulting bundle
- * @param {*} obj
- */
-function _getModuleContent(obj) {
-  return 'module.exports=' + _stringifyWithFunctions(obj);
-}
-
-/**
- * Allow functions in bundle values while delegating to JSON.stringify() for everything else
- * @param {*} obj
- */
-function _stringifyWithFunctions(obj) {
-  if (Array.isArray(obj)) {
-    const vals = obj.map(val => {
-      return _stringifyWithFunctions(val);
-    });
-    return `[${vals.join(',')}]`;
-  } else if (_isObject(obj)) {
-    const vals = Object.keys(obj).map(key => {
-      return `${JSON.stringify(key)}:${_stringifyWithFunctions(obj[key])}`;
-    });
-    return `{${vals.join(',')}}`;
-  } else if (typeof obj === 'function') {
-    return String(obj);
-  } else {
-    return JSON.stringify(obj);
-  }
-}
-
-
-function _mergeParts(target, toMerge) {
-  const len  = toMerge.length;
-
-  if (len === 0)
-    return target;
-
-
-   return _mergeDeep.apply(null, [target].concat(toMerge));
-
-}
-
-function _isObject(item) {
-  return (item && typeof item === 'object' && !Array.isArray(item));
-}
-
-function _mergeDeep(target, ...sources) {
-  if (!sources.length) return target;
-  const source = sources.shift();
-
-  if (_isObject(target) && _isObject(source)) {
-    for (const key in source) {
-      if (_isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
-        _mergeDeep(target[key], source[key]);
-      } else {
-        Object.assign(target, { [key]: source[key] });
-      }
-    }
-  }
-
-  return _mergeDeep(target, ...sources);
 }
 
 /**
@@ -267,4 +181,129 @@ function _normalizeLocaleParts(parts) {
   }
 
   parts.splice(1, 0, scriptTag);
+}
+
+
+
+/**
+ * @return CommonJS-style source of the resulting bundle
+ * @param {*} obj
+ */
+function _getModuleContent(obj) {
+  return 'module.exports=' + stringifyWithFunctions(obj);
+}
+
+
+/**
+ * Evaluates bundle source as JavaScript
+ * @param {string} src
+ */
+function _executeBundle(src) {
+  const exports = {};
+  const sandbox = {
+    define: (arg0, arg1) => arg1? arg1(null, exports)||exports.default: arg0
+  };
+
+  const context = vm.createContext(sandbox);
+  const script = new vm.Script(src);
+  return script.runInContext(context);
+}
+
+
+function _mergeDeep(target, sources) {
+  if (!sources.length) return target;
+  const source = sources.shift();
+
+  if (isObject(target) && isObject(source)) {
+    for (const key in source) {
+      if (isObject(source[key])) {
+        if (!target[key]) Object.assign(target, { [key]: {} });
+        _mergeDeep(target[key], [source[key]]);
+      } else {
+        Object.assign(target, { [key]: source[key] });
+      }
+    }
+  }
+  return _mergeDeep(target, sources);
+}
+
+
+function _getCompleteLocaleSet(rootBundle) {
+  const keys = Object.keys(rootBundle);
+  const locales = keys.filter((key) => {
+    if (key.match(/^[a-z]{2,3}(-.+)?$/)) {
+      const val = rootBundle[key];
+      return val === 1 || val === true;
+    }
+    return false;
+  });
+  return new Set(locales);
+}
+
+/**
+ * @returns Promise<Map<string, Map<string, object>>> - a Promise for a Map with the keys being unique bundle Ids, and the values being Maps whose keys are supported locales
+ * (including 'root', and the values are objects representing the merged translation bundles
+ */
+async function _mergeBundles(loader/* ojL10n-loader instance*/, dir, baseName, source) {
+  const localeBundles = new Map();
+
+  const rootBundle = _executeBundle(source);
+  const definedLocalesSet = _getCompleteLocaleSet(rootBundle);
+
+  let rootTranslations = rootBundle['root'];
+  if (rootTranslations === 1 || rootTranslations === true) {
+    rootTranslations = _loadLocaleBundle(loader, dir, baseName, 'root');
+  }
+
+  const rootValue = await rootTranslations;
+  localeBundles.set('root', rootValue);
+
+  // BCP-47 locales may have up to 3 parts separated by '-'
+  // we need to order the defined locales to have the locales with fewer parts
+  // appear first.  Locales with more parts may depend on locales with fewer parts
+  // (as 'pt-PT' depends 'pt'), so locales with fewer parts needed to be cached earlier.
+
+  const definedLocaleParts = Array.from(definedLocalesSet).map(loc => loc.split('-'));
+  const sortedDefinedLocales = definedLocaleParts.sort((parts0, parts1) => parts0.length-parts1.length);
+
+
+  // Produce value objects for the sorted defined locales
+  const valueObjects = await Promise.all(sortedDefinedLocales.map( async (parts) => {
+    const locale = parts.join('-');
+    const bundle = await _loadLocaleBundle(loader, dir, baseName, locale);
+    return {locale, bundle, parts};
+  }));
+
+  valueObjects.forEach(({locale, bundle, parts}) => {
+    const toMerge = [rootValue];
+    for (let i = 0; i < parts.length-1; i++) {
+      const loc = parts.slice(0, i + 1).join('-');
+      const b = localeBundles.get(loc);
+      if (b) {
+        toMerge.push(b)
+      }
+    }
+    toMerge.push(bundle);
+    const merged = _mergeDeep({}, toMerge);
+    localeBundles.set(locale, merged);
+  });
+
+  return localeBundles;
+}
+
+
+async function _loadLocaleBundle(loader, dir, basename, locale) {
+  const fullPath = path.resolve(dir, locale, basename);
+  loader.addDependency(fullPath);
+
+  return new Promise((resolve, reject) => {
+    loader.loadModule(fullPath, (err, source) =>
+    {
+      if(err) {
+        reject(err);
+      } else {
+        resolve(_executeBundle(source));
+      }
+    });
+  });
 }

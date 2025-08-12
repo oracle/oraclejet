@@ -49,7 +49,7 @@ export interface ojTreeView<K, D> extends baseComponent<ojTreeViewSettableProper
     selected: KeySet<K>;
     /** @deprecated since 8.0.0 - Use selected attribute instead. */
     selection: K[];
-    selectionMode: 'none' | 'single' | 'multiple' | 'leafOnly';
+    selectionMode: 'none' | 'single' | 'multiple' | 'multipleToggle' | 'leafOnly' | 'leafOnlyToggle';
     translations: {
         receivedDataAria?: string;
         retrievingDataAria?: string;
@@ -224,7 +224,7 @@ export interface ojTreeViewSettableProperties<K, D> extends baseComponentSettabl
     selected: KeySet<K>;
     /** @deprecated since 8.0.0 - Use selected attribute instead. */
     selection: K[];
-    selectionMode: 'none' | 'single' | 'multiple' | 'leafOnly';
+    selectionMode: 'none' | 'single' | 'multiple' | 'multipleToggle' | 'leafOnly' | 'leafOnlyToggle';
     translations: {
         receivedDataAria?: string;
         retrievingDataAria?: string;

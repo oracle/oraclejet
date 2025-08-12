@@ -8,8 +8,13 @@
 import * as Translations from 'ojs/ojtranslation';
 import { DateTimeUtils } from '@oracle/oraclejet-preact/UNSAFE_IntlDateTime';
 
+// This class is used to validate that a local date (a date with no time element) falls within
+// the range specified by min and max. If it doesn't, a ValidatorError is thrown.
 class LocalDateRangeValidator {
     constructor(options) {
+        // Throw error if min, max are not date iso strings.
+        // Throw error if min > max
+        // min/max should be undefined/null or a local date. It shouldn't be ''.
         if (!DateTimeUtils.isDateOnlyIsoString(options.min) ||
             !DateTimeUtils.isDateOnlyIsoString(options.max)) {
             throw new Error('If min/max are defined, they must be a date-only iso string.');
@@ -25,6 +30,7 @@ class LocalDateRangeValidator {
         this.rangeUnderflowMessageDetail = options.rangeUnderflowMessageDetail;
         this.formatObj = options.formatObj;
     }
+    // Validates the minimum + maximum conditions. If the value is null, just return.
     validate(value) {
         const messageDetailRangeOverflow = this.rangeOverflowMessageDetail;
         const messageDetailRangeUnderflow = this.rangeUnderflowMessageDetail;
@@ -47,6 +53,7 @@ class LocalDateRangeValidator {
                 maxStr = this.formatObj.format(max);
             }
             if (min && max) {
+                // range
                 if ((LocalDateRangeValidator._compareDateOnlyIsoString(value, min) >= 0 &&
                     LocalDateRangeValidator._compareDateOnlyIsoString(value, max) <= 0) ||
                     LocalDateRangeValidator._compareDateOnlyIsoString(min, max) > 0) {
@@ -54,11 +61,13 @@ class LocalDateRangeValidator {
                 }
             }
             else if (min) {
+                // only min
                 if (LocalDateRangeValidator._compareDateOnlyIsoString(value, min) >= 0) {
                     return value;
                 }
             }
             else if (!max || LocalDateRangeValidator._compareDateOnlyIsoString(value, max) <= 0) {
+                // max only
                 return value;
             }
             throw new Error();
@@ -90,6 +99,9 @@ class LocalDateRangeValidator {
             throw new Error(error[1]);
         }
     }
+    // Returns a message to be used as a hint.
+    // TODO: Redwood does not show hints. Do we care to have a hint? Our legacy Validators contract has getHint but
+    // a new Validators contract shouldn't have hint, imo.
     getHint() {
         let hint;
         const min = this.min;
@@ -112,6 +124,13 @@ class LocalDateRangeValidator {
         }
         return hint;
     }
+    /**
+     * @param {string} isoStr1 first iso string
+     * @param {string} isoStr2 second iso string
+     * @return {number} the time difference between isoStr and isoStr2 in ms.
+     * @private
+     * @static
+     */
     static _compareDateOnlyIsoString(isoStr1, isoStr2) {
         return new Date(isoStr1) - new Date(isoStr2);
     }

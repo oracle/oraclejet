@@ -24,7 +24,7 @@ import { ArrayDataProviderImpl, getCapability, createOptimizedKeySet, createOpti
  * @final
  * @class ArrayDataProvider
  * @implements DataProvider
- * @classdesc This class implements {@link DataProvider}.
+ * @classdesc Note usage of {@link MutableArrayDataProvider} is preferred over ArrayDataProvider as it removes the dependency on knockout. This class implements {@link DataProvider}.
  *            Object representing data available from an array or observableArray. If a plain array is used then it is considered to be immutable.
  *            If an observableArray is used then for mutations, please use the observableArray functions or always call valueHasMutated() if
  *            mutating the underlying array. The decision on whether to use an array or observableArray should therefore be guided
@@ -352,7 +352,10 @@ class ArrayDataProvider {
                     ? options.keys.map((key) => JSON.stringify(key))
                     : options.keys;
         }
-        this._impl = new ArrayDataProviderImpl({
+        this._impl = new ArrayDataProviderImpl(
+        // VB ADP + ADP2 don't specify keyAttributes or idAttribute until activate() gets called
+        // so we have to do our normalization of these options lazily.
+        {
             ...options,
             get keyAttributes() {
                 return options?.keyAttributes ?? options?.idAttribute;
@@ -379,9 +382,15 @@ class ArrayDataProvider {
     fetchByOffset(params) {
         return this._impl.fetchByOffset(params);
     }
+    /**
+     * Fetch the first block of data
+     */
     fetchFirst(params) {
         return this._impl.fetchFirst(params);
     }
+    /**
+     * Determines whether this DataProvider supports certain feature.
+     */
     getCapability(capabilityName) {
         return getCapability(capabilityName);
     }
@@ -394,28 +403,48 @@ class ArrayDataProvider {
     isEmpty() {
         return this._impl.isEmpty();
     }
+    /**
+     * Return an empty Set which is optimized to store keys
+     */
     createOptimizedKeySet(initialSet) {
         return createOptimizedKeySet(initialSet);
     }
+    /**
+     * Returns an empty Map which will efficiently store Keys returned by the DataProvider
+     */
     createOptimizedKeyMap(initialMap) {
         return createOptimizedKeyMap(initialMap);
     }
+    /**
+     * Get the rows data, unwrapping observableArray if needed.
+     */
     _getRowData() {
         return unwrapArrayIfNeeded(this.data);
     }
+    /**
+     * Get the keys, unwrapping observableArray if needed.
+     */
     _getKeys() {
         return unwrapArrayIfNeeded(this._keys);
     }
+    /**
+     * If observableArray, then subscribe to it
+     */
     _subscribeObservableArray(data) {
         if (!(data instanceof Array)) {
             if (!this._isObservableArray(data)) {
+                // we only support Array or ko.observableArray
                 throw new Error('Invalid data type. ArrayDataProvider only supports Array or observableArray.');
             }
+            // subscribe to observableArray arrayChange event to get individual updates
             data['subscribe']((changes) => this._impl.queueMutationEvent(changes), null, 'arrayChange');
             data['subscribe']((changes) => this._impl.flushQueue(), null, 'change');
         }
     }
     _getKeyForDelete(change, generatedKeys) {
+        // ArrayDataProvider might receive array changes containing deletes before any
+        // fetch has been issued.  In this case, it never generated a key for the original
+        // array and must derive it from the data in the change
         let id = this._impl.getId(change.value);
         if (id == null) {
             if (generatedKeys) {
@@ -427,9 +456,15 @@ class ArrayDataProvider {
         }
         return id;
     }
+    /**
+     * Check if observableArray
+     */
     _isObservableArray(obj) {
         return typeof obj === 'function' && obj.subscribe && !(obj['destroyAll'] === undefined);
     }
+    /**
+     * Generate keys array if it wasn't passed in options.keys
+     */
     _generateKeysIfNeeded(generateKeys) {
         if (this._keys == null) {
             this._keys = generateKeys();
@@ -437,6 +472,9 @@ class ArrayDataProvider {
         }
         return false;
     }
+    /**
+     * Apply sort comparators
+     */
     _getSortComparator(sortCriteria) {
         return (x, y) => {
             const sortComparators = this.options != null ? this.options.sortComparators : null;
@@ -462,6 +500,9 @@ class ArrayDataProvider {
             return 0;
         };
     }
+    /**
+     * Merge sort criteria
+     */
     _mergeSortCriteria(sortCriteria) {
         const implicitSort = this.options != null ? this.options.implicitSort : null;
         if (implicitSort != null) {

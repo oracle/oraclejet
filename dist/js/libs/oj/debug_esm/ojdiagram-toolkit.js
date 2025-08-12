@@ -1392,7 +1392,7 @@ class DvtDiagramLink extends Container {
 
     //remove content if the new and old content do not match, the new content might be null
     if (this._customLinkContent && processedContent != this._customLinkContent) {
-      // BUG: JET-31495 - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
+      //  - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
       // When renderer function creates content which is different from the initial content, the initial content
       // is removed from the DOM which breaks the touch events.
       // To fix this, the initial content is added to the touch event container before it can be safely destroyed
@@ -2213,12 +2213,12 @@ class DvtDiagramLink extends Container {
         animationHandler.getAnimDur()
       );
       for (var ix = 0; ix < fadeInItems.length; ix++) {
-        var item = fadeInItems[ix];
+        const item = fadeInItems[ix];
         ToolkitUtils.setAttrNullNS(item, 'opacity', '0');
-        var opacitySetter = (val) => {
+        const opacitySetter = (val) => {
           ToolkitUtils.setAttrNullNS(item, 'opacity', val);
         };
-        var opacityGetter = () => {
+        const opacityGetter = () => {
           var value = ToolkitUtils.getAttrNullNS(item, 'opacity');
           return Number(value);
         };
@@ -3574,7 +3574,7 @@ class DvtDiagramNode extends Container {
 
     //remove content if the new and old content do not match, the new content might be null
     if (this._customNodeContent && nodeContent != this._customNodeContent) {
-      // BUG: JET-31495 - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
+      //  - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
       // When renderer function creates content which is different from the initial content, the initial content
       // is removed from the DOM which breaks the touch events.
       // To fix this, the initial content is added to the touch event container before it can be safely destroyed
@@ -10065,7 +10065,7 @@ class Diagram extends PanZoomComponent {
     this._nodesPane = new Container(context);
     this._topPane = new Container(context);
 
-    // BUG JET-31495 - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
+    //  - IMPOSSIBLE TO REMOVE HOVER TREATMENT AND TOOLTIP, WHEN INLINE TEMPLATE IS USED
     // Create a layer for storing touch event source elements temporarily when needed
     // so as to not break the events
     if (Agent.isTouchDevice()) {

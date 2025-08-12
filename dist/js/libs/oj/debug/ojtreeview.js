@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojkeyset', 'ojs/ojselector', 'ojdnd', 'ojs/ojcustomelement-utils', 'ojs/ojdatacollection-common', 'ojs/ojtranslation'], function (require, oj, $, Context, ThemeUtils, ojcomponentcore, ojanimation, DomUtils, Logger, ojconfig, ojkeyset, ojselector, ojdnd, ojcustomelementUtils, DataCollectionUtils, Translations) { 'use strict';
+define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojkeyset', 'ojs/ojselector', 'ojdnd', 'ojs/ojcustomelement-utils', 'ojs/ojdatacollection-common', 'ojs/ojtranslation', 'ojs/ojset'], function (require, oj, $, Context, ThemeUtils, ojcomponentcore, ojanimation, DomUtils, Logger, ojconfig, ojkeyset, ojselector, ojdnd, ojcustomelementUtils, DataCollectionUtils, Translations, OjSet) { 'use strict';
 
   function _interopNamespace(e) {
     if (e && e.__esModule) { return e; } else {
@@ -29,6 +29,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
+  OjSet = OjSet && Object.prototype.hasOwnProperty.call(OjSet, 'default') ? OjSet['default'] : OjSet;
 
   class TreeviewSelectionManager {
     constructor(
@@ -43,35 +44,72 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
       this.keyAttr = attributesMap.keyAttributes;
       this.childrenAttr = attributesMap.childrenAttribute;
 
-      // Generates Map(parentKey: parentData) and set of all keys from raw data
-      const populateParentKeyNodeMap = (data, parentKeyNodeMap, allKeys) => {
+      // Generates Map(parentKey: parentData), Map(key: parentKey) and set of all keys from raw data
+      const populateParentKeyNodeMap = (
+        data,
+        parentKeyNodeMap,
+        allKeys,
+        keyParentKeyMap,
+        parentKey
+      ) => {
         data.forEach((child) => {
-          allKeys.add(child[this.keyAttr]);
+          const key = child[this.keyAttr];
+          allKeys.add(key);
+          keyParentKeyMap.set(key, parentKey);
           if (child[this.childrenAttr] && child[this.childrenAttr].length > 0) {
-            parentKeyNodeMap.set(child[this.keyAttr], child);
-            populateParentKeyNodeMap(child[this.childrenAttr], parentKeyNodeMap, allKeys);
+            parentKeyNodeMap.set(key, child);
+            populateParentKeyNodeMap(
+              child[this.childrenAttr],
+              parentKeyNodeMap,
+              allKeys,
+              keyParentKeyMap,
+              key
+            );
           }
         });
       };
+      // a Map(key: parentKey)
+      this.keyParentKeyMap = this.createOptimizedKeyMap();
+      // a Map(parentKey: parentData)
       this.parentKeyNodeMap = this.createOptimizedKeyMap();
       this.allKeys = this.createOptimizedKeySet();
-      populateParentKeyNodeMap(this.data, this.parentKeyNodeMap, this.allKeys);
+      populateParentKeyNodeMap(
+        this.data,
+        this.parentKeyNodeMap,
+        this.allKeys,
+        this.keyParentKeyMap,
+        null
+      );
     }
 
     // Computes actual selection from given set of keys. Previous keys optional for diffing.
-    computeSelection(currentKeySet, previousKeySet = new ojkeyset.KeySetImpl()) {
+    computeSelection(
+      currentKeySet,
+      previousKeySet = new ojkeyset.KeySetImpl(),
+      isLeafOnlyToggle = false,
+      toggleSelectionAnchor
+    ) {
       // Derive the set of leaves that becomes selected
       const currentKeys = this.normalizeKeySet(currentKeySet);
       const previousKeys = this.normalizeKeySet(previousKeySet);
       const newKeys = currentKeys.delete(previousKeys.values());
       const oldKeys = previousKeys.delete(currentKeys.values());
       const deselectedLeaves = this.reduceToLeaves(oldKeys.values());
+      const deselectedParents = [...oldKeys.values()].filter((key) => this.parentKeyNodeMap.has(key));
       const selectedLeaves = this.createOptimizedKeySet(
         new Set(
           [
             ...[...currentKeys.values()].filter((key) => !this.parentKeyNodeMap.has(key)),
             ...this.reduceToLeaves(newKeys.values())
-          ].filter((key) => !deselectedLeaves.has(key))
+          ].filter(
+            (key) =>
+              !deselectedLeaves.has(key) ||
+              // check whether the leaf is a descendant of a deselected parent, if so then remove the leaf, if not check whether the leaf is the toggleSelectionAnchor
+              (isLeafOnlyToggle &&
+                deselectedParents.find(
+                  (pKey) => this.isDescendant(key, pKey) || key !== toggleSelectionAnchor
+                ) === undefined)
+          )
         )
       );
 
@@ -160,6 +198,15 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
     // Normalizes given keyset (e.g. if it's an AllKeySetImpl) to a KeySetImpl
     normalizeKeySet(keySet) {
       return keySet.isAddAll() ? new ojkeyset.KeySetImpl(this.allKeys).delete(keySet.deletedValues()) : keySet;
+    }
+
+    // Check whether the leaf is a descendant of a parent
+    isDescendant(leafKey, parentKey) {
+      let currParentKey = this.keyParentKeyMap.get(leafKey);
+      while (currParentKey !== parentKey && currParentKey !== null) {
+        currParentKey = this.keyParentKeyMap.get(currParentKey);
+      }
+      return currParentKey !== null;
     }
   }
 
@@ -477,15 +524,11 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
    *       <td>Toggles the selection of the current item and deselects the other items.</td>
    *     </tr>
    *     <tr>
-   *       <td><kbd>Enter</kbd></td>
-   *       <td>Selects the current item and deselects the other items. No op if the current item is already selected.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl+Space/Enter / CMD+Space/Enter</kbd></td>
+   *       <td><kbd>Ctrl+Space / CMD+Space</kbd></td>
    *       <td>Toggles the selection of the current item while maintaining previously selected items. Only applicable if the multiple or leafOnly selection is enabled.</td>
    *     </tr>
    *     <tr>
-   *       <td><kbd>Shift+Space/Enter</kbd></td>
+   *       <td><kbd>Shift+Space</kbd></td>
    *       <td>Selects contiguous items from the last selected item to the current item. Only applicable if the multiple or leafOnly selection is enabled.</td>
    *     </tr>
    *     <tr>
@@ -1047,16 +1090,16 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         /**
          * <p>The type of selection behavior that is enabled on the TreeView. This attribute controls the number of selections that can be made via selection gestures at any given time.
          *
-         * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the TreeView's selection styling will be applied to all items specified by the <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes.
-         * If <code class="prettyprint">multiple</code> is specified <a href="oj.ojSelector.html">oj-selectors</a> will also be rendered by default.
+         * <p>If the specified value is not <code class="prettyprint">none</code>, selection gestures will be enabled, and the TreeView's selection styling will be applied to all items specified by the <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes.
+         * If <code class="prettyprint">multiple</code> or <code class="prettyprint">multipleToggle</code> is specified <a href="oj.ojSelector.html">oj-selectors</a> will also be rendered by default.
          * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the TreeView's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes.
-         * If <code class="prettyprint">leafOnly</code> is specified, the selection consists only of leaves, from which parent selection states are derived.<a href="oj.ojSelector.html">oj-selectors</a> will be rendered by default and the selection states of the items will be cascaded, which means that:</p>
+         * If <code class="prettyprint">leafOnly</code> or <code class="prettyprint">leafOnlyToggle</code> is specified, the selection consists only of leaves, from which parent selection states are derived.<a href="oj.ojSelector.html">oj-selectors</a> will be rendered by default and the selection states of the items will be cascaded, which means that:</p>
          * <ul>
          *   <li>If a parent item is selected, then all the descendants will be selected automatically.</li>
          *   <li>If a parent item is unselected, then all the descendants will be unselected automatically.</li>
          *   <li>If a parent item has a mixture of selected and unselected descendants, and redwood is enabled then it will display a partially selected state.</li>
          * </ul>
-         * <p> Note: In order to compute the selection, in selectionMode <code>leafOnly</code> the treeview will trigger continuous fetches until it has the complete data set.
+         * <p> Note: In order to compute the selection, in selectionMode <code>leafOnly</code> or <code class="prettyprint">leafOnlyToggle</code> the treeview will trigger continuous fetches until it has the complete data set.
          * We do not recommend using this mode with large data sets and currently mutations are not supported in this mode.</p>
          * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> or <a href="#selected">selected</a> attributes.
          *
@@ -1068,8 +1111,10 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
          * @default "none"
          * @ojvalue {string} "none" Selection is disabled.
          * @ojvalue {string} "single" Only a single item can be selected at a time.
-         * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
-         * @ojvalue {string} "leafOnly" Multiple items can be selected but children items control the parent's selection state.
+         * @ojvalue {string} "multiple" Multiple items can be selected at the same time with the 'replace' selection behavior. For example, clicking on an already selected item will not affect that item's selection, and clicking on a non-selected item will select that item and deselect any other previously selected items. In order to perform additive selections, users can click on selector checkboxes, use spacebar, or ctrl/cmd click on individual items to perform 'toggle' selection gestures.
+         * @ojvalue {string} "multipleToggle" Multiple items can be selected at the same time with the 'toggle' selection behavior. For example, clicking on an already selected item will deselect that item, and clicking on any non-selected item will select that item without affecting any previously selected items.
+         * @ojvalue {string} "leafOnly" Multiple items can be selected with the 'replace' selection behavior, but children items control the parent's selection state.
+         * @ojvalue {string} "leafOnlyToggle" Multiple items can be selected with the 'toggle' selection behavior, but children items control the parent's selection state.
          *
          * @example <caption>Initialize the TreeView with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
          * &lt;oj-tree-view selection-mode='multiple'>&lt;/oj-tree-view>
@@ -1404,6 +1449,19 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         this._syncSelectionState();
       },
       /**
+       * Remove draggable item from item content due to some issues with screen readers
+       * @private
+       */
+      _removeDraggableFromItemContent: function (targetElem) {
+        if (this._draggableAdded) {
+          var itemContent = this._getClosestItemContent(targetElem);
+          if (itemContent) {
+            itemContent.removeAttribute('draggable');
+            delete this._draggableAdded;
+          }
+        }
+      },
+      /**
        * Syncs initial selection state with selected being source of truth
        * @private
        */
@@ -1424,7 +1482,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
       _render: function () {
         var self = this;
         this.element[0].classList.remove(this.constants.OJ_COMPLETE);
-        this._keyList = new Set(); // list of existing node keys
+        this._keyList = new OjSet(); // list of existing node keys
         var ulElementList = this.element[0].querySelectorAll('ul');
         var i;
         if (this.options.data) {
@@ -1435,12 +1493,19 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             var fetchListResult = response.values[0];
             self._truncateIfOverMaxCount(fetchListResult.value);
             var params = { fetchListResult: fetchListResult.value, parentElem: self.element[0] };
-            self._renderItems(params).then(function () {
-              self._resetFocus();
-              self.element[0].classList.add(self.constants.OJ_COMPLETE);
-              self._decorateTree();
-              self._lastSelectedItem = null;
-            });
+            self
+              ._renderItems(params)
+              .then(function () {
+                self._resetFocus();
+                self.element[0].classList.add(self.constants.OJ_COMPLETE);
+                self._decorateTree();
+                self._lastSelectedItem = null;
+              })
+              .then(() => {
+                self._transferAriaProperty('aria-label');
+                self._transferAriaProperty('aria-labelledby');
+                self._transferAriaProperty('aria-describedby');
+              });
           });
         } else {
           for (i = 0; i < ulElementList.length; i++) {
@@ -1465,6 +1530,24 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             this._initLeafOnlySelectionMode();
           }
           this.element[0].classList.add(this.constants.OJ_COMPLETE);
+        }
+      },
+      /**
+       * A helper function that transfers the aria-lable and aria-describedby from oj-tree-view to the ul root element
+       * @param {string} property aria-lable or aria-describedby
+       * @private
+       */
+      _transferAriaProperty: function (property) {
+        const value = this.element[0].getAttribute(property);
+        if (value) {
+          // save the value so that we can set it back when TreeView refresh
+          this[property] = value;
+        }
+
+        const root = this._getRoot();
+        if (this[property] && root) {
+          root.setAttribute(property, this[property]); // @HTMLUpdateOK
+          this.element[0].removeAttribute(property);
         }
       },
       _buildStaticRawData: function (rawData, subtree) {
@@ -1532,7 +1615,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                     self._changeStatusMessage(null, false);
                     self._renderInitialSkeletons();
                   } else if (
-                    !rootMap &&
+                    (!rootMap || rootMap.length === 0) &&
                     !self._isParentSkeletonRendered(parentKey) &&
                     !self._isLeafOnlySelectionEnabled()
                   ) {
@@ -1712,6 +1795,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
       _renderItems: function (params) {
         return new Promise(
           function (resolve) {
+            let isThereAnyExpandableItem = false;
             var ulElem = document.createElement('ul');
             ulElem.classList.add(this.constants.OJ_TREEVIEW_LIST);
             ulElem.setAttribute('role', 'group');
@@ -1725,6 +1809,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             params.parentElem.appendChild(ulElem); // @HTMLUpdateOK
             for (var i = 0; i < params.fetchListResult.data.length; i++) {
               this._renderItem(ulElem, params.fetchListResult, i);
+              if (params.fetchListResult.data[i].children) {
+                isThereAnyExpandableItem = true;
+              }
             }
             if (
               skeletonContainer &&
@@ -1733,6 +1820,16 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             ) {
               this._toggleParentDisplay(params.parentElem, resolve);
             } else {
+              /* We check if leaf only selection is enabled, if we are on the main level and if there is no expandable item.
+                 Initiating leafOnlySelection mode is done on expand/collapse method if leaf only selection is enabled, but if there is no expand/collapse
+                 We do it immediatly here. */
+              if (
+                this._isLeafOnlySelectionEnabled() &&
+                this._getRoot() === ulElem &&
+                !isThereAnyExpandableItem
+              ) {
+                this._initLeafOnlySelectionMode();
+              }
               resolve();
             }
           }.bind(this)
@@ -1891,7 +1988,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         // Prevent infinite recursion due to duplicated keys ()
         if (!replace) {
           if (this._keyList.has(key)) {
-            throw new Error('JET TreeView nodes should not have duplicated keys: ' + key);
+            return;
           }
           this._keyList.add(key);
         }
@@ -2088,7 +2185,6 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
               self._focusOutHandler($(self._getItemContent(self._currentItem)));
             });
           root.setAttribute('role', 'tree');
-          root.setAttribute('aria-labelledby', this.element[0].getAttribute('id'));
 
           var selectionMode = this.options.selectionMode;
           if (selectionMode !== 'none') {
@@ -2107,7 +2203,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           // programmatically setting focus treeview should also handle focus
           this.element[0].setAttribute('tabIndex', -1);
           this.element[0].addEventListener('focus', () => {
-            this._getRoot().focus();
+            if (!this._mouseDownOutsideAnyGroupOrItem) {
+              this._getRoot().focus();
+            }
           });
           this.element[0].addEventListener('blur', () => {
             this._getRoot().blur();
@@ -2115,12 +2213,33 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           this._refreshTopAndBottomSelectionClasses();
         }
       },
-      _isMultiSelectionEnabled: function () {
+      _isMultipleReplace: function () {
         return this.options.selectionMode === 'multiple';
       },
-      _isLeafOnlySelectionEnabled: function () {
+      _isMultipleToggle: function () {
+        return this.options.selectionMode === 'multipleToggle';
+      },
+      _isMultiSelectionEnabled: function () {
+        return this._isMultipleReplace() || this._isMultipleToggle();
+      },
+
+      _isLeafOnlyReplace: function () {
         return this.options.selectionMode === 'leafOnly';
       },
+      _isLeafOnlyToggle: function () {
+        return this.options.selectionMode === 'leafOnlyToggle';
+      },
+      _isLeafOnlySelectionEnabled: function () {
+        return this._isLeafOnlyReplace() || this._isLeafOnlyToggle();
+      },
+
+      _isReplaceSelection: function () {
+        return this._isMultipleReplace() || this._isLeafOnlyReplace();
+      },
+      _isToggleSelection: function () {
+        return this._isMultipleToggle() || this._isLeafOnlyToggle();
+      },
+
       _isDefaultCheckBoxesEnabled: function () {
         var defaults = this._getOptionDefaults();
         return (
@@ -2221,6 +2340,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                   } else {
                     currentSelected = currentSelected.add([event.target.rowKey]);
                     this._selectionAnchor = event.target.rowKey;
+                    if (this._isToggleSelection()) {
+                      this._toggleSelectionAnchor = event.target.rowKey;
+                    }
                   }
                   this._userSelectedOptionChange(currentSelected, event);
                 }
@@ -2259,8 +2381,10 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         // Initial selection
         this._select(item);
 
-        // DnD
-        itemContent.setAttribute('draggable', this._isDnD() ? 'true' : 'false');
+        // DnD. Draggable attribute is added dynamically on desktop devices
+        if (DomUtils.isTouchSupported()) {
+          itemContent.setAttribute('draggable', this._isDnD() ? 'true' : 'false');
+        }
 
         // Create disclosure icon or spacer
         var disclosureIcon = this._getItemDisclosureIcon(itemContent);
@@ -2306,18 +2430,10 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         // 0 index the depth for style purposes
         let depth = this._getDepth(item) - 1;
         const spacerStyle = spacer.style;
-        const isRedwood = ThemeUtils.parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
-        let paddingOffset = 0;
-        if (this._hasIcon(item) && isRedwood) {
-          /* in redwood treeview icons have margin-inline-end: 0.5rem to add space between icon and text,
-            if our items have icons we need to add 0.5 * depth to spacer to properly align them */
-          paddingOffset = depth * this.constants.TREEVIEW_CONTENT_PADDING_REM;
-        }
         if (this._isLeaf(item)) {
           depth += 1;
         }
-        spacerStyle.width =
-          'calc(calc(' + depth + ' * var(--oj-tree-view-indent-width)) + ' + paddingOffset + 'rem)';
+        spacerStyle.width = 'calc(' + depth + ' * var(--oj-tree-view-indent-width))';
       },
       _hasIcon: function (item) {
         return item.querySelectorAll('.oj-treeview-icon.oj-component-icon').length > 0;
@@ -3000,35 +3116,27 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             DataCollectionUtils.isArrowDownKeyEvent(eventKey);
           var key = this._getKey(item);
           var selected = new ojkeyset.KeySetImpl();
-          if (
-            (this._isMultiSelectionEnabled() || this._isLeafOnlySelectionEnabled()) &&
-            event.shiftKey &&
-            !isNavigation &&
-            this._selectionAnchor
-          ) {
+
+          // shift+click/arrows/space in toggle behavior
+          if (this._isToggleSelection() && event.shiftKey) {
+            selected = this._getSelected();
+            let anchorItem = this._getItemByKey(this._toggleSelectionAnchor);
+            if (anchorItem) {
+              selected = this._selectRange(selected, anchorItem, item, this._currentItem);
+            }
+          } else if (this._isReplaceSelection() && event.shiftKey && this._selectionAnchor) {
+            // shift+click/arrows/space in replace behavior
             let nextItem = this._getItemByKey(this._selectionAnchor);
 
             if (isMetaKey) {
               selected = this._getSelected();
             }
-            // Select a range from the last selected item to the current item
-            var getNextItem =
-              nextItem && nextItem.offsetTop < item.offsetTop
-                ? this._getNextActionableItem.bind(this)
-                : this._getPreviousActionableItem.bind(this);
 
-            while (nextItem && nextItem !== item) {
-              var nextKey = this._getKey(nextItem);
-              if (!selected.has(nextKey)) {
-                selected = selected.add([nextKey]);
-              }
-              nextItem = getNextItem(nextItem, 'select');
-            }
             isSelected = true;
-            selected = selected.add([key]);
+            selected = this._selectRange(selected, item, nextItem);
           } else if (
-            (this._isMultiSelectionEnabled() || this._isLeafOnlySelectionEnabled()) &&
-            (isMetaKey || isTouch || isNavigation)
+            this._isToggleSelection() ||
+            (this._isReplaceSelection() && (isMetaKey || isTouch || isNavigation))
           ) {
             // Toggle selection of current item while maintaining the selection of the other items
             isSelected = !isSelected;
@@ -3050,14 +3158,72 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             this._selectionAnchor = key;
           }
           // Since clicking on the item resets the selection, ignore the previous selection when computing the final selection for the leafOnly case.
-          this._userSelectedOptionChange(selected, event, !isMetaKey && !isNavigation && !isTouch);
+          this._userSelectedOptionChange(
+            selected,
+            event,
+            this._isReplaceSelection() && !isMetaKey && !isNavigation && !isTouch
+          );
         }
 
-        if (isSelected) {
-          this._setSelected(item);
-        } else {
-          this._setUnselected(item);
+        if (this._isReplaceSelection() || !event) {
+          if (isSelected) {
+            this._setSelected(item);
+          } else {
+            this._setUnselected(item);
+          }
         }
+      },
+      /**
+       * A helper function to do range selection. For replace behavior, select from
+       * to range start to range end. For toggle behavior, unselect from range start
+       * to previous range end, then select from to range start to range end.
+       *
+       * @param {Object} currSelected the current selection state
+       * @param {Element} currRangeStart the start of range selection
+       * @param {Element} currRangeEnd the end of range selection
+       * @param {Element} prevRangeEnd the end of previous range selection
+       * @private
+       */
+      _selectRange: function (currSelected, currRangeStart, currRangeEnd, prevRangeEnd) {
+        let selected = currSelected;
+        const start = currRangeStart;
+        let end = currRangeEnd;
+        let oldEnd = prevRangeEnd;
+
+        // if the previous end exists, remove the previous range selection, i.e. range from the selection anchor to the previous current item
+        if (oldEnd) {
+          let getNextOldEnd =
+            oldEnd.offsetTop < start.offsetTop
+              ? this._getNextActionableItem.bind(this)
+              : this._getPreviousActionableItem.bind(this);
+
+          while (oldEnd && oldEnd !== start) {
+            const oldEndKey = this._getKey(oldEnd);
+            if (selected.has(oldEndKey)) {
+              selected = selected.delete([oldEndKey]);
+            }
+            oldEnd = getNextOldEnd(oldEnd, 'select');
+          }
+        }
+
+        // Select a range from the selection anchor to the current item
+        let getNextEnd =
+          end && end.offsetTop < start.offsetTop
+            ? this._getNextActionableItem.bind(this)
+            : this._getPreviousActionableItem.bind(this);
+
+        while (end && end !== start) {
+          const endKey = this._getKey(end);
+          if (!selected.has(endKey)) {
+            selected = selected.add([endKey]);
+          }
+          end = getNextEnd(end, 'select');
+        }
+
+        const key = this._getKey(start);
+        selected = selected.add([key]);
+
+        return selected;
       },
       /**
        * Returns a oj-selector by Key.
@@ -3381,7 +3547,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             : this._getSelected();
           this._selectedKeysets = this.treeviewSelectionManager.computeSelection(
             currentKeys,
-            previousKeys
+            previousKeys,
+            this._isLeafOnlyToggle(),
+            this._toggleSelectionAnchor
           );
           currentKeys = this._selectedKeysets.selectedLeaves;
         }
@@ -3502,6 +3670,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         var itemContent = this._getClosestItemContent(event.target);
         if (itemContent) {
           item = itemContent.parentNode;
+          if (this._isToggleSelection() && !event.shiftKey) {
+            this._toggleSelectionAnchor = this._getKey(item);
+          }
           this._select(item, event);
           this._focus(item, event);
           this.touchStartEvent = null;
@@ -3556,6 +3727,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
        * @private
        */
       _handleMouseOut: function (event) {
+        this._removeDraggableFromItemContent(event.target);
         var target = this._getClosestDisclosureIcon(event.target);
         if (target) {
           target.classList.remove(this.constants.OJ_SELECTED);
@@ -3578,6 +3750,22 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
        * @private
        */
       _handleMouseDown: function (event) {
+        // We use this var in oj-tree-view focus event to know if clicking outside any group or item was
+        // the reason of focus so, we don't focus ul element when that happens
+        if (event.target === this.element[0]) {
+          this._mouseDownOutsideAnyGroupOrItem = true;
+          setTimeout(() => {
+            this._mouseDownOutsideAnyGroupOrItem = null;
+          }, 100);
+        }
+        if (!DomUtils.isTouchSupported()) {
+          const itemContent = this._getClosestItemContent(event.target);
+          if (itemContent) {
+            itemContent.setAttribute('draggable', this._isDnD() ? 'true' : 'false');
+            this._draggableAdded = true;
+          }
+        }
+
         // disable click event if selector is target
         if (DataCollectionUtils.isFromDefaultSelector(event)) {
           return;
@@ -3594,6 +3782,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
        * @private
        */
       _handleMouseUp: function (event) {
+        this._removeDraggableFromItemContent(event.target);
         var disclosureIcon = this._getClosestDisclosureIcon(event.target);
         if (disclosureIcon) {
           disclosureIcon.classList.remove(this.constants.OJ_SELECTED);
@@ -3616,11 +3805,22 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           nextItem = DataCollectionUtils.isArrowDownKeyEvent(eventKey)
             ? this._getNextActionableItem(currentItem, 'focus')
             : this._getPreviousActionableItem(currentItem, 'focus');
+
+          if (this._isToggleSelection()) {
+            if (!event.shiftKey) {
+              this._toggleSelectionAnchor = this._getKey(nextItem);
+            } else if (this._toggleSelectionAnchor === undefined) {
+              this._toggleSelectionAnchor = this._getKey(currentItem);
+            }
+          }
+
           if (nextItem) {
             event.preventDefault(); // prevent scrolling the page
-            if (this._isSelected(currentItem) && event.shiftKey) {
-              // Shift+Up/Down either extends the selection to the next item or cancels previous Shift+Down/Up
-              this._select(this._isSelected(nextItem) ? currentItem : nextItem, event);
+            if (event.shiftKey) {
+              if (this._isReplaceSelection() && !this._isSelected(currentItem)) {
+                this._selectionAnchor = this._getKey(currentItem);
+              }
+              this._select(nextItem, event);
             }
             this._scrollToVisible(nextItem);
             this._focus(nextItem, event);
@@ -3645,14 +3845,12 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
               : this._getPreviousActionableItem(currentItem, 'focus');
             if (nextItem) {
               event.preventDefault(); // prevent scrolling the page
+              this._scrollToVisible(nextItem);
               this._focus(nextItem, event);
             }
           }
-        } else if (
-          DataCollectionUtils.isEnterKeyEvent(eventKey) ||
-          DataCollectionUtils.isSpaceBarKeyEvent(eventKey)
-        ) {
-          // ENTER or SPACE
+        } else if (DataCollectionUtils.isSpaceBarKeyEvent(eventKey)) {
+          // SPACE
           event.preventDefault(); // prevent scrolling the page
           this._select(currentItem, event);
         } else if (
@@ -3982,6 +4180,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           return;
         }
         if (eventType === 'dragEnd') {
+          this._removeDraggableFromItemContent(event.target);
           this._removeGhostElements();
           this._dropLine.style.display = 'none';
         }
@@ -4743,7 +4942,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
 
               var index = this._getInsertIndex(
                 parentItem,
-                addEvent.indexes[i],
+                indexes == null ? null : indexes[i],
                 metadata[i].key,
                 finalKeys
               );
@@ -4897,6 +5096,12 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
               if (this._isExpanded(item)) {
                 item.classList.remove(this.constants.OJ_EXPANDED);
                 this._expand(item, true);
+              }
+            } else if (this._isLeaf(item)) {
+              // change we get a refresh for a leaf if it needs to become a parent
+              this._changeNodeToParent(item);
+              if (this._isInitExpanded(key)) {
+                this._expand(item, false);
               }
             }
           });
@@ -5239,7 +5444,9 @@ var __oj_tree_view_metadata =
       "type": "string",
       "enumValues": [
         "leafOnly",
+        "leafOnlyToggle",
         "multiple",
+        "multipleToggle",
         "none",
         "single"
       ],

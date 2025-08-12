@@ -28,5 +28,6 @@ export namespace MutableArrayTreeDataProvider {
         keyAttributeScope?: 'siblings' | 'global';
         sortComparators?: ArrayDataProvider.SortComparators<D>;
         textFilterAttributes?: string[];
+        useKeyPaths?: 'off' | 'on';
     };
 }

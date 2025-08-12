@@ -40,6 +40,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
                 dragLeave?: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
                 dragOver?: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
                 drop: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
+                positions?: Array<('before' | 'inside')>;
             };
         };
         reorder?: {
@@ -89,7 +90,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart & ojTable.ColumnSelectionEnd>;
     selectionMode: {
         column?: 'none' | 'single' | 'multiple';
-        row?: 'none' | 'single' | 'multiple';
+        row?: 'none' | 'single' | 'multiple' | 'multipleToggle';
     };
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';
@@ -140,6 +141,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         msgStatusSortAscending?: string;
         msgStatusSortDescending?: string;
         tooltipRequired?: string;
+        tooltipSeparator?: string;
     };
     addEventListener<T extends keyof ojTableEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTableEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -457,6 +459,7 @@ export namespace ojTable {
     };
     // tslint:disable-next-line interface-over-type-literal
     type DropRowContext = {
+        position: 'inside' | 'before';
         rowIndex: number;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -653,6 +656,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
                 dragLeave?: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
                 dragOver?: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
                 drop: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
+                positions?: Array<('before' | 'inside')>;
             };
         };
         reorder?: {
@@ -702,7 +706,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart & ojTable.ColumnSelectionEnd>;
     selectionMode: {
         column?: 'none' | 'single' | 'multiple';
-        row?: 'none' | 'single' | 'multiple';
+        row?: 'none' | 'single' | 'multiple' | 'multipleToggle';
     };
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';
@@ -753,6 +757,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         msgStatusSortAscending?: string;
         msgStatusSortDescending?: string;
         tooltipRequired?: string;
+        tooltipSeparator?: string;
     };
 }
 export interface ojTableSettablePropertiesLenient<K, D> extends Partial<ojTableSettableProperties<K, D>> {
@@ -1051,6 +1056,7 @@ export namespace TableElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type DropRowContext = {
+        position: 'inside' | 'before';
         rowIndex: number;
     };
     // tslint:disable-next-line interface-over-type-literal

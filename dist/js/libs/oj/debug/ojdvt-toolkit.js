@@ -25203,6 +25203,47 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     return Math.floor(coord / this._scale);
   };
 
+  PixelMap.prototype.isOverlapping = function (x1, y1, x2, y2) {
+    // Evaluate the scaled areas to determine whether the coords are obscured.
+    var scaledX1 = this._adjustForScale(x1);
+    var scaledY1 = this._adjustForScale(y1);
+    var scaledX2 = this._adjustForScale(x2);
+    var scaledY2 = this._adjustForScale(y2);
+    for (var xCoord = scaledX1; xCoord < scaledX2; xCoord++) {
+      for (var yCoord = scaledY1; yCoord < scaledY2; yCoord++) {
+        // Check this map's information. If known to be obscured, search the next area.
+        var pixelValue = this.get(xCoord, yCoord);
+        if (pixelValue === 1) {
+          return true;
+        }
+      }
+    }
+    // If overlapping, would've returned true earlier.
+    return false;
+  };
+
+  /**
+   * Obscures the specified coordinates.
+   * @param {number} x1
+   * @param {number} y1
+   * @param {number} x2
+   * @param {number} y2
+   * @param {number} alpha The amount of the pixel to obscure.
+   */
+  PixelMap.prototype.setOverlap = function (x1, y1, x2, y2) {
+    // Evaluate the scaled segments to determine whether the coords are obscured.
+    var scaledX1 = this._adjustForScale(x1);
+    var scaledY1 = this._adjustForScale(y1);
+    var scaledX2 = this._adjustForScale(x2);
+    var scaledY2 = this._adjustForScale(y2);
+    for (var xCoord = scaledX1; xCoord < scaledX2; xCoord++) {
+      for (var yCoord = scaledY1; yCoord < scaledY2; yCoord++) {
+        // Check this map's information. If not known to be obscured, check the inner maps.
+        this.put(xCoord, yCoord, 1);
+      }
+    }
+  };
+
   /**
    * ImageLoader
    */
@@ -30112,13 +30153,15 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {DvtKeyboardEvent} event
    * @param {Array} listOfObjects Array of DvtKeyboardNavigable objects
    * @param {Boolean=} compareCenters if true, will compare centers of the navigable instead of upper left corner
+   * @param {Boolean=} compareCentersWithTiebreak same as compareCenter, except also handles directional tiebreak
    * @return {DvtKeyboardNavigable}
    */
   KeyboardHandler.getNextAdjacentNavigable = function (
     current,
     event,
     listOfObjects,
-    compareCenters
+    compareCenters,
+    compareCentersWithTiebreak
   ) {
     var keycode = event.keyCode;
 
@@ -30144,7 +30187,16 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
         continue;
       }
 
-      if (!KeyboardHandler._isValidDestination(object, current, keycode, compareCenters)) continue;
+      if (
+        !KeyboardHandler._isValidDestination(
+          object,
+          current,
+          keycode,
+          compareCenters,
+          compareCentersWithTiebreak
+        )
+      )
+        continue;
 
       var inContact = KeyboardHandler._calcInContact(object, current, keycode);
 
@@ -30306,26 +30358,41 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {DvtKeyboardNavigable} current
    * @param {Number} keycode
    * @param {Boolean} compareCenters if true, will compare centers of the navigable instead of upper left corner
+   * @param {Boolean} compareCentersWithTiebreak same as compareCenter, except also handles directional tiebreak
    * @return {Boolean}
    * @private
    */
-  KeyboardHandler._isValidDestination = function (object, current, keycode, compareCenters) {
+  KeyboardHandler._isValidDestination = function (
+    object,
+    current,
+    keycode,
+    compareCenters,
+    compareCentersWithTiebreak
+  ) {
     var objBB = object.getKeyboardBoundingBox();
     var curBB = current.getKeyboardBoundingBox();
 
     // compare the centers of the navigable and to be valid, the navigable must be in the right direction
     // without tolerance
-    if (compareCenters) {
+    if (compareCenters || compareCentersWithTiebreak) {
       var objCenterX = objBB.x + 0.5 * objBB.w;
       var curCenterX = curBB.x + 0.5 * curBB.w;
       var objCenterY = objBB.y + 0.5 * objBB.h;
       var curCenterY = curBB.y + 0.5 * curBB.h;
 
+      if (compareCentersWithTiebreak) {
+        if (objCenterY === curCenterY) {
+          // Used by Sunnburst: consider obj below current if obj is to the right of current
+          objCenterY += objCenterX > curCenterX ? 1 : -1;
+        }
+        // There is no use case to tiebreak X's yet
+      }
+
       switch (keycode) {
         case KeyboardEvent.UP_ARROW:
           return objCenterY < curCenterY;
         case KeyboardEvent.DOWN_ARROW:
-          return objBB.y > curCenterY;
+          return objCenterY > curCenterY;
         case KeyboardEvent.RIGHT_ARROW:
           return objCenterX > curCenterX;
         case KeyboardEvent.LEFT_ARROW:

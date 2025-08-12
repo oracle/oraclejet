@@ -1023,7 +1023,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
     MessagesViewModel.NAVIGATION_TRACKER.remove(this._messagesContainerId);
 
     // detaching an open message overlay results in implicit dismissal
-    if (oj.ZOrderUtils.getStatus(this._composite) === oj.ZOrderUtils.STATUS.OPEN) {
+    if (ojpopupcore.ZOrderUtils.getStatus(this._composite) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
       this._closeOverlay();
     }
   };
@@ -1339,15 +1339,15 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   };
 
   MessagesViewModel.prototype._getPositionAsJqUi = function () {
-    var position = oj.PositionUtils.coerceToJqUi(this._computePosition());
+    var position = ojpopupcore.PositionUtils.coerceToJqUi(this._computePosition());
     var isRtl = DomUtils.getReadingDirection() === 'rtl';
-    position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+    position = ojpopupcore.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
     return position;
   };
 
   MessagesViewModel.prototype._computePosition = function () {
     var position = this._properties.position;
-    return oj.PositionUtils.coerceToJet(position, this._getThemedPosition());
+    return ojpopupcore.PositionUtils.coerceToJet(position, this._getThemedPosition());
   };
 
   MessagesViewModel.prototype._getDefaultSlotMessageElements = function () {
@@ -1413,15 +1413,15 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   MessagesViewModel.prototype._openOverlay = function () {
     var composite = $(this._composite);
     var psOptions = {};
-    psOptions[oj.PopupService.OPTION.POPUP] = composite;
-    psOptions[oj.PopupService.OPTION.LAUNCHER] = this._getLauncher();
-    psOptions[oj.PopupService.OPTION.POSITION] = this._getPositionAsJqUi();
-    psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
+    psOptions[ojpopupcore.PopupService.OPTION.POPUP] = composite;
+    psOptions[ojpopupcore.PopupService.OPTION.LAUNCHER] = this._getLauncher();
+    psOptions[ojpopupcore.PopupService.OPTION.POSITION] = this._getPositionAsJqUi();
+    psOptions[ojpopupcore.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
 
-    psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = ['oj', 'messages', 'layer'].join('-');
-    psOptions[oj.PopupService.OPTION.MODALITY] = oj.PopupService.MODALITY.MODELESS;
-    psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = true;
-    oj.PopupService.getInstance().open(psOptions);
+    psOptions[ojpopupcore.PopupService.OPTION.LAYER_SELECTORS] = ['oj', 'messages', 'layer'].join('-');
+    psOptions[ojpopupcore.PopupService.OPTION.MODALITY] = ojpopupcore.PopupService.MODALITY.MODELESS;
+    psOptions[ojpopupcore.PopupService.OPTION.CUSTOM_ELEMENT] = true;
+    ojpopupcore.PopupService.getInstance().open(psOptions);
 
     this._showMessages();
 
@@ -1448,10 +1448,10 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
 
     var composite = $(this._composite);
 
-    /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+    /** @type {!Object.<PopupService.OPTION, ?>} */
     var psOptions = {};
-    psOptions[oj.PopupService.OPTION.POPUP] = composite;
-    oj.PopupService.getInstance().close(psOptions);
+    psOptions[ojpopupcore.PopupService.OPTION.POPUP] = composite;
+    ojpopupcore.PopupService.getInstance().close(psOptions);
 
     // remove tab key handler
     var overlayEventsCallback = this._overlayEventsCallback;
@@ -1461,11 +1461,11 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
 
   MessagesViewModel.prototype._isOverlayOpen = function () {
     var composite = this._composite;
-    var status = oj.ZOrderUtils.getStatus(composite);
+    var status = ojpopupcore.ZOrderUtils.getStatus(composite);
     return (
-      status === oj.ZOrderUtils.STATUS.OPENING ||
-      status === oj.ZOrderUtils.STATUS.OPEN ||
-      status === oj.ZOrderUtils.STATUS.CLOSING
+      status === ojpopupcore.ZOrderUtils.STATUS.OPENING ||
+      status === ojpopupcore.ZOrderUtils.STATUS.OPEN ||
+      status === ojpopupcore.ZOrderUtils.STATUS.CLOSING
     );
   };
 
@@ -1557,9 +1557,9 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
 
   MessagesViewModel.prototype._getPopupServiceEvents = function () {
     var events = {};
-    events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeOverlay.bind(this);
-    events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
-    events[oj.PopupService.EVENT.POPUP_REFRESH] = this._refresh.bind(this);
+    events[ojpopupcore.PopupService.EVENT.POPUP_CLOSE] = this._closeOverlay.bind(this);
+    events[ojpopupcore.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
+    events[ojpopupcore.PopupService.EVENT.POPUP_REFRESH] = this._refresh.bind(this);
 
     return events;
   };
@@ -1582,7 +1582,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
 
   MessagesViewModel.prototype._surrogateRemoveHandler = function () {
     var composite = $(this._composite);
-    if (oj.ZOrderUtils.getStatus(composite) === oj.ZOrderUtils.STATUS.OPEN) {
+    if (ojpopupcore.ZOrderUtils.getStatus(composite) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
       ojcustomelementUtils.CustomElementUtils.cleanComponentBindings(composite[0]);
       this._closeOverlay();
     }
@@ -1663,7 +1663,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
       /** @type {Element} */
       var target = priorFocusCache[id];
 
-      if (target && $(target).is(':visible') && oj.ZOrderUtils.isAboveTopModalLayer(target)) {
+      if (target && $(target).is(':visible') && ojpopupcore.ZOrderUtils.isAboveTopModalLayer(target)) {
         target.focus();
         delete priorFocusCache[id];
         return true;
@@ -1789,7 +1789,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
           if (
             messagesContainerDiv &&
             $(messagesContainerDiv).is(':visible') &&
-            oj.ZOrderUtils.isAboveTopModalLayer(messagesContainerDiv)
+            ojpopupcore.ZOrderUtils.isAboveTopModalLayer(messagesContainerDiv)
           ) {
             // At this point we need to focus the title of the current message element.
             // A message by default has a category text, and that should be the one that

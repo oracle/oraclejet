@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojkeyboardfocus-utils'], function (exports, oj, DomUtils, Logger, ojkeyboardfocusUtils) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojkeyboardfocus-utils', 'ojs/ojdataprovider'], function (exports, oj, DomUtils, Logger, ojkeyboardfocusUtils, ojdataprovider) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
@@ -35,8 +35,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   /**
    * Warning message to log when duplicate keys are detected.
    */
-  DataCollectionUtils.WARN_DUPLICATE_KEYS_DETAIL =
-    'Duplicate keys detected. Though this can occur due to race conditions, it is likely an indication that the underlying data set contains non-unique keys.';
+  DataCollectionUtils.WARN_DUPLICATE_KEYS_DETAIL = ojdataprovider.DataProviderUtils.WARN_DUPLICATE_KEYS_DETAIL;
 
   /**
    * Number of times checkViewport occured during initial fetch before log a warning
@@ -638,144 +637,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
    * @param {boolean} isLoadAll
    */
   DataCollectionUtils.getAddEventKeysResult = function (initialKeys, addEventDetail, isLoadAll) {
-    var i;
-    var beforeKey;
-    var eventKey;
-    var eventIndex;
-    var beforeIndex;
-
-    // returns an object that stores the required insertion information for a given key
-    function _createAddItem(itemKey, itemIndex) {
-      return { key: itemKey, index: itemIndex };
-    }
-
-    var returnKeys = initialKeys.slice();
-    var eventKeys = [];
-    addEventDetail.keys.forEach(function (key) {
-      eventKeys.push(key);
-    });
-
-    var eventBeforeKeys = [];
-    // afterKeys is deprecated, but continue to support it until we can remove it.
-    // forEach can be called on both array and set.
-    var beforeKeyIter = addEventDetail.addBeforeKeys
-      ? addEventDetail.addBeforeKeys
-      : addEventDetail.afterKeys;
-    if (beforeKeyIter != null) {
-      beforeKeyIter.forEach(function (key) {
-        eventBeforeKeys.push(key);
-      });
-    }
-
-    var foundDuplicate = false;
-    var eventIndexes = addEventDetail.indexes;
-
-    // if beforeKeys are specified, they take precedence over index values.
-    if (eventBeforeKeys.length === eventKeys.length) {
-      // loop through the beforeKeys, and perform insertions as we find them.
-      // some beforeKeys may be in our list of keys to add, so we need to continuously loop through our adds until no insertions are made.
-      // at that point, any left over rows are out of our rendered viewport, and we can safely ignore them in not isLoadAll.
-      var leftOverLength = 0;
-      var requiresAdditionalLooping = true;
-      while (requiresAdditionalLooping) {
-        while (eventKeys.length !== leftOverLength) {
-          leftOverLength = eventKeys.length;
-          // loop through in reverse order as most DP impls have an increasing global index order in their events.
-          for (i = eventKeys.length - 1; i >= 0; i--) {
-            eventKey = eventKeys[i];
-            // ensure the key does not already exist in the data set.
-            if (!DataCollectionUtils.containsKey(returnKeys, eventKey)) {
-              beforeKey = eventBeforeKeys[i];
-              if (beforeKey != null) {
-                beforeIndex = DataCollectionUtils._indexOfKey(returnKeys, beforeKey);
-                if (beforeIndex !== -1) {
-                  returnKeys.splice(beforeIndex, 0, eventKey);
-                  eventBeforeKeys.splice(i, 1);
-                  eventKeys.splice(i, 1);
-                }
-              } else if (isLoadAll) {
-                // null beforeKey is at the end of the data set, only add if isLoadAll
-                returnKeys.push(eventKey);
-                eventBeforeKeys.splice(i, 1);
-                eventKeys.splice(i, 1);
-              }
-            } else {
-              // if duplicate key detected, just remove that key from the set to be added
-              eventBeforeKeys.splice(i, 1);
-              eventKeys.splice(i, 1);
-              foundDuplicate = true;
-            }
-          }
-        }
-        // if before keys were not continuous, just do our best to add the remaining ones at the end when isLoadAll
-        if (isLoadAll && eventKeys.length !== 0) {
-          Logger.error('Invalid "beforeKey" value detected in "add" event.');
-          returnKeys.push(eventKeys[0]);
-          eventBeforeKeys.splice(0, 1);
-          eventKeys.splice(0, 1);
-          requiresAdditionalLooping = eventKeys.length !== 0;
-        } else {
-          requiresAdditionalLooping = false;
-        }
-      }
-    } else if (eventIndexes != null && eventIndexes.length === eventKeys.length) {
-      // if beforeKeys are not specified, we need to rely on the index values.
-      // in order to be safely added, we need to ensure they are ordered in ascending order
-      var indexItems = [];
-      for (i = 0; i < eventKeys.length; i++) {
-        eventKey = eventKeys[i];
-        // ensure the key does not already exist in the data set
-        if (!DataCollectionUtils.containsKey(returnKeys, eventKey)) {
-          eventIndex = eventIndexes[i];
-          if (eventIndex != null) {
-            var added = false;
-            for (var j = 0; j < indexItems.length; j++) {
-              // this is the absolute event index once all updates are made - store it (sorted low to high) and add after
-              if (indexItems[j].index > eventIndex) {
-                indexItems.splice(j, 0, _createAddItem(eventKey, eventIndex));
-                added = true;
-                break;
-              }
-            }
-            if (!added) {
-              indexItems.push(_createAddItem(eventKey, eventIndex));
-            }
-          } else if (isLoadAll) {
-            // null index is at the end of the data set, only add if isLoadAll
-            returnKeys.push(eventKey);
-          }
-        } else {
-          foundDuplicate = true;
-        }
-      }
-      // add the sorted items by index to ensure final index values are correct
-      for (i = 0; i < indexItems.length; i++) {
-        var indexItem = indexItems[i];
-        if (indexItem.index < returnKeys.length) {
-          returnKeys.splice(indexItem.index, 0, indexItem.key);
-        } else if (isLoadAll) {
-          if (indexItem.index !== returnKeys.length) {
-            // log error if index values are not correct
-            Logger.error('Invalid "index" value detected in "add" event.');
-          }
-          // add remaining rows to the end when isLoadAll
-          returnKeys.push(indexItem.key);
-        }
-      }
-    } else if (isLoadAll) {
-      // if neither beforeKeys nor indexes are specified, just add all keys to the end in the current order
-      eventKeys.forEach(function (key) {
-        returnKeys.push(key);
-      });
-    }
-    if (foundDuplicate) {
-      Logger.warn(DataCollectionUtils.WARN_DUPLICATE_KEYS_DETAIL);
-    }
-
-    // return updated keys since any remaining beforeKey rows and index rows are not connected to the viewport
-    return returnKeys;
+    return ojdataprovider.DataProviderUtils.getAddEventKeysResult(initialKeys, addEventDetail, isLoadAll);
   };
-
   /**
    * @private
    */
@@ -787,19 +650,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
     }
     return false;
   };
-
-  /**
-   * @private
-   */
-  DataCollectionUtils._indexOfKey = function (array, key) {
-    for (var i = 0; i < array.length; i++) {
-      if (oj.KeyUtils.equals(array[i], key)) {
-        return i;
-      }
-    }
-    return -1;
-  };
-
   /**
    * Helper method to calculate the offsetTop from element to ancestor
    * @param {Element} ancestor the ancestor element
@@ -951,18 +801,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   };
 
   /**
-   * Returns abort reason aka DOMException with info for aborted fetches.
-   * @private
-   */
-  DataCollectionUtils.getAbortReason = function (element) {
-    const componentTagName = element ? `<${element.tagName.toLowerCase()}>: ` : '';
-    const message = `${componentTagName}Aborting stale fetch for performance – a newer request has been issued`;
-    const newDOMException = new DOMException(message, 'AbortError');
-    newDOMException.severity = 'info';
-    return newDOMException;
-  };
-
-  /**
    * Helper function which returns true if the browser is Chrome
    * @private
    */
@@ -992,6 +830,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
    */
   DataCollectionUtils.isEdge = function () {
     return oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE;
+  };
+
+  /**
+   * Helper function which returns true if the browser is Edge Chromium
+   * @private
+   */
+  DataCollectionUtils.isEdgeChromium = function () {
+    return oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE_CHROMIUM;
   };
 
   /**
@@ -1058,44 +904,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
     return parseInt(oj.AgentUtils.getAgentInfo().browserVersion, 10);
   };
 
-  DataCollectionUtils.doesAttributeExistInFilterCriterion = function (
-    attributeName,
-    filterCriterion
-  ) {
-    // handle text filter
-    if (filterCriterion.text) {
-      return true;
-    }
-    // handle Nested Filter
-    if (filterCriterion.attribute && filterCriterion.op && filterCriterion.op === '$exists') {
-      if (this.doesAttributeExistInFilterCriterion(attributeName, filterCriterion.criterion)) {
-        return true;
-      }
-    }
-    // handle AttributeExpression filter
-    else if (filterCriterion.attribute) {
-      if (filterCriterion.attribute === '*') {
-        return true;
-      } else if (filterCriterion.attribute === attributeName) {
-        return true;
-      }
-    }
-    // handle Attribute filter
-    // eslint-disable-next-line no-prototype-builtins
-    else if (filterCriterion.value && filterCriterion.value.hasOwnProperty(attributeName)) {
-      return true;
-    }
-    // handle Compound Filter
-    else if (filterCriterion.criteria && filterCriterion.criteria.length > 0) {
-      for (let i = 0; i < filterCriterion.criteria.length; i++) {
-        if (this.doesAttributeExistInFilterCriterion(attributeName, filterCriterion.criteria[i])) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-
   const applyMergedInlineStyles = DataCollectionUtils.applyMergedInlineStyles;
   const applyRendererContent = DataCollectionUtils.applyRendererContent;
   const applyStyleObj = DataCollectionUtils.applyStyleObj;
@@ -1126,7 +934,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   const isEscapeKeyEvent = DataCollectionUtils.isEscapeKeyEvent;
   const isEventClickthroughDisabled = DataCollectionUtils.isEventClickthroughDisabled;
   const isFetchAborted = DataCollectionUtils.isFetchAborted;
-  const getAbortReason = DataCollectionUtils.getAbortReason;
   const isFromDefaultSelector = DataCollectionUtils.isFromDefaultSelector;
   const isF2KeyEvent = DataCollectionUtils.isF2KeyEvent;
   const isHomeKeyEvent = DataCollectionUtils.isHomeKeyEvent;
@@ -1148,6 +955,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   const isFirefox = DataCollectionUtils.isFirefox;
   const isSafari = DataCollectionUtils.isSafari;
   const isEdge = DataCollectionUtils.isEdge;
+  const isEdgeChromium = DataCollectionUtils.isEdgeChromium;
   const isIE = DataCollectionUtils.isIE;
   const isMac = DataCollectionUtils.isMac;
   const isWindows = DataCollectionUtils.isWindows;
@@ -1156,7 +964,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   const isWebkit = DataCollectionUtils.isWebkit;
   const isBlink = DataCollectionUtils.isBlink;
   const getBrowserVersion = DataCollectionUtils.getBrowserVersion;
-  const doesAttributeExistInFilterCriterion = DataCollectionUtils.doesAttributeExistInFilterCriterion;
   const isContextMenuKeyEvent = DataCollectionUtils.isContextMenuKeyEvent;
 
   exports.CHECKVIEWPORT_THRESHOLD = CHECKVIEWPORT_THRESHOLD;
@@ -1172,9 +979,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   exports.disableAllFocusableElements = disableAllFocusableElements;
   exports.disableDefaultBrowserStyling = disableDefaultBrowserStyling;
   exports.disableElement = disableElement;
-  exports.doesAttributeExistInFilterCriterion = doesAttributeExistInFilterCriterion;
   exports.enableAllFocusableElements = enableAllFocusableElements;
-  exports.getAbortReason = getAbortReason;
   exports.getActionableElementsInNode = getActionableElementsInNode;
   exports.getAddEventKeysResult = getAddEventKeysResult;
   exports.getBrowserVersion = getBrowserVersion;
@@ -1196,6 +1001,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   exports.isClickthroughDisabled = isClickthroughDisabled;
   exports.isContextMenuKeyEvent = isContextMenuKeyEvent;
   exports.isEdge = isEdge;
+  exports.isEdgeChromium = isEdgeChromium;
   exports.isElementIntersectingScrollerBounds = isElementIntersectingScrollerBounds;
   exports.isElementOrAncestorFocusable = isElementOrAncestorFocusable;
   exports.isEndKeyEvent = isEndKeyEvent;

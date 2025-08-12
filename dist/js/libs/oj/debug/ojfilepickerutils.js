@@ -64,6 +64,7 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
     function pickFiles(callback, fileOptions) {
         setupInput(fileOptions);
         input.onchange = function () {
+            // If this is a webdriver test, _pickerTestData will be populated and should use it
             const files = input._pickerTestData ? input._pickerTestData : input.files;
             callback(files);
             teardownInput();

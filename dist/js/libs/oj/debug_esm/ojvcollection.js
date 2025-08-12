@@ -11,7 +11,11 @@ import { info, warn, error } from 'ojs/ojlogger';
 import CachedIteratorResultsDataProvider from 'ojs/ojcachediteratorresultsdataprovider';
 import DomScroller from 'ojs/ojdomscroller';
 
+/**
+ * Base class that generates content from a DataProvider on behalf of the component
+ */
 class DataProviderContentHandler {
+    // TODO: Use proper type for DataProvider once JIRA JET-26963 is resolved
     constructor(root, dataProvider, callback) {
         this.root = root;
         this.dataProvider = dataProvider;
@@ -21,6 +25,7 @@ class DataProviderContentHandler {
         this.getKey = function (element) {
             if (!element)
                 return null;
+            // should be in the element
             return element.key
                 ? element.key
                 : element.dataset.ojKeyType === 'number'
@@ -41,26 +46,38 @@ class DataProviderContentHandler {
         return this.fetching !== 0;
     }
     addBusyState(description) {
+        // check that component is not destroyed
         if (this.callback != null) {
             return this.callback.addBusyState('DataProviderContentHandler ' + description);
         }
         return () => { };
     }
     destroy() {
+        // disassociate component with ContentHandler
         this.callback = null;
         if (this.dataProvider && this.modelEventHandler) {
             this.dataProvider.removeEventListener('mutate', this.modelEventHandler);
             this.dataProvider.removeEventListener('refresh', this.modelEventHandler);
         }
     }
+    /**
+     * Renders content for no data
+     */
     renderNoData() {
         this.setFetching(false);
         return [];
     }
+    /**
+     * Renders the content inside the list
+     */
     render(data) {
         return this.renderFetchedData(data);
     }
+    /**
+     * Post-render hook after content is in the DOM
+     */
     postRender() {
+        // do nothing at the moment, to be override by subclass
     }
     getDataProvider() {
         return this.dataProvider;
@@ -71,16 +88,30 @@ class DataProviderContentHandler {
     isReady() {
         return !this.fetching;
     }
+    /**
+     * Verify whether the data type for key is one of the acceptable types
+     * @param key
+     */
     verifyKey(key) {
         return this.validKeyTypes.indexOf(typeof key) > -1;
     }
+    /**
+     * Sets the style class on vnode using correct prop
+     * @param vnode
+     * @param styleClasses
+     */
     setStyleClass(vnode, styleClasses) {
+        // expression :class results in className prop getting populated, not class
         const classProp = vnode.props.class || vnode.props.class === '' ? 'class' : 'className';
         const currentClasses = vnode.props[classProp]
             ? [vnode.props[classProp], ...styleClasses]
             : styleClasses;
         vnode.props[classProp] = currentClasses.join(' ');
     }
+    /**
+     * Locates the item vnode from an array of vnodes returned by template renderer
+     * @param vnodes
+     */
     findItemVNode(vnodes) {
         if (Array.isArray(vnodes)) {
             for (const curr of vnodes) {
@@ -89,6 +120,8 @@ class DataProviderContentHandler {
                         return curr;
                     }
                     else {
+                        // the vnode could be the environment context wrapper
+                        // if that is the case use its (first) children
                         return this.findItemVNode(curr.props.children);
                     }
                 }
@@ -98,21 +131,27 @@ class DataProviderContentHandler {
         return vnodes;
     }
     handleModelRefresh(detail) {
+        // remove old data
         this.callback.setData(null);
+        // kick start a new fetch
         this.fetchRows();
     }
     handleItemsAdded(detail) { }
     handleItemsRemoved(detail) { }
     handleItemsUpdated(detail) { }
     _handleModelEvent(event) {
+        // todo: don't need this if evt is correctly typed
         const detail = event['detail'];
         if (event.type === 'refresh') {
             this.handleModelRefresh(detail);
         }
         else if (event.type === 'mutate') {
+            // check if renderedData is in initial state (which is different than no data)
+            // this could happen if we get a mutation event prior to initial fetch is returned (ADP2)
             if (this.callback.getData() == null) {
                 return;
             }
+            // keep track of keys that exist in both add and remove
             const addAndRemoveKeys = [];
             if (detail.add && detail.remove) {
                 detail.remove.keys.forEach((key) => {
@@ -124,6 +163,8 @@ class DataProviderContentHandler {
             if (detail.remove) {
                 const handleDetailRemove = () => {
                     this.handleItemsRemoved(detail.remove);
+                    // reset current item and focus
+                    // only for keys not in addAndRemoveKeys
                     detail.remove.keys.forEach((key) => {
                         if (addAndRemoveKeys.indexOf(key) == -1) {
                             this.callback.handleItemRemoved(key);
@@ -146,7 +187,9 @@ class DataProviderContentHandler {
                 const metadata = this.callback.getData()?.value.metadata;
                 const addDetail = { ...detail.add };
                 metadata?.forEach((data) => {
+                    // key is duplicate and only exists in add event
                     if (keys.has(data.key) && addAndRemoveKeys.indexOf(data.key) == -1) {
+                        // remove key and corresponding element in each field
                         const index = keysArray.indexOf(data.key);
                         addDetail.addBeforeKeys?.splice(index, 1);
                         addDetail.data?.splice(index, 1);
@@ -169,16 +212,26 @@ class DataProviderContentHandler {
     getMaxCount() {
         return Infinity;
     }
+    /**
+     * Truncate the data if the length of data is greater than max count
+     * @param validatedEventDetail validated event detail
+     * @param currentDataLength length of current data
+     */
     truncateIfOverMaxCount(validatedEventDetail, currentDataLength) {
         const eventDataLength = validatedEventDetail.data.length;
         const potentialDataLength = eventDataLength + currentDataLength;
         const offset = this.getMaxCount() - potentialDataLength;
+        // over max count need to truncate
         if (offset < 0) {
             validatedEventDetail.data.splice(offset, eventDataLength);
             validatedEventDetail.metadata.splice(offset, eventDataLength);
             this._handleScrollerMaxRowCount();
         }
     }
+    /**
+     * Get the validated data and metadata for event detail
+     * @param detail event detail
+     */
     getValidatedEventDetail(detail) {
         const addEventBusyResolve = this.addBusyState('validating mutation add event detail');
         return getEventDetail(this.getDataProvider(), detail).then((validatedEventDetail) => {
@@ -202,12 +255,22 @@ var VirtualizationStrategy;
     VirtualizationStrategy[VirtualizationStrategy["VIEWPORT_ONLY"] = 1] = "VIEWPORT_ONLY";
 })(VirtualizationStrategy || (VirtualizationStrategy = {}));
 class VirtualizeDomScroller {
+    /**
+     * Constructs a new instance of VirtualizeDomScroller
+     * @param element the scrollable element in which this DomScroller will listen for scroll event
+     * @param dataProvider the DataProvider
+     * @param asyncIterator any live AsyncIterator that this should use to fetch more data
+     * @param options options
+     */
     constructor(element, dataProvider, asyncIterator, callback, options) {
         this.element = element;
         this.dataProvider = dataProvider;
         this.asyncIterator = asyncIterator;
         this.callback = callback;
         this.options = options;
+        /**
+         * @private
+         */
         this._handleScroll = (event) => {
             const target = this.element;
             const scrollTop = this._getScrollTop(target);
@@ -218,10 +281,12 @@ class VirtualizeDomScroller {
         };
         this._handleModelEvent = (event) => {
             if (event.type === 'mutate') {
+                // todo: don't need this if evt is correctly typed
                 const detail = event['detail'];
                 if (detail.add) {
                     let indexes = detail.add.indexes;
                     const addBeforeKeys = detail.add.addBeforeKeys;
+                    // addBeforeKeys takes precedence
                     if (addBeforeKeys != null) {
                         const keys = Array.from(detail.add.keys);
                         indexes = this._handleModelInsert(addBeforeKeys, keys);
@@ -231,6 +296,7 @@ class VirtualizeDomScroller {
                         this._handleItemsAddedOrRemoved(indexes, 'added');
                         this.rowCount = this.rowCount + indexes.length;
                     }
+                    // if both indexes and addBeforeKeys are missing, then it's adding outside of range and DomScroller could ignore it
                 }
                 if (detail.remove) {
                     const keys = Array.from(detail.remove.keys);
@@ -262,6 +328,10 @@ class VirtualizeDomScroller {
         this.lastFetchTrigger = 0;
         this.checkViewportCount = 0;
     }
+    /**
+     * Checks whether the current viewport is satisfied
+     * @returns true if viewport is satisfied, false otherwise.
+     */
     checkViewport() {
         if (this.currentRenderedPoint.done || this.currentRenderedPoint.maxCountLimit) {
             return true;
@@ -282,36 +352,62 @@ class VirtualizeDomScroller {
     setAsyncIterator(iterator) {
         this.asyncIterator = iterator;
     }
+    /**
+     * Whether we are only rendering a window of items within the viewport (i.e. discard DOM), or if we always renders from top
+     * to the last fetched item (i.e. keeping all the DOM)
+     */
     _isRenderingViewportOnly(callback) {
         return (this.options.strategy === VirtualizationStrategy.VIEWPORT_ONLY &&
             callback.getIndexForRange !== undefined);
     }
+    /**
+     * Sets information about the viewport after the content is rendered in the DOM.  Invoke by the ContentHandler.
+     * @param start the start of the viewport in pixel post render
+     * @param end the end of the viewport in pixel post render
+     */
     setViewportRange(start, end) {
         if (this.currentRenderedPoint.start == null || this.currentRenderedPoint.end == null) {
             this.currentRenderedPoint.start = start;
             this.currentRenderedPoint.end = end;
             this._log(`got pixel range: ${start} to ${end} for renderedPoint: ${this.currentRenderedPoint.startIndex} ${this.currentRenderedPoint.endIndex}`);
         }
+        // need to verify again whether the current range is still applicable
         if (this._checkRenderedPoints()) {
             this.fetchPromise = null;
             if (this.currentScrollTop >= this.lastFetchTrigger) {
+                // re-calculated on next scroll
                 this.nextFetchTrigger = undefined;
             }
         }
     }
+    /**
+     * Destroy this VirtualizeDomScroller instance.
+     */
     destroy() {
         this._getScrollEventElement().removeEventListener('scroll', this.scrollListener);
         this.dataProvider.removeEventListener('mutate', this.modelEventListener);
     }
+    /**
+     * Retrieve the element where the scroll listener is registered on.
+     * @private
+     */
     _getScrollEventElement() {
+        // if scroller is the body, listen for window scroll event.  This is the only way that works consistently across all browsers.
         if (this.element === document.body || this.element === document.documentElement) {
             return window;
         }
         return this.element;
     }
+    /**
+     * @private
+     */
     _getScrollTop(element) {
         const scrollTop = 0;
         if (element === document.documentElement) {
+            // to ensure it works across all browsers.  See https://bugs.webkit.org/show_bug.cgi?id=106133
+            // for firefox we should use documentElement.scrollTop, for Chrome and IE use body.scrollTop
+            // detect this by checking initial scrollTop is the same as current scrolltop, if it's the same then the scrollTop is not
+            // returning the correct value and we should use body.scrollTop
             if (this.useBodyScrollTop === undefined) {
                 this.useBodyScrollTop = this.initialScrollTop === element.scrollTop;
             }
@@ -321,6 +417,12 @@ class VirtualizeDomScroller {
         }
         return scrollTop + element.scrollTop;
     }
+    /**
+     * Render a range of data
+     * @param start
+     * @param end
+     * @private
+     */
     _setRangeLocal(startIndex, endIndex, start, end, maxCountLimit, done) {
         this._log(`rendering row: ${startIndex} to ${endIndex} covering range: ${start == null ? 'unknown' : start} to ${end == null ? 'unknown' : end}`);
         this.callback.beforeFetchByOffset(startIndex, endIndex);
@@ -362,11 +464,17 @@ class VirtualizeDomScroller {
             else {
                 this._log(`fetchByOffset ${startIndex} to ${endIndex} returned but result is NO LONGER applicable`);
                 this.fetchByOffsetPromise = null;
+                // be sure to clear the promises on the busy context for this fetch
                 this.callback.fetchError('notValid');
                 this._checkRenderedPoints();
             }
         });
     }
+    /**
+     * @param scrollTop
+     * @param maxScrollTop
+     * @private
+     */
     _handleScrollerScrollTop(scrollTop, maxScrollTop) {
         this.currentScrollTop = scrollTop;
         if (!this.fetchPromise && this.asyncIterator) {
@@ -379,30 +487,48 @@ class VirtualizeDomScroller {
             if (this.nextFetchTrigger != null &&
                 scrollTop - this.lastFetchTrigger > this.nextFetchTrigger) {
                 this._doFetch();
+                // note beforeFetchCallback would return false if the render queue is non-empty
+                // in which case we should just wait until the next idle cycle to clear the queue
                 return;
             }
             if (maxScrollTop - scrollTop < 1) {
+                // at the bottom and all items from last fetch are rendered, start a new fetch
                 this._doFetch();
                 return;
             }
         }
+        // we are fetching and at the bottom, no need to check previous rendered points
         if (this.fetchPromise && scrollTop > this.lastFetchTrigger) {
             return;
         }
         this._checkRenderedPoints();
     }
+    /**
+     * Whether the current viewport is within the specified range.
+     * @private
+     */
     _isRangeValid(start, end) {
         const scrollTop = this.currentScrollTop;
+        // this number can change
         this.viewportPixelSize = this.element.clientHeight;
+        // first check whether the scroll top is within current rendered range
         if (scrollTop >= start && scrollTop + this.viewportPixelSize <= end) {
             return true;
         }
         return false;
     }
+    /**
+     * Checks whether the current rendered point is still within the current viewport.
+     * If not, then checks one of the rendered range and see which one does satisfiy
+     * the current viewport.
+     * @private
+     */
     _checkRenderedPoints() {
+        // bail if content for current viewport has not been rendered yet
         if (this.currentRenderedPoint.start == null || this.currentRenderedPoint.end == null) {
             return true;
         }
+        // first check whether the scroll top is within current rendered range
         if (this._isRangeValid(this.currentRenderedPoint.start, this.currentRenderedPoint.end)) {
             return true;
         }
@@ -427,11 +553,14 @@ class VirtualizeDomScroller {
         this._log('fetching next set of rows from asyncIterator');
         const beforeFetchCallback = this.callback.beforeFetchNext();
         if (beforeFetchCallback) {
+            // figure out the (start) index based on the scroll position, we'll need that to figure out
+            // the rendered range
             if (this.viewportSize === -1) {
                 this.viewportSize =
                     this.currentRenderedPoint.endIndex - this.currentRenderedPoint.startIndex;
             }
             this.fetchPromise = this._fetchMoreRows().then((result) => {
+                // check if result is still relevant
                 if (result.maxCountLimit) {
                     this._log('reached max count');
                     const start = result.size > 0 ? null : this.currentRenderedPoint.start;
@@ -450,6 +579,7 @@ class VirtualizeDomScroller {
                     if (result.done) {
                         this.lastIndex = renderedEndIndex;
                     }
+                    // render range with no pixel info (that would be filled in later)
                     this._setRangeLocal(renderedStartIndex, renderedEndIndex, null, null, false, result.done);
                 }
                 else {
@@ -465,13 +595,18 @@ class VirtualizeDomScroller {
         }
         else {
             this._log('fetch is aborted due to beforeFetchCallback returning false');
+            // items not rendered yet, reset nextFetchTrigger so it gets calculated again
             this.nextFetchTrigger = undefined;
         }
     }
     _fetchMoreRows() {
         if (!this.fetchPromise) {
+            // make sure we don't exceed maxCount
             const remainingCount = this.maxCount - this.rowCount;
             if (remainingCount > 0) {
+                // asynciterator null tracks the max count case only, mutations do not effect this today
+                // currentRenderedPoint.done tracks the done from dataprovider case
+                // add to end clears that flag
                 if (!this.currentRenderedPoint.done && this.asyncIterator != null) {
                     this.fetchPromise = this.asyncIterator.next().then((result) => {
                         this.fetchPromise = null;
@@ -497,6 +632,8 @@ class VirtualizeDomScroller {
                     return this.fetchPromise;
                 }
             }
+            // this is also passed even in the done case
+            // we need to indicate that we've hit maxCount
             return Promise.resolve({ maxCount: this.maxCount });
         }
         return this.fetchPromise;
@@ -518,9 +655,11 @@ class VirtualizeDomScroller {
                 indexes.push(index + currentStartIndex);
             }
             else {
+                // outside of current fetched range, mark it as not done
                 this.currentRenderedPoint.done = false;
             }
         });
+        // invalidate range
         if (indexes.length > 0) {
             this.currentRenderedPoint.start = null;
             this.currentRenderedPoint.end = null;
@@ -542,14 +681,22 @@ class VirtualizeDomScroller {
         keysToRemove.forEach((key) => {
             currentKeys.splice(currentKeys.indexOf(key), 1);
         });
+        // invalidate range
         if (indexes.length > 0) {
             this.currentRenderedPoint.start = null;
             this.currentRenderedPoint.end = null;
         }
         return indexes;
     }
+    /**
+     * Update the specified render point due to mutation
+     * @param index
+     * @param renderedPoint
+     * @param op
+     */
     _updateRenderedPoint(index, renderedPoint, op) {
         if (index < renderedPoint.startIndex) {
+            // index is outside of the render point
             if (op === 'added') {
                 renderedPoint.startIndex = renderedPoint.startIndex + 1;
                 renderedPoint.endIndex = renderedPoint.endIndex + 1;
@@ -560,6 +707,7 @@ class VirtualizeDomScroller {
             }
         }
         else if (index <= renderedPoint.endIndex) {
+            // index is within the render point
             if (op === 'added') {
                 renderedPoint.endIndex = renderedPoint.endIndex + 1;
             }
@@ -568,6 +716,11 @@ class VirtualizeDomScroller {
             }
         }
     }
+    /**
+     * Helper method for handling items added or removed.
+     * @param indexes
+     * @param op
+     */
     _handleItemsAddedOrRemoved(indexes, op) {
         indexes.forEach((index) => {
             this._updateRenderedPoint(index, this.currentRenderedPoint, op);
@@ -578,6 +731,9 @@ class VirtualizeDomScroller {
     }
 }
 
+/**
+ * Class that interacts with DataProvider on behalf of the component
+ */
 class IteratingDataProviderContentHandler extends DataProviderContentHandler {
     constructor(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions) {
         super(root, dataProvider, callback);
@@ -586,17 +742,26 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
         this.callback = callback;
         this.scrollPolicy = scrollPolicy;
         this.scrollPolicyOptions = scrollPolicyOptions;
+        /**
+         * This is basically the same logic as IteratingDataProviderContentHandler.js that ListView use.
+         * @override
+         */
         this.fetchRows = () => {
+            // checks if we are already fetching cells
             if (this.isReady()) {
                 this.setFetching(true);
                 const options = { clientId: this._clientId };
+                // use fetch size if loadMoreOnScroll, otherwise specify -1 to fetch all rows
                 options.size = this._isLoadMoreOnScroll() ? this.getFetchSize() : -1;
                 this.dataProviderAsyncIterator = this.getDataProvider()
                     .fetchFirst(options)[Symbol.asyncIterator]();
                 const busyStateResolveFunc = this.addBusyState('call next on iterator');
                 const promise = this.dataProviderAsyncIterator.next();
                 const fetchSize = options.size;
+                // new helper function to be called in recursion to fetch all data.
                 const helperFunction = (value) => {
+                    // skip additional fetching if done, or if fetchSize is not -1.
+                    // if it has getPageCount method, it is a pagingTableDataSource so skip this fetch process.
                     if (value.done ||
                         fetchSize !== -1 ||
                         typeof this.getDataProvider().getPageCount === 'function') {
@@ -604,8 +769,11 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                     }
                     const nextPromise = this.dataProviderAsyncIterator.next();
                     return nextPromise.then(function (nextValue) {
+                        // eslint-disable-next-line no-param-reassign
                         value.done = nextValue.done;
+                        // eslint-disable-next-line no-param-reassign
                         value.value.data = value.value.data.concat(nextValue.value.data);
+                        // eslint-disable-next-line no-param-reassign
                         value.value.metadata = value.value.metadata.concat(nextValue.value.metadata);
                         return helperFunction(value);
                     }, function (reason) {
@@ -624,6 +792,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                     .then((value) => {
                     if (value) {
                         busyStateResolveFunc();
+                        // check if content handler has been destroyed already
                         if (this.callback == null) {
                             return;
                         }
@@ -631,7 +800,9 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                         this.callback.setData(value);
                     }
                 }, (reason) => {
+                    // check if content handler has been destroyed already
                     if (this.callback != null) {
+                        // include reason in case we want to do something with it on render
                         const errorValue = {
                             error: reason,
                             done: true,
@@ -653,12 +824,16 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
             };
             this.domScroller = new VirtualizeDomScroller(this._getScroller(), this.getDataProvider(), this.dataProviderAsyncIterator, this, options);
         };
+        // Create a clientId symbol that uniquely identify this consumer so that
+        // DataProvider which supports it can optimize resources
         this._clientId = Symbol();
+        // start fetching immediately
         this.fetchRows();
     }
     getDataProvider() {
         if (this.wrappedDataProvider == null) {
-            const capability = this.dataProvider.getCapability('fetchCapability');
+            const capability = this.dataProvider.getCapability('fetchFirst') ||
+                this.dataProvider.getCapability('fetchCapability');
             if (capability == null || capability.caching == null || capability.caching == 'none') {
                 this.wrappedDataProvider = new CachedIteratorResultsDataProvider(this.dataProvider);
             }
@@ -669,9 +844,14 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
         return this.wrappedDataProvider;
     }
     setDataProvider(dataProvider) {
+        // reset so that it can be re-wrap
         this.wrappedDataProvider = null;
         this.dataProvider = dataProvider;
     }
+    /**
+     * Post-render hook after content is in the DOM
+     * @override
+     */
     postRender() {
         this.initialFetch = false;
     }
@@ -694,6 +874,9 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
     getFetchSize() {
         return this.scrollPolicyOptions.fetchSize;
     }
+    /**
+     * @override
+     */
     getMaxCount() {
         return this.scrollPolicyOptions.maxCount;
     }
@@ -705,12 +888,20 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
             return this.domScroller.checkViewport();
         }
     }
+    /**
+     * Renders skeletons for load more indicators at the bottom
+     */
     renderSkeletonsForLoadMore() { }
+    /**
+     * @override
+     */
     renderFetchedData(dataObj) {
+        // this could happen if destroy comes before fetch completes (note a refresh also causes destroy)
         if (this.callback == null) {
             return;
         }
         const result = [];
+        // should not happen
         if (dataObj == null || dataObj.value == null) {
             return result;
         }
@@ -721,9 +912,12 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
             result.push(this.renderData(data, metadata, startIndex));
             if (this._isLoadMoreOnScroll()) {
                 if (!dataObj.done) {
+                    // if number of items returned is zero but result indicates it's not done
+                    // log it
                     if (data.length === 0) {
                         info('handleFetchedData: zero data returned while done flag is false');
                     }
+                    // always append the loading indicator at the end except the case when max limit has been reached
                     if (!dataObj.maxCountLimit) {
                         if (this.domScroller == null) {
                             const keys = metadata.map((metadata) => {
@@ -738,10 +932,12 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                     this._handleScrollerMaxRowCount();
                 }
             }
+            // fetch is done
             this.setFetching(false);
             return result;
         }
     }
+    /*********************** DomScrollerCallback ****************************/
     beforeFetchNext() {
         if (this.domScrollerFetchResolve != null) {
             return false;
@@ -768,10 +964,13 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
             this.domScrollerFetchResolve = null;
         }
         if (reason !== 'notValid') {
+            // log error, if not just an invalid successful fetch
             error('an error occurred during data fetch, reason: ' + reason);
         }
     }
+    /******************* end DomScrollerCallback ********************************/
     renderData(data, metadata, startIndex) {
+        // component might have been destroyed before fetch success is handled
         if (this.callback == null) {
             return null;
         }
@@ -780,6 +979,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
             if (data[i] == null || metadata[i] == null) {
                 continue;
             }
+            // verify key type
             if (!this.verifyKey(metadata[i].key)) {
                 error('encounted a key with invalid data type.  Acceptable data types for key are: ' +
                     this.validKeyTypes);
@@ -816,6 +1016,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                 const key = keys[i];
                 const data = detail.data != null ? detail.data[i] : null;
                 const metadata = detail.metadata != null ? detail.metadata[i] : null;
+                // if it's within local data range, then just patch the local data and re-render
                 if (index >= startIndex && index <= endIndex) {
                     withinRangeDataCallback(newData, key, index, data, metadata);
                 }
@@ -831,13 +1032,23 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
         }
         return -1;
     }
+    /**
+     * Handles model refresh
+     * @override
+     */
     handleModelRefresh() {
+        // recreate VirtualDomScroller
         if (this.domScroller) {
             this.domScroller.destroy();
         }
         this.domScroller = null;
         super.handleModelRefresh();
     }
+    /**
+     * Handles items insert mutation event
+     * @override
+     * @param detail
+     */
     handleItemsAdded(detail) {
         const itemsAdded = () => {
             this.callback.updateData((currentData) => {
@@ -854,6 +1065,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                 const addBeforeKeys = detail.addBeforeKeys;
                 const keys = detail.keys;
                 if (indexes == null && addBeforeKeys == null) {
+                    // insert at the end
                     if (newData.done && !newData.maxCountLimit) {
                         newData.value.data.push(detail.data);
                         newData.value.metadata.push(detail.metadata);
@@ -865,6 +1077,8 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                         const data = detail.data[i];
                         const metadata = detail.metadata[i];
                         let index = -1;
+                        // index needs to take precedence until we can resolve the issue of
+                        // event referring new key as addBeforeKeys when adding multiple items
                         if (indexes != null && indexes[i] != null) {
                             index = indexes[i];
                         }
@@ -876,11 +1090,15 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                             newData.value.metadata.splice(index, 0, metadata);
                         }
                         else if (newData.done && !newData.maxCountLimit) {
+                            // mark as not done so we will check viewport and fetch later
                             newData.done = false;
+                            // if there isn't any data initially, there would be no DomScroller
+                            // create one so that checkViewport would bring in the new data
                             if (this.domScroller == null) {
                                 this._registerDomScroller([]);
                             }
                             else {
+                                // ensure there is always an asyncIterator when adding an item
                                 this.domScroller.setAsyncIterator(this.dataProviderAsyncIterator);
                             }
                         }
@@ -902,8 +1120,14 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
             itemsAdded();
         }
     }
+    /**
+     * Handles items removal mutation event
+     * @override
+     * @param detail
+     */
     handleItemsRemoved(detail) {
         this._handleItemsMutated(detail, 'keys', (newData, key) => {
+            // could not rely on index since newData is changing
             const index = this._findIndex(newData.value.metadata, key);
             if (index > -1) {
                 newData.value.data.splice(index, 1);
@@ -912,7 +1136,16 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
         });
         super.handleItemsRemoved(detail);
     }
+    /**
+     * Handle update of an item within the current rendered range
+     * @param key the key of the updated item
+     */
     handleCurrentRangeItemUpdated(key) { }
+    /**
+     * Handles items update mutation event
+     * @override
+     * @param detail
+     */
     handleItemsUpdated(detail) {
         const itemsUpdated = () => {
             this._handleItemsMutated(detail, 'keys', (newData, key, index, data, metadata) => {
@@ -935,6 +1168,9 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
     }
 }
 
+/**
+ * Class that interacts with DataProvider on behalf of the component
+ */
 class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler {
     constructor(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions) {
         super(root, dataProvider, callback);
@@ -943,39 +1179,57 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         this.callback = callback;
         this.scrollPolicy = scrollPolicy;
         this.scrollPolicyOptions = scrollPolicyOptions;
+        /**
+         * This is basically the same logic as IteratingDataProviderContentHandler.js that ListView use.
+         * @override
+         */
         this.fetchRows = () => {
+            // checks if we are already fetching cells
             if (this.isReady()) {
                 const options = { clientId: this._clientId };
+                // use fetch size if loadMoreOnScroll, otherwise specify -1 to fetch all rows
                 options.size = this._isLoadMoreOnScroll() ? this.getFetchSize() : -1;
                 const iterator = this.getDataProvider().fetchFirst(options)[Symbol.asyncIterator]();
                 this._cachedIteratorsAndResults['root'] = { iterator, cache: null };
                 const finalResults = { value: { data: [], metadata: [] } };
                 this._fetchNextFromIterator(iterator, null, options, finalResults).then((result) => {
+                    // whether resolve or reject we want to communicate data to the component
+                    // in reject case this is null
                     this._setNewData(result);
                 }, () => {
                     this._setNewData(null);
                 });
             }
         };
+        // returns a promise that resolves if fetch successful, or no fetch
+        // rejects if fetch errors
         this._fetchNextFromIterator = (iterator, key, options, finalResults) => {
             if (iterator == null) {
                 return Promise.resolve();
             }
+            // checks if we are already fetching cells
             this.setFetching(true);
             const busyStateResolveFunc = this.addBusyState('call next on iterator');
             const promise = iterator.next();
             const fetchSize = options.size;
+            // new helper function to be called in recursion to fetch all data.
             const helperFunction = (value) => {
+                // skip additional fetching if done, or if fetchSize is not -1.
+                // if it has getPageCount method, it is a pagingTableDataSource so skip this fetch process.
                 if (value.done || fetchSize !== -1) {
                     return value;
                 }
                 let nextPromise = iterator.next();
                 return nextPromise.then(function (nextValue) {
+                    // eslint-disable-next-line no-param-reassign
                     value.done = nextValue.done;
+                    // eslint-disable-next-line no-param-reassign
                     value.value.data = value.value.data.concat(nextValue.value.data);
+                    // eslint-disable-next-line no-param-reassign
                     value.value.metadata = value.value.metadata.concat(value.value.metadata);
                     return helperFunction(value);
                 }, function (reason) {
+                    // handle fetch error at end of promise chain, do not return any results
                     return Promise.reject(reason);
                 });
             };
@@ -983,12 +1237,16 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 .then((value) => {
                 return helperFunction(value);
             }, (reason) => {
+                // first fetch failed
+                // handle fetch error at end of promise chain
                 return Promise.reject(reason);
             })
                 .then((value) => {
+                // if error happened earlier we will handle it in the rejection chain
                 if (this.isFetching()) {
                     busyStateResolveFunc();
                     this.setFetching(false);
+                    // check if content handler has been destroyed already
                     if (this.callback == null || value == null) {
                         return;
                     }
@@ -999,6 +1257,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                     return this.handleNextItemInResults(options, key, value, finalResults);
                 }
             }, (reason) => {
+                // either initial or helper fetch failed
                 busyStateResolveFunc();
                 this._handleFetchError(reason);
                 return Promise.reject(reason);
@@ -1013,6 +1272,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 let dataToSet;
                 let metadataToSet;
                 let done;
+                // if the fetch errored we want to communicate no data and done back to the component
                 if (result == null) {
                     dataToSet = [];
                     metadataToSet = [];
@@ -1072,6 +1332,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 }
                 const finalResults = { value: { data: [], metadata: [] } };
                 return this.handleNextItemInResults(options, key, result, finalResults).then(() => {
+                    // iterator can be cleared in handleNextItemInResults don't store it
                     let newCacheInfo = this._cachedIteratorsAndResults[key === null ? 'root' : key];
                     let newIterator;
                     if (newCacheInfo != null) {
@@ -1079,6 +1340,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                     }
                     return this._fetchFromAncestors(options, key, newIterator, finalResults);
                 }, (reason) => {
+                    // dom scroller needs to be notified fetching errored out
                     return Promise.reject(reason);
                 });
             }
@@ -1107,6 +1369,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 return this.handleNextItemInResults(options, lastEntryParentKey, result, finalResults).then(this._fetchFromAncestors.bind(this, options, lastEntryParentKey, parentIterator, finalResults));
             };
             return this._fetchNextFromIterator(iterator, key, options, finalResults).then(handleFetchFromAncestors.bind(this, key, finalResults), (reason) => {
+                // pass errors from iterator on
                 return Promise.reject(reason);
             });
         };
@@ -1195,6 +1458,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 expanded
             };
         };
+        // update metadata array
         this._updateAllMetadata = (metadata, parentKey, finalResults) => {
             let newMetadata;
             if (metadata && metadata.length > 0) {
@@ -1272,7 +1536,10 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             if (fetchNext == null) {
                 return;
             }
-            const showSkeletonTimeout = setTimeout(function () {
+            // wait 250ms to show skeleton by adding to skeletonKeys to trigger a re-render
+            // prettier-ignore
+            const showSkeletonTimeout = setTimeout(// @HTMLUpdateOK
+            function () {
                 if (this.callback?.getExpandingKeys().has(key)) {
                     this.callback.updateSkeletonKeys(key);
                 }
@@ -1282,9 +1549,11 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                     return;
                 }
                 this.callback.updateExpand(function (result, skeletonKeys, expandingKeys, expanded) {
+                    // do not show skeleton if returns in < 250ms
                     if (showSkeletonTimeout) {
                         clearTimeout(showSkeletonTimeout);
                     }
+                    // bail early and remove skeletons if no longer being expanded
                     if (skeletonKeys.has(key)) {
                         skeletonKeys = skeletonKeys.delete([key]);
                     }
@@ -1308,6 +1577,8 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             }.bind(this));
         };
         this._recacheData = (data, metadata) => {
+            // could slice/reverse/forEach the array but need to do it on both then
+            // going in reverse makes it easy to prepend to the caches
             for (let i = data.length - 1; i >= 0; i--) {
                 const itemData = data[i];
                 const itemMetadata = metadata[i];
@@ -1336,6 +1607,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 isOverflow: this._getOverflowFunc(),
                 success: this.handleFetchSuccess.bind(this),
                 error: () => {
+                    // set empty data when a fetch more errors
                     this._setNewData(null);
                 },
                 beforeFetch: () => {
@@ -1357,6 +1629,10 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             }
             return null;
         };
+        /**
+         * Checks whether the last item is in the current viewport
+         * @private
+         */
         this._isLastItemInViewport = () => {
             const styleClass = '.' + this.callback.getItemStyleClass() + ', .' + this.callback.getGroupStyleClass();
             const items = this.root.querySelectorAll(styleClass);
@@ -1371,9 +1647,16 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             return true;
         };
         this._cachedIteratorsAndResults = {};
+        // Create a clientId symbol that uniquely identify this consumer so that
+        // DataProvider which supports it can optimize resources
         this._clientId = Symbol();
+        // start fetching immediately
         this.fetchRows();
     }
+    /**
+     * Post-render hook after content is in the DOM
+     * @override
+     */
     postRender() {
         this.initialFetch = false;
     }
@@ -1393,19 +1676,33 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
     getFetchSize() {
         return this.scrollPolicyOptions.fetchSize;
     }
+    /**
+     * @override
+     */
     getMaxCount() {
         return this.scrollPolicyOptions.maxCount;
     }
     isInitialFetch() {
         return this.initialFetch;
     }
+    /**
+     * Renders skeletons for load more indicators at the bottom
+     */
     renderSkeletonsForLoadMore() { }
+    /**
+     * Renders skeletons for load more indicators at the bottom
+     */
     renderSkeletonsForExpand(key) { }
+    /**
+     * @override
+     */
     renderFetchedData(dataObj) {
+        // this could happen if destroy comes before fetch completes (note a refresh also causes destroy)
         if (this.callback == null) {
             return;
         }
         const result = this._renderOutOfRangeData();
+        // should not happen
         if (dataObj == null || dataObj.value == null) {
             return result;
         }
@@ -1415,9 +1712,12 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             result.push(this.renderData(data, metadata));
             if (this._isLoadMoreOnScroll()) {
                 if (!dataObj.done) {
+                    // if number of items returned is zero but result indicates it's not done
+                    // log it
                     if (data.length === 0) {
                         info('handleFetchedData: zero data returned while done flag is false');
                     }
+                    // always append the loading indicator at the end except the case when max limit has been reached
                     if (!dataObj.maxCountLimit) {
                         if (this.domScroller == null) {
                             this._registerDomScroller();
@@ -1436,6 +1736,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         return !this.isFetching();
     }
     handleBeforeFetchByOffset() {
+        // do nothing for now, see subclass
     }
     handleFetchSuccess(result) {
         if (result != null) {
@@ -1447,6 +1748,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         error('iterating dataprovider content handler fetch error :' + reason);
     }
     renderData(data, metadata) {
+        // component might have been destroyed before fetch success is handled
         if (this.callback == null) {
             return null;
         }
@@ -1456,6 +1758,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             if (data[i] == null || metadata[i] == null) {
                 continue;
             }
+            // verify key type
             if (!this.verifyKey(metadata[i].key)) {
                 error('encounted a key with invalid data type.  Acceptable data types for key are: ' +
                     this.validKeyTypes);
@@ -1503,6 +1806,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 const key = keys[i];
                 const data = detail.data != null ? detail.data[i] : null;
                 const metadata = detail.metadata != null ? detail.metadata[i] : null;
+                // if it's within local data range, then just patch the local data and re-render
                 if (index >= startIndex && index <= endIndex) {
                     const returnVal = withinRangeDataCallback(newData, key, index, data, metadata, newExpandingKeys);
                     if (returnVal != null) {
@@ -1527,6 +1831,15 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         }
         return -1;
     }
+    /**
+     * This method traverses down the group through parentKey,
+     * and finds the key of the last child
+     * in the innermost level
+     *
+     * @param metadata the current metadata
+     * @param parentKey the key of group we want to traverse
+     * @param maxLevel the maximum number of levels for traversal
+     */
     _findKeyForLastChild(metadata, parentKey, maxLevel) {
         if (maxLevel === 0) {
             warn('Maximum number of levels exceed');
@@ -1544,6 +1857,14 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             return null;
         }
     }
+    /**
+     * This method finds the index for the new group,
+     * through the index of the group before it and
+     * the size of its children if it has any.
+     *
+     * @param metadata the current metadata
+     * @param index index of the new group
+     */
     _findIndexForNewGroup(metadata, index) {
         if (index === 0)
             return 0;
@@ -1557,6 +1878,14 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             : this._findIndex(metadata, prevGroupKey);
         return prevGroupLastChildIndex + 1;
     }
+    /**
+     * This method finds the index for the last item,
+     * through the index of the last group and the size
+     * of its children if it has any.
+     *
+     * @param parentKey parentKey of new data
+     * @param data the current data
+     */
     _findIndexForLastItem(parentKey, data) {
         let index = -1;
         const lastItem = this._getLastItemByParentKey(parentKey, data);
@@ -1571,15 +1900,22 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             }
         }
         if (lastItem == null || index === -1) {
+            // parentKey cannot be found or cannot find index, skip this iteration
             return -1;
         }
         return index;
     }
+    /**
+     * Handles model refresh
+     * @override
+     */
     handleModelRefresh(detail) {
         if (detail?.keys?.size > 0) {
+            // when refresh event has keys, update children
             this.handleModelRefreshChildren(detail.keys);
         }
         else {
+            // recreate VirtualDomScroller
             if (this.domScroller) {
                 this.domScroller.destroy();
             }
@@ -1628,6 +1964,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                     else {
                         recacheData = data.slice(insertIndex + 1);
                         recacheMetadata = metadata.slice(insertIndex + 1);
+                        // need to make sure it fetches more in the future
                         if (recacheData.length > 0) {
                             done = false;
                             if (this.domScroller != null) {
@@ -1651,6 +1988,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             let newMetadata = finalResults.map((result) => result.value.metadata);
             updatedData = { value: { data: newData, metadata: newMetadata }, done: true };
         }
+        // now we have data that we need to use again in the future and can't refetch because of iterators
         if (recacheData != null) {
             this._recacheData(recacheData, recacheMetadata);
         }
@@ -1671,6 +2009,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 return;
             }
             this.callback.updateData((renderedData) => {
+                // remove corresponding children
                 if (renderedData) {
                     validKeys.forEach((key) => {
                         let metadata = renderedData.value.metadata;
@@ -1682,6 +2021,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                         }
                     });
                 }
+                // get updated data
                 let updatedData = this.getUpdatedData(finalResults, renderedData, validKeys);
                 return {
                     renderedData: updatedData
@@ -1689,6 +2029,11 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             });
         });
     }
+    /**
+     * Handles items insert mutation event
+     * @override
+     * @param detail
+     */
     handleItemsAdded(detail) {
         if (this.callback == null) {
             return;
@@ -1712,6 +2057,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 if ((indexes == null || indexes?.length == 0) &&
                     (addBeforeKeys == null || addBeforeKeys?.length == 0) &&
                     (parentKeys == null || parentKeys?.length == 0)) {
+                    // insert at the end
                     if (newData.done && !newData.maxCountLimit) {
                         newData.value.data.push(...detail.data);
                         newMetadata = this._updateAllMetadata(detail.metadata, null, newData);
@@ -1735,6 +2081,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                                 }
                                 else {
                                     index = this._findIndexForLastItem(parentKey, newData);
+                                    // parentKey cannot be found or cannot find index, skip this iteration
                                     if (index === -1) {
                                         return;
                                     }
@@ -1746,6 +2093,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                                 }
                                 else {
                                     index = this._findIndex(newData.value.metadata, parentKey);
+                                    // parentKey cannot be found or cannot find index, skip this iteration
                                     if (index === -1) {
                                         return;
                                     }
@@ -1754,6 +2102,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                             }
                             else {
                                 index = this._findIndexForLastItem(parentKey, newData);
+                                // parentKey cannot be found or cannot find index, skip this iteration
                                 if (index === -1) {
                                     return;
                                 }
@@ -1771,6 +2120,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                             }
                         }
                         else {
+                            // add an item only when the parent is expanded
                             if (this._isExpanded(parentKey) && newData.done && !newData.maxCountLimit) {
                                 newData.value.data.push(data);
                                 newData.value.metadata.push(metadata);
@@ -1778,6 +2128,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                         }
                     });
                 }
+                // update DomScroller
                 if (this.domScroller && this.domScroller.handleItemsAdded) {
                     this.domScroller.handleItemsAdded(indexes);
                 }
@@ -1799,12 +2150,18 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             itemsAdded();
         }
     }
+    /**
+     * Handles items removal mutation event
+     * @override
+     * @param detail
+     */
     handleItemsRemoved(detail) {
         this._handleItemsMutated(detail, 'keys', (indexes) => {
             if (this.domScroller.handleItemsRemoved) {
                 this.domScroller.handleItemsRemoved(indexes);
             }
         }, (newData, key) => {
+            // could not rely on index since newData is changing
             const index = this._findIndex(newData.value.metadata, key);
             if (index > -1) {
                 const count = IteratingTreeDataProviderContentHandler.getLocalDescendentCount(newData.value.metadata, index) + 1;
@@ -1814,7 +2171,16 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         });
         super.handleItemsRemoved(detail);
     }
+    /**
+     * Handle update of an item within the current rendered range
+     * @param key the key of the updated item
+     */
     handleCurrentRangeItemUpdated() { }
+    /**
+     * Handles items update mutation event
+     * @override
+     * @param detail
+     */
     handleItemsUpdated(detail) {
         const itemsUpdated = () => {
             this._handleItemsMutated(detail, 'keys', (indexes) => {

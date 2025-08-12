@@ -92,17 +92,36 @@ if(additional){
       <?js= self.partial('themes.tmpl', data) ?>
     <?js
     }?>
-    <?js if (data.description) { ?>
-    <div class="description">
+    <?js 
+    if (data.description) { ?>
+      <div class="description">
         <?js= data.description ?>
         <?js 
         var properties = data.properties;
         if (data.kind === 'event' && !properties) { ?>
           <p>See <a href="https://www.oracle.com/pls/topic/lookup?ctx=jetlatest&id=customelementoverview#ce-events-section" target="_blank">Events and Listeners</a> for additional information.</p>
-        <?js } ?>
-    </div>
-    <?js } ?>
-    <?js if (data.ojdeprecateddescription) { 
+        <?js 
+        } ?>
+      </div>
+    <?js 
+    }
+    if (data.kind === 'typedef' ) { ?>
+      <div class="description">
+        <?js
+        if (data.ojexports) {
+          const importDetails = data.usageSample; 
+          if(importDetails) { ?>
+            <dl>
+              <dt><h5>Typescript Import Format</h5></dt>
+              <dd><?js= importDetails ?></dd>
+            </dl>
+          <?js
+          }
+        }?>
+      </div>
+    <?js
+    } 
+    if (data.ojdeprecateddescription) { 
         ?>
         <div class="description deprecated-hidden"><?js= data.ojdeprecateddescription ?></div>
     <?js } ?>

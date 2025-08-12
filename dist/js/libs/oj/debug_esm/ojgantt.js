@@ -58,7 +58,7 @@ var __oj_gantt_metadata =
       "type": "Array<Object>|Promise"
     },
     "dependencyData": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -306,7 +306,7 @@ var __oj_gantt_metadata =
       }
     },
     "rowData": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -384,7 +384,7 @@ var __oj_gantt_metadata =
       "value": "off"
     },
     "taskData": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -3056,7 +3056,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
      * @ojshortdesc Specifies the DataProvider for the dependencies of the Gantt. See the Help documentation for more information.
      * @memberof oj.ojGantt
      * @instance
-     * @type {?Object}
+     * @type {?DataProvider}
      * @ojsignature {target: "Type", value: "?(DataProvider<K1, D1>)", jsdocOverride:true}
      * @default null
      * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
@@ -3730,7 +3730,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
      * @ojshortdesc Specifies the DataProvider for the rows of the Gantt. See the Help documentation for more information.
      * @memberof oj.ojGantt
      * @instance
-     * @type {?Object}
+     * @type {?DataProvider}
      * @ojsignature {target: "Type", value: "?(DataProvider<K3, D3>)", jsdocOverride:true}
      * @default null
      * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
@@ -4108,7 +4108,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
      * @ojshortdesc Specifies the DataProvider for the tasks of the Gantt. See the Help documentation for more information.
      * @memberof oj.ojGantt
      * @instance
-     * @type {?Object}
+     * @type {?DataProvider}
      * @ojsignature {target: "Type", value: "?(DataProvider<K2, D2>)", jsdocOverride:true}
      * @default null
      * @ojdeprecated {since: '12.0.0', description: 'Set the data using the row-data attribute instead.'}
@@ -6107,8 +6107,14 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
       var viewportChangePayload = {
         viewportStart: viewportStart,
         viewportEnd: viewportEnd,
-        majorAxisScale: majorAxisScale,
-        minorAxisScale: minorAxisScale
+        majorAxisScale:
+          majorAxisScale && typeof majorAxisScale !== 'string'
+            ? majorAxisScale.name
+            : majorAxisScale,
+        minorAxisScale:
+          minorAxisScale && typeof minorAxisScale !== 'string'
+            ? minorAxisScale.name
+            : minorAxisScale
       };
 
       this._UserOptionChange('viewportStart', viewportStart);

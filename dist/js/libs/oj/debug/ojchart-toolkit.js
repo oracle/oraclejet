@@ -2486,6 +2486,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
           dataLabelStyle: new dvt.CSSStyle(''),
           _dataLabelStyle: new dvt.CSSStyle(''),
           dataLabelPosition: 'auto',
+          resolveLabelOverlap: "off",
           dataLabelOutline: 'auto',
           funnelBackgroundColor: '#EDEDED',
           x1Format: {},
@@ -5237,6 +5238,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         DvtChartTooltipUtils._addDatatipRow(datatipRows, chart, 'x', 'labelX', xVal, isTabular);
         DvtChartTooltipUtils._addDatatipRow(datatipRows, chart, 'y', 'labelY', val, isTabular);
 
+        const label = DvtChartStyleUtils.getDataLabel(chart, seriesIndex, groupIndex);
+        var displayLabel = chart.getOptions().valueFormats?.label?.tooltipDisplay != 'off';
+        if (label && displayLabel && DvtChartTypeUtils.isScatter(chart)) {
+          DvtChartTooltipUtils._addDatatipRow(
+            datatipRows,
+            chart,
+            'label',
+            'labelDataLabel',
+            label,
+            isTabular
+          );
+        }
+
         // Also add the z value for a bubble chart
         if (DvtChartTypeUtils.isBubble(chart))
           DvtChartTooltipUtils._addDatatipRow(datatipRows, chart, 'z', 'labelZ', zVal, isTabular);
@@ -5383,7 +5397,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       }
 
       // Create tooltip value
-      if (type != 'series' && type != 'group')
+      if (type != 'label' && type != 'series' && type != 'group')
         value = DvtChartFormatUtils$1.formatVal(chart, valueFormat, value);
 
       if (isTabular) {
@@ -23890,7 +23904,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         this._step = this._averageInterval;
 
         if (!this._skipGaps) {
-          // BUG JET-31414 (30393656) MISSING '28' ON X AXIS FOR COORDINATE TO VALUE CONVERSION DEMO
+          //  (30393656) MISSING '28' ON X AXIS FOR COORDINATE TO VALUE CONVERSION DEMO
           // Since the axis labels are obtained from the groups, it may miss a few values.
           // Find and treat the missing values before proceeding.
           times = DvtTimeAxisInfo._treatMissingValues(times, this._calculateGranularity());
@@ -25983,7 +25997,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       dataColor,
       type,
       isStackLabel,
-      originalBarSize
+      originalBarSize,
+      marker
     ) => {
       if (DvtChartTypeUtils.isOverview(chart))
         // no data label in overview
@@ -26048,6 +26063,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       label.setX(dataItemBounds.x + dataItemBounds.w / 2);
       label.alignCenter();
       label.alignMiddle();
+      label._seriesIndex = seriesIndex;
+      label._groupIndex = groupIndex;
+      label._marker = marker;
       var textDim = label.getDimensions();
       var plotAreaDims = chart.getCache().getFromCache('plotAreaDims');
       if (!plotAreaDims) {
@@ -26284,7 +26302,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
           seriesIndex,
           groupIndex,
           itemIndex,
-          marker.getDataColor()
+          marker.getDataColor(),
+          null,
+          null,
+          null,
+          marker
         );
       } else if (marker instanceof DvtChartRangeMarker) {
         DvtChartPlotAreaRenderer._renderDataLabel(
@@ -31300,6 +31322,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       // Restore focus and reapply highlight
       chart.highlight(DvtChartDataUtils.getHighlightedCategories(chart));
       chart.__restoreChartFocus(focusState);
+      chart.__resolveDataLabelPosition();
     },
 
     /**
@@ -32631,6 +32654,170 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     }
   };
 
+  function getLabelPosition(chart, seriesIndex, groupIndex) {
+    const item = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
+    const labelPositionItem =
+      item.labelPosition != 'auto' && item.labelPosition != undefined
+        ? item.labelPosition
+        : undefined;
+    const series = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
+    const labelPositionSeries =
+      series.labelPosition != 'auto' && series.labelPosition != undefined
+        ? series.labelPosition
+        : undefined;
+    return labelPositionItem || labelPositionSeries;
+  }
+
+  function getDataLabelOverlapPreference(labelPosition, resolveLabelOverlap) {
+    if (resolveLabelOverlap === 'off') {
+      return [labelPosition];
+    }
+
+    if (labelPosition === 'aboveMarker') {
+      return ['aboveMarker', 'belowMarker', 'beforeMarker', 'afterMarker'];
+    } else if (labelPosition === 'belowMarker') {
+      return ['belowMarker', 'aboveMarker', 'beforeMarker', 'afterMarker'];
+    } else if (labelPosition === 'beforeMarker') {
+      return ['beforeMarker', 'afterMarker', 'aboveMarker', 'belowMarker'];
+    } else {
+      return ['afterMarker', 'aboveMarker', 'belowMarker', 'beforeMarker'];
+    }
+  }
+
+  function getLabelLayout(chart, label, labelPosition, status, isRTL, removeOverlappingLabel) {
+    let { x: labelX, y: labelY, h: labelHeight, w: labelWidth } = label.getDimensions();
+    let { x: markerX, y: markerY, h: markerHeight, w: markerWidth } = label._marker.getDimensions();
+
+    let seriesIndex = label._seriesIndex;
+    let groupIndex = label._groupIndex;
+
+    const userPosition = getLabelPosition(chart, seriesIndex, groupIndex);
+    const position = userPosition || labelPosition;
+    const labelPadding = 4;
+
+    switch (position) {
+      case 'aboveMarker':
+        labelX = markerX + markerWidth / 2 - labelWidth / 2;
+        labelY = markerY - labelHeight; // No need for buffer because itemBounds.y accounts for typography baselines
+        break;
+      case 'belowMarker':
+        labelX = markerX + markerWidth / 2 - labelWidth / 2;
+        labelY = markerY + markerHeight + labelPadding;
+        break;
+      case 'beforeMarker':
+        labelX = isRTL ? markerX + markerWidth + labelPadding : markerX - labelPadding - labelWidth;
+        labelY = markerY + markerHeight / 2 - labelHeight / 2;
+        break;
+      case 'afterMarker':
+        labelX = isRTL ? markerX - labelPadding - labelWidth : markerX + markerWidth + labelPadding;
+        labelY = markerY + markerHeight / 2 - labelHeight / 2;
+        break;
+      case 'none':
+        // No need to do anything; label won't be rendered anyway
+        break;
+      default:
+        break;
+    }
+
+    return {
+      labelX,
+      labelY,
+      labelWidth,
+      labelHeight,
+      labelPosition: position,
+      label,
+      status: userPosition && !removeOverlappingLabel ? 'DONE' : status
+    };
+  }
+
+  function getInitialAnchors(chart) {
+    // sort markers based on y values
+    const dataLabels =
+      chart._dataLabels?.sort((a, b) => {
+        const dimA = a._marker.getDimensions();
+        const dimB = b._marker.getDimensions();
+
+        return dimA.y - dimB.y || dimA.x - dimB.x;
+      }) || [];
+
+    const anchors = dataLabels.map((label) => {
+      const { x, y, w, h } = label._marker.getDimensions();
+      return {
+        minX: x,
+        minY: y,
+        maxX: x + w,
+        maxY: y + h
+      };
+    });
+
+    return { pending: dataLabels, anchors };
+  }
+
+  function resolveDataLabelOverlap(chart) {
+    const { w: plotAreaWidth, h: plotAreaHeight } = chart.__getPlotAreaSpace();
+
+    const styleDefaults = chart.getOptions().styleDefaults;
+    const removeOverlappingLabel = styleDefaults.hideOverlappingLabels === 'on';
+
+    const isRTL = dvt.Agent.isRightToLeft(chart.getCtx());
+    const { pending, anchors } = getInitialAnchors(chart);
+
+    const spatialIndex = new dvt.PixelMap();
+
+    anchors.forEach(({ minX, minY, maxX, maxY }) => {
+      spatialIndex.setOverlap(minX, minY, maxX, maxY);
+    });
+
+    const positionOrder = getDataLabelOverlapPreference(
+      styleDefaults.dataLabelPosition,
+      styleDefaults.resolveLabelOverlap
+    );
+
+    if (removeOverlappingLabel) {
+      positionOrder.push('none');
+    }
+
+    let pendingLayouts = pending.map((label) =>
+      getLabelLayout(chart, label, positionOrder[0], 'PENDING', isRTL, removeOverlappingLabel)
+    );
+
+    positionOrder.forEach((labelPosition, i) => {
+      const pending = pendingLayouts.filter((l) => l.status === 'PENDING');
+      pending.forEach((l) => {
+        const { labelX, labelY, labelWidth, labelHeight } = getLabelLayout(
+          chart,
+          l.label,
+          labelPosition,
+          'PENDING',
+          isRTL,
+          removeOverlappingLabel
+        );
+
+        const isOutofBound =
+          labelX < 0 ||
+          labelY < 0 ||
+          labelX + labelWidth > plotAreaWidth ||
+          labelY + labelHeight > plotAreaHeight;
+
+        if (
+          !isOutofBound &&
+          !spatialIndex.isOverlapping(labelX, labelY, labelX + labelWidth, labelY + labelHeight)
+        ) {
+          l.labelX = labelX;
+          l.labelY = labelY;
+          l.labelPosition = labelPosition;
+          l.status = 'DONE';
+          spatialIndex.setOverlap(labelX, labelY, labelX + labelWidth, labelY + labelHeight);
+          l.label.setX(l.labelX + l.labelWidth / 2);
+          l.label.setY(l.labelY + l.labelHeight / 2);
+        } else if (labelPosition === 'none') {
+          l.status = 'DONE';
+          l.label._parent.removeChild(l.label);
+        }
+      });
+    });
+  }
+
   /**
    * Chart component.
    * @param {dvt.Context} context The rendering context.
@@ -32958,10 +33145,25 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
       // Restore focus
       this.__restoreChartFocus(focusState);
+      this.__resolveDataLabelPosition();
 
       if (!this.Animation)
         // If not animating, that means we're done rendering, so fire the ready event.
         this.RenderComplete();
+    }
+
+    __resolveDataLabelPosition() {
+      const isScatter = this.Options.type === 'scatter';
+      const hasDataLabel = this._dataLabels && this._dataLabels.length > 0;
+      const removeOverlappingLabel = this.Options.styleDefaults.hideOverlappingLabels === 'on';
+      const resolveOverlap = this.Options.styleDefaults.resolveLabelOverlap === 'on';
+      if (!isScatter || !hasDataLabel) {
+        return;
+      }
+
+      if (removeOverlappingLabel || resolveOverlap) {
+        resolveDataLabelOverlap(this);
+      }
     }
 
     /**
@@ -33049,6 +33251,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       }
 
       this._plotArea = null;
+      this._dataLabels = [];
 
       // Reset cache
       this.getCache().clearCache();
@@ -34666,7 +34869,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         [
           this.Options['shortDesc'] ? this.Options['shortDesc'] : null,
           isNoData ? translations.labelNoData : null
-        ]
+        ].filter(Boolean)
       );
 
       if (this.IsParentRoot()) {

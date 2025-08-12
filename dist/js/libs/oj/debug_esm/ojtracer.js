@@ -51,7 +51,7 @@ class NoOpSpan {
         const sc = {
             traceId: '',
             spanId: '',
-            traceFlags: 0
+            traceFlags: 0 // Need numeric instead of code constant to avoid third party
         };
         return sc;
     }
@@ -105,6 +105,7 @@ class NoOpTracerProvider {
     }
 }
 
+// Return some descriptive text to help identify this element for the Tracer
 function getDescriptiveText(element) {
     const state = CustomElementUtils.getElementState(element);
     return state?.getDescriptiveText() ?? '';
@@ -119,5 +120,9 @@ function getTracerProvider() {
     }
     return tracerProvider;
 }
+function endRecordMode() { }
+function startRecordMode(config) {
+    return null;
+}
 
-export { getDescriptiveText, getTracerProvider, setTracerProvider };
+export { endRecordMode, getDescriptiveText, getTracerProvider, setTracerProvider, startRecordMode };

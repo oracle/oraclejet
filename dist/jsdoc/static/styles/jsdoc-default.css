@@ -621,6 +621,23 @@ code.pretty-print-noprettify {
     float: left;
     width: 20%;
 }
+#quick-nav .subList.typedef li a.exported {
+    display: inline-block;
+    width: 100%;
+    padding: 1px 0px 1px 13px;
+    position: relative;
+    text-decoration: none; 
+    color: inherit; 
+}
+
+#quick-nav h4 {
+    font-size: 100%;
+}
+
+#quick-nav ul.subList.typedef {
+    margin-top: 0
+}
+
 .quick-nav-section7 {
     float: left;
     width: 20%;

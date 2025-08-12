@@ -477,6 +477,8 @@ define(['exports'], function (exports) { 'use strict';
                pointer[currAttributeName].splice(lastIndex, 0, newData);
            }
            else {
+               // if last item in path is -1
+               // will just mutate last node
                if (Array.isArray(pointer[currAttributeName])) {
                    pointer[currAttributeName] = [...pointer[currAttributeName]];
                }
@@ -500,6 +502,8 @@ define(['exports'], function (exports) { 'use strict';
        for (let i = 0; i < newPath.length; i++) {
            let currAttributeName = newPath[i];
            if (i === newPath.length - 1) {
+               // if last item in path is -1
+               // will just mutate last node
                if (currAttributeName === -1) {
                    currAttributeName = pointer.length - 1;
                }
@@ -527,11 +531,14 @@ define(['exports'], function (exports) { 'use strict';
            newPath.push(childrenAttribute);
        }
        if (newPath.length === 0) {
+           //remove node at root level
            if (pointer.length === 1) {
                pointer = pointer.splice(0, 1);
            }
            else {
                if (removedItem === -1) {
+                   // if last item in path is -1
+                   // will just mutate last node
                    removedItem = pointer.length - 1;
                }
                pointer = pointer.splice(removedItem, 1);
@@ -546,6 +553,8 @@ define(['exports'], function (exports) { 'use strict';
                else {
                    pointer[currAttributeName] = [...pointer[currAttributeName]];
                    if (removedItem === -1) {
+                       // if last item in path is -1
+                       // will just mutate last node
                        removedItem = pointer[currAttributeName].length - 1;
                    }
                    pointer[currAttributeName].splice(removedItem, 1);

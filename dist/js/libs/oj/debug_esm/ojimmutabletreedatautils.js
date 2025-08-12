@@ -475,6 +475,8 @@ function addNode(baseArray, path, newData, childrenAttribute = 'children') {
             pointer[currAttributeName].splice(lastIndex, 0, newData);
         }
         else {
+            // if last item in path is -1
+            // will just mutate last node
             if (Array.isArray(pointer[currAttributeName])) {
                 pointer[currAttributeName] = [...pointer[currAttributeName]];
             }
@@ -498,6 +500,8 @@ function replaceNode(baseArray, path, newData, childrenAttribute = 'children') {
     for (let i = 0; i < newPath.length; i++) {
         let currAttributeName = newPath[i];
         if (i === newPath.length - 1) {
+            // if last item in path is -1
+            // will just mutate last node
             if (currAttributeName === -1) {
                 currAttributeName = pointer.length - 1;
             }
@@ -525,11 +529,14 @@ function removeNode(baseArray, path, childrenAttribute = 'children') {
         newPath.push(childrenAttribute);
     }
     if (newPath.length === 0) {
+        //remove node at root level
         if (pointer.length === 1) {
             pointer = pointer.splice(0, 1);
         }
         else {
             if (removedItem === -1) {
+                // if last item in path is -1
+                // will just mutate last node
                 removedItem = pointer.length - 1;
             }
             pointer = pointer.splice(removedItem, 1);
@@ -544,6 +551,8 @@ function removeNode(baseArray, path, childrenAttribute = 'children') {
             else {
                 pointer[currAttributeName] = [...pointer[currAttributeName]];
                 if (removedItem === -1) {
+                    // if last item in path is -1
+                    // will just mutate last node
                     removedItem = pointer[currAttributeName].length - 1;
                 }
                 pointer[currAttributeName].splice(removedItem, 1);

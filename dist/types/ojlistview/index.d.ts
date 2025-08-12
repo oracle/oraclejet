@@ -48,6 +48,7 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
     };
     groupHeaderPosition: 'static' | 'sticky';
     item: {
+        enterKeyFocusBehavior?: string;
         /** @deprecated since 13.0.0 - Not accessible by screen reader. */
         focusable?: ((param0: ojListView.ItemContext<K, D>) => boolean) | boolean;
         renderer?: ((param0: ojListView.ItemContext<K, D>) => {
@@ -74,27 +75,46 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
     selected: KeySet<K>;
     /** @deprecated since 7.0.0 - Use selected attribute instead. */
     selection: K[];
-    selectionMode: 'none' | 'single' | 'multiple';
+    selectionMode: 'none' | 'single' | 'multiple' | 'multipleToggle';
     selectionRequired: boolean;
     translations: {
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleExpandCollapseInstructionText?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view and oj-list-view */
         accessibleGroupCollapse?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view and oj-list-view */
         accessibleGroupExpand?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleNavigateSkipItems?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleReorderAfterItem?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleReorderBeforeItem?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleReorderInsideItem?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleReorderTouchInstructionText?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleSuggestion?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         indexerCharacters?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         labelCopy?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         labelCut?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         labelPaste?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         labelPasteAfter?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         labelPasteBefore?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         msgFetchCompleted?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         msgFetchingData?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         msgItemsAppended?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         msgNoData?: string;
     };
     addEventListener<T extends keyof ojListViewEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojListViewEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -346,6 +366,7 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
     };
     groupHeaderPosition: 'static' | 'sticky';
     item: {
+        enterKeyFocusBehavior?: string;
         /** @deprecated since 13.0.0 - Not accessible by screen reader. */
         focusable?: ((param0: ojListView.ItemContext<K, D>) => boolean) | boolean;
         renderer?: ((param0: ojListView.ItemContext<K, D>) => {
@@ -372,27 +393,46 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
     selected: KeySet<K>;
     /** @deprecated since 7.0.0 - Use selected attribute instead. */
     selection: K[];
-    selectionMode: 'none' | 'single' | 'multiple';
+    selectionMode: 'none' | 'single' | 'multiple' | 'multipleToggle';
     selectionRequired: boolean;
     translations: {
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleExpandCollapseInstructionText?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view and oj-list-view */
         accessibleGroupCollapse?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view and oj-list-view */
         accessibleGroupExpand?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleNavigateSkipItems?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleReorderAfterItem?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleReorderBeforeItem?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleReorderInsideItem?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleReorderTouchInstructionText?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         accessibleSuggestion?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         indexerCharacters?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         labelCopy?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         labelCut?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         labelPaste?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         labelPasteAfter?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         labelPasteBefore?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         msgFetchCompleted?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         msgFetchingData?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         msgItemsAppended?: string;
+        /** @deprecated since 19.0.0 - This usage will not be supported in oj-c-list-view */
         msgNoData?: string;
     };
 }

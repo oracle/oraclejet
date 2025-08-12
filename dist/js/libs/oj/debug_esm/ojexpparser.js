@@ -463,6 +463,9 @@ const ExpParser = function () {
         raw: identifier
       };
     }
+    if (_unsupported.has(identifier)) {
+      _throwError(`The '${identifier}' keyword is not supported in expressions.`);
+    }
     return {
       type: IDENTIFIER,
       name: identifier
@@ -919,10 +922,9 @@ const ExpParser = function () {
       _gobbleSpaces(context);
       const funcBody = _gobbleExpression(context);
       _gobbleSpaces(context);
-      context.index++;
       returnNode = {
         type: BLOCK_STATEMENT,
-        expr: expr.substring(startDef, context.index - 1),
+        expr: expr.substring(startDef, context.index),
         body: {
           type: RETURN_STATEMENT,
           argument: funcBody
@@ -1028,6 +1030,9 @@ const ExpParser = function () {
   _literals.set('false', false);
   _literals.set('null', null);
   _literals.set('undefined', undefined);
+
+  // Identifiers that are not supported by the parser.
+  var _unsupported = new Set(['await']);
 
   // Returns the precedence of a binary operator or `0` if it isn't a binary operator
   function _binaryPrecedence(op_val, prev_op_val, prev_op_prec) {

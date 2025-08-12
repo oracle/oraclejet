@@ -4381,6 +4381,14 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     return isPending;
   };
 
+  /**
+   * Component that encapsulates the PopupService to open a popup when the
+   * VPopup is rendered and close a popup when the VPopup is removed.
+   * The content passed into the VPopup by a parent is the popup content.
+   * NOTE: The popup content must be single rooted and cannot change node type,
+   * meaning the popup content cannot change from a div to a span on
+   * subsequent renders, but the div content and div properties can change.
+   */
   class VPopup extends preact.Component {
       constructor() {
           super(...arguments);
@@ -4392,12 +4400,19 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
           return (jsxRuntime.jsx("div", { style: { display: 'none' }, ref: this._setRootRef, children: props.children }));
       }
       componentDidMount() {
+          // The PopupService expects jQuery objects.
+          // TODO Move jQuery logic to inside PopupService and have it wrap DOM nodes
           this._popup = $(this._rootRef.firstChild);
+          // Using @type to provide type checking for this internal type
+          // TODO remove when we figure out how to expose internal only type declarations
+          /** @type {!Object.<PopupService.OPTION, ?>} */
           const options = {
               [PopupService.OPTION.POPUP]: this._popup,
               [PopupService.OPTION.EVENTS]: {
                   [PopupService.EVENT.POPUP_AUTODISMISS]: this.props.autoDismiss,
                   [PopupService.EVENT.POPUP_REFRESH]: function () {
+                      // JET-35914 - dropdown is not being positioned correctly
+                      // reposition the popup when refreshed
                       this._popup.position(this._getPosition());
                   }.bind(this)
               },
@@ -4412,15 +4427,18 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
           PopupService.getInstance().close({ [PopupService.OPTION.POPUP]: this._popup });
       }
       componentDidUpdate() {
+          // JET-35914 - dropdown is not being positioned correctly
+          // reposition the popup after rendering
           this._popup.position(this._getPosition());
       }
       _getPosition() {
+          // TODO should PositionUtils.normalizeHorizontalAlignment always be called by the PopupService?
           return PositionUtils.normalizeHorizontalAlignment(this.props.position, DomUtils.getReadingDirection() === 'rtl');
       }
   }
   VPopup.defaultProps = {
       autoDismiss: null,
-      layerSelectors: '',
+      layerSelectors: '', // Required PopupService option
       position: {}
   };
 
@@ -4431,22 +4449,25 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
   }
   _a = VLayerUtils;
   VLayerUtils._getPopupServiceOptions = (element, launcherElement, level, priority) => {
+      // PopupService
       const PSOptions = {};
-      const PSoption = oj.PopupService.OPTION;
+      const PSoption = PopupService.OPTION;
       PSOptions[PSoption.POPUP] = element;
       PSOptions[PSoption.LAUNCHER] = launcherElement;
       PSOptions[PSoption.LAYER_SELECTORS] =
           priority === 'messages' ? 'oj-messages-layer' : 'oj-popup-layer';
-      PSOptions[PSoption.LAYER_LEVEL] = level ?? oj.PopupService.LAYER_LEVEL.NEAREST_ANCESTOR;
+      PSOptions[PSoption.LAYER_LEVEL] = level ?? PopupService.LAYER_LEVEL.NEAREST_ANCESTOR;
       PSOptions[PSoption.CUSTOM_ELEMENT] = false;
-      const PSEvent = oj.PopupService.EVENT;
+      const PSEvent = PopupService.EVENT;
       PSOptions[PSoption.EVENTS] = {
           [PSEvent.POPUP_BEFORE_OPEN]: () => { },
           [PSEvent.POPUP_AFTER_OPEN]: () => { },
           [PSEvent.POPUP_BEFORE_CLOSE]: () => { },
           [PSEvent.POPUP_AFTER_CLOSE]: () => { },
           [PSEvent.POPUP_AUTODISMISS]: () => { },
-          [PSEvent.POPUP_REFRESH]: () => { },
+          [PSEvent.POPUP_REFRESH]: () => {
+              _a._refresh(element);
+          },
           [PSEvent.POPUP_CLOSE]: () => {
               _a._closeLayerHost(element, launcherElement);
           },
@@ -4482,10 +4503,13 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       if (!vpopupCoreElement) {
           vpopupCoreElement = document.createElement('div');
           vpopupCoreElement.setAttribute('id', elementId);
+          // explicitly specifying a binding provider of 'preact' here otherwise
+          // custom elements inside the Layer may walk up the DOM and think that
+          // they are in a ko-activated subtree and wait forever for bindings to be applied
           vpopupCoreElement.setAttribute('data-oj-binding-provider', 'preact');
           document.body.appendChild(vpopupCoreElement);
       }
-      const popupServiceInstance = oj.PopupService.getInstance();
+      const popupServiceInstance = PopupService.getInstance();
       const popupServiceOptions = _a._getPopupServiceOptions(vpopupCoreElement, launcherElement, level, priority);
       popupServiceInstance.open(popupServiceOptions);
       return vpopupCoreElement;
@@ -4493,10 +4517,15 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
   VLayerUtils._closeLayerHost = (element, launcherElement) => {
       if (!element)
           return;
-      const popupServiceInstance = oj.PopupService.getInstance();
+      const popupServiceInstance = PopupService.getInstance();
       const popupServiceOptions = _a._getPopupServiceOptions(element, launcherElement);
       popupServiceInstance.close(popupServiceOptions);
       element.remove();
+  };
+  VLayerUtils._refresh = (element) => {
+      if (!element)
+          return;
+      PopupService.getInstance().triggerOnDescendents($(element), PopupService.EVENT.POPUP_REFRESH);
   };
   VLayerUtils.onLayerUnmount = (element, layer) => {
       if (!element)
@@ -4506,7 +4535,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
           return;
       if (layerHost.children.length === 0) {
           delete element[V_LAYER_HOST_ID_REF];
-          const popupServiceInstance = oj.PopupService.getInstance();
+          const popupServiceInstance = PopupService.getInstance();
           const popupServiceOptions = _a._getPopupServiceOptions(layerHost, null);
           popupServiceInstance.close(popupServiceOptions);
           layerHost.remove();
@@ -4521,6 +4550,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
   exports.PositionUtils = PositionUtils;
   exports.VLayerUtils = VLayerUtils;
   exports.VPopup = VPopup;
+  exports.ZOrderUtils = ZOrderUtils;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

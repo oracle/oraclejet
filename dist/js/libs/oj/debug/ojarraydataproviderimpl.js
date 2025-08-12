@@ -73,6 +73,9 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
         }
         return null;
     };
+    /**
+     * Get value for attribute
+     */
     const getVal = (val, attr) => {
         if (typeof attr === 'string') {
             const dotIndex = attr.indexOf('.');
@@ -90,6 +93,9 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
         }
         return val[attr];
     };
+    /**
+     * Get all values in a row
+     */
     const getAllVals = (val) => {
         if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
             return val;
@@ -100,6 +106,7 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
     };
     const filterRowAttributes = (fetchAttribute, data, updatedData) => {
         if (Array.isArray(fetchAttribute)) {
+            // first see if we want all attributes
             let fetchAllAttributes = false;
             fetchAttribute.forEach((key) => {
                 if (key === _ATDEFAULT || key.name === _ATDEFAULT) {
@@ -122,11 +129,13 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                         if (attribute.startsWith('!')) {
                             attribute = attribute.substr(1, attribute.length - 1);
                             if (attribute === dataAttr) {
+                                // if it's excluded then set the exclusion flag and break
                                 excludeAttribute = true;
                                 break;
                             }
                         }
                         else if (attribute === dataAttr) {
+                            // if there is a fetch attribute with the same name then use that
                             fetchAttr = fetchAttribute[i];
                             break;
                         }
@@ -192,9 +201,15 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
             enumerable: true
         });
     };
+    /**
+     * Return an empty Set which is optimized to store keys
+     */
     const createOptimizedKeySet = (initialSet) => {
         return new ojSet(initialSet);
     };
+    /**
+     * Returns an empty Map which will efficiently store Keys returned by the DataProvider
+     */
     const createOptimizedKeyMap = (initialMap) => {
         if (initialMap) {
             const map = new ojMap();
@@ -216,6 +231,9 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
             return markNoProxy({ key });
         });
     };
+    /**
+     * Return the index of a key, or -1 if the key is not found.
+     */
     const indexOfKey = (searchKey, keys) => {
         let keyIndex = -1;
         let i;
@@ -267,6 +285,7 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                         const cachedIteratorInfo = this._parent._mapClientIdToIteratorInfo.get(this._clientId);
                         const cachedOffset = cachedIteratorInfo ? cachedIteratorInfo.offset : null;
                         const resultObj = this._nextFunc(this._params, cachedOffset, false, this._cacheObj);
+                        // Add a getter for totalFilteredRowCount
                         Object.defineProperty(resultObj.result.value, 'totalFilteredRowCount', {
                             get: () => {
                                 if (this._params?.includeFilteredRowCount === 'enabled') {
@@ -298,7 +317,10 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                     };
                     return this._parent.implOptions.supportAbortController
                         ? ojdataprovider.wrapWithAbortHandling(this._params?.signal, callback, false)
-                        :
+                        : // Using the syntax below as opposed to the more straightfoward
+                            // "new Promise((resolve, reject) => callback(resolve, reject))"
+                            // to allow Errors to be thrown rather than being turned into Promise rejections.
+                            // This avoids what would be a (subtle) change in behavior in MADP
                             callback(Promise.resolve.bind(Promise), Promise.reject.bind(Promise));
                 }
             };
@@ -355,7 +377,10 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
             };
             return this.implOptions.supportAbortController
                 ? ojdataprovider.wrapWithAbortHandling(fetchParameters?.signal, callback, false)
-                :
+                : // Using the syntax below as opposed to the more straightfoward
+                    // "new Promise((resolve, reject) => callback(resolve, reject))"
+                    // to allow Errors to be thrown rather than being turned into Promise rejections.
+                    // This avoids what would be a (subtle) change in behavior in MADP
                     callback(Promise.resolve.bind(Promise), Promise.reject.bind(Promise));
         }
         fetchByOffset(params) {
@@ -401,9 +426,15 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
             };
             return this.implOptions.supportAbortController
                 ? ojdataprovider.wrapWithAbortHandling(params?.signal, callback, false)
-                :
+                : // Using the syntax below as opposed to the more straightfoward
+                    // "new Promise((resolve, reject) => callback(resolve, reject))"
+                    // to allow Errors to be thrown rather than being turned into Promise rejections.
+                    // This avoids what would be a (subtle) change in behavior in MADP
                     callback(Promise.resolve.bind(Promise), Promise.reject.bind(Promise));
         }
+        /**
+         * Fetch the first block of data
+         */
         fetchFirst(params) {
             const offset = 0;
             return new this.AsyncIterable(new this.AsyncIterator(this, this._fetchFrom.bind(this), params, offset));
@@ -420,6 +451,8 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
             let totalFilteredRowCount = -1;
             if (filterDef) {
                 totalFilteredRowCount = 0;
+                // Always call getFilter to get a Filter instance, so any ArrayDataProvider options such as textFilterAttributes will work.
+                // This effectively ignore any "filter" property passed in filterCriterion.
                 let filterCriterion = ojdataprovider.FilterFactory.getFilter({
                     filterDef: filterDef,
                     filterOptions: this.options
@@ -435,6 +468,9 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
             }
             return totalFilteredRowCount;
         }
+        /**
+         * Get id value for row
+         */
         getId(row) {
             let id;
             const keyAttributes = this.options?.keyAttributes;
@@ -477,6 +513,9 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
             }
             return keys;
         }
+        /**
+         * Fetch from offset
+         */
         _fetchFrom(params, offset, useHasMore, cacheObj) {
             const fetchAttributes = params != null ? params.attributes : null;
             this.implOptions.generateKeysIfNeeded(() => this.generateKeys());
@@ -503,6 +542,8 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
             let filteredResultData;
             if (params != null && params.filterCriterion) {
                 let filterCriterion = null;
+                // Always call getFilter to get a Filter instance, so any constructor options such as textFilterAttributes will work.
+                // This effectively ignore any "filter" property passed in filterCriterion.
                 filterCriterion = ojdataprovider.FilterFactory.getFilter({
                     filterDef: params.filterCriterion,
                     filterOptions: this.options
@@ -510,6 +551,7 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                 let i = 0;
                 while (resultData.length < fetchSize && i < mappedData.length) {
                     if (filterCriterion.filter(mappedData[i])) {
+                        // updatedOffset is the post-filtered offset
                         if (updatedOffset >= offset) {
                             resultData.push(mappedData[i]);
                             resultKeys.push(mappedKeys[i]);
@@ -548,6 +590,9 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                 offset: updatedOffset
             };
         }
+        /**
+         * Get cached index map
+         */
         _getCachedIndexMap(sortCriteria, cacheObj) {
             if (cacheObj &&
                 cacheObj['indexMap'] &&
@@ -564,6 +609,9 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
             }
             return indexMap;
         }
+        /**
+         * Sort data
+         */
         _sortData(indexMap, sortCriteria) {
             const rowData = this.implOptions.getData();
             const indexedData = indexMap.map((index) => {
@@ -589,6 +637,7 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
             let addCount = 0;
             let deleteCount = 0;
             this._mutationSequenceNum++;
+            // first check if we only have adds or only have deletes
             let onlyAdds = true;
             let onlyDeletes = true;
             this._resetTotalFilteredRowCount = true;
@@ -609,6 +658,7 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
             let operationRemoveEventDetail = null;
             const generatedKeys = this.implOptions.generateKeysIfNeeded(() => this.generateKeys());
             if (!onlyAdds && !onlyDeletes) {
+                // squash deletes and adds into updates
                 for (i = 0; i < changes.length; i++) {
                     index = changes[i].index;
                     status = changes[i].status;
@@ -619,6 +669,7 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                             status !== changes[j]['status'] &&
                             updatedIndexes.indexOf(i) < 0 &&
                             removeDuplicate.indexOf(i) < 0) {
+                            // Squash delete and add only if they have the same index and either no key or same key
                             if (iKey == null || oj.Object.compareValues(iKey, this.getId(changes[j].value))) {
                                 if (status === 'deleted') {
                                     removeDuplicate.push(i);
@@ -635,6 +686,8 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                 for (i = 0; i < changes.length; i++) {
                     if (updatedIndexes.indexOf(i) >= 0) {
                         const key = this.implOptions.getKeys()[changes[i].index];
+                        // By this time, updatedIndexes contains indexes of "added" entries in "changes" array that
+                        // have matching "deleted" entries with same keys, which should be the same as the old keys.
                         keyArray.push(key);
                         dataArray.push(changes[i].value);
                         indexArray.push(changes[i].index);
@@ -705,6 +758,10 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                             this.implOptions.spliceKeys(changes[i].index, 0, id);
                         }
                         else if (!generatedKeys && !this.implOptions.keysSpecified) {
+                            // If we get here, we have a duplicate key because the id is found in the _keys array,
+                            // and it was neither just generated nor specified in the keys options.
+                            // In this case we log a warning but should add the key to the _keys array to keep
+                            // it in sync with the data array.  It is up to the app to ensure key uniqueness.
                             Logger.warn('added row has duplicate key ' + id);
                             this.implOptions.spliceKeys(changes[i].index, 0, id);
                         }
@@ -717,6 +774,8 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                     if (changes[i]['status'] === 'added' &&
                         updatedIndexes.indexOf(i) < 0 &&
                         removeDuplicate.indexOf(i) < 0) {
+                        // afterKeys can only be calculated after all keys
+                        // have been added to the internal keys cache
                         let afterKey = this.implOptions.getKeys()[changes[i].index + 1];
                         afterKey = afterKey == null ? null : afterKey;
                         afterKeyArray.push(afterKey);
@@ -733,6 +792,7 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                     });
                 }
             }
+            // Adjust the last offset for iterators before firing event
             this._adjustIteratorOffset(operationRemoveEventDetail, operationAddEventDetail);
             return new ojdataprovider.DataProviderMutationEvent(markNoProxy({
                 add: operationAddEventDetail,
@@ -743,6 +803,9 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
         resetTotalFilteredRowCount() {
             this._resetTotalFilteredRowCount = true;
         }
+        /**
+         * Adjust the last offset for iterators.
+         */
         _adjustIteratorOffset(removeArray, addArray) {
             const removeIndexes = removeArray?.indexes;
             const addIndexes = addArray?.indexes.slice(0);
@@ -767,6 +830,7 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                     if (addIndexes) {
                         const addData = addArray.data.slice(0);
                         const addKeys = Array.from(addArray.keys);
+                        // ignore all filtered items
                         if (filterCriterion?.filter != null) {
                             for (let i = addIndexes.length - 1; i >= 0; i--) {
                                 let data = addData[i];
@@ -778,8 +842,11 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                             }
                         }
                         if (sortComparator != null) {
+                            // if sorted add all keys to array, sort array, and remove keys after last key
                             const newArray = [...iteratorInfo.fetchedRowKeys, ...addKeys];
                             const allData = this.implOptions.getData();
+                            // We can use a plain map here instead of ojMap because the
+                            // addKeys === _getKeys when this is called today
                             const indexOfKeyMap = new Map();
                             this.implOptions.getKeys().forEach((key, index) => {
                                 indexOfKeyMap.set(key, index);
@@ -793,6 +860,7 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
                             iteratorInfo.offset = iteratorInfo.fetchedRowKeys.length;
                         }
                         else {
+                            // if unsorted add data to position in add event if it's in range
                             addIndexes.forEach((rowIndex, index) => {
                                 const rowKey = addKeys[index];
                                 const lastFetchedRowIndex = indexOfKey(iteratorInfo.rowKey, this.implOptions.getKeys());

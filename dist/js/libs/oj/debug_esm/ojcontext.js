@@ -20,13 +20,20 @@ import { getMetadata } from 'ojs/ojcustomelement-registry';
  * @param {Function|Object|undefined} description of the component and cause
  *        of the busy state
  */
-const BusyState = function (description) {
+const BusyState = function (description, stack) {
   /**
    * @ignore
    * @private
    * @type {?}
    */
   this._description = description;
+
+  /**
+   * @ignore
+   * @private
+   * @type {string}
+   */
+  this._stack = stack;
 
   /**
    * @ignore
@@ -77,6 +84,22 @@ Object.defineProperties(BusyState.prototype, {
       return undefined;
     },
     enumerable: true
+  },
+  /**
+   * The stack trace that added the BusyState. See {@link oj.BusyContext} to enable
+   * capturing.
+   * @memberof oj.BusyState
+   * @instance
+   * @property {?string} stack
+   */
+  stack: {
+    get: function () {
+      if (this._stack) {
+        return this._stack;
+      }
+      return undefined;
+    },
+    enumerable: true
   }
 });
 
@@ -91,6 +114,9 @@ BusyState.prototype.toString = function () {
 
   if (description !== null) {
     buff += description;
+  }
+  if (this.stack) {
+    buff += `\n${this.stack}`;
   }
 
   var elapsed = BusyState._getTs() - this._addedWaitTs;
@@ -142,7 +168,7 @@ BusyState._getTs = function () {
  *
  *     <pre class="prettyprint">
  *     <code>
- *     var busyContext = oj.Context.getPageContext().getBusyContext();
+ *     var busyContext = Context.getPageContext().getBusyContext();
  *     </code></pre>
  *
  *   </li>
@@ -164,7 +190,7 @@ BusyState._getTs = function () {
  *     &lt;/div&gt;
  *
  *     var node = document.querySelector("#mycontext");
- *     var busyContext = oj.Context.getContext(node).getBusyContext();
+ *     var busyContext = Context.getContext(node).getBusyContext();
  *     busyContext.whenReady().then(function ()
  *     {
  *       var component = document.querySelector("#myInput");
@@ -197,6 +223,16 @@ BusyState._getTs = function () {
  * @ojtsexportastype Context
  * @since 2.1.0
  * @classdesc Framework service for querying the busy state of components on the page.
+ * <h3> Session storage usage : </h3>
+ * <pre class="prettyprint">
+ * <code>
+ * // enable BusyContext tracing of BusyState creation
+ * sessionStorage.setItem('ojet.busyContextTracing', 'on');
+ * </code></pre>
+ *
+ * <p>Setting this key in sessionStorage will cause BusyStates to be created with an
+ * additional `stack` property containing the call stack at the time of creation.
+ * </p>
  */
 const BusyContext = function (hostNode, context) {
   this.Init(hostNode, context);
@@ -363,10 +399,13 @@ BusyContext.prototype.Init = function (hostNode, context) {
       });
       this._slaveTimeoutPromiseTimers.push(timer);
 
-      // When the master promise is resolved, all timers may be cleared
-      return Promise.race([master, slaveTimeoutPromise]).finally(
-        this._clearAllSlaveTimeouts.bind(this)
-      );
+      // When the master promise is completed, all timers may be cleared
+      // Note that we have to add the 'catch' block to avoid unhandled promise rejections.
+      // The master promise is still used in the race() call below, so the app will be able to handle
+      // any possible rejection there
+      master.catch(() => {}).finally(() => this._clearAllSlaveTimeouts());
+
+      return Promise.race([master, slaveTimeoutPromise]);
     },
 
     /**
@@ -478,6 +517,13 @@ BusyContext._values = function (statesMap) {
   return busyStates;
 };
 
+class BusyStateTrace extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'BusyStateTrace';
+  }
+}
+
 /**
  * <p>Called by components or services performing a task that should be considered
  * in the overall busy state of the page. An example would be animation or fetching data.</p>
@@ -501,7 +547,7 @@ BusyContext._values = function (statesMap) {
  * var context1 = document.querySelector("#context1");
  *
  * // obtain a busy context scoped for the target node
- * var busyContext1 = oj.Context.getContext(context1).getBusyContext();
+ * var busyContext1 = Context.getContext(context1).getBusyContext();
  * // add a busy state to the target context
  * var options = {"description": "#context1 fetching data"};
  * var resolve = busyContext1.addBusyState(options);
@@ -536,8 +582,18 @@ BusyContext._values = function (statesMap) {
 BusyContext.prototype.addBusyState = function (options) {
   log("BusyContext.addBusyState: start scope='%s'", this._getDebugScope());
 
+  const storageKey = 'ojet.busyContextTracing';
+  let stack;
+  if (window?.sessionStorage?.getItem(storageKey) === 'on') {
+    try {
+      throw new BusyStateTrace('');
+    } catch (ex) {
+      stack = ex.stack;
+    }
+  }
+
   /** @type {oj.BusyState} */
-  var busyState = new BusyState(options[BusyContext._DESCRIPTION]);
+  var busyState = new BusyState(options[BusyContext._DESCRIPTION], stack);
 
   log('>> ' + busyState);
 
@@ -555,7 +611,7 @@ BusyContext.prototype.addBusyState = function (options) {
  * <pre class="prettyprint">
  * <code>
  *  Logger.option("level", Logger.LEVEL_INFO);
- *  oj.Context.getPageContext().getBusyContext().dump("before popup open");
+ *  Context.getPageContext().getBusyContext().dump("before popup open");
  * </code></pre>
  *
  * @export
@@ -870,11 +926,11 @@ BusyContext.prototype._doubleCheckBusyness = function () {
  * Requirejs callback Example:
  * <pre class="prettyprint">
  * <code>
- * require(['knockout', 'jquery', 'app', 'ojs/ojknockout', 'ojs/ojselectcombobox' ...],
- *   function(ko, $, app)
+ * require(['knockout', 'jquery', 'app', 'ojs/ojcontext', 'ojs/ojknockout', 'ojs/ojselectcombobox' ...],
+ *   function(ko, $, app, Context)
  *   {
  *     // release the application bootstrap busy state
- *     oj.Context.getPageContext().getBusyContext().applicationBootstrapComplete();
+ *     Context.getPageContext().getBusyContext().applicationBootstrapComplete();
  *     ...
  *     ...
  *   });
@@ -1291,7 +1347,7 @@ Context._OJ_SURROGATE_ATTR = 'data-oj-surrogate-id';
  * @memberof oj.Context
  */
 Context.getParentElement = function (element) {
-  // @see oj.ZOrderUtils._SURROGATE_ATTR in "ojpopupcore/PopupService.js" for the details on how
+  // @see ZOrderUtils._SURROGATE_ATTR in "ojpopupcore/PopupService.js" for the details on how
   // this attribute is used by the popup service. The constant was re-declared to simplify module
   // dependencies.
 

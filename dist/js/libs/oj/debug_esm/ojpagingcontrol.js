@@ -5,6 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import 'ojs/ojdataprovider';
 import 'ojs/ojinputtext';
 import 'ojs/ojjquery-hammer';
 import 'ojs/ojpagingmodel';
@@ -226,6 +227,11 @@ var __oj_paging_control_metadata =
   "extension": {}
 };
   __oj_paging_control_metadata.extension._WIDGET_NAME = 'ojPagingControl';
+  __oj_paging_control_metadata.extension._WATCHED_ATTRS = [
+    'aria-label',
+    'aria-labelledby',
+    'aria-describedby'
+  ];
   oj.CustomElementBridge.register('oj-paging-control', { metadata: __oj_paging_control_metadata });
 })();
 
@@ -244,6 +250,14 @@ var __oj_paging_control_metadata =
  * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 2
+ * @ojlegacymetadata requirements [
+ *    {
+ *      type: "anyOf",
+ *      label: "accessibility",
+ *      properties: ["aria-label", "aria-labelledby", "aria-describedby"],
+ *      slots: [""]
+ *    }
+ * ]
  *
  * @ojoracleicon 'oj-ux-ico-paging-control'
  *
@@ -254,7 +268,8 @@ var __oj_paging_control_metadata =
  * </h3>
  * <p>Description:</p>
  * <p>A JET PagingControl allows you to fetch and display a single page of data at a time. This feature is particularly useful for large datasets that can be divided into manageable chunks. By only retrieving the items for the currently displayed page, the PagingControl optimizes performance and reduces data transfer.
- * The number of items per page is consistent and customizable, giving you flexibility in designing your interface. Currently, the oj-paging-control is specifically designed to work with the oj-film-strip component, providing visual indicators (dots) to represent different pages of data.</p>
+ * The number of items per page is consistent and customizable, giving you flexibility in designing your interface. Currently, the oj-paging-control is specifically designed to work with the oj-film-strip component, providing visual indicators (dots) to represent different pages of data.
+ * <b>Note: oj-paging-control use in conjunction with oj-table, oj-list-view, and oj-data-grid is deprecated and is no longer supported by JET.</b></p>
  *
  * <pre class="prettyprint"><code>&lt;oj-paging-control
  *   data='{{pagingModel}}'
@@ -280,7 +295,7 @@ var __oj_paging_control_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
- * <p>Application should specify an id for the paging control to generate an aria-label value.
+ * <p>Application should specify an aria-label, aria-labelledby, or aria-describedby attribute in order to be accessible.
  *
  * <p>The paging control also uses aria role = "region".
  *
@@ -1425,7 +1440,9 @@ var __oj_paging_control_metadata =
       this.element.addClass(this._MARKER_STYLE_CLASSES._WIDGET);
 
       this._createAccPageLabel();
-      this._createPagingControlAccLabel();
+      if (!this._isPagingAccesible()) {
+        this._createPagingControlAccLabel();
+      }
       this._createPagingControlContent();
       this._mode = options.mode;
 
@@ -3286,22 +3303,44 @@ var __oj_paging_control_metadata =
      * @private
      */
     _createPagingControlAccLabel: function () {
-      var pagingControlContainer = this._getPagingControlContainer();
-      var pagingControlAccLabelText = this.getTranslatedString(this._BUNDLE_KEY._LABEL_ACC_PAGING);
+      const pagingControlContainer = this._getPagingControlContainer();
 
       // Accessibility label must be unique for role='region'
       // to prevent unique landMarks OAT error
-      pagingControlAccLabelText = this.element.attr('id') + pagingControlAccLabelText;
+      const pagingControlAccLabelText =
+        this.element.attr('id') + this.getTranslatedString(this._BUNDLE_KEY._LABEL_ACC_PAGING);
 
-      var pagingControlAccLabel = this._createAccLabelSpan(
+      const pagingControlAccLabel = this._createAccLabelSpan(
         pagingControlAccLabelText,
         this._CSS_CLASSES._PAGING_CONTROL_ACC_LABEL_CLASS
       );
-      var pagingControlAccLabelId = this.element.attr('id') + '_oj_pgCtrl_acc_label';
+      const pagingControlAccLabelId = this.element.attr('id') + '_oj_pgCtrl_acc_label';
       pagingControlAccLabel.attr('id', pagingControlAccLabelId);
       pagingControlContainer.append(pagingControlAccLabel); // @HTMLUpdateOK
 
       return pagingControlAccLabel;
+    },
+    /**
+     * Helper function to determine if paging has a accesible attribute.
+     * @return {boolean} if paging has a accesible attribute
+     * @private
+     */
+    _isPagingAccesible: function () {
+      return (
+        this.element[0].getAttribute('aria-label') != null ||
+        this.element[0].getAttribute('aria-labelledby') != null ||
+        this.element[0].getAttribute('aria-describedby') != null
+      );
+    },
+    /**
+     * Framework overided function to tell us if aria-label, aria-labelledby or aria-describedby have changed.
+     * @override
+     * @private
+     */
+    _WatchedAttributeChanged: function (attr, _oldValue, newValue) {
+      this._superApply(arguments);
+      const pagingControlContent = this._getPagingControlContent();
+      pagingControlContent[0].setAttribute(attr, newValue); // @HTMLUpdateOK
     },
     /**
      * Create the acc page link label
@@ -3323,14 +3362,39 @@ var __oj_paging_control_metadata =
      * @private
      */
     _createPagingControlContent: function () {
-      var pagingControlContainer = this._getPagingControlContainer();
-      var pagingControlContent = $(document.createElement('div'));
+      const pagingControlContainer = this._getPagingControlContainer();
+      const pagingControlContent = $(document.createElement('div'));
       pagingControlContent.addClass(this._CSS_CLASSES._PAGING_CONTROL_CONTENT_CLASS);
-      var pagingControlAccLabelId = this._getPagingControlAccLabel().attr('id');
-      // Fix bug 34545: use region as role instead of navigation
+
+      if (this._isPagingAccesible()) {
+        if (this.element[0].getAttribute('aria-label')) {
+          pagingControlContent[0].setAttribute(
+            'aria-label',
+            this.element[0].getAttribute('aria-label')
+          );
+          this.element[0].removeAttribute('aria-label');
+        }
+        if (this.element[0].getAttribute('aria-describedby')) {
+          pagingControlContent[0].setAttribute(
+            'aria-describedby',
+            this.element[0].getAttribute('aria-describedby')
+          );
+          this.element[0].removeAttribute('aria-describedby');
+        }
+        if (this.element[0].getAttribute('aria-labelledby')) {
+          pagingControlContent[0].setAttribute(
+            'aria-labelledby',
+            this.element[0].getAttribute('aria-labelledby')
+          );
+          this.element[0].removeAttribute('aria-labelledby');
+        }
+      } else {
+        const pagingControlAccLabelId = this._getPagingControlAccLabel().attr('id');
+        pagingControlContent.attr('aria-labelledby', pagingControlAccLabelId);
+      }
+      // Fix : use region as role instead of navigation
       // because navigation is reserved as unique landmark
       pagingControlContent.attr('role', 'region');
-      pagingControlContent.attr('aria-labelledby', pagingControlAccLabelId);
       pagingControlContainer.append(pagingControlContent); // @HTMLUpdateOK
 
       return pagingControlContent;

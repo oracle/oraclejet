@@ -161,7 +161,7 @@ export class DataProviderRefreshEvent<K> {
 }
 export interface DataProviderRefreshEventDetail<K> {
     disregardAfterKey?: K;
-    keys?: K;
+    keys?: Set<K>;
 }
 export interface DedupCapability {
     type: 'global' | 'none' | 'iterator';
@@ -204,7 +204,7 @@ export interface FetchByKeysResults<K, D> {
 }
 export interface FetchByOffsetCapability {
     attributeFilter?: AttributeFilterCapability;
-    caching?: 'all' | 'none' | 'visitedByCurrentIterator';
+    caching?: 'all' | 'none' | 'visitedByCurrentIterator' | 'visitedByOffset';
     implementation: 'iteration' | 'randomAccess';
     totalFilteredRowCount?: 'exact' | 'none';
 }
@@ -301,6 +301,9 @@ export interface ItemMetadata<K> {
 export interface ItemWithOptionalData<K, D> {
     data?: D;
     metadata: ItemMetadata<K>;
+}
+export interface KeyCapability {
+    structure?: ('none' | 'pathArray' | 'pathArrayString');
 }
 // tslint:disable-next-line no-unnecessary-class
 export interface NestedFilter<D> extends NestedFilterDef<D>, BaseDataFilter<D> {

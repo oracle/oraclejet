@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'ojs/ojcore-base', 'ojs/ojconfig', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojtranslation', 'preact', 'ojs/ojhighlighttext', 'ojs/ojvcomponent', 'ojs/ojpopupcore', 'ojs/ojdatacollection-common', 'ojs/ojdebouncingdataproviderview'], function (exports, jsxRuntime, DomUtils, ojlistdataproviderview, oj, Config, Context, Logger, ThemeUtils, TimerUtils, Translations, preact, ojhighlighttext, ojvcomponent, ojpopupcore, ojdatacollectionCommon, ojdebouncingdataproviderview) { 'use strict';
+define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'ojs/ojcore-base', 'ojs/ojconfig', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojtranslation', 'preact', 'ojs/ojhighlighttext', 'ojs/ojvcomponent', 'ojs/ojpopupcore', 'ojs/ojabortreason', 'ojs/ojdebouncingdataproviderview'], function (exports, jsxRuntime, DomUtils, ojlistdataproviderview, oj, Config, Context, Logger, ThemeUtils, TimerUtils, Translations, preact, ojhighlighttext, ojvcomponent, ojpopupcore, ojabortreason, ojdebouncingdataproviderview) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -44,6 +44,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
         constructor(props) {
             super(props);
             this._handleMouseenter = (event) => {
+                // do this for real mouse enters, but not 300ms after a tap
                 if (!DomUtils.recentTouchEnd()) {
                     this.setState({ ['hover']: true });
                 }
@@ -108,6 +109,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             super(props);
             this._renderedSuggestions = [];
             this.getCount = () => {
+                // calculate the number of rendered suggestions based on the number of non-null entries in the
+                // array, because unmounted suggestions will have their ref set to null
                 const length = this._renderedSuggestions.length;
                 const nullIndex = this._renderedSuggestions.indexOf(null);
                 return nullIndex === -1 ? length : nullIndex;
@@ -153,19 +156,54 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             this._isComposing = false;
             this._setInputElem = (element) => {
                 this._inputElem = element;
+                // pass the ref on, if needed
+                // TODO: The ref assignment support here isn't complete, for example it doesn't work with
+                // a ref obtained via createRef.  This is okay for now because ComposingInput is only used
+                // internally by input-search, but we should fix this if we decide to expose it more widely.
                 this.props.inputRef?.(element);
             };
             this._handleCompositionstart = (event) => {
+                // Keep track of whether the user is composing a character
                 this._isComposing = true;
+                // pass the event on, if needed
+                // (need to specify this._inputElem as the 'this' context to match the HTMLElement event
+                // listener contract)
                 this.props.onCompositionStart?.call(this._inputElem, event);
             };
             this._handleCompositionend = (event) => {
                 this._isComposing = false;
+                // pass the event on, if needed
+                // (need to specify this._inputElem as the 'this' context to match the HTMLElement event
+                // listener contract)
                 this.props.onCompositionEnd?.call(this._inputElem, event);
+                // On some browsers, compositionend event is fired before the final input event,
+                // while it's the other way around on other browsers.  Just update rawValue here
+                // anyway since _SetRawValue will compare the value before actually updating it.
                 this.props.onInputChanged?.({ value: event.target.value });
             };
             this._handleInput = (event) => {
+                // pass the event on, if needed
+                // (need to specify this._inputElem as the 'this' context to match the HTMLElement event
+                // listener contract)
                 this.props.onInput?.call(this._inputElem, event);
+                // Update rawValue only if the user is not in the middle of composing a character.
+                // Non-latin characters can take multiple keystrokes to compose one character.
+                // The keystroke sequence is bracketed by compositionstart and compositionend events,
+                // and each keystroke also fires the input event.  Including the intermediate input
+                // in rawValue makes it hard to do meaningful validation.
+                // JET-39086 - raw-value is not getting updated until space in android devices
+                // In android devices, typing in an English word will behave similar to what one
+                // would see when they compose a CJK character in desktop devices. So, we need to
+                // update the raw-value for all the input events in Android devices without considering
+                // composition events so that the property gets updated for each english character and not
+                // only for delimiters. In GBoard all the CJK keyboard layouts directly allow users
+                // to input a CJK character, so we do not need to rely on composition events for that.
+                // In Japanese keyboard, one of the three available layouts uses english chars
+                // to compose a Japanese character in which case circumventing the logic would end up
+                // updating the property with garbage values. But, it is highly unlikely for one to
+                // use this layout as the other two layouts would allow users to directly type in Japanese
+                // characters. So, for now we will not have to worry about composition events in
+                // Android devices.
                 if (!this._isComposing || this._isAndroidDevice) {
                     this.props.onInputChanged?.({ value: event.target.value });
                 }
@@ -174,8 +212,16 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             this._isAndroidDevice = agentInfo.os === oj.AgentUtils.OS.ANDROID;
         }
         render(props) {
+            // pull out the onInput, onCompositionStart, and onCompositionEnd props so that they're
+            // not included in passThroughProps because we're going to specify them directly
             const { onInputChanged, onInput, onCompositionStart, onCompositionEnd, ...passThroughProps } = props;
-            return (jsxRuntime.jsx("input", { ref: this._setInputElem, onInput: this._handleInput, oncompositionstart: this._handleCompositionstart, oncompositionend: this._handleCompositionend, ...passThroughProps }));
+            return (jsxRuntime.jsx("input", { ref: this._setInputElem, onInput: this._handleInput, 
+                // @ts-ignore
+                // There is a bug in preact where onCompositionStart and onCompositionEnd events do not get
+                // registered correctly - https://github.com/preactjs/preact/issues/3003. So, we need to
+                // use oncompositionstart and oncompositionend as a workaround. We also need to disable ts
+                // for this to work, as these do not exist in the JSXInternal DOMAttributes.
+                oncompositionstart: this._handleCompositionstart, oncompositionend: this._handleCompositionend, ...passThroughProps }));
         }
     }
 
@@ -186,6 +232,222 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var InputSearch_1;
+    /**
+     * @classdesc
+     * <h3 id="inputSearchOverview-section">
+     *   JET Input Search
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputSearchOverview-section"></a>
+     * </h3>
+     * <p>Description: JET Input Search provides support for entering search text.</p>
+     *
+     * <p>JET Input Search displays an input field that a user can type into, as well as an optional dropdown list of suggestions.</p>
+     *
+     * An Input Search that shows only an input field can be created with the following markup.</p>
+     *
+     * <pre class="prettyprint"><code>
+     * &lt;oj-input-search aria-label='Search'>
+     * &lt;/oj-input-search>
+     * </code></pre>
+     *
+     * <p>An Input Search that shows an input field with a dropdown list of suggestions can be
+     * created with the following markup.</p>
+     *
+     * <pre class="prettyprint"><code>
+     * &lt;oj-input-search suggestions='[[dataProvider]]'
+     *                  aria-label='Search'>
+     * &lt;/oj-input-search>
+     * </code></pre>
+     *
+     * <p>Input Search will only show up to a maximum of 12 suggestions in the dropdown list.  The
+     * list could show most recently used searches or high confidence suggested results.  It is
+     * intended to help the user enter search text in order to conduct a subsequent search.  It is up
+     * to the application to conduct the search and display results elsewhere on the page.</p>
+     *
+     * <p>An application should register a listener for the ojValueAction event in order to be
+     * notified when the user submits search text.  The application should then conduct the search and
+     * display the results.</p>
+     *
+     * <pre class="prettyprint"><code>
+     * &lt;oj-input-search on-oj-value-action='[[handleValueAction]]'
+     *                  aria-label='Search'>
+     * &lt;/oj-input-search>
+     * </code></pre>
+     *
+     * <p>If an application provides a separate search button, then it may choose to ignore
+     * ojValueAction events and instead bind to the value.  When the search button is clicked, the
+     * application would conduct a search with the currently set value.</p>
+     *
+     * <pre class="prettyprint"><code>
+     * &lt;oj-input-search value='{{searchText}}'
+     *                  aria-label='Search'>
+     * &lt;/oj-input-search>
+     * &lt;oj-button on-oj-action='[[conductSearch]]'>
+     *   Search
+     * &lt;/oj-button>
+     * </code></pre>
+     *
+     * <p>The <a href="#value">value</a> property is guaranteed to be up-to-date at the time the
+     * <a href="#event:valueAction">ojValueAction</a> event is dispatched.</p>
+     *
+     * <p><b>Note:</b>  Input Search is not a full-fledged form control and does not support some of
+     * the common features of form controls.  For example, it is not expected to be used in an
+     * <code class="prettyprint">oj-form-layout</code>, it does not support a label, and it does not
+     * support assistive text.</p>
+     *
+     * <h3 id="touch-section">
+     *   Touch End User Information
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+     * </h3>
+     *
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Gesture</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>Input Field</td>
+     *       <td><kbd>Tap</kbd></td>
+     *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.</td>
+     *     </tr>
+     *   </tbody>
+     *  </table>
+     *
+     * <h3 id="keyboard-section">
+     *   Keyboard End User Information
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+     * </h3>
+     *
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Key</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>Input field</td>
+     *       <td><kbd>Enter</kbd></td>
+     *       <td>Set the input text as the value.</td>
+     *     </tr>
+     *     <tr>
+     *      <td>Input field</td>
+     *       <td><kbd>UpArrow or DownArrow</kbd></td>
+     *       <td> If the drop down is not open, expand the drop down list.</td>
+     *     </tr>
+     *     <tr>
+     *      <td>Input field</td>
+     *       <td><kbd>Esc</kbd></td>
+     *       <td> Collapse the drop down list. If the drop down is already closed, do nothing.</td>
+     *     </tr>
+     *     <tr>
+     *      <td>Input field</td>
+     *       <td><kbd>Tab In</kbd></td>
+     *       <td>Set focus to the Input Search.</td>
+     *     </tr>
+     *   </tbody>
+     *  </table>
+     *
+     * <h3 id="a11y-section">
+     *   Accessibility
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+     * </h3>
+     * <p>
+     * It is up to the application developer to set an aria-label on the Input Search.
+     * </p>
+     * @typeparam {object} K Type of key of the dataprovider
+     * @typeparam {object} D Type of data from the dataprovider
+     * @ojmetadata description "An Input Search is an input field that the user can type search text into."
+     * @ojmetadata displayName "Input Search"
+     * @ojmetadata main "ojs/ojinputsearch"
+     * @ojmetadata extension {
+     *   "oracle": {
+     *     "icon": "oj-ux-ico-input-search",
+     *     "uxSpecs": ["input-search"]
+     *   },
+     *   "themes": {
+     *     "unsupportedThemes": ["Alta"]
+     *   },
+     *   "vbdt": {
+     *     "module": "ojs/ojinputsearch",
+     *     "defaultColumns": "6",
+     *     "minColumns": "2"
+     *   }
+     * }
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/19/reference-api/oj.ojInputSearch.html"
+     * @ojmetadata propertyLayout [
+     *   {
+     *     "propertyGroup": "common",
+     *     "items": [
+     *       "placeholder"
+     *     ]
+     *   }
+     * ]
+     * @ojmetadata styleClasses [
+     *   {
+     *     "name": "oj-input-search-hero",
+     *     "kind": "class",
+     *     "displayName": "Hero Search",
+     *     "description": "Render a larger search field that is more prominent on the page",
+     *     "help": "#oj-input-search-hero",
+     *     "extension": {
+     *         "jet": {
+     *            "example": "&lt;oj-input-search class=\"oj-input-search-hero\">\n &lt;!-- Content -->\n &lt;/oj-input-search>"
+     *          }
+     *      }
+     *   },
+     *   {
+     *     "name": "form-control-max-width",
+     *     "kind": "set",
+     *     "displayName": "Max Width",
+     *     "description": "In the Redwood theme the default max width of a text field is 100%.  These max width convenience classes are available to create a medium or small field.<br>  The class is applied to the root element.",
+     *     "help": "#form-control-max-width",
+     *     "styleRelation": "exclusive",
+     *     "styleItems": [
+     *       {
+     *         "name": "oj-form-control-max-width-sm",
+     *         "kind": "class",
+     *         "displayName": "Small",
+     *         "description": "Sets the max width for a small field."
+     *       },
+     *       {
+     *         "name": "oj-form-control-max-width-md",
+     *         "kind": "class",
+     *         "displayName": "Medium",
+     *         "description": "Sets the max width for a medium field."
+     *       }
+     *     ]
+     *   },
+     *   {
+     *     "name": "form-control-width",
+     *     "kind": "set",
+     *     "displayName": "Width",
+     *     "description": "In the Redwood theme the default width of a text field is 100%.  These width convenience classes are available to create a medium or small field.<br>  The class is applied to the root element.",
+     *     "help": "#form-control-width",
+     *     "styleRelation": "exclusive",
+     *     "styleItems": [
+     *       {
+     *         "name": "oj-form-control-width-sm",
+     *         "kind": "class",
+     *         "displayName": "Small",
+     *         "description": "Sets the width for a small field."
+     *       },
+     *       {
+     *         "name": "oj-form-control-width-md",
+     *         "kind": "class",
+     *         "displayName": "Medium",
+     *         "description": "Sets the width for a medium field."
+     *       }
+     *     ]
+     *   }
+     * ]
+     * @ojmetadata since "9.0.0"
+     */
     exports.InputSearch = InputSearch_1 = class InputSearch extends preact.Component {
         constructor(props) {
             super(props);
@@ -201,33 +463,53 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             };
             this._counter = 0;
             this._queryCount = 0;
+            /**
+             * mouseenter event listener
+             */
             this._handleMouseenter = (event) => {
+                // do this for real mouse enters, but not 300ms after a tap
                 if (!DomUtils.recentTouchEnd()) {
                     this._updateState({ hover: true });
                 }
             };
+            /**
+             * mouseleave event listener
+             */
             this._handleMouseleave = (event) => {
                 this._updateState({ hover: false });
             };
+            /**
+             * focusin event listener
+             */
             this._handleFocusin = (event) => {
                 if (event.target === event.currentTarget) {
                     this._handleFocus(event);
                 }
                 this._updateState({ focus: true });
             };
+            /**
+             * focusout event listener
+             */
             this._handleFocusout = (event) => {
                 if (event.target === event.currentTarget) {
                     this._handleBlur(event);
                 }
                 this._updateState({ focus: false });
             };
+            /**
+             * focusin event listener
+             */
             this._handleMobileFilterInputFocusin = (event) => {
                 this._updateState({ mobileFilterInputFocus: true });
             };
+            /**
+             * focusout event listener
+             */
             this._handleMobileFilterInputFocusout = (event) => {
                 this._updateState({ mobileFilterInputFocus: false });
             };
             this._handleMobileFilterClear = (event) => {
+                // return focus to the dropdown input field
                 this._mobileFilterInputElem?.focus();
                 this._updateState({
                     filterText: '',
@@ -244,6 +526,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                     displayValue: this.props.value
                 });
             };
+            /**
+             * Invoked when the input event happens
+             */
             this._handleInputChanged = (detail) => {
                 const value = detail.value;
                 const isAutocompleteOn = this.props.autocomplete === 'on';
@@ -254,6 +539,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 if (this.state.showAutocompleteText &&
                     !this.state.autocompleteFloatingText &&
                     filterText === value) {
+                    // if showing "starts with" autocomplete text and the input text has changed such that the
+                    // text is the same as the typed filter text (for example if the user deleted the selected
+                    // autocomplete text), then do not immediately re-show the autocomplete text and remove
+                    // the highlight from the first suggestion
                     Object.assign(updatedState, {
                         showAutocompleteText: false,
                         focusedSuggestionIndex: -1
@@ -262,6 +551,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 else if (!this.state.showAutocompleteText &&
                     lowercaseValue.length < lowercaseFilter.length &&
                     lowercaseFilter.startsWith(lowercaseValue)) {
+                    // if not showing autocomplete text and characters have been deleted from the end of the
+                    // input text, then do not immediately re-show the autocomplete text (for example, if the
+                    // user types 'firefo' and we autocomplete with 'x', and then the user deletes characters
+                    // one by one, we don't want to autocomplete the same string after each deleted character)
                     Object.assign(updatedState, {
                         showAutocompleteText: false
                     });
@@ -278,10 +571,20 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 });
                 this._updateState(updatedState);
             };
+            /**
+             * Invoked when focus is triggered on this.element
+             */
             this._handleFocus = (event) => {
+                // JET-38304 - Calling focus() on oj-input-search doesn't transfer focus
+                // dispatch a focus event on the custom element when the input gets focus
                 this._rootElem?.dispatchEvent(new FocusEvent('focus', { relatedTarget: event.relatedTarget }));
             };
+            /**
+             * Invoked when blur is triggered on this.element
+             */
             this._handleBlur = (event) => {
+                // JET-38304 - Calling focus() on oj-input-search doesn't transfer focus
+                // dispatch a blur event on the custom element when the input gets blurred
                 this._rootElem?.dispatchEvent(new FocusEvent('blur', { relatedTarget: event.relatedTarget }));
             };
             this._handleFilterInputKeydownEnter = (event) => {
@@ -289,6 +592,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 if (this.state.dropdownOpen &&
                     focusIndex >= 0 &&
                     this._suggestionsList?.getCount() > focusIndex &&
+                    // don't select value from dropdown if fetching
                     !this._resolveFetchBusyState &&
                     this.props.autocomplete === 'on') {
                     this._suggestionsList?.fireSuggestionAction(focusIndex);
@@ -318,6 +622,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                             focus: false,
                             actionDetail: null
                         });
+                        // JET-43574 - leave starts-with autocomplete text in field when click or tab away
+                        // if showing autocomplete text, commit it to the display value
                         if (this.state.showAutocompleteText) {
                             Object.assign(updatedState, {
                                 showAutocompleteText: false,
@@ -326,14 +632,20 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                         }
                         break;
                     case this._KEYS.ESC:
+                        // JET-37929 - inputSearch prevents enclosing oj-dialog to be closed with 'esc' key
+                        // only preventDefault if dropdown is open because component will close it, otherwise let
+                        // the event go through unmodified because an ancestor component may handle the event, like
+                        // a dialog that is being dismissed
                         if (this.state.dropdownOpen) {
                             updatedState.dropdownOpen = false;
+                            // if showing autocomplete text, turn it off and remove it from the display value
                             if (this.state.showAutocompleteText) {
                                 Object.assign(updatedState, {
                                     showAutocompleteText: false,
                                     displayValue: this.state.filterText
                                 });
                             }
+                            // need to preventDefault so that value doesn't get cleared and dropdown doesn't stay open
                             event.preventDefault();
                         }
                         break;
@@ -343,18 +655,24 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                             updatedState.dropdownOpen = true;
                         }
                         else if (!this._resolveFetchBusyState && this._suggestionsList?.getCount() > 0) {
+                            // don't update index if fetching or if there are no rendered suggestions
                             let index = this.state.focusedSuggestionIndex;
                             if (keyCode === this._KEYS.DOWN || index === -1) {
                                 index += 1;
                                 updatedState.scrollFocusedSuggestionIntoView = 'bottom';
                             }
                             else if (index > 0) {
+                                // don't decrement lower than 0
                                 index -= 1;
                                 updatedState.scrollFocusedSuggestionIntoView = 'top';
+                                // call preventDefault so that the text cursor doesn't jump to the beginning of the
+                                // text while arrowing up through the suggestions
                                 event.preventDefault();
                             }
                             index = Math.min(this._suggestionsList?.getCount() - 1, index);
                             updatedState.focusedSuggestionIndex = index;
+                            // show the original filter text if there was any and the first autocomplete suggestion
+                            // is highlighted, otherwise show the text of the suggestion
                             const autocomplete = this.props.autocomplete === 'on' && index === 0 && this.state.filterText?.length > 0;
                             updatedState.showAutocompleteText = autocomplete;
                             if (autocomplete) {
@@ -367,6 +685,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                         break;
                     case this._KEYS.LEFT:
                     case this._KEYS.RIGHT:
+                        // if showing "starts with" autocomplete text, commit the autocomplete to be part of the
+                        // filter text
                         if (this.state.showAutocompleteText && !this.state.autocompleteFloatingText) {
                             Object.assign(updatedState, {
                                 showAutocompleteText: false,
@@ -377,6 +697,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                     default:
                         break;
                 }
+                // this will skip updating the state if the user is in the middle of composing a multi-byte character (CJK) like in Chinese.
                 if (keyCode !== this._KEYS.INPUT_METHOD_EDITOR) {
                     this._updateState(updatedState);
                 }
@@ -403,6 +724,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                         focus: true,
                         dropdownOpen: true
                     });
+                    // keep focus on input elem (prevent focus from transferring)
                     if (event.target !== this._mainInputElem || this.state.fullScreenPopup) {
                         event.preventDefault();
                     }
@@ -412,6 +734,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 }
             };
             this._handleFilterInputMousedown = (event) => {
+                // if showing autocomplete text, commit the autocomplete to be part of the filter text
+                // (only do this if clicking on the input field, because that's when the browser will
+                // move the caret and clear the autocomplete selection)
                 if (this.state.showAutocompleteText) {
                     if (!this.state.autocompleteFloatingText) {
                         this._updateState({
@@ -432,6 +757,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 const mainButton = event.button === 0;
                 if (mainButton) {
                     this._updateState({ focus: true });
+                    // keep focus on input elem (prevent focus from transferring)
                     event.preventDefault();
                 }
             };
@@ -463,12 +789,16 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 return this._mobileFilterInputElem || this._mainInputElem;
             };
             this._clickAwayHandler = (event) => {
+                //  - period character in element id prevents options box open/close;
+                // escapeSelector handles special characters
                 const target = event.target;
                 if (target.closest('#' + CSS.escape(this._getDropdownElemId())) ||
                     target.closest('#' + CSS.escape(this._getMainInputContainerId()))) {
                     return;
                 }
                 const updatedState = { dropdownOpen: false };
+                // JET-43574 - leave starts-with autocomplete text in field when click or tab away
+                // if showing autocomplete text, commit it to the display value
                 if (this.state.showAutocompleteText) {
                     Object.assign(updatedState, {
                         showAutocompleteText: false,
@@ -478,6 +808,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 this._updateState(updatedState);
             };
             this._handleDataProviderRefreshEventListener = (event) => {
+                // turn off fetchedInitial flag because we'll need to fetch new data the next time we render the
+                // dropdown
                 this._updateState({ fetchedInitial: false });
             };
             this._handleSuggestionAction = (detail) => {
@@ -495,6 +827,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             showIndicatorDelay = parseInt(showIndicatorDelay, 10);
             showIndicatorDelay = isNaN(showIndicatorDelay) ? 250 : showIndicatorDelay;
             this._showIndicatorDelay = showIndicatorDelay;
+            // JET-44062 - add gap between field and dropdown
             const dropdownVerticalOffset = ThemeUtils.getCachedCSSVarValues(['--oj-private-core-global-dropdown-offset'])[0] || '0';
             this._dropdownVerticalOffset = parseInt(dropdownVerticalOffset, 10);
             if (props.suggestions) {
@@ -519,6 +852,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 activeDescendantId: null,
                 scrollFocusedSuggestionIntoView: null,
                 actionDetail: null,
+                // whether the last event was 'keyboard' or 'mouse'
                 lastEventType: null,
                 showAutocompleteText: false,
                 autocompleteFloatingText: null,
@@ -553,6 +887,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             }
             const inputClasses = 'oj-inputsearch-input oj-text-field-input ';
             const iconClasses = 'oj-text-field-start-end-icon oj-inputsearch-search-icon oj-component-icon';
+            // if (!props.rawValue && !props.value) {
+            //   rootClasses += ' oj-has-no-value';
+            // }
             const displayValue = state.displayValue || '';
             return this._renderEnabled(props, state, rootClasses, iconClasses, displayValue, inputClasses);
         }
@@ -563,6 +900,15 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             return this._updateStateFromProps(props, state);
         }
         static _initStateFromProps(props, state) {
+            // The relationship between value, rawValue, displayValue, and filterText is as follows:
+            // Initially: props.value === state.displayValue === state.filterText
+            // When autocomplete text is not shown:
+            //   Typing: state.displayValue === state.filterText === props.rawValue
+            //   Arrowing in dropdown: state.displayValue === props.rawValue, but state.filterText does not update
+            //   Always: rawValue === displayValue
+            //   Loss of Focus or value submitted via enter or dropdown selection: value === displayValue
+            // When autocomplete text is shown:
+            //   state.displayValue === props.rawValue === state.filterText + autocomplete text
             return {
                 displayValue: props.value,
                 filterText: props.value,
@@ -571,9 +917,12 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
         }
         static _updateStateFromProps(props, state) {
             const updatedState = {};
+            // TODO organize logic into helper methods when we're done refactoring updated()
             if (props.value !== state.oldPropsValue &&
                 ((!state.fullScreenPopup && props.value !== state.displayValue) ||
                     (state.fullScreenPopup && !state.dropdownOpen))) {
+                // The value has been programmatically updated, update the displayValue
+                // and filterText to match
                 updatedState.displayValue = props.value;
                 updatedState.filterText = props.value;
             }
@@ -581,14 +930,18 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 updatedState.fetchedInitial = false;
                 updatedState.fullScreenPopup = props.suggestions && Config.getDeviceRenderMode() === 'phone';
             }
+            // Event listeners may toggle this state even when there is no data provider
+            // so we need to reset here
             if (!props.suggestions) {
                 updatedState.dropdownOpen = false;
                 updatedState.fetchedData = null;
             }
+            // if the dropdown is not open, clear the lastEventType and turn off autocomplete
             if (state.dropdownOpen === false || updatedState.dropdownOpen === false) {
                 updatedState.lastEventType = null;
                 updatedState.showAutocompleteText = false;
             }
+            // if not showing autocomplete text, clear the floating text
             if (!state.showAutocompleteText || updatedState.showAutocompleteText === false) {
                 updatedState.autocompleteFloatingText = null;
             }
@@ -604,7 +957,11 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             this._updateState({ initialRender: false });
         }
         _updateState(updater) {
+            // wrap any state updates in an updater function so we can compare the new state against
+            // the current state and prevent re-rendering if nothing has actually changed (so we don't
+            // end up in an infinite render loop where the same state is repeatedly applied)
             const newUpdater = function (state, props) {
+                // get the new partial state
                 let partialState;
                 if (typeof updater === 'function') {
                     partialState = updater(state, props);
@@ -612,6 +969,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 else {
                     partialState = updater;
                 }
+                // determine whether anything actually changed
                 let changed = false;
                 for (const key in partialState) {
                     if (partialState[key] !== state[key]) {
@@ -625,22 +983,31 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
         }
         componentDidUpdate(oldProps, oldState) {
             const isAutocompleteOn = this.props.autocomplete === 'on';
+            // if the fullscreen popup is opening, transfer focus to the filter field
             if (this.state.fullScreenPopup && !oldState.dropdownOpen && this.state.dropdownOpen) {
                 this._mobileFilterInputElem?.focus();
             }
+            // Update the value when we lose focus or when the user manually submits
+            // the value, e.g. Enter key or selecting from dropdown
             if ((oldState.focus && !this.state.focus) || this.state.valueSubmitted) {
                 if (this.props.value !== this.state.displayValue) {
                     this.props.onValueChanged?.(this.state.displayValue);
                 }
+                // JET-36416 - dropdown not filtered by existing text when opened
+                // if clicking out or tabbing out, update the filterText so that the next time the dropdown
+                // is opened it gets filtered by the displayed text
                 if (oldState.focus && !this.state.focus && oldState.filterText !== this.state.displayValue) {
                     this._updateState({ filterText: this.state.displayValue });
                 }
+                // Don't fire an ojValueAction event for focus loss
                 if (this.state.valueSubmitted) {
                     this.props.onOjValueAction?.({
                         value: this.state.displayValue,
                         itemContext: this.state.actionDetail,
                         previousValue: this.props.value
                     });
+                    // return focus to the main input field when a value has been submitted from the
+                    // fullscreen dropdown
                     if (this.state.fullScreenPopup) {
                         this._mainInputElem?.focus();
                     }
@@ -651,9 +1018,12 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                     }
                 }
             }
+            // rawValue always equals displayValue so it's easiest if we update this in a central location
+            // since state updates are asynchronous
             if (oldState.displayValue != this.state.displayValue) {
                 this.props.onRawValueChanged?.(this.state.displayValue);
             }
+            // if suggestions changed, we need to clean up the old suggestions and setup the new ones
             if (oldProps.suggestions != this.props.suggestions) {
                 if (oldProps.suggestions) {
                     this._removeDataProviderEventListeners(this._dataProvider);
@@ -674,12 +1044,21 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 }
             }
             else {
+                // Fetch new data if:
+                // 1) the dropdown is open and the filter text has changed, or
+                // 2) we don't have any cached data and we haven't yet started a fetch
                 if (this.state.lastFetchedFilterText != this.state.filterText ||
                     (!this.state.fetchedInitial && !this._resolveFetchBusyState)) {
                     this._updateState({ lastFetchedFilterText: this.state.filterText });
                     this._fetchData(this.state.filterText);
                 }
+                // if the dropdown is opening or if the filter text has changed while it's open, then focus
+                // the first suggestion if there is search text
                 if (!oldState.dropdownOpen || this.state.filterText !== oldState.filterText) {
+                    // if opening the dropdown without changing the filter text, like by clicking on the
+                    // field or pressing the down arrow, don't highlight the first suggestion because
+                    // pressing Enter with the existing text should re-submit the same text instead of
+                    // submitting the first suggestion's text
                     if (!oldState.dropdownOpen && this.state.filterText === oldState.filterText) {
                         this._updateState({ focusedSuggestionIndex: -1 });
                     }
@@ -697,6 +1076,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                     }
                 }
                 else if (this.state.fetchedData) {
+                    // Make sure that the focusedSuggestionIndex is valid based on the size of the list
                     this._updateState((state, props) => {
                         const newIndex = Math.min(state.fetchedData.length - 1, state.focusedSuggestionIndex);
                         if (isAutocompleteOn && state.focusedSuggestionIndex !== newIndex) {
@@ -705,13 +1085,20 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                         return null;
                     });
                 }
+                // Don't update active descendant until we're done fetching
                 const focusIndex = this._resolveFetchBusyState ? -1 : this.state.focusedSuggestionIndex;
                 if (focusIndex >= 0 && this.state.labelIds.length > focusIndex) {
+                    // if the first suggestion is focused and we want to show autocomplete text, check whether
+                    // we should actually show it
                     const filterText = this.state.filterText || '';
                     if (focusIndex === 0 && this.state.showAutocompleteText && filterText.length > 0) {
                         const firstSuggestionText = this._suggestionsList?.getFormattedText(0);
                         const lowercaseFirstSuggestionText = firstSuggestionText.toLowerCase();
                         const lowercaseFilterText = filterText.toLowerCase();
+                        // if the first suggestion text starts with the filter text, then show the autocomplete
+                        // text; otherwise, show the first suggestion text floating adjacent to the filter text
+                        // on desktop (but not on mobile because the user has no way to remove it to submit the
+                        // text that they typed)
                         if (lowercaseFirstSuggestionText.startsWith(lowercaseFilterText)) {
                             const selectionStart = filterText.length;
                             const autocompleteText = firstSuggestionText.substr(selectionStart);
@@ -730,6 +1117,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                             });
                         }
                         else {
+                            // don't show floating autocomplete text on mobile, so don't automatically focus
+                            // the first suggestion either
                             this._updateState({
                                 autocompleteFloatingText: null,
                                 activeDescendantId: null,
@@ -744,8 +1133,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                     }
                 }
                 else {
+                    // JET-36771 - Exception on down arrow with no value
+                    // need to clear activeDescendantId when no suggestion focused
                     this._updateState({ activeDescendantId: null });
                 }
+                // JET-37929 - inputSearch prevents enclosing oj-dialog to be closed with 'esc' key
+                // if we're done fetching data and there are no results on desktop, automatically close the
+                // dropdown so that we don't consume keyboard events for it unnecessarily
                 if (!this._resolveFetchBusyState && this.state.labelIds.length === 0) {
                     if (!this.state.fullScreenPopup) {
                         this._updateState({ showAutocompleteText: false, dropdownOpen: false });
@@ -768,6 +1162,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 this._getFilterInputElem()?.setSelectionRange(this.state.displayValue.length, this.state.displayValue.length);
                 this._updateState({ resetFilterInputSelectionRange: false });
             }
+            // store old props in state so we can compare in getDerivedStateFromProps
             if (this.state.oldPropsValue !== this.props.value) {
                 this._updateState({ oldPropsValue: this.props.value });
             }
@@ -779,13 +1174,24 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             if (this._dataProvider) {
                 this._removeDataProviderEventListeners(this._dataProvider);
             }
+            // Resolve any lingering timers and busy states
             this._resolveFetching();
             this._updateState({ initialRender: true });
         }
+        /**
+         * @ignore
+         */
         focus() {
+            // JET-38304 - Calling focus() on oj-input-search doesn't transfer focus
+            // focus the input when the custom element is focused
             this._mainInputElem?.focus();
         }
+        /**
+         * @ignore
+         */
         blur() {
+            // JET-38304 - Calling focus() on oj-input-search doesn't transfer focus
+            // blur the input when the custom element is blurred
             this._mainInputElem?.blur();
         }
         _getDropdownElemId() {
@@ -810,9 +1216,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 offset: { x: 0, y: this._dropdownVerticalOffset }
             };
             const isRtl = DomUtils.getReadingDirection() === 'rtl';
-            let position = oj.PositionUtils.normalizeHorizontalAlignment(defPosition, isRtl);
-            position = oj.PositionUtils.coerceToJet(position);
-            position = oj.PositionUtils.coerceToJqUi(position);
+            let position = ojpopupcore.PositionUtils.normalizeHorizontalAlignment(defPosition, isRtl);
+            // need to coerce to Jet and then JqUi in order for vertical offset to work
+            position = ojpopupcore.PositionUtils.coerceToJet(position);
+            position = ojpopupcore.PositionUtils.coerceToJqUi(position);
+            // set the position.of again to be the element, because coerceToJet will change it to a
+            // string selector, which can then result in an error being thrown from jqueryui
+            // position.js getDimensions(elem) method if the element has been removed from the DOM
             position.of = defPosition.of;
             return position;
         }
@@ -826,14 +1236,23 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 offset: { x: scrollX, y: scrollY }
             };
             const isRtl = DomUtils.getReadingDirection() === 'rtl';
-            position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+            position = ojpopupcore.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
             return position;
         }
         _getMobileDropdownStyle() {
             const dropdownStyle = {};
             const ww = Math.min(window.innerWidth, window.screen.availWidth);
             const hh = Math.min(window.innerHeight, window.screen.availHeight);
+            // in an iframe on a phone, need to get the available height of the parent window to account
+            // for browser URL bar and bottom toolbar
+            // (this depends on device type, not device render mode, because the fix is not needed on
+            // desktop in the cookbook phone portrait mode)
             const deviceType = Config.getDeviceType();
+            // window.parent is not supposed to be null/undefined, but checking that for safety;
+            // in normal cases where the window doesn't have a logical parent, window.parent is supposed
+            // to be set to the window itself;
+            // when there is an iframe, like in the cookbook, the window.parent will actually be different
+            // from the window
             if (deviceType === 'phone' && window.parent && window !== window.parent) {
                 const parentHH = Math.min(window.parent.innerHeight, window.parent.screen.availHeight);
                 const availContentHeight = Math.min(hh, parentHH);
@@ -847,7 +1266,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             return dropdownStyle;
         }
         _usingHandler(pos, props) {
-            if (oj.PositionUtils.isAligningPositionClipped(props)) {
+            // if the input part of the component is clipped in overflow, implicitly close the dropdown
+            if (ojpopupcore.PositionUtils.isAligningPositionClipped(props)) {
                 this._updateState({ dropdownOpen: false });
             }
             else {
@@ -864,29 +1284,39 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             const isMobile = agentInfo.os === oj.AgentUtils.OS.ANDROID ||
                 agentInfo.os === oj.AgentUtils.OS.IOS ||
                 agentInfo.os === oj.AgentUtils.OS.WINDOWSPHONE;
-            const inputType = isMobile ? 'search' : 'text';
+            const inputType = 'search';
             const autocompleteFloatingElem = state.autocompleteFloatingText
                 ? this._renderAutocompleteFloatingText(state.autocompleteFloatingText, displayValue)
                 : null;
-            const searchIcon = jsxRuntime.jsx("span", { class: iconClasses, role: "presentation" });
+            const searchIcon = jsxRuntime.jsx("span", { class: iconClasses, role: "presentation", "aria-hidden": true });
             const textFieldContainer = state.fullScreenPopup
                 ? this._renderMobileMainTextFieldContainer(props, state, searchIcon, inputClasses, ariaLabel, listboxId)
                 : this._renderDesktopMainTextFieldContainer(props, state, searchIcon, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem);
             const dropdown = state.dropdownOpen
                 ? this._renderDropdown(props, state, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem)
                 : null;
+            // JET-46099 - Accessibility: Need ability to read out the suggestion count for JAWS user
+            // inform the user when no suggestions are returned
             const ariaLiveRegion = this._dataProvider ? this._renderAriaLiveRegion(state) : null;
             return (jsxRuntime.jsxs(ojvcomponent.Root, { id: id, ref: this._setRootElem, class: rootClasses, "aria-label": ariaLabel, onMouseDown: this._handleMousedown, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave, children: [ariaLiveRegion, textFieldContainer, dropdown] }));
         }
         _renderAriaLiveRegion(state) {
+            // JET-46099 - Accessibility: Need ability to read out the suggestion count for JAWS user
+            // inform the user when no suggestions are returned
+            // (render a &nbsp; ('\xa0') to clear the text so that the noSuggestionsFound text will be
+            // read again when it is re-added)
             const text = state.fetchedInitial && !state.fetching && state.fetchedData?.length == 0
                 ? Translations.getTranslatedString('oj-ojInputSearch2.noSuggestionsFound')
-                : '\xa0';
+                : '\xa0'; // &nbsp;
             return (jsxRuntime.jsx("div", { id: 'oj-listbox-live-' + this._uniqueId, class: "oj-helper-hidden-accessible oj-listbox-liveregion", "aria-live": "polite", children: text }));
         }
         _renderDesktopMainTextFieldContainer(props, state, searchIcon, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem) {
             const containerClasses = 'oj-text-field-container oj-text-field-has-start-slot';
-            return (jsxRuntime.jsxs("div", { role: "presentation", class: containerClasses, id: this._getMainInputContainerId(), ref: this._setMainInputContainerElem, children: [jsxRuntime.jsx("span", { class: "oj-text-field-start", children: searchIcon }), jsxRuntime.jsxs("div", { class: "oj-text-field-middle", role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-controls": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : undefined, "aria-expanded": this._dataProvider ? (state.dropdownOpen ? 'true' : 'false') : undefined, children: [jsxRuntime.jsx(ComposingInput, { type: inputType, inputRef: this._setMainInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: "off", autocorrect: "off", autocapitalize: "off", spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-busy": state.dropdownOpen && state.loading, "aria-activedescendant": this._dataProvider ? state.activeDescendantId : null, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onInputChanged: this._handleInputChanged, onKeyDown: this._handleDesktopMainInputKeydown }), autocompleteFloatingElem] })] }));
+            return (jsxRuntime.jsxs("div", { role: "presentation", class: containerClasses, id: this._getMainInputContainerId(), ref: this._setMainInputContainerElem, children: [jsxRuntime.jsx("span", { class: "oj-text-field-start", children: searchIcon }), jsxRuntime.jsxs("div", { class: "oj-text-field-middle", 
+                        // use undefined here instead of null so that in Safari on desktop, the role
+                        // attribute is not written out at all instead of it being written out with
+                        // no value
+                        role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-controls": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : undefined, "aria-expanded": this._dataProvider ? (state.dropdownOpen ? 'true' : 'false') : undefined, children: [jsxRuntime.jsx(ComposingInput, { type: inputType, inputRef: this._setMainInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: "off", autocorrect: "off", autocapitalize: "off", spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-busy": state.dropdownOpen && state.loading, "aria-activedescendant": this._dataProvider ? state.activeDescendantId : null, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onInputChanged: this._handleInputChanged, onKeyDown: this._handleDesktopMainInputKeydown }), autocompleteFloatingElem] })] }));
         }
         _renderMobileMainTextFieldContainer(props, state, searchIcon, inputClasses, ariaLabel, listboxId) {
             const { placeholder, value } = props;
@@ -895,7 +1325,14 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             const mobileInputClasses = inputClasses +
                 ' oj-inputsearch-input-displayonly ' +
                 (value ? '' : ' oj-inputsearch-placeholder');
-            return (jsxRuntime.jsxs("div", { role: "presentation", class: containerClasses, id: this._getMainInputContainerId(), children: [jsxRuntime.jsx("span", { class: "oj-text-field-start", children: searchIcon }), jsxRuntime.jsx("div", { class: "oj-text-field-middle", role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-controls": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": dropdownOpen ? 'true' : 'false', children: jsxRuntime.jsx("div", { ref: this._setMainInputElem, class: mobileInputClasses, "aria-label": ariaLabel, "aria-busy": dropdownOpen && loading, tabIndex: 0, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, children: jsxRuntime.jsx("div", { children: value || placeholder }) }) })] }));
+            return (jsxRuntime.jsxs("div", { role: "presentation", class: containerClasses, id: this._getMainInputContainerId(), children: [jsxRuntime.jsx("span", { class: "oj-text-field-start", children: searchIcon }), jsxRuntime.jsx("div", { class: "oj-text-field-middle", 
+                        // use undefined here instead of null so that in Safari on desktop, the role
+                        // attribute is not written out at all instead of it being written out with
+                        // no value
+                        role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-controls": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": dropdownOpen ? 'true' : 'false', children: jsxRuntime.jsx("div", { 
+                            // returning a display only div because of issues with screen readers in Android and iOS
+                            // readonly inputs were inactive or confusing to readers JET-53280, JET-50081
+                            ref: this._setMainInputElem, class: mobileInputClasses, "aria-label": ariaLabel, "aria-busy": dropdownOpen && loading, tabIndex: 0, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, children: jsxRuntime.jsx("div", { children: value || placeholder }) }) })] }));
         }
         _renderMobileDropdownFilterField(props, state, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem) {
             let classes = 'oj-text-field';
@@ -916,6 +1353,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
         }
         _renderMobileDropdownBackIcon() {
             const backIconClasses = 'oj-inputsearch-back-icon oj-inputsearch-icon oj-component-icon oj-clickable-icon-nocontext';
+            // TODO: Should this come in through a translations prop?
+            // TODO: Named this oj-ojInputSearch2 so as not to conflict with the old widget
+            // oj-ojInputSearch, but should we change the old widget name so that we can call this
+            // oj-ojInputSearch?
             const backButtonAriaLabel = Translations.getTranslatedString('oj-ojInputSearch2.cancel');
             return (jsxRuntime.jsx("span", { class: "oj-inputsearch-back-button", role: "button", "aria-label": backButtonAriaLabel, onClick: this._handleMobileDropdownBack, children: jsxRuntime.jsx("span", { class: backIconClasses }) }));
         }
@@ -929,6 +1370,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 ? this._renderDropdownSkeleton()
                 : this._renderDropdownSuggestions(props, state);
             let dropdownClasses = 'oj-listbox-drop oj-listbox-inputsearch';
+            // JET-35735 - dropdown initial focus stays when moving to different item
+            // hide focus highlight when user is moving mouse and hide hover highlight when user is typing
             if (state.lastEventType === 'keyboard') {
                 dropdownClasses += ' oj-listbox-hide-hover';
             }
@@ -962,6 +1405,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             return (jsxRuntime.jsx(ojpopupcore.VPopup, { position: position, layerSelectors: "oj-listbox-drop-layer", autoDismiss: this._clickAwayHandler, children: jsxRuntime.jsxs("div", { "data-oj-binding-provider": "preact", id: this._getDropdownElemId(), ref: this._setDropdownElem, class: classes, role: "presentation", style: style, onMouseDown: mousedownHandler, onMouseMove: this._handleDropdownMousemove, onMouseLeave: this._handleDropdownMouseleave, children: [headerContent, content] }) }));
         }
         _renderAutocompleteFloatingText(autocompleteFloatingText, displayValue) {
+            // Non-breakable space (&nbsp;) is char 0xa0 (160 dec)
+            // Long dash (Em Dash) is \u2014
             const text = '\xa0\u2014\xa0' + autocompleteFloatingText;
             return (jsxRuntime.jsxs("div", { class: "oj-inputsearch-autocomplete-floating-container", children: [jsxRuntime.jsx("span", { style: "visibility: hidden;", children: displayValue }), jsxRuntime.jsx("span", { class: "oj-inputsearch-autocomplete-floating-text", children: text })] }));
         }
@@ -986,9 +1431,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
         _fetchData(_searchText) {
             this._queryCount += 1;
             const queryNumber = this._queryCount;
+            // JET-70319 - Legacy Select and Search - Debouncing
+            // abort an ongoing fetch request because we are issuing a new one and would ignore any
+            // results from the existing one
             if (this.state.fetching) {
-                this._abortController?.abort(ojdatacollectionCommon.getAbortReason());
+                this._abortController?.abort(ojabortreason.getAbortReason());
             }
+            // Create a new AbortController for this fetch
             const abortController = new AbortController();
             this._abortController = abortController;
             let searchText = _searchText;
@@ -1003,6 +1452,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                     Logger.error('InputSearch: DataProvider does not support text filter. ' +
                         'Filtering results in dropdown may not work correctly.');
                 }
+                // create filter using FilterFactory so that default local filtering will happen if
+                // underlying DP doesn't support its own filtering
                 fetchParams['filterCriterion'] = oj.FilterFactory.getFilter({
                     filterDef: { text: searchText }
                 });
@@ -1019,12 +1470,16 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 this._loadingTimer = timer;
             }
             let fetchedData = [];
+            // only open one fetch busy state that we'll resolve when the last fetch returns
             if (!this._resolveFetchBusyState) {
                 this._resolveFetchBusyState = this._addBusyState('InputSearch: fetching suggestions');
             }
+            // TODO: handle hierarchical data?
             const asyncIterator = this._dataProvider.fetchFirst(fetchParams)[Symbol.asyncIterator]();
+            // call next() repeatedly until done or until we've reached our fetch limit
             let remainingFetchCount = maxFetchCount;
             const processNextFunc = function (result) {
+                // only process the results if they came from the last issued fetch, otherwise ignore them
                 if (queryNumber !== this._queryCount) {
                     return;
                 }
@@ -1048,6 +1503,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                     }
                 }
                 if (done) {
+                    // generate ids that are static to this data fetch but won't change across re-renders
                     let labelIds = [];
                     for (let i = 0; i < fetchedData.length; i++) {
                         labelIds.push('oj-inputsearch-result-label-' + this._generateId());
@@ -1063,8 +1519,11 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
                 .next()
                 .then(processNextFunc)
                 .catch((error) => {
+                // JET-70319 - Legacy Select and Search - Debouncing
+                // If it is an abort error because of a new fetch, simply ignore it.
                 if (error instanceof DOMException && error.name === 'AbortError')
                     return;
+                // Otherwise rethrow the error
                 throw error;
             });
         }
@@ -1072,8 +1531,12 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             let numItems = 1;
             let resultsWidth = 0;
             if (this._dropdownElem) {
+                // render the same number of skeleton items as there were existing items in the dropdown, in
+                // case the dropdown was already open so that the height doesn't change due to the skeleton
                 const items = this._dropdownElem.querySelectorAll('.oj-listbox-result');
                 numItems = Math.max(1, items.length);
+                // try to preserve previous width so that the dropdown doesn't shrink while showing the
+                // skeleton if the suggestions are wider than the input field
                 if (items.length > 0) {
                     const resultsContainer = this._dropdownElem.querySelector('.oj-listbox-results');
                     resultsWidth = resultsContainer.offsetWidth;
@@ -1101,9 +1564,16 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
         _wrapDataProviderIfNeeded(suggestions) {
             if (this._isDataProvider(suggestions)) {
                 let wrapper = suggestions;
+                // make sure data provider is an instance of *DataProviderView, and wrap it with one if it
+                // isn't, so that we can use the FilterFactory to create filter criterion and have the DP
+                // do local filtering if needed
                 if (!(wrapper instanceof oj.ListDataProviderView)) {
                     wrapper = new oj.ListDataProviderView(wrapper);
                 }
+                // JET-70319 - Legacy Select and Search - Debouncing
+                // If the DP is capable of returning fetches immediately, simply use the enhanced DP.
+                // Otherwise wrap the enhanced DP in a debouncing wrapper to help reduce the number of
+                // remote fetch requests that are actually made as the user types.
                 const filterCapability = wrapper.getCapability('fetchFirst');
                 const isImmediate = filterCapability?.iterationSpeed === 'immediate';
                 wrapper = isImmediate ? wrapper : new ojdebouncingdataproviderview.DebouncingDataProviderView(wrapper);
@@ -1148,6 +1618,10 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             }
             return formatted || '';
         }
+        // Private methods used by WebElement test adapter
+        /**
+         * @ojmetadata visible false
+         */
         _testChangeValue(value) {
             const promise = new Promise((resolve) => {
                 this._testPromiseResolve = resolve;
@@ -1161,6 +1635,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             });
             return promise;
         }
+        /**
+         * @ojmetadata visible false
+         */
         _testChangeValueByKey(key) {
             const promise = new Promise((resolve) => {
                 this._testPromiseResolve = resolve;

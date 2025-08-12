@@ -10,6 +10,7 @@ var ExceptionType;
 })(ExceptionType || (exports.ExceptionType = ExceptionType = {}));
 var ExceptionKey;
 (function (ExceptionKey) {
+    // Keys that always throw an error
     ExceptionKey["INVALID_PROPS_TYPE"] = "invalid_props_type";
     ExceptionKey["CONDITIONAL_PROPS_TYPE"] = "conditional_props_type";
     ExceptionKey["MISSING_PROPS_OBJECT"] = "missing_props_object";
@@ -43,6 +44,7 @@ var ExceptionKey;
     ExceptionKey["INVALID_SINCE"] = "invalid_since_value";
     ExceptionKey["INVALID_DYNAMIC_TEMPLATE_SLOTS_TYPE_PARAM"] = "invalid_dynamic_template_slots_type_param";
     ExceptionKey["INVALID_COMP_NAME_STARTING_WITH_NUMBER"] = "invalid_comp_name_starting_with_number";
+    // Keys that thow an error unless disabled, else log a warning
     ExceptionKey["UNRECOGNIZED_FUNCTION_WRAPPER"] = "unrecognized_function_wrapper";
     ExceptionKey["STATIC_DEFAULTPROPS_ON_FUNCTION"] = "static_defaultprops_on_function";
     ExceptionKey["RESERVED_CUSTOM_EVENT_PREFIX"] = "reserved_custom_event_prefix";
@@ -50,6 +52,8 @@ var ExceptionKey;
     ExceptionKey["MISSING_DYNAMIC_SLOT_DEF"] = "missing_dynamic_slot_def";
     ExceptionKey["UNSUPPORTED_IMPLICITBUSYCONTEXT"] = "unsupported_implicitbusycontext";
     ExceptionKey["UNSUPPORTED_TEMPLATE_SLOT_DATA_OBJ"] = "unsupported_template_slot_data_obj";
+    ExceptionKey["UNSUPPORTED_CANCELABLE_ACTION_DETAIL_OBJ"] = "unsupported_cancelable_action_detail_obj";
+    // Keys that always log a warning
     ExceptionKey["UNEXPECTED_APIDOC_EXCEPTION"] = "unexpected_apidoc_exception";
     ExceptionKey["MISSING_METHOD_SIGNATURES"] = "missing_method_signatures";
     ExceptionKey["DEPRECATED_METHODS_METADATA"] = "deprecated_methods_metadata";
@@ -80,6 +84,9 @@ var ExceptionKey;
     ExceptionKey["IGNORED_ARRAY_DEFAULT_VALUE"] = "ignored_array_default_value";
     ExceptionKey["UNRECOGNIZED_SUBPROP_KEY"] = "unrecognized_subprop_key";
 })(ExceptionKey || (exports.ExceptionKey = ExceptionKey = {}));
+// Used in the transformers when we want to test certain controlled error conditions.
+// If the AST Node that caused the error condition is provided, then include
+// <fileName>:<line>:<char> in the error message header.
 class TransformerError extends Error {
     constructor(vcompName, message, errNode) {
         const header = TransformerError.getMsgHeader(ExceptionType.THROW_ERROR, vcompName, errNode);

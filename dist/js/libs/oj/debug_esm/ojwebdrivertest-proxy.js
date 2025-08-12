@@ -5,6 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+/**
+ * This proxy is used by JET's test adapters to access runtime modules that are needed to perform
+ * testing actions.
+ */
 const TEST_OBJ_NAME = '__ojwebdrivertest_proxy';
 const modules = {
     BusyContext: () => import('ojs/ojcontext').then(({ default: Context }) => Context.getPageContext().getBusyContext()),
@@ -17,6 +21,12 @@ const modules = {
     Knockout: () => import('knockout')
 };
 const cachedModules = {};
+/**
+ * Get the modules defined by names. Modules will be returned in a Promise.
+ * await getProxy('ModuleA', 'ModuleB', ...).then(modules => ...)
+ * @param moduleNames The module names to fetch
+ * @returns {Promise<object[]>} A Promise resolving to all of the requested modules
+ */
 function getProxy(...moduleNames) {
     return Promise.all(moduleNames.map((name) => {
         if (!modules[name]) {
@@ -27,6 +37,7 @@ function getProxy(...moduleNames) {
             return Promise.resolve(cache);
         }
         else {
+            // call the getter for each module to invoke its dynamic import.
             console.log(`getProxy importing ${name}`);
             return modules[name]().then((result) => {
                 cachedModules[name] = result;
@@ -35,9 +46,16 @@ function getProxy(...moduleNames) {
         }
     }));
 }
+/**
+ * Get the modules defined by names.  Assumes that getProxy has been previously called.
+ * This function simply looks up previously imported modules from the cache.
+ * @param moduleNames The module names to fetch
+ * @returns {object[]} The requested modules
+ */
 function getCachedModules(...moduleNames) {
     return moduleNames.map((name) => cachedModules[name]);
 }
+// Guard for webworkers w/o window access
 typeof window !== 'undefined' && (window[TEST_OBJ_NAME] = { getProxy, getCachedModules });
 
 export { getCachedModules, getProxy };

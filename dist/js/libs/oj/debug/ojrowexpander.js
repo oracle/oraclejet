@@ -2855,24 +2855,33 @@ var __oj_row_expander_metadata =
      * @memberof oj.ojRowExpander
      */
     _releaseResources: function () {
-      this.component.element[0].removeEventListener('keydown', this.handleKeyDownCallback, true);
-      this.toucharea.removeEventListener('touchend', this.handleTouchEndCallback);
-      this.toucharea.removeEventListener('click', this.handleClickCallback);
+      if (this.component != null) {
+        this.component.element[0].removeEventListener('keydown', this.handleKeyDownCallback, true);
+      }
+      if (this.toucharea != null) {
+        this.toucharea.removeEventListener('touchend', this.handleTouchEndCallback);
+        this.toucharea.removeEventListener('click', this.handleClickCallback);
+      }
       this.element[0].removeEventListener('keydown', this.handleKeyPressCallback);
 
-      if (this.component._IsCustomElement()) {
-        $(this.component.element).off('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
-        $(this.component.OuterWrapper).off('ojBeforeCurrentRow', this.handleActiveKeyChangeCallback);
-      } else {
-        $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
-        $(this.component.element).off('ojbeforecurrentrow', this.handleActiveKeyChangeCallback);
+      if (this.component != null) {
+        if (this.component._IsCustomElement()) {
+          $(this.component.element).off('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
+          $(this.component.OuterWrapper).off(
+            'ojBeforeCurrentRow',
+            this.handleActiveKeyChangeCallback
+          );
+        } else {
+          $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
+          $(this.component.element).off('ojbeforecurrentrow', this.handleActiveKeyChangeCallback);
+        }
       }
 
       // unregister expand/collapse events
       if (this._isDataProvider()) {
         this._subscribed = false;
         this._dataProviderSubscription.unsubscribe();
-      } else {
+      } else if (this.datasource != null) {
         this.datasource.off('expand', this.handleExpandCallback, this);
         this.datasource.off('collapse', this.handleCollapseCallback, this);
       }
@@ -2907,7 +2916,9 @@ var __oj_row_expander_metadata =
       }
 
       this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
-      this.component.element[0].addEventListener('keydown', this.handleKeyDownCallback, true);
+      if (this.component != null) {
+        this.component.element[0].addEventListener('keydown', this.handleKeyDownCallback, true);
+      }
       if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
         this.handleTouchEndCallback = this._touchEndListener.bind(this);
         this.toucharea.addEventListener('touchend', this.handleTouchEndCallback);
@@ -2931,16 +2942,16 @@ var __oj_row_expander_metadata =
       }
       // listen for active key change event from host component
       this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
-
-      // These on methods need to stay jquery because were relying on jquery additions in the call
-      if (this.component._IsCustomElement()) {
-        $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
-        $(this.component.OuterWrapper).on('ojBeforeCurrentRow', this.handleActiveKeyChangeCallback);
-      } else {
-        $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
-        $(this.component.element).on('ojbeforecurrentrow', this.handleActiveKeyChangeCallback);
+      if (this.component != null) {
+        // These on methods need to stay jquery because were relying on jquery additions in the call
+        if (this.component._IsCustomElement()) {
+          $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
+          $(this.component.OuterWrapper).on('ojBeforeCurrentRow', this.handleActiveKeyChangeCallback);
+        } else {
+          $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
+          $(this.component.element).on('ojbeforecurrentrow', this.handleActiveKeyChangeCallback);
+        }
       }
-
       if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
         // if expanded option is explicitly specified, make sure it's in sync with current state
         this._initExpanded();

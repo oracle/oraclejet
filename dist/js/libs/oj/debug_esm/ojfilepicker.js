@@ -21,15 +21,215 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+/**
+ * @classdesc
+ * <h3 id="filePickerOverview-section">
+ *   JET FilePicker
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#filePickerOverview-section"></a>
+ * </h3>
+ * <p>Description:</p>
+ * <p>By default the file picker shows a clickable dropzone for selecting files for upload. However, it can be replaced with any clickable element like a button. After the files are selected, the FilePicker fires a "select" event with the selected files. Application has to specify the listener in order to do the actual upload.  The types of files accepted are controlled by the accept attribute.  Additional custom validation can be done through the ojBeforeSelect event.</p>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-file-picker on-oj-select='[[listener]]' accept='["image/*", "video/*"]'>
+ * &lt;/oj-file-picker>
+ * </code>
+ * </pre>
+ *
+ * <h3 id="migration-section">
+ *  Migration
+ *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+ * </h3>
+ * To migrate from oj-file-picker to oj-c-file-picker, you need to revise the import statement and references to oj-file-picker in your app. Please note the changes between the two components below.
+ * <h5>Role attribute</h5>
+ * <p>If aria-label is set on the component, the role attribute will be set internally.  The application should no longer populate the role attribute.</p>
+ *
+ * <h3 id="touch-section">
+ *   Touch End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+ * </h3>
+ *
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Clickable element</td>
+ *       <td><kbd>Tap</kbd></td>
+ *       <td>Launch the browser's file picker.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * <h3 id="keyboard-section">
+ *   Keyboard End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+ * </h3>
+ *
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Key</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Clickable element</td>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td>Launch the browser's file picker.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojmetadata description "A file picker displays a clickable dropzone for selecting files from the device storage."
+ * @ojmetadata displayName "File Picker"
+ * @ojmetadata ojLegacyVComponent "ojFilePicker"
+ * @ojmetadata main "ojs/ojfilepicker"
+ * @ojmetadata status [
+ *   {
+ *     "type": "maintenance",
+ *     "since": "15.0.0",
+ *     "value": ["oj-c-file-picker"]
+ *   }
+ * ]
+ * @ojmetadata extension {
+ *   "vbdt": {
+ *     "module": "ojs/ojfilepicker",
+ *     "styleClasses": [
+ *       {
+ *         "styleGroup": [
+ *           "oj-filepicker-custom"
+ *         ],
+ *         "description": "Apply to a custom file picker if the entire dropzone is replaced with another clickable element like button or menu item."
+ *       },
+ *       {
+ *         "styleGroup": [
+ *           "oj-filepicker-dropzone"
+ *         ],
+ *         "description": "Apply to the dropzone of the file picker."
+ *       },
+ *       {
+ *         "styleGroup": [
+ *           "oj-filepicker-text"
+ *         ],
+ *         "description": "Apply to the dropzone text of the file picker."
+ *       }
+ *     ],
+ *     "defaultColumns": "6",
+ *     "minColumns": "2"
+ *   },
+ *   "oracle": {
+ *     "icon": "oj-ux-ico-attach-file",
+ *     "uxSpecs": [
+ *       "file-picker"
+ *     ]
+ *   }
+ * }
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/19/reference-api/oj.ojFilePicker.html"
+ * @ojmetadata propertyLayout [
+ *   {
+ *     "propertyGroup": "common",
+ *     "items": [
+ *       "accept",
+ *       "selectOn",
+ *       "selectionMode",
+ *       "disabled",
+ *       "primaryText",
+ *       "secondaryText"
+ *     ]
+ *   }
+ * ]
+ * @ojmetadata since "4.0.0"
+ * @ojmetadata styleClasses [
+ *   {
+ *     "name": "oj-filepicker-custom",
+ *     "kind": "class",
+ *     "displayName": "Custom",
+ *     "description": "Apply to a custom file picker if the entire dropzone is replaced with another clickable element like button or menu item.\nNote that the oj-filepicker-custom class doesn't have to be specified in order to change the dropzone text.",
+ *     "status": [
+ *       {
+ *         "type": "deprecated",
+ *         "since": "9.0.0",
+ *         "description": "oj-filepicker-custom class has been deprecated. Class is no longer needed."
+ *       }
+ *     ],
+ *     "help": "#oj-filepicker-custom"
+ *   },
+ *   {
+ *     "name": "oj-filepicker-dropzone",
+ *     "kind": "class",
+ *     "displayName": "File Picker DropZone",
+ *     "description": "Apply to the dropzone of the file picker.",
+ *     "status": [
+ *       {
+ *         "type": "deprecated",
+ *         "since": "9.0.0",
+ *         "description": "oj-filepicker-dropzone class has been deprecated. Class is no longer needed."
+ *       }
+ *     ],
+ *     "help": "#oj-filepicker-dropzone"
+ *   },
+ *   {
+ *     "name": "oj-filepicker-text",
+ *     "kind": "class",
+ *     "displayName": "File Picker Text",
+ *     "description": "Apply to the dropzone text of the file picker.",
+ *     "status": [
+ *       {
+ *         "type": "deprecated",
+ *         "since": "9.0.0",
+ *         "description": "oj-filepicker-text class has been deprecated. Class is no longer needed."
+ *       }
+ *     ],
+ *     "help": "#oj-filepicker-text"
+ *   }
+ * ]
+ * @ojmetadata styleVariableSet {"name": "oj-file-picker-css-set1",
+ *                                "styleVariables": [
+ *                                  {
+ *                                    "name": "oj-file-picker-border-color",
+ *                                    "description": "File picker border color",
+ *                                    "formats": ["color"],
+ *                                    "help": "#css-variables"
+ *                                  },
+ *                                  {
+ *                                    "name": "oj-file-picker-border-width",
+ *                                    "description": "File picker border width",
+ *                                    "formats": ["length"],
+ *                                    "help": "#css-variables"
+ *                                  },
+ *                                  {
+ *                                    "name": "oj-file-picker-border-radius",
+ *                                    "description": "File picker border radius",
+ *                                    "formats": ["length","percentage"],
+ *                                    "help": "#css-variables"
+ *                                  }
+ *                                ]
+ *                              }
+ */
 let FilePicker = class FilePicker extends Component {
     constructor(props) {
         super(props);
         this.rootRef = createRef();
         this._handleSelectingFiles = (event) => {
+            //  - within firefox browser cannot tab past filepicker without file selector
+            // window opening
+            // only launching the file picker if click or 'Enter' was pressed
             if (event.type === 'click' ||
                 (event.type === 'keypress' && event.code === 'Enter')) {
                 this.selecting = true;
+                //  - form submit event is triggered when the file upload button is clicked
                 event.preventDefault();
+                //  - unable to upload after clearing file progress list in demo
+                // reset input value so file selection event will fire when selecting the same file
                 const props = this.props;
                 pickFiles(this._handleFileSelected, {
                     accept: props.accept,
@@ -41,6 +241,7 @@ let FilePicker = class FilePicker extends Component {
             return false;
         };
         this._handleFileSelected = (files) => {
+            // if user cancelled out the file picker dialog, don't add files to upload queue
             this._fileSelectedHelper(files);
         };
         this._handleDragEnter = (event) => {
@@ -54,6 +255,12 @@ let FilePicker = class FilePicker extends Component {
             if (this.inDropZone) {
                 return;
             }
+            // NOTE: dragged files not available
+            // event.dataTransfer.files = null (firefox)
+            // event.dataTransfer.files.length = 0 (chrome, IE, Edge and Safari)
+            // use dataTransfer.items.type instead (works in chrome, firefox and Edge)
+            // event.dataTransfer.items = undefined (not work in IE and safari, just don't display ghost buster)
+            //  - drag and drop to ojfilepicker fails on safari
             const ai = oj.AgentUtils.getAgentInfo();
             this.inDropZone = true;
             this.isDroppable = true;
@@ -63,14 +270,17 @@ let FilePicker = class FilePicker extends Component {
                 const selectionModeValid = this._validateSelectionMode(files);
                 const droppable = this._validateTypes(files);
                 if (selectionModeValid && droppable.rejected.length === 0) {
+                    // validation passes
                     this.setState({ validity: 'valid' });
                 }
                 else {
                     this.isDroppable = false;
                     if (selectionModeValid) {
+                        // mimetype Validation fails
                         messages = this._getMimeTypeValidationMessages(droppable.rejected);
                     }
                     else {
+                        // selected multiple files in single selection mode
                         messages.push({
                             severity: 'error',
                             summary: getTranslatedString('oj-ojFilePicker.singleFileUploadError')
@@ -92,6 +302,7 @@ let FilePicker = class FilePicker extends Component {
             if (!this.rootRef.current.contains(event.relatedTarget)) {
                 this.inDropZone = false;
                 this.setState({ validity: 'NA' });
+                // There's only a promise if validation failed on dragover
                 if (!this.isDroppable && !mimeTypeDropFail) {
                     this.dragPromiseResolver();
                     this.dragPromiseResolver = null;
@@ -109,6 +320,7 @@ let FilePicker = class FilePicker extends Component {
                     if (this._validateSelectionMode(files)) {
                         const droppable = this._validateTypes(files);
                         if (droppable.rejected.length > 0) {
+                            // mimetype Validation fails
                             messages = this._getMimeTypeValidationMessages(droppable.rejected);
                             mimeTypeDropFail = true;
                         }
@@ -148,9 +360,15 @@ let FilePicker = class FilePicker extends Component {
             }
             this.setState({ focus: false });
         };
+        /**
+         * Invoked when focus is triggered on this.element
+         */
         this._handleFocus = (event) => {
             this.rootRef.current?.dispatchEvent(new FocusEvent('focus', { relatedTarget: event.relatedTarget }));
         };
+        /**
+         * Invoked when blur is triggered on this.element
+         */
         this._handleBlur = (event) => {
             this.rootRef.current?.dispatchEvent(new FocusEvent('blur', { relatedTarget: event.relatedTarget }));
         };
@@ -171,9 +389,15 @@ let FilePicker = class FilePicker extends Component {
         }
         this.selecting = false;
     }
+    /**
+     * @ignore
+     */
     focus() {
         FocusUtils.focusFirstTabStop(this.rootRef.current);
     }
+    /**
+     * @ignore
+     */
     blur() {
         const focusElement = document.activeElement;
         if (this.rootRef.current.contains(focusElement)) {
@@ -273,6 +497,7 @@ let FilePicker = class FilePicker extends Component {
         return this.state.focus ? 'oj-focus-highlight' : '';
     }
     _validateSelectionMode(files) {
+        // False if selected multiple files when in single file selection mode
         return this.props.selectionMode !== 'single' || files.length === 1;
     }
     _validateTypes(files) {
@@ -290,6 +515,7 @@ let FilePicker = class FilePicker extends Component {
                     type = nameSplit.length > 1 ? '.' + nameSplit.pop() : type;
                 }
                 type = file.type ? file.type : type;
+                // If type isn't already in one of the lists, add it
                 if (accepted.indexOf(type) === -1 && rejected.indexOf(type) === -1) {
                     if (this._acceptFile(file)) {
                         accepted.push(type);
@@ -334,6 +560,8 @@ let FilePicker = class FilePicker extends Component {
                 return true;
             }
             else if (accept.startsWith('.', 0)) {
+                // when dragover, only MIME type is available, file name is undefined
+                // to lowerCase is to make the string comparison case insensitive
                 if (!file.name || (file.name && file.name.toLowerCase().endsWith(accept.toLowerCase()))) {
                     return true;
                 }
@@ -363,8 +591,13 @@ let FilePicker = class FilePicker extends Component {
         return false;
     }
     _handleFilesAdded(files, oEvent) {
+        //  - filepicker: filelist cleared after the handler returns
+        // Note: the parameter "files" is a direct reference to the embedded Input element's property
+        // which could be reset or changed.
+        // we need to return a copy of FileList just in case apps hold on to a reference to FileList
         const list = this._createFileList(files);
         this.props.onOjBeforeSelect?.({ files: list, originalEvent: oEvent }).then(() => {
+            // if there are no invalid files
             this.props.onOjSelect?.({
                 files: list,
                 originalEvent: oEvent

@@ -2240,19 +2240,21 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         case dvt.KeyboardEvent.UP_ARROW:
           // if at root or upper half of sunburst, go to the last visited child if it is in the upper half of the sunburst
           // otherwise use free-form navigation to select the next child in the "up" direction
-          if (this === root || midAngle > 180) {
+          if (this === root || midAngle >= 180) {
             lastVisitedChild = this.GetLastVisitedChild();
             if (lastVisitedChild) {
               lastVisitedMidAngle = lastVisitedChild._startAngle + lastVisitedChild._angleExtent / 2;
               lastVisitedMidAngle = DvtSunburstNode._normalizedRadToDeg(lastVisitedMidAngle);
-              if (lastVisitedMidAngle > 180) {
+              if (lastVisitedMidAngle >= 180) {
                 return lastVisitedChild;
               }
             }
             next = dvt.KeyboardHandler.getNextAdjacentNavigable(
               this,
               event,
-              this.getDescendantNodes()
+              this.getDescendantNodes(),
+              false,
+              true
             );
           }
           // lower half of sunburst
@@ -2263,19 +2265,21 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         case dvt.KeyboardEvent.DOWN_ARROW:
           // if at root or lower half of sunburst, go to the last visited child if it is in the lower half of the sunburst
           // otherwise use free-form navigation to select the next child in the "down" direction
-          if (this === root || (midAngle >= 0 && midAngle <= 180)) {
+          if (this === root || (midAngle >= 0 && midAngle < 180)) {
             lastVisitedChild = this.GetLastVisitedChild();
             if (lastVisitedChild) {
               lastVisitedMidAngle = lastVisitedChild._startAngle + lastVisitedChild._angleExtent / 2;
               lastVisitedMidAngle = DvtSunburstNode._normalizedRadToDeg(lastVisitedMidAngle);
-              if (lastVisitedMidAngle >= 0 && lastVisitedMidAngle <= 180) {
+              if (lastVisitedMidAngle >= 0 && lastVisitedMidAngle < 180) {
                 return lastVisitedChild;
               }
             }
             next = dvt.KeyboardHandler.getNextAdjacentNavigable(
               this,
               event,
-              this.getDescendantNodes()
+              this.getDescendantNodes(),
+              false,
+              true
             );
           }
           // upper half of sunburst

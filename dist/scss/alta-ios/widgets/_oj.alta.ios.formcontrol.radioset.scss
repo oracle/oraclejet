@@ -63,6 +63,7 @@
       border-top: 1px solid transparent;
     }
 
+    /* Deprecated since 19.0.0: Using .oj-radioset-input-start and .oj-checkboxset-input-start for Redwood applications is not a recommended pattern. */
     // if the image is first, then don't have the border-bottom go under the image.
     .oj-radioset-input-start.oj-choice-direction-column  .oj-choice-item,
     .oj-checkboxset-input-start.oj-choice-direction-column .oj-choice-item,
@@ -76,6 +77,7 @@
       }
     }
 
+    /* Deprecated since 19.0.0: Using .oj-radioset-input-end and .oj-checkboxset-input-end for Redwood applications is not a recommended pattern. */
     .oj-radioset-input-end.oj-choice-direction-column  .oj-choice-item,
     .oj-checkboxset-input-end.oj-choice-direction-column .oj-choice-item,
     .oj-radioset-input-end  .oj-choice-row,

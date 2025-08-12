@@ -31,6 +31,22 @@ BaseCustomElementBridge.proto = {
     this.InitializePrototype(proto);
 
     var metadata = this.GetMetadata(descriptor);
+    // Add __oj_private_identifier_to_* properties to ensure correct behavior
+    // during VComponentTemplate compilation. These properties help preserve
+    // non-primitive property values on the JET components that remain essentially
+    // unchanged when templates are updated.
+    if (!metadata.properties) {
+      metadata.properties = {};
+    }
+    metadata.properties.__oj_private_identifier_to_prop = {
+      type: 'object',
+      writeback: true // set writeback key to true to force deep compare in comparePropertyValues().
+    };
+    metadata.properties.__oj_private_identifier_to_value = {
+      type: 'object',
+      writeback: true // set writeback key to true to force deep compare in comparePropertyValues().
+    };
+
     // Enumerate metadata to define the prototype properties, methods, and events
     BaseCustomElementBridge._enumerateMetadataForKey(
       proto,
@@ -1134,6 +1150,11 @@ whenDocumentReady().then(function () {
  *   Thus an expression associated with a read-only property should always use the {{}} syntax.
  *   Most component properties do not writeback and those that do will indicate it in their API doc.
  * </p>
+ * <p>
+ * Note that nested brackets are not supported within writeback expressions, e.g. <code>obj1[obj2['prop']]</code>.
+ * Dot notation should be used where possible in place of bracket notation. In cases where dot notation is
+ * not applicable, consider moving logic into the view model to simplify expressions.
+ * <p>
  * <pre class="prettyprint">
  *   <code>
  *   &lt;oj-some-element value="[[currentValue]]" selection={{currentSelection}}>&lt;/oj-some-element>

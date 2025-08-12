@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jqueryui-amd/widgets/draggable', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojfocusutils', 'ojs/ojcustomelement-utils', 'ojs/ojconfig'], function (ojpopupcore, ojbutton, mouse, draggable, $, oj, DomUtils, ThemeUtils, Components, AnimationUtils, FocusUtils, ojcustomelementUtils, Config) { 'use strict';
+define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jqueryui-amd/widgets/draggable', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojfocusutils', 'ojs/ojcustomelement-utils'], function (ojpopupcore, ojbutton, mouse, draggable, $, oj, DomUtils, ThemeUtils, Components, AnimationUtils, FocusUtils, ojcustomelementUtils) { 'use strict';
 
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
@@ -1233,6 +1233,14 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
      * @ojoracleicon 'oj-ux-ico-dialog'
      * @ojuxspecs ['dialog']
      *
+     * @ojdeprecated [
+     *  {
+     *    type: "maintenance",
+     *    since: "19.0.0",
+     *    value: ["oj-c-dialog"]
+     *  }
+     * ]
+     *
      * @classdesc
      * <h3 id="dialogOverview-section">
      *   JET Dialog Component
@@ -1279,6 +1287,10 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
      *  <p>The <code class="prettyprint">close</code> method is no longer supported. Use <code class="prettyprint">opened="false"</code> to close the popup.</p>
      *  <h5>isOpen method</h5>
      *  <p>The <code class="prettyprint">isOpen</code> method is no longer supported. Use the <code class="prettyprint">opened</code> attribute to determine the state of the dialog.</p>
+     *  <h5>drag-affordance values</h5>
+     *  <p>The <code class="prettyprint">title-bar</code> value has been replaced with <code class="prettyprint">header</code>.</p>
+     *  <h5>ojResizeStop event</h5>
+     *  <p>The <code class="prettyprint">ojResizeStop</code> event has been renamed to <code class="prettyprint">ojResizeEnd</code>.</p>
      *  <h5>oj-dialog-title css class</h5>
      *  <p>The <code class="prettyprint">oj-dialog-title</code> style class is no longer supported. The user must set the <code class="prettyprint">aria-labelledby</code> attribute explicitly when providing a custom header content in the header slot.</p>
      *  <h5>oj-dialog-footer-separator css class</h5>
@@ -1577,31 +1589,43 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
      */
 
     /**
-     * The JET Dialog can be closed with keyboard actions:
+     * The JET Dialog supports the following keyboard shortcuts:
      *
      * <p>
      * <table class="keyboard-table">
-     *   <thead>
+     *  <thead>
+     *    <tr>
+     *      <th>Target</th>
+     *      <th>Key</th>
+     *      <th>Action</th>
+     *    </tr>
+     *  </thead>
+     *  <tbody>
+     *    <tr>
+     *       <td rowspan="3">Focus within Dialog</td>
+     *       <td><kbd>Tab</kbd> or <kbd>Shift + Tab</kbd></td>
+     *       <td>Navigate the content of the dialog.</td>
+     *    </tr>
+     *    <tr>
+     *      <td><kbd>F6</kbd></td>
+     *      <td>Move focus to the launcher for a dialog with modeless modality.</td>
+     *    </tr>
+     *    <tr>
+     *      <td><kbd>Esc</kbd></td>
+     *      <td>Close the dialog.</td>
+     *    </tr>
      *     <tr>
-     *       <th>Target</th>
-     *       <th>Key</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Dialog</td>
-     *       <td><kbd>Esc</kbd></td>
-     *       <td>Close the dialog.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Dialog Close Icon</td>
+     *       <td rowspan="1">Dialog Close Icon</td>
      *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
      *       <td>Close the dialog.</td>
      *     </tr>
-     *   </tbody>
+     *    <tr>
+     *      <td rowspan="1">Modeless Dialog Launcher</td>
+     *      <td><kbd>F6</kbd></td>
+     *      <td>Move focus to the first tab stop within the open dialog.</td>
+     *     </tr>
+     *  </tbody>
      * </table>
-     *
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojDialog
      */
@@ -2611,7 +2635,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         // fixup the position option set via the widget constructor
         var options = this.options;
-        options.position = oj.PositionUtils.coerceToJet(options.position);
+        options.position = ojpopupcore.PositionUtils.coerceToJet(options.position);
 
         // For custom element dialogs, detect changes to the 'title' attribute using a mutation observer.
         // Update the dialog title DOM on 'title' attribute change.
@@ -2795,6 +2819,61 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         }
       },
 
+      _moveFocusToLauncher: function () {
+        // If the launcher is not focusable, find the closet focusable ancestor
+        if (!this.opener.filter(':focusable').focus().length) {
+          var launcher = this.opener.parents().filter(':focusable');
+          if (launcher.length > 0) {
+            launcher[0].focus();
+          } else {
+            // Hiding a focused element doesn't trigger blur in WebKit
+            // so in case we have nothing to focus on, explicitly blur the active element
+            // https://bugs.webkit.org/show_bug.cgi?id=47182
+            $(this.document[0].activeElement).blur();
+          }
+        }
+      },
+
+      /**
+       * @memberof oj.ojDialog
+       * @instance
+       * @private
+       * @param {Element} activeElement from the event being handled
+       * @param {boolean!} includeChildren when true the focus test will include the scope of any
+       *                   child popups.
+       * @return {boolean} <code>true</code> if the active element is within the content of the
+       *                   dialog
+       */
+      _isFocusInDialog: function (activeElement, includeChildren) {
+        if (!activeElement) {
+          // eslint-disable-next-line no-param-reassign
+          activeElement = document.activeElement;
+        }
+        // added to avoid automation issues where an active element is not established
+        if (!activeElement) {
+          return false;
+        }
+
+        var element = this.element;
+
+        // popups that are children are siblings to the parent dialog within the
+        // layer that defines the stacking context.
+        if (includeChildren) {
+          element = element.parent();
+        }
+
+        return DomUtils.isAncestorOrSelf(element[0], activeElement);
+      },
+
+      _isFocusInLauncher: function (activeElement) {
+        if (!activeElement) {
+          // eslint-disable-next-line no-param-reassign
+          activeElement = document.activeElement;
+        }
+        var launcher = this.opener;
+        return DomUtils.isAncestorOrSelf(launcher[0], activeElement);
+      },
+
       /**
        * @memberof oj.ojDialog
        * @instance
@@ -2814,8 +2893,12 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        */
       _destroy: function () {
         this._off(this.element, 'keydown');
+        if (this._launcherKeydownHandlerInstalled) {
+          this._off(this.opener, 'keydown');
+          delete this._launcherKeydownHandlerInstalled;
+        }
 
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           this._closeImplicitly();
         }
 
@@ -2884,17 +2967,17 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         }
 
         // can only close an open dialog.
-        var status = oj.ZOrderUtils.getStatus(this.element);
-        if (status !== oj.ZOrderUtils.STATUS.OPEN) {
+        var status = ojpopupcore.ZOrderUtils.getStatus(this.element);
+        if (status !== ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           return;
         }
 
         // Status toggle is needed to prevent a recursive closed callled from a
         // beforeClose handler. The _isOperationPending gatekeeper isn't activated
         // until after the _setWhenReady('close'|'open') call.
-        oj.ZOrderUtils.setStatus(this.element, oj.ZOrderUtils.STATUS.BEFORE_CLOSE);
+        ojpopupcore.ZOrderUtils.setStatus(this.element, ojpopupcore.ZOrderUtils.STATUS.BEFORE_CLOSE);
         if (this._trigger('beforeClose', event) === false && !this._ignoreBeforeCloseResultant) {
-          oj.ZOrderUtils.setStatus(this.element, status);
+          ojpopupcore.ZOrderUtils.setStatus(this.element, status);
           return;
         }
 
@@ -2924,11 +3007,11 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           });
         }
 
-        /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+        /** @type {!Object.<PopupService.OPTION, ?>} */
         var psOptions = {};
-        psOptions[oj.PopupService.OPTION.POPUP] = this.element;
-        psOptions[oj.PopupService.OPTION.CONTEXT] = { closeEvent: event };
-        oj.PopupService.getInstance().close(psOptions);
+        psOptions[ojpopupcore.PopupService.OPTION.POPUP] = this.element;
+        psOptions[ojpopupcore.PopupService.OPTION.CONTEXT] = { closeEvent: event };
+        ojpopupcore.PopupService.getInstance().close(psOptions);
       },
       /**
        * Before callback is invoked while the dialog is still visible and still parented in the zorder container.
@@ -2936,11 +3019,11 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @memberof oj.ojDialog
        * @instance
        * @private
-       * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
+       * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for closing the popup
        * @return {Promise|void}
        */
       _beforeCloseHandler: function (psOptions) {
-        var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
+        var rootElement = psOptions[ojpopupcore.PopupService.OPTION.POPUP];
         var isFull = this._isFullDisplay();
         var isSheet = this._isSheetDisplay();
 
@@ -2985,26 +3068,20 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @memberof oj.ojDialog
        * @instance
        * @private
-       * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
+       * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for closing the popup
        * @return {void}
        */
       _afterCloseHandler: function (psOptions) {
-        var context = psOptions[oj.PopupService.OPTION.CONTEXT];
+        var context = psOptions[ojpopupcore.PopupService.OPTION.CONTEXT];
         this._restoreBodyOverflow();
 
-        // Moved from close(). Don't want to move focus until the close animation completed.
-        // If the launcher is not focusable, find the closet focuable ancestor
-        if (!this.opener.filter(':focusable').focus().length) {
-          var launcher = this.opener.parents().filter(':focusable');
-          if (launcher.length > 0) {
-            launcher[0].focus();
-          } else {
-            // Hiding a focused element doesn't trigger blur in WebKit
-            // so in case we have nothing to focus on, explicitly blur the active element
-            // https://bugs.webkit.org/show_bug.cgi?id=47182
-            $(this.document[0].activeElement).blur();
-          }
+        // unregister keydown listener from launcher
+        if (this._launcherKeydownHandlerInstalled) {
+          this._off(this.opener, 'keydown');
+          delete this._launcherKeydownHandlerInstalled;
         }
+        // Moved from close(). Don't want to move focus until the close animation completed.
+        this._moveFocusToLauncher();
 
         var event;
         if (context) {
@@ -3032,13 +3109,13 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * var isOpen = myDialog.isOpen();
        */
       isOpen: function () {
-        var status = oj.ZOrderUtils.getStatus(this.element);
+        var status = ojpopupcore.ZOrderUtils.getStatus(this.element);
         // the window is visible and reparented to the zorder container for these statuses
         return (
-          status === oj.ZOrderUtils.STATUS.OPENING ||
-          status === oj.ZOrderUtils.STATUS.OPEN ||
-          status === oj.ZOrderUtils.STATUS.BEFORE_CLOSE ||
-          status === oj.ZOrderUtils.STATUS.CLOSING
+          status === ojpopupcore.ZOrderUtils.STATUS.OPENING ||
+          status === ojpopupcore.ZOrderUtils.STATUS.OPEN ||
+          status === ojpopupcore.ZOrderUtils.STATUS.BEFORE_CLOSE ||
+          status === ojpopupcore.ZOrderUtils.STATUS.CLOSING
         );
       },
       /**
@@ -3065,12 +3142,12 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // beforeOpen followed by resetting inital focus. This is different behavior
         // than the popup which forces a sync close follwed by a reopen - dialog
         // doesn't have accessiblity launcher requirements.
-        var status = oj.ZOrderUtils.getStatus(this.element);
+        var status = ojpopupcore.ZOrderUtils.getStatus(this.element);
         if (
           !(
-            status === oj.ZOrderUtils.STATUS.OPEN ||
-            status === oj.ZOrderUtils.STATUS.UNKNOWN ||
-            status === oj.ZOrderUtils.STATUS.CLOSE
+            status === ojpopupcore.ZOrderUtils.STATUS.OPEN ||
+            status === ojpopupcore.ZOrderUtils.STATUS.UNKNOWN ||
+            status === ojpopupcore.ZOrderUtils.STATUS.CLOSE
           )
         ) {
           return;
@@ -3080,15 +3157,15 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         // status change is needed to prevent calling open from an on before open
         // handler.  The _isOperationPending doens't gurard until this._setWhenReady('open');
-        oj.ZOrderUtils.setStatus(this.element, oj.ZOrderUtils.STATUS.BEFORE_OPEN);
+        ojpopupcore.ZOrderUtils.setStatus(this.element, ojpopupcore.ZOrderUtils.STATUS.BEFORE_OPEN);
         if (this._trigger('beforeOpen', event) === false) {
-          oj.ZOrderUtils.setStatus(this.element, status);
+          ojpopupcore.ZOrderUtils.setStatus(this.element, status);
           return;
         }
 
         // open was called on a open dialog, just establish intial focus
-        if (status === oj.ZOrderUtils.STATUS.OPEN) {
-          oj.ZOrderUtils.setStatus(this.element, status);
+        if (status === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
+          ojpopupcore.ZOrderUtils.setStatus(this.element, status);
           this._focusTabbable();
           return;
         }
@@ -3112,16 +3189,11 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         var isSheetDisplay = this._isSheetDisplay();
 
-        if (isSheetDisplay) {
-          this.element[0].classList.add('oj-dialog-sheet');
-        }
+        // set the display mode based on the screen and dialog dimensions
+        this._adaptToScreenSize();
 
         if (!isSheetDisplay && this.options.dragAffordance === 'title-bar' && $.fn.draggable) {
           this._makeDraggable();
-        }
-
-        if (!isSheetDisplay && this._isSmallScreen()) {
-          this.element[0].classList.add('oj-dialog-small-screen');
         }
 
         // normalize alignments, so that start and end keywords work as expected.
@@ -3130,8 +3202,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         if (isSheetDisplay) {
           position = this._setSheetPosition(this.options.position);
         }
-        position = oj.PositionUtils.coerceToJqUi(position);
-        position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+        position = ojpopupcore.PositionUtils.coerceToJqUi(position);
+        position = ojpopupcore.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
 
         // if modality is set to modal, prevent accesskey events
         // from being triggered while dialog is open
@@ -3153,17 +3225,17 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           });
         }
 
-        /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+        /** @type {!Object.<PopupService.OPTION, ?>} */
         var psOptions = {};
-        psOptions[oj.PopupService.OPTION.POPUP] = this.element;
-        psOptions[oj.PopupService.OPTION.LAUNCHER] = this.opener;
-        psOptions[oj.PopupService.OPTION.POSITION] = position;
-        psOptions[oj.PopupService.OPTION.MODALITY] = this.options.modality;
-        psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
-        psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = 'oj-dialog-layer';
-        psOptions[oj.PopupService.OPTION.LAYER_LEVEL] = oj.PopupService.LAYER_LEVEL.TOP_LEVEL;
-        psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
-        oj.PopupService.getInstance().open(psOptions);
+        psOptions[ojpopupcore.PopupService.OPTION.POPUP] = this.element;
+        psOptions[ojpopupcore.PopupService.OPTION.LAUNCHER] = this.opener;
+        psOptions[ojpopupcore.PopupService.OPTION.POSITION] = position;
+        psOptions[ojpopupcore.PopupService.OPTION.MODALITY] = this.options.modality;
+        psOptions[ojpopupcore.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
+        psOptions[ojpopupcore.PopupService.OPTION.LAYER_SELECTORS] = 'oj-dialog-layer';
+        psOptions[ojpopupcore.PopupService.OPTION.LAYER_LEVEL] = ojpopupcore.PopupService.LAYER_LEVEL.TOP_LEVEL;
+        psOptions[ojpopupcore.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
+        ojpopupcore.PopupService.getInstance().open(psOptions);
       },
       /**
        * Before open callback is called after the dialog has been reparented into the
@@ -3171,12 +3243,12 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @memberof oj.ojDialog
        * @instance
        * @private
-       * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
+       * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for opening the popup
        * @return {Promise|void}
        */
       _beforeOpenHandler: function (psOptions) {
-        var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
-        var position = psOptions[oj.PopupService.OPTION.POSITION];
+        var rootElement = psOptions[ojpopupcore.PopupService.OPTION.POPUP];
+        var position = psOptions[ojpopupcore.PopupService.OPTION.POSITION];
 
         var isSheet = this._isSheetDisplay();
         if (isSheet) {
@@ -3233,11 +3305,11 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @memberof oj.ojDialog
        * @instance
        * @private
-       * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
+       * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for opening the popup
        * @return {void}
        */
       _afterOpenHandler: function (psOptions) {
-        var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
+        var rootElement = psOptions[ojpopupcore.PopupService.OPTION.POPUP];
         rootElement.parent().removeClass('oj-animate-open');
 
         // JET-44685: iOS may reveal address bar during open animation, need to make sure the position is set
@@ -3253,11 +3325,17 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         delete this._initialWidth;
         delete this._initialHeight;
 
+        // setup 'F6' key handler on the modeless dialog
+        if (psOptions.modality === 'modeless' && this.opener && this.opener.length > 0) {
+          this._on(this.opener, { keydown: this._launcherKeydownHandler });
+          this._launcherKeydownHandlerInstalled = true;
+        }
         this._restoreBodyOverflow();
         this._makeResizable();
         this._trigger('open');
         // this._focusTabbable();
       },
+
       /**
        * Refresh the dialog.
        * Typically used after dynamic content is added to a dialog.
@@ -3310,8 +3388,9 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @private
        */
       _handleResize: function () {
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           this._setupContentScrollBehavior();
+          this._adaptToScreenSize();
           this._adjustPosition();
         }
       },
@@ -3393,6 +3472,16 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           return;
         }
 
+        if (event.keyCode === 117 || event.key === 'F6') {
+          // F6 - toggle focus to launcher or popup
+          // keyCode is deprecated and it's not supported on some browsers.
+          if (this.options.modality === 'modeless' && this._isFocusInDialog(event.target)) {
+            // If this is a modeless dialog, toggle focus to the launcher;
+            event.preventDefault();
+            this._moveFocusToLauncher();
+          }
+        }
+
         if (event.keyCode !== $.ui.keyCode.TAB) {
           return;
         }
@@ -3429,6 +3518,15 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         }
       },
 
+      _launcherKeydownHandler: function (event) {
+        if (event.keyCode === 117 || event.key === 'F6') {
+          if (this._isFocusInLauncher(event.target)) {
+            event.preventDefault();
+            this._focusTabbable();
+          }
+        }
+      },
+
       //
       // Invoke focusable on the passed element.
       // Called on two distinct elements - the outer dialog,
@@ -3453,12 +3551,50 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
       _disableBodyOverflow: function () {
         var body = document.body;
+
+        if (this._scrollLockBackup || !window.visualViewport) {
+          return;
+        }
+        const offsetLeft = window.visualViewport.offsetLeft;
+        const offsetTop = window.visualViewport.offsetTop;
+        const windowScrollX = window.pageXOffset;
+        const windowScrollY = window.pageYOffset;
+
+        this._scrollLockBackup = {
+          windowScrollX: windowScrollX,
+          windowScrollY: windowScrollY,
+          bodyPosition: body.style.position,
+          bodyOverflow: body.style.overflow,
+          bodyTop: body.style.top,
+          bodyLeft: body.style.left,
+          bodyRight: body.style.right
+        };
+
+        body.style.position = 'fixed';
+        body.style.overflow = 'hidden';
+        body.style.top = `${-(windowScrollY - Math.floor(offsetTop))}px`;
+        body.style.left = `${-(windowScrollX - Math.floor(offsetLeft))}px`;
+        body.style.right = '0';
+
         body.classList.add('oj-dialog-sheet-animating');
       },
 
       _restoreBodyOverflow: function () {
         var body = document.body;
         body.classList.remove('oj-dialog-sheet-animating');
+
+        if (this._scrollLockBackup) {
+          const backup = this._scrollLockBackup;
+
+          body.style.position = backup.bodyPosition;
+          body.style.overflow = backup.bodyOverflow;
+          body.style.top = backup.bodyTop;
+          body.style.left = backup.bodyLeft;
+          body.style.right = backup.bodyRight;
+          window.scrollTo(backup.windowScrollX, backup.windowScrollY);
+
+          delete this._scrollLockBackup;
+        }
       },
 
       _destroyCloseButton: function () {
@@ -3753,17 +3889,17 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         if (this._isSheetDisplay()) {
           position = this._setSheetPosition(position);
         }
-        position = oj.PositionUtils.coerceToJqUi(position);
-        position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+        position = ojpopupcore.PositionUtils.coerceToJqUi(position);
+        position = ojpopupcore.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
         this.element.position(position);
 
         this._positionDescendents();
       },
       _positionDescendents: function () {
         // trigger refresh of descendents
-        oj.PopupService.getInstance().triggerOnDescendents(
+        ojpopupcore.PopupService.getInstance().triggerOnDescendents(
           this.element,
-          oj.PopupService.EVENT.POPUP_REFRESH
+          ojpopupcore.PopupService.EVENT.POPUP_REFRESH
         );
       },
       _adjustPosition: function () {
@@ -3790,19 +3926,33 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           elem.classList.remove('oj-dialog-small-height');
         }
       },
+      _adaptToScreenSize: function () {
+        var elem = this.element[0];
+        // first remove the potential full-screen class
+        elem.classList.remove('oj-dialog-full');
+
+        // set sheet display mode on screens up to 600px wide
+        if (this._isSheetDisplay()) {
+          elem.classList.add('oj-dialog-sheet');
+        } else {
+          elem.classList.remove('oj-dialog-sheet');
+        }
+        // now test the full-screen condition again
+        if (this._isFullDisplay()) {
+          elem.classList.add('oj-dialog-full');
+        }
+      },
       _isSheetDisplay: function () {
         if (this._isDefaultPosition) {
-          var behavior = ThemeUtils.parseJSONFromFontFamily('oj-theme-json').behavior;
-          var isPhone = Config.getDeviceRenderMode() === 'phone';
-          if (behavior.includes('redwood') && isPhone) {
+          if (window.innerWidth < 600) {
             return true;
           }
         }
         return false;
       },
       _isFullDisplay: function () {
+        // the full-screen display should only apply on top of the 'sheet' mode
         if (!this._isSheetDisplay()) {
-          // full display supported on Redwood mobile only
           return false;
         }
         var height = window.innerHeight;
@@ -3831,7 +3981,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         return false;
       },
       _setSheetPosition: function (position) {
-        var pos = $.extend({}, position);
+        var pos = $.extend(true, {}, position);
         pos.my.vertical = 'bottom';
         pos.at.vertical = 'bottom';
         pos.of = window;
@@ -3867,14 +4017,14 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             // convert to the internal position format and reevaluate the position.
             this._isDefaultPosition = false;
             var options = this.options;
-            options.position = oj.PositionUtils.coerceToJet(value, options.position);
+            options.position = ojpopupcore.PositionUtils.coerceToJet(value, options.position);
             this._position();
 
             // setting the option is handled here.  don't call on super.
             return;
 
           case 'resizeBehavior':
-            if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+            if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
               this._makeResizable();
             }
             break;
@@ -3906,12 +4056,12 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             break;
 
           case 'modality':
-            if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
-              /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+            if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
+              /** @type {!Object.<PopupService.OPTION, ?>} */
               var psOptions = {};
-              psOptions[oj.PopupService.OPTION.POPUP] = this.element;
-              psOptions[oj.PopupService.OPTION.MODALITY] = value;
-              oj.PopupService.getInstance().changeOptions(psOptions);
+              psOptions[ojpopupcore.PopupService.OPTION.POPUP] = this.element;
+              psOptions[ojpopupcore.PopupService.OPTION.MODALITY] = value;
+              ojpopupcore.PopupService.getInstance().changeOptions(psOptions);
             }
             break;
 
@@ -4109,7 +4259,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
       _surrogateRemoveHandler: function () {
         // In all cases except when the dialog is already open, removal of the
         // surrogate during opening or closing will result in implicit removal.
-        // 1) CLOSING: Handled in oj.ZOrderUtils.removeFromAncestorLayer.  If the
+        // 1) CLOSING: Handled in ZOrderUtils.removeFromAncestorLayer.  If the
         //    surrogate doesn't exist the layer containing the popup dom is detached.
         // 2) OPENING: in the PopupServiceImpl#open _finalize, if the surrogate doesn't
         //    exist after in the open state, this remove callback is invoked.
@@ -4118,8 +4268,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // but jquery UI instances will invoke the _destory method.
 
         var element = this.element;
-        var status = oj.ZOrderUtils.getStatus(element);
-        if (status === oj.ZOrderUtils.STATUS.OPEN) {
+        var status = ojpopupcore.ZOrderUtils.getStatus(element);
+        if (status === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           ojcustomelementUtils.CustomElementUtils.cleanComponentBindings(element[0]);
           element.remove();
         }
@@ -4128,20 +4278,20 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        * @memberof oj.ojDialog
        * @instance
        * @private
-       * @return {!Object.<oj.PopupService.EVENT, function(...)>}
+       * @return {!Object.<PopupService.EVENT, function(...)>}
        */
       _getPopupServiceEvents: function () {
         if (!this._popupServiceEvents) {
-          /** @type {!Object.<oj.PopupService.EVENT, function(...)>} **/
+          /** @type {!Object.<PopupService.EVENT, function(...)>} **/
           var events = {};
 
-          events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
-          events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
-          events[oj.PopupService.EVENT.POPUP_REFRESH] = this._adjustPosition.bind(this);
-          events[oj.PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
-          events[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
-          events[oj.PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);
-          events[oj.PopupService.EVENT.POPUP_AFTER_CLOSE] = this._afterCloseHandler.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_REFRESH] = this._adjustPosition.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_AFTER_CLOSE] = this._afterCloseHandler.bind(this);
 
           this._popupServiceEvents = events;
         }
@@ -4219,7 +4369,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
        */
       _NotifyDetached: function () {
         // detaching an open popup results in implicit dismissal
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           this._closeImplicitly();
         }
 

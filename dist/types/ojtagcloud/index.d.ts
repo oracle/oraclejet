@@ -168,6 +168,8 @@ export namespace ojTagCloud {
     type RenderItemTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K> = TooltipContext<K>;
 }
 export interface ojTagCloudEventMap<K, D extends ojTagCloud.Item<K> | any> extends dvtBaseComponentEventMap<ojTagCloudSettableProperties<K, D>> {
     'animationOnDataChangeChanged': JetElementCustomEvent<ojTagCloud<K, D>["animationOnDataChange"]>;
@@ -408,6 +410,8 @@ export namespace TagCloudElement {
     type RenderItemTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K> = TooltipContext<K>;
 }
 export namespace TagCloudItemElement {
     // tslint:disable-next-line interface-over-type-literal

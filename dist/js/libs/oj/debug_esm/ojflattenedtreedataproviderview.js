@@ -274,11 +274,15 @@ import { KeySetImpl } from 'ojs/ojkeyset';
 
 // end of jsdoc
 
+/**
+ * Class which provides list based optimizations
+ */
 class FlattenedTreeDataProviderView {
     constructor(dataProvider, options) {
         var _a;
         this.dataProvider = dataProvider;
         this.options = options;
+        // cache is last returned by a fetch call for implicit sort cases
         this._cacheInstantiated = false;
         this._createAddItem = (event, insertIndex) => {
             const key = event.key;
@@ -309,7 +313,7 @@ class FlattenedTreeDataProviderView {
             let item = this._createAddItem(event, newIndex);
             this._cache.splice(newIndex, 0, item);
             this._incrementIndexFromParent(newIndex + 1, item.metadata.treeDepth);
-            this._incrementIteratorOffset(newIndex);
+            this._incrementIteratorOffset(newIndex); // TODO
             return item;
         };
         this.AsyncIterable = (_a = class {
@@ -470,6 +474,38 @@ class FlattenedTreeDataProviderView {
                 this.indexes = indexes;
             }
         };
+        this.TaskQueue = class {
+            constructor() {
+                this.queue = [];
+                this.isRunning = false;
+            }
+            enqueue(task) {
+                return new Promise((resolve, reject) => {
+                    this.queue.push({ task, resolve, reject });
+                    if (!this.isRunning) {
+                        this.dequeue();
+                    }
+                });
+            }
+            async dequeue() {
+                if (this.queue.length === 0) {
+                    this.isRunning = false;
+                    return;
+                }
+                this.isRunning = true;
+                const { task, resolve, reject } = this.queue.shift();
+                try {
+                    const result = await task();
+                    resolve(result);
+                }
+                catch (error) {
+                    reject(error);
+                }
+                finally {
+                    this.dequeue();
+                }
+            }
+        };
         if (this.options == null) {
             this.options = {};
         }
@@ -482,6 +518,28 @@ class FlattenedTreeDataProviderView {
         this._cache = [];
         this._mapClientIdToIteratorInfo = new Map();
         this._fetchQueue = [];
+        this._taskQueue = new this.TaskQueue();
+        /*
+         * _notDoneKeyMap is a map of Keys that are marked true if not done
+         *
+         *
+         * True not done flags are added to this map in the following ways:
+         * 1. When adding a potential parent to the cache after a fetch on a underlying dp (fetchByOffset, fetchFirst) has been returned if a item is expanded.
+         * 2. On expand when a new expandedKeySet is set on us we will set true for each key thats not already expanded before the fetch.
+         * 3. We removed items from the cache via the disregardAfterKey, set the parents to true again
+         *
+         * True done flags are removed from this map in the following way:
+         * 1. The underlying dp has told us that they are done and we have added all of the children to the cache.
+         *
+         * Keys are removed for the following reasons:
+         * 1. A node has been collapsed.
+         * 2. A node has been filtered Out on an addMutation.
+         * 3. A node has been removed by mutation.
+         * 4. A node has been updated by mutation.
+         * 5. A node has been removed for disregardAfterKey.
+         * 6. A smartRefresh has happened and the underlying dp has set the keys api will will remove key and its children.
+         *
+         */
         this._notDoneKeyMap = new ojMap();
         this._notDoneKeyMap.set(null, true);
     }
@@ -540,6 +598,8 @@ class FlattenedTreeDataProviderView {
                             }
                         }
                         if (!added && this._isKeyDone(parentKey)) {
+                            // if the key is null insert at end of parent only if done, otherwise ignore the add
+                            // for root level just push to end of cache
                             if (parentKey === null) {
                                 this._pushAddToCache(event);
                                 events.splice(i, 1);
@@ -563,12 +623,18 @@ class FlattenedTreeDataProviderView {
                     const key = event.key;
                     const parentKey = event.parentKey;
                     const parentIndex = this._getItemIndexByKey(parentKey);
-                    if ((parentKey === null || (this._isExpanded(parentKey) && parentIndex !== -1)) &&
+                    if (
+                    // this thing is expanded (i.e. could be rendered)
+                    (parentKey === null || (this._isExpanded(parentKey) && parentIndex !== -1)) &&
+                        // doesn't already exist
                         !this._containsKey(key) &&
+                        // isn't filtered out
                         (!this._currentFilterCriteria ||
                             (this._currentFilterCriteria && this._currentFilterCriteria.filter(event.data)))) {
                         const beforeKey = event.beforeKey;
                         if (beforeKey != null) {
+                            // if the before key is in the cache add before it, otherwise pass until next loop
+                            // non-null before keys that never exist will be ignored
                             const beforeIndex = this._getItemIndexByKey(beforeKey);
                             if (beforeIndex !== -1) {
                                 this._spliceAddToCache(event, beforeIndex);
@@ -576,6 +642,8 @@ class FlattenedTreeDataProviderView {
                             }
                         }
                         else if (this._isKeyDone(parentKey)) {
+                            // if the key is null insert at end of parent only if done, otherwise ignore the add
+                            // for root level just push to end of cache
                             if (parentKey === null) {
                                 this._pushAddToCache(event);
                                 events.splice(i, 1);
@@ -591,6 +659,7 @@ class FlattenedTreeDataProviderView {
             }
         }
         else if (addEventDetail?.indexes?.length > 0) {
+            // Array<[parentKey, Array<event>]> sorted ascending based on event.index>
             let eventBuckets = Array.from(events
                 .reduce((buckets, event) => {
                 const parentKey = event.parentKey;
@@ -611,6 +680,7 @@ class FlattenedTreeDataProviderView {
                     const eventBucket = eventBuckets[i];
                     const parentKey = eventBucket[0];
                     const parentKeyIndex = this._getItemIndexByKey(parentKey);
+                    // if the parent exists
                     if (parentKey === null || (this._isExpanded(parentKey) && parentKeyIndex !== -1)) {
                         const children = this._getChildrenFromCacheByParentKey(parentKey);
                         const eventsInBucket = eventBucket[1];
@@ -725,6 +795,8 @@ class FlattenedTreeDataProviderView {
             const addAfterKeySet = new Set();
             const addKeySet = new Set();
             this._processAddEvent(addEvent);
+            // at this point the cache is up to date
+            // we would now loop the events to see how to translate the event keys to their place in the cache
             addEvent.keys.forEach((key) => {
                 const { index, item } = this._getItemAndIndexByKey(key);
                 if (item != null) {
@@ -776,10 +848,12 @@ class FlattenedTreeDataProviderView {
             const updateIndexArray = [];
             const updateKeySet = new Set();
             updateEvent.metadata.forEach((metadata, index) => {
+                // a node in the cache should not have its notDone state changed by an update unless we handle fetching children
                 const item = this._getItemByKey(metadata.key);
                 if (item != null) {
                     const itemIndex = this._getItemIndexByKey(metadata.key);
                     const newData = updateEvent.data[index];
+                    // could have new children
                     const newMetadata = new this.FlattenedTreeItemMetadata(this, updateEvent.metadata[index].key, item.metadata.parentKey, item.metadata.indexFromParent, item.metadata.treeDepth, this.getChildDataProvider(updateEvent.metadata[index].key) === null);
                     this._cache.splice(itemIndex, 1, new this.Item(this, newMetadata, newData));
                     updateKeySet.add(updateEvent.metadata[index].key);
@@ -805,10 +879,15 @@ class FlattenedTreeDataProviderView {
                 if (keys.has(item.metadata.key)) {
                     this._notDoneKeyMap.set(item.metadata.key, true);
                     this._markParentsAsNotDone(item);
-                    const refreshEvent = new DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(item.metadata.key));
-                    const removedItems = this._cache.splice(i + 1, this._cache.length);
+                    const itemIndex = this._getItemIndexByKey(item.metadata.key);
+                    const disregardAfterKey = this._getKeyByIndex(itemIndex - 1);
+                    const refreshDetail = disregardAfterKey != null
+                        ? new this.DataProviderRefreshEventDetail(disregardAfterKey)
+                        : undefined;
+                    const refreshEvent = new DataProviderRefreshEvent(refreshDetail);
+                    const removedItems = this._cache.splice(itemIndex, this._cache.length);
                     removedItems.forEach((item) => {
-                        this._decrementIteratorOffset(i + 1);
+                        this._decrementIteratorOffset(itemIndex - 1);
                         this._notDoneKeyMap.delete(item.metadata.key);
                     });
                     this.dispatchEvent(refreshEvent);
@@ -864,57 +943,41 @@ class FlattenedTreeDataProviderView {
             return new this.FetchByKeysResults(this, { ...byKeysResult.fetchParameters, keys: params.keys }, results);
         });
     }
-    fetchByOffset(params) {
-        const size = params?.size != null ? params.size : -1;
-        if (this._fetchSize == null) {
-            this._fetchSize = size;
-        }
-        const offset = params?.offset != null ? (params.offset > 0 ? params.offset : 0) : 0;
-        const clonedParams = Object.assign({}, params);
-        clonedParams.size = size;
-        clonedParams.offset = offset;
-        if (this._isSameCriteria(clonedParams.sortCriteria, clonedParams.filterCriterion)) {
-            this._currentSortCriteria = clonedParams.sortCriteria;
-            this._currentFilterCriteria = clonedParams.filterCriterion;
-            if (this._doesCacheSatisfyParameters(clonedParams)) {
-                return Promise.resolve(this._getFetchByOffsetResultsFromCache(clonedParams));
-            }
-        }
-        else {
-            this._clearCaches();
-            this._currentSortCriteria = clonedParams.sortCriteria;
-            this._currentFilterCriteria = clonedParams.filterCriterion;
-        }
-        return this._fetchByOffset(clonedParams);
+    async fetchByOffset(params) {
+        return await this._taskQueue.enqueue(async () => {
+            return this._fetchByOffset(params);
+        });
     }
     fetchFirst(params) {
-        this._fetchSize = params != null ? params.size : -1;
-        if (!this._isSameCriteria(params?.sortCriteria, params?.filterCriterion)) {
-            this._clearCaches();
-        }
-        this._currentSortCriteria = params?.sortCriteria;
-        this._currentFilterCriteria = params?.filterCriterion;
-        const iteratorFunction = () => {
-            const currentOffset = this._mapClientIdToIteratorInfo.get(newIterator._clientId);
-            const clonedParams = Object.assign({}, params);
-            clonedParams.offset = currentOffset;
-            clonedParams.size = this._fetchSize;
-            return this.fetchByOffset(clonedParams).then((result) => {
-                const results = result.results;
-                const data = results.map((value) => {
-                    return value.data;
-                });
-                const metadata = results.map((value) => {
-                    return value.metadata;
-                });
-                const done = data.length === 0 ? true : false;
-                const fetchFirstParameters = Object.assign({}, result.fetchParameters);
-                delete fetchFirstParameters.offset;
-                this._mapClientIdToIteratorInfo.set(newIterator._clientId, currentOffset + metadata.length);
-                if (done) {
-                    return new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, fetchFirstParameters, data, metadata));
+        const iteratorFunction = async () => {
+            return await this._taskQueue.enqueue(async () => {
+                this._fetchSize = params != null ? params.size : -1;
+                if (!this._isSameCriteria(params?.sortCriteria, params?.filterCriterion)) {
+                    this._clearCaches();
                 }
-                return new this.AsyncIteratorYieldResult(this, new this.FetchListResult(this, fetchFirstParameters, data, metadata));
+                this._currentSortCriteria = params?.sortCriteria;
+                this._currentFilterCriteria = params?.filterCriterion;
+                const currentOffset = this._mapClientIdToIteratorInfo.get(newIterator._clientId);
+                const clonedParams = Object.assign({}, params);
+                clonedParams.offset = currentOffset;
+                clonedParams.size = this._fetchSize;
+                return this._fetchByOffset(clonedParams).then((result) => {
+                    const results = result.results;
+                    const data = results.map((value) => {
+                        return value.data;
+                    });
+                    const metadata = results.map((value) => {
+                        return value.metadata;
+                    });
+                    const done = data.length === 0 ? true : false;
+                    const fetchFirstParameters = Object.assign({}, result.fetchParameters);
+                    delete fetchFirstParameters.offset;
+                    this._mapClientIdToIteratorInfo.set(newIterator._clientId, currentOffset + metadata.length);
+                    if (done) {
+                        return new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, fetchFirstParameters, data, metadata));
+                    }
+                    return new this.AsyncIteratorYieldResult(this, new this.FetchListResult(this, fetchFirstParameters, data, metadata));
+                });
             });
         };
         const newIterator = new this.AsyncIterable(this, new this.AsyncIterator(this, (() => {
@@ -945,48 +1008,36 @@ class FlattenedTreeDataProviderView {
     isEmpty() {
         return this.dataProvider.isEmpty();
     }
-    _isSameCriteria(sortCriteria, filterCriterion) {
-        if (sortCriteria) {
-            if (!this._currentSortCriteria ||
-                sortCriteria[0].attribute != this._currentSortCriteria[0].attribute ||
-                sortCriteria[0].direction != this._currentSortCriteria[0].direction) {
-                return false;
+    _fetchByOffset(params) {
+        const size = params?.size != null ? params.size : -1;
+        if (this._fetchSize == null) {
+            this._fetchSize = size;
+        }
+        const offset = params?.offset != null ? (params.offset > 0 ? params.offset : 0) : 0;
+        const clonedParams = Object.assign({}, params);
+        clonedParams.size = size;
+        clonedParams.offset = offset;
+        if (this._isSameCriteria(clonedParams.sortCriteria, clonedParams.filterCriterion)) {
+            this._currentSortCriteria = clonedParams.sortCriteria;
+            this._currentFilterCriteria = clonedParams.filterCriterion;
+            // same criteria, check to see if we have the results cached
+            if (this._doesCacheSatisfyParameters(clonedParams)) {
+                return Promise.resolve(this._getFetchByOffsetResultsFromCache(clonedParams));
             }
         }
         else {
-            if (this._currentSortCriteria) {
-                return false;
-            }
+            // new criteria, refetch from the beginning
+            this._clearCaches();
+            this._currentSortCriteria = clonedParams.sortCriteria;
+            this._currentFilterCriteria = clonedParams.filterCriterion;
         }
-        if (filterCriterion) {
-            if (!this._currentFilterCriteria) {
-                return false;
-            }
-            else {
-                for (const prop in this._currentFilterCriteria) {
-                    if (!this._filterCompare(this._currentFilterCriteria, filterCriterion, prop)) {
-                        return false;
-                    }
-                }
-                for (const prop in filterCriterion) {
-                    if (!this._filterCompare(this._currentFilterCriteria, filterCriterion, prop)) {
-                        return false;
-                    }
-                }
-            }
-        }
-        else {
-            if (this._currentFilterCriteria) {
-                return false;
-            }
-        }
-        return true;
+        return this._fetchByOffsetFromDataProvider(clonedParams);
     }
-    _filterCompare(cachedFilter, newFilter, prop) {
-        if (cachedFilter[prop] === newFilter[prop]) {
-            return true;
-        }
-        return false;
+    _isSameCriteria(sortCriteria, filterCriterion) {
+        return (((this._cacheSortCriteria == null && sortCriteria == null) ||
+            oj.Object.compareValues(this._currentSortCriteria, sortCriteria)) &&
+            ((this._currentFilterCriteria == null && filterCriterion == null) ||
+                oj.Object.__innerEquals(this._currentFilterCriteria, filterCriterion)));
     }
     _doesCacheSatisfyParameters(params, isExpand = false, fetchCountSoFar = 0) {
         if (params.size === -1) {
@@ -1028,11 +1079,11 @@ class FlattenedTreeDataProviderView {
     _getFetchDetails(levelOffset = 0, parentKey = null, level = 0, cacheOffset = this._cache.length, isExpand = false, ancestorsAddedCount = 0) {
         return { parentKey, level, levelOffset, cacheOffset, isExpand, ancestorsAddedCount };
     }
-    async _fetchByOffset(params) {
+    async _fetchByOffsetFromDataProvider(params) {
         let levelOffset = 0;
         if (!this._isCacheEmpty()) {
             const returnVal = await this._fetchChildrenByOffsetFromAncestors(params, this._getLastItem());
-            if (returnVal.paramsSatisfied) {
+            if (returnVal.paramsSatisfied || this._isKeyDone(null)) {
                 return this._getFetchByOffsetResultsFromCache(params);
             }
             levelOffset = returnVal.ancestor.metadata.indexFromParent + 1;
@@ -1059,8 +1110,12 @@ class FlattenedTreeDataProviderView {
         if (parentKey === null) {
             return { paramsSatisfied, ancestor: item };
         }
+        // this is the single slow down in this method, is there a better way to search for the parentItem
+        // maybe keep an item path to the last node? manageability is meh
+        // treeDepth, isLeaf, can be computed in other ways
+        // parentKey, indexFromParent cannot?
         const parentItem = this._getItemByKey(parentKey);
-        const parentChildCount = item.metadata.indexFromParent + 1;
+        const parentChildCount = item.metadata.indexFromParent + 1; // number children is index + 1
         returnVal = await this._fetchChildrenByOffsetFromAncestors(params, parentItem, parentChildCount);
         paramsSatisfied = returnVal.paramsSatisfied;
         return { paramsSatisfied, ancestor: returnVal.ancestor };
@@ -1070,6 +1125,7 @@ class FlattenedTreeDataProviderView {
         const modifiedParameters = this._getModifiedFetchParameters(fetchParams, fetchDetails);
         const results = await dataProvider.fetchByOffset(modifiedParameters);
         const result = results.results;
+        // handle implicit sort case
         if (!this._cacheInstantiated) {
             this._cacheSortCriteria = results.fetchParameters.sortCriteria;
             this._cacheFilterCriteria = results.fetchParameters.filterCriterion;
@@ -1077,7 +1133,7 @@ class FlattenedTreeDataProviderView {
         }
         let paramsSatisfied = false;
         let descendentsAddedCount = 0;
-        let allResultsCached = true;
+        let allResultsCached = true; // no results, should be considered cached
         for (let i = 0; i < result.length; i++) {
             const item = result[i];
             const key = item.metadata.key;
@@ -1092,7 +1148,7 @@ class FlattenedTreeDataProviderView {
             const updatedItem = this._updateItemMetadata(item, parentKey, level, levelOffset + i, isLeaf);
             this._cache.splice(cacheOffset + descendentsAddedCount, 0, updatedItem);
             descendentsAddedCount++;
-            allResultsCached = i === result.length - 1;
+            allResultsCached = i === result.length - 1; // set to false unless we had 0 results, or walked all children in that parent
             paramsSatisfied = this._doesCacheSatisfyParameters(fetchParams, isExpand, descendentsAddedCount + ancestorsAddedCount);
             if (paramsSatisfied) {
                 break;
@@ -1133,77 +1189,81 @@ class FlattenedTreeDataProviderView {
         return clonedParams;
     }
     setExpanded(keySet) {
-        const toExpand = this.createOptimizedKeySet();
-        const toCollapse = this.createOptimizedKeySet();
-        this._oldExpanded = this.options.expanded;
-        this.options.expanded = keySet;
-        const oldSet = this._oldExpanded;
-        const newSet = this.options.expanded;
-        if (!newSet.isAddAll() && !oldSet.isAddAll()) {
-            const newValues = newSet.values();
-            const oldValues = oldSet.values();
-            newValues.forEach((value) => {
-                if (!oldSet.has(value)) {
-                    toExpand.add(value);
-                }
-            });
-            oldValues.forEach((value) => {
-                if (!newSet.has(value)) {
-                    toCollapse.add(value);
-                }
-            });
-        }
-        else if (newSet.isAddAll() && oldSet.isAddAll()) {
-            const newDeletedValues = newSet.deletedValues();
-            const oldDeletedValues = oldSet.deletedValues();
-            newDeletedValues.forEach((value) => {
-                if (oldSet.has(value)) {
-                    toCollapse.add(value);
-                }
-            });
-            oldDeletedValues.forEach((value) => {
-                if (newSet.has(value)) {
-                    toExpand.add(value);
-                }
-            });
-        }
-        else {
-            this._clearCaches();
-            this.dispatchEvent(new DataProviderRefreshEvent());
-            this.getExpandedObservable().next(this._getExpandedObservableValue(this.options.expanded, Promise.resolve()));
-            return;
-        }
-        const expandPromise = this._expand(toExpand);
-        const operationRemoveEventDetail = this._collapse(toCollapse);
-        const completionPromise = new Promise((resolve) => {
-            expandPromise.then((expandReturnObject) => {
-                const operationAddEventDetail = expandReturnObject.operationAddEventDetail;
-                const disregardAfterItem = expandReturnObject.disregardAfterItem;
-                const disregardAfterDescendentsAddedCount = expandReturnObject.disregardAfterDescendentsAddedCount;
-                if (disregardAfterItem != null) {
-                    const disregardAfterKey = disregardAfterItem.metadata.key;
-                    const disregardAfterKeyIndex = this._getItemIndexByKey(disregardAfterKey);
-                    const removedItems = this._cache.splice(disregardAfterKeyIndex + disregardAfterDescendentsAddedCount + 1, this._cache.length);
-                    this._markParentsAsNotDone(disregardAfterItem);
-                    removedItems.forEach((item) => {
-                        this._notDoneKeyMap.delete(item.metadata.key);
-                    });
-                    for (let i = 0; i < removedItems.length; i++) {
-                        this._decrementIteratorOffset(disregardAfterKeyIndex + 1);
+        const promise = this._taskQueue.enqueue(async () => {
+            const toExpand = this.createOptimizedKeySet();
+            const toCollapse = this.createOptimizedKeySet();
+            this._oldExpanded = this.options.expanded;
+            this.options.expanded = keySet;
+            const oldSet = this._oldExpanded;
+            const newSet = this.options.expanded;
+            if (!newSet.isAddAll() && !oldSet.isAddAll()) {
+                const newValues = newSet.values();
+                const oldValues = oldSet.values();
+                newValues.forEach((value) => {
+                    if (!oldSet.has(value)) {
+                        toExpand.add(value);
                     }
-                }
-                if (operationAddEventDetail?.keys?.size > 0 || operationRemoveEventDetail?.keys?.size > 0) {
-                    const mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, null);
-                    this.dispatchEvent(new DataProviderMutationEvent(mutationEventDetail));
-                }
-                if (disregardAfterItem != null) {
-                    const refreshEvent = new DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(disregardAfterItem.metadata.key));
-                    this.dispatchEvent(refreshEvent);
-                }
-                resolve();
+                });
+                oldValues.forEach((value) => {
+                    if (!newSet.has(value)) {
+                        toCollapse.add(value);
+                    }
+                });
+            }
+            else if (newSet.isAddAll() && oldSet.isAddAll()) {
+                const newDeletedValues = newSet.deletedValues();
+                const oldDeletedValues = oldSet.deletedValues();
+                newDeletedValues.forEach((value) => {
+                    if (oldSet.has(value)) {
+                        toCollapse.add(value);
+                    }
+                });
+                oldDeletedValues.forEach((value) => {
+                    if (newSet.has(value)) {
+                        toExpand.add(value);
+                    }
+                });
+            }
+            else {
+                this._clearCaches();
+                this.dispatchEvent(new DataProviderRefreshEvent());
+                return;
+            }
+            const operationRemoveEventDetail = this._collapse(toCollapse);
+            const expandPromise = this._expand(toExpand);
+            const completionPromise = new Promise((resolve) => {
+                expandPromise.then((expandReturnObject) => {
+                    const operationAddEventDetail = expandReturnObject.operationAddEventDetail;
+                    const disregardAfterItem = expandReturnObject.disregardAfterItem;
+                    const disregardAfterDescendentsAddedCount = expandReturnObject.disregardAfterDescendentsAddedCount;
+                    if (disregardAfterItem != null) {
+                        const disregardAfterKey = disregardAfterItem.metadata.key;
+                        const disregardAfterKeyIndex = this._getItemIndexByKey(disregardAfterKey);
+                        const removedItems = this._cache.splice(disregardAfterKeyIndex + disregardAfterDescendentsAddedCount + 1, this._cache.length);
+                        // mark all ancestors not done
+                        this._markParentsAsNotDone(disregardAfterItem);
+                        removedItems.forEach((item) => {
+                            this._notDoneKeyMap.delete(item.metadata.key);
+                        });
+                        for (let i = 0; i < removedItems.length; i++) {
+                            this._decrementIteratorOffset(disregardAfterKeyIndex + 1);
+                        }
+                    }
+                    if (operationAddEventDetail?.keys?.size > 0 ||
+                        operationRemoveEventDetail?.keys?.size > 0) {
+                        const mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, null);
+                        this.dispatchEvent(new DataProviderMutationEvent(mutationEventDetail));
+                    }
+                    if (disregardAfterItem != null) {
+                        const refreshEvent = new DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(disregardAfterItem.metadata.key));
+                        this.dispatchEvent(refreshEvent);
+                    }
+                    resolve();
+                });
             });
+            return await completionPromise;
         });
-        this.getExpandedObservable().next(this._getExpandedObservableValue(this.options.expanded, completionPromise));
+        this.getExpandedObservable().next(this._getExpandedObservableValue(keySet, promise));
     }
     getExpandedObservable() {
         return this._expandedObservable;
@@ -1311,6 +1371,9 @@ class FlattenedTreeDataProviderView {
             if (!this._isKeyDone(key)) {
                 disregardAfterItem = item;
                 disregardAfterDescendentsAddedCount = descendentsAddedCount;
+                // for (let j = 0; j < descendentsAddedCount; j ++) {
+                //   // this._incrementIteratorOffset(insertIndex);
+                // }
                 break;
             }
             let afterKey = key;
@@ -1383,12 +1446,18 @@ class FlattenedTreeDataProviderView {
             }
         });
     }
+    /**
+     * Return an empty Set which is optimized to store keys
+     */
     createOptimizedKeySet(initialSet) {
         if (this.dataProvider.createOptimizedKeySet) {
             return this.dataProvider.createOptimizedKeySet(initialSet);
         }
         return new ojSet(initialSet);
     }
+    /**
+     * Returns an empty Map which will efficiently store Keys returned by the DataProvider
+     */
     createOptimizedKeyMap(initialMap) {
         if (this.dataProvider.createOptimizedKeyMap) {
             return this.dataProvider.createOptimizedKeyMap(initialMap);

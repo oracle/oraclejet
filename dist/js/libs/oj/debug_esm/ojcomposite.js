@@ -48,17 +48,32 @@ CompositeInternal.getContainingComposite = function (node, stopBelow) {
   return composite;
 };
 
+/**
+ * @ignore
+ */
 class CompositeState extends LifecycleElementState {
     constructor() {
         super(...arguments);
         this._templateCleanCallbacks = [];
     }
+    /**
+     * @override
+     */
     getTrackChildrenOption() {
         return 'immediate';
     }
+    /**
+     * Method is called during TemplateSlotBinding
+     * when the template is rendered with Preact.
+     * @param callback
+     */
     addTemplateCleanCallback(callback) {
         this._templateCleanCallbacks.push(callback);
     }
+    /**
+     * The method is for cleaning templates rendered with Preact
+     * when the composite is disconnected from DOM.
+     */
     cleanTemplates() {
         this._templateCleanCallbacks.forEach((callback) => {
             callback();

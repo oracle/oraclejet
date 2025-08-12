@@ -17,14 +17,39 @@
  * It performs build-time code modifications to eliminate the need to use Require.js at runtime while preserving
  * all JET functionality including the lazily loaded module (ojModule and oj-module)
  */
+const webpack = require('webpack');
 const IncompatibleDependency = require('./IncompatibleDependency');
 const ReplaceContentDependency = require('./ReplaceContentDependency');
 const OjModuleImportDependency = require('./OjModuleImportDependency');
 const BaseResourceUrlDependency = require('./BaseResourceUrlDependency');
 const AsyncDependenciesBlock = require('webpack/lib/AsyncDependenciesBlock');
 const ImportDependency = require('webpack/lib/dependencies/ImportDependency');
+const NullDependency = require('webpack/lib/dependencies/NullDependency');
+const {getBundleMap} = require('../shared/mediator');
+const {stringifyWithFunctions} = require('../shared/bundleUtils');
 
-const vm = require("vm");
+
+
+class ReplaceV1BundlesDependency extends NullDependency
+{
+  constructor(range, bundleMapCB) {
+    super();
+    this.range = range;
+    this.bundleMapCB = bundleMapCB;
+  }
+}
+
+ReplaceV1BundlesDependency.Template = class ReplaceV1BundlesDependencyTemplate
+{
+  apply(dep, source) {
+    const bundleIdsToLocales = {};
+    dep.bundleMapCB().forEach((locales, id) => {
+      bundleIdsToLocales[id] = Array.from(locales.keys());
+    });
+
+    source.replace(dep.range[0], dep.range[1], `function _getV1BundlesInfo() {return ${JSON.stringify(bundleIdsToLocales)};}`);
+  }
+};
 
 
 const _OJ_OPTION_COMMENT_REGEXP = new RegExp(/(^|\W)oj[A-Z]{1,}[A-Za-z]{1,}:/);
@@ -33,9 +58,30 @@ class WebpackRequireFixupPlugin
 {
   constructor(options) {
     this.options = options;
+    this._writtenBundles = new Set();
   }
 
   apply(compiler) {
+
+   
+  // The code below is a workaround for the Preact Refresh plugin adding its own content
+  // to translation bundles loaded using .loadModule(). We are are adding matching rules to
+  // exclude js and ts modules in the 'nls' folder. Note that the node-modules exclusion
+  // is in already in the default configuration of the Preact Refresh plugin
+  compiler.hooks.thisCompilation.tap("WebpackRequireFixupPlugin", (compilation) => {
+    const preactRefreshPlugin = compiler.options.plugins.find(
+        (plugin) => plugin.constructor.name === 'ReloadPlugin'
+    );
+    if (preactRefreshPlugin) {
+      const newMatcher = webpack.ModuleFilenameHelpers.matchObject.bind(
+      undefined,
+      {
+        include: /\.([jt]sx?)$/,
+        exclude: [/node_modules/, /\/nls\/.*\.([jt]s)$/]
+      });
+      preactRefreshPlugin.matcher = newMatcher;
+    }
+  });
 
   compiler.hooks.compilation.tap("WebpackRequireFixupPlugin",
       (compilation, {normalModuleFactory,  contextModuleFactory}) => {
@@ -64,6 +110,13 @@ class WebpackRequireFixupPlugin
 					BaseResourceUrlDependency,
 					new BaseResourceUrlDependency.Template()
         );
+        compilation.dependencyTemplates.set(
+					ReplaceV1BundlesDependency,
+					new ReplaceV1BundlesDependency.Template()
+        );
+
+
+
 
         normalModuleFactory.hooks.parser.for("javascript/auto")
           .tap("WebpackRequireFixupPlugin",
@@ -122,7 +175,7 @@ class WebpackRequireFixupPlugin
                     }
                     // require instance is being passed for loading a View and a ViewModel by ojModule
                     else if (ojModuleBindingOpts) {
-                      return _replaceOjModuleRequirePromise(range, _mergeDeep({}, rootOpts, root, ojModuleBindingOpts), parser, true);
+                      return _replaceOjModuleRequirePromise(range, mergeDeep({}, [rootOpts, root, ojModuleBindingOpts]), parser, true);
                     }
                     // require instance is being passed for use by ModuleRouterAdapter
                     else if (moduleRouterAdapterOpts) {
@@ -148,20 +201,29 @@ class WebpackRequireFixupPlugin
                 expr => {_replaceGetRequirePromise(expr, parser);}
               );
 
+
+
               // Tap into the Webpack compiler visiting all statements, so that we can rewrite certain functions
               // Unfortunately, Webpack currently has no easy way to specify that one is looking for a certain assignment expression
               // or function expression, so we need to use the generic statement hook.
               parser.hooks.statement.tap(
 				"WebpackRequireFixupPlugin",
                   (statement) => {
+                    if (statement.type === "FunctionDeclaration") {
+                      switch (statement.id?.name)
+                      {
+                        case "_getOjModuleRequirePromise":
+                          // This function is replaced to make dynamic import calls with a context derived from the webpack.config.js and comment annotations
+                          _replaceOjModuleRequirePromise(statement.range, this.options.ojModuleResources||{}, parser);
+                          return true;
+                        case "_getV1BundlesInfo":
+                          // Replace _getV1BundlesInfo() in the bootstrap module. The resulting function will be returning a POJO
+                          // with the keys being the bundle IDs, and the values being an array of supported locales - Record<string, Array<string>>
 
-                    if (statement.type === "FunctionDeclaration" &&  statement.id
-                                      && statement.id.name === "_getOjModuleRequirePromise") {
-
-                      // This function is replaced to make dynamic import calls with a context derived from the webpack.config.js and comment annotations
-                      _replaceOjModuleRequirePromise(statement.range, this.options.ojModuleResources||{}, parser);
-                      return true;
-
+                          parser.state.current.addDependency(new ReplaceV1BundlesDependency(statement.range,
+                            ()=>getBundleMap()));
+                        return true;
+                      }
                     }
                     else if (statement.type === "ExpressionStatement" &&
                               statement.expression.type === "AssignmentExpression" &&
@@ -221,9 +283,24 @@ class WebpackRequireFixupPlugin
 
               }
           );
+          compilation.hooks.processAssets.tapPromise({name: 'WebpackRequireFixupPlugin', stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONS},
+            // Start writing out bundles here
+            async (c) => {
+              const {RawSource} =  webpack.sources;
+
+              getBundleMap().forEach((locales, id) => {
+                if (!this._writtenBundles.has(id)) {
+                  this._writtenBundles.add(id);
+                  locales.forEach((bundle, loc) => {
+                    compilation.emitAsset(`./js/resources_v1/${loc}/${id}.js`, new RawSource(`export default ${stringifyWithFunctions(bundle)}`));
+                  });
+                }
+              });
+          });
 
       });
   }
+
 }
 
 function _replaceOjModuleRequirePromise(range, options, parser, isDelegate) {
@@ -484,27 +561,7 @@ function _replaceRouterAdapterRequireDelegate(range, viewOpts, viewModelOpts, pa
 }
 
 
-function _isObject(item) {
-  return (item && typeof item === 'object' && !Array.isArray(item));
-};
 
-function _mergeDeep(target, ...sources) {
-  if (!sources.length) return target;
-  const source = sources.shift();
-
-  if (_isObject(target) && _isObject(source)) {
-    Object.keys(source).forEach( key =>  {
-      if (_isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
-        _mergeDeep(target[key], source[key]);
-      } else {
-        Object.assign(target, { [key]: source[key] });
-      }
-    });
-  }
-
-  return _mergeDeep(target, ...sources);
-};
 
 function _getCommentOptions(parser, range) {
   const ret = {};

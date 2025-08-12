@@ -98,9 +98,19 @@
  * @ojdecorator
  */
 
+/**
+ * Class decorator for VComponent. This is a compile time decorator that should add
+ * "binding: {consume: {name: value}}" to the specified property's metadata.
+ * @ignore
+ */
 function consumedBindings(consumes) {
     return function (constructor) { };
 }
+/**
+ * Class decorator for VComponent. This is a compile time decorator that should add
+ * "binding: {provide: Array.[MetadataTypes.ProvideProperty]}" to the specified property's metadata.
+ * @ignore
+ */
 function providedBindings(provides) {
     return function (constructor) { };
 }

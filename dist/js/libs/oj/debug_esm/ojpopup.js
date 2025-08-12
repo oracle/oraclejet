@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { PopupLiveRegion, PopupSkipLink, PopupWhenReadyMediator } from 'ojs/ojpopupcore';
+import { PositionUtils, ZOrderUtils, PopupService, PopupLiveRegion, PopupSkipLink, PopupWhenReadyMediator } from 'ojs/ojpopupcore';
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
 import Context from 'ojs/ojcontext';
@@ -120,6 +120,14 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * @ojoracleicon 'oj-ux-ico-popup-oj'
    * @ojuxspecs ['popup']
    *
+   * @ojdeprecated [
+   *  {
+   *    type: "maintenance",
+   *    since: "19.0.0",
+   *    value: ["oj-c-popup"]
+   *  }
+   * ]
+   *
    * @classdesc
    * <h3 id="popupOverview-section">
    *   JET Popup Component
@@ -158,6 +166,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * </h3>
    *  <p>To migrate from oj-popup to oj-c-popup, you need to revise the import statement and references to oj-c-popup in your app.</p>
    *  <p>In addition, please note the changes between the two components below.</p>
+   *  <h5>chrome</h5>
+   *  <p>This property is replaced with the <code class="prettyprint">variant</code> attribute in oj-c-popup.</p>
    *  <h5>position</h5>
    *  <p>The <code class="prettyprint">position</code> property and its subproperties are replaced with a collection of new top-level attributes.
    *  </p>
@@ -177,8 +187,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    *  <p>This property is replaced with the <code class="prettyprint">anchor</code> attribute in oj-c-popup.</p>
    *  <h5>position.offset, position.collision</h5>
    *  <p>These properties are moved to the top-level as the <code class="prettyprint">offset</code> and <code class="prettyprint">collision</code> attributes.</p>
-   *  <h5>chrome</h5>
-   *  <p>This property is replaced with the <code class="prettyprint">variant</code> attribute in oj-c-popup.</p>
    *  <h5>open method</h5>
    *  <p>The <code class="prettyprint">open</code> method is no longer supported. Visibility of the popup is controlled using the <code class="prettyprint">opened</code> property in oj-c-popup.
    *     The <code class="prettyprint">launcher</code> parameter is replaced with the new <code class="prettyprint">launcher</code> attribute.
@@ -988,7 +996,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       // fixup the position option set via the widget constructor
       var options = this.options;
-      options.position = oj.PositionUtils.coerceToJet(options.position);
+      options.position = PositionUtils.coerceToJet(options.position);
     },
     /**
      * @memberof oj.ojPopup
@@ -1013,7 +1021,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * @override
      */
     _destroy: function () {
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         this._closeImplicitly();
       }
 
@@ -1068,21 +1076,21 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         return;
       }
 
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         this._closeImplicitly(); // synchronous close
       }
 
       var element = this.element;
-      var status = oj.ZOrderUtils.getStatus(element);
-      if (!(status === oj.ZOrderUtils.STATUS.CLOSE || status === oj.ZOrderUtils.STATUS.UNKNOWN)) {
+      var status = ZOrderUtils.getStatus(element);
+      if (!(status === ZOrderUtils.STATUS.CLOSE || status === ZOrderUtils.STATUS.UNKNOWN)) {
         return;
       }
 
       // status change is needed to prevent calling open from an on before open
       // handler.  The _isOperationPending doens't gurard until this._setWhenReady('open');
-      oj.ZOrderUtils.setStatus(element, oj.ZOrderUtils.STATUS.BEFORE_OPEN);
+      ZOrderUtils.setStatus(element, ZOrderUtils.STATUS.BEFORE_OPEN);
       if (this._trigger('beforeOpen') === false) {
-        oj.ZOrderUtils.setStatus(this.element, status);
+        ZOrderUtils.setStatus(this.element, status);
         return;
       }
 
@@ -1127,16 +1135,16 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         layerClass += ' ' + [rootStyle, 'tail', tailDecoration].join('-');
       }
 
-      /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+      /** @type {!Object.<PopupService.OPTION, ?>} */
       var psOptions = {};
-      psOptions[oj.PopupService.OPTION.POPUP] = element;
-      psOptions[oj.PopupService.OPTION.LAUNCHER] = _launcher;
-      psOptions[oj.PopupService.OPTION.POSITION] = _position;
-      psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
-      psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
-      psOptions[oj.PopupService.OPTION.MODALITY] = options.modality;
-      psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
-      oj.PopupService.getInstance().open(psOptions);
+      psOptions[PopupService.OPTION.POPUP] = element;
+      psOptions[PopupService.OPTION.LAUNCHER] = _launcher;
+      psOptions[PopupService.OPTION.POSITION] = _position;
+      psOptions[PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
+      psOptions[PopupService.OPTION.LAYER_SELECTORS] = layerClass;
+      psOptions[PopupService.OPTION.MODALITY] = options.modality;
+      psOptions[PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
+      PopupService.getInstance().open(psOptions);
     },
     /**
      * Before open callback is called after the popup has been reparented into the
@@ -1144,12 +1152,12 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * @memberof oj.ojPopup
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for opening the popup
      * @return {Promise|void}
      */
     _beforeOpenHandler: function (psOptions) {
-      var element = psOptions[oj.PopupService.OPTION.POPUP];
-      var position = psOptions[oj.PopupService.OPTION.POSITION];
+      var element = psOptions[PopupService.OPTION.POPUP];
+      var position = psOptions[PopupService.OPTION.POSITION];
 
       element.show();
       element.position(position);
@@ -1158,7 +1166,9 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       this.initialWidth = element.width();
       this.initialHeight = element.height();
 
-      this._initVoiceOverAssist();
+      if (element[0][Symbol.for('oj-no-voiceover-assist')] !== true) {
+        this._initVoiceOverAssist();
+      }
 
       // JET-58635: set initial focus as soon as possible
       this._initialFocus(false);
@@ -1172,7 +1182,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         return startAnimation(
           element[0],
           action,
-          oj.PositionUtils.addTransformOriginAnimationEffectsOption(element, animationOptions.open),
+          PositionUtils.addTransformOriginAnimationEffectsOption(element, animationOptions.open),
           this
         );
       }
@@ -1184,12 +1194,12 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * @memberof oj.ojPopup
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for opening the popup
      * @return {void}
      */
     _afterOpenHandler: function (psOptions) {
-      var element = psOptions[oj.PopupService.OPTION.POPUP];
-      var launcher = psOptions[oj.PopupService.OPTION.LAUNCHER];
+      var element = psOptions[PopupService.OPTION.POPUP];
+      var launcher = psOptions[PopupService.OPTION.LAUNCHER];
 
       if (this.initialWidth !== element.width() || this.initialHeight !== element.height()) {
         // if the popup width/height changed during opening, re-apply position constraints
@@ -1250,17 +1260,17 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       }
 
       var element = this.element;
-      var status = oj.ZOrderUtils.getStatus(element);
-      if (status !== oj.ZOrderUtils.STATUS.OPEN) {
+      var status = ZOrderUtils.getStatus(element);
+      if (status !== ZOrderUtils.STATUS.OPEN) {
         return;
       }
 
       // Status toggle is needed to prevent a recursive closed callled from a
       // beforeClose handler. The _isOperationPending gatekeeper isn't activated
       // until after the _setWhenReady('close'|'open') call.
-      oj.ZOrderUtils.setStatus(element, oj.ZOrderUtils.STATUS.BEFORE_CLOSE);
+      ZOrderUtils.setStatus(element, ZOrderUtils.STATUS.BEFORE_CLOSE);
       if (this._trigger('beforeClose') === false && !this._ignoreBeforeCloseResultant) {
-        oj.ZOrderUtils.setStatus(element, status);
+        ZOrderUtils.setStatus(element, status);
         return;
       }
 
@@ -1279,10 +1289,10 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       // clean up voice over assist
       this._destroyVoiceOverAssist();
 
-      /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+      /** @type {!Object.<PopupService.OPTION, ?>} */
       var psOptions = {};
-      psOptions[oj.PopupService.OPTION.POPUP] = element;
-      oj.PopupService.getInstance().close(psOptions);
+      psOptions[PopupService.OPTION.POPUP] = element;
+      PopupService.getInstance().close(psOptions);
     },
     /**
      * Before callback is invoked while the popup is still visible and still parented in the
@@ -1290,11 +1300,11 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * @memberof oj.ojPopup
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for closing the popup
      * @return {Promise|void}
      */
     _beforeCloseHandler: function (psOptions) {
-      var element = psOptions[oj.PopupService.OPTION.POPUP];
+      var element = psOptions[PopupService.OPTION.POPUP];
 
       this._unregisterResizeListener(element[0]);
 
@@ -1310,10 +1320,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         var promise = startAnimation(
           element[0],
           action,
-          oj.PositionUtils.addTransformOriginAnimationEffectsOption(
-            element,
-            animationOptions.close
-          ),
+          PositionUtils.addTransformOriginAnimationEffectsOption(element, animationOptions.close),
           this
         ).then(function () {
           element.hide();
@@ -1330,7 +1337,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * @memberof oj.ojPopup
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for closing the popup
      * @return {void}
      */
     // eslint-disable-next-line no-unused-vars
@@ -1366,13 +1373,13 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * var isOpen = myPopup.isOpen();
      */
     isOpen: function () {
-      var status = oj.ZOrderUtils.getStatus(this.element);
+      var status = ZOrderUtils.getStatus(this.element);
       // the window is visible and reparented to the zorder container for these statuses
       return (
-        status === oj.ZOrderUtils.STATUS.OPENING ||
-        status === oj.ZOrderUtils.STATUS.OPEN ||
-        status === oj.ZOrderUtils.STATUS.BEFORE_CLOSE ||
-        status === oj.ZOrderUtils.STATUS.CLOSING
+        status === ZOrderUtils.STATUS.OPENING ||
+        status === ZOrderUtils.STATUS.OPEN ||
+        status === ZOrderUtils.STATUS.BEFORE_CLOSE ||
+        status === ZOrderUtils.STATUS.CLOSING
       );
     },
     /**
@@ -1395,7 +1402,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     refresh: function () {
       this._super();
 
-      if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) !== ZOrderUtils.STATUS.OPEN) {
         return;
       }
 
@@ -1405,10 +1412,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       // trigger refresh of descendents if reposition was successful
       var element = this.element;
-      oj.PopupService.getInstance().triggerOnDescendents(
-        element,
-        oj.PopupService.EVENT.POPUP_REFRESH
-      );
+      PopupService.getInstance().triggerOnDescendents(element, PopupService.EVENT.POPUP_REFRESH);
     },
     /**
      * @memberof oj.ojPopup
@@ -1440,20 +1444,20 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           return;
         case 'autoDismiss':
           if (
-            oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN &&
+            ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN &&
             value !== options.autoDismiss
           ) {
             this._setAutoDismiss(value);
           }
           break;
         case 'modality':
-          if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+          if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
             var element = this.element;
-            /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+            /** @type {!Object.<PopupService.OPTION, ?>} */
             var psOptions = {};
-            psOptions[oj.PopupService.OPTION.POPUP] = element;
-            psOptions[oj.PopupService.OPTION.MODALITY] = value;
-            oj.PopupService.getInstance().changeOptions(psOptions);
+            psOptions[PopupService.OPTION.POPUP] = element;
+            psOptions[PopupService.OPTION.MODALITY] = value;
+            PopupService.getInstance().changeOptions(psOptions);
           }
           break;
         default:
@@ -1518,15 +1522,15 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       // The tail can change the z-index of the layer that defines the stacking context
       // of the popup.  If the popup is open, update the layers class.
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         var layerClass = [rootStyle, 'layer'].join('-');
         layerClass += ' ' + tailStyle;
 
-        /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+        /** @type {!Object.<PopupService.OPTION, ?>} */
         var options = {};
-        options[oj.PopupService.OPTION.POPUP] = element;
-        options[oj.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
-        oj.PopupService.getInstance().changeOptions(options);
+        options[PopupService.OPTION.POPUP] = element;
+        options[PopupService.OPTION.LAYER_SELECTORS] = layerClass;
+        PopupService.getInstance().changeOptions(options);
       }
     },
     /**
@@ -1565,13 +1569,13 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       // if the popup is open, reseed the layer class removing the
       // tail style.
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         var layerClass = [rootStyle, 'layer'].join('-');
-        /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+        /** @type {!Object.<PopupService.OPTION, ?>} */
         var options = {};
-        options[oj.PopupService.OPTION.POPUP] = element;
-        options[oj.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
-        oj.PopupService.getInstance().changeOptions(options);
+        options[PopupService.OPTION.POPUP] = element;
+        options[PopupService.OPTION.LAYER_SELECTORS] = layerClass;
+        PopupService.getInstance().changeOptions(options);
       }
     },
     /**
@@ -1643,7 +1647,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       // new position extends the existing object
       // covert to jet internal position format
       if (position) {
-        options.position = oj.PositionUtils.coerceToJet(position, options.position);
+        options.position = PositionUtils.coerceToJet(position, options.position);
       }
     },
 
@@ -1656,9 +1660,9 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      */
     _getPositionAsJqUi: function () {
       var options = this.options;
-      var position = oj.PositionUtils.coerceToJqUi(options.position);
+      var position = PositionUtils.coerceToJqUi(options.position);
       var isRtl = this._GetReadingDirection() === 'rtl';
-      position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+      position = PositionUtils.normalizeHorizontalAlignment(position, isRtl);
 
       var origUsing = position.using;
       origUsing = $.isFunction(origUsing) ? origUsing : null;
@@ -1735,10 +1739,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         //
         if (props.target && props.target.height === 0 && props.target.width === 0) {
           var isRtl = this._GetReadingDirection() === 'rtl';
-          var position = oj.PositionUtils.normalizeHorizontalAlignment(
-            this.options.position,
-            isRtl
-          );
+          var position = PositionUtils.normalizeHorizontalAlignment(this.options.position, isRtl);
           var myrule = position.my;
           if (!oj.StringUtils.isEmptyOrUndefined(myrule)) {
             // If the original horizontal rule is center, use it; otherwise, use the calculated
@@ -1812,7 +1813,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         }
       }
 
-      oj.PositionUtils.captureTransformOriginAnimationEffectsOption(element, props);
+      PositionUtils.captureTransformOriginAnimationEffectsOption(element, props);
 
       // call on the original using regardless of the tail
       if (origUsing) {
@@ -1825,7 +1826,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       // When focusLoss auto dismissal is enabled, implicitly close the popup when the
       // position.of is clipped in an overflow container.
       if (options.autoDismiss === 'focusLoss') {
-        if (oj.PositionUtils.isAligningPositionClipped(props)) {
+        if (PositionUtils.isAligningPositionClipped(props)) {
           // Ignore focus back to what had focus before the popup was open. Focus
           // restore could fight scroll if the popup was closed due to the aligning
           // element being clipped.
@@ -1920,7 +1921,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * @private
      */
     _handleResize: function () {
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         this._reposition();
       }
     },
@@ -2142,26 +2143,12 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           if ((firstNode === target || element[0] === target) && event.shiftKey) {
             // tabbing backwards, cycle focus to last node
             event.preventDefault();
-            // If the first and last tab stops are the same,
-            // force focus to the root popup dom.  This will
-            // cause the blur to fire on any input components.
-            // If we are back tabbing on the popup dom, jump to the
-            // last tab stop.
-            if (firstNode === lastNode && firstNode === target) {
-              element.attr('tabindex', '-1');
-              element.focus();
-            } else {
+            if (firstNode !== lastNode || firstNode !== target) {
               $(lastNode).focus(); // tabbing backwards, cycle focus to last node
             }
           } else if (lastNode === target && !event.shiftKey) {
             event.preventDefault();
-            // If the first and last tab stops are the same,
-            // force focus to the root popup dom.  This will
-            // cause the blur to fire on any input components.
-            if (lastNode === firstNode) {
-              element.attr('tabindex', '-1');
-              element.focus();
-            } else {
+            if (lastNode !== firstNode) {
               $(firstNode).focus(); // tabbing forwards, cycle to the first node
             }
           }
@@ -2192,23 +2179,23 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var focusLossCallback = this._focusLossCallback;
       var events = this._getPopupServiceEvents();
       if (focusLossCallback) {
-        delete events[oj.PopupService.EVENT.POPUP_AUTODISMISS];
+        delete events[PopupService.EVENT.POPUP_AUTODISMISS];
         delete this._focusLossCallback;
       }
 
       if (autoDismiss === 'focusLoss') {
         focusLossCallback = this._dismissalHandler.bind(this);
         this._focusLossCallback = focusLossCallback;
-        events[oj.PopupService.EVENT.POPUP_AUTODISMISS] = focusLossCallback;
+        events[PopupService.EVENT.POPUP_AUTODISMISS] = focusLossCallback;
       }
 
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         var element = this.element;
-        /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+        /** @type {!Object.<PopupService.OPTION, ?>} */
         var options = {};
-        options[oj.PopupService.OPTION.POPUP] = element;
-        options[oj.PopupService.OPTION.EVENTS] = events;
-        oj.PopupService.getInstance().changeOptions(options);
+        options[PopupService.OPTION.POPUP] = element;
+        options[PopupService.OPTION.EVENTS] = events;
+        PopupService.getInstance().changeOptions(options);
       }
     },
     /**
@@ -2218,7 +2205,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * @param {Event} event native doc
      */
     _dismissalHandler: function (event) {
-      if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) !== ZOrderUtils.STATUS.OPEN) {
         return;
       }
 
@@ -2414,7 +2401,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     _surrogateRemoveHandler: function () {
       // In all cases except when the dialog is already open, removal of the
       // surrogate during opening or closing will result in implicit removal.
-      // 1) CLOSING: Handled in oj.ZOrderUtils.removeFromAncestorLayer.  If the
+      // 1) CLOSING: Handled in ZOrderUtils.removeFromAncestorLayer.  If the
       //    surrogate doesn't exist the layer containing the popup dom is detached.
       // 2) OPENING: in the PopupServiceImpl#open _finalize, if the surrogate doesn't
       //    exist after in the open state, this remove callback is invoked.
@@ -2423,8 +2410,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       // but jquery UI instances will invoke the _destory method.
 
       var element = this.element;
-      var status = oj.ZOrderUtils.getStatus(element);
-      if (status === oj.ZOrderUtils.STATUS.OPEN) {
+      var status = ZOrderUtils.getStatus(element);
+      if (status === ZOrderUtils.STATUS.OPEN) {
         CustomElementUtils.cleanComponentBindings(element[0]);
         element.remove();
       }
@@ -2433,20 +2420,20 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * @memberof oj.ojPopup
      * @instance
      * @private
-     * @return {!Object.<oj.PopupService.EVENT, function(...)>}
+     * @return {!Object.<PopupService.EVENT, function(...)>}
      */
     _getPopupServiceEvents: function () {
       if (!this._popupServiceEvents) {
-        /** @type {!Object.<oj.PopupService.EVENT, function(...)>} **/
+        /** @type {!Object.<PopupService.EVENT, function(...)>} **/
         var events = {};
         this._popupServiceEvents = events;
-        events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
-        events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_REFRESH] = this.refresh.bind(this);
-        events[oj.PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_AFTER_CLOSE] = this._afterCloseHandler.bind(this);
+        events[PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
+        events[PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
+        events[PopupService.EVENT.POPUP_REFRESH] = this.refresh.bind(this);
+        events[PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
+        events[PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
+        events[PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);
+        events[PopupService.EVENT.POPUP_AFTER_CLOSE] = this._afterCloseHandler.bind(this);
       }
       return this._popupServiceEvents;
     },
@@ -2543,7 +2530,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      */
     _NotifyDetached: function () {
       // detaching an open popup results in implicit dismissal
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         this._closeImplicitly();
       }
 

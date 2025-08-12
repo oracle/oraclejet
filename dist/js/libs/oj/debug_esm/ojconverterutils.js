@@ -16,18 +16,23 @@ ConverterUtils.getConverterInstance = function (converterOption) {
     let converterInstance = null;
     if (converterOption) {
         if (typeof converterOption === 'object') {
+            // TODO: Should we check that it duck types Converter?
             if ((converterOption.parse && typeof converterOption.parse === 'function') ||
                 (converterOption.format && typeof converterOption.format === 'function')) {
+                // we are dealing with a converter instance
                 converterInstance = converterOption;
             }
             else {
+                // check if there is a type set
                 cTypeStr = converterOption.type;
                 cOptions = converterOption.options || {};
             }
         }
         if (!converterInstance) {
+            // either we have an object literal or just plain string.
             cTypeStr = cTypeStr || converterOption;
             if (cTypeStr && typeof cTypeStr === 'string') {
+                // if we are passed a string get registered type.
                 if (oj.Validation && oj.Validation.converterFactory) {
                     var cf = oj.Validation.converterFactory(cTypeStr);
                     return cf.createConverter(cOptions);

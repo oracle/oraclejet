@@ -72,7 +72,7 @@
     .oj-table-external-scroll .oj-table-scroller {
       overflow: visible;
     }
-  
+
     .oj-table-stretch .oj-table-scroller {
       position: absolute;
       left: 0;
@@ -212,7 +212,7 @@
       z-index: 1;
       border-bottom: 1px solid $collectionBorderColor;
     }
-    
+
     /* Grid display table styling for the column header elements. */
     .oj-table-grid-display .oj-table-column-header-cell {
 
@@ -478,7 +478,7 @@
     .oj-table-column-header-default-sort-icon.oj-disabled {
       display: none;
     }
-    
+
     /* Styling for the column header resize indicator. */
     .oj-table-column-header-resize-indicator {
       position: absolute;
@@ -592,6 +592,13 @@
 
     }
 
+    .oj-table-container-drag-image {
+      background-color: transparent !important;
+      border-color: transparent !important;
+      position: absolute;
+      top: -10000px;
+    }
+
     /* Styling for drag image of row. */
     .oj-table-body-row-drag-image {
       opacity: 0.95;
@@ -622,8 +629,15 @@
 
     }
 
+    /* Styling for the data row drag inside feedback. */
+    .oj-table-body-row-drag-inside > td {
+      background-image: linear-gradient($collectionCellBgColorSelected, $collectionCellBgColorSelected);
+    }
+
     /* Styling for drop target when dnd with other component */
     .oj-table-body-row-drop-target {
+      position: absolute;
+      z-index: 2;
       width: 100%;
       height: 2px;
       background-color: $dropTargetLineColor;
@@ -698,7 +712,7 @@
         height: $collectionRowHeight;
 
     }
-    
+
     /* Editable table styling for the data cell elements. */
     .oj-table-editable .oj-table-data-cell {
 
@@ -884,10 +898,10 @@
         }
         @include oj-rtl() {
           border-left: 1px solid $collectionCellBorderColor;
-        }  
+        }
 
     }
-    
+
     /* Styling to remove the right border of the last vertical grid line. */
     .oj-table-vgrid-lines:last-child,
     .oj-table-grid-display .oj-table-vgrid-lines:last-child,
@@ -958,7 +972,7 @@
 
          border-color: $collectionBorderColor;
          background-color: $collectionBgColor;
-       
+
        border-width: 0 1px 1px;
     }
   }

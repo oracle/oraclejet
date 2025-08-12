@@ -3404,6 +3404,10 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
  * </h3>
  * To migrate from oj-rating-gauge to oj-c-rating-gauge, you need to revise the import statement and references to oj-rating-gauge in your app. Please note the changes between the two components below.
+ * <h5>No data to display </h5>
+ * <p>
+ * oj-c-rating-gauge will not support showing "No Data to Display" (translated string) to meet Redwood theme design.
+ * </p>
  * <h5>selected-state.color and changed-state.color attributes are no longer supported. </h5>
  * <p>
  * oj-c-rating-gauge will not support state attributes. Use the color API in oj-c-rating-gauge instead of selected-state.color. changed-state.color can be achived by using the changed and color API.
@@ -3651,6 +3655,10 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * </h3>
  * To migrate from oj-status-meter-gauge to oj-c-meter-bar or oj-c-meter-circle, you need to revise the import statement and references to oj-status-meter-gauge in your app.
  * oj-c-meter-bar is analogous to oj-status-meter-gauge with “horizontal” and “vertical” orientation while oj-c-meter-circle is analogous to oj-status-meter-gauge with “circular” orientation.
+ * <h5>No data to display </h5>
+ * <p>
+ * oj-c-meter-bar and oj-c-meter-circle will not support showing "No Data to Display" (translated string) to meet Redwood theme design.
+ * </p>
  * <h5>orientation attribute </h5>
  * <p>
  * oj-c-meter-bar will only support "horizontal" and "vertical" enums while oj-c-meter circle will not include the orientation attribute.
@@ -3658,10 +3666,6 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <h5>center attribute </h5>
  * <p>
  * oj-c-meter-bar and oj-c-meter-circle will not support center attribute. However, oj-c-meter-circle will continue to support centerTemplate. Use this instead.
- * </p>
- * <h5>reference-lines[].line-width attribute </h5>
- * <p>
- * oj-c-meter-bar and oj-c-meter-circle will not support reference-lines[].line-width attributes in this release.
  * </p>
  * <h5>reference-lines[].value attribute </h5>
  * <p>

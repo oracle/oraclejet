@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojdedupdataprovider', 'ojs/ojcomponentcore', 'ojs/ojeventtarget'], function (oj, ojdataprovider, CachedIteratorResultsDataProvider, DedupDataProvider, ojcomponentcore, ojeventtarget) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojdedupdataprovider', 'ojs/ojeventtarget'], function (oj, ojdataprovider, CachedIteratorResultsDataProvider, DedupDataProvider, ojeventtarget) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     CachedIteratorResultsDataProvider = CachedIteratorResultsDataProvider && Object.prototype.hasOwnProperty.call(CachedIteratorResultsDataProvider, 'default') ? CachedIteratorResultsDataProvider['default'] : CachedIteratorResultsDataProvider;
@@ -144,6 +144,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcachediteratorresultsdat
 
     // end of jsdoc
 
+    /**
+     * @license
+     * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+     * Licensed under The Universal Permissive License (UPL), Version 1.0
+     * @ignore
+     */
     class MutateEventFilteringDataProvider {
         constructor(dataProvider) {
             var _a, _b;
@@ -203,16 +209,19 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcachediteratorresultsdat
             else {
                 this.cache = new oj.DataCache();
             }
+            // Add createOptimizedKeyMap method to this DataProvider if the wrapped DataProvider supports it
             if (dataProvider.createOptimizedKeyMap) {
                 this.createOptimizedKeyMap = (initialMap) => {
                     return dataProvider.createOptimizedKeyMap(initialMap);
                 };
             }
+            // Add createOptimizedKeySet method to this DataProvider if the wrapped DataProvider supports it
             if (dataProvider.createOptimizedKeySet) {
                 this.createOptimizedKeySet = (initialSet) => {
                     return dataProvider.createOptimizedKeySet(initialSet);
                 };
             }
+            // Listen to mutate event on wrapped DataProvider
             dataProvider.addEventListener(MutateEventFilteringDataProvider._MUTATE, (event) => {
                 if (event.detail) {
                     let removeDetail = self._processMutations(event.detail.remove);
@@ -230,7 +239,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcachediteratorresultsdat
                     self.dispatchEvent(event);
                 }
             });
+            // Listen to refresh event on wrapped DataProvider
             dataProvider.addEventListener(MutateEventFilteringDataProvider._REFRESH, (event) => {
+                // Invalidate the cache on refresh event
                 self.cache.reset();
                 self.dispatchEvent(event);
             });
@@ -274,6 +285,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcachediteratorresultsdat
             if (detail) {
                 let eventDetailKeys = detail[MutateEventFilteringDataProvider._KEYS];
                 if (eventDetailKeys && eventDetailKeys.size > 0) {
+                    // check if the cache contains the key
                     let removeKeys = new Set();
                     let value = this.cache.getDataByKeys({ keys: eventDetailKeys });
                     eventDetailKeys.forEach(function (key) {
@@ -288,8 +300,10 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcachediteratorresultsdat
                             keyArray.push(val);
                         });
                         let keyIndex = keyArray.indexOf(key);
+                        // Delete the key from detail key set as well as keyArray to keep them in sync
                         detailClone.keys.delete(key);
                         keyArray.splice(keyIndex, 1);
+                        // All detail properties other than keys can be null, so check them before deleting items
                         if (detailClone.data) {
                             detailClone.data.splice(keyIndex, 1);
                         }
@@ -326,6 +340,13 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojcachediteratorresultsdat
     MutateEventFilteringDataProvider._INDEXES = 'indexes';
     ojeventtarget.EventTargetMixin.applyMixin(MutateEventFilteringDataProvider);
     oj._registerLegacyNamespaceProp('MutateEventFilteringDataProvider', MutateEventFilteringDataProvider);
+
+    /**
+     * @license
+     * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+     * Licensed under The Universal Permissive License (UPL), Version 1.0
+     * @ignore
+     */
 
     return MutateEventFilteringDataProvider;
 

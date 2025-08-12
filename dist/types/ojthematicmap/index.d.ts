@@ -47,6 +47,7 @@ export interface ojThematicMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | a
         insert: SVGElement;
     } | void) | null;
     styleDefaults?: {
+        /** @deprecated since 19.0.0 - The areaSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         areaSvgStyle?: Partial<CSSStyleDeclaration>;
         dataAreaDefaults?: {
             borderColor?: string;
@@ -220,7 +221,9 @@ export namespace ojThematicMap {
         opacity?: number;
         selectable?: 'auto' | 'off';
         shortDesc?: (string | ((context: AreaShortDescContext<K, D>) => string));
+        /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -267,7 +270,9 @@ export namespace ojThematicMap {
             x?: number;
             y?: number;
         };
+        /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number;
     };
@@ -307,7 +312,9 @@ export namespace ojThematicMap {
         sourceHover?: string;
         sourceHoverSelected?: string;
         sourceSelected?: string;
+        /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
         width?: number;
@@ -386,9 +393,13 @@ export namespace ojThematicMap {
     // tslint:disable-next-line interface-over-type-literal
     type RenderMarkerContentTemplate<K1, K2, K3, D1, D2, D3> = import('ojs/ojvcomponent').TemplateSlot<RendererContext<K1, K2, K3, D1, D2, D3>>;
     // tslint:disable-next-line interface-over-type-literal
+    type MarkerContentTemplateContext<K1, K2, K3, D1, D2, D3> = RendererContext<K1, K2, K3, D1, D2, D3>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderMarkerTemplate<K3, D3> = import('ojs/ojvcomponent').TemplateSlot<MarkerTemplateContext<K3, D3>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K1, K2, K3, D1, D2, D3> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K1, K2, K3, D1, D2, D3>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K1, K2, K3, D1, D2, D3> = TooltipContext<K1, K2, K3, D1, D2, D3>;
 }
 export interface ojThematicMapEventMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
    any> extends dvtBaseComponentEventMap<ojThematicMapSettableProperties<K1, K2, K3, D1, D2, D3>> {
@@ -466,6 +477,7 @@ export interface ojThematicMapSettableProperties<K1, K2, K3, D1 extends ojThemat
         insert: SVGElement;
     } | void) | null;
     styleDefaults?: {
+        /** @deprecated since 19.0.0 - The areaSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         areaSvgStyle?: Partial<CSSStyleDeclaration>;
         dataAreaDefaults?: {
             borderColor?: string;
@@ -539,7 +551,9 @@ export interface ojThematicMapArea<K1 = any, D1 = any> extends dvtBaseComponent<
     opacity?: number;
     selectable?: 'auto' | 'off';
     shortDesc?: (string | ((context: ojThematicMap.AreaShortDescContext<K1, D1>) => string));
+    /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     addEventListener<T extends keyof ojThematicMapAreaEventMap<K1, D1>>(type: T, listener: (this: HTMLElement, ev: ojThematicMapAreaEventMap<K1, D1>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
@@ -593,7 +607,9 @@ export interface ojThematicMapAreaSettableProperties<K1 = any, D1 = any> extends
     opacity?: number;
     selectable?: 'auto' | 'off';
     shortDesc?: (string | ((context: ojThematicMap.AreaShortDescContext<K1, D1>) => string));
+    /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
 }
 export interface ojThematicMapAreaSettablePropertiesLenient<K1 = any, D1 = any> extends Partial<ojThematicMapAreaSettableProperties<K1, D1>> {
@@ -616,7 +632,9 @@ export interface ojThematicMapLink<K1 = any, K2 = any, D1 = any> extends dvtBase
         x?: number;
         y?: number;
     };
+    /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     width?: number;
     addEventListener<T extends keyof ojThematicMapLinkEventMap<K1, K2, D1>>(type: T, listener: (this: HTMLElement, ev: ojThematicMapLinkEventMap<K1, K2, D1>[T]) => any, options?: (boolean |
@@ -676,7 +694,9 @@ export interface ojThematicMapLinkSettableProperties<K1 = any, K2 = any, D1 = an
         x?: number;
         y?: number;
     };
+    /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     width?: number;
 }
@@ -703,7 +723,9 @@ export interface ojThematicMapMarker<K3 = any, D3 = any> extends dvtBaseComponen
     sourceHover?: string;
     sourceHoverSelected?: string;
     sourceSelected?: string;
+    /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     value?: number;
     width?: number;
@@ -817,7 +839,9 @@ export interface ojThematicMapMarkerSettableProperties<K3 = any, D3 = any> exten
     sourceHover?: string;
     sourceHoverSelected?: string;
     sourceSelected?: string;
+    /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     value?: number;
     width?: number;
@@ -937,7 +961,9 @@ export namespace ThematicMapElement {
         opacity?: number;
         selectable?: 'auto' | 'off';
         shortDesc?: (string | ((context: ojThematicMap.AreaShortDescContext<K, D>) => string));
+        /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -984,7 +1010,9 @@ export namespace ThematicMapElement {
             x?: number;
             y?: number;
         };
+        /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number;
     };
@@ -1024,7 +1052,9 @@ export namespace ThematicMapElement {
         sourceHover?: string;
         sourceHoverSelected?: string;
         sourceSelected?: string;
+        /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
         width?: number;
@@ -1103,9 +1133,13 @@ export namespace ThematicMapElement {
     // tslint:disable-next-line interface-over-type-literal
     type RenderMarkerContentTemplate<K1, K2, K3, D1, D2, D3> = import('ojs/ojvcomponent').TemplateSlot<RendererContext<K1, K2, K3, D1, D2, D3>>;
     // tslint:disable-next-line interface-over-type-literal
+    type MarkerContentTemplateContext<K1, K2, K3, D1, D2, D3> = RendererContext<K1, K2, K3, D1, D2, D3>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderMarkerTemplate<K3, D3> = import('ojs/ojvcomponent').TemplateSlot<MarkerTemplateContext<K3, D3>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K1, K2, K3, D1, D2, D3> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K1, K2, K3, D1, D2, D3>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K1, K2, K3, D1, D2, D3> = TooltipContext<K1, K2, K3, D1, D2, D3>;
 }
 export namespace ThematicMapAreaElement {
     // tslint:disable-next-line interface-over-type-literal
@@ -1243,8 +1277,8 @@ export interface ThematicMapAreaIntrinsicProps extends Partial<Readonly<ojThemat
     onopacityChanged?: (value: ojThematicMapAreaEventMap<any, any>['opacityChanged']) => void;
     onselectableChanged?: (value: ojThematicMapAreaEventMap<any, any>['selectableChanged']) => void;
     onshortDescChanged?: (value: ojThematicMapAreaEventMap<any, any>['shortDescChanged']) => void;
-    onsvgClassNameChanged?: (value: ojThematicMapAreaEventMap<any, any>['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojThematicMapAreaEventMap<any, any>['svgStyleChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgClassNameChanged?: (value: ojThematicMapAreaEventMap<any, any>['svgClassNameChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgStyleChanged?: (value: ojThematicMapAreaEventMap<any, any>['svgStyleChanged']) => void;
     children?: ComponentChildren;
 }
 export interface ThematicMapLinkIntrinsicProps extends Partial<Readonly<ojThematicMapLinkSettableProperties<any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
@@ -1254,8 +1288,8 @@ export interface ThematicMapLinkIntrinsicProps extends Partial<Readonly<ojThemat
     onselectableChanged?: (value: ojThematicMapLinkEventMap<any>['selectableChanged']) => void;
     onshortDescChanged?: (value: ojThematicMapLinkEventMap<any>['shortDescChanged']) => void;
     onstartLocationChanged?: (value: ojThematicMapLinkEventMap<any>['startLocationChanged']) => void;
-    onsvgClassNameChanged?: (value: ojThematicMapLinkEventMap<any>['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojThematicMapLinkEventMap<any>['svgStyleChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgClassNameChanged?: (value: ojThematicMapLinkEventMap<any>['svgClassNameChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgStyleChanged?: (value: ojThematicMapLinkEventMap<any>['svgStyleChanged']) => void;
     onwidthChanged?: (value: ojThematicMapLinkEventMap<any>['widthChanged']) => void;
     children?: ComponentChildren;
 }
@@ -1279,8 +1313,8 @@ export interface ThematicMapMarkerIntrinsicProps extends Partial<Readonly<ojThem
     onsourceHoverChanged?: (value: ojThematicMapMarkerEventMap<any>['sourceHoverChanged']) => void;
     onsourceHoverSelectedChanged?: (value: ojThematicMapMarkerEventMap<any>['sourceHoverSelectedChanged']) => void;
     onsourceSelectedChanged?: (value: ojThematicMapMarkerEventMap<any>['sourceSelectedChanged']) => void;
-    onsvgClassNameChanged?: (value: ojThematicMapMarkerEventMap<any>['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojThematicMapMarkerEventMap<any>['svgStyleChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgClassNameChanged?: (value: ojThematicMapMarkerEventMap<any>['svgClassNameChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgStyleChanged?: (value: ojThematicMapMarkerEventMap<any>['svgStyleChanged']) => void;
     onvalueChanged?: (value: ojThematicMapMarkerEventMap<any>['valueChanged']) => void;
     onwidthChanged?: (value: ojThematicMapMarkerEventMap<any>['widthChanged']) => void;
     onxChanged?: (value: ojThematicMapMarkerEventMap<any>['xChanged']) => void;

@@ -56,8 +56,8 @@ module.exports = {
       'jqueryui-amd': path.resolve(__dirname, './web/js/libs/jquery/jqueryui-amd-1.14.1'),
       'hammerjs': path.resolve(__dirname, './web/js/libs/hammer/hammer-2.0.8'),
       'ojdnd': path.resolve(__dirname, './web/js/libs/dnd-polyfill/dnd-polyfill-1.0.2'),
-      'ojs': path.resolve(__dirname, './web/js/libs/oj/18.1.0/debug'),
-      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/18.1.0/resources'),
+      'ojs': path.resolve(__dirname, './web/js/libs/oj/19.0.0/debug'),
+      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/19.0.0/resources'),
       'oj-c': '@oracle/oraclejet-core-pack/oj-c',
       // Webpack 5 will discover oraclejet-preact's exports and map the name
       // "@oracle/oraclejet-preact" to "@oracle/oraclejet-preact/cjs". We redirect
@@ -66,7 +66,9 @@ module.exports = {
       '@oracle/oraclejet-preact': '@oracle/oraclejet-preact/../amd',
       'signals': path.resolve(__dirname, './web/js/libs/js-signals/signals'),
       'touchr': path.resolve(__dirname, './web/js/libs/touchr/touchr'),
-      'appController': path.resolve(__dirname, './web/js/appController')
+      'appController': path.resolve(__dirname, './web/js/appController'),
+      // If you are creating a bundle with multiple locale support, make sure to create an alias for the bootstrap module (the directory name here is an example)
+      'oraclejet': path.resolve(__dirname, 'node_modules/@oracle/oraclejet') // used to load the bootstrap module that is needed for multi-locale support
     },
     fallback: { chai }
   },
@@ -75,7 +77,7 @@ module.exports = {
     new webpack.LoaderOptionsPlugin({
       options: {
         ojL10nLoader: {
-          locale: "en-US"
+          locale: "en-US"// use "multi" if you want to create a bundle with multiple locale support
         }
       }
     }
@@ -103,7 +105,7 @@ module.exports = {
           }
         },
         // Point this setting to the root folder for the associated JET distribution (could be a CDN). Used by the oj.Config.getResourceUri() call
-        baseResourceUrl: "./web/js/libs/oj/18.1.0"
+        baseResourceUrl: "./web/js/libs/oj/19.0.0"
       }
     )
 

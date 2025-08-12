@@ -288,6 +288,7 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
 
     // end of jsdoc
 
+    // This code is adapted from ko.utils.compareArrays
     const compareArrays = (oldArray, newArray) => {
         const statusNotInOld = 'added';
         const statusNotInNew = 'deleted';
@@ -324,14 +325,16 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
                     thisRow[bigIndex] = smlIndex + 1;
                 }
                 else if (!smlIndex) {
+                    // Top row - transform empty array into new array via additions
                     thisRow[bigIndex] = bigIndex + 1;
                 }
                 else if (smlArray[smlIndex - 1] === bigArray[bigIndex - 1]) {
                     thisRow[bigIndex] = lastRow[bigIndex - 1];
                 }
+                // copy value (no edit)
                 else {
-                    const northDistance = lastRow[bigIndex] || maxDistance;
-                    const westDistance = thisRow[bigIndex - 1] || maxDistance;
+                    const northDistance = lastRow[bigIndex] || maxDistance; // not in big (deletion)
+                    const westDistance = thisRow[bigIndex - 1] || maxDistance; // not in small (addition)
                     thisRow[bigIndex] = myMin(northDistance, westDistance) + 1;
                 }
             }
@@ -345,6 +348,7 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
             if (bigIndex && meMinusOne === editDistanceMatrix[smlIndex][bigIndex - 1]) {
                 --bigIndex;
                 notInSml.push((editScript[editScript.length] = {
+                    // added
                     status: statusNotInSml,
                     value: bigArray[bigIndex],
                     index: bigIndex
@@ -353,6 +357,7 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
             else if (smlIndex && meMinusOne === editDistanceMatrix[smlIndex - 1][bigIndex]) {
                 --smlIndex;
                 notInBig.push((editScript[editScript.length] = {
+                    // deleted
                     status: statusNotInBig,
                     value: smlArray[smlIndex],
                     index: smlIndex
@@ -367,6 +372,13 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
     };
 
     class MutableArrayDataProvider {
+        /**
+         * If value is frozen, just use the value.
+         * Otherwise, make a shallow copy of the data and freeze the copy.
+         *
+         * If value is an array, just use the array.
+         * Otherwise, make it an array
+         */
         set data(value) {
             const oldData = this._data?.slice() ?? [];
             let newData;
@@ -384,12 +396,14 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
             }
             if ((oldData.length === 0 && newData.length > 0) ||
                 (newData.length === 0 && oldData.length > 0)) {
-                this._keys = null;
+                this._keys = null; // reset keys so the new fetch will regenerate
                 this._data = newData;
                 this._impl.flushQueue();
                 this._impl.resetTotalFilteredRowCount();
             }
             else {
+                // Need to ensure keys have been generated from old data so that we can
+                // generate the correct mutation payload;
                 this._generateKeysIfNeeded(() => this._impl.generateKeys());
                 this._data = newData;
                 this._changes = compareArrays(oldData, this._data);
@@ -431,9 +445,15 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
         fetchByOffset(params) {
             return this._impl.fetchByOffset(params);
         }
+        /**
+         * Fetch the first block of data
+         */
         fetchFirst(params) {
             return this._impl.fetchFirst(params);
         }
+        /**
+         * Determines whether this DataProvider supports certain feature.
+         */
         getCapability(capabilityName) {
             return ojarraydataproviderimpl.getCapability(capabilityName);
         }
@@ -446,15 +466,27 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
         isEmpty() {
             return this._impl.isEmpty();
         }
+        /**
+         * Return an empty Set which is optimized to store keys
+         */
         createOptimizedKeySet(initialSet) {
             return ojarraydataproviderimpl.createOptimizedKeySet(initialSet);
         }
+        /**
+         * Returns an empty Map which will efficiently store Keys returned by the DataProvider
+         */
         createOptimizedKeyMap(initialMap) {
             return ojarraydataproviderimpl.createOptimizedKeyMap(initialMap);
         }
         _getKeyForDelete(change, generatedKeys) {
+            // MutableArrayDataProvider can guarantee that keys have been generated for the item
+            // being deleted, whether or not the DataProvider has received a fetch request.  As a result,
+            // it's safe to just do a key lookup here
             return this._keys[change.index];
         }
+        /**
+         * Generate keys array if it wasn't passed in options.keys
+         */
         _generateKeysIfNeeded(generateKeys) {
             if (this._keys == null) {
                 this._keys = generateKeys();
@@ -462,6 +494,9 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
             }
             return false;
         }
+        /**
+         * Apply sort comparators
+         */
         _getSortComparator(sortCriteria) {
             return (x, y) => {
                 const sortComparators = this.options != null ? this.options.sortComparators : null;
@@ -518,6 +553,9 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
                 return 0;
             };
         }
+        /**
+         * Merge sort criteria
+         */
         _mergeSortCriteria(sortCriteria) {
             if (sortCriteria && sortCriteria.length > 0) {
                 return sortCriteria;

@@ -375,6 +375,11 @@ var __oj_checkboxset_metadata =
    * the data shape required by <code>oj-c-checkboxset</code>.
    * </p>
    *
+   * <h5>value attribute</h5>
+   * <p>
+   * The <code>value</code> attribute defaults to <code>null</code> in <code>oj-c-checkboxset</code> instead of an empty array, meaning the component may not always have a value.
+   * </p>
+   *
    * <h5>readonly checkboxset visual appearance</h5>
    * <p>
    * A readonly oj-c-checkboxset will render all checkboxes, with an OK check mark for the selected item. This is
@@ -455,6 +460,14 @@ var __oj_checkboxset_metadata =
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
    *
+   * <h5>LabelledBy attribute</h5>
+   * <p>
+   * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
+   * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
+   * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
+   * to add a label for the form component.
+   * </p>
+   *
    * <h5>DescribedBy attribute</h5>
    * <p>
    * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
@@ -476,6 +489,10 @@ var __oj_checkboxset_metadata =
    * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
    * </p>
    *
+   * <h5>Disabling individual options</h5>
+   * <p>
+   * Disabling individual options is not supported within the core pack component. Items that aren't selectable should be removed from the set of options.
+   * </p>
    *
    * @example <caption>Declare the oj-input-text component with no attributes specified:</caption>
    * &lt;oj-input-text>&lt;/oj-input-text>
@@ -661,6 +678,7 @@ var __oj_checkboxset_metadata =
    * Use this style class if you don't want the chrome around the set.
    * @ojstyleclass oj-checkboxset-no-chrome
    * @ojdisplayname No Chrome
+   * @ojdeprecated [{since: "19.0.0", description: "For Redwood applications, this is not a recommended pattern."}]
    * @memberof oj.ojCheckboxset
    * @ojtsexample
    * &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-no-chrome">
@@ -671,6 +689,7 @@ var __oj_checkboxset_metadata =
    * Use this style class to order the checkbox at the start and label text at the end, even if a theme has a different default order.
    * @ojstyleclass oj-checkboxset-input-start
    * @ojdisplayname Input Start
+   * @ojdeprecated [{since: "19.0.0", description: "For Redwood applications, this is not a recommended pattern."}]
    * @memberof oj.ojCheckboxset
    * @ojtsexample
    * &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-input-start">
@@ -681,6 +700,7 @@ var __oj_checkboxset_metadata =
    * Use this style class to order the checkbox at the end and the label text at the start, even if a theme has a different default order.
    * @ojstyleclass oj-checkboxset-input-end
    * @ojdisplayname Input End
+   * @ojdeprecated [{since: "19.0.0", description: "For Redwood applications, this is not a recommended pattern."}]
    * @memberof oj.ojCheckboxset
    * @ojtsexample
    * &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-input-end">

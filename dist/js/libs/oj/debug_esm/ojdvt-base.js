@@ -5,6 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import 'ojs/ojdataprovider';
 import oj from 'ojs/ojcore-base';
 import { JsonUtils, Agent, Context } from 'ojs/ojdvt-toolkit';
 import Context$1 from 'ojs/ojcontext';

@@ -2171,7 +2171,9 @@ var __oj_range_slider_metadata =
       //
       _createSliderContainer: function () {
         var sliderWrapperId = this._getSliderWrapperId();
-        var existingSliderWrapper = this._elementWrapped.find('#' + sliderWrapperId);
+        // JET-72304 We need to escape the id because find() will throw an error if
+        // the id is not a valid CSS identifier.
+        var existingSliderWrapper = this._elementWrapped.find('#' + CSS.escape(sliderWrapperId));
 
         if (existingSliderWrapper.length) existingSliderWrapper.remove();
 
@@ -2189,7 +2191,9 @@ var __oj_range_slider_metadata =
       _createBarBackground: function () {
         var barId = this._getBarBackgroundId();
 
-        var existingBarBack = this._elementWrapped.find('#' + barId);
+        // JET-72304 We need to escape the id because find() will throw an error if
+        // the id is not a valid CSS identifier.
+        var existingBarBack = this._elementWrapped.find('#' + CSS.escape(barId));
 
         if (existingBarBack.length) existingBarBack.remove();
 
@@ -2298,7 +2302,9 @@ var __oj_range_slider_metadata =
 
           this._range.on('mousedown' + this.eventNamespace, this._reposition.bind(this));
 
-          this._range = this._sliderContainer.find('#' + this._getBarValueId());
+          // JET-72304 We need to escape the id because find() will throw an error if
+          // the id is not a valid CSS identifier.
+          this._range = this._sliderContainer.find('#' + CSS.escape(this._getBarValueId()));
 
           var newClass = '';
           if (options.type === 'fromMin') newClass = ' oj-slider-range-min';

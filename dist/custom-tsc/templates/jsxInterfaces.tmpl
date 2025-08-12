@@ -1,9 +1,7 @@
 <?js
 const data = obj;
 const componentPropertyInterfaceWithGenerics = data.componentPropertyInterface + data.propsClassTypeParamsDeclaration;
-const propsClassNameWithGenerics = data.propsClassName + data.propsClassTypeParams;
-const readOnlyProps = obj.readOnlyProps;
-if (data.propsClassName) {?>
+const readOnlyProps = obj.readOnlyProps; ?>
 export interface <?js= data.componentPropertyInterface ?> extends Partial<Readonly<<?js= data.settablePropertiesInterface ?><?js= data.propsTypeParamsAny ?>>>, <?js= data.globalPropsName ?>, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
 <?js
 if (readOnlyProps && readOnlyProps.length > 0) {
@@ -26,5 +24,3 @@ declare global {
     }
   }
 }
-<?js 
-} ?>

@@ -1024,82 +1024,92 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', '@oracle/or
    */
   OraI18nUtils.getInitials = function (firstName, lastName) {
     // We assume the names are valid. We test the first character only.
-    var c = 0;
-    var c1 = 0;
-    var u;
+    let cForFirstName = 0;
+    // This gets called regardless of the character type, so even for English this gets called.
     if (firstName !== undefined && firstName.length > 0) {
-      c = firstName.charCodeAt(0);
+      cForFirstName = firstName.charCodeAt(0);
     }
 
+    // Check if it is one of the special-cases.
     // Arabic characters. Return empty string
-    if (c >= 0x0600 && c <= 0x06ff) {
+    if (cForFirstName >= 0x0600 && cForFirstName <= 0x06ff) {
       return '';
     }
 
     // Hindi characters. Return first letter of the first name
-    if (c >= 0x0900 && c <= 0x097f) {
+    if (cForFirstName >= 0x0900 && cForFirstName <= 0x097f) {
       return firstName.charAt(0);
     }
 
     // Thai characters. Return first letter of the first name
-    if (c >= 0x0e00 && c <= 0x0e7f) {
+    if (cForFirstName >= 0x0e00 && cForFirstName <= 0x0e7f) {
       return firstName.charAt(0);
     }
 
     // Korean characters. Return first name
     if (
-      (c >= 0x1100 && c <= 0x11ff) ||
-      (c >= 0x3130 && c <= 0x318f) ||
-      (c >= 0xa960 && c <= 0xa97f) ||
-      (c >= 0xac00 && c <= 0xd7ff)
+      (cForFirstName >= 0x1100 && cForFirstName <= 0x11ff) ||
+      (cForFirstName >= 0x3130 && cForFirstName <= 0x318f) ||
+      (cForFirstName >= 0xa960 && cForFirstName <= 0xa97f) ||
+      (cForFirstName >= 0xac00 && cForFirstName <= 0xd7ff)
     ) {
       return firstName;
     }
 
-    // Japanese and Chinese characters. Return last name
     if (lastName !== undefined && lastName.length > 0) {
-      c = lastName.charCodeAt(0);
-    }
-    if (
-      (c >= 0x2e80 && c <= 0x2fdf) ||
-      (c >= 0x3000 && c <= 0x312f) ||
-      (c >= 0x3190 && c <= 0x31ff) ||
-      (c >= 0x3300 && c <= 0x4dbf) ||
-      (c >= 0x4e00 && c <= 0x9fff) ||
-      (c >= 0xf900 && c <= 0xfaff)
-    ) {
-      return lastName;
-    }
+      const cForLastName = lastName.charCodeAt(0);
 
-    // Handle surrogate characters for Japanese and Chinese characters.
-    if (c >= 0xd800 && c <= 0xdbff) {
-      if (lastName && lastName.length < 2) {
-        return '';
-      }
-      c1 = lastName.charCodeAt(1);
-      // c1 must be in DC00-DFFF range
-      if (c1 < 0xdc00 || c1 > 0xdfff) {
-        return '';
-      }
-      // Convert high and low surrogates into unicode scalar.
-      u = (c - 0xd800) * 0x400 + (c1 - 0xdc00) + 0x10000;
-      // test the blocks
-      if (
-        (u >= 0x1b000 && u <= 0x1b0ff) ||
-        (u >= 0x1f200 && u <= 0x1f2ff) ||
-        (u >= 0x20000 && u <= 0x2a6df) ||
-        (u >= 0x2a700 && u <= 0x2b73f) ||
-        (u >= 0x2b740 && u <= 0x2b81f) ||
-        (u >= 0x2b820 && u <= 0x2ceaf) ||
-        (u >= 0x2f800 && u <= 0x2fa1f)
-      ) {
+      // Check cForLastName to see if it is a Japanese and Chinese characters.
+      // Return last name, or '' if there is no last name.
+      if (OraI18nUtils._isCJKCharacterCode(cForLastName)) {
         return lastName;
       }
+
+      // Handle surrogate characters for Japanese and Chinese characters.
+      // They must have both high and low surrogate to be a valid character.
+      // If it is not, return ''.
+      if (cForLastName >= 0xd800 && cForLastName <= 0xdbff) {
+        if (lastName && lastName.length < 2) {
+          return '';
+        }
+        const c1ForLastName = lastName.charCodeAt(1);
+        // c1ForLastName must be in DC00-DFFF range
+        if (c1ForLastName < 0xdc00 || c1ForLastName > 0xdfff) {
+          return '';
+        }
+        // Convert high and low surrogates into unicode scalar.
+        const u = (cForLastName - 0xd800) * 0x400 + (c1ForLastName - 0xdc00) + 0x10000;
+        // test the blocks
+        if (
+          (u >= 0x1b000 && u <= 0x1b0ff) ||
+          (u >= 0x1f200 && u <= 0x1f2ff) ||
+          (u >= 0x20000 && u <= 0x2a6df) ||
+          (u >= 0x2a700 && u <= 0x2b73f) ||
+          (u >= 0x2b740 && u <= 0x2b81f) ||
+          (u >= 0x2b820 && u <= 0x2ceaf) ||
+          (u >= 0x2f800 && u <= 0x2fa1f)
+        ) {
+          return lastName;
+        }
+      }
     }
 
-    // return default
-    c = '';
-    c1 = '';
+    // For , we need a check in case someone typed in a Chinese character for firstName, and no lastName, we return undefined.
+    if (lastName === undefined && firstName !== undefined && firstName.length > 0) {
+      // Check cForFirstName (firstName's first char) to see if it is a Japanese and Chinese characters.
+      // since we return lastName for Japanese and Chinese characters AND lastName is undefined, return undefined.
+      if (OraI18nUtils._isCJKCharacterCode(cForFirstName)) {
+        return undefined;
+      }
+
+      if (cForFirstName >= 0xd800 && cForFirstName <= 0xdbff) {
+        return undefined;
+      }
+    }
+
+    // return default, so for non special cases, like English characters, this code gets called.
+    let c = '';
+    let c1 = '';
     if (firstName !== undefined && firstName.length > 0) {
       c = firstName.charAt(0).toUpperCase();
     }
@@ -1107,6 +1117,25 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', '@oracle/or
       c1 = lastName.charAt(0).toUpperCase();
     }
     return c + c1;
+  };
+
+  /**
+   * Checks if the codePoint is a CJK character.
+   * @private
+   * @param {string} codePoint codePoint to test.
+   * @returns {boolean} true if it a code point that falls into the Unicode ranges for CJK characters.
+   * @since 19.0.0
+   * @method _isCJKCharacterCode
+   */
+  OraI18nUtils._isCJKCharacterCode = function (codePoint) {
+    return (
+      (codePoint >= 0x2e80 && codePoint <= 0x2fdf) ||
+      (codePoint >= 0x3000 && codePoint <= 0x312f) ||
+      (codePoint >= 0x3190 && codePoint <= 0x31ff) ||
+      (codePoint >= 0x3300 && codePoint <= 0x4dbf) ||
+      (codePoint >= 0x4e00 && codePoint <= 0x9fff) ||
+      (codePoint >= 0xf900 && codePoint <= 0xfaff)
+    );
   };
 
   /**

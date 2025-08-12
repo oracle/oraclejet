@@ -87,6 +87,10 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
    * invalid than "invalidHidden".
    * </p>
    * <p>
+   * When a component's <code class="prettyprint">required</code> property is true, deferred validation is performed on the component on initialization.
+   * An empty value causes the <code class="prettyprint">valid</code> property to become "invalidHidden", which is an invalid state on the component that shows no visible errors.
+   * </p>
+   * <p>
    * When any of the enabled tracked component's valid value changes, oj-validation-group will
    * be notified and will update its own valid value if it has changed.
    * There is no default value for the valid property

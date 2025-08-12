@@ -7,6 +7,17 @@
  */
 import KeySetImpl from 'ojs/ojkeysetimpl';
 
+/**
+ * Implementation of the ES6 Set API:
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
+ * that can deal with how equalities are handled when Object is used as key
+ * @ignore
+ * @ojtsignore
+ * @export
+ * @class ojSet
+ * @constructor
+ * @since 6.2.0
+ */
 class ojSet {
     constructor(initialKeys) {
         this.initialKeys = initialKeys;

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery, ojeventtarget) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojeventtarget'], function (oj, ojeventtarget) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
@@ -460,9 +460,13 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
             this._offset = 0;
             this._totalSize = -1;
             this._skipCriteriaCheck = false;
+            // set up initialize promise check to make sure setPage is called before
+            // fetching data
             this._isInitialized = new Promise((resolve) => {
                 this._resolveFunc = resolve;
             });
+            // set up initialize data promise check to make sure data is loaded
+            // before View fetch calls are allowed to continue
             this._isInitialDataLoaded = new Promise((resolve) => {
                 this._dataResolveFunc = resolve;
             });
@@ -481,6 +485,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
         }
         containsKeys(params) {
             return this._checkIfDataInitialized(() => {
+                // if containsKeys exists, use that and filter out extra keys
                 return this.dataProvider[this._CONTAINSKEYS](params)
                     .then((value) => {
                     const keys = value.results;
@@ -507,6 +512,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
             return this._checkIfDataInitialized(() => {
                 const requestedKeys = params.keys;
                 if (!this._isGlobal(params)) {
+                    // use the cached fetch data to get values by keys.
                     return this._fetchByOffset(new this.FetchByOffsetParameters(this, this._offset, this._pageSize, this._currentSortCriteria, this._currentFilterCriteria))
                         .then((results) => {
                         const result = results['results'];
@@ -528,10 +534,12 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                     });
                 }
                 else {
+                    // fetching globally so need to use the dataprovider.
                     if (this.dataProvider[this._FETCHBYKEYS]) {
                         return this.dataProvider[this._FETCHBYKEYS](params);
                     }
                     else {
+                        // doesn't exist so need to throw an error
                         throw new Error('Global scope not supported for this dataprovider');
                     }
                 }
@@ -550,13 +558,16 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
             });
         }
         fetchFirst(params) {
+            // set up iterator variables
             const sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
             const filterCriterion = params != null ? params[this._FILTERCRITERION] : null;
             let payload = {};
+            // we can force a criteria check skip if we know that we shouldn't check
             if (this._skipCriteriaCheck) {
                 this._skipCriteriaCheck = false;
             }
             else {
+                // check criteria. If different, reset page to 0
                 if (!this._isSameCriteria(sortCriteria, filterCriterion)) {
                     this._currentSortCriteria = sortCriteria;
                     this._currentFilterCriteria = filterCriterion;
@@ -571,6 +582,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
             const offset = this._offset;
             const size = this._pageSize;
             const clientId = (params && params.clientId) || Symbol();
+            // initialize cachemap
             this._iteratorCacheMap.set(clientId, {
                 offset,
                 size,
@@ -578,6 +590,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 fetchFirstDone: false,
                 currentParams: this._currentParams
             });
+            // this fetchFirst applies the offset properties on the this.
             return new this.AsyncIterable(this, new this.AsyncIterator(this, ((params, clientId) => {
                 return (params, clientId) => {
                     const iteratorData = this._iteratorCacheMap.get(clientId);
@@ -588,8 +601,12 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                     const currentParams = iteratorData['currentParams'];
                     let updatedParams = new this.FetchByOffsetParameters(this, offset, size, this._currentSortCriteria, this._currentFilterCriteria);
                     if (mutationOffset !== 0 && currentParams) {
+                        // we have a remove event in progress triggering a fetch
+                        // Since we already have the page fetched data, we can
+                        // just grab the current page data and slice what we need.
                         updatedParams = currentParams;
                     }
+                    // Datagrid may trigger the fetchFirst first, so we need to update the params again before fetching
                     let needParamUpdate = false;
                     if (this._isInitialDataLoaded != null) {
                         needParamUpdate = true;
@@ -602,10 +619,14 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                         }
                         return this._fetchByOffset(updatedParams).then((result) => {
                             let results = result['results'];
+                            // If the fetch first done flag is true, then the last fetch should have been all the data
+                            // Return no results since datagrid requires 0 results to conclude fetch
+                            // Skip this if mutationOffset is non-zero, since it's an extra fetch caused by mutation
                             if (fetchFirstDone && mutationOffset === 0) {
                                 results = [];
                             }
                             if (mutationOffset !== 0) {
+                                // Do a slice for mutation offset if applicable.
                                 results = results.slice(results.length - mutationOffset);
                             }
                             const data = results.map((value) => {
@@ -615,15 +636,21 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                                 return value[this._METADATA];
                             });
                             offset = offset + metadata.length - mutationOffset;
+                            // fire page change event in the case of sort operation resetting the page to 0
                             if (payload[this._PAGE] != null) {
+                                // Update end item index
                                 this._endItemIndex = this._offset + data.length - 1;
                                 this.dispatchEvent(new CustomEvent(this._PAGE, { detail: payload }));
                                 payload = {};
                             }
+                            // Datagrid triggers fetchfirst before setPage, so we need to clear this parameter here
                             this._skipCriteriaCheck = false;
                             const resultsParam = new this.FetchByOffsetParameters(this, result['fetchParameters']['offset'] - mutationOffset, this._pageSize, result['fetchParameters'].sortCriteria, result['fetchParameters'].filterCriterion);
+                            // Reset mutation offset after fetch
                             mutationOffset = 0;
+                            // Set done flag for datagrid fetch handling
                             fetchFirstDone = result[this._DONE];
+                            // cache the new data values
                             this._iteratorCacheMap.set(clientId, {
                                 offset,
                                 size,
@@ -651,10 +678,12 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
         isEmpty() {
             return this.dataProvider.isEmpty();
         }
+        // Start PagingModel APIs
         getPage() {
             return this._currentPage;
         }
         setPage(value, options) {
+            // make sure mutation events are complete before starting
             return this._mutationBusyContext(() => {
                 value = parseInt(value, 10);
                 const payload = {};
@@ -666,6 +695,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 }
                 this._offset = parseInt(value, 10) * this._pageSize;
                 this._currentPage = value;
+                // Handle initialization confirmation
                 if (this._isInitialized != null) {
                     this._resolveFunc(true);
                     this._updateTotalSize();
@@ -678,6 +708,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                         this._skipCriteriaCheck = true;
                         this.dispatchEvent(new CustomEvent(this._PAGE, { detail: payload }));
                         this._updateTotalSize();
+                        // If data length is less than fetch parameters page size, then reduce current params size
                         const resultParams = results['fetchParameters'];
                         if (data.length < resultParams.size) {
                             this._currentParams = new this.FetchByOffsetParameters(this, resultParams['offset'], data.length, resultParams['sortCriteria'], resultParams['filterCriterion']);
@@ -685,17 +716,23 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                         this._updatePageData(data);
                     }
                     else if (this._currentPage !== 0) {
+                        // reset to previous page if no data and not on page 1
+                        // since it means we were done last page
                         this._currentPage = payload[this._PREVIOUSPAGE];
                         this._offset = this._currentPage * this._pageSize;
                         this.dispatchEvent(new CustomEvent(this._PAGECOUNT, {
                             detail: { previousValue: value, value: this._currentPage }
                         }));
+                        // skip refresh
                         this._doRefreshEvent = false;
                     }
                     else {
+                        // no data and page 0 means empty data set
                         this._offset = 0;
                         this._endItemIndex = 0;
                     }
+                    // skip initial refresh so that view doesn't
+                    // double fetch. Also confirm that initial data has been loaded
                     if (this._doRefreshEvent) {
                         this._hasMutated = true;
                         this._selfRefresh = true;
@@ -739,33 +776,45 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 return 'actual';
             }
         }
+        // End PagingModel APIs
+        // Start Paging DataProvider View Helper API
+        // helper method for the view to get the global offset
         getGlobalIndex(value) {
             return this._offset + value;
         }
+        // helper method for the view to get the local offset
         getLocalIndex(value) {
             return value - this._offset;
         }
+        // End Paging DataProvider View Helper API
+        // helper method to get local params
         _getLocalParams(params) {
             return new this.FetchByOffsetParameters(this, this.getLocalIndex(params.offset), params.size, params.sortCriteria, params.filterCriterion);
         }
         _updatePageData(results) {
             this._currentPageData = results;
         }
+        // helper method to update total size and fire events if necessary
         _updateTotalSize() {
+            // fire pagecount/totalsize change events if applicable
             const previousTotalSize = this._totalSize;
             const previousPageCount = this._pageCount;
             return this._checkIfInitialized(() => {
                 return this.dataProvider.getTotalSize().then((totalSize) => {
                     this._totalSize = totalSize;
+                    // Reset page count;
                     this._pageCount = -1;
                     if (this._totalSize !== -1) {
                         if (this._isUnknownRowCount) {
+                            // unknown row count flag means that we should be in
+                            // partial row count mode now
                             this._isUnknownRowCount = false;
                             if (!this._isExactMode()) {
                                 this._totalSizeConfidence = 'atLeast';
                             }
                         }
                         this._pageCount = Math.ceil(this._totalSize / this._pageSize);
+                        // update offsets and currentpage if needed
                         if (this._offset >= this._totalSize) {
                             this._offset = this._totalSize - (this._totalSize % this._pageSize);
                             this._endItemIndex = this._totalSize - 1;
@@ -793,6 +842,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 });
             });
         }
+        // busy context for mutation event handling.
+        // should block setPage calls until done
         _mutationBusyContext(callback) {
             if (this._isMutating) {
                 return this._isMutating.then(() => {
@@ -804,14 +855,17 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 return callback();
             }
         }
+        // setup the mutation busyContext
         _setupMutationBusyContext() {
             this._isMutating = new Promise((resolve) => {
                 this._mutationFunc = resolve;
             });
         }
+        // helper method to check if paging control dataprovider view is initialized with currentpage
         _checkIfInitialized(callback) {
             if (this._isInitialized) {
                 return this._isInitialized.then((value) => {
+                    // make sure currentPage is set
                     if (!value || this._currentPage === -1) {
                         this._isInitialized = null;
                         throw new Error('Paging DataProvider View incorrectly initialized');
@@ -826,9 +880,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 return callback();
             }
         }
+        // helper method to check if paging control dataprovider view is initialized with data
         _checkIfDataInitialized(callback) {
             if (this._isInitialDataLoaded) {
                 return this._isInitialDataLoaded.then((value) => {
+                    // make sure currentPage is set
                     if (!value || this._currentPage === -1) {
                         this._isInitialDataLoaded = null;
                         throw new Error('Paging DataProvider View incorrectly initialized');
@@ -843,12 +899,15 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 return callback();
             }
         }
+        // helper method to determine if a row is in the current page.
         _getCurrentPageKeys() {
             return this._currentResults.map((value) => {
                 return value[this._METADATA][this._KEY];
             });
         }
+        // helper method to check that all params for the current fetched data are still the same
         _isSameParams(params) {
+            // In some circumstances current Params is not applied at this point
             if (!this._currentParams) {
                 return false;
             }
@@ -862,6 +921,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 return false;
             }
         }
+        // helper method to determine if the criteria is the same
         _isSameCriteria(sortCriteria, filterCriterion) {
             if (sortCriteria) {
                 if (!this._currentSortCriteria ||
@@ -880,6 +940,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                     return false;
                 }
                 else {
+                    // need to do deep filter compare from both sides
                     for (const prop in this._currentFilterCriteria) {
                         if (!this._filterCompare(this._currentFilterCriteria, filterCriterion, prop)) {
                             return false;
@@ -916,7 +977,10 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
             }
             return false;
         }
+        // helper method to get current page data
         _getCurrentPageData() {
+            // if params haven't changed, just return what we already have
+            // Also need to check that offset and page size are properly set
             if (this._currentParams &&
                 this._currentParams['offset'] === this._offset &&
                 this._currentParams['size'] === this._pageSize) {
@@ -935,9 +999,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 });
             }
         }
+        // internal fetch by offset method to get page data based on offset
         _fetchByOffset(params) {
             return this._checkIfInitialized(() => {
                 params = this._cleanFetchParams(params);
+                // if params haven't changed, just return what we already have
                 if (this._currentParams &&
                     this._isSameParams(params) &&
                     (!this._hasMutated || this._selfRefresh)) {
@@ -945,6 +1011,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                     this._hasMutated = false;
                     return Promise.resolve(new this.FetchByOffsetResults(this, this._returnFetchParams, this._currentResults, this._currentIsDone));
                 }
+                // If size is 0, then we have hit the end of the data and we should be
+                // returning empty results with done = true
                 if (params.size === 0) {
                     this._currentIsDone = true;
                     this._currentParams = params;
@@ -954,9 +1022,12 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
             });
         }
         _fetchByOffsetHelper(params) {
+            // perform a fetch by offset using the available params.
             return this.dataProvider[this._FETCHBYOFFSET](params)
                 .then((result) => {
+                // store results locally. If fetchMore is true, we should append instead of replace
                 this._currentIsDone = result['done'];
+                // initialize currentParams if they don't exist
                 if (!this._currentParams) {
                     this._currentParams = params;
                 }
@@ -967,15 +1038,18 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                     this._currentResults = result['results'];
                     this._currentParams = params;
                 }
+                // Grab sortCriteria and filterCriteria and pass them back if they exist.
                 const sortCriteria = result['fetchParameters'].sortCriteria;
                 const filterCriterion = result['fetchParameters'].filterCriterion;
                 this._returnFetchParams = new this.FetchByOffsetParameters(this, this.getLocalIndex(this._currentParams.offset), this._currentParams.size, sortCriteria, filterCriterion);
                 this._fetchMore = false;
+                // check if we are at the end of the available data
                 const resultSize = this._currentResults.length;
                 const newSize = this._offset + resultSize;
                 const totalSize = this._mutatingTotalSize === null ? this._totalSize : this._mutatingTotalSize;
                 if (result['done']) {
                     this._pageCount = Math.ceil(newSize / this._pageSize);
+                    // if partial, can change back to exact.
                     if (this._totalSizeConfidence) {
                         this._totalSizeConfidence = null;
                     }
@@ -984,29 +1058,40 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                     newSize >= totalSize &&
                     totalSize > -1 &&
                     params.size === this._pageSize) {
+                    // we have more data than we expect given the totalSize, so we should be in partial mode
                     if (!this._isExactMode()) {
                         this._totalSizeConfidence = 'atLeast';
                     }
                 }
                 else if (!result['done'] && resultSize < this._pageSize) {
+                    // we are not done and we have less data than we expected.
+                    // need to refetch with new params since the underlying dataprovider
+                    // fetchSize is smaller than pageSize
                     this._fetchMore = true;
                     const newParams = new this.FetchByOffsetParameters(this, newSize, this._pageSize - resultSize, this._currentSortCriteria, this._currentFilterCriteria);
                     return this._fetchByOffsetHelper(newParams);
                 }
                 else if (!result['done'] && totalSize === -1) {
+                    // either we haven't initialized total size yet,
+                    // or we are in unknown row count mode
                     this._isUnknownRowCount = true;
                 }
+                // check if pageSize matches length or if length and offset hits total size.
                 if (this._pageSize === this._currentResults.length ||
                     (newSize >= totalSize && totalSize > -1)) {
                     this._currentIsDone = true;
                 }
+                // Truncate results down to pageSize if needed to prevent extra data
+                // 
                 if (resultSize > this._pageSize) {
                     this._currentResults.splice(this._pageSize);
                 }
+                // updated data so set mutated flag to false;
                 this._hasMutated = false;
                 return new this.FetchByOffsetResults(this, this._returnFetchParams, this._currentResults, this._currentIsDone);
             })
                 .catch((reject) => {
+                // if fetch is rejected, set all current records to null and reject.
                 this._hasMutated = false;
                 this._fetchMore = false;
                 this._currentIsDone = null;
@@ -1016,15 +1101,20 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 return Promise.reject(reject);
             });
         }
+        // Sanity Check helper method to correct any issues with the params for fetch by offset.
         _cleanFetchParams(params) {
+            // Sanity Check that the offset is within acceptable range
             const newOffset = params.offset;
             if (newOffset >= this._offset + this._pageSize || newOffset < this._offset) {
+                // if outside range, just return size 0
                 return new this.FetchByOffsetParameters(this, newOffset, 0, params.sortCriteria, params.filterCriterion);
             }
+            // Sanity Check that the pageSize is positive
             let newSize = params.size;
             if (newSize <= 0) {
                 newSize = this._pageSize;
             }
+            // Sanity Check that the size and offset are both within the context of the current Page limits.
             if (newOffset + newSize > this._offset + this._pageSize) {
                 newSize = this._offset + this._pageSize - newOffset;
             }
@@ -1032,10 +1122,14 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
             if (totalSize > 0 &&
                 this._totalSizeConfidence !== 'atLeast' &&
                 newOffset + newSize > totalSize) {
+                // Sanity Check that the size and offset combined are within bounds of the total page size
                 newSize = totalSize - newOffset;
             }
             return new this.FetchByOffsetParameters(this, newOffset, newSize, params.sortCriteria, params.filterCriterion);
         }
+        // helper method to fetch data from dataprovider
+        // needs to make sure that no new mutation events have
+        // occurred while fetching to prevent mistakes.
         _mutationEventDataFetcher(callback) {
             this.dataProvider.getTotalSize().then((totalSize) => {
                 if (totalSize > 0) {
@@ -1057,6 +1151,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                     }
                 })
                     .catch((reject) => {
+                    // try again if must refetch is true
                     if (this._mustRefetch) {
                         this._mustRefetch = false;
                         this._hasMutated = true;
@@ -1068,6 +1163,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 });
             });
         }
+        // helper method to handle mutation events with index
         _processMutationEventsByKey(result) {
             const removeMetadataArray = [];
             const removeDataArray = [];
@@ -1081,6 +1177,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
             const updateDataArray = [];
             const updateIndexArray = [];
             const updateKeySet = new Set();
+            //TODO iterate through previous page data vs current page data
+            // and generate the mutation event detail
             const previousPageData = this._currentResultsForMutation.map((item, index) => {
                 return { item, index };
             });
@@ -1099,19 +1197,26 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
             const addedItems = updatedPageData.filter((item) => {
                 return previousPageDataKeys.indexOf(item.item.metadata.key) < 0;
             });
+            // Use filtered mutation event queue to track update events
             let updateMutationsIndices = this._mutationEventQueue
                 .filter((item) => {
                 return !item.detail.add && !item.detail.remove && item.detail.update;
             })
                 .map((item) => {
+                // indexes from events are global, so we need to update them to local
                 return item.detail.update.indexes.map((x) => x - this._pageSize * this._currentPage);
             });
+            // flatten array so we can check for duplicates
             updateMutationsIndices = updateMutationsIndices.reduce((a, b) => {
                 return a.concat(b);
             }, []);
+            // remove duplicate update entries
             updateMutationsIndices = updateMutationsIndices.filter((item, index) => {
                 return updateMutationsIndices.indexOf(item) === index;
             });
+            // Use tracked update event items to check whether or not
+            // existing items in the previous page data that are in the
+            // same place in the current page date have updated.
             const updateItems = previousPageData.filter((item) => {
                 const updatedIndex = updatedPageDataKeys.indexOf(item.item.metadata.key);
                 if (updateMutationsIndices.indexOf(updatedIndex) > -1) {
@@ -1119,6 +1224,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 }
                 return false;
             });
+            // clear mutation event queue
             this._mutationEventQueue = [];
             if (addedItems.length > 0) {
                 addedItems.forEach((item) => {
@@ -1150,18 +1256,27 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                     updateKeySet.add(metadata.key);
                 });
             }
+            // : Adding mutation offset tracker to support collection iterator
+            // based mutation event handling. Expected behavior should be: on remove event
+            // iterator is called and expected to provide the new rows to fill in the
+            // removed gap when we need add events that are out of current viewport range
+            // Table specific
             const currentViewport = previousPageData.length - removeIndexArray.length;
             const oocvAddIndexArray = addIndexArray.filter((index) => {
                 return index >= currentViewport;
             });
+            // Update mutation offset values
             this._iteratorCacheMap.forEach((iteratorData, clientId) => {
                 iteratorData['mutationOffset'] = oocvAddIndexArray.length;
+                // also update the offset in case it is out of range due to page data deletion
+                // update the current params
                 if (iteratorData['offset'] >= this._totalSize) {
                     iteratorData['offset'] = this._totalSize - (this._totalSize % this._pageSize);
                     iteratorData['currentParams'] = this._currentParams;
                 }
                 this._iteratorCacheMap.set(clientId, iteratorData);
             });
+            // build mutation event detail and fire if not null
             let operationAddEventDetail = null;
             let operationRemoveEventDetail = null;
             let operationUpdateEventDetail = null;
@@ -1178,19 +1293,28 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 operationRemoveEventDetail != null ||
                 operationUpdateEventDetail != null) {
                 const mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
+                //update internal currentPageData
                 this._updatePageData(result['results']);
                 this.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
             }
         }
         _addEventListeners(dataprovider) {
             dataprovider.addEventListener(this._REFRESH, (event) => {
+                // Treat it as a set page to 0 and refresh if not
+                // directly after a mutation b/c mutation event trigger
+                // refresh naturally. Natural refreshes need to update
+                // totalSize and force fetching.
                 if (!this._hasMutated) {
                     this._hasMutated = true;
+                    // If refresh occurs, setPage should complete before
+                    // fetchFirst triggers. this will help resolve the order
                     this._isInitialDataLoaded = new Promise((resolve) => {
                         this._dataResolveFunc = resolve;
                     });
                     this._updateTotalSize().then(() => {
                         this.setPage(0, { pageSize: this._pageSize }).then(() => {
+                            // if no data, set page skips refresh event dispatch,
+                            // so we need to fire it off here to update the view with no data.
                             if (this._endItemIndex === 0) {
                                 this.dispatchEvent(new oj.DataProviderRefreshEvent());
                             }
@@ -1202,20 +1326,25 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 this._mutationEventQueue.push(event);
                 this._setupMutationBusyContext();
                 if (this._isFetchingForMutation) {
+                    // if new mutation has come in, we need to refetch. Otherwise, we may have stale data.
                     this._mustRefetch = true;
                 }
                 else {
                     this._isFetchingForMutation = true;
                     this._currentResultsForMutation =
                         this._currentPageData != null ? this._currentPageData : [];
+                    // kick off new data fetch
                     this._hasMutated = true;
                     this._mutationEventDataFetcher((result) => {
+                        // finish fetching updated data
                         this._isFetchingForMutation = false;
                         const length = result['results'].length;
+                        // need to update endItemIndex
                         this._endItemIndex = Math.max(0, this._offset + length - 1);
                         this._updateTotalSize().then(() => {
                             this._mutatingTotalSize = null;
                             if (length === 0) {
+                                // no results so need to refresh since page has changed
                                 this._mutationFunc(true);
                                 this.setPage(this._currentPage, { pageSize: this._pageSize });
                             }

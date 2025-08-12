@@ -40,7 +40,7 @@ var __oj_timeline_metadata =
       "value": "none"
     },
     "data": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -1806,7 +1806,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
      * @ojshortdesc Specifies the data provider for the timeline. See the Help documentation for more information.
      * @memberof oj.ojTimeline
      * @instance
-     * @type {?Object}
+     * @type {?DataProvider}
      * @ojsignature {target: "Type", value: "?(DataProvider<K, D>)", jsdocOverride:true}
      * @default null
      * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
@@ -1943,7 +1943,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
-       * @ojdeprecated {type: "antiPattern", since: "18.0.0", themes: ["Redwood"]}
+       * @ojdeprecated {since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
        * @default {}
        */
       svgStyle: {},
@@ -2047,7 +2047,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
-       * @ojdeprecated {type: "antiPattern", since: "18.0.0", themes: ["Redwood"]}
+       * @ojdeprecated {since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
        * @default {}
        */
       svgStyle: {}
@@ -2133,7 +2133,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
-       * @ojdeprecated {type: "antiPattern", since: "18.0.0", themes: ["Redwood"]}
+       * @ojdeprecated {since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
        * @default {}
        */
       svgStyle: {}

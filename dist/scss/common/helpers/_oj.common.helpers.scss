@@ -29,7 +29,7 @@
       $themeRootMap: map-merge($themeRootMap, (targetPlatform: $themeTargetPlatform));
   }
   $themeRootMap: map-merge($themeRootMap, (behavior: "alta"));
-  $themeRootMap: map-merge($themeRootMap, (jetReleaseVersion: "v18.1.0"));
+  $themeRootMap: map-merge($themeRootMap, (jetReleaseVersion: "v19.0.0"));
 
   .oj-theme-json {
       font-family: oj-json-from-map($themeRootMap);

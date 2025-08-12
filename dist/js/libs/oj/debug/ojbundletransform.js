@@ -21,7 +21,7 @@ define(['exports'], function (exports) { 'use strict';
     OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
-    /* global Reflect, Promise, SuppressedError, Symbol */
+    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
 
     var extendStatics = function(d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -132,8 +132,8 @@ define(['exports'], function (exports) { 'use strict';
     }
 
     function __generator(thisArg, body) {
-        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-        return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+        return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
         function verb(n) { return function (v) { return step([n, v]); }; }
         function step(op) {
             if (f) throw new TypeError("Generator is already executing.");
@@ -237,8 +237,9 @@ define(['exports'], function (exports) { 'use strict';
     function __asyncGenerator(thisArg, _arguments, generator) {
         if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
         var g = generator.apply(thisArg, _arguments || []), i, q = [];
-        return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
-        function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
+        return i = Object.create((typeof AsyncIterator === "function" ? AsyncIterator : Object).prototype), verb("next"), verb("throw"), verb("return", awaitReturn), i[Symbol.asyncIterator] = function () { return this; }, i;
+        function awaitReturn(f) { return function (v) { return Promise.resolve(v).then(f, reject); }; }
+        function verb(n, f) { if (g[n]) { i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; if (f) i[n] = f(i[n]); } }
         function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
         function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r); }
         function fulfill(value) { resume("next", value); }
@@ -271,10 +272,19 @@ define(['exports'], function (exports) { 'use strict';
         o["default"] = v;
     };
 
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+
     function __importStar(mod) {
         if (mod && mod.__esModule) return mod;
         var result = {};
-        if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
         __setModuleDefault(result, mod);
         return result;
     }
@@ -304,7 +314,7 @@ define(['exports'], function (exports) { 'use strict';
     function __addDisposableResource(env, value, async) {
         if (value !== null && value !== void 0) {
             if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
-            var dispose;
+            var dispose, inner;
             if (async) {
                 if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
                 dispose = value[Symbol.asyncDispose];
@@ -312,14 +322,17 @@ define(['exports'], function (exports) { 'use strict';
             if (dispose === void 0) {
                 if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
                 dispose = value[Symbol.dispose];
+                if (async) inner = dispose;
             }
             if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
+            if (inner) dispose = function() { try { inner.call(this); } catch (e) { return Promise.reject(e); } };
             env.stack.push({ value: value, dispose: dispose, async: async });
         }
         else if (async) {
             env.stack.push({ async: true });
         }
         return value;
+
     }
 
     var _SuppressedError = typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
@@ -332,20 +345,34 @@ define(['exports'], function (exports) { 'use strict';
             env.error = env.hasError ? new _SuppressedError(e, env.error, "An error was suppressed during disposal.") : e;
             env.hasError = true;
         }
+        var r, s = 0;
         function next() {
-            while (env.stack.length) {
-                var rec = env.stack.pop();
+            while (r = env.stack.pop()) {
                 try {
-                    var result = rec.dispose && rec.dispose.call(rec.value);
-                    if (rec.async) return Promise.resolve(result).then(next, function(e) { fail(e); return next(); });
+                    if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
+                    if (r.dispose) {
+                        var result = r.dispose.call(r.value);
+                        if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) { fail(e); return next(); });
+                    }
+                    else s |= 1;
                 }
                 catch (e) {
                     fail(e);
                 }
             }
+            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
         }
         return next();
+    }
+
+    function __rewriteRelativeImportExtension(path, preserveJsx) {
+        if (typeof path === "string" && /^\.\.?\//.test(path)) {
+            return path.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function (m, tsx, d, ext, cm) {
+                return tsx ? preserveJsx ? ".jsx" : ".js" : d && (!ext || !cm) ? m : (d + ext + "." + cm.toLowerCase() + "js");
+            });
+        }
+        return path;
     }
 
     var tslib_es6 = {
@@ -354,6 +381,10 @@ define(['exports'], function (exports) { 'use strict';
         __rest: __rest,
         __decorate: __decorate,
         __param: __param,
+        __esDecorate: __esDecorate,
+        __runInitializers: __runInitializers,
+        __propKey: __propKey,
+        __setFunctionName: __setFunctionName,
         __metadata: __metadata,
         __awaiter: __awaiter,
         __generator: __generator,
@@ -376,6 +407,7 @@ define(['exports'], function (exports) { 'use strict';
         __classPrivateFieldIn: __classPrivateFieldIn,
         __addDisposableResource: __addDisposableResource,
         __disposeResources: __disposeResources,
+        __rewriteRelativeImportExtension: __rewriteRelativeImportExtension,
     };
 
     var ErrorKind;
@@ -4396,190 +4428,726 @@ define(['exports'], function (exports) { 'use strict';
     var SPACE_SEPARATOR_REGEX$1 = /[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/;
     var WHITE_SPACE_REGEX$2 = /[\t-\r \x85\u200E\u200F\u2028\u2029]/;
 
+    /**
+     * https://unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
+     * Credit: https://github.com/caridy/intl-datetimeformat-pattern/blob/master/index.js
+     * with some tweaks
+     */
+    var DATE_TIME_REGEX$1 = /(?:[Eec]{1,6}|G{1,5}|[Qq]{1,5}|(?:[yYur]+|U{1,5})|[ML]{1,5}|d{1,2}|D{1,3}|F{1}|[abB]{1,5}|[hkHK]{1,2}|w{1,2}|W{1}|m{1,2}|s{1,2}|[zZOvVxX]{1,4})(?=([^']*'[^']*')*[^']*$)/g;
+    /**
+     * Parse Date time skeleton into Intl.DateTimeFormatOptions
+     * Ref: https://unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
+     * @public
+     * @param skeleton skeleton string
+     */
+    function parseDateTimeSkeleton$1(skeleton) {
+        var result = {};
+        skeleton.replace(DATE_TIME_REGEX$1, function (match) {
+            var len = match.length;
+            switch (match[0]) {
+                // Era
+                case 'G':
+                    result.era = len === 4 ? 'long' : len === 5 ? 'narrow' : 'short';
+                    break;
+                // Year
+                case 'y':
+                    result.year = len === 2 ? '2-digit' : 'numeric';
+                    break;
+                case 'Y':
+                case 'u':
+                case 'U':
+                case 'r':
+                    throw new RangeError('`Y/u/U/r` (year) patterns are not supported, use `y` instead');
+                // Quarter
+                case 'q':
+                case 'Q':
+                    throw new RangeError('`q/Q` (quarter) patterns are not supported');
+                // Month
+                case 'M':
+                case 'L':
+                    result.month = ['numeric', '2-digit', 'short', 'long', 'narrow'][len - 1];
+                    break;
+                // Week
+                case 'w':
+                case 'W':
+                    throw new RangeError('`w/W` (week) patterns are not supported');
+                case 'd':
+                    result.day = ['numeric', '2-digit'][len - 1];
+                    break;
+                case 'D':
+                case 'F':
+                case 'g':
+                    throw new RangeError('`D/F/g` (day) patterns are not supported, use `d` instead');
+                // Weekday
+                case 'E':
+                    result.weekday = len === 4 ? 'long' : len === 5 ? 'narrow' : 'short';
+                    break;
+                case 'e':
+                    if (len < 4) {
+                        throw new RangeError('`e..eee` (weekday) patterns are not supported');
+                    }
+                    result.weekday = ['short', 'long', 'narrow', 'short'][len - 4];
+                    break;
+                case 'c':
+                    if (len < 4) {
+                        throw new RangeError('`c..ccc` (weekday) patterns are not supported');
+                    }
+                    result.weekday = ['short', 'long', 'narrow', 'short'][len - 4];
+                    break;
+                // Period
+                case 'a': // AM, PM
+                    result.hour12 = true;
+                    break;
+                case 'b': // am, pm, noon, midnight
+                case 'B': // flexible day periods
+                    throw new RangeError('`b/B` (period) patterns are not supported, use `a` instead');
+                // Hour
+                case 'h':
+                    result.hourCycle = 'h12';
+                    result.hour = ['numeric', '2-digit'][len - 1];
+                    break;
+                case 'H':
+                    result.hourCycle = 'h23';
+                    result.hour = ['numeric', '2-digit'][len - 1];
+                    break;
+                case 'K':
+                    result.hourCycle = 'h11';
+                    result.hour = ['numeric', '2-digit'][len - 1];
+                    break;
+                case 'k':
+                    result.hourCycle = 'h24';
+                    result.hour = ['numeric', '2-digit'][len - 1];
+                    break;
+                case 'j':
+                case 'J':
+                case 'C':
+                    throw new RangeError('`j/J/C` (hour) patterns are not supported, use `h/H/K/k` instead');
+                // Minute
+                case 'm':
+                    result.minute = ['numeric', '2-digit'][len - 1];
+                    break;
+                // Second
+                case 's':
+                    result.second = ['numeric', '2-digit'][len - 1];
+                    break;
+                case 'S':
+                case 'A':
+                    throw new RangeError('`S/A` (second) patterns are not supported, use `s` instead');
+                // Zone
+                case 'z': // 1..3, 4: specific non-location format
+                    result.timeZoneName = len < 4 ? 'short' : 'long';
+                    break;
+                case 'Z': // 1..3, 4, 5: The ISO8601 varios formats
+                case 'O': // 1, 4: milliseconds in day short, long
+                case 'v': // 1, 4: generic non-location format
+                case 'V': // 1, 2, 3, 4: time zone ID or city
+                case 'X': // 1, 2, 3, 4: The ISO8601 varios formats
+                case 'x': // 1, 2, 3, 4: The ISO8601 varios formats
+                    throw new RangeError('`Z/O/v/V/X/x` (timeZone) patterns are not supported, use `z` instead');
+            }
+            return '';
+        });
+        return result;
+    }
+
+    // @generated from regex-gen.ts
+    var WHITE_SPACE_REGEX$3 = /[\t-\r \x85\u200E\u200F\u2028\u2029]/i;
+
+    function parseNumberSkeletonFromString$1(skeleton) {
+        if (skeleton.length === 0) {
+            throw new Error('Number skeleton cannot be empty');
+        }
+        // Parse the skeleton
+        var stringTokens = skeleton
+            .split(WHITE_SPACE_REGEX$3)
+            .filter(function (x) { return x.length > 0; });
+        var tokens = [];
+        for (var _i = 0, stringTokens_1 = stringTokens; _i < stringTokens_1.length; _i++) {
+            var stringToken = stringTokens_1[_i];
+            var stemAndOptions = stringToken.split('/');
+            if (stemAndOptions.length === 0) {
+                throw new Error('Invalid number skeleton');
+            }
+            var stem = stemAndOptions[0], options = stemAndOptions.slice(1);
+            for (var _a = 0, options_1 = options; _a < options_1.length; _a++) {
+                var option = options_1[_a];
+                if (option.length === 0) {
+                    throw new Error('Invalid number skeleton');
+                }
+            }
+            tokens.push({ stem: stem, options: options });
+        }
+        return tokens;
+    }
+    function icuUnitToEcma$1(unit) {
+        return unit.replace(/^(.*?)-/, '');
+    }
+    var FRACTION_PRECISION_REGEX$1 = /^\.(?:(0+)(\*)?|(#+)|(0+)(#+))$/g;
+    var SIGNIFICANT_PRECISION_REGEX$1 = /^(@+)?(\+|#+)?[rs]?$/g;
+    var INTEGER_WIDTH_REGEX$1 = /(\*)(0+)|(#+)(0+)|(0+)/g;
+    var CONCISE_INTEGER_WIDTH_REGEX$1 = /^(0+)$/;
+    function parseSignificantPrecision$1(str) {
+        var result = {};
+        if (str[str.length - 1] === 'r') {
+            result.roundingPriority = 'morePrecision';
+        }
+        else if (str[str.length - 1] === 's') {
+            result.roundingPriority = 'lessPrecision';
+        }
+        str.replace(SIGNIFICANT_PRECISION_REGEX$1, function (_, g1, g2) {
+            // @@@ case
+            if (typeof g2 !== 'string') {
+                result.minimumSignificantDigits = g1.length;
+                result.maximumSignificantDigits = g1.length;
+            }
+            // @@@+ case
+            else if (g2 === '+') {
+                result.minimumSignificantDigits = g1.length;
+            }
+            // .### case
+            else if (g1[0] === '#') {
+                result.maximumSignificantDigits = g1.length;
+            }
+            // .@@## or .@@@ case
+            else {
+                result.minimumSignificantDigits = g1.length;
+                result.maximumSignificantDigits =
+                    g1.length + (typeof g2 === 'string' ? g2.length : 0);
+            }
+            return '';
+        });
+        return result;
+    }
+    function parseSign$1(str) {
+        switch (str) {
+            case 'sign-auto':
+                return {
+                    signDisplay: 'auto',
+                };
+            case 'sign-accounting':
+            case '()':
+                return {
+                    currencySign: 'accounting',
+                };
+            case 'sign-always':
+            case '+!':
+                return {
+                    signDisplay: 'always',
+                };
+            case 'sign-accounting-always':
+            case '()!':
+                return {
+                    signDisplay: 'always',
+                    currencySign: 'accounting',
+                };
+            case 'sign-except-zero':
+            case '+?':
+                return {
+                    signDisplay: 'exceptZero',
+                };
+            case 'sign-accounting-except-zero':
+            case '()?':
+                return {
+                    signDisplay: 'exceptZero',
+                    currencySign: 'accounting',
+                };
+            case 'sign-never':
+            case '+_':
+                return {
+                    signDisplay: 'never',
+                };
+        }
+    }
+    function parseConciseScientificAndEngineeringStem$1(stem) {
+        // Engineering
+        var result;
+        if (stem[0] === 'E' && stem[1] === 'E') {
+            result = {
+                notation: 'engineering',
+            };
+            stem = stem.slice(2);
+        }
+        else if (stem[0] === 'E') {
+            result = {
+                notation: 'scientific',
+            };
+            stem = stem.slice(1);
+        }
+        if (result) {
+            var signDisplay = stem.slice(0, 2);
+            if (signDisplay === '+!') {
+                result.signDisplay = 'always';
+                stem = stem.slice(2);
+            }
+            else if (signDisplay === '+?') {
+                result.signDisplay = 'exceptZero';
+                stem = stem.slice(2);
+            }
+            if (!CONCISE_INTEGER_WIDTH_REGEX$1.test(stem)) {
+                throw new Error('Malformed concise eng/scientific notation');
+            }
+            result.minimumIntegerDigits = stem.length;
+        }
+        return result;
+    }
+    function parseNotationOptions$1(opt) {
+        var result = {};
+        var signOpts = parseSign$1(opt);
+        if (signOpts) {
+            return signOpts;
+        }
+        return result;
+    }
+    /**
+     * https://github.com/unicode-org/icu/blob/master/docs/userguide/format_parse/numbers/skeletons.md#skeleton-stems-and-options
+     */
+    function parseNumberSkeleton$1(tokens) {
+        var result = {};
+        for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
+            var token = tokens_1[_i];
+            switch (token.stem) {
+                case 'percent':
+                case '%':
+                    result.style = 'percent';
+                    continue;
+                case '%x100':
+                    result.style = 'percent';
+                    result.scale = 100;
+                    continue;
+                case 'currency':
+                    result.style = 'currency';
+                    result.currency = token.options[0];
+                    continue;
+                case 'group-off':
+                case ',_':
+                    result.useGrouping = false;
+                    continue;
+                case 'precision-integer':
+                case '.':
+                    result.maximumFractionDigits = 0;
+                    continue;
+                case 'measure-unit':
+                case 'unit':
+                    result.style = 'unit';
+                    result.unit = icuUnitToEcma$1(token.options[0]);
+                    continue;
+                case 'compact-short':
+                case 'K':
+                    result.notation = 'compact';
+                    result.compactDisplay = 'short';
+                    continue;
+                case 'compact-long':
+                case 'KK':
+                    result.notation = 'compact';
+                    result.compactDisplay = 'long';
+                    continue;
+                case 'scientific':
+                    result = __assign(__assign(__assign({}, result), { notation: 'scientific' }), token.options.reduce(function (all, opt) { return (__assign(__assign({}, all), parseNotationOptions$1(opt))); }, {}));
+                    continue;
+                case 'engineering':
+                    result = __assign(__assign(__assign({}, result), { notation: 'engineering' }), token.options.reduce(function (all, opt) { return (__assign(__assign({}, all), parseNotationOptions$1(opt))); }, {}));
+                    continue;
+                case 'notation-simple':
+                    result.notation = 'standard';
+                    continue;
+                // https://github.com/unicode-org/icu/blob/master/icu4c/source/i18n/unicode/unumberformatter.h
+                case 'unit-width-narrow':
+                    result.currencyDisplay = 'narrowSymbol';
+                    result.unitDisplay = 'narrow';
+                    continue;
+                case 'unit-width-short':
+                    result.currencyDisplay = 'code';
+                    result.unitDisplay = 'short';
+                    continue;
+                case 'unit-width-full-name':
+                    result.currencyDisplay = 'name';
+                    result.unitDisplay = 'long';
+                    continue;
+                case 'unit-width-iso-code':
+                    result.currencyDisplay = 'symbol';
+                    continue;
+                case 'scale':
+                    result.scale = parseFloat(token.options[0]);
+                    continue;
+                case 'rounding-mode-floor':
+                    result.roundingMode = 'floor';
+                    continue;
+                case 'rounding-mode-ceiling':
+                    result.roundingMode = 'ceil';
+                    continue;
+                case 'rounding-mode-down':
+                    result.roundingMode = 'trunc';
+                    continue;
+                case 'rounding-mode-up':
+                    result.roundingMode = 'expand';
+                    continue;
+                case 'rounding-mode-half-even':
+                    result.roundingMode = 'halfEven';
+                    continue;
+                case 'rounding-mode-half-down':
+                    result.roundingMode = 'halfTrunc';
+                    continue;
+                case 'rounding-mode-half-up':
+                    result.roundingMode = 'halfExpand';
+                    continue;
+                // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#integer-width
+                case 'integer-width':
+                    if (token.options.length > 1) {
+                        throw new RangeError('integer-width stems only accept a single optional option');
+                    }
+                    token.options[0].replace(INTEGER_WIDTH_REGEX$1, function (_, g1, g2, g3, g4, g5) {
+                        if (g1) {
+                            result.minimumIntegerDigits = g2.length;
+                        }
+                        else if (g3 && g4) {
+                            throw new Error('We currently do not support maximum integer digits');
+                        }
+                        else if (g5) {
+                            throw new Error('We currently do not support exact integer digits');
+                        }
+                        return '';
+                    });
+                    continue;
+            }
+            // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#integer-width
+            if (CONCISE_INTEGER_WIDTH_REGEX$1.test(token.stem)) {
+                result.minimumIntegerDigits = token.stem.length;
+                continue;
+            }
+            if (FRACTION_PRECISION_REGEX$1.test(token.stem)) {
+                // Precision
+                // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#fraction-precision
+                // precision-integer case
+                if (token.options.length > 1) {
+                    throw new RangeError('Fraction-precision stems only accept a single optional option');
+                }
+                token.stem.replace(FRACTION_PRECISION_REGEX$1, function (_, g1, g2, g3, g4, g5) {
+                    // .000* case (before ICU67 it was .000+)
+                    if (g2 === '*') {
+                        result.minimumFractionDigits = g1.length;
+                    }
+                    // .### case
+                    else if (g3 && g3[0] === '#') {
+                        result.maximumFractionDigits = g3.length;
+                    }
+                    // .00## case
+                    else if (g4 && g5) {
+                        result.minimumFractionDigits = g4.length;
+                        result.maximumFractionDigits = g4.length + g5.length;
+                    }
+                    else {
+                        result.minimumFractionDigits = g1.length;
+                        result.maximumFractionDigits = g1.length;
+                    }
+                    return '';
+                });
+                var opt = token.options[0];
+                // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#trailing-zero-display
+                if (opt === 'w') {
+                    result = __assign(__assign({}, result), { trailingZeroDisplay: 'stripIfInteger' });
+                }
+                else if (opt) {
+                    result = __assign(__assign({}, result), parseSignificantPrecision$1(opt));
+                }
+                continue;
+            }
+            // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#significant-digits-precision
+            if (SIGNIFICANT_PRECISION_REGEX$1.test(token.stem)) {
+                result = __assign(__assign({}, result), parseSignificantPrecision$1(token.stem));
+                continue;
+            }
+            var signOpts = parseSign$1(token.stem);
+            if (signOpts) {
+                result = __assign(__assign({}, result), signOpts);
+            }
+            var conciseScientificAndEngineeringOpts = parseConciseScientificAndEngineeringStem$1(token.stem);
+            if (conciseScientificAndEngineeringOpts) {
+                result = __assign(__assign({}, result), conciseScientificAndEngineeringOpts);
+            }
+        }
+        return result;
+    }
+
     // @generated from time-data-gen.ts
     // prettier-ignore  
     var timeData$1 = {
-        "AX": [
-            "H"
-        ],
-        "BQ": [
-            "H"
-        ],
-        "CP": [
-            "H"
-        ],
-        "CZ": [
-            "H"
-        ],
-        "DK": [
-            "H"
-        ],
-        "FI": [
-            "H"
-        ],
-        "ID": [
-            "H"
-        ],
-        "IS": [
-            "H"
-        ],
-        "ML": [
-            "H"
-        ],
-        "NE": [
-            "H"
-        ],
-        "RU": [
-            "H"
-        ],
-        "SE": [
-            "H"
-        ],
-        "SJ": [
-            "H"
-        ],
-        "SK": [
-            "H"
-        ],
-        "AS": [
-            "h",
-            "H"
-        ],
-        "BT": [
-            "h",
-            "H"
-        ],
-        "DJ": [
-            "h",
-            "H"
-        ],
-        "ER": [
-            "h",
-            "H"
-        ],
-        "GH": [
-            "h",
-            "H"
-        ],
-        "IN": [
-            "h",
-            "H"
-        ],
-        "LS": [
-            "h",
-            "H"
-        ],
-        "PG": [
-            "h",
-            "H"
-        ],
-        "PW": [
-            "h",
-            "H"
-        ],
-        "SO": [
-            "h",
-            "H"
-        ],
-        "TO": [
-            "h",
-            "H"
-        ],
-        "VU": [
-            "h",
-            "H"
-        ],
-        "WS": [
-            "h",
-            "H"
-        ],
         "001": [
             "H",
             "h"
+        ],
+        "419": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "AC": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "AD": [
+            "H",
+            "hB"
+        ],
+        "AE": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "AF": [
+            "H",
+            "hb",
+            "hB",
+            "h"
+        ],
+        "AG": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "AI": [
+            "H",
+            "h",
+            "hb",
+            "hB"
         ],
         "AL": [
             "h",
             "H",
             "hB"
         ],
-        "TD": [
-            "h",
+        "AM": [
             "H",
             "hB"
         ],
-        "ca-ES": [
+        "AO": [
+            "H",
+            "hB"
+        ],
+        "AR": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "AS": [
+            "h",
+            "H"
+        ],
+        "AT": [
+            "H",
+            "hB"
+        ],
+        "AU": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "AW": [
+            "H",
+            "hB"
+        ],
+        "AX": [
+            "H"
+        ],
+        "AZ": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "BA": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "BB": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "BD": [
+            "h",
+            "hB",
+            "H"
+        ],
+        "BE": [
+            "H",
+            "hB"
+        ],
+        "BF": [
+            "H",
+            "hB"
+        ],
+        "BG": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "BH": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "BI": [
+            "H",
+            "h"
+        ],
+        "BJ": [
+            "H",
+            "hB"
+        ],
+        "BL": [
+            "H",
+            "hB"
+        ],
+        "BM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "BN": [
+            "hb",
+            "hB",
+            "h",
+            "H"
+        ],
+        "BO": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "BQ": [
+            "H"
+        ],
+        "BR": [
+            "H",
+            "hB"
+        ],
+        "BS": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "BT": [
+            "h",
+            "H"
+        ],
+        "BW": [
             "H",
             "h",
+            "hb",
             "hB"
+        ],
+        "BY": [
+            "H",
+            "h"
+        ],
+        "BZ": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "CA": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "CC": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "CD": [
+            "hB",
+            "H"
         ],
         "CF": [
             "H",
             "h",
             "hB"
         ],
+        "CG": [
+            "H",
+            "hB"
+        ],
+        "CH": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "CI": [
+            "H",
+            "hB"
+        ],
+        "CK": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "CL": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
         "CM": [
             "H",
             "h",
             "hB"
         ],
-        "fr-CA": [
+        "CN": [
             "H",
+            "hB",
+            "hb",
+            "h"
+        ],
+        "CO": [
             "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "CP": [
+            "H"
+        ],
+        "CR": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "CU": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "CV": [
+            "H",
             "hB"
         ],
-        "gl-ES": [
+        "CW": [
             "H",
-            "h",
             "hB"
         ],
-        "it-CH": [
+        "CX": [
             "H",
             "h",
-            "hB"
-        ],
-        "it-IT": [
-            "H",
-            "h",
-            "hB"
-        ],
-        "LU": [
-            "H",
-            "h",
-            "hB"
-        ],
-        "NP": [
-            "H",
-            "h",
-            "hB"
-        ],
-        "PF": [
-            "H",
-            "h",
-            "hB"
-        ],
-        "SC": [
-            "H",
-            "h",
-            "hB"
-        ],
-        "SM": [
-            "H",
-            "h",
-            "hB"
-        ],
-        "SN": [
-            "H",
-            "h",
-            "hB"
-        ],
-        "TF": [
-            "H",
-            "h",
-            "hB"
-        ],
-        "VA": [
-            "H",
-            "h",
+            "hb",
             "hB"
         ],
         "CY": [
@@ -4588,23 +5156,340 @@ define(['exports'], function (exports) { 'use strict';
             "hb",
             "hB"
         ],
-        "GR": [
-            "h",
+        "CZ": [
+            "H"
+        ],
+        "DE": [
             "H",
+            "hB"
+        ],
+        "DG": [
+            "H",
+            "h",
             "hb",
             "hB"
         ],
-        "CO": [
+        "DJ": [
             "h",
+            "H"
+        ],
+        "DK": [
+            "H"
+        ],
+        "DM": [
+            "h",
+            "hb",
             "H",
-            "hB",
-            "hb"
+            "hB"
         ],
         "DO": [
             "h",
             "H",
             "hB",
             "hb"
+        ],
+        "DZ": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "EA": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "EC": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "EE": [
+            "H",
+            "hB"
+        ],
+        "EG": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "EH": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "ER": [
+            "h",
+            "H"
+        ],
+        "ES": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "ET": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "FI": [
+            "H"
+        ],
+        "FJ": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "FK": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "FM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "FO": [
+            "H",
+            "h"
+        ],
+        "FR": [
+            "H",
+            "hB"
+        ],
+        "GA": [
+            "H",
+            "hB"
+        ],
+        "GB": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "GD": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "GE": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "GF": [
+            "H",
+            "hB"
+        ],
+        "GG": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "GH": [
+            "h",
+            "H"
+        ],
+        "GI": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "GL": [
+            "H",
+            "h"
+        ],
+        "GM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "GN": [
+            "H",
+            "hB"
+        ],
+        "GP": [
+            "H",
+            "hB"
+        ],
+        "GQ": [
+            "H",
+            "hB",
+            "h",
+            "hb"
+        ],
+        "GR": [
+            "h",
+            "H",
+            "hb",
+            "hB"
+        ],
+        "GT": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "GU": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "GW": [
+            "H",
+            "hB"
+        ],
+        "GY": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "HK": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "HN": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "HR": [
+            "H",
+            "hB"
+        ],
+        "HU": [
+            "H",
+            "h"
+        ],
+        "IC": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "ID": [
+            "H"
+        ],
+        "IE": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "IL": [
+            "H",
+            "hB"
+        ],
+        "IM": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "IN": [
+            "h",
+            "H"
+        ],
+        "IO": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "IQ": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "IR": [
+            "hB",
+            "H"
+        ],
+        "IS": [
+            "H"
+        ],
+        "IT": [
+            "H",
+            "hB"
+        ],
+        "JE": [
+            "H",
+            "h",
+            "hb",
+            "hB"
+        ],
+        "JM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "JO": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "JP": [
+            "H",
+            "K",
+            "h"
+        ],
+        "KE": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ],
+        "KG": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "KH": [
+            "hB",
+            "h",
+            "H",
+            "hb"
+        ],
+        "KI": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "KM": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "KN": [
+            "h",
+            "hb",
+            "H",
+            "hB"
         ],
         "KP": [
             "h",
@@ -4618,130 +5503,115 @@ define(['exports'], function (exports) { 'use strict';
             "hB",
             "hb"
         ],
-        "NA": [
+        "KW": [
             "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "KY": [
+            "h",
+            "hb",
             "H",
+            "hB"
+        ],
+        "KZ": [
+            "H",
+            "hB"
+        ],
+        "LA": [
+            "H",
+            "hb",
+            "hB",
+            "h"
+        ],
+        "LB": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "LC": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "LI": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "LK": [
+            "H",
+            "h",
             "hB",
             "hb"
         ],
-        "PA": [
-            "h",
-            "H",
-            "hB",
-            "hb"
-        ],
-        "PR": [
-            "h",
-            "H",
-            "hB",
-            "hb"
-        ],
-        "VE": [
-            "h",
-            "H",
-            "hB",
-            "hb"
-        ],
-        "AC": [
-            "H",
+        "LR": [
             "h",
             "hb",
+            "H",
             "hB"
         ],
-        "AI": [
-            "H",
+        "LS": [
             "h",
-            "hb",
-            "hB"
-        ],
-        "BW": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "BZ": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "CC": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "CK": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "CX": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "DG": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "FK": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "GB": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "GG": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "GI": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "IE": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "IM": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "IO": [
-            "H",
-            "h",
-            "hb",
-            "hB"
-        ],
-        "JE": [
-            "H",
-            "h",
-            "hb",
-            "hB"
+            "H"
         ],
         "LT": [
             "H",
             "h",
             "hb",
+            "hB"
+        ],
+        "LU": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "LV": [
+            "H",
+            "hB",
+            "hb",
+            "h"
+        ],
+        "LY": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "MA": [
+            "H",
+            "h",
+            "hB",
+            "hb"
+        ],
+        "MC": [
+            "H",
+            "hB"
+        ],
+        "MD": [
+            "H",
+            "hB"
+        ],
+        "ME": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "MF": [
+            "H",
+            "hB"
+        ],
+        "MG": [
+            "H",
+            "h"
+        ],
+        "MH": [
+            "h",
+            "hb",
+            "H",
             "hB"
         ],
         "MK": [
@@ -4750,17 +5620,95 @@ define(['exports'], function (exports) { 'use strict';
             "hb",
             "hB"
         ],
+        "ML": [
+            "H"
+        ],
+        "MM": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ],
         "MN": [
             "H",
             "h",
             "hb",
             "hB"
         ],
+        "MO": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "MP": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "MQ": [
+            "H",
+            "hB"
+        ],
+        "MR": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
         "MS": [
             "H",
             "h",
             "hb",
             "hB"
+        ],
+        "MT": [
+            "H",
+            "h"
+        ],
+        "MU": [
+            "H",
+            "h"
+        ],
+        "MV": [
+            "H",
+            "h"
+        ],
+        "MW": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "MX": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "MY": [
+            "hb",
+            "hB",
+            "h",
+            "H"
+        ],
+        "MZ": [
+            "H",
+            "hB"
+        ],
+        "NA": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "NC": [
+            "H",
+            "hB"
+        ],
+        "NE": [
+            "H"
         ],
         "NF": [
             "H",
@@ -4772,6 +5720,25 @@ define(['exports'], function (exports) { 'use strict';
             "H",
             "h",
             "hb",
+            "hB"
+        ],
+        "NI": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "NL": [
+            "H",
+            "hB"
+        ],
+        "NO": [
+            "H",
+            "h"
+        ],
+        "NP": [
+            "H",
+            "h",
             "hB"
         ],
         "NR": [
@@ -4786,10 +5753,146 @@ define(['exports'], function (exports) { 'use strict';
             "hb",
             "hB"
         ],
+        "NZ": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "OM": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "PA": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "PE": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "PF": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "PG": [
+            "h",
+            "H"
+        ],
+        "PH": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "PK": [
+            "h",
+            "hB",
+            "H"
+        ],
+        "PL": [
+            "H",
+            "h"
+        ],
+        "PM": [
+            "H",
+            "hB"
+        ],
         "PN": [
             "H",
             "h",
             "hb",
+            "hB"
+        ],
+        "PR": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "PS": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "PT": [
+            "H",
+            "hB"
+        ],
+        "PW": [
+            "h",
+            "H"
+        ],
+        "PY": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "QA": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "RE": [
+            "H",
+            "hB"
+        ],
+        "RO": [
+            "H",
+            "hB"
+        ],
+        "RS": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "RU": [
+            "H"
+        ],
+        "RW": [
+            "H",
+            "h"
+        ],
+        "SA": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "SB": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SC": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "SD": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "SE": [
+            "H"
+        ],
+        "SG": [
+            "h",
+            "hb",
+            "H",
             "hB"
         ],
         "SH": [
@@ -4798,10 +5901,72 @@ define(['exports'], function (exports) { 'use strict';
             "hb",
             "hB"
         ],
+        "SI": [
+            "H",
+            "hB"
+        ],
+        "SJ": [
+            "H"
+        ],
+        "SK": [
+            "H"
+        ],
+        "SL": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "SM": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "SN": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "SO": [
+            "h",
+            "H"
+        ],
+        "SR": [
+            "H",
+            "hB"
+        ],
+        "SS": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "ST": [
+            "H",
+            "hB"
+        ],
+        "SV": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
         "SX": [
             "H",
             "h",
             "hb",
+            "hB"
+        ],
+        "SY": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "SZ": [
+            "h",
+            "hb",
+            "H",
             "hB"
         ],
         "TA": [
@@ -4810,11 +5975,185 @@ define(['exports'], function (exports) { 'use strict';
             "hb",
             "hB"
         ],
+        "TC": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "TD": [
+            "h",
+            "H",
+            "hB"
+        ],
+        "TF": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "TG": [
+            "H",
+            "hB"
+        ],
+        "TH": [
+            "H",
+            "h"
+        ],
+        "TJ": [
+            "H",
+            "h"
+        ],
+        "TL": [
+            "H",
+            "hB",
+            "hb",
+            "h"
+        ],
+        "TM": [
+            "H",
+            "h"
+        ],
+        "TN": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "TO": [
+            "h",
+            "H"
+        ],
+        "TR": [
+            "H",
+            "hB"
+        ],
+        "TT": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "TW": [
+            "hB",
+            "hb",
+            "h",
+            "H"
+        ],
+        "TZ": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ],
+        "UA": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "UG": [
+            "hB",
+            "hb",
+            "H",
+            "h"
+        ],
+        "UM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "US": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "UY": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "UZ": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "VA": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "VC": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "VE": [
+            "h",
+            "H",
+            "hB",
+            "hb"
+        ],
+        "VG": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "VI": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "VN": [
+            "H",
+            "h"
+        ],
+        "VU": [
+            "h",
+            "H"
+        ],
+        "WF": [
+            "H",
+            "hB"
+        ],
+        "WS": [
+            "h",
+            "H"
+        ],
+        "XK": [
+            "H",
+            "hB",
+            "h"
+        ],
+        "YE": [
+            "h",
+            "hB",
+            "hb",
+            "H"
+        ],
+        "YT": [
+            "H",
+            "hB"
+        ],
         "ZA": [
             "H",
             "h",
             "hb",
             "hB"
+        ],
+        "ZM": [
+            "h",
+            "hb",
+            "H",
+            "hB"
+        ],
+        "ZW": [
+            "H",
+            "h"
         ],
         "af-ZA": [
             "H",
@@ -4822,49 +6161,42 @@ define(['exports'], function (exports) { 'use strict';
             "hB",
             "hb"
         ],
-        "AR": [
-            "H",
+        "ar-001": [
             "h",
             "hB",
-            "hb"
+            "hb",
+            "H"
         ],
-        "CL": [
+        "ca-ES": [
             "H",
             "h",
-            "hB",
-            "hb"
+            "hB"
         ],
-        "CR": [
-            "H",
+        "en-001": [
             "h",
-            "hB",
-            "hb"
+            "hb",
+            "H",
+            "hB"
         ],
-        "CU": [
-            "H",
+        "en-HK": [
             "h",
-            "hB",
-            "hb"
+            "hb",
+            "H",
+            "hB"
         ],
-        "EA": [
+        "en-IL": [
             "H",
             "h",
-            "hB",
-            "hb"
+            "hb",
+            "hB"
         ],
-        "es-BO": [
-            "H",
+        "en-MY": [
             "h",
-            "hB",
-            "hb"
+            "hb",
+            "H",
+            "hB"
         ],
         "es-BR": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "es-EC": [
             "H",
             "h",
             "hB",
@@ -4882,764 +6214,36 @@ define(['exports'], function (exports) { 'use strict';
             "hB",
             "hb"
         ],
-        "es-PE": [
+        "fr-CA": [
             "H",
             "h",
-            "hB",
-            "hb"
+            "hB"
         ],
-        "GT": [
+        "gl-ES": [
             "H",
             "h",
-            "hB",
-            "hb"
-        ],
-        "HN": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "IC": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "KG": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "KM": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "LK": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "MA": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "MX": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "NI": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "PY": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "SV": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "UY": [
-            "H",
-            "h",
-            "hB",
-            "hb"
-        ],
-        "JP": [
-            "H",
-            "h",
-            "K"
-        ],
-        "AD": [
-            "H",
-            "hB"
-        ],
-        "AM": [
-            "H",
-            "hB"
-        ],
-        "AO": [
-            "H",
-            "hB"
-        ],
-        "AT": [
-            "H",
-            "hB"
-        ],
-        "AW": [
-            "H",
-            "hB"
-        ],
-        "BE": [
-            "H",
-            "hB"
-        ],
-        "BF": [
-            "H",
-            "hB"
-        ],
-        "BJ": [
-            "H",
-            "hB"
-        ],
-        "BL": [
-            "H",
-            "hB"
-        ],
-        "BR": [
-            "H",
-            "hB"
-        ],
-        "CG": [
-            "H",
-            "hB"
-        ],
-        "CI": [
-            "H",
-            "hB"
-        ],
-        "CV": [
-            "H",
-            "hB"
-        ],
-        "DE": [
-            "H",
-            "hB"
-        ],
-        "EE": [
-            "H",
-            "hB"
-        ],
-        "FR": [
-            "H",
-            "hB"
-        ],
-        "GA": [
-            "H",
-            "hB"
-        ],
-        "GF": [
-            "H",
-            "hB"
-        ],
-        "GN": [
-            "H",
-            "hB"
-        ],
-        "GP": [
-            "H",
-            "hB"
-        ],
-        "GW": [
-            "H",
-            "hB"
-        ],
-        "HR": [
-            "H",
-            "hB"
-        ],
-        "IL": [
-            "H",
-            "hB"
-        ],
-        "IT": [
-            "H",
-            "hB"
-        ],
-        "KZ": [
-            "H",
-            "hB"
-        ],
-        "MC": [
-            "H",
-            "hB"
-        ],
-        "MD": [
-            "H",
-            "hB"
-        ],
-        "MF": [
-            "H",
-            "hB"
-        ],
-        "MQ": [
-            "H",
-            "hB"
-        ],
-        "MZ": [
-            "H",
-            "hB"
-        ],
-        "NC": [
-            "H",
-            "hB"
-        ],
-        "NL": [
-            "H",
-            "hB"
-        ],
-        "PM": [
-            "H",
-            "hB"
-        ],
-        "PT": [
-            "H",
-            "hB"
-        ],
-        "RE": [
-            "H",
-            "hB"
-        ],
-        "RO": [
-            "H",
-            "hB"
-        ],
-        "SI": [
-            "H",
-            "hB"
-        ],
-        "SR": [
-            "H",
-            "hB"
-        ],
-        "ST": [
-            "H",
-            "hB"
-        ],
-        "TG": [
-            "H",
-            "hB"
-        ],
-        "TR": [
-            "H",
-            "hB"
-        ],
-        "WF": [
-            "H",
-            "hB"
-        ],
-        "YT": [
-            "H",
-            "hB"
-        ],
-        "BD": [
-            "h",
-            "hB",
-            "H"
-        ],
-        "PK": [
-            "h",
-            "hB",
-            "H"
-        ],
-        "AZ": [
-            "H",
-            "hB",
-            "h"
-        ],
-        "BA": [
-            "H",
-            "hB",
-            "h"
-        ],
-        "BG": [
-            "H",
-            "hB",
-            "h"
-        ],
-        "CH": [
-            "H",
-            "hB",
-            "h"
-        ],
-        "GE": [
-            "H",
-            "hB",
-            "h"
-        ],
-        "LI": [
-            "H",
-            "hB",
-            "h"
-        ],
-        "ME": [
-            "H",
-            "hB",
-            "h"
-        ],
-        "RS": [
-            "H",
-            "hB",
-            "h"
-        ],
-        "UA": [
-            "H",
-            "hB",
-            "h"
-        ],
-        "UZ": [
-            "H",
-            "hB",
-            "h"
-        ],
-        "XK": [
-            "H",
-            "hB",
-            "h"
-        ],
-        "AG": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "AU": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "BB": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "BM": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "BS": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "CA": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "DM": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "en-001": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "FJ": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "FM": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "GD": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "GM": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "GU": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "GY": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "JM": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "KI": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "KN": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "KY": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "LC": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "LR": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "MH": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "MP": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "MW": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "NZ": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "SB": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "SG": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "SL": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "SS": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "SZ": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "TC": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "TT": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "UM": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "US": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "VC": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "VG": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "VI": [
-            "h",
-            "hb",
-            "H",
-            "hB"
-        ],
-        "ZM": [
-            "h",
-            "hb",
-            "H",
             "hB"
-        ],
-        "BO": [
-            "H",
-            "hB",
-            "h",
-            "hb"
-        ],
-        "EC": [
-            "H",
-            "hB",
-            "h",
-            "hb"
-        ],
-        "ES": [
-            "H",
-            "hB",
-            "h",
-            "hb"
-        ],
-        "GQ": [
-            "H",
-            "hB",
-            "h",
-            "hb"
-        ],
-        "PE": [
-            "H",
-            "hB",
-            "h",
-            "hb"
         ],
-        "AE": [
-            "h",
+        "gu-IN": [
             "hB",
             "hb",
-            "H"
-        ],
-        "ar-001": [
             "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "BH": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "DZ": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "EG": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "EH": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "HK": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "IQ": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "JO": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "KW": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "LB": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "LY": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "MO": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "MR": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "OM": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "PH": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "PS": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "QA": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "SA": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "SD": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "SY": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "TN": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "YE": [
-            "h",
-            "hB",
-            "hb",
-            "H"
-        ],
-        "AF": [
-            "H",
-            "hb",
-            "hB",
-            "h"
-        ],
-        "LA": [
-            "H",
-            "hb",
-            "hB",
-            "h"
-        ],
-        "CN": [
-            "H",
-            "hB",
-            "hb",
-            "h"
-        ],
-        "LV": [
-            "H",
-            "hB",
-            "hb",
-            "h"
-        ],
-        "TL": [
-            "H",
-            "hB",
-            "hb",
-            "h"
-        ],
-        "zu-ZA": [
-            "H",
-            "hB",
-            "hb",
-            "h"
-        ],
-        "CD": [
-            "hB",
-            "H"
-        ],
-        "IR": [
-            "hB",
             "H"
         ],
         "hi-IN": [
             "hB",
             "h",
             "H"
+        ],
+        "it-CH": [
+            "H",
+            "h",
+            "hB"
+        ],
+        "it-IT": [
+            "H",
+            "h",
+            "hB"
         ],
         "kn-IN": [
             "hB",
@@ -5648,47 +6252,6 @@ define(['exports'], function (exports) { 'use strict';
         ],
         "ml-IN": [
             "hB",
-            "h",
-            "H"
-        ],
-        "te-IN": [
-            "hB",
-            "h",
-            "H"
-        ],
-        "KH": [
-            "hB",
-            "h",
-            "H",
-            "hb"
-        ],
-        "ta-IN": [
-            "hB",
-            "h",
-            "hb",
-            "H"
-        ],
-        "BN": [
-            "hb",
-            "hB",
-            "h",
-            "H"
-        ],
-        "MY": [
-            "hb",
-            "hB",
-            "h",
-            "H"
-        ],
-        "ET": [
-            "hB",
-            "hb",
-            "h",
-            "H"
-        ],
-        "gu-IN": [
-            "hB",
-            "hb",
             "h",
             "H"
         ],
@@ -5704,34 +6267,21 @@ define(['exports'], function (exports) { 'use strict';
             "h",
             "H"
         ],
-        "TW": [
+        "ta-IN": [
             "hB",
+            "h",
             "hb",
+            "H"
+        ],
+        "te-IN": [
+            "hB",
             "h",
             "H"
         ],
-        "KE": [
+        "zu-ZA": [
+            "H",
             "hB",
             "hb",
-            "H",
-            "h"
-        ],
-        "MM": [
-            "hB",
-            "hb",
-            "H",
-            "h"
-        ],
-        "TZ": [
-            "hB",
-            "hb",
-            "H",
-            "h"
-        ],
-        "UG": [
-            "hB",
-            "hb",
-            "H",
             "h"
         ]
     };
@@ -5827,7 +6377,7 @@ define(['exports'], function (exports) { 'use strict';
     }
     // #region Ponyfills
     // Consolidate these variables up top for easier toggling during debugging
-    var hasNativeStartsWith$1 = !!String.prototype.startsWith;
+    var hasNativeStartsWith$1 = !!String.prototype.startsWith && '_a'.startsWith('a', 1);
     var hasNativeFromCodePoint$1 = !!String.fromCodePoint;
     var hasNativeFromEntries$1 = !!Object.fromEntries;
     var hasNativeCodePointAt$1 = !!String.prototype.codePointAt;
@@ -6366,7 +6916,7 @@ define(['exports'], function (exports) { 'use strict';
                                 pattern: dateTimePattern,
                                 location: styleAndLocation.styleLocation,
                                 parsedOptions: this.shouldParseSkeletons
-                                    ? parseDateTimeSkeleton(dateTimePattern)
+                                    ? parseDateTimeSkeleton$1(dateTimePattern)
                                     : {},
                             };
                             var type = argType === 'date' ? TYPE$1.date : TYPE$1.time;
@@ -6524,7 +7074,7 @@ define(['exports'], function (exports) { 'use strict';
         Parser.prototype.parseNumberSkeletonFromString = function (skeleton, location) {
             var tokens = [];
             try {
-                tokens = parseNumberSkeletonFromString(skeleton);
+                tokens = parseNumberSkeletonFromString$1(skeleton);
             }
             catch (e) {
                 return this.error(ErrorKind$1.INVALID_NUMBER_SKELETON, location);
@@ -6535,7 +7085,7 @@ define(['exports'], function (exports) { 'use strict';
                     tokens: tokens,
                     location: location,
                     parsedOptions: this.shouldParseSkeletons
-                        ? parseNumberSkeleton(tokens)
+                        ? parseNumberSkeleton$1(tokens)
                         : {},
                 },
                 err: null,
@@ -7089,6 +7639,140 @@ define(['exports'], function (exports) { 'use strict';
             (c >= 0xfe45 && c <= 0xfe46));
     }
 
+    function cloneDeep(obj) {
+        if (Array.isArray(obj)) {
+            // @ts-expect-error meh
+            return __spreadArray([], obj.map(cloneDeep), true);
+        }
+        if (obj !== null && typeof obj === 'object') {
+            // @ts-expect-error meh
+            return Object.keys(obj).reduce(function (cloned, k) {
+                // @ts-expect-error meh
+                cloned[k] = cloneDeep(obj[k]);
+                return cloned;
+            }, {});
+        }
+        return obj;
+    }
+    function hoistPluralOrSelectElement(ast, el, positionToInject) {
+        // pull this out of the ast and move it to the top
+        var cloned = cloneDeep(el);
+        var options = cloned.options;
+        cloned.options = Object.keys(options).reduce(function (all, k) {
+            var newValue = hoistSelectors(__spreadArray(__spreadArray(__spreadArray([], ast.slice(0, positionToInject), true), options[k].value, true), ast.slice(positionToInject + 1), true));
+            all[k] = {
+                value: newValue,
+            };
+            return all;
+        }, {});
+        return cloned;
+    }
+    function isPluralOrSelectElement(el) {
+        return isPluralElement$1(el) || isSelectElement$1(el);
+    }
+    function findPluralOrSelectElement(ast) {
+        return !!ast.find(function (el) {
+            if (isPluralOrSelectElement(el)) {
+                return true;
+            }
+            if (isTagElement$1(el)) {
+                return findPluralOrSelectElement(el.children);
+            }
+            return false;
+        });
+    }
+    /**
+     * Hoist all selectors to the beginning of the AST & flatten the
+     * resulting options. E.g:
+     * "I have {count, plural, one{a dog} other{many dogs}}"
+     * becomes "{count, plural, one{I have a dog} other{I have many dogs}}".
+     * If there are multiple selectors, the order of which one is hoisted 1st
+     * is non-deterministic.
+     * The goal is to provide as many full sentences as possible since fragmented
+     * sentences are not translator-friendly
+     * @param ast AST
+     */
+    function hoistSelectors(ast) {
+        for (var i = 0; i < ast.length; i++) {
+            var el = ast[i];
+            if (isPluralOrSelectElement(el)) {
+                return [hoistPluralOrSelectElement(ast, el, i)];
+            }
+            if (isTagElement$1(el) && findPluralOrSelectElement([el])) {
+                throw new Error('Cannot hoist plural/select within a tag element. Please put the tag element inside each plural/select option');
+            }
+        }
+        return ast;
+    }
+    /**
+     * Collect all variables in an AST to Record<string, TYPE>
+     * @param ast AST to collect variables from
+     * @param vars Record of variable name to variable type
+     */
+    function collectVariables(ast, vars) {
+        if (vars === void 0) { vars = new Map(); }
+        ast.forEach(function (el) {
+            if (isArgumentElement$1(el) ||
+                isDateElement$1(el) ||
+                isTimeElement$1(el) ||
+                isNumberElement$1(el)) {
+                if (el.value in vars && vars.get(el.value) !== el.type) {
+                    throw new Error("Variable ".concat(el.value, " has conflicting types"));
+                }
+                vars.set(el.value, el.type);
+            }
+            if (isPluralElement$1(el) || isSelectElement$1(el)) {
+                vars.set(el.value, el.type);
+                Object.keys(el.options).forEach(function (k) {
+                    collectVariables(el.options[k].value, vars);
+                });
+            }
+            if (isTagElement$1(el)) {
+                vars.set(el.value, el.type);
+                collectVariables(el.children, vars);
+            }
+        });
+    }
+    /**
+     * Check if 2 ASTs are structurally the same. This primarily means that
+     * they have the same variables with the same type
+     * @param a
+     * @param b
+     * @returns
+     */
+    function isStructurallySame(a, b) {
+        var aVars = new Map();
+        var bVars = new Map();
+        collectVariables(a, aVars);
+        collectVariables(b, bVars);
+        if (aVars.size !== bVars.size) {
+            return {
+                success: false,
+                error: new Error("Different number of variables: [".concat(Array.from(aVars.keys()).join(', '), "] vs [").concat(Array.from(bVars.keys()).join(', '), "]")),
+            };
+        }
+        return Array.from(aVars.entries()).reduce(function (result, _a) {
+            var key = _a[0], type = _a[1];
+            if (!result.success) {
+                return result;
+            }
+            var bType = bVars.get(key);
+            if (bType == null) {
+                return {
+                    success: false,
+                    error: new Error("Missing variable ".concat(key, " in message")),
+                };
+            }
+            if (bType !== type) {
+                return {
+                    success: false,
+                    error: new Error("Variable ".concat(key, " has conflicting types: ").concat(TYPE$1[type], " vs ").concat(TYPE$1[bType])),
+                };
+            }
+            return result;
+        }, { success: true });
+    }
+
     function pruneLocation$1(els) {
         els.forEach(function (el) {
             delete el.location;
@@ -7134,11 +7818,21 @@ define(['exports'], function (exports) { 'use strict';
         return (values) => new IntlMessageFormat(_parsePattern(pattern), locale).format(values);
     }
     function _parsePattern(pattern) {
+        // set ignioreTag flag, so that < and > characters are treated as regular characters that do not
+        // require escaping
         return parse$1(pattern, { ignoreTag: true });
     }
+    /**
+     * Transforms a modified ARB-style bundle into an object where each key is mapped to a formatter function
+     * (see the Formatter type definition above)
+     * @param bundle {Object} modified ARB-style bundle as a JavaScript object
+     * @param locale {string} locale associated with the bundle
+     * @ignore
+     */
     function convertBundle(bundle, locale) {
         return Object.keys(bundle).reduce((acc, key) => {
             if (!key.startsWith('@')) {
+                // ignore metadata keys
                 acc[key] = _getFormatter(bundle[key], locale);
             }
             return acc;

@@ -194,7 +194,7 @@ var __oj_option_metadata =
  */
 
 /**
- * <p>Child content for oj-option. This is normally the text node that displays for oj-option.</p>
+ * <p>Child content for oj-option. This can only be text.</p>
  *
  * @ojchild Default
  * @ojshortdesc The default slot for the option's content.

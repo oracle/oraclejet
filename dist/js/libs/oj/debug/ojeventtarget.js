@@ -107,12 +107,14 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
         dispatchEvent(evt) {
             if (this._eventListeners) {
                 var i, returnValue;
+                //clone the eventListeners to isolate mutations that may occur during dispatching events
                 var eventListeners = this._eventListeners.slice(0);
                 for (i = 0; i < eventListeners.length; i++) {
                     var eventListener = eventListeners[i];
                     if (evt && evt.type && eventListener['type'] == evt.type.toLowerCase()) {
                         returnValue = eventListener['listener'].apply(this, [evt]);
                         if (returnValue === false) {
+                            // event cancelled
                             return false;
                         }
                     }

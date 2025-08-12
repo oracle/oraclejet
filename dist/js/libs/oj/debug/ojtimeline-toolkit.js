@@ -1010,7 +1010,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @return {string} The series style.
      */
     getSeriesStyle: () => {
-      return 'background-color:#f9f9f9;';
+      return 'background-color: transparent;';
     },
 
     /**
@@ -1092,7 +1092,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @return {string} The timeline style.
      */
     getTimelineStyle: () => {
-      return 'border:1px #d9dfe3;background-color:#f9f9f9;';
+      return 'border:1px #d9dfe3;background-color: transparent;';
     },
 
     /**
@@ -2070,7 +2070,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       }
 
       if (itemType !== DvtTimelineSeriesNode.DURATION_EVENT) {
-        var availableWidthToEnd = endLoc - itemStartLoc + edgeOffset;
+        var availableWidthToEnd = this._timeline.isVertical()
+          ? timeline._seriesSize
+          : // JET-59453: single date event bubbles should be allowed to extend all the way to the timeline end edge,
+            // i.e. not need to add "edgeOffset" to availableWidthToEnd.
+            // Also account for single date event bubble shifts when feelers are turned on.
+            (availableWidthToEnd =
+              endLoc - itemStartLoc + DvtTimelineStyleUtils.getBubbleOffset(timeline));
         return Math.min(Math.max(0, availableWidthToEnd), maximumContentsWidth);
       }
 
@@ -3666,6 +3672,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
      * @private
      */
     _updateBubble: (item, series, index, mvAnimator) => {
+      // Right now this only applies to horizontal timeline
+      // single date event bubbles that are closest
+      // to the timeline end, because they may truncate and require a full re-render.
+      if (item._shouldEventUpdateBubbleRerender) {
+        var contentContainer = item._content.getParent();
+        contentContainer.removeChild(item._content);
+        item._content = DvtTimelineSeriesItemRenderer._getBubbleContent(item, series);
+        contentContainer.addChild(item._content);
+        DvtTimelineSeriesItemRenderer._setupBubble(item, item._content);
+      }
+
       // Need to update the bubble widths before spacing if applicable
       if (
         item._timeline._isComponentResize ||
@@ -3741,19 +3758,25 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var feelerId = '_feeler_' + id;
       var durationSize =
         item.getItemType() === DvtTimelineSeriesNode.DURATION_BAR ? item.getDurationSize() : 0;
+      var options = item._timeline.Options;
+      // JET-59453: make the feeler taller by at least the item border radius so that
+      // a feeler connecting to a bubble corner stays connected visually.
+      var bubbleBorderRadius = DvtTimelineStyleUtils.getBubbleRadius(options);
       if (!series.isInverted()) {
         var feelerY = series.Height + overflowOffset - durationSize;
-        if (!series.isTopToBottom()) var feelerHeight = series.Height - spacing + overflowOffset;
+        if (!series.isTopToBottom())
+          var feelerHeight = series.Height - spacing + overflowOffset - bubbleBorderRadius;
         else
           feelerHeight =
             spacing -
             series._initialSpacing +
             DvtTimelineStyleUtils.getBubbleSpacing() +
-            item.getHeight();
+            item.getHeight() -
+            bubbleBorderRadius;
       } else {
         // only shorten feelerY if duration bar
         feelerY = durationSize;
-        if (series.isTopToBottom()) feelerHeight = spacing;
+        if (series.isTopToBottom()) feelerHeight = spacing + bubbleBorderRadius;
         else
           feelerHeight =
             series.Height -
@@ -3761,7 +3784,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             item.getHeight() +
             overflowOffset +
             series._initialSpacing -
-            DvtTimelineStyleUtils.getBubbleSpacing();
+            DvtTimelineStyleUtils.getBubbleSpacing() +
+            bubbleBorderRadius;
       }
       var feelerX;
       if (isRTL) feelerX = length - loc;
@@ -3817,19 +3841,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var feeler = item.getFeeler();
       var durationSize =
         item.getItemType() === DvtTimelineSeriesNode.DURATION_BAR ? item.getDurationSize() : 0;
+      var options = item._timeline.Options;
+      // JET-59453: make the feeler taller by at least the item border radius so that
+      // a feeler connecting to a bubble corner stays connected visually.
+      var bubbleBorderRadius = DvtTimelineStyleUtils.getBubbleRadius(options);
       if (!series.isInverted()) {
         var feelerY = series.Height + overflowOffset - durationSize;
         if (!series.isTopToBottom())
-          var feelerHeight = series.Height - item.getSpacing() + overflowOffset;
+          var feelerHeight = series.Height - item.getSpacing() + overflowOffset - bubbleBorderRadius;
         else
           feelerHeight =
             item.getSpacing() -
             series._initialSpacing +
             DvtTimelineStyleUtils.getBubbleSpacing() +
-            item.getHeight();
+            item.getHeight() -
+            bubbleBorderRadius;
       } else {
         feelerY = durationSize;
-        if (series.isTopToBottom()) feelerHeight = item.getSpacing();
+        if (series.isTopToBottom()) feelerHeight = item.getSpacing() + bubbleBorderRadius;
         else
           feelerHeight =
             series.Height -
@@ -3837,7 +3866,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             item.getHeight() +
             overflowOffset +
             series._initialSpacing -
-            DvtTimelineStyleUtils.getBubbleSpacing();
+            DvtTimelineStyleUtils.getBubbleSpacing() +
+            bubbleBorderRadius;
         overflowOffset = 0;
       }
       var feelerX;
@@ -9485,6 +9515,43 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         item.setLoc(loc);
         if (!series._isRandomItemLayout) item.setSpacing(null);
       }
+
+      // In horizontal timeline, single date event (and duration bar) bubbles that extend beyond the timeline
+      // end should truncate, i.e. they need to be re-rendered instead of just having their positions updated.
+      // For performance, we can just update the event bubbles that are the closest to
+      // the timeline end.
+      // More specifically, given items stack, we can group items by their y position,
+      // and mark only the single date event bubbles with the largest x position in LTR
+      // (or smallest x position in RTL) within their y position group,
+      // for full re-render (which happens in the subsequent _updateBubble call).
+      if (!series.isVertical()) {
+        var isRTL = dvt.Agent.isRightToLeft(series.getCtx());
+        const levelLastEventMap = new Map();
+        for (i = 0; i < items.length; i++) {
+          item = items[i];
+          item._shouldEventUpdateBubbleRerender = false;
+          if (item.getItemType() !== DvtTimelineSeriesNode.DURATION_EVENT) {
+            var itemTime = item.getStartTime();
+            if (itemTime >= series._start && itemTime <= series._end) {
+              const bubble = item.getBubble();
+              const y = bubble.getTranslateY();
+              const x = bubble.getTranslateX();
+              if (levelLastEventMap.has(y)) {
+                if (
+                  (isRTL && x <= levelLastEventMap.get(y).x) ||
+                  (!isRTL && x >= levelLastEventMap.get(y).x)
+                ) {
+                  levelLastEventMap.set(y, { x, item });
+                }
+              } else {
+                levelLastEventMap.set(y, { x, item });
+              }
+            }
+          }
+        }
+        levelLastEventMap.forEach(({ item }) => (item._shouldEventUpdateBubbleRerender = true));
+      }
+
       for (i = 0; i < items.length; i++) {
         item = items[i];
         var itemTime = item.getStartTime();

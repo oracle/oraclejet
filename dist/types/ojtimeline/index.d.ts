@@ -23,17 +23,20 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
     majorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
         scale?: (string | DvtTimeComponentScale);
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     minorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
         scale?: (string | DvtTimeComponentScale);
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         zoomOrder?: Array<string | DvtTimeComponentScale>;
     };
     orientation: 'vertical' | 'horizontal';
     overview: {
         rendered?: 'on' | 'off';
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     referenceObjects: ojTimeline.ReferenceObject[];
@@ -380,11 +383,15 @@ export namespace ojTimeline {
     // tslint:disable-next-line interface-over-type-literal
     type RenderItemBubbleContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemBubbleTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type ItemBubbleContentTemplateContext<K, D> = ItemBubbleTemplateContext<K, D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderItemTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderSeriesTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K, D> = TooltipContext<K, D>;
 }
 export interface ojTimelineEventMap<K, D extends ojTimeline.DataItem | any> extends dvtTimeComponentEventMap<ojTimelineSettableProperties<K, D>> {
     'ojMove': ojTimeline.ojMove<K, D>;
@@ -429,17 +436,20 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
     majorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
         scale?: (string | DvtTimeComponentScale);
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     minorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
         scale?: (string | DvtTimeComponentScale);
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         zoomOrder?: Array<string | DvtTimeComponentScale>;
     };
     orientation: 'vertical' | 'horizontal';
     overview: {
         rendered?: 'on' | 'off';
+        /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     referenceObjects: ojTimeline.ReferenceObject[];
@@ -673,6 +683,7 @@ export interface ojTimelineSeries extends JetElement<ojTimelineSeriesSettablePro
     emptyText?: string;
     itemLayout?: 'auto' | 'bottomToTop' | 'topToBottom';
     label?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     addEventListener<T extends keyof ojTimelineSeriesEventMap>(type: T, listener: (this: HTMLElement, ev: ojTimelineSeriesEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -702,6 +713,7 @@ export interface ojTimelineSeriesSettableProperties extends JetSettablePropertie
     emptyText?: string;
     itemLayout?: 'auto' | 'bottomToTop' | 'topToBottom';
     label?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
 }
 export interface ojTimelineSeriesSettablePropertiesLenient extends Partial<ojTimelineSeriesSettableProperties> {
@@ -896,11 +908,15 @@ export namespace TimelineElement {
     // tslint:disable-next-line interface-over-type-literal
     type RenderItemBubbleContentTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemBubbleTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type ItemBubbleContentTemplateContext<K, D> = ItemBubbleTemplateContext<K, D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderItemTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderSeriesTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K, D> = TooltipContext<K, D>;
 }
 export namespace TimelineItemElement {
     // tslint:disable-next-line interface-over-type-literal
@@ -981,7 +997,7 @@ export interface TimelineSeriesIntrinsicProps extends Partial<Readonly<ojTimelin
     onemptyTextChanged?: (value: ojTimelineSeriesEventMap['emptyTextChanged']) => void;
     onitemLayoutChanged?: (value: ojTimelineSeriesEventMap['itemLayoutChanged']) => void;
     onlabelChanged?: (value: ojTimelineSeriesEventMap['labelChanged']) => void;
-    onsvgStyleChanged?: (value: ojTimelineSeriesEventMap['svgStyleChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgStyleChanged?: (value: ojTimelineSeriesEventMap['svgStyleChanged']) => void;
     children?: ComponentChildren;
 }
 declare global {

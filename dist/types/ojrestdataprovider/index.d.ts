@@ -58,7 +58,7 @@ export namespace RESTDataProvider {
     type FetchErrorDetail<K, D> = {
         /** @deprecated since 15.1.0 - Use FetchErrorDetail.error instead. */
         err: TypeError;
-        error: TypeError;
+        error: any;
         fetchParameters: FetchListParameters<D> | FetchByKeysParameters<K> | FetchByOffsetParameters<D>;
         fetchType: 'fetchFirst' | 'fetchByKeys' | 'fetchByOffset';
         options: Options<K, D>;
@@ -96,13 +96,36 @@ export namespace RESTDataProvider {
     type Options<K, D> = {
         capabilities?: Capabilities;
         enforceKeyStringify?: 'off' | 'on';
-        error?: ((response: FetchErrorDetail<K, D> | FetchResponseErrorDetail<K, D>) => void);
+        error?: (response: FetchErrorDetail<K, D> | FetchResponseErrorDetail<K, D>) => void;
         implicitSort?: Array<SortCriterion<D>>;
         iterationLimit?: number;
         keyAttributes: string | string[];
+        restHelper?: {
+            fetchFirst: (options: RESTHelperFetchByOffsetRequestOptions<K, D>) => Promise<RESTHelperResponse<K, D>>;
+            fetchByOffset?: (options: RESTHelperFetchByOffsetRequestOptions<K, D>) => Promise<RESTHelperResponse<K, D>>;
+            fetchByKeys?: (options: RESTHelperFetchByKeysRequestOptions<K, D>) => Promise<RESTHelperResponse<K, D>>;
+        };
         textFilterAttributes?: string[];
-        transforms: Transforms<K, D>;
-        url: string;
+        transforms?: Transforms<K, D>;
+        url?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RESTHelperFetchByKeysRequestOptions<K, D> = {
+        fetchParameters: FetchByKeysParameters<K>;
+        options: Options<K, D>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RESTHelperFetchByOffsetRequestOptions<K, D> = {
+        fetchParameters: FetchByOffsetParameters<D>;
+        options: Options<K, D>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RESTHelperResponse<K, D> = {
+        data: D[];
+        hasMore?: boolean;
+        keys?: K[];
+        metadata?: ItemMetadata<K>[];
+        totalSize?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Transforms<K, D> = {

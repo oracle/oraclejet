@@ -64,7 +64,7 @@ var __oj_n_box_metadata =
       "type": "function"
     },
     "data": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -1069,7 +1069,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent, {
      * @ojshortdesc Specifies the data provider for the NBox. See the Help documentation for more information.
      * @memberof oj.ojNBox
      * @instance
-     * @type {Object|null}
+     * @type {DataProvider|null}
      * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
      * @default null
      * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
@@ -1459,6 +1459,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent, {
          * @instance
          * @type {Object=}
          * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+         * @ojdeprecated {since: "19.0.0", description: "The maximizedSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
          */
         maximizedSvgStyle: undefined,
 
@@ -1472,6 +1473,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent, {
          * @instance
          * @type {Object=}
          * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+         * @ojdeprecated {since: "19.0.0", description: "The minimizedSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
          */
         minimizedSvgStyle: undefined,
 
@@ -1500,6 +1502,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent, {
          * @instance
          * @type {Object=}
          * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+         * @ojdeprecated {since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
          */
         svgStyle: undefined
       },
@@ -4172,6 +4175,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent, {
  * @instance
  * @type {(Object|null)=}
  * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>|null", jsdocOverride: true}
+ * @ojdeprecated {since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
  * @default null
  *
  * @example <caption>Initialize NBox node with the
@@ -4190,6 +4194,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent, {
  * @instance
  * @type {string=}
  * @default ''
+ * @ojdeprecated {since: "19.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>

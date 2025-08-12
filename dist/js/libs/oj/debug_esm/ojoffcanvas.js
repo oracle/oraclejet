@@ -15,7 +15,7 @@ import { warn } from 'ojs/ojlogger';
 import { getReadingDirection, makeFocusable, isChromeEvent, isLogicalAncestorOrSelf, isTouchSupported } from 'ojs/ojdomutils';
 import FocusUtils from 'ojs/ojfocusutils';
 import 'ojs/ojjquery-hammer';
-import 'ojs/ojpopupcore';
+import { ZOrderUtils } from 'ojs/ojpopupcore';
 
 /**
  * @namespace
@@ -688,7 +688,7 @@ OffcanvasUtils._registerCloseHandler = function (_offcanvas) {
       }
 
       // if there is an open modal dialog, do not autoDismiss
-      if (oj.ZOrderUtils.hasModalDialogOpen()) {
+      if (ZOrderUtils.hasModalDialogOpen()) {
         return;
       }
 
@@ -1997,6 +1997,16 @@ OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
   $(outerWrapper)
     .ojHammer(mOptions)
     .on('panstart', function (event) {
+      if (proceed) {
+        // stop touch event from bubbling to prevent for example pull to refresh from happening
+        event.gesture.srcEvent.stopPropagation();
+        // prevent page from scrolling
+        event.gesture.srcEvent.preventDefault();
+        // stop bubbling
+        event.stopPropagation();
+        return;
+      }
+
       direction = null;
 
       switch (event.gesture.direction) {

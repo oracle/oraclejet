@@ -117,6 +117,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
             row?: 'enable' | 'disable';
         };
     };
+    editCell: ojDataGrid.EditCell;
     editMode: 'none' | 'cellNavigation' | 'cellEdit';
     frozenColumnCount: number;
     frozenRowCount: number;
@@ -302,7 +303,10 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         accessibleColumnSelected?: string;
         accessibleColumnSpanContext?: string;
         accessibleContainsControls?: string;
+        accessibleEndOfDataGrid?: string;
         accessibleExpanded?: string;
+        accessibleFilterable?: string;
+        accessibleFiltered?: string;
         accessibleFirstColumn?: string;
         accessibleFirstRow?: string;
         accessibleLastColumn?: string;
@@ -415,6 +419,10 @@ export namespace ojDataGrid {
     }
     interface ojBeforeEdit<K, D> extends CustomEvent<{
         cellContext: CellContext<K, D>;
+        focusCallback: (detail: {
+            locator?: string;
+            action?: 'focusAndOpen';
+        }) => void;
         [propName: string]: any;
     }> {
     }
@@ -535,6 +543,8 @@ export namespace ojDataGrid {
     // tslint:disable-next-line interface-over-type-literal
     type dndChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type editCellChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["editCell"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type editModeChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["editMode"]>;
     // tslint:disable-next-line interface-over-type-literal
     type frozenColumnCountChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["frozenColumnCount"]>;
@@ -631,6 +641,13 @@ export namespace ojDataGrid {
         position: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type EditCell = {
+        indexes: {
+            row: number;
+            column: number;
+        };
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type HeaderContext<K, D> = {
         axis: 'column' | 'columnEnd' | 'row' | 'rowEnd';
         componentElement: Element;
@@ -709,27 +726,51 @@ export namespace ojDataGrid {
     // tslint:disable-next-line interface-over-type-literal
     type RenderColumnEndHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type ColumnEndHeaderLabelTemplateContext<D> = LabelTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderColumnEndHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type ColumnEndHeaderTemplateContext<D> = HeaderTemplateContext<D>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderColumnHeaderContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type ColumnHeaderContentTemplateContext<D> = HeaderTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderColumnHeaderLabelContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type ColumnHeaderLabelContentTemplateContext<D> = LabelTemplateContext<D>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderColumnHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type ColumnHeaderLabelTemplateContext<D> = LabelTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderColumnHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type ColumnHeaderTemplateContext<D> = HeaderTemplateContext<D>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowEndHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type RowEndHeaderLabelTemplateContext<D> = LabelTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderRowEndHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RowEndHeaderTemplateContext<D> = HeaderTemplateContext<D>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowHeaderContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type RowHeaderContentTemplateContext<D> = HeaderTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderRowHeaderLabelContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RowHeaderLabelContentTemplateContext<D> = LabelTemplateContext<D>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type RowHeaderLabelTemplateContext<D> = LabelTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderRowHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RowHeaderTemplateContext<D> = HeaderTemplateContext<D>;
 }
 export interface ojDataGridEventMap<K, D> extends baseComponentEventMap<ojDataGridSettableProperties<K, D>> {
     'ojBeforeCurrentCell': ojDataGrid.ojBeforeCurrentCell<K>;
@@ -755,6 +796,7 @@ export interface ojDataGridEventMap<K, D> extends baseComponentEventMap<ojDataGr
     'dataChanged': JetElementCustomEvent<ojDataGrid<K, D>["data"]>;
     'dataTransferOptionsChanged': JetElementCustomEvent<ojDataGrid<K, D>["dataTransferOptions"]>;
     'dndChanged': JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>;
+    'editCellChanged': JetElementCustomEvent<ojDataGrid<K, D>["editCell"]>;
     'editModeChanged': JetElementCustomEvent<ojDataGrid<K, D>["editMode"]>;
     'frozenColumnCountChanged': JetElementCustomEvent<ojDataGrid<K, D>["frozenColumnCount"]>;
     'frozenRowCountChanged': JetElementCustomEvent<ojDataGrid<K, D>["frozenRowCount"]>;
@@ -882,6 +924,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
             row?: 'enable' | 'disable';
         };
     };
+    editCell: ojDataGrid.EditCell;
     editMode: 'none' | 'cellNavigation' | 'cellEdit';
     frozenColumnCount: number;
     frozenRowCount: number;
@@ -1067,7 +1110,10 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         accessibleColumnSelected?: string;
         accessibleColumnSpanContext?: string;
         accessibleContainsControls?: string;
+        accessibleEndOfDataGrid?: string;
         accessibleExpanded?: string;
+        accessibleFilterable?: string;
+        accessibleFiltered?: string;
         accessibleFirstColumn?: string;
         accessibleFirstRow?: string;
         accessibleLastColumn?: string;
@@ -1169,6 +1215,10 @@ export namespace DataGridElement {
     }
     interface ojBeforeEdit<K, D> extends CustomEvent<{
         cellContext: ojDataGrid.CellContext<K, D>;
+        focusCallback: (detail: {
+            locator?: string;
+            action?: 'focusAndOpen';
+        }) => void;
         [propName: string]: any;
     }> {
     }
@@ -1289,6 +1339,8 @@ export namespace DataGridElement {
     // tslint:disable-next-line interface-over-type-literal
     type dndChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type editCellChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["editCell"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type editModeChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["editMode"]>;
     // tslint:disable-next-line interface-over-type-literal
     type frozenColumnCountChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["frozenColumnCount"]>;
@@ -1385,6 +1437,13 @@ export namespace DataGridElement {
         position: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type EditCell = {
+        indexes: {
+            row: number;
+            column: number;
+        };
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type HeaderContext<K, D> = {
         axis: 'column' | 'columnEnd' | 'row' | 'rowEnd';
         componentElement: Element;
@@ -1463,27 +1522,51 @@ export namespace DataGridElement {
     // tslint:disable-next-line interface-over-type-literal
     type RenderColumnEndHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type ColumnEndHeaderLabelTemplateContext<D> = LabelTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderColumnEndHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type ColumnEndHeaderTemplateContext<D> = HeaderTemplateContext<D>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderColumnHeaderContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type ColumnHeaderContentTemplateContext<D> = HeaderTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderColumnHeaderLabelContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type ColumnHeaderLabelContentTemplateContext<D> = LabelTemplateContext<D>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderColumnHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type ColumnHeaderLabelTemplateContext<D> = LabelTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderColumnHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type ColumnHeaderTemplateContext<D> = HeaderTemplateContext<D>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowEndHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type RowEndHeaderLabelTemplateContext<D> = LabelTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderRowEndHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RowEndHeaderTemplateContext<D> = HeaderTemplateContext<D>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowHeaderContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type RowHeaderContentTemplateContext<D> = HeaderTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderRowHeaderLabelContentTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RowHeaderLabelContentTemplateContext<D> = LabelTemplateContext<D>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
+    type RowHeaderLabelTemplateContext<D> = LabelTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderRowHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RowHeaderTemplateContext<D> = HeaderTemplateContext<D>;
 }
 export interface DataGridIntrinsicProps extends Partial<Readonly<ojDataGridSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojBeforeCurrentCell?: (value: ojDataGridEventMap<any, any>['ojBeforeCurrentCell']) => void;
@@ -1510,6 +1593,7 @@ export interface DataGridIntrinsicProps extends Partial<Readonly<ojDataGridSetta
     ondataChanged?: (value: ojDataGridEventMap<any, any>['dataChanged']) => void;
     ondataTransferOptionsChanged?: (value: ojDataGridEventMap<any, any>['dataTransferOptionsChanged']) => void;
     ondndChanged?: (value: ojDataGridEventMap<any, any>['dndChanged']) => void;
+    oneditCellChanged?: (value: ojDataGridEventMap<any, any>['editCellChanged']) => void;
     oneditModeChanged?: (value: ojDataGridEventMap<any, any>['editModeChanged']) => void;
     onfrozenColumnCountChanged?: (value: ojDataGridEventMap<any, any>['frozenColumnCountChanged']) => void;
     onfrozenRowCountChanged?: (value: ojDataGridEventMap<any, any>['frozenRowCountChanged']) => void;

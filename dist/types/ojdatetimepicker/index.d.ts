@@ -1251,21 +1251,42 @@ export interface ojInputDateTimeSettablePropertiesLenient extends Partial<ojInpu
     [key: string]: any;
 }
 export interface ojInputTime extends inputBase<string, ojInputTimeSettableProperties> {
+    /** @deprecated since 19.0.0 - The time field in corepack contains mask segments instead of a general input, so autocomplete is not supported. */
+    autocomplete: 'on' | 'off' | string;
+    /** @deprecated since 19.0.0 - This is not recommended for accessibility reasons. */
+    autofocus: boolean;
     converter: Converter<any>;
+    displayOptions?: {
+        /** @deprecated since 19.0.0 - Please use help-hints instead. */
+        converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
+    };
+    /** @deprecated since 19.0.0 - This is not supported in the Redwood UX specification. */
     keyboardEdit: 'enabled' | 'disabled';
+    /** @deprecated since 19.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
+    labelledBy: string | null;
     max: string | null;
     min: string | null;
+    /** @deprecated since 19.0.0 - Changing the Class or Style property is not recommended, as it leads to an inconsistent UI. */
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    /** @deprecated since 19.0.0 - The time field in corepack contains mask segments instead of a general input, so placeholder is not supported. */
+    placeholder: string;
     /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
        the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
+    /** @deprecated since 19.0.0 - The time field does not have a picker. */
     timePicker: {
         /** @deprecated since 8.2.0 - This attribute is deprecated and should not be used as it will be ignored in new UX design. */
         footerLayout: '' | 'now';
+        /** @deprecated since 19.0.0 - This is not supported in the Redwood UX specification. */
         showOn?: 'focus' | 'userFocus' | 'image';
+        /** @deprecated since 19.0.0 - The time field in corepack contains a mask and not a picker. */
         timeIncrement?: string;
     };
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
@@ -1275,8 +1296,11 @@ export interface ojInputTime extends inputBase<string, ojInputTimeSettableProper
         accessibleMaxLengthExceeded?: string;
         /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthRemaining?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         ampmWheelLabel?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         cancelText?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         currentTimeText?: string;
         dateTimeRange?: {
             /** @deprecated since 18.0.0 - Please use help-hints instead. */
@@ -1300,8 +1324,11 @@ export interface ojInputTime extends inputBase<string, ojInputTimeSettableProper
                 rangeUnderflow?: string;
             };
         };
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         hourWheelLabel?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         minuteWheelLabel?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         okText?: string;
         /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
         regexp?: {
@@ -1317,7 +1344,9 @@ export interface ojInputTime extends inputBase<string, ojInputTimeSettableProper
             /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         tooltipTime?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         tooltipTimeDisabled?: string;
     };
     addEventListener<T extends keyof ojInputTimeEventMap>(type: T, listener: (this: HTMLElement, ev: ojInputTimeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -1346,15 +1375,25 @@ export namespace ojInputTime {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type autocompleteChanged = JetElementCustomEvent<ojInputTime["autocomplete"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type autofocusChanged = JetElementCustomEvent<ojInputTime["autofocus"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type converterChanged = JetElementCustomEvent<ojInputTime["converter"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojInputTime["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type keyboardEditChanged = JetElementCustomEvent<ojInputTime["keyboardEdit"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojInputTime["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojInputTime["max"]>;
     // tslint:disable-next-line interface-over-type-literal
     type minChanged = JetElementCustomEvent<ojInputTime["min"]>;
     // tslint:disable-next-line interface-over-type-literal
     type pickerAttributesChanged = JetElementCustomEvent<ojInputTime["pickerAttributes"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged = JetElementCustomEvent<ojInputTime["placeholder"]>;
     // tslint:disable-next-line interface-over-type-literal
     type renderModeChanged = JetElementCustomEvent<ojInputTime["renderMode"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1369,15 +1408,9 @@ export namespace ojInputTime {
     // tslint:disable-next-line interface-over-type-literal
     type asyncValidatorsChanged = inputBase.asyncValidatorsChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type autocompleteChanged = inputBase.autocompleteChanged<string, ojInputTimeSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type autofocusChanged = inputBase.autofocusChanged<string, ojInputTimeSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type describedByChanged = inputBase.describedByChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type disabledChanged = inputBase.disabledChanged<string, ojInputTimeSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type displayOptionsChanged = inputBase.displayOptionsChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type helpChanged = inputBase.helpChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1387,11 +1420,7 @@ export namespace ojInputTime {
     // tslint:disable-next-line interface-over-type-literal
     type labelHintChanged = inputBase.labelHintChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelledByChanged = inputBase.labelledByChanged<string, ojInputTimeSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type messagesCustomChanged = inputBase.messagesCustomChanged<string, ojInputTimeSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type placeholderChanged = inputBase.placeholderChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type rawValueChanged = inputBase.rawValueChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1411,28 +1440,28 @@ export namespace ojInputTime {
 export interface ojInputTimeEventMap extends inputBaseEventMap<string, ojInputTimeSettableProperties> {
     'ojAnimateEnd': ojInputTime.ojAnimateEnd;
     'ojAnimateStart': ojInputTime.ojAnimateStart;
+    'autocompleteChanged': JetElementCustomEvent<ojInputTime["autocomplete"]>;
+    'autofocusChanged': JetElementCustomEvent<ojInputTime["autofocus"]>;
     'converterChanged': JetElementCustomEvent<ojInputTime["converter"]>;
+    'displayOptionsChanged': JetElementCustomEvent<ojInputTime["displayOptions"]>;
     'keyboardEditChanged': JetElementCustomEvent<ojInputTime["keyboardEdit"]>;
+    'labelledByChanged': JetElementCustomEvent<ojInputTime["labelledBy"]>;
     'maxChanged': JetElementCustomEvent<ojInputTime["max"]>;
     'minChanged': JetElementCustomEvent<ojInputTime["min"]>;
     'pickerAttributesChanged': JetElementCustomEvent<ojInputTime["pickerAttributes"]>;
+    'placeholderChanged': JetElementCustomEvent<ojInputTime["placeholder"]>;
     'renderModeChanged': JetElementCustomEvent<ojInputTime["renderMode"]>;
     'timePickerChanged': JetElementCustomEvent<ojInputTime["timePicker"]>;
     'validatorsChanged': JetElementCustomEvent<ojInputTime["validators"]>;
     'valueChanged': JetElementCustomEvent<ojInputTime["value"]>;
     'asyncValidatorsChanged': JetElementCustomEvent<ojInputTime["asyncValidators"]>;
-    'autocompleteChanged': JetElementCustomEvent<ojInputTime["autocomplete"]>;
-    'autofocusChanged': JetElementCustomEvent<ojInputTime["autofocus"]>;
     'describedByChanged': JetElementCustomEvent<ojInputTime["describedBy"]>;
     'disabledChanged': JetElementCustomEvent<ojInputTime["disabled"]>;
-    'displayOptionsChanged': JetElementCustomEvent<ojInputTime["displayOptions"]>;
     'helpChanged': JetElementCustomEvent<ojInputTime["help"]>;
     'helpHintsChanged': JetElementCustomEvent<ojInputTime["helpHints"]>;
     'labelEdgeChanged': JetElementCustomEvent<ojInputTime["labelEdge"]>;
     'labelHintChanged': JetElementCustomEvent<ojInputTime["labelHint"]>;
-    'labelledByChanged': JetElementCustomEvent<ojInputTime["labelledBy"]>;
     'messagesCustomChanged': JetElementCustomEvent<ojInputTime["messagesCustom"]>;
-    'placeholderChanged': JetElementCustomEvent<ojInputTime["placeholder"]>;
     'rawValueChanged': JetElementCustomEvent<ojInputTime["rawValue"]>;
     'readonlyChanged': JetElementCustomEvent<ojInputTime["readonly"]>;
     'readonlyUserAssistanceShownChanged': JetElementCustomEvent<ojInputTime["readonlyUserAssistanceShown"]>;
@@ -1441,21 +1470,42 @@ export interface ojInputTimeEventMap extends inputBaseEventMap<string, ojInputTi
     'validChanged': JetElementCustomEvent<ojInputTime["valid"]>;
 }
 export interface ojInputTimeSettableProperties extends inputBaseSettableProperties<string> {
+    /** @deprecated since 19.0.0 - The time field in corepack contains mask segments instead of a general input, so autocomplete is not supported. */
+    autocomplete: 'on' | 'off' | string;
+    /** @deprecated since 19.0.0 - This is not recommended for accessibility reasons. */
+    autofocus: boolean;
     converter: Converter<any>;
+    displayOptions?: {
+        /** @deprecated since 19.0.0 - Please use help-hints instead. */
+        converterHint?: 'display' | 'none';
+        /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
+    };
+    /** @deprecated since 19.0.0 - This is not supported in the Redwood UX specification. */
     keyboardEdit: 'enabled' | 'disabled';
+    /** @deprecated since 19.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
+    labelledBy: string | null;
     max: string | null;
     min: string | null;
+    /** @deprecated since 19.0.0 - Changing the Class or Style property is not recommended, as it leads to an inconsistent UI. */
     pickerAttributes: {
         class?: string;
         style?: string;
     };
+    /** @deprecated since 19.0.0 - The time field in corepack contains mask segments instead of a general input, so placeholder is not supported. */
+    placeholder: string;
     /** @deprecated since 8.0.0 - Support for "native" mode rendering is deprecated because JET promotes a consistent Oracle UX based upon the Redwood design system. As a result,
        the theme variable "$inputDateTimeRenderModeOptionDefault" is also deprecated. */
     renderMode: 'jet' | 'native';
+    /** @deprecated since 19.0.0 - The time field does not have a picker. */
     timePicker: {
         /** @deprecated since 8.2.0 - This attribute is deprecated and should not be used as it will be ignored in new UX design. */
         footerLayout: '' | 'now';
+        /** @deprecated since 19.0.0 - This is not supported in the Redwood UX specification. */
         showOn?: 'focus' | 'userFocus' | 'image';
+        /** @deprecated since 19.0.0 - The time field in corepack contains a mask and not a picker. */
         timeIncrement?: string;
     };
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
@@ -1465,8 +1515,11 @@ export interface ojInputTimeSettableProperties extends inputBaseSettableProperti
         accessibleMaxLengthExceeded?: string;
         /** @deprecated since 18.0.0 - This message text should be consistent across the application, and not configured per component instance. */
         accessibleMaxLengthRemaining?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         ampmWheelLabel?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         cancelText?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         currentTimeText?: string;
         dateTimeRange?: {
             /** @deprecated since 18.0.0 - Please use help-hints instead. */
@@ -1490,8 +1543,11 @@ export interface ojInputTimeSettableProperties extends inputBaseSettableProperti
                 rangeUnderflow?: string;
             };
         };
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         hourWheelLabel?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         minuteWheelLabel?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         okText?: string;
         /** @deprecated since 18.0.0 - The implicit regexp validator is not supported by the component. */
         regexp?: {
@@ -1507,7 +1563,9 @@ export interface ojInputTimeSettableProperties extends inputBaseSettableProperti
             /** @deprecated since 14.0.0 - In the Redwood design system form components do not show validator summaries, so this is no longer needed. */
             messageSummary?: string;
         };
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         tooltipTime?: string;
+        /** @deprecated since 19.0.0 - The Redwood UX specification does not allow this to be configurable. */
         tooltipTimeDisabled?: string;
     };
 }
@@ -1860,15 +1918,25 @@ export namespace InputTimeElement {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type autocompleteChanged = JetElementCustomEvent<ojInputTime["autocomplete"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type autofocusChanged = JetElementCustomEvent<ojInputTime["autofocus"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type converterChanged = JetElementCustomEvent<ojInputTime["converter"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojInputTime["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type keyboardEditChanged = JetElementCustomEvent<ojInputTime["keyboardEdit"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojInputTime["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojInputTime["max"]>;
     // tslint:disable-next-line interface-over-type-literal
     type minChanged = JetElementCustomEvent<ojInputTime["min"]>;
     // tslint:disable-next-line interface-over-type-literal
     type pickerAttributesChanged = JetElementCustomEvent<ojInputTime["pickerAttributes"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged = JetElementCustomEvent<ojInputTime["placeholder"]>;
     // tslint:disable-next-line interface-over-type-literal
     type renderModeChanged = JetElementCustomEvent<ojInputTime["renderMode"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1883,15 +1951,9 @@ export namespace InputTimeElement {
     // tslint:disable-next-line interface-over-type-literal
     type asyncValidatorsChanged = inputBase.asyncValidatorsChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type autocompleteChanged = inputBase.autocompleteChanged<string, ojInputTimeSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type autofocusChanged = inputBase.autofocusChanged<string, ojInputTimeSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type describedByChanged = inputBase.describedByChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type disabledChanged = inputBase.disabledChanged<string, ojInputTimeSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type displayOptionsChanged = inputBase.displayOptionsChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type helpChanged = inputBase.helpChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
@@ -1901,11 +1963,7 @@ export namespace InputTimeElement {
     // tslint:disable-next-line interface-over-type-literal
     type labelHintChanged = inputBase.labelHintChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelledByChanged = inputBase.labelledByChanged<string, ojInputTimeSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
     type messagesCustomChanged = inputBase.messagesCustomChanged<string, ojInputTimeSettableProperties>;
-    // tslint:disable-next-line interface-over-type-literal
-    type placeholderChanged = inputBase.placeholderChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type rawValueChanged = inputBase.rawValueChanged<string, ojInputTimeSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
@@ -2071,28 +2129,28 @@ export interface InputTimeIntrinsicProps extends Partial<Readonly<ojInputTimeSet
     onojAnimateEnd?: (value: ojInputTimeEventMap['ojAnimateEnd']) => void;
     /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojInputTimeEventMap['ojAnimateStart']) => void;
+    /** @deprecated since 19.0.0 */ onautocompleteChanged?: (value: ojInputTimeEventMap['autocompleteChanged']) => void;
+    /** @deprecated since 19.0.0 */ onautofocusChanged?: (value: ojInputTimeEventMap['autofocusChanged']) => void;
     onconverterChanged?: (value: ojInputTimeEventMap['converterChanged']) => void;
-    onkeyboardEditChanged?: (value: ojInputTimeEventMap['keyboardEditChanged']) => void;
+    ondisplayOptionsChanged?: (value: ojInputTimeEventMap['displayOptionsChanged']) => void;
+    /** @deprecated since 19.0.0 */ onkeyboardEditChanged?: (value: ojInputTimeEventMap['keyboardEditChanged']) => void;
+    /** @deprecated since 19.0.0 */ onlabelledByChanged?: (value: ojInputTimeEventMap['labelledByChanged']) => void;
     onmaxChanged?: (value: ojInputTimeEventMap['maxChanged']) => void;
     onminChanged?: (value: ojInputTimeEventMap['minChanged']) => void;
-    onpickerAttributesChanged?: (value: ojInputTimeEventMap['pickerAttributesChanged']) => void;
+    /** @deprecated since 19.0.0 */ onpickerAttributesChanged?: (value: ojInputTimeEventMap['pickerAttributesChanged']) => void;
+    /** @deprecated since 19.0.0 */ onplaceholderChanged?: (value: ojInputTimeEventMap['placeholderChanged']) => void;
     /** @deprecated since 8.0.0 */ onrenderModeChanged?: (value: ojInputTimeEventMap['renderModeChanged']) => void;
-    ontimePickerChanged?: (value: ojInputTimeEventMap['timePickerChanged']) => void;
+    /** @deprecated since 19.0.0 */ ontimePickerChanged?: (value: ojInputTimeEventMap['timePickerChanged']) => void;
     onvalidatorsChanged?: (value: ojInputTimeEventMap['validatorsChanged']) => void;
     onvalueChanged?: (value: ojInputTimeEventMap['valueChanged']) => void;
     /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojInputTimeEventMap['asyncValidatorsChanged']) => void;
-    onautocompleteChanged?: (value: ojInputTimeEventMap['autocompleteChanged']) => void;
-    onautofocusChanged?: (value: ojInputTimeEventMap['autofocusChanged']) => void;
     ondescribedByChanged?: (value: ojInputTimeEventMap['describedByChanged']) => void;
     ondisabledChanged?: (value: ojInputTimeEventMap['disabledChanged']) => void;
-    ondisplayOptionsChanged?: (value: ojInputTimeEventMap['displayOptionsChanged']) => void;
     onhelpChanged?: (value: ojInputTimeEventMap['helpChanged']) => void;
     onhelpHintsChanged?: (value: ojInputTimeEventMap['helpHintsChanged']) => void;
     onlabelEdgeChanged?: (value: ojInputTimeEventMap['labelEdgeChanged']) => void;
     onlabelHintChanged?: (value: ojInputTimeEventMap['labelHintChanged']) => void;
-    onlabelledByChanged?: (value: ojInputTimeEventMap['labelledByChanged']) => void;
     onmessagesCustomChanged?: (value: ojInputTimeEventMap['messagesCustomChanged']) => void;
-    onplaceholderChanged?: (value: ojInputTimeEventMap['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojInputTimeEventMap['rawValueChanged']) => void;
     onreadonlyChanged?: (value: ojInputTimeEventMap['readonlyChanged']) => void;
     onreadonlyUserAssistanceShownChanged?: (value: ojInputTimeEventMap['readonlyUserAssistanceShownChanged']) => void;

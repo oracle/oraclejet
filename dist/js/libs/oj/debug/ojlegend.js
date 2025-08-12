@@ -19,7 +19,7 @@ var __oj_legend_metadata =
       "value": ""
     },
     "data": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -438,11 +438,26 @@ var __oj_legend_section_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
    * </h3>
    * To migrate from oj-legend to oj-c-legend, you need to revise the import statement and references to oj-legend in your app. Please note the changes between the two components below.
-   * <h5 id="dataprovider-key-type-migration"></h5>
-   * <h5>contextMenu slot</h5>
+   * <h5>Default component width</h5>
    * <p>
-   * For the initial version of oj-c-legend, contextMenu slot is not supported. We plan on supporting this use case in future releases.
+   * The default width of oj-c-legend is 100% while in oj-legend there is no explicit width set but it is driven by SVG default dimensions.
    * </p>
+   * <h5>Keyboard navigation</h5>
+   * <p>
+   * In oj-c-legend, keyboard navigation of items is 1-dimension direction whereas in legacy it is 2-dimension direction. In oj-c-legend, up and right keys go in the same direction and down and left keys also go in the same direction.
+   * </p>
+   * <h5>Sectional legend horizontal layout</h5>
+   * <p>
+   * In oj-c-legend, sectional legends in horizontal orientation are laid out in a flowing manner whereas legend might have some gaps.
+   * </p>
+   * <h5 id="dataprovider-key-type-migration"></h5>
+   * <h5 id="context-menu-migration"></h5>
+   * <h5>text-style</h5>
+   * <p>
+   * For the initial version of oj-c-legend, the cursor property will not be supported in the text-style CSS style object.
+   * </p>
+   * <h5> getPreferredSize </h5>
+   * <p> For oj-c-legend, getPreferredSize method is not supported. Use the <a target="_blank" href="legend-utils.html#getPreferredSize">getPrferredSize</a> utility instead. </p>
    * <h5>getContextByNode method</h5>
    * <p>
    * For the initial version of oj-c-legend, getContextByNode method is not supported. We plan on supporting this use case in future releases.
@@ -455,12 +470,7 @@ var __oj_legend_section_metadata =
    * <p>
    * For the initial version of oj-c-legend, nested section is not supported. $current of sectionTemplate context will not contain parentKey and parentData properties.
    * </p>
-   * <h5>text-style</h5>
-   * <p>
-   * For the initial version of oj-c-legend, the cursor property will not be supported in the text-style CSS style object.
-   * </p>
-   * <h5> getPreferredSize </h5>
-   * <p> For the initial version of oj-c-legend, getPreferredSize method is not supported. </p>
+   *
    * @ojfragment migrationDoc
    * @memberof oj.ojLegend
    */
@@ -867,7 +877,7 @@ var __oj_legend_section_metadata =
        * @memberof oj.ojLegend
        * @ojshortdesc Specifies the DataProvider for the sections and items of the legend. See the Help documentation for more information.
        * @instance
-       * @type {Object|null}
+       * @type {DataProvider|null}
        * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
        * @default null
        * @ojwebelementstatus {type: "unsupported", since: "13.0.0",

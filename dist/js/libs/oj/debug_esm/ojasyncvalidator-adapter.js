@@ -19,6 +19,7 @@ class SyncValidatorAdapter {
                     self._validator.validate(value);
                 }
                 catch (e) {
+                    // if throws an Error then we should reject
                     return Promise.reject(e);
                 }
                 return null;
@@ -28,6 +29,7 @@ class SyncValidatorAdapter {
             this._validator.validate(value);
         }
         catch (e) {
+            // if throws an Error then we should reject
             return Promise.reject(e);
         }
         return Promise.resolve(null);

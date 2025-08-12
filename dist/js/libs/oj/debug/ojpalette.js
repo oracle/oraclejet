@@ -72,6 +72,7 @@ define(['exports', 'ojs/ojpaletteutils'], function (exports, ojpaletteutils) { '
         const colors = getColorMap(palette);
         const newColors = [];
         const range = options && options.range ? options.range : [0, 1];
+        // if bins is 0 or null, return the full palette
         const numBins = bins ? bins : colors.length;
         validateArgs(numBins, range);
         const [start, end] = range;

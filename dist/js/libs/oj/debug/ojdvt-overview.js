@@ -1838,8 +1838,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
           var width = Math.max(x2Pos - x1Pos, this.getMinimumWindowWidth());
           var slidingWindow = this.getSlidingWindow();
-          if (this.isRTL() && this.flipOnRtl())
-            this.setSlidingWindowPosX(slidingWindow, this.Width - (x1Pos + width));
+          if (this.isRTL() && this.flipOnRtl()) this.setSlidingWindowPosX(slidingWindow, this.Width - (x1Pos + width));
           else this.setSlidingWindowPosX(slidingWindow, x1Pos);
 
           DvtOverviewRenderer._setSlidingWindowWidth(this, slidingWindow, width);
@@ -1870,7 +1869,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     flipOnRtl() {
       return true;
     }
-
     /**
      * Checks whether a particular feature is turned off
      */

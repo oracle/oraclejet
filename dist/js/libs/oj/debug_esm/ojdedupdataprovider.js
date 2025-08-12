@@ -143,6 +143,12 @@ import CachedIteratorResultsDataProvider from 'ojs/ojcachediteratorresultsdatapr
 
 // end of jsdoc
 
+/**
+ * @license
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 class DedupDataProvider {
     constructor(dataProvider) {
         var _a, _b;
@@ -171,6 +177,10 @@ class DedupDataProvider {
             ['next']() {
                 const cachedKeys = new Set();
                 if (this.params.size > 0) {
+                    // de-dup by checking if the cache already contains the row. If so then
+                    // publish a delete mutation for the old one first.
+                    // we only want to do this if we are iteratively fetching blocks.
+                    // fetching everything with size = -1 is covered by block deduping.
                     const cachedFetchByOffsetResults = this._parent.cache.getDataByOffset({
                         offset: 0,
                         size: this._cachedOffset
@@ -208,6 +218,7 @@ class DedupDataProvider {
                         const mutationRemoveEventDetail = new this._parent.DataProviderMutationEventDetail(this._parent, null, operationRemoveEventDetail, null);
                         this._parent.dispatchEvent(new DataProviderMutationEvent(mutationRemoveEventDetail));
                     }
+                    // if it's our cache then update it
                     if (!(this._parent.dataProvider instanceof CachedIteratorResultsDataProvider)) {
                         this._parent.cache.addListResult(result);
                     }
@@ -245,23 +256,29 @@ class DedupDataProvider {
         else {
             this.cache = new oj.DataCache();
         }
+        // Add createOptimizedKeyMap method to this DataProvider if the wrapped DataProvider supports it
         if (dataProvider.createOptimizedKeyMap) {
             this.createOptimizedKeyMap = (initialMap) => {
                 return dataProvider.createOptimizedKeyMap(initialMap);
             };
         }
+        // Add createOptimizedKeySet method to this DataProvider if the wrapped DataProvider supports it
         if (dataProvider.createOptimizedKeySet) {
             this.createOptimizedKeySet = (initialSet) => {
                 return dataProvider.createOptimizedKeySet(initialSet);
             };
         }
+        // Listen to mutate event on wrapped DataProvider
         dataProvider.addEventListener(DedupDataProvider._MUTATE, (event) => {
             if (event.detail && event.detail.add) {
+                // de-dup add mutations
                 this._processAddMutations(event.detail.add);
             }
             this.dispatchEvent(event);
         });
+        // Listen to refresh event on wrapped DataProvider
         dataProvider.addEventListener(DedupDataProvider._REFRESH, (event) => {
+            // Invalidate the cache on refresh event
             this.cache.reset();
             this.dispatchEvent(event);
         });
@@ -295,6 +312,7 @@ class DedupDataProvider {
     _processAddMutations(detail) {
         const eventDetailKeys = detail[DedupDataProvider._KEYS];
         if (eventDetailKeys && eventDetailKeys.size > 0) {
+            // check if the cache contains the key. If it does then dispatch a remove to remove them
             const removeKeys = new Set();
             const removeDataArray = [];
             const removeMetadataArray = [];
@@ -332,5 +350,12 @@ DedupDataProvider._REMOVE = 'remove';
 DedupDataProvider._INDEXES = 'indexes';
 EventTargetMixin.applyMixin(DedupDataProvider);
 oj._registerLegacyNamespaceProp('DedupDataProvider', DedupDataProvider);
+
+/**
+ * @license
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 export default DedupDataProvider;

@@ -2740,7 +2740,7 @@ class DvtMapObjPeer {
 
     var stashedOldContents = false;
     if (newRootElem != rootElem) {
-      // BUG: JET-31433 - IN THEMATIC MAP: INLINE TEMPLATES DEMO, THE MARKER STAYS HIGHLIGHTED
+      //  - IN THEMATIC MAP: INLINE TEMPLATES DEMO, THE MARKER STAYS HIGHLIGHTED
       // When renderer function creates content which is different from the initial content, the initial content
       // is removed from the DOM which breaks the touch events.
       // To fix this, the initial content is added to the touch event container before it can be safely destroyed
@@ -6850,7 +6850,7 @@ class ThematicMap extends PanZoomComponent {
     this._linkLayers = new Container(this.getCtx());
     this._linkLayers.setAriaRole('region', true);
 
-    // BUG: JET-31433 - IN THEMATIC MAP: INLINE TEMPLATES DEMO, THE MARKER STAYS HIGHLIGHTED
+    //  - IN THEMATIC MAP: INLINE TEMPLATES DEMO, THE MARKER STAYS HIGHLIGHTED
     // Create a layer for storing touch event source elements temporarily when needed
     // so as to not break the events
     if (Agent.isTouchDevice()) {

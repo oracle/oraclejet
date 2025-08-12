@@ -9,7 +9,6 @@ import oj from 'ojs/ojcore-base';
 import { wrapWithAbortHandling } from 'ojs/ojdataprovider';
 import CachedIteratorResultsDataProvider from 'ojs/ojcachediteratorresultsdataprovider';
 import DedupDataProvider from 'ojs/ojdedupdataprovider';
-import 'ojs/ojcomponentcore';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 
 /**
@@ -145,6 +144,12 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
 
 // end of jsdoc
 
+/**
+ * @license
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 class MutateEventFilteringDataProvider {
     constructor(dataProvider) {
         var _a, _b;
@@ -204,16 +209,19 @@ class MutateEventFilteringDataProvider {
         else {
             this.cache = new oj.DataCache();
         }
+        // Add createOptimizedKeyMap method to this DataProvider if the wrapped DataProvider supports it
         if (dataProvider.createOptimizedKeyMap) {
             this.createOptimizedKeyMap = (initialMap) => {
                 return dataProvider.createOptimizedKeyMap(initialMap);
             };
         }
+        // Add createOptimizedKeySet method to this DataProvider if the wrapped DataProvider supports it
         if (dataProvider.createOptimizedKeySet) {
             this.createOptimizedKeySet = (initialSet) => {
                 return dataProvider.createOptimizedKeySet(initialSet);
             };
         }
+        // Listen to mutate event on wrapped DataProvider
         dataProvider.addEventListener(MutateEventFilteringDataProvider._MUTATE, (event) => {
             if (event.detail) {
                 let removeDetail = self._processMutations(event.detail.remove);
@@ -231,7 +239,9 @@ class MutateEventFilteringDataProvider {
                 self.dispatchEvent(event);
             }
         });
+        // Listen to refresh event on wrapped DataProvider
         dataProvider.addEventListener(MutateEventFilteringDataProvider._REFRESH, (event) => {
+            // Invalidate the cache on refresh event
             self.cache.reset();
             self.dispatchEvent(event);
         });
@@ -275,6 +285,7 @@ class MutateEventFilteringDataProvider {
         if (detail) {
             let eventDetailKeys = detail[MutateEventFilteringDataProvider._KEYS];
             if (eventDetailKeys && eventDetailKeys.size > 0) {
+                // check if the cache contains the key
                 let removeKeys = new Set();
                 let value = this.cache.getDataByKeys({ keys: eventDetailKeys });
                 eventDetailKeys.forEach(function (key) {
@@ -289,8 +300,10 @@ class MutateEventFilteringDataProvider {
                         keyArray.push(val);
                     });
                     let keyIndex = keyArray.indexOf(key);
+                    // Delete the key from detail key set as well as keyArray to keep them in sync
                     detailClone.keys.delete(key);
                     keyArray.splice(keyIndex, 1);
+                    // All detail properties other than keys can be null, so check them before deleting items
                     if (detailClone.data) {
                         detailClone.data.splice(keyIndex, 1);
                     }
@@ -327,5 +340,12 @@ MutateEventFilteringDataProvider._REMOVE = 'remove';
 MutateEventFilteringDataProvider._INDEXES = 'indexes';
 EventTargetMixin.applyMixin(MutateEventFilteringDataProvider);
 oj._registerLegacyNamespaceProp('MutateEventFilteringDataProvider', MutateEventFilteringDataProvider);
+
+/**
+ * @license
+ * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
 
 export default MutateEventFilteringDataProvider;

@@ -8,13 +8,14 @@
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
 import Context from 'ojs/ojcontext';
-import { applyRendererContent, getEventDetail, isRequestIdleCallbackSupported, calculateOffsetTop, getDefaultScrollBarWidth, isFetchAborted, isElementIntersectingScrollerBounds, isIterateAfterDoneNotAllowed, getAbortReason } from 'ojs/ojdatacollection-common';
+import { applyRendererContent, getEventDetail, isRequestIdleCallbackSupported, calculateOffsetTop, getDefaultScrollBarWidth, isFetchAborted, isElementIntersectingScrollerBounds, isIterateAfterDoneNotAllowed } from 'ojs/ojdatacollection-common';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { fadeOut, fadeIn } from 'ojs/ojanimation';
 import { info, log, error } from 'ojs/ojlogger';
 import DomScroller from 'ojs/ojdomscroller';
 import KeySet from 'ojs/ojset';
 import KeyMap from 'ojs/ojmap';
+import { getAbortReason } from 'ojs/ojabortreason';
 
 /**
  * Base class for IteratingDataProviderContentHandler and TreeDataProviderContentHandler
@@ -83,6 +84,8 @@ DataProviderContentHandler.prototype.cleanItems = function (templateEngine, pare
  * @protected
  */
 DataProviderContentHandler.prototype.Destroy = function (completelyDestroy) {
+  this.unsetRootAriaProperties();
+
   // this.m_root was changed in RenderContent
   if (this.m_superRoot != null) {
     this.m_root = this.m_superRoot;
@@ -120,6 +123,12 @@ DataProviderContentHandler.prototype.setRootAriaProperties = function () {
     this.m_root.setAttribute('role', 'listbox');
   }
 };
+
+/**
+ * Unsets any aria attributes on the root element
+ * @protected
+ */
+DataProviderContentHandler.prototype.unsetRootAriaProperties = function () {};
 
 /**
  * Renders the content inside the list
@@ -578,7 +587,7 @@ DataProviderContentHandler.prototype.getMetadata = function (index, key, data, p
     context = {};
   }
 
-  if (context.index == null) {
+  if (context.index == null && index !== -1) {
     context.index = index;
   }
 
@@ -1131,11 +1140,17 @@ DataProviderContentHandler.prototype.removeItem = function (elem, isReinsert) {
       self.handleRemoveTransitionEnd(elem, restoreFocus, isReinsert);
       if (self.m_widget) {
         self.m_widget.enableResizeListener();
+        if (restoreFocus) {
+          self.m_widget._cleanupTempShiftFocusDiv();
+        }
       }
     },
     function () {
       if (self.m_widget) {
         self.m_widget.enableResizeListener();
+        if (restoreFocus) {
+          self.m_widget._cleanupTempShiftFocusDiv();
+        }
       }
     }
   );
@@ -1858,7 +1873,10 @@ IteratingDataProviderContentHandler.prototype.HandleResize = function (width, he
     if (this.m_loadingIndicator != null) {
       this._adjustLoadMoreSkeletons(this._getRootElementWidth(true));
     } else {
-      var container = this.m_root.querySelector('.oj-listview-skeleton-container');
+      // avoid the case that listview is inside listview
+      var container = this.m_root.querySelector(
+        '.oj-listview-skeleton-container:not(oj-list-view .oj-listview-skeleton-container)'
+      );
       if (container != null) {
         // this must be the initial skeleton, just re-render them
         this.renderInitialSkeletons();
@@ -1916,6 +1934,18 @@ IteratingDataProviderContentHandler.prototype.notifyAttached = function () {
 };
 
 /**
+ * Sets aria-rowcount or aria-colcount
+ * @override
+ */
+IteratingDataProviderContentHandler.prototype.setAriaRowOrColCount = function (root, value) {
+  if (this.isCardLayout()) {
+    root.setAttribute('aria-colcount', value);
+  } else {
+    root.setAttribute('aria-rowcount', value);
+  }
+};
+
+/**
  * Sets aria properties on root
  * @override
  */
@@ -1933,7 +1963,8 @@ IteratingDataProviderContentHandler.prototype.setRootAriaProperties = function (
         // (this happened in oj-select-single unit tests)
         if (self.m_root) {
           // if count is unknown, then use max count
-          self.m_root.setAttribute('aria-rowcount', size === -1 ? self._getMaxCount() : size);
+          const value = size === -1 ? self._getMaxCount() : size;
+          self.setAriaRowOrColCount(self.m_root, value);
         }
       });
   }
@@ -1945,7 +1976,9 @@ IteratingDataProviderContentHandler.prototype.setRootAriaProperties = function (
  */
 IteratingDataProviderContentHandler.prototype.unsetRootAriaProperties = function () {
   IteratingDataProviderContentHandler.superclass.unsetRootAriaProperties.call(this);
-  this.m_root.removeAttribute('aria-rowcount');
+  const root = this.m_superRoot || this.m_root;
+  root.removeAttribute('aria-rowcount');
+  root.removeAttribute('aria-colcount');
 };
 
 /**
@@ -3029,7 +3062,8 @@ IteratingDataProviderContentHandler.prototype._getAnimateShowContentPromise = fu
       ) {
         // update aria rowcount once all data is loaded
         const root = this.m_superRoot ? this.m_superRoot : this.m_root;
-        root.setAttribute('aria-rowcount', this.getItems(this.m_root).length);
+        const value = this.getItems(this.m_root).length;
+        this.setAriaRowOrColCount(root, value);
       }
       return skipPostProcessing;
     })

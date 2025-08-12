@@ -1,0 +1,1 @@
+export { SelectSinglePlaceholderElementEventMap, SelectSinglePlaceholderElementSettableProperties, SelectSinglePlaceholderElementSettablePropertiesLenient, SelectSinglePlaceholderElement } from './ojselectsingleplaceholder';

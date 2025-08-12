@@ -68,6 +68,8 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
         labelClearSelection?: string;
         labelClose?: string;
         labelCountWithTotal?: string;
+        /** @deprecated since 19.0.0 - Applications should override the translated string for the whole application and not just an individual element instance. */
+        labelDataLabel?: string;
         labelDataVisualization?: string;
         labelDate?: string;
         labelDefaultGroupName?: string;
@@ -714,6 +716,8 @@ export namespace ojChart {
     type LabelValueFormat = {
         converter?: (Converter<string>);
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+        tooltipDisplay?: 'off' | 'on';
+        tooltipLabel?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Legend = {
@@ -983,6 +987,7 @@ export namespace ojChart {
         dataLabelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
         funnelBackgroundColor?: string;
         groupSeparators?: GroupSeparatorDefaults;
+        hideOverlappingLabels?: 'on' | 'off';
         hoverBehaviorDelay?: number;
         lineStyle?: LineStyle;
         lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
@@ -998,6 +1003,7 @@ export namespace ojChart {
         patterns?: string[];
         pieFeelerColor?: string;
         pieInnerRadius?: number;
+        resolveLabelOverlap?: 'on' | 'off';
         selectionEffect?: 'explode' | 'highlightAndExplode' | 'highlight';
         seriesEffect?: 'color' | 'pattern' | 'gradient';
         shapes?: string[];
@@ -1224,9 +1230,13 @@ export namespace ojChart {
     // tslint:disable-next-line interface-over-type-literal
     type RenderPieCenterTemplate = import('ojs/ojvcomponent').TemplateSlot<PieCenterContext>;
     // tslint:disable-next-line interface-over-type-literal
+    type PieCenterTemplateContext = PieCenterContext;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderSeriesTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K, D, I extends Array<Item<any, null>> | number[] | null> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D, I>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K, D, I extends Array<Item<any, null>> | number[] | null> = TooltipContext<K, D, I>;
 }
 export interface ojChartEventMap<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
    null> extends dvtBaseComponentEventMap<ojChartSettableProperties<K, D, I, C>> {
@@ -1352,6 +1362,8 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
         labelClearSelection?: string;
         labelClose?: string;
         labelCountWithTotal?: string;
+        /** @deprecated since 19.0.0 - Applications should override the translated string for the whole application and not just an individual element instance. */
+        labelDataLabel?: string;
         labelDataVisualization?: string;
         labelDate?: string;
         labelDefaultGroupName?: string;
@@ -1464,6 +1476,7 @@ export interface ojChartItem<K = any, D = any, I extends Array<ojChart.Item<any,
     sourceHoverSelected?: string;
     sourceSelected?: string;
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     targetValue?: number;
     value?: number;
@@ -1655,6 +1668,7 @@ export interface ojChartItemSettableProperties<K = any, D = any, I extends Array
     sourceHoverSelected?: string;
     sourceSelected?: string;
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     targetValue?: number;
     value?: number;
@@ -1669,7 +1683,9 @@ export interface ojChartItemSettablePropertiesLenient<K = any, D = any, I extend
 }
 export interface ojChartSeries extends JetElement<ojChartSeriesSettableProperties> {
     areaColor?: string;
+    /** @deprecated since 19.0.0 - The areaSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     areaSvgClassName?: string;
+    /** @deprecated since 19.0.0 - The areaSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     areaSvgStyle?: Partial<CSSStyleDeclaration>;
     assignedToY2?: 'on' | 'off';
     borderColor?: string;
@@ -1686,7 +1702,9 @@ export interface ojChartSeries extends JetElement<ojChartSeriesSettablePropertie
     markerDisplayed?: 'on' | 'off' | 'auto';
     markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
     markerSize?: number;
+    /** @deprecated since 19.0.0 - The markerSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     markerSvgClassName?: string;
+    /** @deprecated since 19.0.0 - The markerSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     markerSvgStyle?: Partial<CSSStyleDeclaration>;
     name?: string;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
@@ -1699,6 +1717,7 @@ export interface ojChartSeries extends JetElement<ojChartSeriesSettablePropertie
     sourceSelected?: string;
     stackCategory?: string;
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     type?: 'line' | 'area' | 'lineWithArea' | 'bar' | 'candlestick' | 'boxPlot' | 'auto';
     addEventListener<T extends keyof ojChartSeriesEventMap>(type: T, listener: (this: HTMLElement, ev: ojChartSeriesEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -1811,7 +1830,9 @@ export interface ojChartSeriesEventMap extends HTMLElementEventMap {
 }
 export interface ojChartSeriesSettableProperties extends JetSettableProperties {
     areaColor?: string;
+    /** @deprecated since 19.0.0 - The areaSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     areaSvgClassName?: string;
+    /** @deprecated since 19.0.0 - The areaSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     areaSvgStyle?: Partial<CSSStyleDeclaration>;
     assignedToY2?: 'on' | 'off';
     borderColor?: string;
@@ -1828,7 +1849,9 @@ export interface ojChartSeriesSettableProperties extends JetSettableProperties {
     markerDisplayed?: 'on' | 'off' | 'auto';
     markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
     markerSize?: number;
+    /** @deprecated since 19.0.0 - The markerSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     markerSvgClassName?: string;
+    /** @deprecated since 19.0.0 - The markerSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     markerSvgStyle?: Partial<CSSStyleDeclaration>;
     name?: string;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
@@ -1841,6 +1864,7 @@ export interface ojChartSeriesSettableProperties extends JetSettableProperties {
     sourceSelected?: string;
     stackCategory?: string;
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     type?: 'line' | 'area' | 'lineWithArea' | 'bar' | 'candlestick' | 'boxPlot' | 'auto';
 }
@@ -1872,7 +1896,9 @@ export interface ojSparkChart<K, D extends ojSparkChart.Item | any> extends dvtB
     markerShape?: 'auto' | 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
     markerSize?: number;
     referenceObjects?: ojSparkChart.ReferenceObject[];
+    /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     tooltip?: {
         renderer: ((context: ojSparkChart.TooltipContext) => ({
@@ -2026,6 +2052,8 @@ export namespace ojSparkChart {
     type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate = import('ojs/ojvcomponent').TemplateSlot<TooltipContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext = TooltipContext;
 }
 export interface ojSparkChartEventMap<K, D extends ojSparkChart.Item | any> extends dvtBaseComponentEventMap<ojSparkChartSettableProperties<K, D>> {
     'animationDurationChanged': JetElementCustomEvent<ojSparkChart<K, D>["animationDuration"]>;
@@ -2081,7 +2109,9 @@ export interface ojSparkChartSettableProperties<K, D extends ojSparkChart.Item |
     markerShape?: 'auto' | 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
     markerSize?: number;
     referenceObjects?: ojSparkChart.ReferenceObject[];
+    /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     tooltip?: {
         renderer: ((context: ojSparkChart.TooltipContext) => ({
@@ -2743,6 +2773,8 @@ export namespace ChartElement {
     type LabelValueFormat = {
         converter?: (Converter<string>);
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+        tooltipDisplay?: 'off' | 'on';
+        tooltipLabel?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Legend = {
@@ -3012,6 +3044,7 @@ export namespace ChartElement {
         dataLabelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
         funnelBackgroundColor?: string;
         groupSeparators?: ojChart.GroupSeparatorDefaults;
+        hideOverlappingLabels?: 'on' | 'off';
         hoverBehaviorDelay?: number;
         lineStyle?: ojChart.LineStyle;
         lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
@@ -3027,6 +3060,7 @@ export namespace ChartElement {
         patterns?: string[];
         pieFeelerColor?: string;
         pieInnerRadius?: number;
+        resolveLabelOverlap?: 'on' | 'off';
         selectionEffect?: 'explode' | 'highlightAndExplode' | 'highlight';
         seriesEffect?: 'color' | 'pattern' | 'gradient';
         shapes?: string[];
@@ -3253,9 +3287,13 @@ export namespace ChartElement {
     // tslint:disable-next-line interface-over-type-literal
     type RenderPieCenterTemplate = import('ojs/ojvcomponent').TemplateSlot<PieCenterContext>;
     // tslint:disable-next-line interface-over-type-literal
+    type PieCenterTemplateContext = PieCenterContext;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderSeriesTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<SeriesTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K, D, I>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = TooltipContext<K, D, I>;
 }
 export namespace ChartGroupElement {
     // tslint:disable-next-line interface-over-type-literal
@@ -3552,6 +3590,8 @@ export namespace SparkChartElement {
     type RenderItemTemplate<K = any, D = any> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate = import('ojs/ojvcomponent').TemplateSlot<TooltipContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext = TooltipContext;
 }
 export namespace SparkChartItemElement {
     // tslint:disable-next-line interface-over-type-literal
@@ -3675,7 +3715,7 @@ export interface ChartItemIntrinsicProps extends Partial<Readonly<ojChartItemSet
     onsourceHoverSelectedChanged?: (value: ojChartItemEventMap<any, any, any>['sourceHoverSelectedChanged']) => void;
     onsourceSelectedChanged?: (value: ojChartItemEventMap<any, any, any>['sourceSelectedChanged']) => void;
     onsvgClassNameChanged?: (value: ojChartItemEventMap<any, any, any>['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojChartItemEventMap<any, any, any>['svgStyleChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgStyleChanged?: (value: ojChartItemEventMap<any, any, any>['svgStyleChanged']) => void;
     ontargetValueChanged?: (value: ojChartItemEventMap<any, any, any>['targetValueChanged']) => void;
     onvalueChanged?: (value: ojChartItemEventMap<any, any, any>['valueChanged']) => void;
     onvolumeChanged?: (value: ojChartItemEventMap<any, any, any>['volumeChanged']) => void;
@@ -3686,8 +3726,8 @@ export interface ChartItemIntrinsicProps extends Partial<Readonly<ojChartItemSet
 }
 export interface ChartSeriesIntrinsicProps extends Partial<Readonly<ojChartSeriesSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onareaColorChanged?: (value: ojChartSeriesEventMap['areaColorChanged']) => void;
-    onareaSvgClassNameChanged?: (value: ojChartSeriesEventMap['areaSvgClassNameChanged']) => void;
-    onareaSvgStyleChanged?: (value: ojChartSeriesEventMap['areaSvgStyleChanged']) => void;
+    /** @deprecated since 19.0.0 */ onareaSvgClassNameChanged?: (value: ojChartSeriesEventMap['areaSvgClassNameChanged']) => void;
+    /** @deprecated since 19.0.0 */ onareaSvgStyleChanged?: (value: ojChartSeriesEventMap['areaSvgStyleChanged']) => void;
     onassignedToY2Changed?: (value: ojChartSeriesEventMap['assignedToY2Changed']) => void;
     onborderColorChanged?: (value: ojChartSeriesEventMap['borderColorChanged']) => void;
     onborderWidthChanged?: (value: ojChartSeriesEventMap['borderWidthChanged']) => void;
@@ -3703,8 +3743,8 @@ export interface ChartSeriesIntrinsicProps extends Partial<Readonly<ojChartSerie
     onmarkerDisplayedChanged?: (value: ojChartSeriesEventMap['markerDisplayedChanged']) => void;
     onmarkerShapeChanged?: (value: ojChartSeriesEventMap['markerShapeChanged']) => void;
     onmarkerSizeChanged?: (value: ojChartSeriesEventMap['markerSizeChanged']) => void;
-    onmarkerSvgClassNameChanged?: (value: ojChartSeriesEventMap['markerSvgClassNameChanged']) => void;
-    onmarkerSvgStyleChanged?: (value: ojChartSeriesEventMap['markerSvgStyleChanged']) => void;
+    /** @deprecated since 19.0.0 */ onmarkerSvgClassNameChanged?: (value: ojChartSeriesEventMap['markerSvgClassNameChanged']) => void;
+    /** @deprecated since 19.0.0 */ onmarkerSvgStyleChanged?: (value: ojChartSeriesEventMap['markerSvgStyleChanged']) => void;
     onnameChanged?: (value: ojChartSeriesEventMap['nameChanged']) => void;
     onpatternChanged?: (value: ojChartSeriesEventMap['patternChanged']) => void;
     onpieSliceExplodeChanged?: (value: ojChartSeriesEventMap['pieSliceExplodeChanged']) => void;
@@ -3715,7 +3755,7 @@ export interface ChartSeriesIntrinsicProps extends Partial<Readonly<ojChartSerie
     onsourceSelectedChanged?: (value: ojChartSeriesEventMap['sourceSelectedChanged']) => void;
     onstackCategoryChanged?: (value: ojChartSeriesEventMap['stackCategoryChanged']) => void;
     onsvgClassNameChanged?: (value: ojChartSeriesEventMap['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojChartSeriesEventMap['svgStyleChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgStyleChanged?: (value: ojChartSeriesEventMap['svgStyleChanged']) => void;
     ontypeChanged?: (value: ojChartSeriesEventMap['typeChanged']) => void;
     children?: ComponentChildren;
 }
@@ -3741,8 +3781,8 @@ export interface SparkChartIntrinsicProps extends Partial<Readonly<ojSparkChartS
     onmarkerShapeChanged?: (value: ojSparkChartEventMap<any, any>['markerShapeChanged']) => void;
     onmarkerSizeChanged?: (value: ojSparkChartEventMap<any, any>['markerSizeChanged']) => void;
     onreferenceObjectsChanged?: (value: ojSparkChartEventMap<any, any>['referenceObjectsChanged']) => void;
-    onsvgClassNameChanged?: (value: ojSparkChartEventMap<any, any>['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojSparkChartEventMap<any, any>['svgStyleChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgClassNameChanged?: (value: ojSparkChartEventMap<any, any>['svgClassNameChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgStyleChanged?: (value: ojSparkChartEventMap<any, any>['svgStyleChanged']) => void;
     ontooltipChanged?: (value: ojSparkChartEventMap<any, any>['tooltipChanged']) => void;
     ontypeChanged?: (value: ojSparkChartEventMap<any, any>['typeChanged']) => void;
     onvisualEffectsChanged?: (value: ojSparkChartEventMap<any, any>['visualEffectsChanged']) => void;

@@ -45,6 +45,7 @@ export declare enum ExceptionKey {
     MISSING_DYNAMIC_SLOT_DEF = "missing_dynamic_slot_def",
     UNSUPPORTED_IMPLICITBUSYCONTEXT = "unsupported_implicitbusycontext",
     UNSUPPORTED_TEMPLATE_SLOT_DATA_OBJ = "unsupported_template_slot_data_obj",
+    UNSUPPORTED_CANCELABLE_ACTION_DETAIL_OBJ = "unsupported_cancelable_action_detail_obj",
     UNEXPECTED_APIDOC_EXCEPTION = "unexpected_apidoc_exception",
     MISSING_METHOD_SIGNATURES = "missing_method_signatures",
     DEPRECATED_METHODS_METADATA = "deprecated_methods_metadata",

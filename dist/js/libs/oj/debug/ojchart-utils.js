@@ -25,6 +25,7 @@ define(['exports', 'ojs/ojdvt-axis'], function (exports, ojdvtAxis) { 'use stric
         }))(null, axisOptions);
         let obj = mixin.getAxisData();
         let formatter;
+        // converters number of fractional digits range from 0 to 20
         let minimumFractionDigits = 20;
         let maximumFractionDigits = 0;
         if (!obj.isLog) {
@@ -36,6 +37,7 @@ define(['exports', 'ojs/ojdvt-axis'], function (exports, ojdvtAxis) { 'use stric
             for (var i = 0; i <= obj.numSteps; i++) {
                 let value = i * obj.step + obj.min;
                 value = mixin.linearToActual(value);
+                // for log scale, format each label individually as the scaling do not need to match across all labels
                 formatter = new ojdvtAxis.LinearScaleAxisValueFormatter(value, value, value, 'auto', 'on');
                 maximumFractionDigits = Math.max(maximumFractionDigits, formatter.getDecimalPlaces());
                 minimumFractionDigits = Math.min(minimumFractionDigits, formatter.getDecimalPlaces());

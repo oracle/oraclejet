@@ -430,14 +430,27 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
        }
        else {
          let resolvedName = linkto(name, htmlsafe(name));
-         resolvedType = fixArrayWithDotSyntax(resolvedName);
-         types.push(spanifyTypeWithClass(name, resolvedType, className, deprecationInfos));
+         resolvedName = fixArrayWithDotSyntax(resolvedName);
+         resolvedName = replaceDomInterfaces(resolvedName);
+         types.push(spanifyTypeWithClass(name, resolvedName, className, deprecationInfos));
        }
      };
    }
 
    return types;
  }
+
+ function replaceDomInterfaces(typeName){
+  dominterfaces.forEach(domintfc => {
+    // find the interface: should not be preceded by >.# or alphanumerical literal and should not be followed by #.<
+    const regexp = new RegExp(`(?<!\\w|[#,>,.])${domintfc}(?!\\w|[#,<,.]<)`, 'g');
+    if (regexp.test(typeName)) {
+      const interfaceLink = `<a href="${dominterface_baseurl}/${domintfc}">${domintfc}</a>`;
+      typeName = typeName.replace(regexp, interfaceLink);
+    }
+  })
+  return typeName;
+}
 
  function fixArrayWithDotSyntax(type){
    let fixedType = type;
@@ -1136,7 +1149,7 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
 
        memberTypeDeprecations.forEach(function (deprecation) {
          since = deprecation.since;
-         removeBasedonSince = !since || convertSemverToInt32(since) <= convertSemverToInt32('6.0.0');
+         removeBasedonSince = !since || isBeforeJet6(since);
          let value = deprecation.value;
          if (!Array.isArray(value)) {
            value = [value];
@@ -1291,15 +1304,16 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
  }
 
  function getModuleFolderName(doclet) {
-   let moduleName;
-   if (doclet && doclet.meta) {
-     const filename = doclet.meta.filename;
-     if (filename && doclet.ojmodule) {
-         moduleName = doclet.ojmodule.replace(/\"/g, '').replace(/'/g, '');
-     }
-   }
-   return moduleName;
- }
+  let moduleName;
+  if (doclet && doclet.meta) {
+    const filename = doclet.meta.filename;
+    if (filename && doclet.ojmodule) {
+        moduleName = doclet.ojmodule.replace(/\"/g, '').replace(/'/g, '');
+    }
+  }
+  return moduleName;
+}
+
 
  function generate(title, docs, filename, resolveLinks, classes) {
    resolveLinks = resolveLinks === false ? false : true;
@@ -1522,7 +1536,7 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
            //yes the whole doclet is deprecated.
 
            since = deprecation.since;
-           removeBasedonSince = !since || convertSemverToInt32(since) <= convertSemverToInt32('6.0.0');
+           removeBasedonSince = !since || isBeforeJet6(since);
            if (removeBasedonSince) {
              //is it deprecated prior to typescript? if so, it goes only in jsdoc.
              returnVal = 'jsdeprecated-hidden';
@@ -1544,7 +1558,7 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
            //yes the whole doclet is deprecated.
 
            since = deprecation.since;
-           removeBasedonSince = !since || convertSemverToInt32(since) <= convertSemverToInt32('6.0.0');
+           removeBasedonSince = !since || isBeforeJet6(since);
            if (removeBasedonSince && deprecation.target !== 'propertyValue') {
              //is it deprecated prior to typescript? if so, it goes only in jsdoc.
              returnVal = 'jsdeprecated-hidden';
@@ -1666,16 +1680,16 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
            if (className){
              itemsNav +=
              `<li class="${className}">
-                 <div id="${moduleKey}" class="module_element">
+                <div id="${moduleKey}" class="module_element">
                    <a href="${moduleKey}.html">${moduleKey}</a>
-                 </div>`;
+                </div>`;
            }
            else {
              itemsNav +=
            `<li>
-               <div id="${moduleKey}" class="module_element">
-                 <a href="${moduleKey}.html">${moduleKey}</a>
-               </div>`;
+              <div id="${moduleKey}" class="module_element">
+                <a href="${moduleKey}.html">${moduleKey}</a>
+              </div>`;
            }
 
            // an array of component, class, interface, namespace or binding element doclets
@@ -1688,10 +1702,10 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
                itemsNav += processNavigatorArrayMembers(moduleContent, linkto, 'Module');
              }
              if (moduleObj.modulecontainer) {
-               let namedExports = find({ kind: "member", memberof: moduleObj.modulecontainer[0].name });
-               namedExports = [...namedExports, ...find({ kind: "function", memberof: moduleObj.modulecontainer[0].name })];
-               namedExports = [...namedExports, ...find({ kind: "typedef", memberof: moduleObj.modulecontainer[0].name })];
-               namedExports.forEach(doclet => {
+              let namedExports = find({ kind: "member", memberof: moduleObj.modulecontainer[0].name });
+              namedExports = [...namedExports, ...find({ kind: "function", memberof: moduleObj.modulecontainer[0].name })];
+              namedExports = [...namedExports, ...find({ kind: "typedef", memberof: moduleObj.modulecontainer[0].name })];
+              namedExports.forEach(doclet => {
                  doclet.ojId = 'navItem' + index;
                  let className = getDeprecatedClass(doclet);
                  let liTag;
@@ -2199,6 +2213,9 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
      //for typedef's it means generic parameters.
      if (doclet.kind === 'typedef') {
        addGenericSignature(doclet);
+       if (doclet.tstype){
+        addSignatureTypes(doclet);
+       }
      }
 
    });
@@ -2230,7 +2247,7 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
    view.logger = logger;
 
    view.getStylingItems = styleutils.getStylingItems;
-   view.convertSemverToInt32 = convertSemverToInt32;
+   view.isBeforeJet6 = isBeforeJet6;
 
    //build modules based navigation
    view.nav = buildJETModuleNav(members);
@@ -2725,26 +2742,16 @@ logger.info(`Logger set to ${env.opts.loggingLevel}`);
      doclet.ojmodulereturn = returnType;
    }
  }
- // https://gist.github.com/dislick/914e67444f8f71df3900bd77ccec6091
- const convertSemverToInt32 = function (version) {
-   // Split a given version string into three parts.
-   let parts = version.split('.');
-   // Check if we got exactly three parts, otherwise throw an error.
-   if (parts.length !== 3) {
-     throw new Error(`Received invalid version string: ${version}`);
-   }
-   // Make sure that no part is larger than 1023 or else it
-   // won't fit into a 32-bit integer.
-   parts.forEach((part) => {
-     if (part >= 1024) {
-       throw new Error(`Version string invalid, ${part} is too large`);
-     }
-   });
-   // Let's create a new number which we will return later on
-   let numericVersion = 0;
-   // Shift all parts either 0, 10 or 20 bits to the left.
-   for (let i = 0; i < 3; i++) {
-     numericVersion |= parts[i] << i * 10;
-   }
-   return numericVersion;
- };
+
+/**
+ * Returns true if the version is on or before JET 6.0.0.
+ * @example
+ * isBeforeJet6('5.0.0'); // true
+ * isBeforeJet6('6.0.0'); // true
+ * isBeforeJet6('6.1.0'); // false
+ * @param {*} version Semver version string, e.g. '5.0.0', '6.0.0', '6.1.0'
+ * @returns {boolean} True if the version is on or before JET 6.0.0, false otherwise.
+ */
+const isBeforeJet6 = function (version) {
+  return version === '6.0.0' || Number(version.split('.')[0]) < 6;
+};

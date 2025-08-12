@@ -24,12 +24,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojmenu', 'preact'], function (expo
             }
         }
         _getMenu() {
+            // Use childNodes[0] instead of firstChild because the latter is being patched to avoid unwanted DOM changes from preact
             const menu = this._rootRef.childNodes[0];
             return menu;
         }
         _openMenu() {
             const openOption = this._getOpenOptions();
-            this._menuElement['__openingContextMenu'] = true;
+            this._menuElement['__openingContextMenu'] = true; // This value is being used in ojMenu in menuOpenActions()
             try {
                 this._menuElement.open(this.props.eventObj.event, openOption);
                 this._addCloseListener();
@@ -56,7 +57,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojmenu', 'preact'], function (expo
                     of: eventType === 'keyboard' ? this.props.launcherElement : this.props.eventObj.event
                 },
                 initialFocus: 'menu'
-            };
+            }; // used for fields caller omitted
             return openOption;
         }
         componentWillUnmount() {
@@ -74,6 +75,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojmenu', 'preact'], function (expo
             at: 'start bottom',
             collision: 'flipfit'
         },
+        // For touch events, "my" is set to "start>40 center",
+        // to avoid having the context menu obscured by the user's finger.
         touch: {
             my: 'start>40 center',
             at: 'start bottom',
@@ -85,6 +88,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojmenu', 'preact'], function (expo
             collision: 'flipfit'
         }
     };
+
+    /**
+     * @license
+     * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+     * Licensed under The Universal Permissive License (UPL), Version 1.0
+     * @ignore
+     */
 
     exports.VMenu = VMenu;
 

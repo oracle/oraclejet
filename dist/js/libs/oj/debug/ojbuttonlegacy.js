@@ -9,6 +9,7 @@ define(['exports', 'ojs/ojcomponentcore', 'ojs/ojcore-base'], function (exports,
 
 	oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
+	// This is not used but in order for the build to include the code it must export something
 	class ButtonLegacy {
 	}
 	oj._registerLegacyNamespaceProp('ButtonLegacy', ButtonLegacy);

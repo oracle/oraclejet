@@ -1,0 +1,13 @@
+// import classes defined in the base directory
+@import "../base/_oj-select-single-placeholder.scss";
+
+@import "../../../button/themes/stable/oj-button.cssvars.scss";
+@import "../../../form-control/themes/stable/_oj-form-control-ignore.cssvars.scss";
+@import "../../../text-field/themes/stable/_oj-text-field.cssvars.scss";
+@import "../../../icons/themes/stable/oj-icons.scss";
+
+@include module-include-once("stable.selectsingleplaceholder") {
+    oj-select-single-placeholder .oj-searchselect-arrow {
+        margin-inline-end:  -0.375rem; 
+    }
+}

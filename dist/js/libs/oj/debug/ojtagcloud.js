@@ -53,6 +53,13 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * <p>
    * The default height of the component will now respond to scaling with the current height equal to when scaling equals 'lg'.
    * </p>
+   * <h5>Hover visual</h5>
+   * <p>
+   * The hover visual for items in oj-c-tag-cloud is different from that of oj-tag-cloud.
+   * </p>
+   * <h5 id="context-menu-migration"></h5>
+   * For the initial version of oj-c-tag-cloud, getContextByNode method is not supported. We plan on supporting this use case in a future release.
+   * </p>
    * <h5>animaton-on-data-change attribute</h5>
    * <p>
    * For the initial version of oj-c-tagcloud, animaton-on-data-change attribute is not supported. We plan on supporting this use case in a future release.
@@ -65,18 +72,9 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * <p>
    * For the initial version of oj-c-tagcloud, animation-duration attribute is not supported. We plan on supporting this use case in a future release.
    * </p>
-   * <h5>tooltip attribute</h5>
+   * <h5>tooltip attribute and tooltipTemplate slot</h5>
    * <p>
-   * For initial version of oj-c-tagcloud, use datatip instead of tooltip. Support of complex datatip usecase will be handled in a future release.
-   * </p>
-   * <h5>touch-response attribute</h5>
-   * <p>
-   * For the initial version of oj-c-tagcloud, touch-response attribute is not supported. We plan on supporting this use case in a future release.
-   * </p>
-   * <h5 id="context-menu-migration"></h5>
-   * <h5>getContextByNode method</h5>
-   * <p>
-   * For the initial version of oj-c-tag-cloud, getContextByNode method is not supported. We plan on supporting this use case in a future release.
+   * For initial version of oj-c-tagcloud, use datatip instead. Support of complex datatip usecase will be handled in a future release.
    * </p>
    * <h5>oj-tag-cloud-item's svg-class-name attribute</h5>
    * <p>
@@ -576,7 +574,7 @@ var __oj_tag_cloud_metadata =
       "value": ""
     },
     "data": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -976,7 +974,7 @@ var __oj_tag_cloud_item_metadata =
        * @ojshortdesc Specifies the DataProvider for the tag cloud. See the Help documentation for more information.
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {Object|null}
+       * @type {DataProvider|null}
        * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
        * @default null
        * @ojwebelementstatus {type: "unsupported", since: "13.0.0",

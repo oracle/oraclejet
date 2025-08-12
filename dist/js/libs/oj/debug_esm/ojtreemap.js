@@ -47,7 +47,7 @@ var __oj_treemap_metadata =
       "value": ""
     },
     "data": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -739,7 +739,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
      * @ojshortdesc Specifies the DataProvider for the treemap. See the Help documentation for more information.
      * @memberof oj.ojTreemap
      * @instance
-     * @type {Object|null}
+     * @type {DataProvider|null}
      * @ojsignature {target: "Type", value: "DataProvider<K, D>|null"}
      * @default null
      * @ojwebelementstatus {type: "unsupported", since: "13.0.0",

@@ -7,14 +7,21 @@
  */
 define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfig', 'ojs/ojconverter-nativedatetime'], function (exports, LocaleData, __ConverterUtilsI18n, ojconfig, ojconverterNativedatetime) { 'use strict';
 
+    // OraI18nUtils is an undocumented class that is ok for other JET code to call
+    // but we don't want it to be a public API. So we need to cast it to any here.
     const LocalOraI18nUtils = __ConverterUtilsI18n.OraI18nUtils;
     const _UTC = 'UTC';
+    // Intl.DateTimeFormatOptions used to get time zone name
     let intlOptions = {
         hour: 'numeric',
         minute: 'numeric',
         second: 'numeric',
         timeZoneName: 'long'
     };
+    // We used to get the list of available timezones from timeZoneData section
+    // in supplementalTimeZoneData resource bundle. We got rid of timeZoneData section
+    // because we now get time zone offsets from ISODateTimezoneOffset.getISODateOffset API.
+    // We moved the timezones IDs from the resource bundle into this array.
     const timeZoneIDs = [
         'Africa/Abidjan',
         'Africa/Addis_Ababa',
@@ -222,10 +229,13 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
         'US/Hawaii',
         'UTC'
     ];
+    // return the language part
     function getBCP47Lang(tag) {
         const arr = tag.split('-');
         return arr[0];
     }
+    // Get the dates node from resoucre bundle for current locale. If not found,
+    // try parent locales. Fall back to en-US.
     function getDatesNode(localeElements) {
         function getDates(locale) {
             let datesNode = null;
@@ -241,6 +251,7 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
             return dates;
         }
         let parts = locale.split('-');
+        // We already tried full locale
         parts.pop();
         while (parts.length > 0) {
             locale = parts.join('-');
@@ -250,8 +261,12 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
             }
             parts.pop();
         }
+        // fall back to en-US
         return localeElements.main['en-US'].dates;
     }
+    // Returns the localized city name that correspond to a time zone ID (tzID)
+    // from the resource bundle. For example if tzID = 'America/Buenos_Aires',
+    // it returns 'Buenos Aires'.
     function getLocalizedCityName(mainNodeKey, tzID, offset, cities) {
         const parts = tzID.split('/');
         const region = parts[0];
@@ -294,6 +309,8 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
         nameObject.locName = locCity + locZone;
         return nameObject;
     }
+    // Iterates through available timeZoneIDs and adds timezone object into
+    // sortedZones array. the time zone  object consist of id and localized city name.
     function pushZoneNameObject(sortedZones, offsets) {
         const localeElements = LocaleData.__getBundle();
         const mainNode = LocalOraI18nUtils.getLocaleElementsMainNode(localeElements);
@@ -313,6 +330,7 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
             const offset = -ojconverterNativedatetime.getISODateOffset(dateParts, zoneID);
             const localizedName = getLocalizedCityName(mainNodeKey, zoneID, offset, cities);
             if (localizedName !== null) {
+                // . Asia/Saigon is obsolete
                 if (zoneID === 'Asia/Saigon') {
                     zoneID = 'Asia/Ho_Chi_Minh';
                 }
@@ -327,6 +345,7 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
     class AvailableTimeZones {
         static getAvailableTimeZonesImpl() {
             const localeElements = LocaleData.__getBundle();
+            // return cached array if available
             const locale = LocalOraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
             const cached = AvailableTimeZones?._timeZoneDataCache[locale]?.availableTimeZones;
             return cached || AvailableTimeZones._availableTimeZonesImpl(localeElements);
@@ -344,9 +363,12 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
                 return res1 + res2;
             });
             const len = sortedZones.length;
+            // return an array with "display name with offset" instead of the
+            // object localizedName which was only used for sorting
             for (let j = 0; j < len; j++) {
                 sortedZones[j].displayName = sortedZones[j].displayName.offsetLocName;
             }
+            // cache the sorted zones
             AvailableTimeZones._timeZoneDataCache[locale] = { availableTimeZones: sortedZones };
             return sortedZones;
         }

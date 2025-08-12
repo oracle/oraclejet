@@ -137,11 +137,6 @@ function getPathParam(segment) {
   throw Error(`no path parameter found for segment ${segment}`);
 }
 
-function getFullUrl(pathname) {
-  const loc = document.location;
-  return `${loc.protocol}//${loc.hostname}${loc.port ? ':' + loc.port : ''}${pathname}`;
-}
-
 /**
  * An observable which publishes state changes that are about to be set as
  * the current state for the router. Subscribers can choose to listen to
@@ -696,14 +691,14 @@ CoreRouter.prototype.go = function (...routes) {
 
   let newPath;
   try {
-    newPath = this.getUrlForNavigation(...routes);
+    newPath = this._getPathname(routes);
   } catch (ex) {
     return Promise.reject(ex.message);
   }
 
   // Get the current routes for all active routers, and compare that to the
   // new routes for this transition.
-  const currentPath = getFullUrl(urlAdapter.getUrlForRoutes(getActiveRoutes()));
+  const currentPath = this._getPathname(getActiveRoutes());
   const prevNoHistorySegments = noHistorySegments;
   if (this._noHistory) {
     info(`Navigating non-history tracking router(${this._name}) to ${path}`);
@@ -735,7 +730,7 @@ const paramTypesRegex = new RegExp(
  * Create a full URL for the given routes. The parameters are the same as those to {@link CoreRouter#go},
  * and relative to the current router on which it's called.
  * @param {...CoreRouter.Route} routes The route(s) from which to generate the URL
- * @returns The full URL to the given routes, i.e. "https://host[:port]/<routes>..."
+ * @returns {string} The full URL to the given routes, i.e. "https://host[:port]/<routes>..."
  * @since 18.0.0
  * @name getUrlForNavigation
  * @memberof CoreRouter
@@ -746,6 +741,17 @@ const paramTypesRegex = new RegExp(
  *               {target: "Type", value: "string", for: "returns"}]
  */
 CoreRouter.prototype.getUrlForNavigation = function (...routes) {
+  const { protocol, hostname, port } = document.location;
+  return `${protocol}//${hostname}${port ? ':' + port : ''}${this._getPathname(routes)}`;
+};
+
+/**
+ * Get the full pathname for navigation from the given routes.
+ * @param {CoreRouter.Route[]} routes
+ * @returns {string} The pathname to which the router will navigate
+ * @private
+ */
+CoreRouter.prototype._getPathname = function (routes) {
   routes.forEach(function ({ params }) {
     if (params) {
       // Only primitive values in params object
@@ -760,15 +766,16 @@ CoreRouter.prototype.getUrlForNavigation = function (...routes) {
   });
 
   // Insert the new transitions after the current router's route offset
-  const newRoutes = this._getParentRoutes()
-    .concat(
-      // only first transition is for this router
-      this._getPendingState(routes[0]),
-      // remaining are for child routers
-      routes.slice(1)
-    )
-    .filter(Boolean);
-  return getFullUrl(urlAdapter.getUrlForRoutes(newRoutes));
+  return urlAdapter.getUrlForRoutes(
+    this._getParentRoutes()
+      .concat(
+        // only first transition is for this router
+        this._getPendingState(routes[0]),
+        // remaining are for child routers
+        routes.slice(1)
+      )
+      .filter(Boolean)
+  );
 };
 
 /**

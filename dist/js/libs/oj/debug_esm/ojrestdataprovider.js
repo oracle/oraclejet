@@ -150,10 +150,10 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
 
 /**
  * @typedef {Object} RESTDataProvider.Options
- * @property {string} url - URL of the REST endpoint to fetch data from.
+ * @property {string=} url - URL of the REST endpoint to fetch data from.
  * @property {string} keyAttributes - The field name which stores the key in the data. Can be a string denoting a single key attribute or an array
  * of strings for multiple key attributes.
- * @property {Object} transforms - Object which defines functions that transform the request when fetchFirst, fetchByOffset and fetchByKeys are called.
+ * @property {Object=} transforms - Object which defines functions that transform the request when fetchFirst, fetchByOffset and fetchByKeys are called.
  * @property {Object=} capabilities - Object which defines the capabilities of the RESTDataProvider instance based on the REST service is fetches data from.
  * @property {Array=} implicitSort - Array of {@link SortCriterion} used to specify sort information when the fetched data is already sorted.
  * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
@@ -163,7 +163,14 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  * delegates to fetchFirst (because the fetchByKeys capability has not be set with an implementation of "lookup" or "batchLookup"). In the fetchByKeys case,
  * fetchFirst has to iterate through all the data in search of rows corresponding to the provided keys. Without an iteration limit, the iteration can continue
  * for a long time if the provided keys are invalid or the corresponding rows are at the end of the dataset.
- * @property {Function} error - Callback function that is executed when a fetch error has occurred.
+ * @property {Function=} error - Callback function that is executed when a fetch error has occurred.
+ * @property {Object=} restHelper - Using the default RESTDataProvider fetch implementation with transforms is preferred for code maintainability.
+ *                                  However, for rare use cases that require overriding the RESTDataProvider's default fetch call, applications should specify their restHelper as a constructor option.
+ *                                  The restHelper is an object containing custom fetch functions for fetchFirst, fetchByOffset, and fetchByKeys.
+ *                                  Specifying a fetchFirst rest helper is required when setting any custom fetch implementation.
+ *                                  Specifying a fetchByOffset rest helper is required when setting the capability of fetchByOffset to randomAccess.
+ *                                  Specifying a fetchByKeys rest helper is required when setting the capability of fetchByKeys to either lookup or batchLookup.
+ *                                  The signatures of each rest helper can be found in the API documentation of RESTDataProvider.
  * @property {string=} enforceKeyStringify - Optionally specify whether keys need to be converted to strings. Supported values:<br>
  *                                  <ul>
  *                                    <li>'off': the key values are returned as it is.
@@ -178,7 +185,16 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  *  {target: "Type", value: "Capabilities", for: "capabilities"},
  *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
  *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
- *  {target: "Type", value: "?((response: FetchErrorDetail<K,D > | FetchResponseErrorDetail<K,D>) => void)", for: "error", jsdocOverride: true},
+ *  {target: "Type", value: "(response: FetchErrorDetail<K,D > | FetchResponseErrorDetail<K,D>) => void", for: "error", jsdocOverride: true},
+ *  {target: "Type", value: " { fetchFirst: (
+ *     options: RESTDataProvider.RESTHelperFetchByOffsetRequestOptions<K,D>
+ *   ) => Promise<RESTDataProvider.RESTHelperResponse<K, D>>;
+ *   fetchByOffset?: (
+ *     options: RESTDataProvider.RESTHelperFetchByOffsetRequestOptions<K,D>
+ *   ) => Promise<RESTDataProvider.RESTHelperResponse<K, D>>;
+ *   fetchByKeys?: (
+ *     options: RESTDataProvider.RESTHelperFetchByKeysRequestOptions<K,D>
+ *   ) => Promise<RESTDataProvider.RESTHelperResponse<K, D>>; }", for: "restHelper", jsdocOverride: true},
  *  {target: "Type", value: "'off' | 'on'", for: "enforceKeyStringify"}
  * ]
  */
@@ -199,7 +215,7 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  * @typedef {Object} RESTDataProvider.FetchErrorDetail
  * @property {string} fetchType - Type of fetch that was made
  * @property {Object} options - Options passed in to RESTDataProvider
- * @property {TypeError} error - TypeError returned from fetch call
+ * @property {any} error - Error returned from fetch call
  * @property {TypeError} err - TypeError returned from fetch call (deprecated)
  * @property {Object} fetchParameters - FetchParams passed into the fetch call
  * @ojsignature [
@@ -336,6 +352,43 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  *  {target: "Type", value: "K[]", for: "keys"},
  *  {target: "Type", value: "ItemMetadata<K>[]", for: "metadata"}
  * ]
+ */
+
+/**
+ * @typedef {Object} RESTDataProvider.RESTHelperResponse
+ * @property {Array} data - fetched data
+ * @property {Array=} keys - keys associated with fetched data. If keys is returned but not metadata,
+ * the metadata will be generated from the keys
+ * @property {Array=} metadata - metadata associated with fetched data. If metadata is returned
+ * but not keys, the keys will be extracted from the metadata
+ * @property {number=} totalSize - total number of rows available
+ * @property {boolean=} hasMore - whether there are more rows available to be fetched
+ * @ojsignature [
+ *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+ *  {target: "Type", value: "D[]", for: "data"},
+ *  {target: "Type", value: "K[]", for: "keys"},
+ *  {target: "Type", value: "ItemMetadata<K>[]", for: "metadata"}
+ * ]
+ */
+
+/**
+ * @typedef {Object} RESTDataProvider.RESTHelperFetchByOffsetRequestOptions
+ * @property {Object} options - Options passed in to RESTDataProvider
+ * @property {Object} fetchParameters - FetchParams passed into the fetch call
+ * @ojsignature [
+ *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+ *  {target: "Type", value: "RESTDataProvider.Options<K, D>", for: "options"},
+ *  {target: "Type", value: "FetchByOffsetParameters<D>", for: "fetchParameters"}]
+ */
+
+/**
+ * @typedef {Object} RESTDataProvider.RESTHelperFetchByKeysRequestOptions
+ * @property {Object} options - Options passed in to RESTDataProvider
+ * @property {Object} fetchParameters - FetchParams passed into the fetch call
+ * @ojsignature [
+ *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+ *  {target: "Type", value: "RESTDataProvider.Options<K, D>", for: "options"},
+ *  {target: "Type", value: "FetchByKeysParameters<K>", for: "fetchParameters"}]
  */
 
 /**
@@ -504,39 +557,34 @@ class RESTHelper {
     async fetch() {
         const request = await this._createRequest();
         const signal = this.options.fetchParameters.signal;
+        let result;
         try {
             const response = await fetch(request, { signal: signal });
-            return await this._parseResponse(response);
+            result = await this._parseResponse(response);
         }
         catch (err) {
             if (this.options.errorHandler) {
-                if (err.status != null) {
-                    const errorContext = {
-                        fetchType: this.options.fetchType,
-                        fetchParameters: this.options.fetchParameters,
-                        options: this.options.options,
-                        response: err
-                    };
-                    this.options.errorHandler(errorContext);
-                }
-                else {
-                    const errorContext = {
-                        fetchType: this.options.fetchType,
-                        fetchParameters: this.options.fetchParameters,
-                        options: this.options.options,
-                        error: err
-                    };
-                    Object.defineProperty(errorContext, 'err', {
-                        get() {
-                            return errorContext.error;
-                        },
-                        enumerable: true
-                    });
-                    this.options.errorHandler(errorContext);
-                }
+                const errorContext = {
+                    fetchType: this.options.fetchType,
+                    fetchParameters: this.options.fetchParameters,
+                    options: this.options.options,
+                    error: err
+                };
+                // JET-60386
+                Object.defineProperty(errorContext, 'err', {
+                    get() {
+                        return errorContext.error;
+                    },
+                    enumerable: true
+                });
+                this.options.errorHandler(errorContext);
             }
             throw err;
         }
+        if (result.throwResponse) {
+            throw result.throwResponse;
+        }
+        return result.fetchResponse;
     }
     async _createRequest() {
         const { url, transforms, fetchParameters, fetchType, fetchOptions } = this.options;
@@ -554,9 +602,18 @@ class RESTHelper {
             body: await this._getResponseBody(response)
         };
         if (!response.ok) {
-            throw parsedResponse;
+            const errorContext = {
+                fetchType: this.options.fetchType,
+                fetchParameters: this.options.fetchParameters,
+                options: this.options.options,
+                response: parsedResponse
+            };
+            if (this.options.errorHandler) {
+                this.options.errorHandler(errorContext);
+            }
+            return { throwResponse: parsedResponse };
         }
-        return this._applyResponseTransforms(parsedResponse);
+        return { fetchResponse: await this._applyResponseTransforms(parsedResponse) };
     }
     async _getResponseBody(response) {
         try {
@@ -605,6 +662,7 @@ class RESTHelper {
 
 const _SORT = 'sort';
 const _FILTER = 'filter';
+const _KEY = 'key';
 const _ATINDEX = '@index';
 const _FETCHBYKEYS = 'fetchByKeys';
 const _FETCHBYOFFSET = 'fetchByOffset';
@@ -655,6 +713,7 @@ class RESTDataProvider {
                 const data = result.value.data;
                 this._rowsFetched += data.length;
                 if (Number.isInteger(this._iterationLimit) && this._rowsFetched >= this._iterationLimit) {
+                    // at or past the iteration limit so force the iterator to be done
                     result.done = true;
                 }
                 return result;
@@ -672,6 +731,23 @@ class RESTDataProvider {
                 this.done = true;
             }
         };
+        const capabilities = this._getCapabilitiesFromOptions();
+        if (this.options.restHelper) {
+            let shouldThrowError = false;
+            if (capabilities.fetchByKeys != null && this.options.restHelper.fetchByKeys == null) {
+                shouldThrowError = true;
+            }
+            else if (capabilities.fetchByOffset != null &&
+                this.options.restHelper.fetchByOffset == null) {
+                shouldThrowError = true;
+            }
+            else if (this.options.restHelper.fetchFirst == null) {
+                shouldThrowError = true;
+            }
+            if (shouldThrowError) {
+                throw new Error('Rest Helper does not match capabilities');
+            }
+        }
     }
     fetchFirst(parameters) {
         return new this.AsyncIterable(new this.AsyncIterator(this, this._fetchFrom.bind(this), parameters, 0, this.options.iterationLimit));
@@ -719,6 +795,10 @@ class RESTDataProvider {
         return initialMap ? new ojMap(initialMap) : new ojMap();
     }
     isEmpty() {
+        // this is consistent with ServiceDataProvider. since we never store the returned
+        // data, we can only determine if there is any data available after the fetch.
+        // i.e we don't have access to previously fetched data and there is no guarantee
+        // that it is available on the REST endpoint
         return 'unknown';
     }
     getCapability(capabilityName) {
@@ -728,6 +808,8 @@ class RESTDataProvider {
                 return capabilities.sort;
             case _FILTER:
                 return capabilities.filter;
+            case _KEY:
+                return capabilities.key;
             case _FETCHFIRST:
                 return this._getFetchCapability(_FETCHFIRST);
             case _FETCHBYKEYS:
@@ -751,7 +833,7 @@ class RESTDataProvider {
         this._adjustIteratorOffset(remove, add);
         this.dispatchEvent(new DataProviderMutationEvent(detail));
     }
-    async _fetchFrom(fetchType, fetchParameters, offset, hasMore) {
+    async _fetchFrom(fetchType, fetchParameters = {}, offset, hasMore) {
         const { signal } = fetchParameters;
         const callback = async (resolve, reject) => {
             if (hasMore) {
@@ -766,18 +848,31 @@ class RESTDataProvider {
                     })
                 };
                 FilterUtils.validateFilterCapabilities(this.getCapability('filter'), fullFetchParameters.filterCriterion);
-                const restHelper = new RESTHelper({
-                    fetchType,
-                    fetchParameters: fullFetchParameters,
-                    url: this.options.url,
-                    transforms: this.options.transforms,
-                    fetchOptions: {
-                        textFilterAttributes: this.options.textFilterAttributes
-                    },
-                    errorHandler: this.options.error,
-                    options: this.options
-                });
-                const fetchResult = await restHelper.fetch();
+                let fetchResult;
+                if (!this.options.restHelper) {
+                    const restHelper = new RESTHelper({
+                        fetchType,
+                        fetchParameters: fullFetchParameters,
+                        url: this.options.url,
+                        transforms: this.options.transforms,
+                        fetchOptions: {
+                            textFilterAttributes: this.options.textFilterAttributes
+                        },
+                        errorHandler: this.options.error,
+                        options: this.options
+                    });
+                    fetchResult = await restHelper.fetch();
+                }
+                else {
+                    const restHelperCallback = this.options.restHelper[fetchType];
+                    if (!restHelperCallback) {
+                        throw new Error(`Rest Helper does not match capabilities: ${fetchType}`);
+                    }
+                    fetchResult = await restHelperCallback({
+                        options: this.options,
+                        fetchParameters: fullFetchParameters
+                    });
+                }
                 const { data, totalSize, hasMore } = fetchResult;
                 let metadata = this._getFetchResultMetaData(fetchResult);
                 const mergedSortCriteria = this._mergeSortCriteria(fetchParameters.sortCriteria);
@@ -840,18 +935,33 @@ class RESTDataProvider {
             const fetchedData = [];
             let fetchedDataMetadata = [];
             for (let key of fetchParameters.keys) {
-                const restHelper = new RESTHelper({
-                    fetchType: _FETCHBYKEYS,
-                    fetchParameters: {
-                        ...fetchParameters,
-                        keys: new Set([key])
-                    },
-                    url: this.options.url,
-                    transforms: this.options.transforms,
-                    errorHandler: this.options.error,
-                    options: this.options
-                });
-                fetchPromises.push(restHelper.fetch());
+                if (!this.options.restHelper) {
+                    const restHelper = new RESTHelper({
+                        fetchType: _FETCHBYKEYS,
+                        fetchParameters: {
+                            ...fetchParameters,
+                            keys: new Set([key])
+                        },
+                        url: this.options.url,
+                        transforms: this.options.transforms,
+                        errorHandler: this.options.error,
+                        options: this.options
+                    });
+                    fetchPromises.push(restHelper.fetch());
+                }
+                else {
+                    const restHelperCallback = this.options.restHelper.fetchByKeys;
+                    if (!restHelperCallback) {
+                        throw new Error(`Rest Helper does not match capabilities: ${_FETCHBYKEYS}`);
+                    }
+                    fetchPromises.push(restHelperCallback({
+                        options: this.options,
+                        fetchParameters: {
+                            ...fetchParameters,
+                            keys: new Set([key])
+                        }
+                    }));
+                }
             }
             (await Promise.all(fetchPromises)).forEach((fetchResult) => {
                 fetchResult.data.forEach((item) => {
@@ -869,15 +979,28 @@ class RESTDataProvider {
     async _fetchByKeysBatchLookup(fetchParameters) {
         const { signal } = fetchParameters;
         const callback = async (resolve, reject) => {
-            const restHelper = new RESTHelper({
-                fetchType: _FETCHBYKEYS,
-                fetchParameters,
-                url: this.options.url,
-                transforms: this.options.transforms,
-                errorHandler: this.options.error,
-                options: this.options
-            });
-            const fetchResult = await restHelper.fetch();
+            let fetchResult;
+            if (!this.options.restHelper) {
+                const restHelper = new RESTHelper({
+                    fetchType: _FETCHBYKEYS,
+                    fetchParameters,
+                    url: this.options.url,
+                    transforms: this.options.transforms,
+                    errorHandler: this.options.error,
+                    options: this.options
+                });
+                fetchResult = await restHelper.fetch();
+            }
+            else {
+                const restHelperCallback = this.options.restHelper.fetchByKeys;
+                if (!restHelperCallback) {
+                    throw new Error(`Rest Helper does not match capabilities: ${_FETCHBYKEYS}`);
+                }
+                fetchResult = await restHelperCallback({
+                    options: this.options,
+                    fetchParameters: fetchParameters
+                });
+            }
             const metadata = this._getFetchResultMetaData(fetchResult);
             return resolve(this._createFetchByKeysResults(fetchParameters, fetchResult.data, metadata));
         };
@@ -917,6 +1040,7 @@ class RESTDataProvider {
                 fetchResultMetadata.push(entry);
             });
             if (typeof fetchResultData[offset + size - 1] !== 'undefined') {
+                // stop iterating when we have fetched the data we need
                 done = true;
             }
             else {
@@ -1064,6 +1188,7 @@ class RESTDataProvider {
             if (sortCriteria == null) {
                 return implicitSort;
             }
+            // merge
             const mergedSortCriteria = sortCriteria.slice(0);
             let i, j, found;
             for (i = 0; i < implicitSort.length; i++) {

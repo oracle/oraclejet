@@ -7,6 +7,33 @@
  */
 import { Component, toChildArray, cloneElement } from 'preact';
 
+/**
+ * The Remounter component should be used to remount a custom element when its slot layout
+ * chnages. This is useful for cases when (1) a custom element does not use shadow DOM, and
+ * (2) parent component's re-render may rearrange slots in a way that would affect their patching
+ * and distribution
+ * Example:
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;Remounter>
+ *   <oj-button>
+ *    &lt;span slot="startIcon" class="start">&lt;/span>
+ *    {props.showEnd &&
+ *      &lt;span slot="endIcon" class>="end"&lt;/span>
+ *    }
+ *  &lt;/oj-button>
+ * &lt;/Remounter>
+ * </code>
+ * </pre>
+ * In the example above, the "endIcon" slot is rendered conditionally, and the Remounter is responsible for remounting
+ * the <oj-button> element whenever the condition changes.
+ *
+ * Note that the Remounter will not be tracking slots produced by the custom element's class-based component or
+ * functional component children.
+ *
+ * The Remounter will throw an error if its number of children is not equal to one, or if its child is not an element node.
+ * @ignore
+ */
 class Remounter extends Component {
     render(props) {
         let children = toChildArray(props?.children);
@@ -14,6 +41,8 @@ class Remounter extends Component {
         if (this._isVNode(first) &&
             typeof first.type === 'function' &&
             first.type['__ojIsEnvironmentWrapper']) {
+            // The node type is a constructor, so assume that this is an EnvironmentWrapper.
+            // Lets get its children for cloning.
             children = toChildArray(first.props?.children);
             first = children[0];
         }
@@ -21,19 +50,27 @@ class Remounter extends Component {
             throw new Error('The only child of the Remounter must be a custom element node');
         }
         const key = this._getElementKey(first);
+        // There is no need to clone the EnvironmentWrapper, it is going to be added again
+        // at the cloneElement() step.
         return [cloneElement(first, { key })];
     }
     _getElementKey(elem) {
+        // toChildArray will return empty array if children are undefined
         const slots = toChildArray(elem.props?.children);
+        // String and number are used 'as is', VNodes are turned into objects
+        // with 'key', 'slot' and 'type' as keys
         const slotInfos = slots.map((slot) => this._isVNode(slot) ? this._getSlotInfo(slot) : slot);
         return JSON.stringify(slotInfos);
     }
     _getSlotInfo(slot) {
         let type = slot.type;
+        // If the type is not a string, try getting 'name' for function or class
         type = typeof type === 'string' ? type : type.name || String(type);
+        // object keys that have undefined values will be skipped by JSON.stringify
         return { key: slot.key, type, slot: slot.props?.slot };
     }
     _isVNode(node) {
+        // toChildArray() will remove null, undefined and boolean nodes
         return typeof node !== 'string' && isNaN(node);
     }
 }

@@ -116,6 +116,14 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      * @ojoracleicon 'oj-ux-ico-popup-oj'
      * @ojuxspecs ['popup']
      *
+     * @ojdeprecated [
+     *  {
+     *    type: "maintenance",
+     *    since: "19.0.0",
+     *    value: ["oj-c-popup"]
+     *  }
+     * ]
+     *
      * @classdesc
      * <h3 id="popupOverview-section">
      *   JET Popup Component
@@ -154,6 +162,8 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      * </h3>
      *  <p>To migrate from oj-popup to oj-c-popup, you need to revise the import statement and references to oj-c-popup in your app.</p>
      *  <p>In addition, please note the changes between the two components below.</p>
+     *  <h5>chrome</h5>
+     *  <p>This property is replaced with the <code class="prettyprint">variant</code> attribute in oj-c-popup.</p>
      *  <h5>position</h5>
      *  <p>The <code class="prettyprint">position</code> property and its subproperties are replaced with a collection of new top-level attributes.
      *  </p>
@@ -173,8 +183,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      *  <p>This property is replaced with the <code class="prettyprint">anchor</code> attribute in oj-c-popup.</p>
      *  <h5>position.offset, position.collision</h5>
      *  <p>These properties are moved to the top-level as the <code class="prettyprint">offset</code> and <code class="prettyprint">collision</code> attributes.</p>
-     *  <h5>chrome</h5>
-     *  <p>This property is replaced with the <code class="prettyprint">variant</code> attribute in oj-c-popup.</p>
      *  <h5>open method</h5>
      *  <p>The <code class="prettyprint">open</code> method is no longer supported. Visibility of the popup is controlled using the <code class="prettyprint">opened</code> property in oj-c-popup.
      *     The <code class="prettyprint">launcher</code> parameter is replaced with the new <code class="prettyprint">launcher</code> attribute.
@@ -984,7 +992,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
 
         // fixup the position option set via the widget constructor
         var options = this.options;
-        options.position = oj.PositionUtils.coerceToJet(options.position);
+        options.position = ojpopupcore.PositionUtils.coerceToJet(options.position);
       },
       /**
        * @memberof oj.ojPopup
@@ -1009,7 +1017,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * @override
        */
       _destroy: function () {
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           this._closeImplicitly();
         }
 
@@ -1064,21 +1072,21 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
           return;
         }
 
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           this._closeImplicitly(); // synchronous close
         }
 
         var element = this.element;
-        var status = oj.ZOrderUtils.getStatus(element);
-        if (!(status === oj.ZOrderUtils.STATUS.CLOSE || status === oj.ZOrderUtils.STATUS.UNKNOWN)) {
+        var status = ojpopupcore.ZOrderUtils.getStatus(element);
+        if (!(status === ojpopupcore.ZOrderUtils.STATUS.CLOSE || status === ojpopupcore.ZOrderUtils.STATUS.UNKNOWN)) {
           return;
         }
 
         // status change is needed to prevent calling open from an on before open
         // handler.  The _isOperationPending doens't gurard until this._setWhenReady('open');
-        oj.ZOrderUtils.setStatus(element, oj.ZOrderUtils.STATUS.BEFORE_OPEN);
+        ojpopupcore.ZOrderUtils.setStatus(element, ojpopupcore.ZOrderUtils.STATUS.BEFORE_OPEN);
         if (this._trigger('beforeOpen') === false) {
-          oj.ZOrderUtils.setStatus(this.element, status);
+          ojpopupcore.ZOrderUtils.setStatus(this.element, status);
           return;
         }
 
@@ -1123,16 +1131,16 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
           layerClass += ' ' + [rootStyle, 'tail', tailDecoration].join('-');
         }
 
-        /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+        /** @type {!Object.<PopupService.OPTION, ?>} */
         var psOptions = {};
-        psOptions[oj.PopupService.OPTION.POPUP] = element;
-        psOptions[oj.PopupService.OPTION.LAUNCHER] = _launcher;
-        psOptions[oj.PopupService.OPTION.POSITION] = _position;
-        psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
-        psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
-        psOptions[oj.PopupService.OPTION.MODALITY] = options.modality;
-        psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
-        oj.PopupService.getInstance().open(psOptions);
+        psOptions[ojpopupcore.PopupService.OPTION.POPUP] = element;
+        psOptions[ojpopupcore.PopupService.OPTION.LAUNCHER] = _launcher;
+        psOptions[ojpopupcore.PopupService.OPTION.POSITION] = _position;
+        psOptions[ojpopupcore.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
+        psOptions[ojpopupcore.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
+        psOptions[ojpopupcore.PopupService.OPTION.MODALITY] = options.modality;
+        psOptions[ojpopupcore.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
+        ojpopupcore.PopupService.getInstance().open(psOptions);
       },
       /**
        * Before open callback is called after the popup has been reparented into the
@@ -1140,12 +1148,12 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * @memberof oj.ojPopup
        * @instance
        * @private
-       * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
+       * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for opening the popup
        * @return {Promise|void}
        */
       _beforeOpenHandler: function (psOptions) {
-        var element = psOptions[oj.PopupService.OPTION.POPUP];
-        var position = psOptions[oj.PopupService.OPTION.POSITION];
+        var element = psOptions[ojpopupcore.PopupService.OPTION.POPUP];
+        var position = psOptions[ojpopupcore.PopupService.OPTION.POSITION];
 
         element.show();
         element.position(position);
@@ -1154,7 +1162,9 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         this.initialWidth = element.width();
         this.initialHeight = element.height();
 
-        this._initVoiceOverAssist();
+        if (element[0][Symbol.for('oj-no-voiceover-assist')] !== true) {
+          this._initVoiceOverAssist();
+        }
 
         // JET-58635: set initial focus as soon as possible
         this._initialFocus(false);
@@ -1168,7 +1178,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
           return AnimationUtils.startAnimation(
             element[0],
             action,
-            oj.PositionUtils.addTransformOriginAnimationEffectsOption(element, animationOptions.open),
+            ojpopupcore.PositionUtils.addTransformOriginAnimationEffectsOption(element, animationOptions.open),
             this
           );
         }
@@ -1180,12 +1190,12 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * @memberof oj.ojPopup
        * @instance
        * @private
-       * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
+       * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for opening the popup
        * @return {void}
        */
       _afterOpenHandler: function (psOptions) {
-        var element = psOptions[oj.PopupService.OPTION.POPUP];
-        var launcher = psOptions[oj.PopupService.OPTION.LAUNCHER];
+        var element = psOptions[ojpopupcore.PopupService.OPTION.POPUP];
+        var launcher = psOptions[ojpopupcore.PopupService.OPTION.LAUNCHER];
 
         if (this.initialWidth !== element.width() || this.initialHeight !== element.height()) {
           // if the popup width/height changed during opening, re-apply position constraints
@@ -1246,17 +1256,17 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         }
 
         var element = this.element;
-        var status = oj.ZOrderUtils.getStatus(element);
-        if (status !== oj.ZOrderUtils.STATUS.OPEN) {
+        var status = ojpopupcore.ZOrderUtils.getStatus(element);
+        if (status !== ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           return;
         }
 
         // Status toggle is needed to prevent a recursive closed callled from a
         // beforeClose handler. The _isOperationPending gatekeeper isn't activated
         // until after the _setWhenReady('close'|'open') call.
-        oj.ZOrderUtils.setStatus(element, oj.ZOrderUtils.STATUS.BEFORE_CLOSE);
+        ojpopupcore.ZOrderUtils.setStatus(element, ojpopupcore.ZOrderUtils.STATUS.BEFORE_CLOSE);
         if (this._trigger('beforeClose') === false && !this._ignoreBeforeCloseResultant) {
-          oj.ZOrderUtils.setStatus(element, status);
+          ojpopupcore.ZOrderUtils.setStatus(element, status);
           return;
         }
 
@@ -1275,10 +1285,10 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         // clean up voice over assist
         this._destroyVoiceOverAssist();
 
-        /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+        /** @type {!Object.<PopupService.OPTION, ?>} */
         var psOptions = {};
-        psOptions[oj.PopupService.OPTION.POPUP] = element;
-        oj.PopupService.getInstance().close(psOptions);
+        psOptions[ojpopupcore.PopupService.OPTION.POPUP] = element;
+        ojpopupcore.PopupService.getInstance().close(psOptions);
       },
       /**
        * Before callback is invoked while the popup is still visible and still parented in the
@@ -1286,11 +1296,11 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * @memberof oj.ojPopup
        * @instance
        * @private
-       * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
+       * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for closing the popup
        * @return {Promise|void}
        */
       _beforeCloseHandler: function (psOptions) {
-        var element = psOptions[oj.PopupService.OPTION.POPUP];
+        var element = psOptions[ojpopupcore.PopupService.OPTION.POPUP];
 
         this._unregisterResizeListener(element[0]);
 
@@ -1306,10 +1316,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
           var promise = AnimationUtils.startAnimation(
             element[0],
             action,
-            oj.PositionUtils.addTransformOriginAnimationEffectsOption(
-              element,
-              animationOptions.close
-            ),
+            ojpopupcore.PositionUtils.addTransformOriginAnimationEffectsOption(element, animationOptions.close),
             this
           ).then(function () {
             element.hide();
@@ -1326,7 +1333,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * @memberof oj.ojPopup
        * @instance
        * @private
-       * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
+       * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for closing the popup
        * @return {void}
        */
       // eslint-disable-next-line no-unused-vars
@@ -1362,13 +1369,13 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * var isOpen = myPopup.isOpen();
        */
       isOpen: function () {
-        var status = oj.ZOrderUtils.getStatus(this.element);
+        var status = ojpopupcore.ZOrderUtils.getStatus(this.element);
         // the window is visible and reparented to the zorder container for these statuses
         return (
-          status === oj.ZOrderUtils.STATUS.OPENING ||
-          status === oj.ZOrderUtils.STATUS.OPEN ||
-          status === oj.ZOrderUtils.STATUS.BEFORE_CLOSE ||
-          status === oj.ZOrderUtils.STATUS.CLOSING
+          status === ojpopupcore.ZOrderUtils.STATUS.OPENING ||
+          status === ojpopupcore.ZOrderUtils.STATUS.OPEN ||
+          status === ojpopupcore.ZOrderUtils.STATUS.BEFORE_CLOSE ||
+          status === ojpopupcore.ZOrderUtils.STATUS.CLOSING
         );
       },
       /**
@@ -1391,7 +1398,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
       refresh: function () {
         this._super();
 
-        if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) !== ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           return;
         }
 
@@ -1401,10 +1408,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
 
         // trigger refresh of descendents if reposition was successful
         var element = this.element;
-        oj.PopupService.getInstance().triggerOnDescendents(
-          element,
-          oj.PopupService.EVENT.POPUP_REFRESH
-        );
+        ojpopupcore.PopupService.getInstance().triggerOnDescendents(element, ojpopupcore.PopupService.EVENT.POPUP_REFRESH);
       },
       /**
        * @memberof oj.ojPopup
@@ -1436,20 +1440,20 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
             return;
           case 'autoDismiss':
             if (
-              oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN &&
+              ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN &&
               value !== options.autoDismiss
             ) {
               this._setAutoDismiss(value);
             }
             break;
           case 'modality':
-            if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+            if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
               var element = this.element;
-              /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+              /** @type {!Object.<PopupService.OPTION, ?>} */
               var psOptions = {};
-              psOptions[oj.PopupService.OPTION.POPUP] = element;
-              psOptions[oj.PopupService.OPTION.MODALITY] = value;
-              oj.PopupService.getInstance().changeOptions(psOptions);
+              psOptions[ojpopupcore.PopupService.OPTION.POPUP] = element;
+              psOptions[ojpopupcore.PopupService.OPTION.MODALITY] = value;
+              ojpopupcore.PopupService.getInstance().changeOptions(psOptions);
             }
             break;
           default:
@@ -1514,15 +1518,15 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
 
         // The tail can change the z-index of the layer that defines the stacking context
         // of the popup.  If the popup is open, update the layers class.
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           var layerClass = [rootStyle, 'layer'].join('-');
           layerClass += ' ' + tailStyle;
 
-          /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+          /** @type {!Object.<PopupService.OPTION, ?>} */
           var options = {};
-          options[oj.PopupService.OPTION.POPUP] = element;
-          options[oj.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
-          oj.PopupService.getInstance().changeOptions(options);
+          options[ojpopupcore.PopupService.OPTION.POPUP] = element;
+          options[ojpopupcore.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
+          ojpopupcore.PopupService.getInstance().changeOptions(options);
         }
       },
       /**
@@ -1561,13 +1565,13 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
 
         // if the popup is open, reseed the layer class removing the
         // tail style.
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           var layerClass = [rootStyle, 'layer'].join('-');
-          /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+          /** @type {!Object.<PopupService.OPTION, ?>} */
           var options = {};
-          options[oj.PopupService.OPTION.POPUP] = element;
-          options[oj.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
-          oj.PopupService.getInstance().changeOptions(options);
+          options[ojpopupcore.PopupService.OPTION.POPUP] = element;
+          options[ojpopupcore.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
+          ojpopupcore.PopupService.getInstance().changeOptions(options);
         }
       },
       /**
@@ -1639,7 +1643,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         // new position extends the existing object
         // covert to jet internal position format
         if (position) {
-          options.position = oj.PositionUtils.coerceToJet(position, options.position);
+          options.position = ojpopupcore.PositionUtils.coerceToJet(position, options.position);
         }
       },
 
@@ -1652,9 +1656,9 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        */
       _getPositionAsJqUi: function () {
         var options = this.options;
-        var position = oj.PositionUtils.coerceToJqUi(options.position);
+        var position = ojpopupcore.PositionUtils.coerceToJqUi(options.position);
         var isRtl = this._GetReadingDirection() === 'rtl';
-        position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+        position = ojpopupcore.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
 
         var origUsing = position.using;
         origUsing = $.isFunction(origUsing) ? origUsing : null;
@@ -1731,10 +1735,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
           //
           if (props.target && props.target.height === 0 && props.target.width === 0) {
             var isRtl = this._GetReadingDirection() === 'rtl';
-            var position = oj.PositionUtils.normalizeHorizontalAlignment(
-              this.options.position,
-              isRtl
-            );
+            var position = ojpopupcore.PositionUtils.normalizeHorizontalAlignment(this.options.position, isRtl);
             var myrule = position.my;
             if (!oj.StringUtils.isEmptyOrUndefined(myrule)) {
               // If the original horizontal rule is center, use it; otherwise, use the calculated
@@ -1808,7 +1809,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
           }
         }
 
-        oj.PositionUtils.captureTransformOriginAnimationEffectsOption(element, props);
+        ojpopupcore.PositionUtils.captureTransformOriginAnimationEffectsOption(element, props);
 
         // call on the original using regardless of the tail
         if (origUsing) {
@@ -1821,7 +1822,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         // When focusLoss auto dismissal is enabled, implicitly close the popup when the
         // position.of is clipped in an overflow container.
         if (options.autoDismiss === 'focusLoss') {
-          if (oj.PositionUtils.isAligningPositionClipped(props)) {
+          if (ojpopupcore.PositionUtils.isAligningPositionClipped(props)) {
             // Ignore focus back to what had focus before the popup was open. Focus
             // restore could fight scroll if the popup was closed due to the aligning
             // element being clipped.
@@ -1916,7 +1917,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * @private
        */
       _handleResize: function () {
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           this._reposition();
         }
       },
@@ -2138,26 +2139,12 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
             if ((firstNode === target || element[0] === target) && event.shiftKey) {
               // tabbing backwards, cycle focus to last node
               event.preventDefault();
-              // If the first and last tab stops are the same,
-              // force focus to the root popup dom.  This will
-              // cause the blur to fire on any input components.
-              // If we are back tabbing on the popup dom, jump to the
-              // last tab stop.
-              if (firstNode === lastNode && firstNode === target) {
-                element.attr('tabindex', '-1');
-                element.focus();
-              } else {
+              if (firstNode !== lastNode || firstNode !== target) {
                 $(lastNode).focus(); // tabbing backwards, cycle focus to last node
               }
             } else if (lastNode === target && !event.shiftKey) {
               event.preventDefault();
-              // If the first and last tab stops are the same,
-              // force focus to the root popup dom.  This will
-              // cause the blur to fire on any input components.
-              if (lastNode === firstNode) {
-                element.attr('tabindex', '-1');
-                element.focus();
-              } else {
+              if (lastNode !== firstNode) {
                 $(firstNode).focus(); // tabbing forwards, cycle to the first node
               }
             }
@@ -2188,23 +2175,23 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         var focusLossCallback = this._focusLossCallback;
         var events = this._getPopupServiceEvents();
         if (focusLossCallback) {
-          delete events[oj.PopupService.EVENT.POPUP_AUTODISMISS];
+          delete events[ojpopupcore.PopupService.EVENT.POPUP_AUTODISMISS];
           delete this._focusLossCallback;
         }
 
         if (autoDismiss === 'focusLoss') {
           focusLossCallback = this._dismissalHandler.bind(this);
           this._focusLossCallback = focusLossCallback;
-          events[oj.PopupService.EVENT.POPUP_AUTODISMISS] = focusLossCallback;
+          events[ojpopupcore.PopupService.EVENT.POPUP_AUTODISMISS] = focusLossCallback;
         }
 
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           var element = this.element;
-          /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+          /** @type {!Object.<PopupService.OPTION, ?>} */
           var options = {};
-          options[oj.PopupService.OPTION.POPUP] = element;
-          options[oj.PopupService.OPTION.EVENTS] = events;
-          oj.PopupService.getInstance().changeOptions(options);
+          options[ojpopupcore.PopupService.OPTION.POPUP] = element;
+          options[ojpopupcore.PopupService.OPTION.EVENTS] = events;
+          ojpopupcore.PopupService.getInstance().changeOptions(options);
         }
       },
       /**
@@ -2214,7 +2201,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * @param {Event} event native doc
        */
       _dismissalHandler: function (event) {
-        if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) !== ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           return;
         }
 
@@ -2410,7 +2397,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
       _surrogateRemoveHandler: function () {
         // In all cases except when the dialog is already open, removal of the
         // surrogate during opening or closing will result in implicit removal.
-        // 1) CLOSING: Handled in oj.ZOrderUtils.removeFromAncestorLayer.  If the
+        // 1) CLOSING: Handled in ZOrderUtils.removeFromAncestorLayer.  If the
         //    surrogate doesn't exist the layer containing the popup dom is detached.
         // 2) OPENING: in the PopupServiceImpl#open _finalize, if the surrogate doesn't
         //    exist after in the open state, this remove callback is invoked.
@@ -2419,8 +2406,8 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         // but jquery UI instances will invoke the _destory method.
 
         var element = this.element;
-        var status = oj.ZOrderUtils.getStatus(element);
-        if (status === oj.ZOrderUtils.STATUS.OPEN) {
+        var status = ojpopupcore.ZOrderUtils.getStatus(element);
+        if (status === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           ojcustomelementUtils.CustomElementUtils.cleanComponentBindings(element[0]);
           element.remove();
         }
@@ -2429,20 +2416,20 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        * @memberof oj.ojPopup
        * @instance
        * @private
-       * @return {!Object.<oj.PopupService.EVENT, function(...)>}
+       * @return {!Object.<PopupService.EVENT, function(...)>}
        */
       _getPopupServiceEvents: function () {
         if (!this._popupServiceEvents) {
-          /** @type {!Object.<oj.PopupService.EVENT, function(...)>} **/
+          /** @type {!Object.<PopupService.EVENT, function(...)>} **/
           var events = {};
           this._popupServiceEvents = events;
-          events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
-          events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
-          events[oj.PopupService.EVENT.POPUP_REFRESH] = this.refresh.bind(this);
-          events[oj.PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
-          events[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
-          events[oj.PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);
-          events[oj.PopupService.EVENT.POPUP_AFTER_CLOSE] = this._afterCloseHandler.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_REFRESH] = this.refresh.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);
+          events[ojpopupcore.PopupService.EVENT.POPUP_AFTER_CLOSE] = this._afterCloseHandler.bind(this);
         }
         return this._popupServiceEvents;
       },
@@ -2539,7 +2526,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
        */
       _NotifyDetached: function () {
         // detaching an open popup results in implicit dismissal
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        if (ojpopupcore.ZOrderUtils.getStatus(this.element) === ojpopupcore.ZOrderUtils.STATUS.OPEN) {
           this._closeImplicitly();
         }
 

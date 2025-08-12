@@ -15,19 +15,41 @@ declare class ListDataProviderView<K, D, Kin, Din> implements DataProvider<K, D>
     fetchByOffset(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;
     fetchFirst(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>;
     getCapability(capabilityName: string): any;
+    getTotalFilteredRowCountObservable(): {
+        subscribe(subscriber: ((rowCount: ListDataProviderView.RowCount) => void)): {
+            unsubscribe(): void;
+            closed(): boolean;
+        };
+    } | null;
     getTotalSize(): Promise<number>;
     isEmpty(): 'yes' | 'no' | 'unknown';
     removeEventListener(eventType: string, listener: EventListener): void;
 }
 declare namespace ListDataProviderView {
     // tslint:disable-next-line interface-over-type-literal
+    type ExactRowCount = {
+        count: number;
+        type: 'exact';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NotFetchedRowCount = {
+        type: 'notFetched';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Options<K, D, Kin, Din> = {
         attributes?: Array<string | FetchAttribute>;
         dataMapping?: DataMapping<K, D, Kin, Din>;
         filterCriterion?: DataFilter.Filter<D>;
         from?: Kin;
+        includeFilteredRowCount?: 'enabled' | 'disabled';
         offset?: number;
         sortCriteria?: Array<SortCriterion<D>>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RowCount = NotFetchedRowCount | UnknownRowCount | ExactRowCount;
+    // tslint:disable-next-line interface-over-type-literal
+    type UnknownRowCount = {
+        type: 'unknown';
     };
 }
 export = ListDataProviderView;

@@ -170,6 +170,8 @@ export namespace ojLedGauge {
     };
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate = import('ojs/ojvcomponent').TemplateSlot<TooltipContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext = TooltipContext;
 }
 export interface ojLedGaugeEventMap extends dvtBaseGaugeEventMap<ojLedGaugeSettableProperties> {
     'borderColorChanged': JetElementCustomEvent<ojLedGauge["borderColor"]>;
@@ -403,6 +405,8 @@ export namespace ojRatingGauge {
     };
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate = import('ojs/ojvcomponent').TemplateSlot<TooltipContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext = TooltipContext;
 }
 export interface ojRatingGaugeEventMap extends dvtBaseGaugeEventMap<ojRatingGaugeSettableProperties> {
     'changedChanged': JetElementCustomEvent<ojRatingGauge["changed"]>;
@@ -758,7 +762,11 @@ export namespace ojStatusMeterGauge {
     // tslint:disable-next-line interface-over-type-literal
     type RenderCenterTemplate = import('ojs/ojvcomponent').TemplateSlot<CenterContext>;
     // tslint:disable-next-line interface-over-type-literal
+    type CenterTemplateContext = CenterContext;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate = import('ojs/ojvcomponent').TemplateSlot<TooltipContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext = TooltipContext;
 }
 export interface ojStatusMeterGaugeEventMap extends dvtBaseGaugeEventMap<ojStatusMeterGaugeSettableProperties> {
     'angleExtentChanged': JetElementCustomEvent<ojStatusMeterGauge["angleExtent"]>;
@@ -963,6 +971,8 @@ export namespace LedGaugeElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate = import('ojs/ojvcomponent').TemplateSlot<TooltipContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext = TooltipContext;
 }
 export namespace RatingGaugeElement {
     // tslint:disable-next-line interface-over-type-literal
@@ -1027,6 +1037,8 @@ export namespace RatingGaugeElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate = import('ojs/ojvcomponent').TemplateSlot<TooltipContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext = TooltipContext;
 }
 export namespace StatusMeterGaugeElement {
     // tslint:disable-next-line interface-over-type-literal
@@ -1137,7 +1149,11 @@ export namespace StatusMeterGaugeElement {
     // tslint:disable-next-line interface-over-type-literal
     type RenderCenterTemplate = import('ojs/ojvcomponent').TemplateSlot<CenterContext>;
     // tslint:disable-next-line interface-over-type-literal
+    type CenterTemplateContext = CenterContext;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate = import('ojs/ojvcomponent').TemplateSlot<TooltipContext>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext = TooltipContext;
 }
 export interface LedGaugeIntrinsicProps extends Partial<Readonly<ojLedGaugeSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onborderColorChanged?: (value: ojLedGaugeEventMap['borderColorChanged']) => void;

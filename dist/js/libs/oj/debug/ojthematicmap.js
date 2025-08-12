@@ -45,7 +45,7 @@ var __oj_thematic_map_metadata =
       "value": "none"
     },
     "areaData": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -126,7 +126,7 @@ var __oj_thematic_map_metadata =
       "value": "short"
     },
     "linkData": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -169,7 +169,7 @@ var __oj_thematic_map_metadata =
       }
     },
     "markerData": {
-      "type": "object",
+      "type": "DataProvider",
       "extension": {
         "webelement": {
           "exceptionStatus": [
@@ -891,7 +891,7 @@ var __oj_thematic_map_marker_metadata =
        * @ojshortdesc Specifies the DataProvider for the areas of the thematic map. See the Help documentation for more information.
        * @memberof oj.ojThematicMap
        * @instance
-       * @type {(Object|null)=}
+       * @type {(DataProvider|null)=}
        * @ojsignature {target: "Type", value: "DataProvider<K1, D1>|null", jsdocOverride:true}
        * @default null
        * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
@@ -1199,7 +1199,7 @@ var __oj_thematic_map_marker_metadata =
        * @ojshortdesc Specifies the DataProvider for the links of the thematic map. See the Help documentation for more information.
        * @memberof oj.ojThematicMap
        * @instance
-       * @type {(Object|null)=}
+       * @type {(DataProvider|null)=}
        * @ojsignature {target: "Type", value: "DataProvider<K2, D2>|null", jsdocOverride:true}
        * @default null
        * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
@@ -1383,7 +1383,7 @@ var __oj_thematic_map_marker_metadata =
        * @ojshortdesc Specifies the DataProvider for the markers of the thematic map. See the Help documentation for more information.
        * @memberof oj.ojThematicMap
        * @instance
-       * @type {(Object|null)=}
+       * @type {(DataProvider|null)=}
        * @ojsignature {target: "Type", value: "DataProvider<K3, D3>|null", jsdocOverride:true}
        * @default null
        * @ojwebelementstatus {type: "unsupported", since: "13.0.0",
@@ -1645,7 +1645,7 @@ var __oj_thematic_map_marker_metadata =
          * @type {Object=}
          * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
-         *
+         * @ojdeprecated {since: "19.0.0", description: "The areaSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
          * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
          */
         /**
@@ -3334,6 +3334,8 @@ var __oj_thematic_map_marker_metadata =
    *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "labelStyle", jsdocOverride: true},
    *               {target: "Type", value: "?(string | ((context: oj.ojThematicMap.AreaShortDescContext<K,D>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "<K,D=any>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "svgStyle", since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
+   * @ojdeprecated {target:"property", for: "svgClassName", since: "19.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    */
   /**
    * @typedef {Object} oj.ojThematicMap.Link
@@ -3342,16 +3344,16 @@ var __oj_thematic_map_marker_metadata =
    * @property {Object}        endLocation An object used to determine the end point of the link.
    * @property {any=}          endLocation.id The marker or area id to be used as the end point.
    * @property {string=}       endLocation.location An identifier corresponding to a Feature provided in the mapProvider geo object to be used as the end point.
-   * @property {number=}       endLocation.x The x coordinate which can represent latitude of the end point.
-   * @property {number=}       endLocation.y The y coordinate which can represent longitude of the end point.
+   * @property {number=}       endLocation.x The x coordinate which can represent longitude of the end point.
+   * @property {number=}       endLocation.y The y coordinate which can represent latitude of the end point.
    * @property {any=}          id The identifier for this link. The id should be set by the application if the DataProvider is not being used. The row key will be used as id in the  case.
    * @property {"auto"|"off"}  [selectable="auto"] Specifies whether or not the link will be selectable.
    * @property {(string|function)=} shortDesc The description of this element. Will be lazily created if a function is used.  This is used for accessibility and also for customizing the tooltip text.
    * @property {Object}        startLocation An object used to determine the start point of the link.
    * @property {any=}          startLocation.id The marker id to be used as the start point.
    * @property {string=}       startLocation.location An identifier corresponding to a Feature provided in the mapProvider geo object to be used as the start point.
-   * @property {number=}       startLocation.x The x coordinate which can represent latitude of the start point.
-   * @property {number=}       startLocation.y The y coordinate which can represent longitude of the start point.
+   * @property {number=}       startLocation.x The x coordinate which can represent longitude of the start point.
+   * @property {number=}       startLocation.y The y coordinate which can represent latitude of the start point.
    * @property {string=}       svgClassName The CSS style class defining the style of the link.
    * @property {Object=}       svgStyle The CSS style object defining the style of the link. Only SVG CSS style properties are supported.
    * @property {number=}       width The link width in pixels.
@@ -3361,6 +3363,8 @@ var __oj_thematic_map_marker_metadata =
    *               {target: "Type", value: "K2", for: "startLocation.id"},
    *               {target: "Type", value: "?(string | ((context: oj.ojThematicMap.LinkShortDescContext<K1,K2,D1>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "<K1,K2,D1=any>", for:"genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "svgStyle", since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
+   * @ojdeprecated {target:"property", for: "svgClassName", since: "19.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    */
   /**
    * @typedef {Object} oj.ojThematicMap.Marker
@@ -3400,6 +3404,8 @@ var __oj_thematic_map_marker_metadata =
    *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
    *               {target: "Type", value: "?(string | ((context: oj.ojThematicMap.MarkerShortDescContext<K3,D3>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "<K3,D3=any>", for: "genericTypeParameters"}]
+   * @ojdeprecated {target:"property", for: "svgStyle", since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
+   * @ojdeprecated {target:"property", for: "svgClassName", since: "19.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    */
   /**
    * @typedef {Object} oj.ojThematicMap.RendererContext
@@ -3965,6 +3971,7 @@ var __oj_thematic_map_marker_metadata =
    * @instance
    * @type {string=}
    * @default ""
+   * @ojdeprecated {since: "19.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
    *
    * @example <caption>Initialize the thematic map area with the
    * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
@@ -3980,6 +3987,7 @@ var __oj_thematic_map_marker_metadata =
    * @type {object=}
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
+   * @ojdeprecated {since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
    *
    * @example <caption>Initialize the thematic map area with the
    * <code class="prettyprint">svg-style</code> attribute specified:</caption>
@@ -4099,7 +4107,7 @@ var __oj_thematic_map_marker_metadata =
    * @example <caption>See the <a href="#endLocation">endLocation</a> attribute for usage examples.</caption>
    */
   /**
-   * The x coordinate which can represent latitude of the end point.
+   * The x coordinate which can represent longitude of the end point.
    * @expose
    * @name endLocation.x
    * @memberof! oj.ojThematicMapLink
@@ -4109,7 +4117,7 @@ var __oj_thematic_map_marker_metadata =
    * @example <caption>See the <a href="#endLocation">endLocation</a> attribute for usage examples.</caption>
    */
   /**
-   * The y coordinate which can represent longitude of the end point.
+   * The y coordinate which can represent latitude of the end point.
    * @expose
    * @name endLocation.y
    * @memberof! oj.ojThematicMapLink
@@ -4186,7 +4194,7 @@ var __oj_thematic_map_marker_metadata =
    * @example <caption>See the <a href="#startLocation">startLocation</a> attribute for usage examples.</caption>
    */
   /**
-   * The x coordinate which can represent latitude of the start point.
+   * The x coordinate which can represent longitude of the start point.
    * @expose
    * @name startLocation.x
    * @memberof! oj.ojThematicMapLink
@@ -4196,7 +4204,7 @@ var __oj_thematic_map_marker_metadata =
    * @example <caption>See the <a href="#startLocation">startLocation</a> attribute for usage examples.</caption>
    */
   /**
-   * The y coordinate which can represent longitude of the start point.
+   * The y coordinate which can represent latitude of the start point.
    * @expose
    * @name startLocation.y
    * @memberof! oj.ojThematicMapLink
@@ -4213,6 +4221,7 @@ var __oj_thematic_map_marker_metadata =
    * @instance
    * @type {string=}
    * @default ""
+   * @ojdeprecated {since: "19.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
    *
    * @example <caption>Initialize the thematic map link with the
    * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
@@ -4228,6 +4237,7 @@ var __oj_thematic_map_marker_metadata =
    * @type {object=}
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
+   * @ojdeprecated {since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
    *
    * @example <caption>Initialize the thematic map link with the
    * <code class="prettyprint">svg-style</code> attribute specified:</caption>
@@ -4579,6 +4589,7 @@ var __oj_thematic_map_marker_metadata =
    * @instance
    * @type {string=}
    * @default ""
+   * @ojdeprecated {since: "19.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
    *
    * @example <caption>Initialize the thematic map marker with the
    * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
@@ -4594,6 +4605,7 @@ var __oj_thematic_map_marker_metadata =
    * @type {object=}
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
+   * @ojdeprecated {since: "19.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
    *
    * @example <caption>Initialize the thematic map marker with the
    * <code class="prettyprint">svg-style</code> attribute specified:</caption>

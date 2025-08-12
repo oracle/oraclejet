@@ -96,8 +96,23 @@ if (data.kind !== 'class' && !data.ojcomponent && data.ojunsupportedthemes && da
         <?js= data.description ?>
       </div>
     <?js 
-    } ?>
+    } 
+    if (data.kind === 'typedef' ) { ?>
+      <div class="description">
+        <?js
+        if (data.ojexports) {
+          const importDetails = data.usageSample; 
+          if(importDetails) { ?>
+            <dl>
+              <dt><h5>Typescript Import Format</h5></dt>
+              <dd><?js= importDetails ?></dd>
+            </dl>
+          <?js
+          }
+        }?>
+      </div>
     <?js 
+    }
     if (data.ojdeprecateddescription) { ?>
       <div class="description deprecated-hidden"><?js= data.ojdeprecateddescription ?></div>
     <?js 

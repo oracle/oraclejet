@@ -35,6 +35,8 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrettyMsgEncoder = exports.PCC = void 0;
 const process = __importStar(require("process"));
+// Enum that maps ANSI color codes
+// see - https://en.m.wikipedia.org/wiki/ANSI_escape_code#Colors
 var PCC;
 (function (PCC) {
     PCC["FILE"] = "\u001B[96m";
@@ -45,12 +47,20 @@ var PCC;
     PCC["ERRCODE"] = "\u001B[90m";
     PCC["VCOMP"] = "\u001B[96m";
 })(PCC || (exports.PCC = PCC = {}));
-const RESET_PCC = '\u001b[0m';
+const RESET_PCC = '\u001b[0m'; // Reset all codes
+/**
+ * Utility class that provides ANSI color coding for prettier
+ * compilation error/warning messages.
+ * Color coding is only applied if stdout is connect to a terminal,
+ * and can be disabled based upon the tsconfig "pretty" setting.
+ */
 class PrettyMsgEncoder {
     constructor(tsconfig_pretty) {
+        // if undefined in tsconfig.compilerOptions, default will depend upon
+        // whether stdout is connect to a terminal
         this._isPretty = process.stdout.isTTY;
         if (tsconfig_pretty !== undefined) {
-            this._isPretty &&= !!tsconfig_pretty;
+            this._isPretty &&= !!tsconfig_pretty; // if specified, coerce to boolean value
         }
     }
     encode(type, val) {

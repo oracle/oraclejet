@@ -28,6 +28,9 @@ class TreeDataSourceAdapter extends DataSourceAdapter {
             childDataProvider._parentInfoMap = this._parentInfoMap;
             return childDataProvider;
         }
+        // todo: for the component use case, this is sufficient since parentKey should have been
+        // fetched already, otherwise, we would probably need a private contract in TreeDataSource
+        // to handle the case when parentKey has not been fetched yet
         return null;
     }
     fetchFirst(params) {
@@ -56,6 +59,9 @@ class TreeDataSourceAdapter extends DataSourceAdapter {
         }
         return null;
     }
+    /**
+     * Get the function which performs the fetch
+     */
     _getFetchFunc(params) {
         const self = this;
         if (params != null && params[TreeDataSourceAdapter._SORTCRITERIA] != null) {
@@ -88,6 +94,9 @@ class TreeDataSourceAdapter extends DataSourceAdapter {
             return this._getTreeDataSourceFetch(params);
         }
     }
+    /**
+     * Get the function which invokes fetchChildren() on TreeDataSource
+     */
     _getTreeDataSourceFetch(params) {
         const self = this;
         return function (params) {
@@ -128,11 +137,18 @@ class TreeDataSourceAdapter extends DataSourceAdapter {
             });
         };
     }
+    /**
+     * Add event listeners to TreeDataSource.  Note that currently none of the components
+     * handle change event from TreeDataSource.
+     */
     _addTreeDataSourceEventListeners() {
         this.removeAllListeners();
         this.addListener('change', this._handleChange);
         this.addListener('refresh', this._handleRefresh);
     }
+    /**
+     * Remove event listeners to TableDataSource
+     */
     _removeTreeDataSourceEventListeners() {
         this.removeListener('change');
         this.removeListener('refresh');

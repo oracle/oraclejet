@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacollection-common', 'ojs/ojconfig', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojdomscroller', 'ojs/ojset', 'ojs/ojmap'], function (exports, oj, $, Context, DataCollectionUtils, Config, AnimationUtils, Logger, DomScroller, KeySet, KeyMap) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacollection-common', 'ojs/ojconfig', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojdomscroller', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojabortreason'], function (exports, oj, $, Context, DataCollectionUtils, Config, AnimationUtils, Logger, DomScroller, KeySet, KeyMap, ojabortreason) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -81,6 +81,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
    * @protected
    */
   DataProviderContentHandler.prototype.Destroy = function (completelyDestroy) {
+    this.unsetRootAriaProperties();
+
     // this.m_root was changed in RenderContent
     if (this.m_superRoot != null) {
       this.m_root = this.m_superRoot;
@@ -118,6 +120,12 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
       this.m_root.setAttribute('role', 'listbox');
     }
   };
+
+  /**
+   * Unsets any aria attributes on the root element
+   * @protected
+   */
+  DataProviderContentHandler.prototype.unsetRootAriaProperties = function () {};
 
   /**
    * Renders the content inside the list
@@ -576,7 +584,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
       context = {};
     }
 
-    if (context.index == null) {
+    if (context.index == null && index !== -1) {
       context.index = index;
     }
 
@@ -1129,11 +1137,17 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
         self.handleRemoveTransitionEnd(elem, restoreFocus, isReinsert);
         if (self.m_widget) {
           self.m_widget.enableResizeListener();
+          if (restoreFocus) {
+            self.m_widget._cleanupTempShiftFocusDiv();
+          }
         }
       },
       function () {
         if (self.m_widget) {
           self.m_widget.enableResizeListener();
+          if (restoreFocus) {
+            self.m_widget._cleanupTempShiftFocusDiv();
+          }
         }
       }
     );
@@ -1856,7 +1870,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
       if (this.m_loadingIndicator != null) {
         this._adjustLoadMoreSkeletons(this._getRootElementWidth(true));
       } else {
-        var container = this.m_root.querySelector('.oj-listview-skeleton-container');
+        // avoid the case that listview is inside listview
+        var container = this.m_root.querySelector(
+          '.oj-listview-skeleton-container:not(oj-list-view .oj-listview-skeleton-container)'
+        );
         if (container != null) {
           // this must be the initial skeleton, just re-render them
           this.renderInitialSkeletons();
@@ -1914,6 +1931,18 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
   };
 
   /**
+   * Sets aria-rowcount or aria-colcount
+   * @override
+   */
+  IteratingDataProviderContentHandler.prototype.setAriaRowOrColCount = function (root, value) {
+    if (this.isCardLayout()) {
+      root.setAttribute('aria-colcount', value);
+    } else {
+      root.setAttribute('aria-rowcount', value);
+    }
+  };
+
+  /**
    * Sets aria properties on root
    * @override
    */
@@ -1931,7 +1960,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
           // (this happened in oj-select-single unit tests)
           if (self.m_root) {
             // if count is unknown, then use max count
-            self.m_root.setAttribute('aria-rowcount', size === -1 ? self._getMaxCount() : size);
+            const value = size === -1 ? self._getMaxCount() : size;
+            self.setAriaRowOrColCount(self.m_root, value);
           }
         });
     }
@@ -1943,7 +1973,9 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
    */
   IteratingDataProviderContentHandler.prototype.unsetRootAriaProperties = function () {
     IteratingDataProviderContentHandler.superclass.unsetRootAriaProperties.call(this);
-    this.m_root.removeAttribute('aria-rowcount');
+    const root = this.m_superRoot || this.m_root;
+    root.removeAttribute('aria-rowcount');
+    root.removeAttribute('aria-colcount');
   };
 
   /**
@@ -3027,7 +3059,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
         ) {
           // update aria rowcount once all data is loaded
           const root = this.m_superRoot ? this.m_superRoot : this.m_root;
-          root.setAttribute('aria-rowcount', this.getItems(this.m_root).length);
+          const value = this.getItems(this.m_root).length;
+          this.setAriaRowOrColCount(root, value);
         }
         return skipPostProcessing;
       })
@@ -3418,7 +3451,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdatacoll
     // if listview is busy, abort the current request so that we can start a new one
     if (!this.IsReady() && this.m_controller) {
       const wrapper = this.m_widget.OuterWrapper ?? this.m_widget.ojContext.element[0];
-      this.m_controller.abort(DataCollectionUtils.getAbortReason(wrapper));
+      this.m_controller.abort(ojabortreason.getAbortReason(wrapper));
       this._setFetching(false);
     }
 

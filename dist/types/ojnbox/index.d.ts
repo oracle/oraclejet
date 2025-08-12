@@ -44,9 +44,12 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
         cellDefaults?: {
             labelHalign?: 'center' | 'end' | 'start';
             labelStyle?: Partial<CSSStyleDeclaration>;
+            /** @deprecated since 19.0.0 - The maximizedSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             maximizedSvgStyle?: Partial<CSSStyleDeclaration>;
+            /** @deprecated since 19.0.0 - The minimizedSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             minimizedSvgStyle?: Partial<CSSStyleDeclaration>;
             showCount?: 'on' | 'off' | 'auto';
+            /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         columnLabelStyle?: Partial<CSSStyleDeclaration>;
@@ -421,6 +424,8 @@ export namespace ojNBox {
     type RenderNodeTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K> = TooltipContext<K>;
 }
 export interface ojNBoxEventMap<K, D extends ojNBox.Node<K> | any> extends dvtBaseComponentEventMap<ojNBoxSettableProperties<K, D>> {
     'ojCopyRequest': ojNBox.ojCopyRequest<K>;
@@ -499,9 +504,12 @@ export interface ojNBoxSettableProperties<K, D extends ojNBox.Node<K> | any> ext
         cellDefaults?: {
             labelHalign?: 'center' | 'end' | 'start';
             labelStyle?: Partial<CSSStyleDeclaration>;
+            /** @deprecated since 19.0.0 - The maximizedSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             maximizedSvgStyle?: Partial<CSSStyleDeclaration>;
+            /** @deprecated since 19.0.0 - The minimizedSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             minimizedSvgStyle?: Partial<CSSStyleDeclaration>;
             showCount?: 'on' | 'off' | 'auto';
+            /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         columnLabelStyle?: Partial<CSSStyleDeclaration>;
@@ -627,7 +635,9 @@ export interface ojNBoxNode<K = any> extends dvtBaseComponent<ojNBoxNodeSettable
     row: string;
     secondaryLabel?: string;
     shortDesc?: (string | ((context: ojNBox.NodeShortDescContext<K>) => string));
+    /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration> | null;
     xPercentage?: number | null;
     yPercentage?: number | null;
@@ -738,7 +748,9 @@ export interface ojNBoxNodeSettableProperties<K = any> extends dvtBaseComponentS
     row: string;
     secondaryLabel?: string;
     shortDesc?: (string | ((context: ojNBox.NodeShortDescContext<K>) => string));
+    /** @deprecated since 19.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 19.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration> | null;
     xPercentage?: number | null;
     yPercentage?: number | null;
@@ -1036,6 +1048,8 @@ export namespace NBoxElement {
     type RenderNodeTemplate<K, D> = import('ojs/ojvcomponent').TemplateSlot<NodeTemplateContext<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderTooltipTemplate<K> = import('ojs/ojvcomponent').TemplateSlot<TooltipContext<K>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipTemplateContext<K> = TooltipContext<K>;
 }
 export namespace NBoxNodeElement {
     // tslint:disable-next-line interface-over-type-literal
@@ -1124,8 +1138,8 @@ export interface NBoxNodeIntrinsicProps extends Partial<Readonly<ojNBoxNodeSetta
     onrowChanged?: (value: ojNBoxNodeEventMap<any>['rowChanged']) => void;
     onsecondaryLabelChanged?: (value: ojNBoxNodeEventMap<any>['secondaryLabelChanged']) => void;
     onshortDescChanged?: (value: ojNBoxNodeEventMap<any>['shortDescChanged']) => void;
-    onsvgClassNameChanged?: (value: ojNBoxNodeEventMap<any>['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojNBoxNodeEventMap<any>['svgStyleChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgClassNameChanged?: (value: ojNBoxNodeEventMap<any>['svgClassNameChanged']) => void;
+    /** @deprecated since 19.0.0 */ onsvgStyleChanged?: (value: ojNBoxNodeEventMap<any>['svgStyleChanged']) => void;
     onxPercentageChanged?: (value: ojNBoxNodeEventMap<any>['xPercentageChanged']) => void;
     onyPercentageChanged?: (value: ojNBoxNodeEventMap<any>['yPercentageChanged']) => void;
     children?: ComponentChildren;

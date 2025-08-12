@@ -8,7 +8,7 @@
 define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistview'], function (exports, oj, $, Logger, ojdnd, ojlistview) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
-  $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
+  var $__default = 'default' in $ ? $['default'] : $;
 
   /**
    * @ignore
@@ -143,8 +143,8 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   };
 
   ListViewDndContext.prototype._findItem = function (target) {
-    if ($(target).get(0).classList.contains('oj-listview-first-drop-target')) {
-      return $(this.m_dropTargetElem);
+    if ($__default(target).get(0).classList.contains('oj-listview-first-drop-target')) {
+      return $__default(this.m_dropTargetElem);
     }
     return this.listview.FindItem(target);
   };
@@ -164,7 +164,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       for (var i = 0; i < selection.length; i++) {
         var elem = this.listview.FindElementByKey(selection[i]);
         // make sure item is focusable also
-        if (elem != null && !this.listview.SkipFocus($(elem))) {
+        if (elem != null && !this.listview.SkipFocus($__default(elem))) {
           items.push(elem);
         }
       }
@@ -213,12 +213,12 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   // eslint-disable-next-line no-unused-vars
   ListViewDndContext.prototype.itemRenderComplete = function (elem, context) {
     // if it's a group, use the div instead
-    if (!$(elem).hasClass(this.listview.getItemStyleClass())) {
+    if (!$__default(elem).hasClass(this.listview.getItemStyleClass())) {
       // eslint-disable-next-line no-param-reassign
       elem = elem.firstElementChild;
     }
 
-    var dragHandle = $(elem).find('.' + this.GetDragAffordanceClass());
+    var dragHandle = $__default(elem).find('.' + this.GetDragAffordanceClass());
     // for touch draggable needs to be set prior to touch interaction
     if (dragHandle != null && dragHandle.length > 0 && this.listview._isTouchSupport()) {
       dragHandle.attr('draggable', 'true');
@@ -230,12 +230,12 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   /** ****************************** Mouse down/up, touch start/end helpers ***********************************************/
   ListViewDndContext.prototype._unsetSelectionDraggable = function () {
     if (this.m_draggableSelection) {
-      $.each(
+      $__default.each(
         this.m_draggableSelection,
         function (index, elem) {
-          $(elem).removeClass('oj-draggable');
+          $__default(elem).removeClass('oj-draggable');
           if (this.listview._isTouchSupport()) {
-            $(elem).removeAttr('draggable');
+            $__default(elem).removeAttr('draggable');
           }
         }.bind(this)
       );
@@ -258,12 +258,12 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
     for (var i = 0; i < selection.length; i++) {
       var elem = this.listview.FindElementByKey(selection[i]);
       // make sure item is focusable also
-      if (elem != null && !this.listview.SkipFocus($(elem))) {
+      if (elem != null && !this.listview.SkipFocus($__default(elem))) {
         elems.push(elem);
-        $(elem).addClass('oj-draggable');
+        $__default(elem).addClass('oj-draggable');
         // for touch draggable needs to be set prior to touch interaction
         if (this.listview._isTouchSupport()) {
-          $(elem).attr('draggable', 'true');
+          $__default(elem).attr('draggable', 'true');
         }
       }
     }
@@ -311,7 +311,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       var dragger;
 
       if (target.hasClass(cls)) {
-        dragger = $(target);
+        dragger = $__default(target);
       } else {
         var item = this._findItem(target);
         if (!this.shouldDragCurrentItem()) {
@@ -332,7 +332,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
             } else {
               // the active item would change, so remove oj-draggable now
               // note for multiple selection case see setSelectionDraggable
-              $(selectedItems[0]).removeClass('oj-draggable');
+              $__default(selectedItems[0]).removeClass('oj-draggable');
             }
           }
         } else {
@@ -358,7 +358,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       var dragger;
 
       if (target.hasClass(cls)) {
-        dragger = $(target);
+        dragger = $__default(target);
       } else {
         dragger = this._findItem(target);
       }
@@ -555,7 +555,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
     var isCardLayout = this.listview.isCardLayout();
 
     if (items.length > 1) {
-      dragImage = $(this._createDragImage());
+      dragImage = $__default(this._createDragImage());
       dragImage.css({
         width: this.listview.element.css('width'),
         height: this.listview.element.css('height')
@@ -573,7 +573,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       for (i = 0; i < items.length; i++) {
         offsetTop = items[i].offsetTop - minTop;
         var offsetWidth = items[i].offsetWidth;
-        clone = $(items[i].cloneNode(true));
+        clone = $__default(items[i].cloneNode(true));
         clone.removeClass('oj-selected oj-focus oj-hover').css({
           position: 'absolute',
           top: offsetTop,
@@ -586,9 +586,9 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       }
     } else {
       // calculate offset if drag on affordance
-      if ($(target).hasClass(this.GetDragAffordanceClass())) {
+      if ($__default(target).hasClass(this.GetDragAffordanceClass())) {
         offsetTop = 0;
-        if ($.contains(items[0], target.offsetParent)) {
+        if ($__default.contains(items[0], target.offsetParent)) {
           offsetTop = target.offsetTop;
         }
 
@@ -599,13 +599,13 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
         top = Math.max(0, nativeEvent.offsetY);
       }
 
-      clone = $(items[0].cloneNode(true));
+      clone = $__default(items[0].cloneNode(true));
       clone.removeClass('oj-selected oj-focus oj-hover').addClass('oj-drag');
       if (!isCardLayout) {
         clone.addClass('oj-listview-item-drag-image');
       }
 
-      dragImage = $(this._createDragImage());
+      dragImage = $__default(this._createDragImage());
       dragImage
         .css({
           width: this.GetDragImageWidth(items[0]),
@@ -619,7 +619,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       dragImage.addClass('oj-listview-card-layout');
     }
 
-    $('body').append(dragImage); // @HTMLUpdateOK
+    $__default('body').append(dragImage); // @HTMLUpdateOK
     this.m_dragImage = dragImage;
     nativeEvent.dataTransfer.setDragImage(dragImage.get(0), left, top);
   };
@@ -662,7 +662,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       }
 
       var items;
-      if ($(event.target).hasClass(this.GetDragAffordanceClass()) || this.shouldDragCurrentItem()) {
+      if ($__default(event.target).hasClass(this.GetDragAffordanceClass()) || this.shouldDragCurrentItem()) {
         // if it's affordance then use event target
         items = [];
         items.push(this._findItem(event.target)[0]);
@@ -672,7 +672,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
 
       if (items.length > 0) {
         this.m_dragItems = items;
-        this.m_currentDragItem = $(items[0]);
+        this.m_currentDragItem = $__default(items[0]);
 
         var ui = this._setDragItemDataTransfer(event, dataTypes, items);
         if (ui) {
@@ -739,7 +739,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
         var dragItem = this.m_dragItems[i];
         dragItem.classList.remove('oj-listview-drag-source');
         dragItem.classList.remove(this.GetDragItemClass());
-        $(dragItem).css('display', '');
+        $__default(dragItem).css('display', '');
       }
     }
 
@@ -831,7 +831,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
     if (this.m_dropTarget == null) {
       var dropTarget;
       if (type === 'space') {
-        dropTarget = $(item.get(0).cloneNode(false));
+        dropTarget = $__default(item.get(0).cloneNode(false));
         dropTarget.addClass('oj-drop').removeClass('oj-drag oj-draggable oj-hover oj-focus').css({
           display: 'block',
           height: item.outerHeight(),
@@ -842,7 +842,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
         dropTarget.classList.add('oj-listview-drop-target');
       }
 
-      this.m_dropTarget = $(dropTarget);
+      this.m_dropTarget = $__default(dropTarget);
     }
 
     var elem = item.get(0);
@@ -996,8 +996,8 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
     // for touch we'll need to remove max height set
     if (this.m_maxHeightAdjusted == null && this.listview._isTouchSupport()) {
       this.listview.element.find('ul.' + this.listview.getGroupStyleClass()).each(function () {
-        $(this).attr('oldMaxHeight', $(this).css('maxHeight').toString());
-        $(this).css('maxHeight', 10000);
+        $__default(this).attr('oldMaxHeight', $__default(this).css('maxHeight').toString());
+        $__default(this).css('maxHeight', 10000);
       });
 
       this.m_maxHeightAdjusted = 'adjusted';
@@ -1011,8 +1011,8 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   ListViewDndContext.prototype._restoreGroupItemStyle = function () {
     if (this.listview._isTouchSupport()) {
       this.listview.element.find('ul.' + this.listview.getGroupStyleClass()).each(function () {
-        $(this).css('maxHeight', parseInt($(this).attr('oldMaxHeight'), 10));
-        $(this).removeAttr('oldMaxHeight');
+        $__default(this).css('maxHeight', parseInt($__default(this).attr('oldMaxHeight'), 10));
+        $__default(this).removeAttr('oldMaxHeight');
       });
     }
 
@@ -1107,9 +1107,9 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
     this._adjustGroupItemStyle();
 
     // checks whether this is initially dragging over the drag item
-    if (this.m_dragItems != null && $(this.m_dragItems[0]).css('display') !== 'none') {
+    if (this.m_dragItems != null && $__default(this.m_dragItems[0]).css('display') !== 'none') {
       // take out the current drag item and create drop target
-      item = $(this.m_dragItems[0]);
+      item = $__default(this.m_dragItems[0]);
 
       // this will check for matching data types
       returnValue = this._invokeDropCallback('dragOver', event, { item: item.get(0) });
@@ -1126,7 +1126,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
         for (var i = 0; i < this.m_dragItems.length; i++) {
           // we have to override inline style instead of doing it inside style class since
           // custom style class could override it
-          $(this.m_dragItems[i]).addClass(this.GetDragItemClass()).css('display', 'none');
+          $__default(this.m_dragItems[i]).addClass(this.GetDragItemClass()).css('display', 'none');
         }
 
         dropTarget.insertBefore(item); // @HTMLUpdateOK
@@ -1188,7 +1188,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
             this._setAccInfo(item, this.m_dropPosition);
           }
           event.preventDefault();
-        } else if (!$(event.target).hasClass(this.listview.getGroupStyleClass())) {
+        } else if (!$__default(event.target).hasClass(this.listview.getGroupStyleClass())) {
           // don't remove the drop target if we have inside the empty area of the list of a group item
           // this happens mostly in card layout view
           // not a valid drop target
@@ -1216,7 +1216,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   ListViewDndContext.prototype._getAndUpdateEmptyItem = function () {
     var emptyItem = this.listview.element.children('.' + this.listview.getEmptyTextStyleClass());
     if (emptyItem.length === 0) {
-      emptyItem = $(this.listview.element[0].querySelector('.oj-listview-no-data-item'));
+      emptyItem = $__default(this.listview.element[0].querySelector('.oj-listview-no-data-item'));
     } else {
       emptyItem.get(0).textContent = '';
     }
@@ -1366,6 +1366,110 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   };
 
   /**
+   * exposing this on the custom element so that it can be called by the Webelement
+   * @private
+   * @returns {Object} reorder object
+   */
+  ListViewDndContext.prototype._doReorderHelper = function (event, key, position) {
+    let itemArray = [];
+    let referenceItem;
+    let destKey;
+    let groupHeader;
+    let movePosition = 'before';
+    const item = this.listview.FindElementByKey(key);
+    if (item == null) {
+      throw new Error('invaild key');
+    }
+
+    itemArray.push(item);
+
+    if ('groupKey' in position) {
+      groupHeader = this.listview.FindElementByKey(position.groupKey);
+      if (groupHeader == null) {
+        throw $.error('invalid group key');
+      }
+    }
+
+    if ('groupIndex' in position && position.groupIndex) {
+      let groupHeaderItems = this.listview.element[0].querySelectorAll(
+        '.oj-listview-element > .' +
+          this.listview.getItemElementStyleClass() +
+          '> .' +
+          this.listview.getGroupStyleClass()
+      );
+      for (let j = 0; j < position.groupIndex.length; j++) {
+        groupHeader = groupHeaderItems[position.groupIndex[j]];
+        if (groupHeader == null) {
+          throw $.error('invaild group index ');
+        }
+        groupHeaderItems = groupHeader.querySelectorAll(
+          '.' + this.listview.getItemElementStyleClass() + '> .' + this.listview.getGroupStyleClass()
+        );
+      }
+    }
+
+    if (groupHeader) {
+      let leaves = groupHeader.querySelectorAll('ul > .' + this.listview.getItemElementStyleClass());
+      if (leaves.length === 0) {
+        movePosition = 'inside';
+        destKey = this.listview.GetKey(groupHeader);
+      }
+      if ('itemIndex' in position && position.itemIndex) {
+        for (let i = 0; i < leaves.length; i++) {
+          if (position.itemIndex === i) {
+            destKey = this.listview.GetKey(leaves[i]);
+            break;
+          }
+        }
+        if (destKey == null) {
+          throw $.error('invalid itemIndex');
+        }
+      } else if (destKey == null) {
+        destKey = this.listview.GetKey(leaves[leaves.length - 1]);
+        movePosition = 'after';
+      }
+    }
+
+    if (destKey == null && 'key' in position) {
+      let items = this.listview.element[0].querySelectorAll(
+        'ul > .' + this.listview.getItemElementStyleClass()
+      );
+      if (position.key !== null) {
+        destKey = position.key;
+      } else {
+        destKey = this.listview.GetKey(items[items.length - 1]);
+        movePosition = 'after';
+      }
+    }
+
+    if (destKey == null && 'index' in position && position.index) {
+      let items = this.listview.element[0].querySelectorAll(
+        '.' + this.listview.GetStyleClass() + ' > .' + this.listview.getItemElementStyleClass()
+      );
+      for (let i = 0; i < items.length; i++) {
+        if (position.index === i) {
+          destKey = this.listview.GetKey(items[i]);
+          break;
+        }
+      }
+    }
+
+    if (destKey !== null) {
+      referenceItem = this.listview.FindElementByKey(destKey);
+    }
+
+    if (referenceItem == null) {
+      throw new Error('invaild reference position');
+    }
+
+    this.listview.Trigger(
+      'reorder',
+      event,
+      this.CreateReorderPayload(itemArray, movePosition, referenceItem)
+    );
+  };
+
+  /**
    * Returns payload object for reorder event. Navlist overrides this.
    * @param {Array} items, items to be moved.
    * @param {string} position, the drop position relative to the reference item.
@@ -1389,7 +1493,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   ListViewDndContext.prototype.prepareContextMenu = function (contextMenu) {
     var self = this;
 
-    var menuContainer = $(contextMenu);
+    var menuContainer = $__default(contextMenu);
     if (this.m_contextMenu !== contextMenu) {
       this.m_contextMenu = contextMenu;
 
@@ -1407,10 +1511,10 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       if (menuItem.tagName === 'OJ-OPTION') {
         // eslint-disable-next-line no-param-reassign
         menuItem.innerHTML = newListItem.get(0).innerHTML; // @HTMLUpdateOK
-        $(menuItem).attr('data-oj-command', newListItem.attr('data-oj-command'));
+        $__default(menuItem).attr('data-oj-command', newListItem.attr('data-oj-command'));
       } else {
-        newListItem.get(0).className = $(menuItem).get(0).className;
-        $(menuItem).replaceWith(newListItem); // @HTMLUpdateOK
+        newListItem.get(0).className = $__default(menuItem).get(0).className;
+        $__default(menuItem).replaceWith(newListItem); // @HTMLUpdateOK
       }
     });
 
@@ -1424,7 +1528,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
         if (contextMenu.tagName === 'OJ-MENU') {
           contextMenu.refresh();
         } else {
-          $(contextMenu).ojMenu('refresh');
+          $__default(contextMenu).ojMenu('refresh');
         }
       }
     }
@@ -1471,20 +1575,20 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   ListViewDndContext.prototype._getCommands = function (contextMenu, callback) {
     var self = this;
     var capabilities = [];
-    var listItems = $(contextMenu).find(this._getDndContextMenuItemSelector());
+    var listItems = $__default(contextMenu).find(this._getDndContextMenuItemSelector());
     listItems.each(function () {
       var command;
-      var anchor = $(this).children('a');
+      var anchor = $__default(this).children('a');
 
       if (anchor.length === 0) {
-        if ($(this).attr('data-oj-command').indexOf(self.GetCommandPrefix()) === 0) {
-          command = $(this).attr('data-oj-command').substring(self.GetCommandPrefix().length);
+        if ($__default(this).attr('data-oj-command').indexOf(self.GetCommandPrefix()) === 0) {
+          command = $__default(this).attr('data-oj-command').substring(self.GetCommandPrefix().length);
           if (callback) {
             callback(this, command);
           }
         }
       } else {
-        command = $(this).attr('data-oj-command');
+        command = $__default(this).attr('data-oj-command');
 
         // mapping for paste
         if (command === ListViewDndContext.PASTE_BEFORE_COMMAND) {
@@ -1526,7 +1630,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
    * @private
    */
   ListViewDndContext.prototype._buildContextMenuListItem = function (command, tagName) {
-    var listItem = $(document.createElement(tagName)); // @HTMLUpdateOK
+    var listItem = $__default(document.createElement(tagName)); // @HTMLUpdateOK
     listItem.attr('data-oj-command', command);
     listItem.append(this._buildContextMenuLabel(command, tagName === 'OJ-OPTION')); // @HTMLUpdateOK
     return listItem;
@@ -1548,7 +1652,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
     if (useOjOption) {
       return textNode;
     }
-    return $('<a href="#"></a>').append(textNode); // @HTMLUpdateOK
+    return $__default('<a href="#"></a>').append(textNode); // @HTMLUpdateOK
   };
 
   /**
@@ -1559,13 +1663,13 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   ListViewDndContext.prototype._handleCut = function (event) {
     // first restore style of any previously cut items
     if (this.m_clipboard != null) {
-      $(this.m_clipboard).removeClass(this.GetCutStyleClass());
+      $__default(this.m_clipboard).removeClass(this.GetCutStyleClass());
     }
 
     var items = this.GetCutItems(event);
     // focus should be moved back to listview after context menu is closed
     this.listview.ojContext.element.focus();
-    $(items).addClass(this.GetCutStyleClass());
+    $__default(items).addClass(this.GetCutStyleClass());
     this.m_clipboard = items;
 
     // fire cut event
@@ -1590,7 +1694,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   ListViewDndContext.prototype._handleCopy = function (event) {
     // first restore style of any previously cut items
     if (this.m_clipboard != null) {
-      $(this.m_clipboard).removeClass(this.GetCutStyleClass());
+      $__default(this.m_clipboard).removeClass(this.GetCutStyleClass());
     }
 
     var items = this._getSelectedItems();
@@ -1612,7 +1716,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
     this.listview.Trigger('paste', event, { item: item.get(0) });
 
     // restore cut item style
-    $(this.m_clipboard).removeClass(this.GetCutStyleClass());
+    $__default(this.m_clipboard).removeClass(this.GetCutStyleClass());
 
     // fire reorder event
     this.listview.Trigger(
@@ -1637,7 +1741,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       return;
     }
 
-    var item = ui ? ui.item : $(event.target);
+    var item = ui ? ui.item : $__default(event.target);
     switch (item.attr('data-oj-command')) {
       case ListViewDndContext.CUT_COMMAND:
         this._handleCut(event);
@@ -1720,7 +1824,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       return;
     }
 
-    var menuContainer = $(event.target);
+    var menuContainer = $__default(event.target);
 
     // disable all menu items first, needs to be done even if there's no default menu items since
     // there could be one from before refresh
@@ -1792,7 +1896,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
           this._handleCopy(event);
           return true;
         } else if (keyCode === ListViewDndContext.V_KEY) {
-          var active = $(this._getActiveItem());
+          var active = $__default(this._getActiveItem());
           if (this.m_clipboard != null) {
             var position;
             if (active.children().first().hasClass(this.listview.getGroupItemStyleClass())) {

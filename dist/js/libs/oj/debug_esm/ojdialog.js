@@ -5,19 +5,18 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { PopupWhenReadyMediator } from 'ojs/ojpopupcore';
+import { PositionUtils, ZOrderUtils, PopupService, PopupWhenReadyMediator } from 'ojs/ojpopupcore';
 import 'ojs/ojbutton';
 import 'jqueryui-amd/widgets/mouse';
 import 'jqueryui-amd/widgets/draggable';
 import $ from 'jquery';
 import oj from 'ojs/ojcore-base';
-import { removeResizeListener, addResizeListener, isAncestorOrSelf, getCSSLengthAsFloat } from 'ojs/ojdomutils';
+import { isAncestorOrSelf, removeResizeListener, addResizeListener, getCSSLengthAsFloat } from 'ojs/ojdomutils';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import { subtreeAttached, subtreeDetached, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
 import { startAnimation } from 'ojs/ojanimation';
 import FocusUtils from 'ojs/ojfocusutils';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
-import { getDeviceRenderMode } from 'ojs/ojconfig';
 
 (function () {
   const OJ_RESIZABLE_HANDLE_SELECTOR = '.oj-resizable-handle';
@@ -1241,6 +1240,14 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
    * @ojoracleicon 'oj-ux-ico-dialog'
    * @ojuxspecs ['dialog']
    *
+   * @ojdeprecated [
+   *  {
+   *    type: "maintenance",
+   *    since: "19.0.0",
+   *    value: ["oj-c-dialog"]
+   *  }
+   * ]
+   *
    * @classdesc
    * <h3 id="dialogOverview-section">
    *   JET Dialog Component
@@ -1287,6 +1294,10 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
    *  <p>The <code class="prettyprint">close</code> method is no longer supported. Use <code class="prettyprint">opened="false"</code> to close the popup.</p>
    *  <h5>isOpen method</h5>
    *  <p>The <code class="prettyprint">isOpen</code> method is no longer supported. Use the <code class="prettyprint">opened</code> attribute to determine the state of the dialog.</p>
+   *  <h5>drag-affordance values</h5>
+   *  <p>The <code class="prettyprint">title-bar</code> value has been replaced with <code class="prettyprint">header</code>.</p>
+   *  <h5>ojResizeStop event</h5>
+   *  <p>The <code class="prettyprint">ojResizeStop</code> event has been renamed to <code class="prettyprint">ojResizeEnd</code>.</p>
    *  <h5>oj-dialog-title css class</h5>
    *  <p>The <code class="prettyprint">oj-dialog-title</code> style class is no longer supported. The user must set the <code class="prettyprint">aria-labelledby</code> attribute explicitly when providing a custom header content in the header slot.</p>
    *  <h5>oj-dialog-footer-separator css class</h5>
@@ -1585,31 +1596,43 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
    */
 
   /**
-   * The JET Dialog can be closed with keyboard actions:
+   * The JET Dialog supports the following keyboard shortcuts:
    *
    * <p>
    * <table class="keyboard-table">
-   *   <thead>
+   *  <thead>
+   *    <tr>
+   *      <th>Target</th>
+   *      <th>Key</th>
+   *      <th>Action</th>
+   *    </tr>
+   *  </thead>
+   *  <tbody>
+   *    <tr>
+   *       <td rowspan="3">Focus within Dialog</td>
+   *       <td><kbd>Tab</kbd> or <kbd>Shift + Tab</kbd></td>
+   *       <td>Navigate the content of the dialog.</td>
+   *    </tr>
+   *    <tr>
+   *      <td><kbd>F6</kbd></td>
+   *      <td>Move focus to the launcher for a dialog with modeless modality.</td>
+   *    </tr>
+   *    <tr>
+   *      <td><kbd>Esc</kbd></td>
+   *      <td>Close the dialog.</td>
+   *    </tr>
    *     <tr>
-   *       <th>Target</th>
-   *       <th>Key</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>Dialog</td>
-   *       <td><kbd>Esc</kbd></td>
-   *       <td>Close the dialog.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Dialog Close Icon</td>
+   *       <td rowspan="1">Dialog Close Icon</td>
    *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
    *       <td>Close the dialog.</td>
    *     </tr>
-   *   </tbody>
+   *    <tr>
+   *      <td rowspan="1">Modeless Dialog Launcher</td>
+   *      <td><kbd>F6</kbd></td>
+   *      <td>Move focus to the first tab stop within the open dialog.</td>
+   *     </tr>
+   *  </tbody>
    * </table>
-   *
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
    * @memberof oj.ojDialog
    */
@@ -2619,7 +2642,7 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
 
       // fixup the position option set via the widget constructor
       var options = this.options;
-      options.position = oj.PositionUtils.coerceToJet(options.position);
+      options.position = PositionUtils.coerceToJet(options.position);
 
       // For custom element dialogs, detect changes to the 'title' attribute using a mutation observer.
       // Update the dialog title DOM on 'title' attribute change.
@@ -2803,6 +2826,61 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       }
     },
 
+    _moveFocusToLauncher: function () {
+      // If the launcher is not focusable, find the closet focusable ancestor
+      if (!this.opener.filter(':focusable').focus().length) {
+        var launcher = this.opener.parents().filter(':focusable');
+        if (launcher.length > 0) {
+          launcher[0].focus();
+        } else {
+          // Hiding a focused element doesn't trigger blur in WebKit
+          // so in case we have nothing to focus on, explicitly blur the active element
+          // https://bugs.webkit.org/show_bug.cgi?id=47182
+          $(this.document[0].activeElement).blur();
+        }
+      }
+    },
+
+    /**
+     * @memberof oj.ojDialog
+     * @instance
+     * @private
+     * @param {Element} activeElement from the event being handled
+     * @param {boolean!} includeChildren when true the focus test will include the scope of any
+     *                   child popups.
+     * @return {boolean} <code>true</code> if the active element is within the content of the
+     *                   dialog
+     */
+    _isFocusInDialog: function (activeElement, includeChildren) {
+      if (!activeElement) {
+        // eslint-disable-next-line no-param-reassign
+        activeElement = document.activeElement;
+      }
+      // added to avoid automation issues where an active element is not established
+      if (!activeElement) {
+        return false;
+      }
+
+      var element = this.element;
+
+      // popups that are children are siblings to the parent dialog within the
+      // layer that defines the stacking context.
+      if (includeChildren) {
+        element = element.parent();
+      }
+
+      return isAncestorOrSelf(element[0], activeElement);
+    },
+
+    _isFocusInLauncher: function (activeElement) {
+      if (!activeElement) {
+        // eslint-disable-next-line no-param-reassign
+        activeElement = document.activeElement;
+      }
+      var launcher = this.opener;
+      return isAncestorOrSelf(launcher[0], activeElement);
+    },
+
     /**
      * @memberof oj.ojDialog
      * @instance
@@ -2822,8 +2900,12 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
      */
     _destroy: function () {
       this._off(this.element, 'keydown');
+      if (this._launcherKeydownHandlerInstalled) {
+        this._off(this.opener, 'keydown');
+        delete this._launcherKeydownHandlerInstalled;
+      }
 
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         this._closeImplicitly();
       }
 
@@ -2892,17 +2974,17 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       }
 
       // can only close an open dialog.
-      var status = oj.ZOrderUtils.getStatus(this.element);
-      if (status !== oj.ZOrderUtils.STATUS.OPEN) {
+      var status = ZOrderUtils.getStatus(this.element);
+      if (status !== ZOrderUtils.STATUS.OPEN) {
         return;
       }
 
       // Status toggle is needed to prevent a recursive closed callled from a
       // beforeClose handler. The _isOperationPending gatekeeper isn't activated
       // until after the _setWhenReady('close'|'open') call.
-      oj.ZOrderUtils.setStatus(this.element, oj.ZOrderUtils.STATUS.BEFORE_CLOSE);
+      ZOrderUtils.setStatus(this.element, ZOrderUtils.STATUS.BEFORE_CLOSE);
       if (this._trigger('beforeClose', event) === false && !this._ignoreBeforeCloseResultant) {
-        oj.ZOrderUtils.setStatus(this.element, status);
+        ZOrderUtils.setStatus(this.element, status);
         return;
       }
 
@@ -2932,11 +3014,11 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
         });
       }
 
-      /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+      /** @type {!Object.<PopupService.OPTION, ?>} */
       var psOptions = {};
-      psOptions[oj.PopupService.OPTION.POPUP] = this.element;
-      psOptions[oj.PopupService.OPTION.CONTEXT] = { closeEvent: event };
-      oj.PopupService.getInstance().close(psOptions);
+      psOptions[PopupService.OPTION.POPUP] = this.element;
+      psOptions[PopupService.OPTION.CONTEXT] = { closeEvent: event };
+      PopupService.getInstance().close(psOptions);
     },
     /**
      * Before callback is invoked while the dialog is still visible and still parented in the zorder container.
@@ -2944,11 +3026,11 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
      * @memberof oj.ojDialog
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for closing the popup
      * @return {Promise|void}
      */
     _beforeCloseHandler: function (psOptions) {
-      var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
+      var rootElement = psOptions[PopupService.OPTION.POPUP];
       var isFull = this._isFullDisplay();
       var isSheet = this._isSheetDisplay();
 
@@ -2993,26 +3075,20 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
      * @memberof oj.ojDialog
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for closing the popup
      * @return {void}
      */
     _afterCloseHandler: function (psOptions) {
-      var context = psOptions[oj.PopupService.OPTION.CONTEXT];
+      var context = psOptions[PopupService.OPTION.CONTEXT];
       this._restoreBodyOverflow();
 
-      // Moved from close(). Don't want to move focus until the close animation completed.
-      // If the launcher is not focusable, find the closet focuable ancestor
-      if (!this.opener.filter(':focusable').focus().length) {
-        var launcher = this.opener.parents().filter(':focusable');
-        if (launcher.length > 0) {
-          launcher[0].focus();
-        } else {
-          // Hiding a focused element doesn't trigger blur in WebKit
-          // so in case we have nothing to focus on, explicitly blur the active element
-          // https://bugs.webkit.org/show_bug.cgi?id=47182
-          $(this.document[0].activeElement).blur();
-        }
+      // unregister keydown listener from launcher
+      if (this._launcherKeydownHandlerInstalled) {
+        this._off(this.opener, 'keydown');
+        delete this._launcherKeydownHandlerInstalled;
       }
+      // Moved from close(). Don't want to move focus until the close animation completed.
+      this._moveFocusToLauncher();
 
       var event;
       if (context) {
@@ -3040,13 +3116,13 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
      * var isOpen = myDialog.isOpen();
      */
     isOpen: function () {
-      var status = oj.ZOrderUtils.getStatus(this.element);
+      var status = ZOrderUtils.getStatus(this.element);
       // the window is visible and reparented to the zorder container for these statuses
       return (
-        status === oj.ZOrderUtils.STATUS.OPENING ||
-        status === oj.ZOrderUtils.STATUS.OPEN ||
-        status === oj.ZOrderUtils.STATUS.BEFORE_CLOSE ||
-        status === oj.ZOrderUtils.STATUS.CLOSING
+        status === ZOrderUtils.STATUS.OPENING ||
+        status === ZOrderUtils.STATUS.OPEN ||
+        status === ZOrderUtils.STATUS.BEFORE_CLOSE ||
+        status === ZOrderUtils.STATUS.CLOSING
       );
     },
     /**
@@ -3073,12 +3149,12 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       // beforeOpen followed by resetting inital focus. This is different behavior
       // than the popup which forces a sync close follwed by a reopen - dialog
       // doesn't have accessiblity launcher requirements.
-      var status = oj.ZOrderUtils.getStatus(this.element);
+      var status = ZOrderUtils.getStatus(this.element);
       if (
         !(
-          status === oj.ZOrderUtils.STATUS.OPEN ||
-          status === oj.ZOrderUtils.STATUS.UNKNOWN ||
-          status === oj.ZOrderUtils.STATUS.CLOSE
+          status === ZOrderUtils.STATUS.OPEN ||
+          status === ZOrderUtils.STATUS.UNKNOWN ||
+          status === ZOrderUtils.STATUS.CLOSE
         )
       ) {
         return;
@@ -3088,15 +3164,15 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
 
       // status change is needed to prevent calling open from an on before open
       // handler.  The _isOperationPending doens't gurard until this._setWhenReady('open');
-      oj.ZOrderUtils.setStatus(this.element, oj.ZOrderUtils.STATUS.BEFORE_OPEN);
+      ZOrderUtils.setStatus(this.element, ZOrderUtils.STATUS.BEFORE_OPEN);
       if (this._trigger('beforeOpen', event) === false) {
-        oj.ZOrderUtils.setStatus(this.element, status);
+        ZOrderUtils.setStatus(this.element, status);
         return;
       }
 
       // open was called on a open dialog, just establish intial focus
-      if (status === oj.ZOrderUtils.STATUS.OPEN) {
-        oj.ZOrderUtils.setStatus(this.element, status);
+      if (status === ZOrderUtils.STATUS.OPEN) {
+        ZOrderUtils.setStatus(this.element, status);
         this._focusTabbable();
         return;
       }
@@ -3120,16 +3196,11 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
 
       var isSheetDisplay = this._isSheetDisplay();
 
-      if (isSheetDisplay) {
-        this.element[0].classList.add('oj-dialog-sheet');
-      }
+      // set the display mode based on the screen and dialog dimensions
+      this._adaptToScreenSize();
 
       if (!isSheetDisplay && this.options.dragAffordance === 'title-bar' && $.fn.draggable) {
         this._makeDraggable();
-      }
-
-      if (!isSheetDisplay && this._isSmallScreen()) {
-        this.element[0].classList.add('oj-dialog-small-screen');
       }
 
       // normalize alignments, so that start and end keywords work as expected.
@@ -3138,8 +3209,8 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       if (isSheetDisplay) {
         position = this._setSheetPosition(this.options.position);
       }
-      position = oj.PositionUtils.coerceToJqUi(position);
-      position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+      position = PositionUtils.coerceToJqUi(position);
+      position = PositionUtils.normalizeHorizontalAlignment(position, isRtl);
 
       // if modality is set to modal, prevent accesskey events
       // from being triggered while dialog is open
@@ -3161,17 +3232,17 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
         });
       }
 
-      /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+      /** @type {!Object.<PopupService.OPTION, ?>} */
       var psOptions = {};
-      psOptions[oj.PopupService.OPTION.POPUP] = this.element;
-      psOptions[oj.PopupService.OPTION.LAUNCHER] = this.opener;
-      psOptions[oj.PopupService.OPTION.POSITION] = position;
-      psOptions[oj.PopupService.OPTION.MODALITY] = this.options.modality;
-      psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
-      psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = 'oj-dialog-layer';
-      psOptions[oj.PopupService.OPTION.LAYER_LEVEL] = oj.PopupService.LAYER_LEVEL.TOP_LEVEL;
-      psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
-      oj.PopupService.getInstance().open(psOptions);
+      psOptions[PopupService.OPTION.POPUP] = this.element;
+      psOptions[PopupService.OPTION.LAUNCHER] = this.opener;
+      psOptions[PopupService.OPTION.POSITION] = position;
+      psOptions[PopupService.OPTION.MODALITY] = this.options.modality;
+      psOptions[PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
+      psOptions[PopupService.OPTION.LAYER_SELECTORS] = 'oj-dialog-layer';
+      psOptions[PopupService.OPTION.LAYER_LEVEL] = PopupService.LAYER_LEVEL.TOP_LEVEL;
+      psOptions[PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
+      PopupService.getInstance().open(psOptions);
     },
     /**
      * Before open callback is called after the dialog has been reparented into the
@@ -3179,12 +3250,12 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
      * @memberof oj.ojDialog
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for opening the popup
      * @return {Promise|void}
      */
     _beforeOpenHandler: function (psOptions) {
-      var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
-      var position = psOptions[oj.PopupService.OPTION.POSITION];
+      var rootElement = psOptions[PopupService.OPTION.POPUP];
+      var position = psOptions[PopupService.OPTION.POSITION];
 
       var isSheet = this._isSheetDisplay();
       if (isSheet) {
@@ -3241,11 +3312,11 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
      * @memberof oj.ojDialog
      * @instance
      * @private
-     * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
+     * @param {!Object.<PopupService.OPTION, ?>} psOptions property bag for opening the popup
      * @return {void}
      */
     _afterOpenHandler: function (psOptions) {
-      var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
+      var rootElement = psOptions[PopupService.OPTION.POPUP];
       rootElement.parent().removeClass('oj-animate-open');
 
       // JET-44685: iOS may reveal address bar during open animation, need to make sure the position is set
@@ -3261,11 +3332,17 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       delete this._initialWidth;
       delete this._initialHeight;
 
+      // setup 'F6' key handler on the modeless dialog
+      if (psOptions.modality === 'modeless' && this.opener && this.opener.length > 0) {
+        this._on(this.opener, { keydown: this._launcherKeydownHandler });
+        this._launcherKeydownHandlerInstalled = true;
+      }
       this._restoreBodyOverflow();
       this._makeResizable();
       this._trigger('open');
       // this._focusTabbable();
     },
+
     /**
      * Refresh the dialog.
      * Typically used after dynamic content is added to a dialog.
@@ -3318,8 +3395,9 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
      * @private
      */
     _handleResize: function () {
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         this._setupContentScrollBehavior();
+        this._adaptToScreenSize();
         this._adjustPosition();
       }
     },
@@ -3401,6 +3479,16 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
         return;
       }
 
+      if (event.keyCode === 117 || event.key === 'F6') {
+        // F6 - toggle focus to launcher or popup
+        // keyCode is deprecated and it's not supported on some browsers.
+        if (this.options.modality === 'modeless' && this._isFocusInDialog(event.target)) {
+          // If this is a modeless dialog, toggle focus to the launcher;
+          event.preventDefault();
+          this._moveFocusToLauncher();
+        }
+      }
+
       if (event.keyCode !== $.ui.keyCode.TAB) {
         return;
       }
@@ -3437,6 +3525,15 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       }
     },
 
+    _launcherKeydownHandler: function (event) {
+      if (event.keyCode === 117 || event.key === 'F6') {
+        if (this._isFocusInLauncher(event.target)) {
+          event.preventDefault();
+          this._focusTabbable();
+        }
+      }
+    },
+
     //
     // Invoke focusable on the passed element.
     // Called on two distinct elements - the outer dialog,
@@ -3461,12 +3558,50 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
 
     _disableBodyOverflow: function () {
       var body = document.body;
+
+      if (this._scrollLockBackup || !window.visualViewport) {
+        return;
+      }
+      const offsetLeft = window.visualViewport.offsetLeft;
+      const offsetTop = window.visualViewport.offsetTop;
+      const windowScrollX = window.pageXOffset;
+      const windowScrollY = window.pageYOffset;
+
+      this._scrollLockBackup = {
+        windowScrollX: windowScrollX,
+        windowScrollY: windowScrollY,
+        bodyPosition: body.style.position,
+        bodyOverflow: body.style.overflow,
+        bodyTop: body.style.top,
+        bodyLeft: body.style.left,
+        bodyRight: body.style.right
+      };
+
+      body.style.position = 'fixed';
+      body.style.overflow = 'hidden';
+      body.style.top = `${-(windowScrollY - Math.floor(offsetTop))}px`;
+      body.style.left = `${-(windowScrollX - Math.floor(offsetLeft))}px`;
+      body.style.right = '0';
+
       body.classList.add('oj-dialog-sheet-animating');
     },
 
     _restoreBodyOverflow: function () {
       var body = document.body;
       body.classList.remove('oj-dialog-sheet-animating');
+
+      if (this._scrollLockBackup) {
+        const backup = this._scrollLockBackup;
+
+        body.style.position = backup.bodyPosition;
+        body.style.overflow = backup.bodyOverflow;
+        body.style.top = backup.bodyTop;
+        body.style.left = backup.bodyLeft;
+        body.style.right = backup.bodyRight;
+        window.scrollTo(backup.windowScrollX, backup.windowScrollY);
+
+        delete this._scrollLockBackup;
+      }
     },
 
     _destroyCloseButton: function () {
@@ -3761,17 +3896,17 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       if (this._isSheetDisplay()) {
         position = this._setSheetPosition(position);
       }
-      position = oj.PositionUtils.coerceToJqUi(position);
-      position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+      position = PositionUtils.coerceToJqUi(position);
+      position = PositionUtils.normalizeHorizontalAlignment(position, isRtl);
       this.element.position(position);
 
       this._positionDescendents();
     },
     _positionDescendents: function () {
       // trigger refresh of descendents
-      oj.PopupService.getInstance().triggerOnDescendents(
+      PopupService.getInstance().triggerOnDescendents(
         this.element,
-        oj.PopupService.EVENT.POPUP_REFRESH
+        PopupService.EVENT.POPUP_REFRESH
       );
     },
     _adjustPosition: function () {
@@ -3798,19 +3933,33 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
         elem.classList.remove('oj-dialog-small-height');
       }
     },
+    _adaptToScreenSize: function () {
+      var elem = this.element[0];
+      // first remove the potential full-screen class
+      elem.classList.remove('oj-dialog-full');
+
+      // set sheet display mode on screens up to 600px wide
+      if (this._isSheetDisplay()) {
+        elem.classList.add('oj-dialog-sheet');
+      } else {
+        elem.classList.remove('oj-dialog-sheet');
+      }
+      // now test the full-screen condition again
+      if (this._isFullDisplay()) {
+        elem.classList.add('oj-dialog-full');
+      }
+    },
     _isSheetDisplay: function () {
       if (this._isDefaultPosition) {
-        var behavior = parseJSONFromFontFamily('oj-theme-json').behavior;
-        var isPhone = getDeviceRenderMode() === 'phone';
-        if (behavior.includes('redwood') && isPhone) {
+        if (window.innerWidth < 600) {
           return true;
         }
       }
       return false;
     },
     _isFullDisplay: function () {
+      // the full-screen display should only apply on top of the 'sheet' mode
       if (!this._isSheetDisplay()) {
-        // full display supported on Redwood mobile only
         return false;
       }
       var height = window.innerHeight;
@@ -3839,7 +3988,7 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       return false;
     },
     _setSheetPosition: function (position) {
-      var pos = $.extend({}, position);
+      var pos = $.extend(true, {}, position);
       pos.my.vertical = 'bottom';
       pos.at.vertical = 'bottom';
       pos.of = window;
@@ -3875,14 +4024,14 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
           // convert to the internal position format and reevaluate the position.
           this._isDefaultPosition = false;
           var options = this.options;
-          options.position = oj.PositionUtils.coerceToJet(value, options.position);
+          options.position = PositionUtils.coerceToJet(value, options.position);
           this._position();
 
           // setting the option is handled here.  don't call on super.
           return;
 
         case 'resizeBehavior':
-          if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+          if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
             this._makeResizable();
           }
           break;
@@ -3914,12 +4063,12 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
           break;
 
         case 'modality':
-          if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
-            /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+          if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
+            /** @type {!Object.<PopupService.OPTION, ?>} */
             var psOptions = {};
-            psOptions[oj.PopupService.OPTION.POPUP] = this.element;
-            psOptions[oj.PopupService.OPTION.MODALITY] = value;
-            oj.PopupService.getInstance().changeOptions(psOptions);
+            psOptions[PopupService.OPTION.POPUP] = this.element;
+            psOptions[PopupService.OPTION.MODALITY] = value;
+            PopupService.getInstance().changeOptions(psOptions);
           }
           break;
 
@@ -4117,7 +4266,7 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
     _surrogateRemoveHandler: function () {
       // In all cases except when the dialog is already open, removal of the
       // surrogate during opening or closing will result in implicit removal.
-      // 1) CLOSING: Handled in oj.ZOrderUtils.removeFromAncestorLayer.  If the
+      // 1) CLOSING: Handled in ZOrderUtils.removeFromAncestorLayer.  If the
       //    surrogate doesn't exist the layer containing the popup dom is detached.
       // 2) OPENING: in the PopupServiceImpl#open _finalize, if the surrogate doesn't
       //    exist after in the open state, this remove callback is invoked.
@@ -4126,8 +4275,8 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       // but jquery UI instances will invoke the _destory method.
 
       var element = this.element;
-      var status = oj.ZOrderUtils.getStatus(element);
-      if (status === oj.ZOrderUtils.STATUS.OPEN) {
+      var status = ZOrderUtils.getStatus(element);
+      if (status === ZOrderUtils.STATUS.OPEN) {
         CustomElementUtils.cleanComponentBindings(element[0]);
         element.remove();
       }
@@ -4136,20 +4285,20 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
      * @memberof oj.ojDialog
      * @instance
      * @private
-     * @return {!Object.<oj.PopupService.EVENT, function(...)>}
+     * @return {!Object.<PopupService.EVENT, function(...)>}
      */
     _getPopupServiceEvents: function () {
       if (!this._popupServiceEvents) {
-        /** @type {!Object.<oj.PopupService.EVENT, function(...)>} **/
+        /** @type {!Object.<PopupService.EVENT, function(...)>} **/
         var events = {};
 
-        events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
-        events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_REFRESH] = this._adjustPosition.bind(this);
-        events[oj.PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_AFTER_CLOSE] = this._afterCloseHandler.bind(this);
+        events[PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
+        events[PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
+        events[PopupService.EVENT.POPUP_REFRESH] = this._adjustPosition.bind(this);
+        events[PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
+        events[PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
+        events[PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);
+        events[PopupService.EVENT.POPUP_AFTER_CLOSE] = this._afterCloseHandler.bind(this);
 
         this._popupServiceEvents = events;
       }
@@ -4227,7 +4376,7 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
      */
     _NotifyDetached: function () {
       // detaching an open popup results in implicit dismissal
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      if (ZOrderUtils.getStatus(this.element) === ZOrderUtils.STATUS.OPEN) {
         this._closeImplicitly();
       }
 

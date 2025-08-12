@@ -562,9 +562,26 @@ if (columnCount && !self.isStylingOrOverview) {
                         } 
                     }
                 } 
-                else { ?>
-                    <?js= self.getLiTag(membersObj.public[i]) ?><div><a href="#<?js= membersObj.public[i].id ?>"><?js= membName ?></a></div>
-                <?js 
+                else { 
+                    let hasTypeDef = false;
+                        if (hasTypeDefColumn) {
+                            for (var v = 0; v < self.typedefs.length; v++) {
+                                if (membersObj.public[i].signature) {
+                                    if (membersObj.public[i].signature.indexOf(self.typedefs[v].longname) > 0) {
+                                        hasTypeDef = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (hasTypeDef) {?>
+                            <?js= self.getLiTag(membersObj.public[i]) ?><div><a href="#<?js= membersObj.public[i].id ?>"><b><?js= membName ?></b></a></div>
+                        <?js 
+                        } 
+                        else {?>
+                            <?js= self.getLiTag(membersObj.public[i]) ?><div><a href="#<?js= membersObj.public[i].id ?>"><?js= membName ?></a></div>
+                        <?js 
+                        } 
                 }
 
                 // When we get to the end, close any remaining open lists
@@ -638,11 +655,31 @@ if (columnCount && !self.isStylingOrOverview) {
     if (hasTypeDefColumn) { ?>
     <div class="quick-nav-section<?js= columnCount ?>">
         <h3><a href="#typedefs-section">Type Definitions</a></h3>
-        <ul class="subList">
-            <?js for (var i=0; i < self.typedefs.length; i++){ ?>            
-                <?js= self.getLiTag(self.typedefs[i]) ?><a href="#<?js= self.typedefs[i].name ?>"><?js= self.typedefs[i].name ?></a></li>
-            <?js } ?>
-        </ul>
+        <?js
+        self.exportedTypes = self.typedefs.filter(td => td.ojexports) || [];
+        self.docOnlyTypes = self.typedefs.filter(td => !td.ojexports) || [];
+        if (self.exportedTypes){ ?>
+            <h4><a href="#exported-typedefs-section">Exported Types</a></h4>
+            <ul class="subList typedef">
+            <?js 
+            for (let i = 0; i < self.exportedTypes.length; i++) { ?>
+                <?js= self.getLiTag(self.exportedTypes[i]) ?><a href="#<?js= self.exportedTypes[i].name ?>" class="exported"><?js= self.exportedTypes[i].name ?></a></li>
+            <?js 
+            } ?>
+            </ul> 
+        <?js
+        }
+        if (self.docOnlyTypes){ ?>
+            <h4><a href="#doc-only-typedefs-section">Documentation-only Types</a></h4>
+            <ul class="subList typedef">
+            <?js 
+            for (let i = 0; i < self.docOnlyTypes.length; i++) { ?>
+                <?js= self.getLiTag(self.docOnlyTypes[i]) ?><a href="#<?js= self.docOnlyTypes[i].name ?>"><?js= self.docOnlyTypes[i].name ?></a></li>
+            <?js 
+            } ?>
+            </ul> 
+        <?js
+        }?>
     </div>
     <?js } ?>
     <?js if (hasDecorators) { ?>
@@ -1202,23 +1239,61 @@ if (!self.isStylingOrOverview) { ?>
             Type Definitions
             <a class="bookmarkable-link" title="Bookmarkable Link" href="#<?js= elemId ?>"></a>
         </h3>
-
-        <dl>
-            <?js 
-            self.typedefs.forEach(function(e) {
-                self.docInProgress = e;
-                if (e.signature || e.classsignature) { ?>
-                    <?js= self.partial('method.tmpl', e) ?>
-                <?js
-                }
-                else { ?>
-                    <?js= self.partial('members.tmpl', e) ?>
-                <?js
-                }
-            }); 
-            self.docInProgress = null;?>
-        </dl>
-    <?js 
+        <?js
+        if (self.exportedTypes && self.exportedTypes.length){ ?>
+            <h4 id="exported-typedefs-section">
+                Exported Types
+                <a class="bookmarkable-link" title="Bookmarkable Link" href="#exported-typedefs-section"></a>
+            </h4>
+            <p>
+                <b>Note: </b> Type definitions in this section are exported by the module, and so can be imported for use in application code.
+            </p>
+            <dl>
+                <?js 
+                const usageSampleCommentPart = '//To import this type, use the format below.<br>';
+                const pathMappingPrefix = doc.pack? `${doc.pack}/` : '';
+                self.exportedTypes.forEach(function(e) {
+                    self.docInProgress = e;
+                    const usageSample = usageSampleCommentPart + `import { ${e.id} } from "${pathMappingPrefix}${self.moduleName}";`;
+                    e.usageSample = `<pre class="prettyprint"><code>`+usageSample+`</code></pre>`;
+                    if (e.signature || e.classsignature) { ?>
+                        <?js= self.partial('method.tmpl', e) ?>
+                    <?js
+                    }
+                    else { ?>
+                        <?js= self.partial('members.tmpl', e) ?>
+                    <?js
+                    }
+                }); 
+                self.docInProgress = null;?>
+            </dl>
+        <?js 
+        }
+        if (self.docOnlyTypes && self.docOnlyTypes.length){ ?>
+            <h4 id="doc-only-typedefs-section">
+                Documentation-only Types
+                <a class="bookmarkable-link" title="Bookmarkable Link" href="#doc-only-typedefs-section"></a>
+            </h4>
+            <p>
+                <b>Note: </b> Type definitions in this section have been provided for documentation purposes and cannot be imported into application code.
+            </p>
+            <dl>
+                <?js 
+                self.docOnlyTypes.forEach(function(e) {
+                    self.docInProgress = e;
+                    if (e.signature || e.classsignature) { ?>
+                        <?js= self.partial('method.tmpl', e) ?>
+                    <?js
+                    }
+                    else { ?>
+                        <?js= self.partial('members.tmpl', e) ?>
+                    <?js
+                    }
+                }); 
+                self.docInProgress = null;?>
+            </dl>
+        <?js 
+        }
     } 
     // DECORATORS
     var decoratorNames = '';
