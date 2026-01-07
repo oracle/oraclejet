@@ -15,7 +15,7 @@
     "knockout": "3.5.1",
     "requirejs": "2.3.7",
     "requirejs-text": "2.0.16",
-    "preact": "10.26.9",
+    "preact": "10.26.10",
     "proj4": "2.17.0",
     "require-css": "0.1.10",
     "@types/signals": "1.0.2",
