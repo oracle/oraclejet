@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -60,6 +60,13 @@ var __oj_accordion_metadata =
  * @ojcomponent oj.ojAccordion
  * @augments oj.baseComponent
  * @since 0.6.0
+ * @ojdeprecated [
+ *  {
+ *    type: "maintenance",
+ *    since: "20.0.0",
+ *    value: ["oj-c-accordion-item-single", "oj-c-accordion-item-multiple"]
+ *  }
+* ]
  *
  * @ojshortdesc An accordion displays a set of collapsible child elements.
  * @ojrole group
@@ -117,6 +124,8 @@ var __oj_accordion_metadata =
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
+ *
+ * {@ojinclude "name":"migrationDoc"}
  *
  *
  * <h3 id="rtl-section">
@@ -237,6 +246,96 @@ var __oj_accordion_metadata =
  *
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojAccordion
+ */
+
+
+ /**
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   *
+   * <p>
+   * To migrate from <code>oj-accordion</code> to the new <code>oj-c-accordion-item-single</code> and <code>oj-c-accordion-item-multiple</code> components, update your markup and logic as follows:
+   * </p>
+   *
+   * <h5>Component Replacement</h5>
+   * <ul>
+   *   <li>Remove <code>&lt;oj-accordion&gt;</code></li>
+   *   <li>Replace each <code>&lt;oj-collapsible&gt;</code> child with <code>&lt;oj-c-accordion-item-single&gt;</code> for single expansion, or <code>&lt;oj-c-accordion-item-multiple&gt;</code> for multiple expansion.</li>
+   * </ul>
+   *
+   * <h5>Single vs. Multiple Expansion</h5>
+   * <ul>
+   *   <li>For single expansion, use <code>oj-c-accordion-item-single</code> and bind the <code>expanded-key</code> property to a single observable value.</li>
+   *   <li>For multiple expansion, use <code>oj-c-accordion-item-multiple</code> and bind the <code>expanded-keys</code> property to an observable array.</li>
+   * </ul>
+   *
+   * <h5>Properties and Events</h5>
+   * <ul>
+   *   <li>Set <code>item-key</code> on each item to uniquely identify it.</li>
+   *   <li>Use <code>on-oj-expand</code> and <code>on-oj-collapse</code> events to handle expansion and collapse.</li>
+   *   <li>Accessibility: Set <code>aria-label</code> and provide header text for each item.</li>
+   * </ul>
+   *
+   * <h5>Example Migration</h5>
+   * <pre class="prettyprint"><code>
+   * <!-- Legacy -->
+   * &lt;oj-accordion>
+   *   &lt;oj-collapsible>
+   *     &lt;h3 slot="header">Header 1&lt;/h3>
+   *     &lt;p>Content 1&lt;/p>
+   *   &lt;/oj-collapsible>
+   *   &lt;oj-collapsible expanded="true">
+   *     &lt;h3 slot="header">Header 2&lt;/h3>
+   *     &lt;p>Content 2&lt;/p>
+   *   &lt;/oj-collapsible>
+   * &lt;/oj-accordion>
+   *
+   * <!-- New: Single Expansion -->
+   * &lt;oj-c-accordion-item-single item-key="item1" expanded-key="[[expanded]]" aria-label="Header 1">
+   *   &lt;h3 slot="header">Header 1&lt;/h3>
+   *   &lt;p>Content 1&lt;/p>
+   * &lt;/oj-c-accordion-item-single>
+   * &lt;oj-c-accordion-item-single item-key="item2" expanded-key="[[expanded]]" aria-label="Header 2">
+   *   &lt;h3 slot="header">Header 2&lt;/h3>
+   *   &lt;p>Content 2&lt;/p>
+   * &lt;/oj-c-accordion-item-single>
+   *
+   * <!-- Legacy -->
+   * &lt;oj-accordion multiple>
+   *   &lt;oj-collapsible expanded="true">
+   *     &lt;h3 slot="header">Header 1&lt;/h3>
+   *     &lt;p>Content 1&lt;/p>
+   *   &lt;/oj-collapsible>
+   *   &lt;oj-collapsible expanded="true">
+   *     &lt;h3 slot="header">Header 2&lt;/h3>
+   *     &lt;p>Content 2&lt;/p>
+   *   &lt;/oj-collapsible>
+   * &lt;/oj-accordion>
+   *
+   * <!-- New: Multiple Expansion -->
+   * &lt;oj-c-accordion-item-multiple item-key="item1" expanded-keys="[[expandedKeys]]" aria-label="Header 1">
+   *   &lt;h3 slot="header">Header 1&lt;/h3>
+   *   &lt;p>Content 1&lt;/p>
+   * &lt;/oj-c-accordion-item-multiple>
+   * &lt;oj-c-accordion-item-multiple item-key="item2" expanded-keys="[[expandedKeys]]" aria-label="Header 2">
+   *   &lt;h3 slot="header">Header 2&lt;/h3>
+   *   &lt;p>Content 2&lt;/p>
+   * &lt;/oj-c-accordion-item-multiple>
+   * </code></pre>
+   *
+   * <h5>Removed and Changed Features</h5>
+   * <ul>
+   *   <li>The <code>multiple</code> property is replaced by using <code>oj-c-accordion-item-multiple</code> for multiple expansion.</li>
+   *   <li>The <code>expanded</code> property is replaced by <code>expanded-key</code> (single) or <code>expanded-keys</code> (multiple).</li>
+   *   <li>Events <code>beforeExpand</code>, <code>expand</code>, <code>beforeCollapse</code>, <code>collapse</code> are replaced by <code>on-oj-expand</code> and <code>on-oj-collapse</code> on each item.</li>
+   *   <li>Accessibility: Always set <code>aria-label</code> and provide header text for each item.</li>
+   * </ul>
+   *
+   *
+   * @ojfragment migrationDoc
+   * @memberof oj.ojAccordion
  */
 
 //-----------------------------------------------------------------

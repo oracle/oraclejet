@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -10,7 +10,7 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
     // OraI18nUtils is an undocumented class that is ok for other JET code to call
     // but we don't want it to be a public API. So we need to cast it to any here.
     const LocalOraI18nUtils = __ConverterUtilsI18n.OraI18nUtils;
-    const _UTC = 'UTC';
+    const _GMT = 'GMT';
     // Intl.DateTimeFormatOptions used to get time zone name
     let intlOptions = {
         hour: 'numeric',
@@ -191,7 +191,6 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
         'Europe/Amsterdam',
         'Europe/Athens',
         'Europe/Belgrade',
-        'Europe/Belgrade',
         'Europe/Berlin',
         'Europe/Brussels',
         'Europe/Bucharest',
@@ -265,7 +264,7 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
         return localeElements.main['en-US'].dates;
     }
     // Returns the localized city name that correspond to a time zone ID (tzID)
-    // from the resource bundle. For example if tzID = 'America/Buenos_Aires',
+    // from the Intl.DateTimeFormat. For example if tzID = 'America/Buenos_Aires',
     // it returns 'Buenos Aires'.
     function getLocalizedCityName(mainNodeKey, tzID, offset, cities) {
         const parts = tzID.split('/');
@@ -277,20 +276,15 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
         const d = new Date();
         const nameObject = { offsetLocName: null, locName: null };
         const metaRegion = cities[region];
-        if (lang === 'en') {
-            if (parts[1] !== undefined) {
-                locCity = ' ' + parts[1];
-                locCity = locCity.replace(/_/g, ' ');
-                locCity = locCity.replace('Saigon', 'Ho Chi Minh City');
+        if (city !== undefined) {
+            if (lang === 'en') {
+                locCity = ' ' + city.replace(/_/g, ' ').replace('Saigon', 'Ho Chi Minh City');
             }
-        }
-        else if (metaRegion !== undefined) {
-            locCity = metaRegion[city];
-            if (locCity !== undefined) {
-                locCity = locCity.exemplarCity;
-                if (locCity !== undefined) {
-                    locCity = ' ' + locCity;
-                }
+            else if (metaRegion !== undefined && metaRegion[city]?.exemplarCity !== undefined) {
+                locCity = ' ' + metaRegion[city].exemplarCity;
+            }
+            else {
+                locCity = ' ' + city;
             }
         }
         if (locCity === undefined) {
@@ -299,9 +293,9 @@ define(['exports', 'ojs/ojlocaledata', 'ojs/ojconverterutils-i18n', 'ojs/ojconfi
         intlOptions.timeZone = tzID;
         let intlCnv = new Intl.DateTimeFormat(mainNodeKey, intlOptions);
         locZone = intlCnv.formatToParts(d).find((obj) => obj.type === 'timeZoneName').value;
-        let locName = `(${_UTC})`;
+        let locName = `(${_GMT})`; // JET-72217: "GMT" is used here to ensure consistency, as both DateTimeConverters and Intl.DateTimeFormat return values in "GMT" (not "UTC").
         if (offset !== 0) {
-            locName = LocalOraI18nUtils.getTimeStringFromOffset(_UTC, offset, true, true);
+            locName = LocalOraI18nUtils.getTimeStringFromOffset(_GMT, offset, true, true);
             locName = `(${locName})`;
         }
         locZone = ' - ' + locZone;

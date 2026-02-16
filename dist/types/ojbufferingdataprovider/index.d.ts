@@ -3,9 +3,7 @@ import { DataProvider, FetchByKeysParameters, ContainsKeysResults, FetchByKeysRe
 declare class BufferingDataProvider<K, D> implements DataProvider<K, D> {
     constructor(dataProvider: DataProvider<K, D>, options?: BufferingDataProvider.Options<K, D>);
     addEventListener(eventType: string, listener: EventListener): void;
-    addItem(item: Item<K, D>, addDetail?: {
-        addBeforeKey?: K | null;
-    }): void;
+    addItem(item: Item<K, D>, addDetail?: BufferingDataProvider.AddDetail<K>): Item<K, D>;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
     createOptimizedKeySet?(initialSet?: Set<K>): Set<K>;
@@ -25,6 +23,14 @@ declare class BufferingDataProvider<K, D> implements DataProvider<K, D> {
     updateItem(item: Item<K, D>): void;
 }
 declare namespace BufferingDataProvider {
+    // tslint:disable-next-line interface-over-type-literal
+    type AddDetail<K> = ({
+        addBeforeKey: K | null;
+        addAfterKey?: never;
+    } | {
+        addBeforeKey?: never;
+        addAfterKey: K;
+    });
     // tslint:disable-next-line interface-over-type-literal
     type Options<K, D> = {
         keyGenerator?: (value: Partial<D>) => K;

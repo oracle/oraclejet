@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1465,7 +1465,8 @@ var __oj_color_palette_metadata =
                 optionChange: self._onLVOptionChange.bind(self),
                 selectionMode: 'single',
                 selection: self._palInitSelected,
-                rootAttributes: { class: 'oj-colorpalette-listview-full' }
+                rootAttributes: { class: 'oj-colorpalette-listview-full' },
+                itemAction: self._itemAction.bind(self)
               })
               .attr('data-oj-internal', ''); // for use in automation api
             self._$LVWidget = self._$LV;
@@ -1994,6 +1995,7 @@ var __oj_color_palette_metadata =
             $("<div class='oj-colorpalette-swatch-container'></div>").append( // @HTMLUpdateOK
               $("<div class='oj-colorpalette-swatch'></div>")
                 .attr('title', !label ? tooltip : null)
+                .attr('aria-label', !label ? tooltip : null)
                 .addClass(selectedClass)
                 .css('backgroundColor', color.toString())
             )
@@ -2030,6 +2032,7 @@ var __oj_color_palette_metadata =
           selectedClass +
           "'" +
           (!label ? " title='" + tooltip + "'" : '') +
+          (!label ? " aria-label='" + tooltip + "'" : '') +
           '>' +
           "<div class='oj-colorpalette-swatch-none-icon'>" +
           '</div>' +
@@ -2041,6 +2044,28 @@ var __oj_color_palette_metadata =
         }
         raw += '</div>';
         return $(raw)[0];
+      },
+
+      /**
+       * Since ListView no longer uses enter key for selection from JET 19,
+       * we will use item action event to do selection for enter key
+       * @param {Event} event the original event
+       * @param {Object} context the item context
+       * @return {void}
+       * @memberof oj.ojColorPalette
+       * @instance
+       * @private
+       */
+      _itemAction: function (event, context) {
+        if (event.key === 'Enter') {
+          const selected = context.context.key;
+          if (this._palInitSelected.length === 0) {
+            this._palInitSelected.push(selected);
+          } else {
+            this._palInitSelected[0] = selected;
+          }
+          this._$LV.ojListView('option', 'selection', this._palInitSelected);
+        }
       },
 
       /**

@@ -322,7 +322,7 @@ export interface SelectSingleIntrinsicProps extends Partial<Readonly<ojSelectSin
     onitemTextChanged?: (value: ojSelectSingleEventMap<any, any>['itemTextChanged']) => void;
     onlabelEdgeChanged?: (value: ojSelectSingleEventMap<any, any>['labelEdgeChanged']) => void;
     onlabelHintChanged?: (value: ojSelectSingleEventMap<any, any>['labelHintChanged']) => void;
-    onlabelledByChanged?: (value: ojSelectSingleEventMap<any, any>['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojSelectSingleEventMap<any, any>['labelledByChanged']) => void;
     onmatchByChanged?: (value: ojSelectSingleEventMap<any, any>['matchByChanged']) => void;
     onmessagesCustomChanged?: (value: ojSelectSingleEventMap<any, any>['messagesCustomChanged']) => void;
     onplaceholderChanged?: (value: ojSelectSingleEventMap<any, any>['placeholderChanged']) => void;

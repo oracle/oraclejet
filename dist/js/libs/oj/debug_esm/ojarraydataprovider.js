@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -359,6 +359,15 @@ class ArrayDataProvider {
             ...options,
             get keyAttributes() {
                 return options?.keyAttributes ?? options?.idAttribute;
+            },
+            get textFilterAttributes() {
+                return options?.textFilterAttributes;
+            },
+            get implicitSort() {
+                return options?.implicitSort;
+            },
+            get sortComparators() {
+                return options?.sortComparators;
             }
         }, {
             getData: () => this._getRowData(),

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -254,7 +254,7 @@ var __oj_paging_control_metadata =
  *    {
  *      type: "anyOf",
  *      label: "accessibility",
- *      properties: ["aria-label", "aria-labelledby", "aria-describedby"],
+ *      properties: ["aria-label", "aria-labelledby"],
  *      slots: [""]
  *    }
  * ]
@@ -295,7 +295,11 @@ var __oj_paging_control_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
- * <p>Application should specify an aria-label, aria-labelledby, or aria-describedby attribute in order to be accessible.
+ * To make your component accessible, the application is required to include contextual information for screen readers using one or more the following methods as appropriate:
+ *  <ul>
+ *   <li>aria-labelledby</li>
+ *   <li>aria-label</li>
+ *  </ul>
  *
  * <p>The paging control also uses aria role = "region".
  *

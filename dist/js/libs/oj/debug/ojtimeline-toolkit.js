@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -10411,7 +10411,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (y == null) y = this._initialSpacing;
 
       if (!this._isVertical) {
-        var endViewportCollisionOffset = item.getEndViewportCollision() ? item.getContentWidth() : 0;
+        var endViewportCollisionOffset = item.getEndViewportCollision() &&  DvtTimelineSeriesItemRenderer._isOverflow(item)
+        ? item.getContentWidth() : 0;
         var x = item.getLoc() - endViewportCollisionOffset;
         var width = item.getWidth() + DvtTimelineStyleUtils.getMinHorizontalBubbleSpacing();
         var hOffset = DvtTimelineStyleUtils.getBubbleSpacing();
@@ -10419,11 +10420,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         for (i = 0; i < index; i++) {
           currItem = this._items[i];
           currWidth = currItem.getWidth() + DvtTimelineStyleUtils.getMinHorizontalBubbleSpacing();
-          endViewportCollisionOffset = currItem.getEndViewportCollision()
+          endViewportCollisionOffset = currItem.getEndViewportCollision() && DvtTimelineSeriesItemRenderer._isOverflow(currItem)
             ? currItem.getContentWidth()
             : 0;
           var currX = currItem.getLoc() - endViewportCollisionOffset;
-
           if ((x >= currX && x <= currX + currWidth) || (currX >= x && currX <= x + width))
             overlappingItems.push(currItem);
         }
@@ -11667,7 +11667,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       // need to recalculate the discrete offset
       if (this.isDiscreteNavigationMode()) {
         var navButtonBackgroundWidth = DvtTimelineStyleUtils.getNavButtonBackgroundWidth();
-
         this._timeAxisRatio =
           (this._canvasLength - 2 * navButtonBackgroundWidth) / this._canvasLength;
         this._discreteOffset =
@@ -11682,6 +11681,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas);
         DvtTimelineRenderer._renderSeriesLabels(this);
         DvtTimelineRenderer._renderZoomControls(this);
+
         if (this.isDiscreteNavigationMode()) {
           DvtTimelineRenderer._renderNavigationArrows(this, this._timeZoomCanvas);
           this.doInitialPan();
@@ -11696,6 +11696,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       // if not animating, we are done rendering
       if (!this.Animation) this.RenderComplete();
+    
     }
 
     HandleKeyDown(event) {

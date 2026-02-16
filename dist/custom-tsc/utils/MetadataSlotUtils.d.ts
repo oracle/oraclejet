@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import * as MetaTypes from './MetadataTypes';
-export declare function generateSlotsMetadata(memberKey: string, slotPropDeclaration: ts.PropertyDeclaration, metaUtilObj: MetaTypes.MetaUtilObj): boolean;
+export declare function generateSlotsMetadata(memberKey: string, slotPropDeclaration: ts.PropertyDeclaration, memberSymbol: ts.Symbol, metaUtilObj: MetaTypes.MetaUtilObj): boolean;
 /**
  * Returns the properties of the slot data.
  * @param slotDataNode

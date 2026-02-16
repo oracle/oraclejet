@@ -8,7 +8,7 @@ export type ReexportedType = {
 };
 /**
  * Transformer run after the metadata transformer and before the code
- * is compiled to JavaScript so we can add any missing import statements.
+ * is compiled to JavaScript so we can add any missing export statements.
  * @param buildOptions
  */
 export default function moduleExportTransformer(program: ts.Program, buildOptions: ApiDocOptions): ts.TransformerFactory<ts.SourceFile>;

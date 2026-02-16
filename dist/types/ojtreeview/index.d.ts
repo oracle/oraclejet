@@ -63,7 +63,7 @@ export interface ojTreeView<K, D> extends baseComponent<ojTreeViewSettableProper
     setProperty<T extends keyof ojTreeViewSettableProperties<K, D>>(property: T, value: ojTreeViewSettableProperties<K, D>[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojTreeViewSettableProperties<K, D>>): void;
     setProperties(properties: ojTreeViewSettablePropertiesLenient<K, D>): void;
-    getContextByNode(node: Element): object | null;
+    getContextByNode(node: Element): ojTreeView.ItemContext<K, D> | null;
 }
 export namespace ojTreeView {
     interface ojAnimateEnd extends CustomEvent<{

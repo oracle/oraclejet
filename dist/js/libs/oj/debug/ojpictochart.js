@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -353,6 +353,15 @@ var __oj_picto_chart_item_metadata =
    *
    * @ojoracleicon 'oj-ux-ico-chart-pictochart'
    * @ojuxspecs ['picto-chart']
+   *
+   *  @ojlegacymetadata requirements [
+   *    {
+   *      type: "anyOf",
+   *      label: "accessibility",
+   *      properties: ["aria-label", "aria-labelledby"],
+   *      slots: [""]
+   *    }
+   * ]
    *
    * @classdesc
    * <h3 id="pictoChartOverview-section">
@@ -920,6 +929,41 @@ var __oj_picto_chart_item_metadata =
   });
 
   /**
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * To migrate from oj-picto-chart to oj-c-picto-chart, you need to revise the import statement and references to oj-picto-chart in your app. Please note the changes between the two components below.
+   *
+   * <h5>animation-duration</h5>
+   * <p>
+   * For the initial version of oj-c-picto-chart, animation-duration is not supported. We plan on supporting this use case in future releases.
+   * </p>
+   *
+   * <h5>animation-on-data-change</h5>
+   * <p>
+   * For the initial version of oj-c-picto-chart, animation-on-data-change is not supported. We plan on supporting this use case in future releases.
+   * </p>
+   *
+   * <h5>animation-on-display</h5>
+   * <p>
+   * For the initial version of oj-c-picto-chart, animation-on-display is not supported. We plan on supporting this use case in future releases.
+   * </p>
+   *
+   * <h5>track-resize</h5>
+   * <p>
+   * We will deprecate the track-resize api but keep the default functionality. For track-resize "off" case we recommend providing a fixed width to the picto-chart.
+   * </p>
+   *
+   * <h5>tooltip.renderer</h5>
+   * <p>
+   * We are moving away from functions towards templates, application be expected to use the tooltip template instead
+   * </p>
+   * @ojfragment migrationDoc
+   * @memberof oj.ojPictoChart
+   */
+
+  /**
    * <table class="keyboard-table">
    *   <thead>
    *     <tr>
@@ -1230,6 +1274,65 @@ var __oj_picto_chart_item_metadata =
    * @memberof oj.ojPictoChart
    */
 
+  /**
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * To migrate from oj-picto-chart to oj-c-picto-chart-item, you need to revise the import statement and references to oj-picto-chart-item in your app. Please note the changes between the two components below.
+   *
+   * <h5>border-color</h5>
+   * <p>
+   * For the initial version of oj-c-picto-chart-item, border-color is not supported. We plan on supporting this use case in future releases.
+   * </p>
+   *
+   * <h5>border-width</h5>
+   * <p>
+   * For the initial version of oj-c-picto-chart-item, border-width is not supported. We plan on supporting this use case in future releases.
+   * </p>
+   *
+   * <h5>drilling</h5>
+   * <p>
+   * For the initial version of oj-c-picto-chart-item, drilling is not supported. We plan on supporting this use case in future releases.
+   * </p>
+   *
+   * <h5>source</h5>
+   * <p>
+   * For the initial version of oj-c-picto-chart-item, source is not supported. We plan on supporting this use case in future releases.
+   * </p>
+   *
+   * <h5>source-hover</h5>
+   * <p>
+   * For the initial version of oj-c-picto-chart-item, source-hover is not supported. We plan on supporting this use case in future releases.
+   * </p>
+   *
+   * <h5>source-hover-selected</h5>
+   * <p>
+   * For the initial version of oj-c-picto-chart-item, source-hover-selected is not supported. We plan on supporting this use case in future releases.
+   * </p>
+   *
+   * <h5>source-selected</h5>
+   * <p>
+   * For the initial version of oj-c-picto-chart-item, source-selected is not supported. We plan on supporting this use case in future releases.
+   * </p>
+   *
+   * <h5>svg-style and svg-classname support</h5>
+   * <p>
+   * For the initial version of oj-c-picto-chart-item, svg-style and svg-classname are not supported. We plan on supporting this use case in future releases.
+   * </p>
+   *
+   * <h5>track-resize</h5>
+   * <p>
+   * We will deprecate the track-resize api but keep the default functionality. For track-resize "off" case we recommend providing a fixed width to the picto-chart-item.
+   * </p>
+   *
+   * <h5>tooltip.renderer</h5>
+   * <p>
+   * We are moving away from functions towards templates, application be expected to use the tooltip template instead
+   * </p>
+   * @ojfragment migrationDoc
+   * @memberof oj.ojPictoChartItem
+   */
   /**
    * @ojcomponent oj.ojPictoChartItem
    * @ojshortdesc The oj-picto-chart-item element is used to declare properties for picto chart items. See the Help documentation for more information.

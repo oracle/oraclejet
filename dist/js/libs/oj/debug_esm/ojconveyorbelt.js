@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -157,6 +157,8 @@ function ConveyorBeltCommon(elem, options, buttonInfo, callbackInfo, styleInfo) 
   this._atEnd = false;
 
   this._hasResources = false;
+
+  this._focusFallbackTimer = null;
 }
 
 /**
@@ -248,17 +250,58 @@ ConveyorBeltCommon.prototype.setupResources = function () {
   };
   cbcClass._addBubbleEventListener(this._overflowContainer, 'touchend', this._touchEndListener);
   cbcClass._addBubbleEventListener(this._overflowContainer, 'touchcancel', this._touchEndListener);
-
+  this._lastEventSource = null;
+  this._lastEvent = null;
+  this._isFocusCalled = false;
   this._handleKeyDownFunc = function (event) {
+    self._lastEventSource = 'keydown';
     self._handleKeyDown(event);
   };
 
+  this._handlePointerDownFunc = function () {
+    self._lastEventSource = 'pointer';
+  };
+
+  this._handleKeyUpFunc = function () {
+    self._lastEventSource = null;
+  };
+
+  this._handleClickFunc = function () {
+    if (self._isFocusCalled) {
+      if (self._focusFallbackTimer) {
+        clearTimeout(self._focusFallbackTimer);
+        self._focusFallbackTimer = null;
+      }
+      self._handleFocus(self._lastEvent);
+      self._isFocusCalled = false;
+    }
+    self._lastEventSource = null;
+    self._lastEvent = null;
+  };
+
   cbcClass._addBubbleEventListener(this._elem, 'keydown', this._handleKeyDownFunc);
+  cbcClass._addBubbleEventListener(this._elem, 'pointerdown', this._handlePointerDownFunc);
+  cbcClass._addBubbleEventListener(this._elem, 'keyup', this._handleKeyUpFunc);
+  cbcClass._addBubbleEventListener(this._elem, 'click', this._handleClickFunc);
 
   this._handleFocusListener = function (event) {
-    self._handleFocus(event);
+    if (self._lastEventSource === 'keydown' || self._lastEventSource === null) {
+      self._handleFocus(event);
+    } else if (self._lastEventSource === 'pointer') {
+      self._lastEvent = event;
+      self._isFocusCalled = true;
+
+      if (self._focusFallbackTimer) {
+        clearTimeout(self._focusFallbackTimer);
+      }
+      self._focusFallbackTimer = setTimeout(function () {
+        if (self._isFocusCalled) {
+          self._isFocusCalled = false;
+        }
+      }, 500);
+    }
   };
-  this._elem.addEventListener('focus', this._handleFocusListener, {
+  this._elem.addEventListener('focusin', this._handleFocusListener, {
     passive: false,
     capture: true
   });
@@ -309,7 +352,10 @@ ConveyorBeltCommon.prototype.releaseResources = function () {
   );
   cbcClass._removeBubbleEventListener(this._overflowContainer, 'scroll', this._scrollListener);
   cbcClass._removeBubbleEventListener(this._elem, 'keydown', this._handleKeyDownFunc);
-  this._elem.removeEventListener('focus', this._handleFocusListener, {
+  cbcClass._removeBubbleEventListener(this._elem, 'pointerdown', this._handlePointerDownFunc);
+  cbcClass._removeBubbleEventListener(this._elem, 'keyup', this._handleEventSourceFunc);
+  cbcClass._removeBubbleEventListener(this._elem, 'click', this._handleEventSourceFunc);
+  this._elem.removeEventListener('focusin', this._handleFocusListener, {
     passive: false,
     capture: true
   });
@@ -2510,8 +2556,7 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
         var contentParentElem = null;
         if (options.contentParent) {
           // only use the first result returned from the contentParent selector
-          var safeSelector = normalizeSelectorForQuery(options.contentParent);
-          contentParentElem = this.element[0].querySelector(safeSelector);
+          contentParentElem = this.element.find(options.contentParent)[0];
         }
         callbackInfo.handleFocus = function (event) {
           // if focus is on the conveyorbelt itself do nothing
@@ -2530,7 +2575,6 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
               break;
             }
           }
-
         };
         this._cbCommon = new ConveyorBeltCommon(
           elem[0],
@@ -2946,7 +2990,6 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
       return null;
     },
 
-
     /**
      * Calculates real offsetLeft from the overflow container
      *
@@ -3008,23 +3051,24 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
           elementOffRight <= currentScroll + currentViewportSize &&
           elementOffLeft >= currentScroll &&
           elementOffLeft > this._cbCommon._getButtonSize()
-         ) {
+        ) {
           return;
         }
         // if the element width is bigger than the current view port and it is partially in the view port, then we don't scroll
         if (
-          element.offsetWidth > currentViewportSize && (
-              (elementOffLeft <= currentScroll &&
-                elementOffRight >= currentScroll + currentViewportSize) ||
-              (elementOffRight <= currentScroll + currentViewportSize &&
-                elementOffRight >= currentScroll)
-          )) {
-            return;
+          element.offsetWidth > currentViewportSize &&
+          ((elementOffLeft <= currentScroll &&
+            elementOffRight >= currentScroll + currentViewportSize) ||
+            (elementOffRight <= currentScroll + currentViewportSize &&
+              elementOffRight >= currentScroll))
+        ) {
+          return;
         }
 
         // if vertical conveyor belt and the element is in the current vertical view port, then we don't need to scroll
       } else {
-        if ( elementOffTop + element.offsetHeight <= currentScroll + currentViewportSize &&
+        if (
+          elementOffTop + element.offsetHeight <= currentScroll + currentViewportSize &&
           elementOffTop >= currentScroll &&
           elementOffTop > this._cbCommon._getButtonSize()
         ) {
@@ -3033,12 +3077,12 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
         var elementOffBottom = elementOffTop + element.offsetHeight;
         // if the element width is bigger than the current view port and it is partially in the view port, then we don't scroll
         if (
-          element.offsetHeight > currentViewportSize && (
-            (elementOffTop <= currentScroll &&
-              elementOffBottom >= currentScroll + currentViewportSize) ||
+          element.offsetHeight > currentViewportSize &&
+          ((elementOffTop <= currentScroll &&
+            elementOffBottom >= currentScroll + currentViewportSize) ||
             (elementOffBottom <= currentScroll + currentViewportSize &&
-              elementOffBottom >= currentScroll)
-        )) {
+              elementOffBottom >= currentScroll))
+        ) {
           return;
         }
       }
@@ -3082,14 +3126,3 @@ ConveyorBeltCommon._KEYBOARD_KEYS = {
     }
   });
 })(); // end of ConveyorBelt wrapper function
-
-// JET-75829: For querySelector, use [id="..."] if selector is an id starting with a digit
-function normalizeSelectorForQuery(selector) {
-  // If selector is an id starting with a digit, e.g. "#4n54be08ur7mgvx"
-  // Use [id="4n54be08ur7mgvx"]
-  const match = selector.match(/^#(\d[\w-]*)$/);
-  if (match) {
-    return `[id="${match[1]}"]`;
-  }
-  return selector;
-}

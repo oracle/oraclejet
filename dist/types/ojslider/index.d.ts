@@ -11,6 +11,7 @@ export interface ojRangeSlider extends editableValue<Object | null, ojRangeSlide
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     max: number | null;
     min: number | null;
@@ -122,6 +123,7 @@ export interface ojRangeSliderSettableProperties extends editableValueSettablePr
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     max: number | null;
     min: number | null;
@@ -152,6 +154,7 @@ export interface ojSlider extends editableValue<number | null, ojSliderSettableP
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     max: number | null;
     min: number | null;
@@ -262,6 +265,7 @@ export interface ojSliderSettableProperties extends editableValueSettablePropert
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     max: number | null;
     min: number | null;
@@ -402,7 +406,7 @@ export interface RangeSliderIntrinsicProps extends Partial<Readonly<ojRangeSlide
     onojAnimateStart?: (value: ojRangeSliderEventMap['ojAnimateStart']) => void;
     ondisabledChanged?: (value: ojRangeSliderEventMap['disabledChanged']) => void;
     ondisplayOptionsChanged?: (value: ojRangeSliderEventMap['displayOptionsChanged']) => void;
-    onlabelledByChanged?: (value: ojRangeSliderEventMap['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojRangeSliderEventMap['labelledByChanged']) => void;
     onmaxChanged?: (value: ojRangeSliderEventMap['maxChanged']) => void;
     onminChanged?: (value: ojRangeSliderEventMap['minChanged']) => void;
     onorientationChanged?: (value: ojRangeSliderEventMap['orientationChanged']) => void;
@@ -425,7 +429,7 @@ export interface SliderIntrinsicProps extends Partial<Readonly<ojSliderSettableP
     /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojSliderEventMap['ojAnimateStart']) => void;
     ondisplayOptionsChanged?: (value: ojSliderEventMap['displayOptionsChanged']) => void;
-    onlabelledByChanged?: (value: ojSliderEventMap['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojSliderEventMap['labelledByChanged']) => void;
     onmaxChanged?: (value: ojSliderEventMap['maxChanged']) => void;
     onminChanged?: (value: ojSliderEventMap['minChanged']) => void;
     onorientationChanged?: (value: ojSliderEventMap['orientationChanged']) => void;

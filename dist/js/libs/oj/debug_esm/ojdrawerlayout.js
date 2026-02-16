@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -152,7 +152,7 @@ var DrawerLayout_1;
  *     "module": "ojs/ojdrawerlayout"
  *   }
  * }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/19/reference-api/oj.ojDrawerLayout.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojDrawerLayout.html"
  * @ojmetadata since "11.0.0"
  */
 let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
@@ -282,11 +282,22 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             // Trigger refresh of descendants (popups opened from the drawer)
             PopupService.getInstance().triggerOnDescendents($drawerElement, PopupService.EVENT.POPUP_REFRESH);
         };
-        this.destroyHandler = (edge) => {
-            const $drawerElement = $(this.getDrawerRef(edge).current);
-            const status = ZOrderUtils.getStatus($drawerElement);
+        this.destroyHandler = (drawerElement) => {
+            const status = ZOrderUtils.getStatus($(drawerElement));
+            // During animation drawer is wrapped in a clipping area.
+            // If we are destroying drawer before the clipping area is removed,
+            // we need to remove it manually. Otherwise calling removeFromAncesterLayer
+            // woudld remove this temporary wrapper instead of removing drawer's z-layer.
+            const parentNodeOfDrawerEl = drawerElement.parentNode;
+            // Clipping area does not have safe indentifier
+            // Instead, check if the parent node is z-layer
+            if (!parentNodeOfDrawerEl.classList.contains('oj-drawer-layout-surrogate')) {
+                // Remove clipping area of overlay Popups.
+                // It was masking overlays of the drawer during the animation (see beforeOpen hook)
+                DrawerUtils.unwrapDrawerClippingArea(drawerElement);
+            }
             if (status === ZOrderUtils.STATUS.OPEN) {
-                ZOrderUtils.removeFromAncestorLayer($drawerElement);
+                ZOrderUtils.removeFromAncestorLayer($(drawerElement));
             }
         };
         this.windowResizeCallback = () => {
@@ -947,14 +958,17 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
         PSOptions[PSoption.LAYER_LEVEL] = PopupService.LAYER_LEVEL.TOP_LEVEL;
         PSOptions[PSoption.POSITION] = this.getDrawerPosition(edge);
         PSOptions[PSoption.CUSTOM_ELEMENT] = true;
+        const drawerElement = this.getDrawerRef(edge).current;
         const PSEvent = PopupService.EVENT;
         PSOptions[PSoption.EVENTS] = {
             [PSEvent.POPUP_BEFORE_OPEN]: () => this.beforeOpenHandler(edge, prevState),
-            [PSEvent.POPUP_AFTER_OPEN]: () => this.afterOpenHandler(edge, prevState),
+            // Need to pass drawerElement as a parameter of afterOpenHandler.
+            // Resolving it via getDrawerRef(edge) getter does not work in destroy cases. Ref is lost.
+            [PSEvent.POPUP_AFTER_OPEN]: () => this.afterOpenHandler(edge, prevState, drawerElement),
             [PSEvent.POPUP_BEFORE_CLOSE]: () => this.beforeCloseHandler(edge),
             [PSEvent.POPUP_AFTER_CLOSE]: () => this.afterCloseHandler(edge, prevState),
             [PSEvent.POPUP_REFRESH]: () => this.refreshHandler(edge),
-            [PSEvent.POPUP_REMOVE]: () => this.destroyHandler(edge)
+            [PSEvent.POPUP_REMOVE]: () => this.destroyHandler(drawerElement)
         };
         return PSOptions;
     }
@@ -997,12 +1011,24 @@ let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {
             this.bottomRef.current.style.width = `${width}px`;
         }
     }
-    afterOpenHandler(edge, prevState) {
+    afterOpenHandler(edge, prevState, drawerElement) {
+        const $drawerElement = $(drawerElement);
         // Enable body overflow disabled in 'beforeOpen'
         DrawerUtils.enableBodyOverflow();
+        const drawerZLayer = ZOrderUtils.getFirstAncestorLayer($drawerElement);
+        if (drawerZLayer === ZOrderUtils.getDefaultLayer()) {
+            // Shortcircuit in case drawerLayer is identified
+            // as the main stacking container ('__oj_zorder_container')
+            return;
+        }
+        const drawerSurrogate = ZOrderUtils._getSurrogate(drawerZLayer);
+        if (!drawerSurrogate) {
+            // Shortcircuit in case of destroy cases that happen during opening animation.
+            // Surrogate of drawer's z-layer was removed. We should proceed to destroying
+            // the drawer and do not move focus into the drawer or register its resize observers.
+            return;
+        }
         this.handleFocus(prevState);
-        const drawerElement = this.getDrawerRef(edge).current;
-        const $drawerElement = $(drawerElement);
         const status = ZOrderUtils.getStatus($drawerElement);
         // Register overlay drawer resize observer
         if (edge === DrawerConstants.stringStart && this.startOverlayDrawerResizeHandler === null) {

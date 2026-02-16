@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -426,8 +426,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojarraydataprovider', 'ojs/ojeventtar
      * @expose
      * @memberof MutableArrayTreeDataProvider
      * @instance
-     * @property {any} data
-     * @ojsignature {target: "Type", value: "any"}
+     * @type {D[]}
+     * @ojsignature {target: "Type", value: "D[]"}
      * @ojtsexample <caption>Example of mutating the entire tree</caption>
      * const rootTreeDataProvider = new MutableArrayTreeDataProvider(rootData, 'id');
      * let newRootData;
@@ -662,7 +662,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojarraydataprovider', 'ojs/ojeventtar
                 if (children) {
                     const childDataProvider = new MutableArrayTreeDataProvider(children, this.keyAttribute, this.options, this._getRootDataProvider());
                     Object.defineProperty(childDataProvider, 'data', {
-                        writable: false
+                        get: () => childDataProvider._data
                     });
                     if (childDataProvider != null) {
                         const enforceKeyStringify = this.options?.enforceKeyStringify;

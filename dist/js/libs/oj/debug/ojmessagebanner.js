@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -857,7 +857,7 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
      * @param event Blur event object
      */
     function handleDocumentBlurCapture(event) {
-        priorFocusedElement = event.target;
+        priorFocusedElement = new WeakRef(event.target);
     }
     /**
      * Handles the keyup event in the component
@@ -890,7 +890,7 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
         // Track previous focus if the priorFocused element is not a part of this or any other
         // registered component
         const { callbacks } = componentsMap.get(id);
-        if (priorFocusedElement && !isPartOfRegisteredMessages(priorFocusedElement)) {
+        if (priorFocusedElement?.deref() && !isPartOfRegisteredMessages(priorFocusedElement.deref())) {
             priorFocusCache.set(id, priorFocusedElement);
             // since the focus moved to this component from outside, call the
             // onFocus callbacks if available
@@ -1069,7 +1069,7 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
      * @returns true, if focus is restored. false otherwise.
      */
     function togglePreviousFocus(id, event) {
-        const target = getClosestPriorFocusedElement(id);
+        const target = getClosestPriorFocusedElement(id)?.deref();
         const { callbacks } = componentsMap.get(id) ?? {};
         if (target && document.body.contains(target)) {
             target.focus();
@@ -1432,8 +1432,8 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
      * same severity are then sorted in reverse chronological order. Set the sorting attribute to "off" to show the
      * messages in the order that they appear in the data.
      *
-     * @typeparam {object} K Type of key of the dataprovider. It can either be a string or a number.
-     * @typeparam {object} D Type of the data from the dataprovider. It must extend the MessageBannerItem type.
+     * @typeparam K Type of key of the dataprovider. It can either be a string or a number.
+     * @typeparam D Type of the data from the dataprovider. It must extend the MessageBannerItem type.
      * @ojmetadata description "Message Banners are brief, moderately disruptive, semi-permanent messages that help communicate relevant and useful information."
      * @ojmetadata displayName "Message Banner"
      * @ojmetadata main "ojs/ojmessagebanner"
@@ -1465,7 +1465,7 @@ define(['exports', 'preact/jsx-runtime', 'preact/hooks', 'preact', 'ojs/ojconfig
      *     ]
      *   }
      * ]
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/19/reference-api/oj.ojMessageBanner.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojMessageBanner.html"
      * @ojmetadata since "12.0.0"
      * @ojmetadata status [
      *   {

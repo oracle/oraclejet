@@ -200,6 +200,10 @@ function getDtMetadata(objWithJsDoc, context, propertyPath, metaUtilObj) {
                 // child 'styleVariables' array
                 if (mdKey === 'styleVariableSet') {
                     if (mdVal.styleVariables && Array.isArray(mdVal.styleVariables)) {
+                        // save off the styleVariableSet metadata for apidoc generation
+                        dt['jsdoc'] = dt['jsdoc'] || {};
+                        dt['jsdoc'][mdKey] = dt['jsdoc'][mdKey] || [];
+                        dt['jsdoc'][mdKey].push({ ...mdVal });
                         mdKey = 'styleVariables';
                         mdVal = mdVal.styleVariables.slice(); // copy the array
                     }
@@ -219,6 +223,18 @@ function getDtMetadata(objWithJsDoc, context, propertyPath, metaUtilObj) {
                 // NOTE:  Legacy VComponent API Doc was generated outside of custom-tsc
                 if (mdKey === 'styleClasses') {
                     let styleClasses = mdVal;
+                    // save off the styleClasses metadata for apidoc generation
+                    dt['jsdoc'] = dt['jsdoc'] || {};
+                    // Deep copy the array to avoid mutations
+                    try {
+                        dt['jsdoc'][mdKey] = JSON.parse(JSON.stringify(mdVal));
+                    }
+                    catch (e) {
+                        // If serialization fails, fallback to a shallow copy
+                        dt['jsdoc'][mdKey] = Array.isArray(mdVal)
+                            ? mdVal.map((item) => ({ ...item }))
+                            : { ...mdVal };
+                    }
                     styleClasses.forEach((sc) => {
                         // API Doc examples are tucked away under extension.jet metadata - remove them
                         // so they don't end up getting written out to the DT metadata
@@ -263,6 +279,10 @@ function getDtMetadata(objWithJsDoc, context, propertyPath, metaUtilObj) {
                 dt['jsdoc']['example'] = dt['jsdoc']['example'] || [];
                 dt['jsdoc']['example'].push(jsdocExampleText);
             }
+        }
+        else if (ts.idText(tag.tagName) === 'since') {
+            dt['jsdoc'] = dt['jsdoc'] || {};
+            dt['jsdoc']['since'] = ts.getTextOfJSDocComment(tag.comment);
         }
         else if (ts.idText(tag.tagName) === 'typeparam') {
             dt['jsdoc'] = dt['jsdoc'] || {};
@@ -1242,15 +1262,19 @@ function walkTypeMembers(type, metaUtilObj, callback) {
             // as optional callback arguments -- these arguments are needed
             // to determine if the Mapped Type Property is optional,
             // since the Root symbol itself might not be marked as optional.
+            // This call returns the "mapped" or "synthesized" (by checker) symbols that exist on the mapped type itself
+            //  -they reflect the mapped symbols type/optionality are after mapping.
             const propSymbols = checker.getPropertiesOfType(type);
             if (propSymbols) {
+                // rootSymbols correspond to the original properties before mapping
                 const rootSymbols = isMappedType(type)
                     ? propSymbols.map((sym) => checker.getRootSymbols(sym)?.[0])
                     : [];
                 for (let i = 0; i < propSymbols.length; i++) {
                     const mappedSymbol = propSymbols[i];
                     const rootSymbol = rootSymbols?.[i] ?? mappedSymbol;
-                    callback(rootSymbol, rootSymbol.getEscapedName(), mappedSymbol);
+                    const nameForKey = mappedSymbol.getEscapedName(); // use remapped name
+                    callback(rootSymbol, nameForKey, mappedSymbol);
                 }
             }
         }
@@ -1786,7 +1810,13 @@ function getTypeDefDetails(typeRefNode, metaUtilObj, seenTypeDefs, processProps)
                         ts.isMethodDeclaration(propSignature)) {
                         const property = key.toString();
                         const propertyPath = [property];
-                        const typeDefMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MDScope.DT, MetaTypes.MDContext.TYPEDEF, propertyPath, symbol, metaUtilObj);
+                        const typeDefMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MDScope.DT, MetaTypes.MDContext.TYPEDEF, propertyPath, mappedTypeSymbol ?? symbol, metaUtilObj);
+                        // skip the property if it has @ignore JSDoc tag
+                        const skipProperty = typeDefMetadata['jsdoc'] && typeDefMetadata['jsdoc']['ignore'] === true;
+                        if (skipProperty) {
+                            printInColor(`getTypeDefDetails:: Skipping property ${property} due to @ignore JSDoc tag.`, metaUtilObj, 2, MetadataTypes_1.Color.FgYellow);
+                            return;
+                        }
                         const propSym = mappedTypeSymbol ?? symbol;
                         typeDefMetadata['optional'] = propSym.flags & ts.SymbolFlags.Optional ? true : false;
                         // assign top level metadata

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -127,11 +127,11 @@ AbstractLovBase.prototype._usingHandler = function (pos, props) {
 
     // constrain the dropdown size to the available space
     var dropdownElemStyle = dropdownElem.style;
-    // don't change width if pos.left is < 0 because it can result in the dropdown flickering
-    if (pos.left >= 0) {
-      dropdownElemStyle.maxWidth = availableSpace.width + 'px';
-    }
-    dropdownElemStyle.maxHeight = availableSpace.height + 'px';
+
+    // JET-73815 - Dropdown opens with incorrect/partial width on first click
+    // Always set maxWidth to availableSpace.width to prevent dropdown from growing beyond viewport.
+    dropdownElemStyle.maxWidth = availableSpace.width + 'px';
+    dropdownElemStyle.maxHeight = availableSpace.height - this._dropdownVerticalOffset + 'px';
 
     // apply same position, because the popup service should put it in the same place after
     // running collision logic (exclude using callback, because we're already in it and we don't
@@ -445,6 +445,18 @@ AbstractLovBase.prototype._handleQueryResultsFetch = function (focusFirstElem) {
 };
 
 AbstractLovBase.prototype.updateLiveRegion = function (translatedString) {
+  const region = this._liveRegion;
+  if (!region) {
+    return;
+  }
+
+  // JET-76125: Because of CSS issues with VoiceOver on iOS that cause the live region not to announce,
+  // we need to attach the live region to the dropdown element instead of being a sibling to the editable input field.
+  const dropdown = this._lovDropdown?.getElement?.();
+  if (dropdown != null && (region.parentElement !== dropdown || !document.contains(region))) {
+    dropdown.appendChild(region);
+  }
+
   $(this._liveRegion).text(translatedString);
 };
 
@@ -2505,6 +2517,7 @@ LovMainField.prototype._createInnerDom = function (options) {
   var ariaLabel = options.ariaLabel;
   var ariaControls = options.ariaControls;
   var cachedMainFieldInputElement = options.cachedMainFieldInputElement;
+  var isIOS = oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS;
 
   var textFieldContainer = document.createElement('div');
   textFieldContainer.setAttribute(
@@ -2531,8 +2544,18 @@ LovMainField.prototype._createInnerDom = function (options) {
   input.setAttribute('aria-autocomplete', 'list');
   input.setAttribute('placeholder', options.placeholder);
   input.disabled = !enabled && !readonly;
+
   if (readonly || (this._forceReadOnly && enabled)) {
-    input.setAttribute('readonly', 'true');
+    if (isIOS && !readonly) {
+      // For iOS, we want to avoid applying readonly because VoiceOver will announce that
+      // the field is "Read Only". However, we also want to suppress the virtual keyboard
+      // since this input is not directly editable. So we set inputmode to 'none', which
+      // has the effect of suppressing the virtual keyboard but still allows for it to
+      // trigger the dropdown.
+      input.setAttribute('inputmode', 'none');
+    } else {
+      input.setAttribute('readonly', 'true');
+    }
   }
   if (!readonly) {
     input.setAttribute('role', 'combobox');
@@ -2914,6 +2937,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
      * @access public
      * @instance
      * @memberof oj.ojSelectBase
+     * @ojdeprecated {since: '20.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
      */
     /**
      * <p>
@@ -3932,7 +3956,6 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       // (We don't need to set tabindex of the filter input to -1 for tabbing forward because when
       // the component has focus, the main input is hidden and the filter input is always shown.
       // So the user is never actually tabbing out of the main input.)
-      this._origMainInputTabIndex = mainInputElem.tabIndex;
       mainInputElem.tabIndex = -1;
 
       this.OuterWrapper.classList.add('oj-searchselect-filter-shown');
@@ -3995,8 +4018,14 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       // (We don't need to set tabindex of the filter input to -1 for tabbing forward because when
       // the component has focus, the main input is hidden and the filter input is always shown.
       // So the user is never actually tabbing out of the main input.)
-      if (this._origMainInputTabIndex !== undefined) {
-        mainInputElem.tabIndex = this._origMainInputTabIndex;
+
+      // JET-62253 - "oj-select-single: Unable to Toggle Edit Mode with F2 After Mouse Focus"
+      // If data-oj-tabmod="0" is present, collection has set tabindex to -1, so keep it -1.
+      // Otherwise, always restore to 0 so the main input is tabbable.
+      if (mainInputElem.getAttribute('data-oj-tabmod') === '0') {
+        mainInputElem.tabIndex = -1;
+      } else {
+        mainInputElem.tabIndex = 0;
       }
 
       this.OuterWrapper.classList.remove('oj-searchselect-filter-shown');

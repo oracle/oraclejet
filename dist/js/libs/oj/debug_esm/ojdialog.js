@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -3088,7 +3088,24 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         delete this._launcherKeydownHandlerInstalled;
       }
       // Moved from close(). Don't want to move focus until the close animation completed.
-      this._moveFocusToLauncher();
+      // JET-77352 - Guard focus restoration so we don't steal focus from another
+      // popup/dialog that has opened during/after this dialog's close animation.
+      var shouldMoveFocusToLauncher = true;
+      var active = document.activeElement;
+      if (active) {
+        var openPopups = ZOrderUtils.findOpenPopups();
+        for (var i = 0; i < openPopups.length; i++) {
+          var popupElem = openPopups[i];
+          if (isAncestorOrSelf(popupElem, active)) {
+            // Another open popup currently owns focus; do not restore to launcher
+            shouldMoveFocusToLauncher = false;
+            break;
+          }
+        }
+      }
+      if (shouldMoveFocusToLauncher) {
+        this._moveFocusToLauncher();
+      }
 
       var event;
       if (context) {
@@ -3562,26 +3579,32 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       if (this._scrollLockBackup || !window.visualViewport) {
         return;
       }
-      const offsetLeft = window.visualViewport.offsetLeft;
-      const offsetTop = window.visualViewport.offsetTop;
-      const windowScrollX = window.pageXOffset;
-      const windowScrollY = window.pageYOffset;
+      // This is needed to block body scroll while animating the dialog in sheet mode.
+      // JET-76381: However, the same behavior is applied by PopupService when rendering modals on iOS.
+      // Therefore, we don't want to re-apply the body scroll lock when the body position is already
+      // set to 'fixed' and overflow is 'hidden'.
+      if (body.style.position !== 'fixed' || body.style.overflow !== 'hidden') {
+        const offsetLeft = window.visualViewport.offsetLeft;
+        const offsetTop = window.visualViewport.offsetTop;
+        const windowScrollX = window.pageXOffset;
+        const windowScrollY = window.pageYOffset;
 
-      this._scrollLockBackup = {
-        windowScrollX: windowScrollX,
-        windowScrollY: windowScrollY,
-        bodyPosition: body.style.position,
-        bodyOverflow: body.style.overflow,
-        bodyTop: body.style.top,
-        bodyLeft: body.style.left,
-        bodyRight: body.style.right
-      };
+        this._scrollLockBackup = {
+          windowScrollX: windowScrollX,
+          windowScrollY: windowScrollY,
+          bodyPosition: body.style.position,
+          bodyOverflow: body.style.overflow,
+          bodyTop: body.style.top,
+          bodyLeft: body.style.left,
+          bodyRight: body.style.right
+        };
 
-      body.style.position = 'fixed';
-      body.style.overflow = 'hidden';
-      body.style.top = `${-(windowScrollY - Math.floor(offsetTop))}px`;
-      body.style.left = `${-(windowScrollX - Math.floor(offsetLeft))}px`;
-      body.style.right = '0';
+        body.style.position = 'fixed';
+        body.style.overflow = 'hidden';
+        body.style.top = `${-(windowScrollY - Math.floor(offsetTop))}px`;
+        body.style.left = `${-(windowScrollX - Math.floor(offsetLeft))}px`;
+        body.style.right = '0';
+      }
 
       body.classList.add('oj-dialog-sheet-animating');
     },
@@ -3589,7 +3612,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     _restoreBodyOverflow: function () {
       var body = document.body;
       body.classList.remove('oj-dialog-sheet-animating');
-
       if (this._scrollLockBackup) {
         const backup = this._scrollLockBackup;
 

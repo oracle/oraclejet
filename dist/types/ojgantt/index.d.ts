@@ -72,18 +72,24 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
     taskData?: (DataProvider<K2, D2>);
     taskDefaults: {
         attribute?: {
+            /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgClassName?: string;
+            /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         baseline?: {
             borderRadius?: string;
             height?: number;
+            /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgClassName?: string;
+            /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         borderRadius?: string;
         downtime?: {
+            /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgClassName?: string;
+            /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         height?: number;
@@ -93,17 +99,23 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
             offset?: number;
         };
         overtime?: {
+            /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgClassName?: string;
+            /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         progress?: {
             borderRadius?: string;
             height?: string;
+            /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgClassName?: string;
+            /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         resizable?: 'disabled' | 'enabled';
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'normal' | 'milestone' | 'summary' | 'auto';
     };
@@ -411,7 +423,7 @@ export namespace ojGantt {
     type DataRow<K3 = any, D3 = any, K2 = any, D2 = any> = {
         label?: string;
         labelStyle?: Partial<CSSStyleDeclaration>;
-        referenceObjects?: Array<Partial<ReferenceObject>>;
+        referenceObjects?: Array<Partial<RowReferenceObject>>;
         shortDesc?: (string | ((context: RowShortDescContext<K3, D3>) => string));
         tasks?: Array<DataTask<K2, D2>>;
     };
@@ -522,7 +534,7 @@ export namespace ojGantt {
         id?: any;
         label?: string;
         labelStyle?: Partial<CSSStyleDeclaration>;
-        referenceObjects?: Array<Partial<ReferenceObject>>;
+        referenceObjects?: Array<Partial<RowReferenceObject>>;
         shortDesc?: (string | ((context: RowShortDescContext<K3, D3>) => string));
         tasks?: Array<RowTask<K2, D2>>;
     };
@@ -561,6 +573,14 @@ export namespace ojGantt {
         key: K3;
         leaf: boolean;
         parentKey: K3;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RowReferenceObject = {
+        end?: string;
+        shortDesc?: string;
+        start?: string;
+        svgClassName?: string;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type RowShortDescContext<K3, D3> = {
@@ -820,18 +840,24 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
     taskData?: (DataProvider<K2, D2>);
     taskDefaults: {
         attribute?: {
+            /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgClassName?: string;
+            /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         baseline?: {
             borderRadius?: string;
             height?: number;
+            /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgClassName?: string;
+            /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         borderRadius?: string;
         downtime?: {
+            /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgClassName?: string;
+            /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         height?: number;
@@ -841,17 +867,23 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
             offset?: number;
         };
         overtime?: {
+            /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgClassName?: string;
+            /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         progress?: {
             borderRadius?: string;
             height?: string;
+            /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgClassName?: string;
+            /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
             svgStyle?: Partial<CSSStyleDeclaration>;
         };
         resizable?: 'disabled' | 'enabled';
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'normal' | 'milestone' | 'summary' | 'auto';
     };
@@ -1008,6 +1040,7 @@ export interface ojGanttDependency extends JetElement<ojGanttDependencySettableP
     shortDesc?: string | null;
     successorTaskId: any;
     svgClassName?: string;
+    /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     type?: 'finishStart' | 'finishFinish' | 'startStart' | 'startFinish';
     addEventListener<T extends keyof ojGanttDependencyEventMap>(type: T, listener: (this: HTMLElement, ev: ojGanttDependencyEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -1045,6 +1078,7 @@ export interface ojGanttDependencySettableProperties extends JetSettableProperti
     shortDesc?: string | null;
     successorTaskId: any;
     svgClassName?: string;
+    /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     type?: 'finishStart' | 'finishFinish' | 'startStart' | 'startFinish';
 }
@@ -1053,8 +1087,11 @@ export interface ojGanttDependencySettablePropertiesLenient extends Partial<ojGa
 }
 export interface ojGanttReferenceObject extends JetElement<ojGanttReferenceObjectSettableProperties> {
     end?: string;
+    shortDesc?: string | null;
     start?: string;
+    /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
     addEventListener<T extends keyof ojGanttReferenceObjectEventMap>(type: T, listener: (this: HTMLElement, ev: ojGanttReferenceObjectEventMap[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
@@ -1069,6 +1106,8 @@ export namespace ojGanttReferenceObject {
     // tslint:disable-next-line interface-over-type-literal
     type endChanged = JetElementCustomEvent<ojGanttReferenceObject["end"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojGanttReferenceObject["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type startChanged = JetElementCustomEvent<ojGanttReferenceObject["start"]>;
     // tslint:disable-next-line interface-over-type-literal
     type svgClassNameChanged = JetElementCustomEvent<ojGanttReferenceObject["svgClassName"]>;
@@ -1077,14 +1116,18 @@ export namespace ojGanttReferenceObject {
 }
 export interface ojGanttReferenceObjectEventMap extends HTMLElementEventMap {
     'endChanged': JetElementCustomEvent<ojGanttReferenceObject["end"]>;
+    'shortDescChanged': JetElementCustomEvent<ojGanttReferenceObject["shortDesc"]>;
     'startChanged': JetElementCustomEvent<ojGanttReferenceObject["start"]>;
     'svgClassNameChanged': JetElementCustomEvent<ojGanttReferenceObject["svgClassName"]>;
     'svgStyleChanged': JetElementCustomEvent<ojGanttReferenceObject["svgStyle"]>;
 }
 export interface ojGanttReferenceObjectSettableProperties extends JetSettableProperties {
     end?: string;
+    shortDesc?: string | null;
     start?: string;
+    /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgClassName?: string;
+    /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
     svgStyle?: Partial<CSSStyleDeclaration>;
 }
 export interface ojGanttReferenceObjectSettablePropertiesLenient extends Partial<ojGanttReferenceObjectSettableProperties> {
@@ -1152,7 +1195,9 @@ export interface ojGanttTask<K2 = any, D2 = any> extends dvtTimeComponent<ojGant
     downtime?: {
         end?: string;
         start?: string;
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     end?: string;
@@ -1166,13 +1211,16 @@ export interface ojGanttTask<K2 = any, D2 = any> extends dvtTimeComponent<ojGant
     overtime?: {
         end?: string;
         start?: string;
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     progress?: {
         borderRadius?: string;
         height?: string;
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
     };
@@ -1273,7 +1321,9 @@ export interface ojGanttTaskSettableProperties<K2 = any, D2 = any> extends dvtTi
     downtime?: {
         end?: string;
         start?: string;
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     end?: string;
@@ -1287,13 +1337,16 @@ export interface ojGanttTaskSettableProperties<K2 = any, D2 = any> extends dvtTi
     overtime?: {
         end?: string;
         start?: string;
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     progress?: {
         borderRadius?: string;
         height?: string;
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
     };
@@ -1474,7 +1527,7 @@ export namespace GanttElement {
     type DataRow<K3 = any, D3 = any, K2 = any, D2 = any> = {
         label?: string;
         labelStyle?: Partial<CSSStyleDeclaration>;
-        referenceObjects?: Array<Partial<ojGantt.ReferenceObject>>;
+        referenceObjects?: Array<Partial<ojGantt.RowReferenceObject>>;
         shortDesc?: (string | ((context: ojGantt.RowShortDescContext<K3, D3>) => string));
         tasks?: Array<ojGantt.DataTask<K2, D2>>;
     };
@@ -1585,7 +1638,7 @@ export namespace GanttElement {
         id?: any;
         label?: string;
         labelStyle?: Partial<CSSStyleDeclaration>;
-        referenceObjects?: Array<Partial<ojGantt.ReferenceObject>>;
+        referenceObjects?: Array<Partial<ojGantt.RowReferenceObject>>;
         shortDesc?: (string | ((context: ojGantt.RowShortDescContext<K3, D3>) => string));
         tasks?: Array<ojGantt.RowTask<K2, D2>>;
     };
@@ -1624,6 +1677,14 @@ export namespace GanttElement {
         key: K3;
         leaf: boolean;
         parentKey: K3;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RowReferenceObject = {
+        end?: string;
+        shortDesc?: string;
+        start?: string;
+        svgClassName?: string;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type RowShortDescContext<K3, D3> = {
@@ -1795,6 +1856,8 @@ export namespace GanttReferenceObjectElement {
     // tslint:disable-next-line interface-over-type-literal
     type endChanged = JetElementCustomEvent<ojGanttReferenceObject["end"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojGanttReferenceObject["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type startChanged = JetElementCustomEvent<ojGanttReferenceObject["start"]>;
     // tslint:disable-next-line interface-over-type-literal
     type svgClassNameChanged = JetElementCustomEvent<ojGanttReferenceObject["svgClassName"]>;
@@ -1899,15 +1962,16 @@ export interface GanttDependencyIntrinsicProps extends Partial<Readonly<ojGanttD
     onshortDescChanged?: (value: ojGanttDependencyEventMap['shortDescChanged']) => void;
     onsuccessorTaskIdChanged?: (value: ojGanttDependencyEventMap['successorTaskIdChanged']) => void;
     onsvgClassNameChanged?: (value: ojGanttDependencyEventMap['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojGanttDependencyEventMap['svgStyleChanged']) => void;
+    /** @deprecated since 20.0.0 */ onsvgStyleChanged?: (value: ojGanttDependencyEventMap['svgStyleChanged']) => void;
     ontypeChanged?: (value: ojGanttDependencyEventMap['typeChanged']) => void;
     children?: ComponentChildren;
 }
 export interface GanttReferenceObjectIntrinsicProps extends Partial<Readonly<ojGanttReferenceObjectSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onendChanged?: (value: ojGanttReferenceObjectEventMap['endChanged']) => void;
+    onshortDescChanged?: (value: ojGanttReferenceObjectEventMap['shortDescChanged']) => void;
     onstartChanged?: (value: ojGanttReferenceObjectEventMap['startChanged']) => void;
-    onsvgClassNameChanged?: (value: ojGanttReferenceObjectEventMap['svgClassNameChanged']) => void;
-    onsvgStyleChanged?: (value: ojGanttReferenceObjectEventMap['svgStyleChanged']) => void;
+    /** @deprecated since 20.0.0 */ onsvgClassNameChanged?: (value: ojGanttReferenceObjectEventMap['svgClassNameChanged']) => void;
+    /** @deprecated since 20.0.0 */ onsvgStyleChanged?: (value: ojGanttReferenceObjectEventMap['svgStyleChanged']) => void;
     children?: ComponentChildren;
 }
 export interface GanttRowIntrinsicProps extends Partial<Readonly<ojGanttRowSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {

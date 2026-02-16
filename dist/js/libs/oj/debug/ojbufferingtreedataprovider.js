@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -170,6 +170,13 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      */
 
     /**
+     * @typedef {Object} BufferingTreeDataProvider.AddDetail
+     * @ojsignature [{target: "Type", value: "<K>", for: "genericTypeParameters"},
+     *               {target: "Type",
+     *               value: "({nullParentKey?: K;} & ({ addBeforeKey: K | null, addAfterKey?: never} | { addBeforeKey?: never, addAfterKey: K}))"}]
+     */
+
+    /**
      * @inheritdoc
      * @memberof BufferingTreeDataProvider
      * @instance
@@ -332,15 +339,17 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      * @method
      * @name addItem
      * @param {Item<K, D>} item - an Item object that represents the row.
-     * @param {Object=} addDetail - An object that represents additional add details about the row.
+     * @param {BufferingTreeDataProvider.AddDetail=} addDetail - An object that represents additional add details about the row. To insert at particular position, either addBeforeKey or addAfterKey should be sepecifed.
      * If the addItem method is called only with the item parameter, then the item will be added at the top.
      * If addBeforeKey is provided and that key exists in the base TreeDataProvider, then the item will be added before that key.
      * If addBeforeKey is null or the provided key doesn't exist in the base TreeDataProvider, then the item will be added at the end.
+     * If addAfterKey is provided and that key exist in base TreeDataProvider then item will be added after that key otherwise item will be added at the end.
      * addItem supports passing in an item that has a null key. If the key is null, then a string-typed v4 UUID key is generated for the key.
      * To use this feature, addDetail.nullParentKey should be provided as the second parameter to addItem, where nullParentKey is the parentKey of the new item.
+     * @return {Item<K, D>} added item
      * @throws {Error} if an "add" or "update" entry already exists for the same key.
      * @ojsignature {target: "Type",
-     *               value: "(item: Item<K, D>, addDetail?: { nullParentKey?: K, addBeforeKey?: K | null }): void"}
+     *               value: "(item: Item<K, D>, addDetail?: BufferingTreeDataProvider.AddDetail<K>): Item<K, D>"}
      */
 
     /**
@@ -518,6 +527,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             this.dataBeforeUpdated = new Map();
             this.dataProvider = _dataProvider;
             this.options = _options;
+            this.keyCacheMap = new ojMap();
+            this.ignoreAfterTransactionMap = new Map();
             this.rootBufferingDataProvider = _rootBufferingDataProvider;
             if (!this.rootBufferingDataProvider) {
                 this.editBuffer = new ojbufferingutils.EditBuffer();
@@ -564,7 +575,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         removeItem(item) {
             const keyPath = this.convertKeyToKeyPath(item.metadata.key);
             const parentKey = this.getParentKey(keyPath);
-            const mutationEvent = ojbufferingutils.BufferingDataProviderUtils.removeItem(item, this.getIteratorByParentKey(parentKey), this.getTreeEditBuffer());
+            const mutationEvent = ojbufferingutils.BufferingDataProviderUtils.removeItem(item, this.getIteratorByParentKey(parentKey), this.getKeyCacheByParentKey(parentKey), this.getTreeEditBuffer());
             const submittableItems = this.getSubmittableItems();
             submittableItems.forEach((editItem) => {
                 const key = this.convertKeyToKeyPath(editItem.item.metadata.key);
@@ -572,16 +583,33 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     this.resetUnsubmittedItem(editItem.item.metadata.key);
                 }
             });
-            this.dispatchEvent(mutationEvent);
+            this._populateParentKeyAndDispatch(mutationEvent);
             this.dispatchSubmittableChangeEvent(this.editBuffer);
         }
         updateItem(item) {
             const mutationEvent = ojbufferingutils.BufferingDataProviderUtils.updateItem(item, this.getTreeEditBuffer());
-            this.dispatchEvent(mutationEvent);
+            this._populateParentKeyAndDispatch(mutationEvent);
             this.dispatchSubmittableChangeEvent(this.editBuffer);
+        }
+        _populateParentKeyAndDispatch(mutationEvent) {
+            this._populateAddParentKeysOnMutationEvent(mutationEvent);
+            this.dispatchEvent(mutationEvent);
         }
         getParentKey(keyPath) {
             return keyPath.slice(0, keyPath.length - 1);
+        }
+        _populateAddParentKeysOnMutationEvent(mutationEvent) {
+            const add = mutationEvent.detail.add;
+            if (!add || !add.keys) {
+                return;
+            }
+            const parentKeys = [];
+            add.keys.forEach((key) => {
+                const keyPath = this.convertKeyToKeyPath(key);
+                const parentKey = this.getParentKey(keyPath);
+                parentKeys.push(parentKey.length !== 0 ? parentKey : null);
+            });
+            add.parentKeys = parentKeys;
         }
         isKeyPathDescendant(keyPath, parentKeyPath) {
             if (parentKeyPath.length >= keyPath.length) {
@@ -608,32 +636,32 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             const keyPath = this.convertKeyToKeyPath(addItem.metadata.key);
             const parentKey = this.getParentKey(keyPath);
             const isNewParent = parentKey.length > 0 && this.dataProvider.getChildDataProvider(parentKey) == null;
-            const addDetails = { ...addDetail };
-            if (addDetail?.addBeforeKey != null) {
-                const addBeforeKey = this.convertKeyToKeyPath(addDetail.addBeforeKey);
-                const addBeforeParentKey = this.getParentKey(addBeforeKey);
-                if (!oj.KeyUtils.equals(parentKey, addBeforeParentKey)) {
-                    Logger.error("addBeforeKey is not a descendant of item's parentKey");
-                    delete addDetails.addBeforeKey;
+            const addDetails = addDetail && { ...addDetail };
+            if (addDetail?.addBeforeKey != null || addDetail?.addAfterKey != null) {
+                const addDetailAttribute = addDetail.addBeforeKey != null ? 'addBeforeKey' : 'addAfterKey';
+                const addDetailKey = this.convertKeyToKeyPath(addDetail[addDetailAttribute]);
+                const addDetailParentKey = this.getParentKey(addDetailKey);
+                if (!oj.KeyUtils.equals(parentKey, addDetailParentKey)) {
+                    Logger.error(`${addDetailAttribute} is not a descendant of item's parentKey`);
+                    delete addDetails[addDetailAttribute];
                 }
             }
             const parentIterator = this.getIteratorByParentKey(parentKey);
-            const mutationEvent = ojbufferingutils.BufferingDataProviderUtils.addItem(addItem, this.getTreeEditBuffer(), parentIterator, addDetails);
-            let parentKeys = parentKey.length !== 0 ? [parentKey] : [null];
-            mutationEvent.detail.add.parentKeys = parentKeys;
-            const addBeforeKey = mutationEvent.detail.add.addBeforeKeys[0];
-            const addBeforeKeys = addBeforeKey != null ? [addBeforeKey] : undefined;
-            mutationEvent.detail.add.addBeforeKeys = addBeforeKeys;
+            const mutationEvent = ojbufferingutils.BufferingDataProviderUtils.addItem(addItem, this.getTreeEditBuffer(), parentIterator, this.getKeyCacheByParentKey(parentKey), addDetails);
             if (isNewParent) {
                 this.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent({ keys: new ojSet([parentKey]) }));
             }
             else {
-                this.dispatchEvent(mutationEvent);
+                this._populateParentKeyAndDispatch(mutationEvent);
             }
             this.dispatchSubmittableChangeEvent(this.editBuffer);
+            return addItem;
         }
         getIteratorByParentKey(parentKey) {
             return this.lastIteratorMap.get(parentKey);
+        }
+        getKeyCacheByParentKey(parentKey) {
+            return this.keyCacheMap.get(parentKey);
         }
         convertKeyToKeyPath(keyPath) {
             const pathInfo = this.getPathCapability(this.dataProvider);
@@ -659,13 +687,23 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             return treeDataProvider.getCapability('key')?.structure;
         }
         fetchByOffset(params) {
-            return ojbufferingutils.BufferingDataProviderUtils.fetchByOffset(params, this.getTreeEditBuffer(), this.dataProvider);
+            const lastFetchParams = this.lastFetchByOffsetParameters;
+            this.lastFetchByOffsetParameters = params;
+            let keyCache = this.rootBufferingDataProvider.getKeyCacheByParentKey(this.parentKey);
+            let ignoreAfterTransaction = this.rootBufferingDataProvider.getKeyCacheByParentKey(this.parentKey);
+            if (!keyCache) {
+                keyCache = new ojdataprovider.KeyCache();
+                this.rootBufferingDataProvider.keyCacheMap.set(this.parentKey, keyCache);
+                ignoreAfterTransaction = { index: -1 };
+                this.rootBufferingDataProvider.ignoreAfterTransactionMap.set(this.parentKey, ignoreAfterTransaction);
+            }
+            return ojbufferingutils.BufferingDataProviderUtils.fetchByOffset(params, this.getTreeEditBuffer(), keyCache, lastFetchParams, this.dataProvider, ignoreAfterTransaction);
         }
         fetchFirst(params) {
             this.lastSortCriteria = params ? params.sortCriteria : null;
             const baseIterator = this.dataProvider.fetchFirst(params)[Symbol.asyncIterator]();
             const iterator = new this.TreeAsyncIterator(this, baseIterator, params);
-            this.rootBufferingDataProvider.lastIteratorMap.set(this.parentKey ? this.parentKey : null, iterator);
+            this.rootBufferingDataProvider.lastIteratorMap.set(this.parentKey, iterator);
             return new this.TreeAsyncIterable(this, iterator);
         }
         getCapability(capabilityName) {
@@ -696,15 +734,18 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             unsubmittedItems.delete(key);
             this.dispatchSubmittableChangeEvent(this.editBuffer);
             ojbufferingutils.BufferingDataProviderUtils.resetUnsubmittedItem(editItem, this.editBuffer, this.dataProvider, this.getIteratorByParentKey(this.parentKey), keySet).then((mutationEvent) => {
-                this.dispatchEvent(mutationEvent);
+                this._populateParentKeyAndDispatch(mutationEvent);
             });
         }
         setItemStatus(editItem, newStatus, error, newKey) {
-            const editBuffer = ojbufferingutils.BufferingDataProviderUtils.setItemStatus(editItem, newStatus, this.generatedKeyMap, this.editBuffer, error, newKey);
+            const { editBuffer, mutationEvent } = ojbufferingutils.BufferingDataProviderUtils.setItemStatus(editItem, newStatus, this.generatedKeyMap, this.editBuffer, error, newKey);
             if (editBuffer) {
                 // If any item is changing status, we may have submittable items.
                 // Call dispatchSubmittableChangeEvent, which will figure out if we need to fire submittableChange event.
                 this.dispatchSubmittableChangeEvent(editBuffer);
+            }
+            if (mutationEvent) {
+                this._populateParentKeyAndDispatch(mutationEvent);
             }
         }
         dispatchSubmittableChangeEvent(editBuffer) {
@@ -735,7 +776,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                         });
                     });
                 }
-                this.dispatchEvent(mutationEvent);
+                this._populateParentKeyAndDispatch(mutationEvent);
             });
         }
         /**

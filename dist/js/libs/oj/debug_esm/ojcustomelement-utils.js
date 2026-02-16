@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1151,11 +1151,18 @@ class ElementState {
         this._createdPromise.then(() => {
             this._updateComponentState(ComponentState.Complete);
         }, (error) => {
-            this._updateComponentState(ComponentState.Incomplete);
-            // If the binding provider is disposed, we will reject the binding provider promise,
-            // but not throw an error so check to see if one was passed before rethrowing.
-            if (error)
-                throw error;
+            // if preCreated promise failed due to disconnected DOM (in oj-defer case for example),
+            // reset creation state back to the initial values so it can be restarted if reconnected.
+            if (error === ElementState._DISCONNECTED) {
+                this.resetCreationCycle();
+            }
+            else {
+                this._updateComponentState(ComponentState.Incomplete);
+                // If the binding provider is disposed, we will reject the binding provider promise,
+                // but not throw an error so check to see if one was passed before rethrowing.
+                if (error)
+                    throw error;
+            }
         });
     }
     /**
@@ -1605,6 +1612,7 @@ class ElementState {
             this._componentState === ComponentState.BindingsDisposed);
     }
 }
+ElementState._DISCONNECTED = Symbol('disconnected');
 ElementState._NOOP = () => { };
 var ComponentState;
 (function (ComponentState) {

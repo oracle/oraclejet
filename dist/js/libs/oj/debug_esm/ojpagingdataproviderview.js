@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -270,40 +270,8 @@ class PagingDataProviderView {
         var _a;
         this.dataProvider = dataProvider;
         this.options = options;
-        this._KEY = 'key';
-        this._KEYS = 'keys';
-        this._STARTINDEX = 'startIndex';
-        this._PAGESIZE = 'pageSize';
-        this._OFFSET = 'offset';
-        this._SIZE = 'size';
-        this._PAGE = 'page';
-        this._PAGECOUNT = 'pageCount';
-        this._TOTALSIZE = 'totalsize';
-        this._PREVIOUSPAGE = 'previousPage';
-        this._BEFOREPAGE = 'beforePage';
-        this._DONE = 'done';
-        this._VALUE = 'value';
-        this._DATA = 'data';
-        this._REFRESH = 'refresh';
-        this._MUTATE = 'mutate';
-        this._SORTCRITERIA = 'sortCriteria';
-        this._FILTERCRITERION = 'filterCriterion';
-        this._METADATA = 'metadata';
-        this._RESULTS = 'results';
-        this._FETCHPARAMETERS = 'fetchParameters';
-        this._CONTAINSPARAMETERS = 'containsParameters';
-        this._CONTAINSKEYS = 'containsKeys';
-        this._FETCHBYKEYS = 'fetchByKeys';
-        this._FETCHBYOFFSET = 'fetchByOffset';
-        this._AFTERKEYS = 'afterKeys';
-        this._ADDBEFOREKEYS = 'addBeforeKeys';
-        this._ADD = 'add';
-        this._REMOVE = 'remove';
-        this._UPDATE = 'update';
-        this._INDEXES = 'indexes';
         this.AsyncIterable = (_a = class {
-                constructor(_parent, _asyncIterator) {
-                    this._parent = _parent;
+                constructor(_asyncIterator) {
                     this._asyncIterator = _asyncIterator;
                     this[Symbol.asyncIterator] = function () {
                         return this._asyncIterator;
@@ -313,8 +281,7 @@ class PagingDataProviderView {
             Symbol.asyncIterator,
             _a);
         this.AsyncIterator = class {
-            constructor(_parent, _nextFunc, _params, _clientId) {
-                this._parent = _parent;
+            constructor(_nextFunc, _params, _clientId) {
                 this._nextFunc = _nextFunc;
                 this._params = _params;
                 this._clientId = _clientId;
@@ -325,131 +292,119 @@ class PagingDataProviderView {
             }
         };
         this.AsyncIteratorYieldResult = class {
-            constructor(_parent, value) {
-                this._parent = _parent;
+            constructor(value) {
                 this.value = value;
-                this[_parent._VALUE] = value;
-                this[_parent._DONE] = false;
+                this[PagingDataProviderView._VALUE] = value;
+                this[PagingDataProviderView._DONE] = false;
             }
         };
         this.AsyncIteratorReturnResult = class {
-            constructor(_parent, value) {
-                this._parent = _parent;
+            constructor(value) {
                 this.value = value;
-                this[_parent._VALUE] = value;
-                this[_parent._DONE] = true;
+                this[PagingDataProviderView._VALUE] = value;
+                this[PagingDataProviderView._DONE] = true;
             }
         };
         this.FetchListParameters = class {
-            constructor(_parent, size, sortCriteria, filterCriterion) {
-                this._parent = _parent;
+            constructor(size, sortCriteria, filterCriterion) {
                 this.size = size;
                 this.sortCriteria = sortCriteria;
                 this.filterCriterion = filterCriterion;
-                this[_parent._SIZE] = size;
-                this[_parent._SORTCRITERIA] = sortCriteria;
-                this[_parent._FILTERCRITERION] = filterCriterion;
+                this[PagingDataProviderView._SIZE] = size;
+                this[PagingDataProviderView._SORTCRITERIA] = sortCriteria;
+                this[PagingDataProviderView._FILTERCRITERION] = filterCriterion;
             }
         };
         this.FetchListResult = class {
-            constructor(_parent, fetchParameters, data, metadata) {
-                this._parent = _parent;
+            constructor(fetchParameters, data, metadata) {
                 this.fetchParameters = fetchParameters;
                 this.data = data;
                 this.metadata = metadata;
-                this[_parent._FETCHPARAMETERS] = fetchParameters;
-                this[_parent._DATA] = data;
-                this[_parent._METADATA] = metadata;
+                this[PagingDataProviderView._FETCHPARAMETERS] = fetchParameters;
+                this[PagingDataProviderView._DATA] = data;
+                this[PagingDataProviderView._METADATA] = metadata;
             }
         };
         this.FetchByOffsetParameters = class {
-            constructor(_parent, offset, size, sortCriteria, filterCriterion) {
-                this._parent = _parent;
+            constructor(offset, size, sortCriteria, filterCriterion) {
                 this.offset = offset;
                 this.size = size;
                 this.sortCriteria = sortCriteria;
                 this.filterCriterion = filterCriterion;
-                this[_parent._SIZE] = size;
-                this[_parent._SORTCRITERIA] = sortCriteria;
-                this[_parent._OFFSET] = offset;
-                this[_parent._FILTERCRITERION] = filterCriterion;
+                this[PagingDataProviderView._SIZE] = size;
+                this[PagingDataProviderView._SORTCRITERIA] = sortCriteria;
+                this[PagingDataProviderView._OFFSET] = offset;
+                this[PagingDataProviderView._FILTERCRITERION] = filterCriterion;
             }
         };
         this.FetchByOffsetResults = class {
-            constructor(_parent, fetchParameters, results, done) {
-                this._parent = _parent;
+            constructor(fetchParameters, results, done) {
                 this.fetchParameters = fetchParameters;
                 this.results = results;
                 this.done = done;
-                this[_parent._FETCHPARAMETERS] = fetchParameters;
-                this[_parent._RESULTS] = results;
-                this[_parent._DONE] = done;
+                this[PagingDataProviderView._FETCHPARAMETERS] = fetchParameters;
+                this[PagingDataProviderView._RESULTS] = results;
+                this[PagingDataProviderView._DONE] = done;
             }
         };
         this.FetchByKeysResults = class {
-            constructor(_parent, fetchParameters, results) {
-                this._parent = _parent;
+            constructor(fetchParameters, results) {
                 this.fetchParameters = fetchParameters;
                 this.results = results;
-                this[_parent._FETCHPARAMETERS] = fetchParameters;
-                this[_parent._RESULTS] = results;
+                this[PagingDataProviderView._FETCHPARAMETERS] = fetchParameters;
+                this[PagingDataProviderView._RESULTS] = results;
             }
         };
         this.ContainsKeysResults = class {
-            constructor(_parent, containsParameters, results) {
-                this._parent = _parent;
+            constructor(containsParameters, results) {
                 this.containsParameters = containsParameters;
                 this.results = results;
-                this[_parent._CONTAINSPARAMETERS] = containsParameters;
-                this[_parent._RESULTS] = results;
+                this[PagingDataProviderView._CONTAINSPARAMETERS] = containsParameters;
+                this[PagingDataProviderView._RESULTS] = results;
             }
         };
         this.ItemMetadata = class {
-            constructor(_parent, key) {
-                this._parent = _parent;
+            constructor(key) {
                 this.key = key;
-                this[_parent._KEY] = key;
+                this[PagingDataProviderView._KEY] = key;
             }
         };
         this.DataProviderMutationEventDetail = class {
-            constructor(_parent, add, remove, update) {
-                this._parent = _parent;
+            constructor(add, remove, update) {
                 this.add = add;
                 this.remove = remove;
                 this.update = update;
-                this[_parent._ADD] = add;
-                this[_parent._REMOVE] = remove;
-                this[_parent._UPDATE] = update;
+                this[PagingDataProviderView._ADD] = add;
+                this[PagingDataProviderView._REMOVE] = remove;
+                this[PagingDataProviderView._UPDATE] = update;
             }
         };
         this.DataProviderOperationEventDetail = class {
-            constructor(_parent, keys, metadata, data, indexes) {
-                this._parent = _parent;
+            constructor(keys, metadata, data, indexes) {
                 this.keys = keys;
                 this.metadata = metadata;
                 this.data = data;
                 this.indexes = indexes;
-                this[_parent._KEYS] = keys;
-                this[_parent._METADATA] = metadata;
-                this[_parent._DATA] = data;
-                this[_parent._INDEXES] = indexes;
+                this[PagingDataProviderView._KEYS] = keys;
+                this[PagingDataProviderView._METADATA] = metadata;
+                this[PagingDataProviderView._DATA] = data;
+                this[PagingDataProviderView._INDEXES] = indexes;
             }
         };
         this.DataProviderAddOperationEventDetail = class {
-            constructor(_parent, keys, afterKeys, addBeforeKeys, metadata, data, indexes) {
-                this._parent = _parent;
+            constructor(keys, afterKeys, addBeforeKeys, metadata, data, indexes) {
                 this.keys = keys;
                 this.afterKeys = afterKeys;
                 this.addBeforeKeys = addBeforeKeys;
                 this.metadata = metadata;
                 this.data = data;
                 this.indexes = indexes;
-                this[_parent._KEYS] = keys;
-                this[_parent._AFTERKEYS] = afterKeys;
-                this[_parent._ADDBEFOREKEYS] = addBeforeKeys;
-                this[_parent._METADATA] = metadata;
-                this[_parent._DATA] = data;
-                this[_parent._INDEXES] = indexes;
+                this[PagingDataProviderView._KEYS] = keys;
+                this[PagingDataProviderView._AFTERKEYS] = afterKeys;
+                this[PagingDataProviderView._ADDBEFOREKEYS] = addBeforeKeys;
+                this[PagingDataProviderView._METADATA] = metadata;
+                this[PagingDataProviderView._DATA] = data;
+                this[PagingDataProviderView._INDEXES] = indexes;
             }
         };
         this._addEventListeners(dataProvider);
@@ -485,7 +440,7 @@ class PagingDataProviderView {
     containsKeys(params) {
         return this._checkIfDataInitialized(() => {
             // if containsKeys exists, use that and filter out extra keys
-            return this.dataProvider[this._CONTAINSKEYS](params)
+            return this.dataProvider[PagingDataProviderView._CONTAINSKEYS](params)
                 .then((value) => {
                 const keys = value.results;
                 if (!this._isGlobal(params)) {
@@ -496,10 +451,10 @@ class PagingDataProviderView {
                             currentPageResults.add(key);
                         }
                     });
-                    return new this.ContainsKeysResults(this, params, currentPageResults);
+                    return new this.ContainsKeysResults(params, currentPageResults);
                 }
                 else {
-                    return new this.ContainsKeysResults(this, params, keys);
+                    return new this.ContainsKeysResults(params, keys);
                 }
             })
                 .catch((reject) => {
@@ -512,21 +467,21 @@ class PagingDataProviderView {
             const requestedKeys = params.keys;
             if (!this._isGlobal(params)) {
                 // use the cached fetch data to get values by keys.
-                return this._fetchByOffset(new this.FetchByOffsetParameters(this, this._offset, this._pageSize, this._currentSortCriteria, this._currentFilterCriteria))
+                return this._fetchByOffset(new this.FetchByOffsetParameters(this._offset, this._pageSize, this._currentSortCriteria, this._currentFilterCriteria))
                     .then((results) => {
                     const result = results['results'];
                     const mappedResultMap = new Map();
                     const filteredResults = result.map((value) => {
-                        if (requestedKeys.has(value[this._METADATA][this._KEY])) {
+                        if (requestedKeys.has(value[PagingDataProviderView._METADATA][PagingDataProviderView._KEY])) {
                             return value;
                         }
                     });
                     filteredResults.forEach((value) => {
                         if (value) {
-                            mappedResultMap.set(value[this._METADATA][this._KEY], value);
+                            mappedResultMap.set(value[PagingDataProviderView._METADATA][PagingDataProviderView._KEY], value);
                         }
                     });
-                    return new this.FetchByKeysResults(this, params, mappedResultMap);
+                    return new this.FetchByKeysResults(params, mappedResultMap);
                 })
                     .catch((reject) => {
                     return Promise.reject(reject);
@@ -534,8 +489,8 @@ class PagingDataProviderView {
             }
             else {
                 // fetching globally so need to use the dataprovider.
-                if (this.dataProvider[this._FETCHBYKEYS]) {
-                    return this.dataProvider[this._FETCHBYKEYS](params);
+                if (this.dataProvider[PagingDataProviderView._FETCHBYKEYS]) {
+                    return this.dataProvider[PagingDataProviderView._FETCHBYKEYS](params);
                 }
                 else {
                     // doesn't exist so need to throw an error
@@ -546,20 +501,24 @@ class PagingDataProviderView {
     }
     fetchByOffset(params) {
         return this._checkIfDataInitialized(() => {
-            const offset = params != null ? (params[this._OFFSET] > 0 ? params[this._OFFSET] : 0) : 0;
-            params = new this.FetchByOffsetParameters(this, this._offset, this._pageSize, this._currentSortCriteria, this._currentFilterCriteria);
+            const offset = params != null
+                ? params[PagingDataProviderView._OFFSET] > 0
+                    ? params[PagingDataProviderView._OFFSET]
+                    : 0
+                : 0;
+            params = new this.FetchByOffsetParameters(this._offset, this._pageSize, this._currentSortCriteria, this._currentFilterCriteria);
             return this._fetchByOffset(params).then((results) => {
                 const newResult = results['results'].filter((value, index) => {
                     return index >= offset;
                 });
-                return new this.FetchByOffsetResults(this, this._getLocalParams(params), newResult, results['done']);
+                return new this.FetchByOffsetResults(this._getLocalParams(params), newResult, results['done']);
             });
         });
     }
     fetchFirst(params) {
         // set up iterator variables
-        const sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
-        const filterCriterion = params != null ? params[this._FILTERCRITERION] : null;
+        const sortCriteria = params != null ? params[PagingDataProviderView._SORTCRITERIA] : null;
+        const filterCriterion = params != null ? params[PagingDataProviderView._FILTERCRITERION] : null;
         let payload = {};
         // we can force a criteria check skip if we know that we shouldn't check
         if (this._skipCriteriaCheck) {
@@ -572,9 +531,9 @@ class PagingDataProviderView {
                 this._currentFilterCriteria = filterCriterion;
                 this._offset = 0;
                 if (this._currentPage !== 0) {
-                    payload[this._PREVIOUSPAGE] = this._currentPage;
+                    payload[PagingDataProviderView._PREVIOUSPAGE] = this._currentPage;
                     this._currentPage = 0;
-                    payload[this._PAGE] = this._currentPage;
+                    payload[PagingDataProviderView._PAGE] = this._currentPage;
                 }
             }
         }
@@ -590,7 +549,7 @@ class PagingDataProviderView {
             currentParams: this._currentParams
         });
         // this fetchFirst applies the offset properties on the this.
-        return new this.AsyncIterable(this, new this.AsyncIterator(this, ((params, clientId) => {
+        return new this.AsyncIterable(new this.AsyncIterator(((params, clientId) => {
             return (params, clientId) => {
                 const iteratorData = this._iteratorCacheMap.get(clientId);
                 let offset = iteratorData['offset'];
@@ -598,7 +557,7 @@ class PagingDataProviderView {
                 let mutationOffset = iteratorData['mutationOffset'];
                 let fetchFirstDone = iteratorData['fetchFirstDone'];
                 const currentParams = iteratorData['currentParams'];
-                let updatedParams = new this.FetchByOffsetParameters(this, offset, size, this._currentSortCriteria, this._currentFilterCriteria);
+                let updatedParams = new this.FetchByOffsetParameters(offset, size, this._currentSortCriteria, this._currentFilterCriteria);
                 if (mutationOffset !== 0 && currentParams) {
                     // we have a remove event in progress triggering a fetch
                     // Since we already have the page fetched data, we can
@@ -614,7 +573,7 @@ class PagingDataProviderView {
                     if (needParamUpdate) {
                         size = this._pageSize;
                         offset = this._offset;
-                        updatedParams = new this.FetchByOffsetParameters(this, offset, size, this._currentSortCriteria, this._currentFilterCriteria);
+                        updatedParams = new this.FetchByOffsetParameters(offset, size, this._currentSortCriteria, this._currentFilterCriteria);
                     }
                     return this._fetchByOffset(updatedParams).then((result) => {
                         let results = result['results'];
@@ -629,26 +588,26 @@ class PagingDataProviderView {
                             results = results.slice(results.length - mutationOffset);
                         }
                         const data = results.map((value) => {
-                            return value[this._DATA];
+                            return value[PagingDataProviderView._DATA];
                         });
                         const metadata = results.map((value) => {
-                            return value[this._METADATA];
+                            return value[PagingDataProviderView._METADATA];
                         });
                         offset = offset + metadata.length - mutationOffset;
                         // fire page change event in the case of sort operation resetting the page to 0
-                        if (payload[this._PAGE] != null) {
+                        if (payload[PagingDataProviderView._PAGE] != null) {
                             // Update end item index
                             this._endItemIndex = this._offset + data.length - 1;
-                            this.dispatchEvent(new CustomEvent(this._PAGE, { detail: payload }));
+                            this.dispatchEvent(new CustomEvent(PagingDataProviderView._PAGE, { detail: payload }));
                             payload = {};
                         }
                         // Datagrid triggers fetchfirst before setPage, so we need to clear this parameter here
                         this._skipCriteriaCheck = false;
-                        const resultsParam = new this.FetchByOffsetParameters(this, result['fetchParameters']['offset'] - mutationOffset, this._pageSize, result['fetchParameters'].sortCriteria, result['fetchParameters'].filterCriterion);
+                        const resultsParam = new this.FetchByOffsetParameters(result['fetchParameters']['offset'] - mutationOffset, this._pageSize, result['fetchParameters'].sortCriteria, result['fetchParameters'].filterCriterion);
                         // Reset mutation offset after fetch
                         mutationOffset = 0;
                         // Set done flag for datagrid fetch handling
-                        fetchFirstDone = result[this._DONE];
+                        fetchFirstDone = result[PagingDataProviderView._DONE];
                         // cache the new data values
                         this._iteratorCacheMap.set(clientId, {
                             offset,
@@ -657,10 +616,10 @@ class PagingDataProviderView {
                             fetchFirstDone,
                             currentParams
                         });
-                        if (result[this._DONE] && data.length === 0) {
-                            return Promise.resolve(new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, resultsParam, data, metadata)));
+                        if (result[PagingDataProviderView._DONE] && data.length === 0) {
+                            return Promise.resolve(new this.AsyncIteratorReturnResult(new this.FetchListResult(resultsParam, data, metadata)));
                         }
-                        return Promise.resolve(new this.AsyncIteratorYieldResult(this, new this.FetchListResult(this, resultsParam, data, metadata)));
+                        return Promise.resolve(new this.AsyncIteratorYieldResult(new this.FetchListResult(resultsParam, data, metadata)));
                     });
                 });
             };
@@ -686,11 +645,11 @@ class PagingDataProviderView {
         return this._mutationBusyContext(() => {
             value = parseInt(value, 10);
             const payload = {};
-            payload[this._PAGE] = value;
-            payload[this._PREVIOUSPAGE] = this._currentPage;
-            this.dispatchEvent(new CustomEvent(this._BEFOREPAGE, { detail: payload }));
-            if (options[this._PAGESIZE] != null) {
-                this._pageSize = options[this._PAGESIZE];
+            payload[PagingDataProviderView._PAGE] = value;
+            payload[PagingDataProviderView._PREVIOUSPAGE] = this._currentPage;
+            this.dispatchEvent(new CustomEvent(PagingDataProviderView._BEFOREPAGE, { detail: payload }));
+            if (options[PagingDataProviderView._PAGESIZE] != null) {
+                this._pageSize = options[PagingDataProviderView._PAGESIZE];
             }
             this._offset = parseInt(value, 10) * this._pageSize;
             this._currentPage = value;
@@ -699,27 +658,27 @@ class PagingDataProviderView {
                 this._resolveFunc(true);
                 this._updateTotalSize();
             }
-            const params = new this.FetchByOffsetParameters(this, this._offset, this._pageSize, this._currentSortCriteria, this._currentFilterCriteria);
+            const params = new this.FetchByOffsetParameters(this._offset, this._pageSize, this._currentSortCriteria, this._currentFilterCriteria);
             return this._fetchByOffset(params).then((results) => {
                 const data = results['results'];
                 if (data.length !== 0) {
                     this._endItemIndex = this._offset + data.length - 1;
                     this._skipCriteriaCheck = true;
-                    this.dispatchEvent(new CustomEvent(this._PAGE, { detail: payload }));
+                    this.dispatchEvent(new CustomEvent(PagingDataProviderView._PAGE, { detail: payload }));
                     this._updateTotalSize();
                     // If data length is less than fetch parameters page size, then reduce current params size
                     const resultParams = results['fetchParameters'];
                     if (data.length < resultParams.size) {
-                        this._currentParams = new this.FetchByOffsetParameters(this, resultParams['offset'], data.length, resultParams['sortCriteria'], resultParams['filterCriterion']);
+                        this._currentParams = new this.FetchByOffsetParameters(resultParams['offset'], data.length, resultParams['sortCriteria'], resultParams['filterCriterion']);
                     }
                     this._updatePageData(data);
                 }
                 else if (this._currentPage !== 0) {
                     // reset to previous page if no data and not on page 1
                     // since it means we were done last page
-                    this._currentPage = payload[this._PREVIOUSPAGE];
+                    this._currentPage = payload[PagingDataProviderView._PREVIOUSPAGE];
                     this._offset = this._currentPage * this._pageSize;
-                    this.dispatchEvent(new CustomEvent(this._PAGECOUNT, {
+                    this.dispatchEvent(new CustomEvent(PagingDataProviderView._PAGECOUNT, {
                         detail: { previousValue: value, value: this._currentPage }
                     }));
                     // skip refresh
@@ -788,7 +747,7 @@ class PagingDataProviderView {
     // End Paging DataProvider View Helper API
     // helper method to get local params
     _getLocalParams(params) {
-        return new this.FetchByOffsetParameters(this, this.getLocalIndex(params.offset), params.size, params.sortCriteria, params.filterCriterion);
+        return new this.FetchByOffsetParameters(this.getLocalIndex(params.offset), params.size, params.sortCriteria, params.filterCriterion);
     }
     _updatePageData(results) {
         this._currentPageData = results;
@@ -820,19 +779,19 @@ class PagingDataProviderView {
                         const newPage = Math.floor(this._totalSize / this._pageSize);
                         if (this._currentPage !== newPage) {
                             const payload = {};
-                            payload[this._PAGE] = newPage;
-                            payload[this._PREVIOUSPAGE] = this._currentPage;
-                            this.dispatchEvent(new CustomEvent(this._PAGE, { detail: payload }));
+                            payload[PagingDataProviderView._PAGE] = newPage;
+                            payload[PagingDataProviderView._PREVIOUSPAGE] = this._currentPage;
+                            this.dispatchEvent(new CustomEvent(PagingDataProviderView._PAGE, { detail: payload }));
                             this._currentPage = newPage;
                         }
                     }
                     if (previousPageCount !== this._pageCount) {
-                        this.dispatchEvent(new CustomEvent(this._PAGECOUNT, {
+                        this.dispatchEvent(new CustomEvent(PagingDataProviderView._PAGECOUNT, {
                             detail: { previousValue: previousPageCount, value: this._pageCount }
                         }));
                     }
                     else if (previousTotalSize !== this._totalSize) {
-                        this.dispatchEvent(new CustomEvent(this._TOTALSIZE, {
+                        this.dispatchEvent(new CustomEvent(PagingDataProviderView._TOTALSIZE, {
                             detail: { previousValue: previousTotalSize, value: this._totalSize }
                         }));
                     }
@@ -901,7 +860,7 @@ class PagingDataProviderView {
     // helper method to determine if a row is in the current page.
     _getCurrentPageKeys() {
         return this._currentResults.map((value) => {
-            return value[this._METADATA][this._KEY];
+            return value[PagingDataProviderView._METADATA][PagingDataProviderView._KEY];
         });
     }
     // helper method to check that all params for the current fetched data are still the same
@@ -910,10 +869,13 @@ class PagingDataProviderView {
         if (!this._currentParams) {
             return false;
         }
-        if (this._currentParams[this._SIZE] === params[this._SIZE] &&
-            this._currentParams[this._OFFSET] === params[this._OFFSET] &&
-            this._currentParams[this._SORTCRITERIA] === params[this._SORTCRITERIA] &&
-            this._currentParams[this._FILTERCRITERION] === params[this._FILTERCRITERION]) {
+        if (this._currentParams[PagingDataProviderView._SIZE] === params[PagingDataProviderView._SIZE] &&
+            this._currentParams[PagingDataProviderView._OFFSET] ===
+                params[PagingDataProviderView._OFFSET] &&
+            this._currentParams[PagingDataProviderView._SORTCRITERIA] ===
+                params[PagingDataProviderView._SORTCRITERIA] &&
+            this._currentParams[PagingDataProviderView._FILTERCRITERION] ===
+                params[PagingDataProviderView._FILTERCRITERION]) {
             return true;
         }
         else {
@@ -984,7 +946,7 @@ class PagingDataProviderView {
             this._currentParams['offset'] === this._offset &&
             this._currentParams['size'] === this._pageSize) {
             if (this._currentPageData && !this._hasMutated) {
-                return Promise.resolve(new this.FetchByOffsetResults(this, this._getLocalParams(this._currentParams), this._currentPageData, this._currentIsDone));
+                return Promise.resolve(new this.FetchByOffsetResults(this._getLocalParams(this._currentParams), this._currentPageData, this._currentIsDone));
             }
             else {
                 return this._fetchByOffset(this._currentParams).then((result) => {
@@ -993,7 +955,7 @@ class PagingDataProviderView {
             }
         }
         else {
-            return this._fetchByOffset(new this.FetchByOffsetParameters(this, this._offset, this._pageSize, this._currentSortCriteria, this._currentFilterCriteria)).then((result) => {
+            return this._fetchByOffset(new this.FetchByOffsetParameters(this._offset, this._pageSize, this._currentSortCriteria, this._currentFilterCriteria)).then((result) => {
                 return result;
             });
         }
@@ -1008,21 +970,21 @@ class PagingDataProviderView {
                 (!this._hasMutated || this._selfRefresh)) {
                 this._selfRefresh = false;
                 this._hasMutated = false;
-                return Promise.resolve(new this.FetchByOffsetResults(this, this._returnFetchParams, this._currentResults, this._currentIsDone));
+                return Promise.resolve(new this.FetchByOffsetResults(this._returnFetchParams, this._currentResults, this._currentIsDone));
             }
             // If size is 0, then we have hit the end of the data and we should be
             // returning empty results with done = true
             if (params.size === 0) {
                 this._currentIsDone = true;
                 this._currentParams = params;
-                return Promise.resolve(new this.FetchByOffsetResults(this, this._getLocalParams(params), [], this._currentIsDone));
+                return Promise.resolve(new this.FetchByOffsetResults(this._getLocalParams(params), [], this._currentIsDone));
             }
             return this._fetchByOffsetHelper(params);
         });
     }
     _fetchByOffsetHelper(params) {
         // perform a fetch by offset using the available params.
-        return this.dataProvider[this._FETCHBYOFFSET](params)
+        return this.dataProvider[PagingDataProviderView._FETCHBYOFFSET](params)
             .then((result) => {
             // store results locally. If fetchMore is true, we should append instead of replace
             this._currentIsDone = result['done'];
@@ -1040,7 +1002,7 @@ class PagingDataProviderView {
             // Grab sortCriteria and filterCriteria and pass them back if they exist.
             const sortCriteria = result['fetchParameters'].sortCriteria;
             const filterCriterion = result['fetchParameters'].filterCriterion;
-            this._returnFetchParams = new this.FetchByOffsetParameters(this, this.getLocalIndex(this._currentParams.offset), this._currentParams.size, sortCriteria, filterCriterion);
+            this._returnFetchParams = new this.FetchByOffsetParameters(this.getLocalIndex(this._currentParams.offset), this._currentParams.size, sortCriteria, filterCriterion);
             this._fetchMore = false;
             // check if we are at the end of the available data
             const resultSize = this._currentResults.length;
@@ -1067,7 +1029,7 @@ class PagingDataProviderView {
                 // need to refetch with new params since the underlying dataprovider
                 // fetchSize is smaller than pageSize
                 this._fetchMore = true;
-                const newParams = new this.FetchByOffsetParameters(this, newSize, this._pageSize - resultSize, this._currentSortCriteria, this._currentFilterCriteria);
+                const newParams = new this.FetchByOffsetParameters(newSize, this._pageSize - resultSize, this._currentSortCriteria, this._currentFilterCriteria);
                 return this._fetchByOffsetHelper(newParams);
             }
             else if (!result['done'] && totalSize === -1) {
@@ -1087,7 +1049,7 @@ class PagingDataProviderView {
             }
             // updated data so set mutated flag to false;
             this._hasMutated = false;
-            return new this.FetchByOffsetResults(this, this._returnFetchParams, this._currentResults, this._currentIsDone);
+            return new this.FetchByOffsetResults(this._returnFetchParams, this._currentResults, this._currentIsDone);
         })
             .catch((reject) => {
             // if fetch is rejected, set all current records to null and reject.
@@ -1106,7 +1068,7 @@ class PagingDataProviderView {
         const newOffset = params.offset;
         if (newOffset >= this._offset + this._pageSize || newOffset < this._offset) {
             // if outside range, just return size 0
-            return new this.FetchByOffsetParameters(this, newOffset, 0, params.sortCriteria, params.filterCriterion);
+            return new this.FetchByOffsetParameters(newOffset, 0, params.sortCriteria, params.filterCriterion);
         }
         // Sanity Check that the pageSize is positive
         let newSize = params.size;
@@ -1124,7 +1086,7 @@ class PagingDataProviderView {
             // Sanity Check that the size and offset combined are within bounds of the total page size
             newSize = totalSize - newOffset;
         }
-        return new this.FetchByOffsetParameters(this, newOffset, newSize, params.sortCriteria, params.filterCriterion);
+        return new this.FetchByOffsetParameters(newOffset, newSize, params.sortCriteria, params.filterCriterion);
     }
     // helper method to fetch data from dataprovider
     // needs to make sure that no new mutation events have
@@ -1280,25 +1242,25 @@ class PagingDataProviderView {
         let operationRemoveEventDetail = null;
         let operationUpdateEventDetail = null;
         if (addIndexArray.length > 0) {
-            operationAddEventDetail = new this.DataProviderAddOperationEventDetail(this, addKeySet, null, null, addMetadataArray, addDataArray, addIndexArray);
+            operationAddEventDetail = new this.DataProviderAddOperationEventDetail(addKeySet, null, null, addMetadataArray, addDataArray, addIndexArray);
         }
         if (removeIndexArray.length > 0) {
-            operationRemoveEventDetail = new this.DataProviderOperationEventDetail(this, removeKeySet, removeMetadataArray, removeDataArray, removeIndexArray);
+            operationRemoveEventDetail = new this.DataProviderOperationEventDetail(removeKeySet, removeMetadataArray, removeDataArray, removeIndexArray);
         }
         if (updateIndexArray.length > 0) {
-            operationUpdateEventDetail = new this.DataProviderOperationEventDetail(this, updateKeySet, updateMetadataArray, updateDataArray, updateIndexArray);
+            operationUpdateEventDetail = new this.DataProviderOperationEventDetail(updateKeySet, updateMetadataArray, updateDataArray, updateIndexArray);
         }
         if (operationAddEventDetail != null ||
             operationRemoveEventDetail != null ||
             operationUpdateEventDetail != null) {
-            const mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
+            const mutationEventDetail = new this.DataProviderMutationEventDetail(operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
             //update internal currentPageData
             this._updatePageData(result['results']);
             this.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
         }
     }
     _addEventListeners(dataprovider) {
-        dataprovider.addEventListener(this._REFRESH, (event) => {
+        dataprovider.addEventListener(PagingDataProviderView._REFRESH, (event) => {
             // Treat it as a set page to 0 and refresh if not
             // directly after a mutation b/c mutation event trigger
             // refresh naturally. Natural refreshes need to update
@@ -1321,7 +1283,7 @@ class PagingDataProviderView {
                 });
             }
         });
-        dataprovider.addEventListener(this._MUTATE, (event) => {
+        dataprovider.addEventListener(PagingDataProviderView._MUTATE, (event) => {
             this._mutationEventQueue.push(event);
             this._setupMutationBusyContext();
             if (this._isFetchingForMutation) {
@@ -1357,6 +1319,37 @@ class PagingDataProviderView {
         });
     }
 }
+PagingDataProviderView._KEY = 'key';
+PagingDataProviderView._KEYS = 'keys';
+PagingDataProviderView._STARTINDEX = 'startIndex';
+PagingDataProviderView._PAGESIZE = 'pageSize';
+PagingDataProviderView._OFFSET = 'offset';
+PagingDataProviderView._SIZE = 'size';
+PagingDataProviderView._PAGE = 'page';
+PagingDataProviderView._PAGECOUNT = 'pageCount';
+PagingDataProviderView._TOTALSIZE = 'totalsize';
+PagingDataProviderView._PREVIOUSPAGE = 'previousPage';
+PagingDataProviderView._BEFOREPAGE = 'beforePage';
+PagingDataProviderView._DONE = 'done';
+PagingDataProviderView._VALUE = 'value';
+PagingDataProviderView._DATA = 'data';
+PagingDataProviderView._REFRESH = 'refresh';
+PagingDataProviderView._MUTATE = 'mutate';
+PagingDataProviderView._SORTCRITERIA = 'sortCriteria';
+PagingDataProviderView._FILTERCRITERION = 'filterCriterion';
+PagingDataProviderView._METADATA = 'metadata';
+PagingDataProviderView._RESULTS = 'results';
+PagingDataProviderView._FETCHPARAMETERS = 'fetchParameters';
+PagingDataProviderView._CONTAINSPARAMETERS = 'containsParameters';
+PagingDataProviderView._CONTAINSKEYS = 'containsKeys';
+PagingDataProviderView._FETCHBYKEYS = 'fetchByKeys';
+PagingDataProviderView._FETCHBYOFFSET = 'fetchByOffset';
+PagingDataProviderView._AFTERKEYS = 'afterKeys';
+PagingDataProviderView._ADDBEFOREKEYS = 'addBeforeKeys';
+PagingDataProviderView._ADD = 'add';
+PagingDataProviderView._REMOVE = 'remove';
+PagingDataProviderView._UPDATE = 'update';
+PagingDataProviderView._INDEXES = 'indexes';
 oj._registerLegacyNamespaceProp('PagingDataProviderView', PagingDataProviderView);
 oj.EventTargetMixin.applyMixin(PagingDataProviderView);
 

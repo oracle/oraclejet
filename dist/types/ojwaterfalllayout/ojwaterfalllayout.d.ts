@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -173,6 +173,28 @@ type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'aria-labelledby' | '
         key?: Key;
         offsetY?: number;
     }>;
+    /**
+     * @description
+     * Specifies how oj-waterfall-layout manages the tabindex of elements inside the item.
+     * By default, oj-waterfall-layout disables all tabbable elements when the component is initially rendered.
+     * If 'always' is specified, in addition to the default behavior, the component will continue to monitor and disable tabbable elements after the initial render,
+     * ensuring they remain non-tabbable if changes occur, except in actionable mode.
+     *
+     * @ojmetadata description "Specifies how oj-waterfall-layout manages the tabindex of tabbable items."
+     * @ojmetadata displayName "TabManagement"
+     * @ojmetadata help "#tabManagement"
+     * @ojmetadata propertyEditorValues {
+     *     "initial": {
+     *       "description": "Disable all tabbable elements during initial render",
+     *       "displayName": "Initial"
+     *     },
+     *     "always": {
+     *       "description": "In addition to the initial render, monitor and disable tabbable elements if any changes occur",
+     *       "displayName": "Always"
+     *     }
+     *   }
+     */
+    tabManagement?: 'initial' | 'always';
 };
 type QuerySelector = keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
 type State = {
@@ -222,6 +244,19 @@ interface ItemTemplateContext<Key, Data> {
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  *  </h3>
+ *  To make your component accessible, the application is required to include contextual information for screen readers using one or more the following methods as appropriate:
+ *  <ul>
+ *   <li>aria-label</li>
+ *   <li>aria-labelledby</li>
+ *  </ul>
+ *
+ * <h3 id="progressive-loading-section">
+ *   Progressive Loading
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#progressive-loading-section"></a>
+ * </h3>
+ * <p>
+ *  This component supports loading indicators. Loading indicators are only shown after a pre-defined time has elapsed during the data provider fetch.
+ * </p>
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -288,8 +323,8 @@ interface ItemTemplateContext<Key, Data> {
  *     </tr>
  *   </tbody>
  * </table>
- * @param {string | number} K Type of key of the dataprovider
- * @param {number} D Type of data from the dataprovider
+ * @typeparam K Type of key of the dataprovider
+ * @typeparam D Type of data from the dataprovider
  * @ojmetadata description "A waterfall layout displays heterogeneous data as a grid of cards."
  * @ojmetadata displayName "Waterfall Layout"
  * @ojmetadata main "ojs/ojwaterfalllayout"
@@ -311,6 +346,14 @@ interface ItemTemplateContext<Key, Data> {
  * }
  * @ojmetadata help "%JET_API_DOC_URL%oj.ojWaterfallLayout.html"
  * @ojmetadata since "9.0.0"
+ * @ojlegacymetadata requirements [
+ *    {
+ *      type: "anyOf",
+ *      label: "accessibility",
+ *      properties: ["aria-label", "aria-labelledby"],
+ *      slots: [""]
+ *    }
+ * ]
  */
 /**
  * This export corresponds to the WaterfallLayout Preact component. For the oj-waterfall-layout custom element, import WaterfallLayoutElement instead.
@@ -331,8 +374,8 @@ export declare class WaterfallLayout<K extends string | number, D> extends Compo
     private focusInHandler;
     private focusOutHandler;
     private delayShowSkeletonsTimeout;
-    private prevRootWidth;
     private mouseDownTarget;
+    private mutationObserver;
     constructor();
     static defaultProps: Partial<Props<any, any>>;
     private gutterWidth;
@@ -486,6 +529,7 @@ export namespace WaterfallLayoutElement {
     type scrollPolicyChanged<K extends string | number, D> = JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['scrollPolicy']>;
     type scrollPolicyOptionsChanged<K extends string | number, D> = JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['scrollPolicyOptions']>;
     type scrollPositionChanged<K extends string | number, D> = JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['scrollPosition']>;
+    type tabManagementChanged<K extends string | number, D> = JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['tabManagement']>;
     type ItemTemplateContext<K extends string | number, D> = _WaterfallLayoutElementTypes._ItemTemplateContext<K, D>;
     type RenderItemTemplate<K extends string | number, D> = import('ojs/ojvcomponent').TemplateSlot<ItemTemplateContext<K, D>>;
 }
@@ -495,6 +539,7 @@ export interface WaterfallLayoutElementEventMap<K extends string | number, D> ex
     'scrollPolicyChanged': JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['scrollPolicy']>;
     'scrollPolicyOptionsChanged': JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['scrollPolicyOptions']>;
     'scrollPositionChanged': JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['scrollPosition']>;
+    'tabManagementChanged': JetElementCustomEventStrict<WaterfallLayoutElement<K, D>['tabManagement']>;
 }
 export interface WaterfallLayoutElementSettableProperties<Key, Data> extends JetSettableProperties {
     /**
@@ -552,6 +597,13 @@ export interface WaterfallLayoutElementSettableProperties<Key, Data> extends Jet
      * </p>
      */
     scrollPosition?: Props<Key, Data>['scrollPosition'];
+    /**
+     * Specifies how oj-waterfall-layout manages the tabindex of elements inside the item.
+     * By default, oj-waterfall-layout disables all tabbable elements when the component is initially rendered.
+     * If 'always' is specified, in addition to the default behavior, the component will continue to monitor and disable tabbable elements after the initial render,
+     * ensuring they remain non-tabbable if changes occur, except in actionable mode.
+     */
+    tabManagement?: Props<Key, Data>['tabManagement'];
 }
 export interface WaterfallLayoutElementSettablePropertiesLenient<Key, Data> extends Partial<WaterfallLayoutElementSettableProperties<Key, Data>> {
     [key: string]: any;
@@ -563,6 +615,7 @@ export interface WaterfallLayoutIntrinsicProps extends Partial<Readonly<Waterfal
     onscrollPolicyChanged?: (value: WaterfallLayoutElementEventMap<any, any>['scrollPolicyChanged']) => void;
     onscrollPolicyOptionsChanged?: (value: WaterfallLayoutElementEventMap<any, any>['scrollPolicyOptionsChanged']) => void;
     onscrollPositionChanged?: (value: WaterfallLayoutElementEventMap<any, any>['scrollPositionChanged']) => void;
+    ontabManagementChanged?: (value: WaterfallLayoutElementEventMap<any, any>['tabManagementChanged']) => void;
 }
 declare global {
     namespace preact.JSX {

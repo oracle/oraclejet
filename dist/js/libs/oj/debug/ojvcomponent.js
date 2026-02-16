@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -3610,7 +3610,9 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
           // take longer than a microtask to resolve and the element might disconnect while waiting for the promises.
           // This makes the binding provider promise a) irrelevant and b) likely to blow up if we proceeded.
           return Promise.all([translationPromise, templateEnginePromise]).then(() => {
-              return this.Element.isConnected ? super.GetPreCreatedPromise() : Promise.reject();
+              return this.Element.isConnected
+                  ? super.GetPreCreatedPromise()
+                  : Promise.reject(ojcustomelementUtils.ElementState._DISCONNECTED);
           });
       }
       /**
@@ -3913,7 +3915,15 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
                   vcompProps: props,
                   observedPropsSet,
                   elemRefObj: this[ELEMENT_REF_OBJ]
-              }, children: jsxRuntime.jsx(BusyContextProvider, { elemRefObj: this[ELEMENT_REF_OBJ], children: jsxRuntime.jsx(InternalComp, { instance: this, baseRender: componentRender, props: componentProps, state: state, context: context, tagName: tagName, metadata: metadata }) }) }));
+              }, children: tagName === 'oj-c-select-single' || tagName === 'oj-c-select-multiple' ? (InternalComp({
+                  instance: this,
+                  tagName,
+                  metadata,
+                  state,
+                  context,
+                  baseRender: componentRender,
+                  props: componentProps
+              })) : (jsxRuntime.jsx(BusyContextProvider, { elemRefObj: this[ELEMENT_REF_OBJ], children: jsxRuntime.jsx(InternalComp, { instance: this, baseRender: componentRender, props: componentProps, state: state, context: context, tagName: tagName, metadata: metadata }) })) }));
       };
   }
   function addPropGetterSetters(proto, properties) {

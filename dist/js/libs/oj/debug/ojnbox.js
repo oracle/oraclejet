@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -823,6 +823,15 @@ var __oj_n_box_node_metadata =
    *
    * @ojoracleicon 'oj-ux-ico-chart-nbox'
    * @ojuxspecs ['nbox']
+   *
+   *  @ojlegacymetadata requirements [
+   *    {
+   *      type: "anyOf",
+   *      label: "accessibility",
+   *      properties: ["aria-label", "aria-labelledby"],
+   *      slots: [""]
+   *    }
+   * ]
    *
    * @classdesc
    * <h3 id="nBoxOverview-section">
@@ -2943,6 +2952,12 @@ var __oj_n_box_node_metadata =
    * @property {string} row The id of the row containing this cell.
    * @property {"on"|"off"|"auto"} [showCount="auto"] Determines when to display the cell count label (extra info displayed after primary cell label). "off" never show the count label. "on" always show the count label. Show countLabel value if specified, otherwise use a simple node count. "auto" show the count label if countLabel attribute is defined.
    * @property {string=} shortDesc The description of this cell. This is used for accessibility.
+   * @ojdeprecated {target:"property", for: "svgStyle", since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
+   * @ojdeprecated {target:"property", for: "svgClassName", since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
+   * @ojdeprecated {target:"property", for: "maximizedSvgStyle", since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
+   * @ojdeprecated {target:"property", for: "maximizedSvgStyle", since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
+   * @ojdeprecated {target:"property", for: "minimizedSvgStyle", since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
+   * @ojdeprecated {target:"property", for: "minimizedSvgClassName", since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", for: "labelStyle", jsdocOverride: true},
    *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
    *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "maximizedSvgStyle", jsdocOverride: true},
@@ -3775,6 +3790,7 @@ var __oj_n_box_node_metadata =
    * @instance
    * @type {string=}
    * @default ''
+   * @ojdeprecated {since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
    *
    * @example <caption>Initialize NBox node with the
    * <code class="prettyprint">icon.svgClassName</code> attribute specified:</caption>
@@ -3829,7 +3845,8 @@ var __oj_n_box_node_metadata =
    * @instance
    * @type {Object=}
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
-   *
+   * @ojdeprecated {since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
+   * 
    * @example <caption>Initialize NBox node with the
    * <code class="prettyprint">icon.svgStyle</code> attribute specified:</caption>
    * &lt;oj-n-box data='[[dataProvider]]'>
@@ -4053,6 +4070,7 @@ var __oj_n_box_node_metadata =
    * @memberof! oj.ojNBoxNode
    * @instance
    * @type {string=}
+   * @ojdeprecated {since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
    *
    * @example <caption>Initialize NBox node with the
    * <code class="prettyprint">indicatorIcon.svgClassName</code> attribute specified:</caption>
@@ -4072,6 +4090,7 @@ var __oj_n_box_node_metadata =
    * @instance
    * @type {(Object|null)=}
    * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>|null", jsdocOverride: true}
+   * @ojdeprecated {since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
    *
    * @example <caption>Initialize NBox node with the
    * <code class="prettyprint">indicatorIcon.svgStyle</code> attribute specified:</caption>

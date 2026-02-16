@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -328,13 +328,23 @@ class JetTemplateEngine {
         // alias to provide to the template children
         const templateAlias = templateElement.getAttribute('data-oj-as');
         const processedNodes = TemplateEngineUtils.processTemplate(templateElement);
+        let contextProperties = properties;
         if (processedNodes && processedNodes.replacementMap?.size > 0) {
-            if (!properties) {
-                properties = {};
-            }
-            properties['_ojNodesMap'] = Object.fromEntries(processedNodes.replacementMap);
+            // proxy to support multiple templates being executed with the same properties instance
+            const nodesMap = Object.fromEntries(processedNodes.replacementMap);
+            contextProperties = new Proxy(properties || {}, {
+                get(target, p, receiver) {
+                    if (p === '_ojNodesMap') {
+                        return nodesMap;
+                    }
+                    if (p === Symbol.for('_ojOriginalProps')) {
+                        return properties;
+                    }
+                    return Reflect.get(target, p, receiver);
+                }
+            });
         }
-        const context = TemplateEngineUtils.getContext(this._bindingProvider, componentElement, templateElement, properties, alias, templateAlias, provided);
+        const context = TemplateEngineUtils.getContext(this._bindingProvider, componentElement, templateElement, contextProperties, alias, templateAlias, provided);
         if (templateElement.render) {
             return this._templateEngineVDOM.executeTemplate(componentElement, templateElement, reportBusy, context, provided);
         }

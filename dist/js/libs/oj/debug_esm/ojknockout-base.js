@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -614,7 +614,12 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
   };
 
   function _getCurrent(_bindingContext) {
-    return _bindingContext.$current || _bindingContext.$data;
+    let current = _bindingContext.$current;
+    if (current?._ojNodesMap) {
+      // original props should be used for proxied _nodesMap cases
+      current = current[Symbol.for('_ojOriginalProps')];
+    }
+    return current || _bindingContext.$data;
   }
 
   function _createSimpleEventListenerWrapper(_bindingContext, listener) {
@@ -1673,7 +1678,7 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
 
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  *
@@ -3032,7 +3037,7 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
 
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore

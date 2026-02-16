@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -37,12 +37,12 @@ define(['ojs/ojlogger', 'ojs/ojwebdrivertest-proxy'], function (Logger, ojwebdri
      * @global
      * @member {string} version JET version numberr
      */
-    version: '19.0.0',
+    version: '20.0.0',
     /**
      * @global
      * @member {string} revision JET source code revision number
      */
-    revision: '2025-08-12_09-40-56',
+    revision: '2026-02-13_03-22-54',
 
     // This function is only meant to be used outside the library, so quoting the name
     // to avoid renaming is appropriate

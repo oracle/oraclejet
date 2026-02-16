@@ -304,7 +304,7 @@ function processUtilityFunctions(sourceFile) {
 }
 /**
  * Creates the starter metaUtilObj which is a collection of all the discoverable metadata associated with exported functions.
- * If the sourceFile is not marked with the 'resource' type ojmetadata, we are not going to spelungk and look for functions
+ * If the sourceFile is not marked with the 'resource' type ojmetadata, we are not going to spelunk and look for functions
  * @param sourceFile The ts/tsx source file
  * @returns a new MetautilObj object or null
  */

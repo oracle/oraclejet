@@ -42,6 +42,11 @@ const INCLUDE_TOKEN = '@include';
 function generateApiDocMetadata(metaUtilObj, options) {
     if (options.apiDocDir && options.apiDocBuildEnabled) {
         try {
+            // If the component is excluded from API Doc generation, skip it
+            if (options.exclude && options.exclude.includes(metaUtilObj.componentName)) {
+                console.log(`Skipping API Doc generation for excluded component: ${metaUtilObj.componentName}`);
+                return;
+            }
             console.log(`building API Doc metadata for module ${metaUtilObj.componentName}...`);
             const apidoc = (0, ApiDocUtils_1.generateDoclets)(metaUtilObj);
             if (apidoc && Array.isArray(apidoc)) {

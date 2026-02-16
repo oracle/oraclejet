@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,13 +8,13 @@
 define(["exports","ojs/ojlogger","ojs/ojthemeutils","@oracle/oraclejet-preact/UNSAFE_IntlDateTime"],function(e,t,r,s){"use strict";
 /**
      * @license
-     * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+     * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
      * The Universal Permissive License (UPL), Version 1.0
      * @ignore
      */let o={};const n=()=>(i(),o),a=e=>{const r=e.timeStyle?.short?.pattern,s=e.dateStyle?.short?.pattern;return r&&!s||s&&!r?(t.error("timeStyle.short.pattern and dateStyle.short.pattern must be set together."),!1):!l(e)||(t.error("setDateTimePreferences options must not be empty."),!1)},i=()=>{Object.isFrozen(o)||(l(o.dateStyle)&&l(o.timeStyle)&&(o.dateStyle=c()),Object.freeze(o))},c=()=>{const e=r.parseJSONFromFontFamily("oj-inputdatetime-option-defaults")||{};let t;return t="numeric"===e.converterYear||"2-digit"===e.converterYear?e.converterYear:"numeric",{short:{year:t}}},l=e=>!e||0===Object.keys(e).length;
 /**
      * @license
-     * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+     * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
      * The Universal Permissive License (UPL), Version 1.0
      * @ignore
      */

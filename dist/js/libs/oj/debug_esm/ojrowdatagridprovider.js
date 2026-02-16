@@ -1,14 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
 import { DataGridProviderUpdateEvent, DataGridProviderRefreshEvent, DataGridProviderRemoveEvent, DataGridProviderAddEvent } from 'ojs/ojdatagridprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { DataProviderUtils } from 'ojs/ojdataprovider';
+import { KeyCache, DataProviderUtils } from 'ojs/ojdataprovider';
 import { KeySetImpl } from 'ojs/ojkeyset';
 
 class RowDataGridProvider {
@@ -16,8 +15,7 @@ class RowDataGridProvider {
         this.dataProvider = dataProvider;
         this.options = options;
         this.version = 0;
-        this.keyCache = [];
-        this.lastRowKeyCached = false;
+        this.keyCache = new KeyCache();
         this.GridItem = class {
             constructor(metadata, data) {
                 this.metadata = metadata;
@@ -74,8 +72,12 @@ class RowDataGridProvider {
         this.sortCriteria = null;
         this.filterable = options?.filterable;
         this.filterCriteria = null;
+        this.fetchCount = 0;
+        this.refreshDuringFetchMap = new Map();
         // Fetch
-        this.supportsFilteredRowCount =
+        this.supportsFetchByOffsetFilteredRowCount =
+            dataProvider.getCapability('fetchByOffset')?.totalFilteredRowCount === 'exact';
+        this.supportsFetchFirstFilteredRowCount =
             dataProvider.getCapability('fetchFirst')?.totalFilteredRowCount === 'exact';
         // Tree
         if (options?.expandedObservable) {
@@ -98,7 +100,7 @@ class RowDataGridProvider {
                         const headerKeysToUpdate = oldKeys.symmetricDifference(newKeys);
                         const ranges = [];
                         headerKeysToUpdate.forEach((key) => {
-                            const keyCacheIndex = this._getKeyCacheIndexByKey(key);
+                            const keyCacheIndex = this.keyCache.getIndexByKey(key);
                             if (keyCacheIndex !== -1) {
                                 ranges.push({
                                     rowOffset: keyCacheIndex,
@@ -129,38 +131,56 @@ class RowDataGridProvider {
         }
     }
     async fetchByOffset(parameters) {
+        const fetchCount = this.fetchCount;
+        this.fetchCount++;
+        this.refreshDuringFetchMap.set(fetchCount, false);
         const rowOffset = parameters.rowOffset;
         let rowCount = parameters.rowCount;
-        let fetchResult = { results: [], done: false, fetchParameters: null };
+        let fetchResult = {
+            results: [],
+            done: false,
+            fetchParameters: null
+        };
         if (rowCount != 0) {
-            fetchResult = await this.dataProvider.fetchByOffset({ offset: rowOffset, size: rowCount });
+            fetchResult = await this.dataProvider.fetchByOffset({
+                offset: rowOffset,
+                size: rowCount,
+                includeFilteredRowCount: this.supportsFetchByOffsetFilteredRowCount ? 'enabled' : undefined
+            });
             this.sortCriteria = fetchResult.fetchParameters?.sortCriteria;
             this.filterCriteria = fetchResult.fetchParameters?.filterCriterion;
+            this.totalRowCount = fetchResult.totalFilteredRowCount;
         }
-        let totalSize = -1;
-        let sameFetchParameters = this.isSameFetchParameters(fetchResult.fetchParameters);
-        if (!sameFetchParameters || this.totalRowCount == null) {
-            if (this.supportsFilteredRowCount) {
-                let fetchFirstResult = await this.dataProvider
-                    .fetchFirst({ size: 1, includeFilteredRowCount: 'enabled' })[Symbol.asyncIterator]()
-                    .next();
-                if (fetchFirstResult.value.totalFilteredRowCount != null) {
-                    totalSize = fetchFirstResult.value.totalFilteredRowCount;
+        if (!this.supportsFetchByOffsetFilteredRowCount) {
+            let totalSize = -1;
+            const sameFetchParameters = DataProviderUtils.isSameFetchParameters(this.currentFetchParameters, fetchResult.fetchParameters, ['sortCriteria', 'filterCriterion']);
+            if (!sameFetchParameters || this.totalRowCount == null) {
+                if (this.supportsFetchFirstFilteredRowCount) {
+                    const fetchFirstResult = await this.dataProvider
+                        .fetchFirst({ size: 1, includeFilteredRowCount: 'enabled' })[Symbol.asyncIterator]()
+                        .next();
+                    if (fetchFirstResult.value.totalFilteredRowCount != null) {
+                        totalSize = fetchFirstResult.value.totalFilteredRowCount;
+                    }
                 }
+                else if (this.isUnfiltered(fetchResult.fetchParameters)) {
+                    totalSize = await this.dataProvider.getTotalSize();
+                }
+                this.totalRowCount = totalSize;
             }
-            else if (this.isUnfiltered(fetchResult.fetchParameters)) {
-                totalSize = await this.dataProvider.getTotalSize();
-            }
-            this.totalRowCount = totalSize;
         }
-        this.updateKeyCache(fetchResult, rowOffset);
+        // only cache results from latest underlying refreshes
+        if (this.refreshDuringFetchMap.get(fetchCount) === false) {
+            this.updateKeyCache(fetchResult, rowOffset);
+        }
+        this.refreshDuringFetchMap.delete(fetchCount);
         this.setupLayout(fetchResult.results);
         const columnOffset = parameters.columnOffset;
         const columnDone = columnOffset + parameters.columnCount >= this.columns.databody.length;
         const columnCount = Math.max(Math.min(parameters.columnCount, this.columns.databody.length - columnOffset), 0);
         rowCount = Math.min(parameters.rowCount, fetchResult.results.length);
         const rowDone = fetchResult.done;
-        this.lastRowKeyCached = this.lastRowKeyCached || fetchResult.done;
+        this.keyCache.setDone(this.keyCache.isDone() || fetchResult.done);
         const version = this.version;
         const requestSet = parameters.fetchRegions;
         const isAll = requestSet == null || requestSet.has('all');
@@ -214,45 +234,19 @@ class RowDataGridProvider {
     }
     updateKeyCache(fetchResult, rowOffset) {
         let fetchParameters = fetchResult.fetchParameters;
-        if (!this.isSameFetchParameters(fetchParameters)) {
-            this._clearKeyCache();
+        if (!DataProviderUtils.isSameFetchParameters(this.currentFetchParameters, fetchParameters, [
+            'sortCriteria',
+            'filterCriterion'
+        ])) {
+            this.keyCache.reset();
         }
-        this.currentFetchParameters = fetchParameters;
+        this.currentFetchParameters = { ...fetchParameters };
         let results = fetchResult.results;
-        results.forEach((item, resultIndex) => {
-            this.keyCache[rowOffset + resultIndex] = item.metadata.key;
+        const keys = [];
+        results.forEach((item) => {
+            keys.push(item.metadata.key);
         });
-    }
-    _clearKeyCache() {
-        this.keyCache = [];
-    }
-    isKeyCacheSparse() {
-        for (let i = 0; i < this.keyCache.length; i++) {
-            if (this.keyCache[i] === undefined) {
-                return true;
-            }
-        }
-        return false;
-    }
-    // helper method to determine if the criteria is the same
-    isSameFetchParameters(fetchParameters) {
-        let sortCriterion = fetchParameters?.sortCriteria;
-        let filterCriterion = fetchParameters?.filterCriterion;
-        let currentSortCriterion = this.currentFetchParameters?.sortCriteria;
-        let currentFilterCriterion = this.currentFetchParameters?.filterCriterion;
-        // if sortCriterion is null and currentSortCriterion is undefined or viceversa then it is considered as criteria is same
-        if (!((sortCriterion == null || currentSortCriterion == null) &&
-            sortCriterion == currentSortCriterion) &&
-            !oj.Object.compareValues(sortCriterion, currentSortCriterion)) {
-            return false;
-        }
-        // if filterCriterion is null and currentFilterCriterion is undefined or viceversa then it is considered as criteria is same
-        if (!((filterCriterion == null || currentSortCriterion == null) &&
-            filterCriterion == currentFilterCriterion) &&
-            !oj.Object.compareValues(filterCriterion, currentFilterCriterion)) {
-            return false;
-        }
-        return true;
+        this.keyCache.spliceKeys(rowOffset, keys.length, ...keys);
     }
     isUnfiltered(fetchParameters) {
         return fetchParameters == null || fetchParameters.filterCriterion == null;
@@ -617,8 +611,8 @@ class RowDataGridProvider {
         let updateEventDetail;
         let addEventDetail;
         let removeItems;
-        let isSparse = this.isKeyCacheSparse();
-        let allLoaded = this.lastRowKeyCached && !isSparse;
+        let isSparse = this.keyCache.getSparseIndex() !== -1;
+        let allLoaded = this.keyCache.isDone() && !isSparse;
         if (detail.remove && detail.remove.keys.size > 0) {
             [needsRefresh, removeEventDetail, removeItems] = this._convertEventDetail(detail.remove, 'remove', isSparse);
         }
@@ -627,14 +621,15 @@ class RowDataGridProvider {
             return b.index - a.index;
         })
             .forEach((item) => {
-            this.keyCache.splice(item.index, 1);
+            this.keyCache.spliceKeys(item.index, 1);
             if (this.totalRowCount !== -1) {
                 this.totalRowCount -= 1;
             }
         });
         if (!needsRefresh && detail.add && detail.add.keys.size > 0) {
-            const finalKeys = DataProviderUtils.getAddEventKeysResult(this.keyCache, detail.add, allLoaded);
-            needsRefresh = isSparse && finalKeys.length !== this.keyCache.length + detail.add.keys.size;
+            const finalKeys = DataProviderUtils.getAddEventKeysResult(this.keyCache.getKeys(), detail.add, allLoaded);
+            needsRefresh =
+                isSparse && finalKeys.length !== this.keyCache.getSize() + detail.add.keys.size;
             if (!needsRefresh) {
                 let ranges = [];
                 // loop final keys, see if in detail,
@@ -654,7 +649,7 @@ class RowDataGridProvider {
                     }
                 });
                 addEventDetail = { axis: 'row', ranges, version: this.version };
-                this.keyCache = finalKeys;
+                this.keyCache.spliceKeys(0, finalKeys.length, ...finalKeys);
             }
         }
         if (!needsRefresh && detail.update && detail.update.keys.size > 0) {
@@ -682,7 +677,7 @@ class RowDataGridProvider {
         let indexInArrays = 0;
         detail.keys.forEach((key) => {
             let givenIndex = detail.indexes?.[indexInArrays];
-            let keyCacheIndex = this._getKeyCacheIndexByKey(key);
+            let keyCacheIndex = this.keyCache.getIndexByKey(key);
             if (keyCacheIndex != -1) {
                 itemsToModify.push({ index: keyCacheIndex, key: key });
             }
@@ -718,16 +713,16 @@ class RowDataGridProvider {
     }
     _handleUnderlyingRefresh(event) {
         this.version++;
-        let isSparse = this.isKeyCacheSparse();
+        let isSparse = this.keyCache.getSparseIndex() !== -1;
         let fullRefresh = true;
         let detail;
         if (event?.detail?.disregardAfterKey != null) {
-            const keyCacheIndex = this._getKeyCacheIndexByKey(event.detail.disregardAfterKey);
+            const keyCacheIndex = this.keyCache.getIndexByKey(event.detail.disregardAfterKey);
             if (keyCacheIndex !== -1) {
                 detail = { disregardAfterRowOffset: keyCacheIndex };
-                this.keyCache.length = keyCacheIndex + 1;
+                this.keyCache.disregardAfterIndex(keyCacheIndex);
                 this.totalRowCount = this.totalRowCount === -1 ? -1 : keyCacheIndex + 1;
-                this.lastRowKeyCached = false;
+                this.keyCache.setDone(false);
                 fullRefresh = false;
             }
             else if (!isSparse) {
@@ -741,17 +736,14 @@ class RowDataGridProvider {
         const refreshEvent = new DataGridProviderRefreshEvent(detail);
         this.dispatchEvent(refreshEvent);
     }
-    _getKeyCacheIndexByKey(searchKey) {
-        return this.keyCache.findIndex((keyCacheKey) => {
-            return oj.Object.compareValues(keyCacheKey, searchKey);
-        });
-    }
     resetInternal() {
-        this._clearKeyCache();
+        this.keyCache.reset();
+        this.refreshDuringFetchMap.forEach((value, key, map) => {
+            map.set(key, true);
+        });
         this.totalRowCount = null;
         this.currentFetchParameters = null;
         this.sortCriteria = null;
-        this.lastRowKeyCached = false;
     }
 }
 EventTargetMixin.applyMixin(RowDataGridProvider);

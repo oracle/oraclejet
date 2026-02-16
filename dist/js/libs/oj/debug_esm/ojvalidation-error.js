@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -28,6 +28,7 @@ import Message from 'ojs/ojmessaging';
  *    return;
  *    }
  *  };
+ *
  * @constructor
  * @final
  * @ojtsnoexport
@@ -35,6 +36,8 @@ import Message from 'ojs/ojmessaging';
  * @ojtsimport {module: "ojmessaging", type: "AMD", importName: "Message"}
  * @since 0.6.0
  * @export
+ * @ojdeprecated {since: '20.0.0', description: 'Applications should use native Javascript
+ * Error to construct the validation errors, e.g., "new Error(`error message detail`)."'}
  */
 const ValidatorError = function (summary, detail) {
   var message = {
@@ -101,6 +104,8 @@ ValidatorError.prototype.getMessage = function () {
  * @ojtsexportastype
  * @since 0.6.0
  * @export
+ * @ojdeprecated {since: '20.0.0', description: 'Applications should use native Javascript
+ * Error to construct the conversion errors, e.g., "new Error(`error message detail`)."'}
  */
 const ConverterError = function (summary, detail) {
   var message = {

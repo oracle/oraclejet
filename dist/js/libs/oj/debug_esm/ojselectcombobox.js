@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -7834,6 +7834,7 @@ const _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     var filtered = [];
     var self = this;
     var lastChoiceIndex;
+    var currFocusIdx = -1;
 
     // filter out duplicates
     $(data).each(function () {
@@ -7860,6 +7861,10 @@ const _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
         // for non-initial fetch from data provider, populate data/metadata from valueOptions for the selected ids
         filtered = _ComboUtils.findOptions(this.opts.valueOptions, ids);
       }
+      // JET-75584 : Value change in VB triggers a refresh event, leading to the loss of focus on the selected item
+      currFocusIdx = this._getSelectedItemIndex(
+        this.selection.find('.' + this._classNm + '-selected-choice.oj-focus')
+      );
     }
 
     this.selection.find('.' + this._classNm + '-selected-choice').remove();
@@ -7876,7 +7881,10 @@ const _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     // Storing this data so that it will be used when setting the display value.
     this.currentItem = filtered;
     this.currentValue = ids;
-
+    // If there is a focused item present before refreshing the component then setting the focus back to the same item after component reload.
+    if (currFocusIdx >= 0 && currFocusIdx < filtered.length) {
+      this._selectChoice(this._getSelectedItemByIndex(currFocusIdx));
+    }
     self._postprocessResults();
   },
 
@@ -10327,6 +10335,13 @@ const _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
  *
  * @ojoracleicon 'oj-ux-ico-text-input-combo'
  *
+ * @ojdeprecated [
+ *   {
+ *     type: "maintenance",
+ *     since: "20.0.0",
+ *     value: ["oj-c-select-single"]
+ *   }
+ * ]
  * @classdesc
  * <h3 id="comboboxOneOverview-section">
  *   JET Combobox One
@@ -10380,6 +10395,13 @@ const _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
+ *
+ *  <h3 id="migration-section">
+ *   Migration
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"migrationDoc"}
  *
  * <h3 id="perf-section">
  *   Performance
@@ -10535,7 +10557,195 @@ const _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
  * @memberof oj.ojComboboxOne
  * @instance
  */
-
+/**
+ *
+ * <p>
+ * To migrate from oj-combobox-one to oj-c-select-single, you need to revise the import statement
+ * and references to oj-c-select-single in your app. Please note the changes between the two
+ * components below.
+ * </p>
+ *
+ * <h5>Global attributes</h5>
+ * <p>
+ * The following global attributes are no longer supported:
+ * <ul>
+ * <li>tabindex - not considered accessible</li>
+ * </ul>
+ * </p>
+ *
+ * <h5>LabelEdge attribute</h5>
+ * <p>
+ * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
+ * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+ * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+ * attribute to the corresponding value.
+ * </p>
+ *
+ * <h5>MessagesCustom attribute</h5>
+ * <p>
+ * The type of the <code class="prettyprint">severity</code> property of the messages in the
+ * array has changed from
+ * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+ * essentially <code class="prettyprint">string | number</code>, to simply
+ * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+ * values are the same as the previously supported string values.
+ * The application can no longer specify severity as a number, including hardcoded numbers,
+ * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+ * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+ * </p>
+ *
+ * <h5>TextAlign attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start and oj-form-control-text-align-end is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ *   <li>
+ *   .oj-form-control-text-align-right maps to 'right'
+ *   </li>
+ *   <li>
+ *   .oj-form-control-text-align-start maps to 'start'
+ *   </li>
+ *   <li>
+ *   .oj-form-control-text-align-end maps to 'end'
+ *   </li>
+ * </ul>
+ * </p>
+ *
+ *
+ * <h5>MaxWidth attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-max-width-sm maps to 'sm'
+ * </li>
+ * <li>
+ * .oj-form-control-max-width-md maps to 'md'
+ * </li>
+ * </ul>
+ * </p>
+ *
+ * <h5>Width attribute</h5>
+ * <p>
+ * The usage of the style classes: oj-form-control-width-sm and oj-form-control-width-md is now
+ * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+ * <ul>
+ * <li>
+ * .oj-form-control-width-sm maps to 'sm'
+ * </li>
+ * <li>
+ * .oj-form-control-width-md maps to 'md'
+ * </li>
+ * </ul>
+ * </p>
+ *
+ *
+ * <h5>Translations</h5>
+ * <p>
+ * The instance level translations are not supported anymore for the following translation properties. These need to be configured
+ * in the translation bundle.
+ * <ul>
+ *  <li>filter-further</li>
+ *  <li>more-matches-found</li>
+ *  <li>no-matches-found</li>
+ *  <li>one-matches-found</li>
+ *
+ *
+ * </ul>
+ * </p>
+ * <p>
+ * The 'required' translation property can still be configured at the instance level, but this API is simplified to take a single
+ * string instead of an object. To show a different required message detail, the application can now set the required-message-detail
+ * attribute to the desired translated string.
+ * </p>
+ *
+ *
+ * <h5>Refresh method</h5>
+ * <p>
+ * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+ * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+ * </p>
+ *
+ * <h5>Custom Label</h5>
+ * <p>
+ * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+ * label-hint attribute to add a label for the form component.
+ * </p>
+ * <p>
+ * The application should no longer need to use the &lt;oj-label-value> component to layout the form component. The application
+ * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+ * </p>
+ *
+ * <h5>LabelledBy attribute</h5>
+ * <p>
+ * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
+ * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
+ * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
+ * to add a label for the form component.
+ * </p>
+ *
+ * <h5>DescribedBy attribute</h5>
+ * <p>
+ * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+ * This attribute is not carried forward to the core pack component.
+ * </p>
+ *
+ * <h5>Formatted messages</h5>
+ * <p>
+ * Formatting messages using html tags is not supported in the core pack component.
+ * </p>
+ *
+ * <h5>Add to List (Custom Values)</h5>
+ * oj-combobox-one allows users to add custom values (not present in the dropdown) by default.
+ * In oj-c-select-single, you must enable the Add to List feature by setting the add-to-list property to 'on'
+ * and handling the ojAddToListAction.
+ *
+ * <h5>Custom initial value</h5>
+ * oj-combobox-one allows applications to initialize the component with a custom initial value (a value that is not
+ * present in the data). In oj-c-select-single, the value of the component, including the initial value, must be present
+ * in the current data. If you want to have a custom initial value, you must add it to the data when initializing the component.
+ * If this value is not added to the data, oj-c-select-single will throw an error saying that it cannot fetch the data for the
+ * value and the component will not work as expected.
+ *
+ * <h5>Data Provider key type</h5>
+ * <p>
+ * In oj-c-select-single, the type of the data attribute is <code>DataProvider&lt;V, D&gt;</code> where
+ * V can only be of type string or number. This also affects the type of the component value, which is V,
+ * and the value-item, which is <code>ItemContext&lt;V, D&gt;</code>.
+ * </p>
+ *
+ * <h5>Using ArrayDataProvider with multiple keys</h5>
+ * <p>
+ * If you want to use an ArrayDataProvider with multiple key attributes, you can do so by setting
+ * the <code class="prettyprint">enforceKeyStringify</code> option on ArrayDataProvider to
+ * <code class="prettyprint">'on'</code> to use multiple key attributes but have string keys.
+ * See the ArrayDataProvider doc for more information.
+ * </p>
+ *
+ * <h5>Supplying Options</h5>
+ * oj-combobox-one supports inline child &lt;oj-option> and &lt;oj-optgroup> elements as well as the options property.
+ * oj-c-select-single requires all data to be supplied via the data property as a DataProvider.
+ * For small static sets, create an ArrayDataProvider from an array.
+ *
+ * <h5>ojValueUpdated Event</h5>
+ * <p>
+ * oj-c-select-single does not have an ojValueUpdated event. It has an ojValueAction event.
+ * </p>
+ *
+ * <h5>Limitations</h5>
+ * <p>
+ * Note that oj-c-select-single supports a limited feature set in JET 17.1.0.
+ * </p>
+ *
+ * <ul>
+ * <li>It does not support hierarchical data.</li>
+ * <li>It supports customizing dropdown content only using oj-c-table and oj-c-list-view. Other collection components (including legacy oj-table) are not supported.</li>
+ * </ul>
+ * @ojfragment migrationDoc
+ * @memberof oj.ojComboboxOne
+ * @instance
+ */
 //-----------------------------------------------------
 //                   Fragments ComboboxMany
 //-----------------------------------------------------
@@ -11048,6 +11258,11 @@ const _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
  * Additionally, applications are advised to use oj-select-single instead of the deprecated oj-select-one.
  * </p>
  *
+ * <p>oj-c-select-single is the component that supersedes both oj-select-single and oj-combobox-one.
+ * oj-c-select-single has an "Add to List" feature which can be used to allow a user to enter values
+ * that are not available in the data, like oj-combobox-one.
+ * </p>
+ *
  * @ojfragment selectComboDifferences
  * @memberof oj.ojCombobox
  */
@@ -11461,6 +11676,7 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
      * @access public
      * @instance
      * @memberof oj.ojComboboxMany
+     * @ojdeprecated {since: '20.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
      */
     /**
      * {@ojinclude "name":"comboboxCommonLabelledBy"}
@@ -11474,6 +11690,7 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
      * @access public
      * @instance
      * @memberof oj.ojComboboxOne
+     * @ojdeprecated {since: '20.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
      */
     /**
      * <p>
@@ -13930,23 +14147,23 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
    *
    */
   validate: function () {
-    var displayValueForSetValue = this._getDisplayValueForSetValue();
-    var combobox = this.combobox;
-    var valueCandidate = displayValueForSetValue;
-    var valOptToResetOnFailure;
-    var returnValue;
+    const displayValueForSetValue = this._getDisplayValueForSetValue();
+    const combobox = this.combobox;
+    let valueCandidate = displayValueForSetValue;
+    let valOptToResetOnFailure;
+    let returnValue;
 
     if (combobox.hasUncommittedValue) {
       // we need to update the valueOptions before setting the value
-      var newValOpts = null;
-      var multiple = this.multiple;
+      let newValOpts = null;
+      const multiple = this.multiple;
 
       if (multiple) {
-        var lastRawValue = displayValueForSetValue[displayValueForSetValue.length - 1];
-        var val = (combobox.getVal() || []).slice(0);
-        var data = this._getValueOptionCandidateFromRawValue(lastRawValue);
-        var id = combobox.id(data);
-        var initialValOpts = (combobox.getValOpts() || []).slice(0);
+        const lastRawValue = displayValueForSetValue[displayValueForSetValue.length - 1];
+        const val = (combobox.getVal() || []).slice(0);
+        const data = this._getValueOptionCandidateFromRawValue(lastRawValue);
+        const id = combobox.id(data);
+        const initialValOpts = (combobox.getValOpts() || []).slice(0);
 
         newValOpts = initialValOpts.slice(0);
         if (val.indexOf(id) === -1) {
@@ -13959,8 +14176,21 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
         }
         valueCandidate = val;
       } else {
-        newValOpts = this._getValueOptionCandidateFromRawValue(displayValueForSetValue);
-        valueCandidate = combobox.id(newValOpts);
+        const val = combobox.getVal();
+        const data = this._getValueOptionCandidateFromRawValue(displayValueForSetValue);
+        const id = combobox.id(data);
+        const initialValOpts = combobox.getValOpts();
+
+        // JET-64761 - validation result is inconsistent
+        // To validate the component with the latest rawValue, we modify the valueOption in anticipation that the value
+        // will be updated if the validation succeeds. But, if the validation fails, we need to revert it to the initial
+        // value option as the value will not be updated to the new one
+        newValOpts = initialValOpts;
+        if (val !== id) {
+          newValOpts = data;
+          valOptToResetOnFailure = initialValOpts;
+        }
+        valueCandidate = id;
       }
       combobox._skipSetValueOptions = true;
       combobox.shouldApplyConverter = true;
@@ -17337,13 +17567,6 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
  * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
  * </p>
  *
- * <h5>LabelledBy attribute</h5>
- * <p>
- * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
- * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
- * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
- * to add a label for the form component.
- * </p>
  *
  * <h5>DescribedBy attribute</h5>
  * <p>
@@ -17354,11 +17577,6 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
  * <h5>Formatted messages</h5>
  * <p>
  * Formatting messages using html tags is not supported in the core pack component.
- * </p>
- *
- * <h5>Usage in Dynamic Form</h5>
- * <p>
- * Using the component in oj-dyn-form is not supported in this release; use oj-dynamic-form instead.
  * </p>
  *
  * <h5>Limitations</h5>
@@ -17784,6 +18002,7 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
      * @instance
      * @since 7.0.0
      * @memberof oj.ojSelectOne
+     * @ojdeprecated {since: '20.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
      */
     /**
      * <p>
@@ -17823,6 +18042,7 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
      * @instance
      * @since 7.0.0
      * @memberof oj.ojSelectMany
+     * @ojdeprecated {since: '20.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
      */
     /**
      * <p>
@@ -17850,6 +18070,7 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
      * @instance
      * @since 7.0.0
      * @memberof oj.ojSelect
+     * @ojdeprecated {since: '20.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
      */
     labelledBy: null,
 

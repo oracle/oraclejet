@@ -238,10 +238,14 @@ function _getLookupAbsPathsFromCompilerOptions(compilerOptions) {
     // Initialize an array of relative paths to the specified rootDir(s)
     const lookupRelPaths = compilerOptions.rootDirs ?? (compilerOptions.rootDir ? [compilerOptions.rootDir] : []);
     // Transform the relative rootDir(s) into absolute paths
-    const lookupAbsPaths = lookupRelPaths.map((dir) => path.posix.resolve(dir));
+    // NOTE: if dir is an absolute path, we can't use path.posix.resolve to convert it to absolute path
+    // because on Windows it will just append to the current working directory, resulting in an invalid path
+    // So we use ensureAbsolutePath (inside it is calling path.resolve first) to get the absolute path but still in posix format
+    const lookupAbsPaths = lookupRelPaths.map((dir) => ensureAbsolutePath(dir));
     // Push the absolute path of the current working directory onto the array, and return it
     lookupAbsPaths.push(path.posix.resolve());
-    return lookupAbsPaths;
+    // Remove duplicates before returning
+    return Array.from(new Set(lookupAbsPaths));
 }
 /**
  * Given an array of lookup directories, search for a JSON file with the specified name

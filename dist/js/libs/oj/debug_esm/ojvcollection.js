@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import { getEventDetail, CHECKVIEWPORT_THRESHOLD } from 'ojs/ojdatacollection-common';
+import { getEventDetail, CHECKVIEWPORT_THRESHOLD, getScrollEventElement } from 'ojs/ojdatacollection-common';
 import { info, warn, error } from 'ojs/ojlogger';
 import CachedIteratorResultsDataProvider from 'ojs/ojcachediteratorresultsdataprovider';
 import DomScroller from 'ojs/ojdomscroller';
@@ -32,11 +32,7 @@ class DataProviderContentHandler {
                     ? Number(element.dataset.ojKey)
                     : element.dataset.ojKey;
         };
-        if (dataProvider) {
-            this.modelEventHandler = this._handleModelEvent.bind(this);
-            dataProvider.addEventListener('mutate', this.modelEventHandler);
-            dataProvider.addEventListener('refresh', this.modelEventHandler);
-        }
+        this.setDataProvider(dataProvider);
     }
     setFetching(fetching) {
         const fetchingValue = fetching ? this.fetching + 1 : this.fetching - 1;
@@ -52,13 +48,29 @@ class DataProviderContentHandler {
         }
         return () => { };
     }
+    /**
+     * A function to register data provider event handler
+     */
+    registerEventListener(dataProvider) {
+        if (dataProvider) {
+            this.modelEventHandler = this._handleModelEvent.bind(this);
+            dataProvider.addEventListener('mutate', this.modelEventHandler);
+            dataProvider.addEventListener('refresh', this.modelEventHandler);
+        }
+    }
+    /**
+     * A function to unregister data provider event handler
+     */
+    unRegisterEventListener(dataProvider) {
+        if (dataProvider && this.modelEventHandler) {
+            dataProvider.removeEventListener('mutate', this.modelEventHandler);
+            dataProvider.removeEventListener('refresh', this.modelEventHandler);
+        }
+    }
     destroy() {
         // disassociate component with ContentHandler
         this.callback = null;
-        if (this.dataProvider && this.modelEventHandler) {
-            this.dataProvider.removeEventListener('mutate', this.modelEventHandler);
-            this.dataProvider.removeEventListener('refresh', this.modelEventHandler);
-        }
+        this.unRegisterEventListener(this.dataProvider);
     }
     /**
      * Renders content for no data
@@ -83,7 +95,9 @@ class DataProviderContentHandler {
         return this.dataProvider;
     }
     setDataProvider(dataProvider) {
+        this.unRegisterEventListener(this.dataProvider);
         this.dataProvider = dataProvider;
+        this.registerEventListener(this.dataProvider);
     }
     isReady() {
         return !this.fetching;
@@ -392,11 +406,7 @@ class VirtualizeDomScroller {
      * @private
      */
     _getScrollEventElement() {
-        // if scroller is the body, listen for window scroll event.  This is the only way that works consistently across all browsers.
-        if (this.element === document.body || this.element === document.documentElement) {
-            return window;
-        }
-        return this.element;
+        return getScrollEventElement(this.element);
     }
     /**
      * @private
@@ -831,22 +841,19 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
         this.fetchRows();
     }
     getDataProvider() {
-        if (this.wrappedDataProvider == null) {
-            const capability = this.dataProvider.getCapability('fetchFirst') ||
-                this.dataProvider.getCapability('fetchCapability');
-            if (capability == null || capability.caching == null || capability.caching == 'none') {
-                this.wrappedDataProvider = new CachedIteratorResultsDataProvider(this.dataProvider);
-            }
-            else {
-                this.wrappedDataProvider = this.dataProvider;
-            }
-        }
-        return this.wrappedDataProvider;
+        return this.dataProvider;
     }
     setDataProvider(dataProvider) {
         // reset so that it can be re-wrap
-        this.wrappedDataProvider = null;
-        this.dataProvider = dataProvider;
+        this.unRegisterEventListener(this.dataProvider);
+        const capability = dataProvider.getCapability('fetchFirst') || dataProvider.getCapability('fetchCapability');
+        if (capability == null || capability.caching == null || capability.caching == 'none') {
+            this.dataProvider = new CachedIteratorResultsDataProvider(dataProvider);
+        }
+        else {
+            this.dataProvider = dataProvider;
+        }
+        this.registerEventListener(this.dataProvider);
     }
     /**
      * Post-render hook after content is in the DOM
@@ -1317,9 +1324,12 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         this.fetchMoreRows = () => {
             if (this.isReady()) {
                 const lastEntryMetadata = this._getLastEntryMetadata();
-                let key = lastEntryMetadata.key;
-                if (lastEntryMetadata.isLeaf || !this._isExpanded(key)) {
-                    key = lastEntryMetadata.parentKey;
+                let key = null;
+                if (lastEntryMetadata) {
+                    key = lastEntryMetadata.key;
+                    if (lastEntryMetadata.isLeaf || !this._isExpanded(key)) {
+                        key = lastEntryMetadata.parentKey;
+                    }
                 }
                 const options = {};
                 options.size = this._isLoadMoreOnScroll() ? this.getFetchSize() : -1;
@@ -1382,6 +1392,9 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             return null;
         };
         this._isExpanded = (key) => {
+            // root is always expanded
+            if (key == null)
+                return true;
             const expanded = this.callback.getExpanded();
             return expanded.has(key);
         };
@@ -1906,6 +1919,33 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         return index;
     }
     /**
+     * A helper function that remove keys from this._cachedIteratorsAndResults
+     */
+    _clearCachedIteratorsAndResults(keys) {
+        Object.keys(this._cachedIteratorsAndResults).forEach((key) => {
+            if (keys.has(key)) {
+                delete this._cachedIteratorsAndResults[key];
+            }
+        });
+        const rootCache = this._cachedIteratorsAndResults['root'];
+        const value = rootCache?.cache?.value;
+        if (value) {
+            const indexes = [];
+            for (let i = value.metadata.length - 1; i >= 0; i--) {
+                if (keys.has(value.metadata[i].key)) {
+                    indexes.push(i);
+                }
+            }
+            indexes.forEach((index) => {
+                value.metadata.splice(index, 1);
+                value.data.splice(index, 1);
+            });
+            if (value.metadata.length === 0) {
+                rootCache.cache = null;
+            }
+        }
+    }
+    /**
      * Handles model refresh
      * @override
      */
@@ -1965,12 +2005,11 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                         recacheData = data.slice(insertIndex + 1);
                         recacheMetadata = metadata.slice(insertIndex + 1);
                         // need to make sure it fetches more in the future
-                        if (recacheData.length > 0) {
-                            done = false;
-                            if (this.domScroller != null) {
-                                this.domScroller.setAsyncIterator({ next: this.fetchMoreRows.bind(this) });
-                            }
+                        done = false;
+                        if (!this.domScroller) {
+                            this._registerDomScroller();
                         }
+                        this.domScroller.setAsyncIterator({ next: this.fetchMoreRows.bind(this) });
                     }
                     updatingData = {
                         value: {
@@ -1998,12 +2037,18 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         const allFetchNext = [];
         const validKeys = [];
         for (let key of keys) {
+            // if not expanded, skip
+            if (!this._isExpanded(key)) {
+                continue;
+            }
             const fetchNext = this.fetchNextFromChildDataProvider(key);
             if (fetchNext != null) {
                 allFetchNext.push(fetchNext);
                 validKeys.push(key);
             }
         }
+        if (allFetchNext.length === 0)
+            return;
         Promise.all(allFetchNext).then((finalResults) => {
             if (this.callback == null) {
                 return;
@@ -2081,8 +2126,10 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                                 }
                                 else {
                                     index = this._findIndexForLastItem(parentKey, newData);
-                                    // parentKey cannot be found or cannot find index, skip this iteration
-                                    if (index === -1) {
+                                    // parentKey cannot be found or cannot find index, skip this iteration unless the currentData is empty
+                                    // OR skip this iteration if the currentData is not done
+                                    if ((index === -1 && currentData.value.data.length !== 0) ||
+                                        (parentKey == null && !currentData.done)) {
                                         return;
                                     }
                                 }
@@ -2108,6 +2155,13 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                                 }
                             }
                         }
+                        if (index < 0 &&
+                            this._isExpanded(parentKey) &&
+                            newData.done &&
+                            !newData.maxCountLimit) {
+                            // add an item to the end only when the parent is expanded
+                            index = Math.max(newData.value.data.length - 1, 0);
+                        }
                         if (index > -1) {
                             newData.value.data.splice(index, 0, data);
                             newMetadata = this._updateMetadata(metadata, parentKey, newData);
@@ -2117,13 +2171,6 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                             }
                             if (this._isExpanded(metadata.key)) {
                                 keysToExpand.push(metadata.key);
-                            }
-                        }
-                        else {
-                            // add an item only when the parent is expanded
-                            if (this._isExpanded(parentKey) && newData.done && !newData.maxCountLimit) {
-                                newData.value.data.push(data);
-                                newData.value.metadata.push(metadata);
                             }
                         }
                     });
@@ -2169,6 +2216,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 newData.value.metadata.splice(index, count);
             }
         });
+        this._clearCachedIteratorsAndResults(detail.keys);
         super.handleItemsRemoved(detail);
     }
     /**

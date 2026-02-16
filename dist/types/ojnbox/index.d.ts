@@ -224,13 +224,18 @@ export namespace ojNBox {
         labelHalign?: string;
         labelStyle?: Partial<CSSStyleDeclaration>;
         maximizedSvgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         maximizedSvgStyle?: Partial<CSSStyleDeclaration>;
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         minimizedSvgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         minimizedSvgStyle?: Partial<CSSStyleDeclaration>;
         row: string;
         shortDesc?: string;
         showCount?: 'on' | 'off' | 'auto';
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -611,7 +616,9 @@ export interface ojNBoxNode<K = any> extends dvtBaseComponent<ojNBoxNodeSettable
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
         shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         source?: string;
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number | null;
     };
@@ -627,7 +634,9 @@ export interface ojNBoxNode<K = any> extends dvtBaseComponent<ojNBoxNodeSettable
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
         shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         source?: string | null;
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration> | null;
         width?: number | null;
     };
@@ -724,7 +733,9 @@ export interface ojNBoxNodeSettableProperties<K = any> extends dvtBaseComponentS
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
         shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         source?: string;
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number | null;
     };
@@ -740,7 +751,9 @@ export interface ojNBoxNodeSettableProperties<K = any> extends dvtBaseComponentS
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
         shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         source?: string | null;
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration> | null;
         width?: number | null;
     };
@@ -848,13 +861,18 @@ export namespace NBoxElement {
         labelHalign?: string;
         labelStyle?: Partial<CSSStyleDeclaration>;
         maximizedSvgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         maximizedSvgStyle?: Partial<CSSStyleDeclaration>;
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         minimizedSvgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         minimizedSvgStyle?: Partial<CSSStyleDeclaration>;
         row: string;
         shortDesc?: string;
         showCount?: 'on' | 'off' | 'auto';
+        /** @deprecated since 20.0.0 - The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal

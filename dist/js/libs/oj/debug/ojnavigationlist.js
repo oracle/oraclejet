@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -628,6 +628,27 @@ var __oj_tab_bar_metadata =
       itemInsertComplete: function (elem, context) {
         this.m_listHandler.ItemInsertComplete(elem, context);
         _ojNavigationListView.superclass.itemInsertComplete.apply(this, arguments);
+        // This ensures when a tab is added and set as the selection value the remove icon shows up. Add and removal of tabs is supported only in oj-tab-bar
+        if (this.isTabBar()) {
+          const key = this.GetKey(elem);
+          // If inserted item is set as current item by application focus it. Though the currentItemOptions is updated the call to SetCurrentItem sets the active item and bring focus to it.
+          const currentKey = this.options.currentItem;
+          if (currentKey != null && key === currentKey) {
+            const isTabBarActiveElement = this.element[0].contains(document.activeElement);
+            // We want to prevent the focus set by SetCurrentItem if tabbar or its descendent is not the active element
+            this.SetCurrentItem($(elem), { type: 'focus' }, !isTabBarActiveElement);
+          }
+
+          // GetOption returns an array so we obtain the first entry which is the selection value
+          var selection = this.GetOption(this.OPTION_SELECTION)[0];
+          if (
+            selection != null &&
+            selection === key &&
+            elem.classList.contains(this.getRemovableStyleClass()) &&
+            elem.classList.contains('oj-selected')
+          )
+            this.HighlightUnhighlightElem(elem, 'oj-selected', true);
+        }
       },
 
       /**
@@ -2917,6 +2938,7 @@ var __oj_tab_bar_metadata =
      *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
      * </h3>
      *
+     * <p>It is not recommended to use <code class="prettyprint">oj-navigation-list</code> only for the purpose of rendering links that navigate to a different page. Instead, each item that has a link should be interactive and activating it should display or switch a content panel within the same page or context.</p>
      *
      * <h3 id="rtl-section">
      *   Reading direction
@@ -4694,6 +4716,12 @@ var __oj_tab_bar_metadata =
    *   </tbody>
    * </table>
    *
+   * <h3 id="a11y-section">
+   * Accessibility
+   * <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+   * </h3>
+   * <p>It is not recommended to use <code class="prettyprint">oj-tab-bar</code> only for the purpose of rendering links that navigate to a different page. Instead, each item that has a link should be interactive and activating it should display or switch a content panel within the same page or context.</p>
+   *
    * <h3 id="migration-section">
    *   Migration
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
@@ -6443,21 +6471,24 @@ var __oj_tab_bar_metadata =
         this.m_root.addClass(this.m_widget.getCondenseStyleClass());
       }
     }
-    var visibleItems = this.m_widget.element.find(
-      '.' + this.m_widget.getItemElementStyleClass() + ':visible'
-    );
+
+    var lastItemClass = this.m_widget.getLastItemStyleClass();
+    var allItems = this.m_widget.element.find('.' + this.m_widget.getItemElementStyleClass());
+    var visibleItems = allItems.filter(':visible');
     visibleItems.each(function (index) {
-      var ele = $(this);
       if (index > 0) {
         self._addSeparator(this, index);
       }
-
-      if (index === visibleItems.length - 1) {
-        ele.addClass(self.m_widget.getLastItemStyleClass());
-      } else {
-        ele.removeClass(self.m_widget.getLastItemStyleClass());
-      }
     });
+    // We need to remove last item class from all items first
+    allItems.removeClass(lastItemClass);
+    // If visible items are empty example usually before render or when oj-tab-bar is used in a popup, then we use all the tab-bar items and pick the last one
+    if (visibleItems.length > 0) {
+      visibleItems.last().addClass(lastItemClass);
+    } else if (allItems.length > 0) {
+      allItems.last().addClass(lastItemClass);
+    }
+
     if (this.m_duringInit) {
       this.m_duringInit = false;
       this._handleOverflow();
@@ -7030,18 +7061,20 @@ var __oj_tab_bar_metadata =
         }
       }
 
-      if (!overflowItemSelected) {
-        this._highlightUnhighlightMoreItem(false);
-      } else {
-        // other items should not be visually selected since an overflow item is already selected
-        const visibleItems = this.m_widget.element[0].querySelectorAll(
-          '.' + this.m_widget.getItemElementStyleClass() + '.oj-selected'
-        );
-        for (let j = 0; j < visibleItems.length - 1; j++) {
-          if (!this.m_widget.compareValues(visibleItems[j].key, selectedItem)) {
-            visibleItems[j].classList.remove('oj-selected');
-          }
+      // Clear selection from all items (including both visible and overflow) except for the one that matches with selection option
+      const allSelectedItems = this.m_widget.element[0].querySelectorAll(
+        '.' + this.m_widget.getItemElementStyleClass() + '.oj-selected'
+      );
+      for (let j = 0; j < allSelectedItems.length; j++) {
+        if (!this.m_widget.compareValues(allSelectedItems[j].key, selectedItem)) {
+          allSelectedItems[j].classList.remove('oj-selected');
         }
+      }
+      // Only highlight the overflow menu button if the current selection is in the overflow menu
+      if (overflowItemSelected) {
+        this._highlightUnhighlightMoreItem(true);
+      } else {
+        this._highlightUnhighlightMoreItem(false);
       }
     }
   };
@@ -7456,6 +7489,14 @@ var __oj_tab_bar_metadata =
       this.m_widget.AnimateCollapseComplete(item.children('.' + this.m_widget.getGroupStyleClass()));
     } else {
       this.m_widget.AnimateExpandComplete(item.children('.' + this.m_widget.getGroupStyleClass()));
+    // For ios, it is needed to set aria-hidden.
+    // aria-hidden should be set for first level of items and should be removed from second level only after animation is complete,
+      item.siblings().attr(_ARIA_HIDDEN$1, 'true'); // @HTMLUpdateOK
+      item
+      .children('.' + this.m_widget.getGroupItemStyleClass())
+      .children('.' + this.m_widget.getItemContentStyleClass())
+      .attr(_ARIA_HIDDEN$1, 'true'); // @HTMLUpdateOK
+      item.children('.' + this.m_widget.getGroupStyleClass()).removeAttr(_ARIA_HIDDEN$1);
     }
   };
 
@@ -7494,14 +7535,6 @@ var __oj_tab_bar_metadata =
       this._slideAnimationComplete(target, true, nextFocusableItem, event, false);
       animationResolve(null);
     }
-
-    // For ios, it is needed to set aria-hidden.
-    target.siblings().attr(_ARIA_HIDDEN$1, 'true'); // @HTMLUpdateOK
-    target
-      .children('.' + this.m_widget.getGroupItemStyleClass())
-      .children('.' + this.m_widget.getItemContentStyleClass())
-      .attr(_ARIA_HIDDEN$1, 'true'); // @HTMLUpdateOK
-    sublist.removeAttr(_ARIA_HIDDEN$1);
 
     // undo any display set by ListView
     groupItem.css('display', '');

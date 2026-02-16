@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -231,7 +231,7 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
         // if refreshNeeded is false,
         // then continue for loop and look at the next mutation to see if that can be ignored
         // or if _refreshTrackedComponents needs to be called.
-        for (var i = 0; i < mutationsLength && !refreshNeeded; i++) {
+        for (var i = 0; i < mutationsLength; i++) {
           var mutation = mutations[i];
           // target is the node whose children changed
           var target = mutation.target;
@@ -242,7 +242,13 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
           var removedNodes = mutation.removedNodes;
           var addedNodes = mutation.addedNodes;
           refreshNeeded = _isOrContainsTrackedComponent(removedNodes);
-          if (!refreshNeeded && addedNodes.length > 0) {
+
+          // exit early once a trackable removal is detected
+          if (refreshNeeded) {
+            break;
+          }
+
+          if (addedNodes.length > 0) {
             // if refreshNeeded is false, and we are adding something,
             // then look at this mutation;
             // if it is a child of any of the tracked components,
@@ -251,9 +257,10 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
 
             // if ignore is false, see if target or addedNodes needs to be tracked.
             // checking on the addedNodes does not always work. you must also check target
-            // If so, set refreshNeeded to true
+            // If so, set refreshNeeded to true and we exit
             if (!ignore && _isAnyNodeTrackable(target, addedNodes)) {
               refreshNeeded = true;
+              break;
             }
           }
         }
@@ -750,15 +757,19 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
      * @return {boolean} true if the target or a node from nodelist is trackable, else false
      */
     function _isAnyNodeTrackable(target, nodes) {
-      var length = nodes.length;
-
       if (_isTrackable(target)) {
         return true;
       }
 
-      // loop through the nodes and see if one is trackable
-      for (var i = 0; i < length; i++) {
-        if (_isTrackable(nodes[i])) {
+      if (!nodes) {
+        return false;
+      }
+
+      // Recursively loop through the nodes and see if one of them, or one of their children, is trackable.
+      const length = nodes.length;
+      for (let i = 0; i < length; i++) {
+        const node = nodes[i];
+        if (_isAnyNodeTrackable(node, node.children)) {
           return true;
         }
       }

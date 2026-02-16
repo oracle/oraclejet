@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -5019,6 +5019,10 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         }
 
         if (contextMenuNode) {
+          // We set slot attribute to be context menu since menu dismiss is not called when clicking launcher, except on context menus.
+          // We determine if menu is context menu via slot attribute. Default menus(table,grid) doesn't set context menu slot attribute by default
+          contextMenuNode.setAttribute('slot', 'contextMenu');
+
           // Note: our touch positioning is similar to that of the iOS touch callout (bubble with "Open in New Tab", etc.), which is offset from the pressHold location as follows:
           // - to the right, vertically centered.  (by default)
           // - to the left, vertically centered.  (if fits better)
@@ -5047,12 +5051,15 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
             }
           };
 
-          var defaults = { launcher: this.element, position: position[eventType] }; // used for fields caller omitted
-          var forcedOptions = { initialFocus: 'menu' };
+          var defaults = {
+            launcher: this.element,
+            position: position[eventType],
+            initialFocus: 'menu'
+          }; // used for fields caller omitted
 
           var mergedOpenOptions = shallow
-            ? $.extend(defaults, openOptions, forcedOptions)
-            : $.extend(true, defaults, openOptions, forcedOptions);
+            ? $.extend(defaults, openOptions)
+            : $.extend(true, defaults, openOptions);
 
           contextMenuNode.__openingContextMenu = true; // Hack.  See todo on this ivar in Menu.open().
           if (contextMenuNode.tagName === 'OJ-MENU') {

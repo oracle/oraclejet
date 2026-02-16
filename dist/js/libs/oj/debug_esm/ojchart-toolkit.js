@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -25800,11 +25800,15 @@ const DvtChartPlotAreaRenderer = {
       Stroke.getDefaultDashProps(baselineType, baselineWidth)
     );
 
+    const deferredBaseline =
+      DvtChartDataUtils.isStacked(chart) &&
+      chart.getOptionsCache().getFromCache('hasNegativeValues');
+
     // Render a single path for horizontal and vertical gridlines otherwise render individual lines/circles
     var pathCmd = '';
     for (var i = 0; i < coords.length; i++) {
       var isBaseline = baselineCoord != null && coords[i] == baselineCoord;
-      if (position == 'radial' || position == 'tangential' || isBaseline) {
+      if (position == 'radial' || position == 'tangential' || (isBaseline && !deferredBaseline)) {
         DvtChartPlotAreaRenderer._renderGridline(
           chart,
           container,
@@ -25881,6 +25885,96 @@ const DvtChartPlotAreaRenderer = {
     line.setStroke(stroke);
     line.setMouseEnabled(false);
     container.addChild(line);
+  },
+
+  /**
+   * Renders deferred baselines for stacked charts with negative values.
+   * @param {Chart} chart The chart being rendered.
+   * @param {dvt.Container} container The container to render to.
+   * @param {dvt.Rectangle} availSpace The available space.
+   * @private
+   */
+  _renderDeferredBaselines: (chart, container, availSpace) => {
+    // Only render deferred baselines for stacked charts with negative values
+    if (
+      !DvtChartDataUtils.isStacked(chart) ||
+      !chart.getOptionsCache().getFromCache('hasNegativeValues')
+    ) {
+      return;
+    }
+
+    // Render baseline for y-axis
+    if (chart.yAxis) {
+      var yOptions = chart.yAxis.getOptions();
+      var yBaselineCoord = chart.yAxis.getBaselineCoord();
+      if (yBaselineCoord != null) {
+        DvtChartPlotAreaRenderer._renderBaseline(
+          chart,
+          container,
+          yOptions['majorTick'],
+          chart.yAxis.getPosition(),
+          yBaselineCoord,
+          availSpace
+        );
+      }
+    }
+
+    // Render baseline for y2-axis
+    if (chart.y2Axis) {
+      var y2Options = chart.y2Axis.getOptions();
+      var y2BaselineCoord = chart.y2Axis.getBaselineCoord();
+      if (y2BaselineCoord != null) {
+        DvtChartPlotAreaRenderer._renderBaseline(
+          chart,
+          container,
+          y2Options['majorTick'],
+          chart.y2Axis.getPosition(),
+          y2BaselineCoord,
+          availSpace
+        );
+      }
+    }
+  },
+
+  /**
+   * Renders a single baseline gridline.
+   * @param {Chart} chart The chart being rendered.
+   * @param {dvt.Container} container The container to render to.
+   * @param {Object} options The options object of the gridline.
+   * @param {String} position The axis position.
+   * @param {Number} baselineCoord The baseline coordinate.
+   * @param {dvt.Rectangle} availSpace The available space.
+   * @private
+   */
+  _renderBaseline: (chart, container, options, position, baselineCoord, availSpace) => {
+    // Construct the baseline stroke
+    var lineColor = options['lineColor'];
+    var baselineColor = lineColor;
+    if (options['baselineColor'] != 'inherit') {
+      if (options['baselineColor'] == 'auto')
+        baselineColor = ColorUtils.getDarker(lineColor, 0.6);
+      else baselineColor = options['baselineColor'];
+    }
+    var baselineWidth =
+      options['baselineWidth'] != null ? options['baselineWidth'] : options['lineWidth'];
+    var baselineType = options['baselineStyle'] ? options['baselineStyle'] : options['lineStyle'];
+    var baselineStroke = new Stroke(
+      baselineColor,
+      1,
+      baselineWidth,
+      false,
+      Stroke.getDefaultDashProps(baselineType, baselineWidth)
+    );
+
+    // Render the baseline gridline
+    DvtChartPlotAreaRenderer._renderGridline(
+      chart,
+      container,
+      position,
+      baselineCoord,
+      baselineStroke,
+      availSpace
+    );
   },
 
   /**
@@ -25967,6 +26061,8 @@ const DvtChartPlotAreaRenderer = {
       clipGroup = DvtChartPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
       DvtChartRefObjRenderer.renderForegroundObjects(chart, clipGroup, availSpace);
     }
+
+    DvtChartPlotAreaRenderer._renderDeferredBaselines(chart, container, availSpace);
 
     // Initial Selection
     var selected = DvtChartDataUtils.getInitialSelection(chart);
@@ -31037,10 +31133,11 @@ class DvtChartPie extends Container {
     var par = slice.getPieChart()._shapesContainer;
     if (par) {
       var parentChildCount = par.getNumChildren();
-      if (parentChildCount - this._numFrontObjs > 1) {
+      var oldIndex = par.getChildIndex(slice._topSurface[0]);
+      var newIndex = parentChildCount - this._numFrontObjs - 1;
+      if (parentChildCount - this._numFrontObjs > 1 && oldIndex != newIndex) {
         // Only change z-order for top surface
         par.removeChild(slice._topSurface[0]);
-        var newIndex = parentChildCount - this._numFrontObjs - 1;
         par.addChildAt(slice._topSurface[0], newIndex);
       }
     }
@@ -31061,7 +31158,8 @@ class DvtChartPie extends Container {
     if (par) {
       var parentChildCount = par.getNumChildren();
       var newIndex = parentChildCount - this._numFrontObjs - 1 - this._numSelectedObjsInFront;
-      if (newIndex >= 0) {
+      var oldIndex = par.getChildIndex(slice._topSurface[0]);
+      if (newIndex >= 0 && oldIndex != newIndex) {
         par.removeChild(slice._topSurface[0]);
         par.addChildAt(slice._topSurface[0], newIndex);
       }
@@ -31209,9 +31307,9 @@ const DvtChartRenderer = {
     var axisBounds = chart.__getAxisSpace();
     var horizAxisBounds = new Rectangle(
       plotAreaBounds.x,
-      axisBounds.y,
+      plotAreaBounds.y,
       plotAreaBounds.w,
-      axisBounds.h
+      axisBounds.h - Math.abs(plotAreaBounds.y - axisBounds.y)
     );
     var vertAxisBounds = new Rectangle(
       axisBounds.x,

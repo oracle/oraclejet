@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -339,6 +339,19 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
      * @ojstylevariable oj-label-inside-edge-line-height {description: "Inside label edge line height", formats: ["number"], help: "#oj-label-css-set2"}
      * @ojstylevariable oj-label-inside-edge-position-top {description: "Inside label edge position top", formats: ["length"], help: "#oj-label-css-set2"}
      * @ojstylevariable oj-label-inside-edge-color {description: "Inside label edge color", formats: ["color"], help: "#oj-label-css-set2"}
+     * @memberof oj.ojLabel
+     */
+
+    //-----------------------------------------------------
+    //                   Slots
+    //-----------------------------------------------------
+
+    /**
+     * <p>The default slot is used to specify the label's content.
+     * The <code class="prettyprint">&lt;oj-label></code> element accepts plain text or DOM nodes as children for the default slot.</p>
+     *
+     * @ojchild Default
+     * @ojshortdesc The default slot is used to specify the label's content.
      * @memberof oj.ojLabel
      */
     oj.__registerWidget('oj.ojLabel', $.oj.baseComponent, {

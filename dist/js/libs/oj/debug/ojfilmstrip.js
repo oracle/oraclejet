@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1668,10 +1668,7 @@ var __oj_film_strip_metadata =
         // Fix  - ACC: FIF TOUR PAGE DOESN'T DESCRIBE WHAT'S WITHIN THE FILMSTRIP
         // Create a page info element that will contain the current page information for accessibility
         const pageInfoElem = this._createPageInfoElem();
-        const elementId = elem.attr('id');
-        const pageInfoId = pageInfoElem.attr('id');
         elem.append(pageInfoElem); // @HTMLUpdateOK
-        elem.attr(_OJ_FILMSTRIP_LABELLEDBY, `${elementId} ${pageInfoId}`); // @HTMLUpdateOK
         this._pageInfoElem = pageInfoElem;
 
         // FIX : only need to create nav buttons if the filmstrip

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -359,7 +359,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @default null
  */
 /**
- * Specifies the minimum y coordinate of the current viewport for zoom and scroll. Only applies to bubble and scatter charts. If not specified, this value will be the axis min.
+ * Specifies the minimum y coordinate of the current viewport for zoom and scroll. If not specified, this value will be the axis min.
  * @expose
  * @name viewportMin
  * @ojtypedefmember
@@ -368,7 +368,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @default null
  */
 /**
- * Specifies the maximum y coordinate of the current viewport for zoom and scroll. Only applies to bubble and scatter charts. If not specified, this value will be the axis max.
+ * Specifies the maximum y coordinate of the current viewport for zoom and scroll. If not specified, this value will be the axis max.
  * @expose
  * @name viewportMax
  * @ojtypedefmember
@@ -797,8 +797,6 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * <p>
  * Corepack chart components (oj-c-line-chart, oj-c-area-chart) will use Redwood icons and JET buttons instead of the custom SVG buttons in oj-chart.
  * </p>
- * <h5> track-resize </h5>
- * <p> For the initial version of oj-c-line-chart and oj-c-area-chart, track-resize attribute is not supported. The component will itself resize on change in dimension. </p>
  * <h5 id="context-menu-migration"></h5>
  * <h5> Context menu affordance </h5>
  * <p> Corepack chart components (oj-c-line-chart, oj-c-area-chart) will have visual interaction affordance and keyboard support for context menus which does not exist in oj-chart. </p>
@@ -872,7 +870,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, getYAxis method is not supported. We plan on supporting this use case in a future release.
  * </p>
  * <h5> getContextByNode method </h5>
- * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, getContextByNode method is not supported. We plan on supporting this use case in a future release.
+ * <p> The getContextByNode method has been replaced by the context-menu-config attribute in both oj-c-line-chart and oj-c-area-chart components.
  * </p>
  * @ojfragment migrationDoc
  * @memberof oj.ojChart
@@ -2793,6 +2791,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @memberof! oj.ojChart.BoxPlotDefaults
  * @type {string=}
  * @default ""
+ * @ojdeprecated {since: "20.0.0", description: "The whiskerSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
  */
 /**
  * The CSS inline style to apply to the whisker stems.
@@ -2805,6 +2804,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @type {Object=}
  * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
  * @default {}
+ * @ojdeprecated {since: "20.0.0", description: "The whiskerSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
  */
 /**
  * The CSS style class to apply to the whisker ends.
@@ -2813,6 +2813,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.BoxPlotDefaults
  * @type {string=}
+ * @ojdeprecated {since: "20.0.0", description: "The whiskerEndSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
  * @default ""
  */
 /**
@@ -2825,6 +2826,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @memberof! oj.ojChart.BoxPlotDefaults
  * @type {Object=}
  * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+ * @ojdeprecated {since: "20.0.0", description: "The whiskerEndSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
  * @default {}
  */
 /**
@@ -2844,6 +2846,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @memberof! oj.ojChart.BoxPlotDefaults
  * @type {string=}
  * @default ""
+ * @ojdeprecated {since: "20.0.0", description: "The medianSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
  */
 /**
  * The CSS inline style to apply to the median line.
@@ -2854,6 +2857,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @memberof! oj.ojChart.BoxPlotDefaults
  * @type {Object=}
  * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
+ * @ojdeprecated {since: "20.0.0", description: "The medianSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
  * @default {}
  */
 
@@ -3273,6 +3277,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.StyleDefaults
  * @type {number=}
+ * @ojdeprecated {since: '20.0.0', description: 'This is not recommended in the Redwood design system.'}
  * @default null
  * @ojunits milliseconds
  * @ojmin 0
@@ -7425,7 +7430,7 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
  *              ]
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["type", "orientation", "legend.title", "legend.position", "legend.rendered",
- *                                                     "styleDefaults.lineType", "styleDefaults.markerDisplayed", "styleDefaults.markerShape", "styleDefaults.threeDEffect",
+ *                                                     "styleDefaults.lineType", "styleDefaults.markerDisplayed", "styleDefaults.markerShape",
  *                                                     "stack", "pieCenter.label", "xAxis.title", "yAxis.title", "animationOnDataChange", "animationOnDisplay",
  *                                                     "styleDefaults.pieInnerRadius", "coordinateSystem", "style"]}
  * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
@@ -7434,6 +7439,15 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
  *
  * @ojoracleicon 'oj-ux-ico-chart'
  * @ojuxspecs ['dvtChart_BarLineAreaCombo', 'range-chart', 'pie-chart', 'polar-chart', 'funnel-chart', 'pyramid-chart', 'stock-chart', 'data-visualization-common']
+ *
+ * @ojlegacymetadata requirements [
+ *    {
+ *      type: "anyOf",
+ *      label: "accessibility",
+ *      properties: ["aria-label", "aria-labelledby"],
+ *      slots: [""]
+ *    }
+ * ]
  *
  * @classdesc
  * <h3 id="chartOverview-section">
@@ -7504,8 +7518,6 @@ const createGroupsAndSeries = (component, templateEngine, items, dataProperty) =
  *    on the individual data items. The chart can take advantage of these higher level properties to apply the style properties on
  *    containers, saving expensive DOM calls.
  * </p>
- *
- * {@ojinclude "name":"fragment_trackResize"}
  *
  * {@ojinclude "name":"rtl"}
  */
@@ -7788,7 +7800,24 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent, {
      * @ojvalue {string} "seriesType" The combo chart rendering order between series types will follow a set z-ordering aimed at minimizing overlap:  area and line with area series type in the background, then bar series, then line series in the foreground. Series within the same type are rendered in the order presented in the data.
      * @default "seriesType"
      */
-    comboSeriesOrder: 'seriesType'
+    comboSeriesOrder: 'seriesType',
+    /**
+     * Defines whether the element will automatically render in response to
+     * changes in size. If set to <code class="prettyprint">off</code>, then the
+     * application is responsible for calling <code class="prettyprint">refresh</code>
+     * to render the element at the new size.
+     * @expose
+     * @name trackResize
+     * @ojshortdesc Defines whether the element will automatically render in response to changes in size. See the Help documentation for more information.
+     * @ojdeprecated {since: '20.0.0', description: 'The trackResize property is deprecated. By default, the chart will automatically re-render in response to changes to its size.'}
+     * @memberof oj.ojChart
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "on" When track-resize is set to "on", chart automatically re-renders in response to changes to its size.
+     * @ojvalue {string} "off" When track-resize is set to "off", chart does not automatically re-render, and so the application is responsible for calling refresh to render the chart at the new size.
+     * @default "on"
+     */
+    trackResize: 'on'
   },
   /**
    * @override

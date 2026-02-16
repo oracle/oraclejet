@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -9,7 +9,7 @@ import { jsx } from 'preact/jsx-runtime';
 import { h, Component } from 'preact';
 import { Root, customElement } from 'ojs/ojvcomponent';
 import oj from 'ojs/ojcore-base';
-import { handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
+import { handleActionablePrevTab, handleActionableTab, disableAllFocusableElements, getNoJQFocusHandlers, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
 import { fadeOut, slideIn, fadeIn, slideOut } from 'ojs/ojanimation';
 import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
 import { getTranslatedString } from 'ojs/ojtranslation';
@@ -695,6 +695,19 @@ var WaterfallLayout_1;
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  *  </h3>
+ *  To make your component accessible, the application is required to include contextual information for screen readers using one or more the following methods as appropriate:
+ *  <ul>
+ *   <li>aria-label</li>
+ *   <li>aria-labelledby</li>
+ *  </ul>
+ *
+ * <h3 id="progressive-loading-section">
+ *   Progressive Loading
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#progressive-loading-section"></a>
+ * </h3>
+ * <p>
+ *  This component supports loading indicators. Loading indicators are only shown after a pre-defined time has elapsed during the data provider fetch.
+ * </p>
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -761,8 +774,8 @@ var WaterfallLayout_1;
  *     </tr>
  *   </tbody>
  * </table>
- * @param {string | number} K Type of key of the dataprovider
- * @param {number} D Type of data from the dataprovider
+ * @typeparam K Type of key of the dataprovider
+ * @typeparam D Type of data from the dataprovider
  * @ojmetadata description "A waterfall layout displays heterogeneous data as a grid of cards."
  * @ojmetadata displayName "Waterfall Layout"
  * @ojmetadata main "ojs/ojwaterfalllayout"
@@ -782,8 +795,16 @@ var WaterfallLayout_1;
  *     ]
  *   }
  * }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/19/reference-api/oj.ojWaterfallLayout.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojWaterfallLayout.html"
  * @ojmetadata since "9.0.0"
+ * @ojlegacymetadata requirements [
+ *    {
+ *      type: "anyOf",
+ *      label: "accessibility",
+ *      properties: ["aria-label", "aria-labelledby"],
+ *      slots: [""]
+ *    }
+ * ]
  */
 let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Component {
     constructor() {
@@ -1019,6 +1040,33 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             resizeObserver.observe(root);
             this.resizeObserver = resizeObserver;
         }
+        // register a MutationObserver
+        if (this.props.tabManagement === 'always' && !this.mutationObserver) {
+            const config = { attributeFilter: ['tabindex'], childList: true, subtree: true };
+            const callback = (entries) => {
+                // The tabindex attribute might be modified multiple times
+                // before the MutationObserver invokes its callback.
+                // Lets accumulate the relevant nodes in a Set and
+                // update them after all entries are processed.
+                const nodesToUpdate = new Set();
+                for (const entry of entries) {
+                    // skip for current item
+                    if (entry.target.parentElement === this.currentItem)
+                        continue;
+                    // skip for actionable mode
+                    if (this.actionableMode && this.currentItem.contains(entry.target))
+                        continue;
+                    if (entry.type === 'attributes' && entry.target.tabIndex > -1) {
+                        nodesToUpdate.add(entry.target);
+                    }
+                }
+                nodesToUpdate.forEach((entry) => {
+                    disableAllFocusableElements(entry, false, false, true);
+                });
+            };
+            this.mutationObserver = new MutationObserver(callback);
+            this.mutationObserver.observe(root, config);
+        }
         makeFocusable({
             applyHighlight: true,
             setupHandlers: (focusInHandler, focusOutHandler) => {
@@ -1113,44 +1161,43 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
                     contentDiv.style.height = this.state.contentHeight + 'px';
                 }
             }
-            if (this.props.cardSizing === 'dynamic' &&
-                !this.cardResizeObserver &&
-                window['ResizeObserver']) {
-                this.cardResizeObserver = new window['ResizeObserver'](this._debounce((entries) => {
-                    let isCardSizeChanged = false;
-                    entries.forEach((entry, index) => {
-                        // assume all cards have same width, we can update the itemWidth only once if it's changed
-                        if (index === 0) {
-                            const width = entry.borderBoxSize[0].inlineSize;
-                            const itemWidth = this.contentHandler.getLayout().getItemWidth();
-                            if (itemWidth !== undefined && itemWidth !== width) {
-                                this.contentHandler.getLayout().setItemWidth(width);
+            if (this.props.cardSizing === 'dynamic') {
+                if (!this.cardResizeObserver && window['ResizeObserver']) {
+                    this.cardResizeObserver = new window['ResizeObserver'](this._debounce((entries) => {
+                        let isCardSizeChanged = false;
+                        entries.forEach((entry, index) => {
+                            // assume all cards have same width, we can update the itemWidth only once if it's changed
+                            if (index === 0) {
+                                const width = entry.borderBoxSize[0].inlineSize;
+                                const itemWidth = this.contentHandler.getLayout().getItemWidth();
+                                if (itemWidth !== undefined && itemWidth !== width) {
+                                    this.contentHandler.getLayout().setItemWidth(width);
+                                    isCardSizeChanged = true;
+                                }
+                            }
+                            // for each card, update the height in cache if it's changed
+                            const height = entry.borderBoxSize[0].blockSize;
+                            const key = this.contentHandler.getKey(entry.target);
+                            const cache = this.contentHandler.getLayout().getPosition(key);
+                            if (cache && cache.height !== height) {
+                                this.contentHandler.getLayout().setPosition(key, { ...cache, height });
                                 isCardSizeChanged = true;
                             }
-                        }
-                        // for each card, update the height in cache if it's changed
-                        const height = entry.borderBoxSize[0].blockSize;
-                        const key = this.contentHandler.getKey(entry.target);
-                        const cache = this.contentHandler.getLayout().getPosition(key);
-                        if (cache && cache.height !== height) {
-                            this.contentHandler.getLayout().setPosition(key, { ...cache, height });
-                            isCardSizeChanged = true;
-                        }
-                    });
-                    if (isCardSizeChanged) {
-                        const isRootWidthSame = this.prevRootWidth === undefined || this.prevRootWidth === this.state.width;
-                        if (isRootWidthSame) {
-                            // for the case that card content are loaded async and container/screen size doesn't change
+                        });
+                        if (isCardSizeChanged) {
+                            // recalcualte positions whenever the card size is changed
                             this.contentHandler.getLayout().recalculatePositions(0);
                             this.setState({ positions: this.contentHandler.getLayout().getPositions() });
                         }
-                        this.prevRootWidth = this.state.width;
-                    }
-                }, WaterfallLayout_1.debounceThreshold));
-                const items = this.getRootElement().querySelectorAll('.' + this.getItemStyleClass());
-                items.forEach((item) => {
-                    this.cardResizeObserver.observe(item);
-                });
+                    }, WaterfallLayout_1.debounceThreshold));
+                }
+                // observe every time to ensure all items are observed, just in case the items are not available at the beginning
+                if (this.cardResizeObserver) {
+                    const items = this.getRootElement().querySelectorAll('.' + this.getItemStyleClass());
+                    items.forEach((item) => {
+                        this.cardResizeObserver.observe(item);
+                    });
+                }
             }
         }
         else {
@@ -1187,6 +1234,10 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             this.cardResizeObserver.disconnect();
         }
         this.cardResizeObserver = null;
+        if (this.mutationObserver) {
+            this.mutationObserver.disconnect();
+        }
+        this.mutationObserver = null;
         // if the scroller is the element itself, then we will be fine as it will be cleanup when the DOM is removed
         // if the scroller is something else, then _getScroller() should not return null in that case
         if (this.scrollListener && this._getScroller() != null) {
@@ -1665,7 +1716,8 @@ WaterfallLayout.defaultProps = {
         maxCount: 500,
         scroller: null
     },
-    scrollPosition: { y: 0 }
+    scrollPosition: { y: 0 },
+    tabManagement: 'initial'
 };
 WaterfallLayout.minResizeWidthThreshold = 10;
 WaterfallLayout.debounceThreshold = 100;
@@ -1673,7 +1725,7 @@ WaterfallLayout._CSS_Vars = {
     showIndicatorDelay: '--oj-private-core-global-loading-indicator-delay-duration',
     cardAnimationDelay: '--oj-private-animation-global-card-entrance-delay-increment'
 };
-WaterfallLayout._metadata = { "properties": { "cardSizing": { "type": "string", "enumValues": ["fixed", "dynamic"] }, "data": { "type": "object" }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "string|Element" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "string|number" }, "offsetY": { "type": "number" } }, "writeback": true } }, "slots": { "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["scrollPosition"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "aria-labelledby", "aria-describedby"] } };
+WaterfallLayout._metadata = { "properties": { "cardSizing": { "type": "string", "enumValues": ["fixed", "dynamic"] }, "data": { "type": "object" }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "string|Element" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "string|number" }, "offsetY": { "type": "number" } }, "writeback": true }, "tabManagement": { "type": "string", "enumValues": ["always", "initial"] } }, "slots": { "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["scrollPosition"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "aria-labelledby", "aria-describedby"] } };
 WaterfallLayout = WaterfallLayout_1 = __decorate([
     customElement('oj-waterfall-layout')
 ], WaterfallLayout);

@@ -54,6 +54,8 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
     };
     /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
+    /** @deprecated since 20.0.0 - The trackResize property is deprecated. By default, the chart will automatically re-render in response to changes to its size. */
+    trackResize: 'on' | 'off';
     type?: ojChart.ChartType;
     valueFormats?: ojChart.ValueFormats;
     xAxis?: ojChart.XAxis;
@@ -62,11 +64,13 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
     zoomAndScroll?: 'delayedScrollOnly' | 'liveScrollOnly' | 'delayed' | 'live' | 'off';
     zoomDirection?: 'x' | 'y' | 'auto';
     translations: {
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
         labelClose?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         labelCountWithTotal?: string;
         /** @deprecated since 19.0.0 - Applications should override the translated string for the whole application and not just an individual element instance. */
         labelDataLabel?: string;
@@ -91,14 +95,19 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
         labelX?: string;
         labelY?: string;
         labelZ?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         stateCollapsed?: string;
         stateDrillable?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         stateExpanded?: string;
         stateHidden?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         stateIsolated?: string;
         stateLoaded?: string;
         stateLoading?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         stateMaximized?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         stateMinimized?: string;
         stateSelected?: string;
         stateUnselected?: string;
@@ -380,6 +389,9 @@ export namespace ojChart {
     type touchResponseChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I,
        C>["touchResponse"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I,
+       C>["trackResize"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type typeChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I, C>["type"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueFormatsChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I,
@@ -399,12 +411,6 @@ export namespace ojChart {
     // tslint:disable-next-line interface-over-type-literal
     type zoomDirectionChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I,
        C>["zoomDirection"]>;
-    //------------------------------------------------------------
-    // Start: generated events for inherited properties
-    //------------------------------------------------------------
-    // tslint:disable-next-line interface-over-type-literal
-    type trackResizeChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
-       null> = dvtBaseComponent.trackResizeChanged<ojChartSettableProperties<K, D, I, C>>;
     // tslint:disable-next-line interface-over-type-literal
     type AxisLine = {
         lineColor?: string;
@@ -418,12 +424,18 @@ export namespace ojChart {
     };
     // tslint:disable-next-line interface-over-type-literal
     type BoxPlotDefaults = {
+        /** @deprecated since 20.0.0 - The medianSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         medianSvgClassName?: string;
+        /** @deprecated since 20.0.0 - The medianSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         medianSvgStyle?: Partial<CSSStyleDeclaration>;
         whiskerEndLength?: string;
+        /** @deprecated since 20.0.0 - The whiskerEndSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         whiskerEndSvgClassName?: string;
+        /** @deprecated since 20.0.0 - The whiskerEndSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         whiskerEndSvgStyle?: Partial<CSSStyleDeclaration>;
+        /** @deprecated since 20.0.0 - The whiskerSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         whiskerSvgClassName?: string;
+        /** @deprecated since 20.0.0 - The whiskerSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         whiskerSvgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -988,6 +1000,7 @@ export namespace ojChart {
         funnelBackgroundColor?: string;
         groupSeparators?: GroupSeparatorDefaults;
         hideOverlappingLabels?: 'on' | 'off';
+        /** @deprecated since 20.0.0 - This is not recommended in the Redwood design system. */
         hoverBehaviorDelay?: number;
         lineStyle?: LineStyle;
         lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
@@ -1289,6 +1302,7 @@ export interface ojChartEventMap<K, D extends ojChart.DataItem<I> | any, I exten
     'timeAxisTypeChanged': JetElementCustomEvent<ojChart<K, D, I, C>["timeAxisType"]>;
     'tooltipChanged': JetElementCustomEvent<ojChart<K, D, I, C>["tooltip"]>;
     'touchResponseChanged': JetElementCustomEvent<ojChart<K, D, I, C>["touchResponse"]>;
+    'trackResizeChanged': JetElementCustomEvent<ojChart<K, D, I, C>["trackResize"]>;
     'typeChanged': JetElementCustomEvent<ojChart<K, D, I, C>["type"]>;
     'valueFormatsChanged': JetElementCustomEvent<ojChart<K, D, I, C>["valueFormats"]>;
     'xAxisChanged': JetElementCustomEvent<ojChart<K, D, I, C>["xAxis"]>;
@@ -1296,7 +1310,6 @@ export interface ojChartEventMap<K, D extends ojChart.DataItem<I> | any, I exten
     'yAxisChanged': JetElementCustomEvent<ojChart<K, D, I, C>["yAxis"]>;
     'zoomAndScrollChanged': JetElementCustomEvent<ojChart<K, D, I, C>["zoomAndScroll"]>;
     'zoomDirectionChanged': JetElementCustomEvent<ojChart<K, D, I, C>["zoomDirection"]>;
-    'trackResizeChanged': JetElementCustomEvent<ojChart<K, D, I, C>["trackResize"]>;
 }
 export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
    null> extends dvtBaseComponentSettableProperties {
@@ -1348,6 +1361,8 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
     };
     /** @deprecated since 18.0.0 - This attribute is deprecated and no longer recommended in the Redwood Design system. The "auto" value behavior will be applied instead. */
     touchResponse?: 'touchStart' | 'auto';
+    /** @deprecated since 20.0.0 - The trackResize property is deprecated. By default, the chart will automatically re-render in response to changes to its size. */
+    trackResize: 'on' | 'off';
     type?: ojChart.ChartType;
     valueFormats?: ojChart.ValueFormats;
     xAxis?: ojChart.XAxis;
@@ -1356,11 +1371,13 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
     zoomAndScroll?: 'delayedScrollOnly' | 'liveScrollOnly' | 'delayed' | 'live' | 'off';
     zoomDirection?: 'x' | 'y' | 'auto';
     translations: {
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         accessibleContainsControls?: string;
         componentName?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
         labelClose?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         labelCountWithTotal?: string;
         /** @deprecated since 19.0.0 - Applications should override the translated string for the whole application and not just an individual element instance. */
         labelDataLabel?: string;
@@ -1385,14 +1402,19 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
         labelX?: string;
         labelY?: string;
         labelZ?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         stateCollapsed?: string;
         stateDrillable?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         stateExpanded?: string;
         stateHidden?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         stateIsolated?: string;
         stateLoaded?: string;
         stateLoading?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         stateMaximized?: string;
+        /** @deprecated since 19.1.0 - This resource is not used by oj-chart. */
         stateMinimized?: string;
         stateSelected?: string;
         stateUnselected?: string;
@@ -2436,6 +2458,9 @@ export namespace ChartElement {
     type touchResponseChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
        null> = JetElementCustomEvent<ojChart<K, D, I, C>["touchResponse"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["trackResize"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type typeChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D,
        I, C>["type"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -2456,12 +2481,6 @@ export namespace ChartElement {
     // tslint:disable-next-line interface-over-type-literal
     type zoomDirectionChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
        null> = JetElementCustomEvent<ojChart<K, D, I, C>["zoomDirection"]>;
-    //------------------------------------------------------------
-    // Start: generated events for inherited properties
-    //------------------------------------------------------------
-    // tslint:disable-next-line interface-over-type-literal
-    type trackResizeChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
-       null> = dvtBaseComponent.trackResizeChanged<ojChartSettableProperties<K, D, I, C>>;
     // tslint:disable-next-line interface-over-type-literal
     type AxisLine = {
         lineColor?: string;
@@ -2475,12 +2494,18 @@ export namespace ChartElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type BoxPlotDefaults = {
+        /** @deprecated since 20.0.0 - The medianSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         medianSvgClassName?: string;
+        /** @deprecated since 20.0.0 - The medianSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         medianSvgStyle?: Partial<CSSStyleDeclaration>;
         whiskerEndLength?: string;
+        /** @deprecated since 20.0.0 - The whiskerEndSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         whiskerEndSvgClassName?: string;
+        /** @deprecated since 20.0.0 - The whiskerEndSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         whiskerEndSvgStyle?: Partial<CSSStyleDeclaration>;
+        /** @deprecated since 20.0.0 - The whiskerSvgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         whiskerSvgClassName?: string;
+        /** @deprecated since 20.0.0 - The whiskerSvgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         whiskerSvgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -3045,6 +3070,7 @@ export namespace ChartElement {
         funnelBackgroundColor?: string;
         groupSeparators?: ojChart.GroupSeparatorDefaults;
         hideOverlappingLabels?: 'on' | 'off';
+        /** @deprecated since 20.0.0 - This is not recommended in the Redwood design system. */
         hoverBehaviorDelay?: number;
         lineStyle?: ojChart.LineStyle;
         lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
@@ -3668,6 +3694,7 @@ export interface ChartIntrinsicProps extends Partial<Readonly<ojChartSettablePro
     ontimeAxisTypeChanged?: (value: ojChartEventMap<any, any, any, any>['timeAxisTypeChanged']) => void;
     ontooltipChanged?: (value: ojChartEventMap<any, any, any, any>['tooltipChanged']) => void;
     /** @deprecated since 18.0.0 */ ontouchResponseChanged?: (value: ojChartEventMap<any, any, any, any>['touchResponseChanged']) => void;
+    /** @deprecated since 20.0.0 */ ontrackResizeChanged?: (value: ojChartEventMap<any, any, any, any>['trackResizeChanged']) => void;
     ontypeChanged?: (value: ojChartEventMap<any, any, any, any>['typeChanged']) => void;
     onvalueFormatsChanged?: (value: ojChartEventMap<any, any, any, any>['valueFormatsChanged']) => void;
     onxAxisChanged?: (value: ojChartEventMap<any, any, any, any>['xAxisChanged']) => void;
@@ -3675,7 +3702,6 @@ export interface ChartIntrinsicProps extends Partial<Readonly<ojChartSettablePro
     onyAxisChanged?: (value: ojChartEventMap<any, any, any, any>['yAxisChanged']) => void;
     onzoomAndScrollChanged?: (value: ojChartEventMap<any, any, any, any>['zoomAndScrollChanged']) => void;
     onzoomDirectionChanged?: (value: ojChartEventMap<any, any, any, any>['zoomDirectionChanged']) => void;
-    ontrackResizeChanged?: (value: ojChartEventMap<any, any, any, any>['trackResizeChanged']) => void;
     children?: ComponentChildren;
 }
 export interface ChartGroupIntrinsicProps extends Partial<Readonly<ojChartGroupSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {

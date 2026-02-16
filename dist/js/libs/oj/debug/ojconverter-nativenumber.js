@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -258,6 +258,7 @@ define(['exports', 'ojs/ojconfig', 'ojs/ojconverter-preferences'], function (exp
     function parseInput(input, resolvedOptions, locale) {
         const localeData = getLocaleData(locale);
         const { decimal, group } = resolvedOptions.separators;
+        const dot = '.';
         const { negativeSign, positiveSign, percentSign, localToAsciiNumbers, exponentSeparator, negativeAccountingSign } = localeData;
         let exponent = 0;
         let buffer = '';
@@ -276,7 +277,14 @@ define(['exports', 'ojs/ojconfig', 'ojs/ojconverter-preferences'], function (exp
                     buffer += '-';
                     break;
                 case decimal:
-                    buffer += '.';
+                    buffer += dot;
+                    break;
+                case dot:
+                    // Periods are allowed as long as they are not used as the grouping separator and no 
+                    // other decimal separator has been found in the string.
+                    if (group !== dot && !input.includes(decimal)) {
+                        buffer += dot;
+                    }
                     break;
                 case exponentSeparator:
                 case 'E':
@@ -849,9 +857,15 @@ define(['exports', 'ojs/ojconfig', 'ojs/ojconverter-preferences'], function (exp
                 // options for the fraction part
                 const decOpts = {
                     useGrouping: false,
-                    minimumIntegerDigits: this._getMinimumIntegerDigitsForFraction(decimal.length)
+                    // JET-76469 - FOR KWD CURRENCY, THE ROUNDING OF PRICES IS WORKING INCORRECTLY (OJET)
+                    // Use `fractionPart` to determine the length of the decimal part as it is the
+                    // minimum fraction digits treated string.
+                    minimumIntegerDigits: this._getMinimumIntegerDigitsForFraction(fractionPart.length)
                 };
-                const fraction = this._formatDecimalPart(decOpts, fractionPart, decimal.length);
+                // JET-76469 - FOR KWD CURRENCY, THE ROUNDING OF PRICES IS WORKING INCORRECTLY (OJET)
+                // Use `fractionPart` to determine the length of the decimal part as it is the
+                // minimum fraction digits treated string.
+                const fraction = this._formatDecimalPart(decOpts, fractionPart, fractionPart.length);
                 // replace the 'placeholder' fraction part with the previously formatted real one
                 let formatted = '';
                 for (let part of parts) {
@@ -889,9 +903,15 @@ define(['exports', 'ojs/ojconfig', 'ojs/ojconverter-preferences'], function (exp
                 const fractionPart = this._getFractionPart(decimal, minimumFractionDigits);
                 const decPartOpts = {
                     useGrouping: false,
-                    minimumIntegerDigits: this._getMinimumIntegerDigitsForFraction(decLength)
+                    // JET-76469 - FOR KWD CURRENCY, THE ROUNDING OF PRICES IS WORKING INCORRECTLY (OJET)
+                    // Use `fractionPart` to determine the length of the decimal part as it is the
+                    // minimum fraction digits treated string.
+                    minimumIntegerDigits: this._getMinimumIntegerDigitsForFraction(fractionPart.length)
                 };
-                formattedFraction = this._formatDecimalPart(decPartOpts, fractionPart, decLength);
+                // JET-76469 - FOR KWD CURRENCY, THE ROUNDING OF PRICES IS WORKING INCORRECTLY (OJET)
+                // Use `fractionPart` to determine the length of the decimal part as it is the
+                // minimum fraction digits treated string.
+                formattedFraction = this._formatDecimalPart(decPartOpts, fractionPart, fractionPart.length);
             }
             // Replace both the 'fraction' and the 'integer' parts
             let formatted = '';

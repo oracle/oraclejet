@@ -53,7 +53,7 @@ const _UNSUPPORTED_IMPLICIT_BUSY_CONTEXT_MSG = 'The ImplicitBusyContext marker t
 const _INVALID_DYNAMIC_TEMPLATE_SLOTS_TYPE_PARAM_MSG = `The DynamicTemplateSlots type requires that its type parameter consist of one or more named type references.
   Refactor any inline type literals, mapped types, intersection types, etc. into a new type alias or interface definition, and reference it by name.
   This name will become a key in the 'dynamicSlots' element of the VComponent's generated metadata JSON.`;
-function generateSlotsMetadata(memberKey, slotPropDeclaration, metaUtilObj) {
+function generateSlotsMetadata(memberKey, slotPropDeclaration, memberSymbol, metaUtilObj) {
     let isSlot = false;
     const exportToAlias = metaUtilObj.progImportMaps.getMap(ImportMaps_1.IMAP.exportToAlias, slotPropDeclaration);
     const slotTypeInfo = getSlotTypeInfo(slotPropDeclaration, exportToAlias, metaUtilObj);
@@ -63,13 +63,13 @@ function generateSlotsMetadata(memberKey, slotPropDeclaration, metaUtilObj) {
         isSlot = true;
         switch (slotTypeInfo.typeName) {
             case `${exportToAlias.ComponentChildren}`:
-                updateSlotMetadata('', slotPropDeclaration, slotTypeInfo, false, false, metaUtilObj);
+                updateSlotMetadata('', slotPropDeclaration, memberSymbol, slotTypeInfo, false, false, metaUtilObj);
                 break;
             case `${exportToAlias.TemplateSlot}`:
-                updateSlotMetadata(memberKey, slotPropDeclaration, slotTypeInfo, true, false, metaUtilObj);
+                updateSlotMetadata(memberKey, slotPropDeclaration, memberSymbol, slotTypeInfo, true, false, metaUtilObj);
                 break;
             case `${exportToAlias.Slot}`:
-                updateSlotMetadata(memberKey, slotPropDeclaration, slotTypeInfo, false, false, metaUtilObj);
+                updateSlotMetadata(memberKey, slotPropDeclaration, memberSymbol, slotTypeInfo, false, false, metaUtilObj);
                 break;
             case `${exportToAlias.DynamicTemplateSlots}`:
                 if (metaUtilObj.dynamicSlotsInUse & _DYNAMIC_TEMPLATE_SLOT_DETECTED) {
@@ -84,7 +84,7 @@ function generateSlotsMetadata(memberKey, slotPropDeclaration, metaUtilObj) {
                     prop: memberKey,
                     isTemplate: 1
                 }, metaUtilObj);
-                updateSlotMetadata(memberKey, slotPropDeclaration, slotTypeInfo, true, true, metaUtilObj);
+                updateSlotMetadata(memberKey, slotPropDeclaration, memberSymbol, slotTypeInfo, true, true, metaUtilObj);
                 break;
             case `${exportToAlias.DynamicSlots}`:
                 if (metaUtilObj.dynamicSlotsInUse & _DYNAMIC_SLOT_DETECTED) {
@@ -124,7 +124,7 @@ function generateSlotsMetadata(memberKey, slotPropDeclaration, metaUtilObj) {
     }
     return isSlot;
 }
-function updateSlotMetadata(slotName, propDeclaration, slotTypeInfo, isTemplateSlot, isDynamicSlot, metaUtilObj) {
+function updateSlotMetadata(slotName, propDeclaration, memberSymbol, slotTypeInfo, isTemplateSlot, isDynamicSlot, metaUtilObj) {
     if (!isDynamicSlot) {
         let slotDataNode;
         let templateSlotInfo;
@@ -149,7 +149,7 @@ function updateSlotMetadata(slotName, propDeclaration, slotTypeInfo, isTemplateS
             : slotTypeInfo.hasImplicitBusyContext
                 ? { implicitBusyContext: true }
                 : {};
-        metaUtilObj.fullMetadata.slots[slotName] = Object.assign({}, getDtMetadataForSlot(propDeclaration, slotTypeInfo, metaUtilObj), slotTypeInfo.hasImplicitBusyContext && !isTemplateSlot ? { implicitBusyContext: true } : {});
+        metaUtilObj.fullMetadata.slots[slotName] = Object.assign({}, getDtMetadataForSlot(slotName, propDeclaration, memberSymbol, slotTypeInfo, metaUtilObj), slotTypeInfo.hasImplicitBusyContext && !isTemplateSlot ? { implicitBusyContext: true } : {});
         // NOTE: We can only get the template slot's render function signature
         // type alias, context type alias, and deprecation status AFTER
         // having populated its DT metadata
@@ -258,7 +258,7 @@ function updateSlotMetadata(slotName, propDeclaration, slotTypeInfo, isTemplateS
                     //    Property name will be used to determine the name of the renderer
                     //    function signature type
                     const dynamicTemplateSlotInfo = getTemplateSlotInfo(slotName, slotDataNode, metaUtilObj);
-                    let dt = getDtMetadataForSlot(propDeclaration, slotTypeInfo, metaUtilObj);
+                    let dt = getDtMetadataForSlot(slotName, propDeclaration, memberSymbol, slotTypeInfo, metaUtilObj);
                     let processedStatus;
                     if (dt.status) {
                         processedStatus = processDynamicTemplateSlotsStatus(key, dt.status);
@@ -380,21 +380,40 @@ function isMoreRecentDeprecation(candidate, current) {
                     (candidateMinor == currentMinor && candidatePatch > currentPatch))));
     }
 }
-function getDtMetadataForSlot(propDeclaration, slotTypeInfo, metaUtilObj) {
+function getDtMetadataForSlot(slotPropName, propDeclaration, memberSymbol, slotTypeInfo, metaUtilObj) {
     const declaration = propDeclaration;
     const dt = MetaUtils.getDtMetadata(declaration, MetaTypes.MDContext.SLOT, null, metaUtilObj);
+    let metaObj;
     const slotDataNode = getSlotDataNode(slotTypeInfo);
     if (slotDataNode) {
         const dataObj = getSlotData(slotDataNode, metaUtilObj);
+        if (slotPropName && slotPropName.length > 0 && slotTypeInfo.typeName !== 'Slot') {
+            const propertyPath = [slotPropName];
+            metaObj = TypeUtils.getAllMetadataForDeclaration(propDeclaration, MetaTypes.MDScope.DT, MetaTypes.MDContext.SLOT, propertyPath, memberSymbol, metaUtilObj, slotDataNode);
+            if (metaObj && metaObj.typeDefs) {
+                // loop through the typeObjects discovered during metadata discovery and attempt to create TypeDefs
+                const slotDataTypeStr = metaObj.rawType;
+                let stack = new Set();
+                if (slotDataTypeStr) {
+                    MetaUtils.createTypeDefinitionFromTypeDefObj(metaObj.typeDefs, metaUtilObj, stack);
+                }
+            }
+        }
         if (dataObj) {
             dt['data'] = dataObj;
-            // check to see if we have an exported type alias (apidoc metadata)
-            if (ts.isTypeReferenceNode(slotDataNode) &&
-                TypeUtils.isLocalExport(slotDataNode, metaUtilObj)) {
-                const typeDefName = (0, Utils_1.getTypeNameFromTypeReference)(slotDataNode);
+            if (metaObj && metaObj.reftype && metaObj.isApiDocSignature) {
                 dt['jsdoc'] = dt['jsdoc'] || {};
-                dt['jsdoc']['typedef'] = typeDefName;
+                dt['jsdoc']['reftype'] = metaObj.reftype;
             }
+            // // check to see if we have an exported type alias (apidoc metadata)
+            // if (
+            //   ts.isTypeReferenceNode(slotDataNode) &&
+            //   TypeUtils.isLocalExport(slotDataNode, metaUtilObj)
+            // ) {
+            //   const typeDefName = getTypeNameFromTypeReference(slotDataNode);
+            //   dt['jsdoc'] = dt['jsdoc'] || {};
+            //   dt['jsdoc']['typedef'] = typeDefName;
+            // }
         }
     }
     return dt;

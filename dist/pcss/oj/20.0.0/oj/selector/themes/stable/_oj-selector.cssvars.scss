@@ -1,0 +1,10 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../text-field/themes/stable/_oj-text-field.cssvars.scss";
+@import "../../../radio-checkbox/themes/stable/_oj-radiocheckbox.cssvars.scss";
+@import "../../../collection/themes/stable/_oj-collection.cssvars.scss";
+
+  @include module-include-once("stable.variables.selector") {
+
+  }

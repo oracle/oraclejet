@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1390,8 +1390,11 @@ ListViewDndContext.prototype._doReorderHelper = function (event, key, position) 
       throw error$1('invalid group key');
     }
   }
-
-  if ('groupIndex' in position && position.groupIndex) {
+  // Null check is required since position.groupIndex could also be 0
+  if ('groupIndex' in position && position.groupIndex != null) {
+    if (position.groupIndex < 0) {
+      throw error$1('invaild group index');
+    }
     let groupHeaderItems = this.listview.element[0].querySelectorAll(
       '.oj-listview-element > .' +
         this.listview.getItemElementStyleClass() +
@@ -1401,7 +1404,7 @@ ListViewDndContext.prototype._doReorderHelper = function (event, key, position) 
     for (let j = 0; j < position.groupIndex.length; j++) {
       groupHeader = groupHeaderItems[position.groupIndex[j]];
       if (groupHeader == null) {
-        throw error$1('invaild group index ');
+        throw error$1('invaild group index');
       }
       groupHeaderItems = groupHeader.querySelectorAll(
         '.' + this.listview.getItemElementStyleClass() + '> .' + this.listview.getGroupStyleClass()
@@ -1415,7 +1418,11 @@ ListViewDndContext.prototype._doReorderHelper = function (event, key, position) 
       movePosition = 'inside';
       destKey = this.listview.GetKey(groupHeader);
     }
-    if ('itemIndex' in position && position.itemIndex) {
+    // Null check is required since position.itemIndex could also be 0
+    if ('itemIndex' in position && position.itemIndex != null) {
+      if (position.itemIndex < 0) {
+        throw error$1('invalid itemIndex');
+      }
       for (let i = 0; i < leaves.length; i++) {
         if (position.itemIndex === i) {
           destKey = this.listview.GetKey(leaves[i]);
@@ -1442,8 +1449,11 @@ ListViewDndContext.prototype._doReorderHelper = function (event, key, position) 
       movePosition = 'after';
     }
   }
-
-  if (destKey == null && 'index' in position && position.index) {
+  // Null check is required since position.index could also be 0
+  if (destKey == null && 'index' in position && position.index != null) {
+    if (position.index < 0) {
+      throw error$1('invaild reference position');
+    }
     let items = this.listview.element[0].querySelectorAll(
       '.' + this.listview.GetStyleClass() + ' > .' + this.listview.getItemElementStyleClass()
     );

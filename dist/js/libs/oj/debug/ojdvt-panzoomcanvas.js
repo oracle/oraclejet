@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -307,8 +307,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       if (this._callbackObj.isPanningEnabled())
         this.TouchManager.processAssociatedTouchMove(event, 'panTouch');
 
-      //  Only prevent default browser behavior if panning or zooming is enabled
-      if (this._callbackObj.isZoomingEnabled() || this._callbackObj.isPanningEnabled())
+      //  Only prevent default browser behavior if panning is enabled and not a pinch zoom
+      if (
+        this._callbackObj.isPanningEnabled() ||
+        (this._callbackObj.isZoomingEnabled() && event.touches.length == 2)
+      )
         event.preventDefault();
     }
 

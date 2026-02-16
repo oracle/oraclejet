@@ -1,12 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 import { ArrayDataProviderImpl, getCapability, createOptimizedKeySet, createOptimizedKeyMap, getVal } from 'ojs/ojarraydataproviderimpl';
+import { getLocale } from 'ojs/ojconfig';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -121,7 +122,7 @@ import { ArrayDataProviderImpl, getCapability, createOptimizedKeySet, createOpti
  * @expose
  * @memberof MutableArrayDataProvider
  * @instance
- * @property {D[]} data
+ * @type {D[]}
  * @ojsignature {target: "Type", value: "D[]"}
  */
 
@@ -499,6 +500,7 @@ class MutableArrayDataProvider {
      * Apply sort comparators
      */
     _getSortComparator(sortCriteria) {
+        const collator = new Intl.Collator(getLocale(), { numeric: true, sensitivity: 'base' });
         return (x, y) => {
             const sortComparators = this.options != null ? this.options.sortComparators : null;
             let i, direction, attribute, comparator, xval, yval;
@@ -529,10 +531,7 @@ class MutableArrayDataProvider {
                         if (strY === 'null' || strY === 'undefined') {
                             return -1;
                         }
-                        compareResult = strX.localeCompare(strY, undefined, {
-                            numeric: true,
-                            sensitivity: 'base'
-                        });
+                        compareResult = collator.compare(strX, strY);
                     }
                     else {
                         if (strX === 'null' || strX === 'undefined') {
@@ -541,10 +540,7 @@ class MutableArrayDataProvider {
                         if (strY === 'null' || strY === 'undefined') {
                             return 1;
                         }
-                        compareResult = strY.localeCompare(strX, undefined, {
-                            numeric: true,
-                            sensitivity: 'base'
-                        });
+                        compareResult = collator.compare(strY, strX);
                     }
                     if (compareResult != 0) {
                         return compareResult;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -107,8 +107,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', '@oracle/or
   /**
    * <p>Returns a local ISO string provided a Date object.
    * This method can be used to convert a moment in time or a local ISO string into
-   * a local ISO string. It can also be used to convert any Date object into local ISO
-   * string.</p>
+   * a local to user's system ISO string. It can also be used to convert any Date object into local
+   * to user's system  ISO string.
+   * </p>
    * Examples below are where the local (user's system) time zone is UTC-06:00<br>
    * dateToLocalIso(new Date('2021-06-04T00:00:00-04:00')); -->'2021-06-03T22:00:00'<br>
    * dateToLocalIso(new Date('2021-06-04T02:30:00Z')); -->'2021-06-03T20:30:00'<br>
@@ -1181,8 +1182,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', '@oracle/or
   /**
    * <p>Returns a local ISO string provided a Date object.
    * This method can be used to convert a moment in time or a local ISO string into
-   * a local ISO string. It can also be used to convert any Date object into local ISO
-   * string.</p>
+   * a local to user's system ISO string. It can also be used to convert any Date object into local
+   * to user's system  ISO string.
+   * </p>
    * Examples below are where the local (user's system) time zone is UTC-06:00<br>
    * dateToLocalIso(new Date('2021-06-04T00:00:00-04:00')); -->'2021-06-03T22:00:00'<br>
    * dateToLocalIso(new Date('2021-06-04T02:30:00Z')); -->'2021-06-03T20:30:00'<br>
@@ -1233,18 +1235,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', '@oracle/or
    * Returns the timezone offset between UTC and the local time in Etc/GMT[+-]h syntax.
    * The offset is positive if the local timezone is behind UTC and negative if
    * it is ahead. The offset range is between Etc/GMT-14 and Etc/GMT+12 (UTC-12 and UTC+14)
-   *
-   * @example <caption>The local time is UTC-7 (Pacific Daylight Time)</caption>
-   * oj.IntlConverterUtils.getLocalTimeZoneOffset() will return the string "Etc/GMT+7"
-   *
-   * @example <caption>The local time is UTC+1 (Central European Standard Time)</caption>
-   * oj.IntlConverterUtils.getLocalTimeZoneOffset() will return the string "Etc/GMT-1"
    * <p>
    * NOTE: Since JET v12.0.0, the IntlDateTimeConverter will fallback to the local system time zone
    * if no timeZone is in the options.
    * So instead of using this API to get a local timezone offset to pass the converter,
    * you should not set any timeZone in the converter options.
    * </p>
+   * @example <caption>The local time is UTC-7 (Pacific Daylight Time)</caption>
+   * oj.IntlConverterUtils.getLocalTimeZoneOffset() will return the string "Etc/GMT+7"
+   *
+   * @example <caption>The local time is UTC+1 (Central European Standard Time)</caption>
+   * oj.IntlConverterUtils.getLocalTimeZoneOffset() will return the string "Etc/GMT-1"
    * @export
    * @param {Date=} date If date is undefined, it returns the local timezone offset of the current
    * date, otherwise it returns the local timezone offset at that given date.

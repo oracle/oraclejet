@@ -134,6 +134,7 @@ export interface ojComboboxMany<K, D, V = any> extends ojCombobox<V[], ojCombobo
     /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<V[]>>;
     converter: Converter<V> | null;
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     maximumResultCount: number;
     minLength: number;
@@ -288,6 +289,7 @@ export interface ojComboboxManySettableProperties<K, D, V = any> extends ojCombo
     /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<V[]>>;
     converter: Converter<V> | null;
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     maximumResultCount: number;
     minLength: number;
@@ -332,6 +334,7 @@ export interface ojComboboxOne<K, D, V = any> extends ojCombobox<V, ojComboboxOn
     asyncValidators: Array<AsyncValidator<V>>;
     converter: Converter<V> | null;
     filterOnOpen: 'none' | 'rawValue';
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     maximumResultCount: number;
     minLength: number;
@@ -496,6 +499,7 @@ export interface ojComboboxOneSettableProperties<K, D, V = any> extends ojCombob
     asyncValidators: Array<AsyncValidator<V>>;
     converter: Converter<V> | null;
     filterOnOpen: 'none' | 'rawValue';
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     maximumResultCount: number;
     minLength: number;
@@ -542,6 +546,7 @@ export interface ojSelect<V, SP extends ojSelectSettableProperties<V, SV>, SV = 
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     addEventListener<T extends keyof ojSelectEventMap<V, SP, SV>>(type: T, listener: (this: HTMLElement, ev: ojSelectEventMap<V, SP, SV>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
@@ -649,12 +654,14 @@ export interface ojSelectSettableProperties<V, SV = V> extends editableValueSett
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
 }
 export interface ojSelectSettablePropertiesLenient<V, SV = V> extends Partial<ojSelectSettableProperties<V, SV>> {
     [key: string]: any;
 }
 export interface ojSelectMany<K, D, V = any> extends ojSelect<V[], ojSelectManySettableProperties<K, D, V>> {
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     maximumResultCount: number;
     minimumResultsForSearch: number;
@@ -799,6 +806,7 @@ export interface ojSelectManyEventMap<K, D, V = any> extends ojSelectEventMap<V[
     'validChanged': JetElementCustomEvent<ojSelectMany<K, D, V>["valid"]>;
 }
 export interface ojSelectManySettableProperties<K, D, V = any[]> extends ojSelectSettableProperties<V[]> {
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     maximumResultCount: number;
     minimumResultsForSearch: number;
@@ -842,6 +850,7 @@ export interface ojSelectManySettablePropertiesLenient<K, D, V = any[]> extends 
 }
 /** @deprecated since 8.1.0 - Suggested alternative: oj-select-single. */
 export interface ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSettableProperties<K, D, V>> {
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     maximumResultCount: number;
     minimumResultsForSearch: number;
@@ -985,6 +994,7 @@ export interface ojSelectOneEventMap<K, D, V = any> extends ojSelectEventMap<V, 
     'validChanged': JetElementCustomEvent<ojSelectOne<K, D, V>["valid"]>;
 }
 export interface ojSelectOneSettableProperties<K, D, V = any> extends ojSelectSettableProperties<V> {
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     maximumResultCount: number;
     minimumResultsForSearch: number;
@@ -1485,7 +1495,7 @@ export interface ComboboxManyIntrinsicProps extends Partial<Readonly<ojComboboxM
     onojAnimateStart?: (value: ojComboboxManyEventMap<any, any, any>['ojAnimateStart']) => void;
     /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojComboboxManyEventMap<any, any, any>['asyncValidatorsChanged']) => void;
     onconverterChanged?: (value: ojComboboxManyEventMap<any, any, any>['converterChanged']) => void;
-    onlabelledByChanged?: (value: ojComboboxManyEventMap<any, any, any>['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojComboboxManyEventMap<any, any, any>['labelledByChanged']) => void;
     onmaximumResultCountChanged?: (value: ojComboboxManyEventMap<any, any, any>['maximumResultCountChanged']) => void;
     onminLengthChanged?: (value: ojComboboxManyEventMap<any, any, any>['minLengthChanged']) => void;
     onoptionRendererChanged?: (value: ojComboboxManyEventMap<any, any, any>['optionRendererChanged']) => void;
@@ -1521,7 +1531,7 @@ export interface ComboboxOneIntrinsicProps extends Partial<Readonly<ojComboboxOn
     /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojComboboxOneEventMap<any, any, any>['asyncValidatorsChanged']) => void;
     onconverterChanged?: (value: ojComboboxOneEventMap<any, any, any>['converterChanged']) => void;
     onfilterOnOpenChanged?: (value: ojComboboxOneEventMap<any, any, any>['filterOnOpenChanged']) => void;
-    onlabelledByChanged?: (value: ojComboboxOneEventMap<any, any, any>['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojComboboxOneEventMap<any, any, any>['labelledByChanged']) => void;
     onmaximumResultCountChanged?: (value: ojComboboxOneEventMap<any, any, any>['maximumResultCountChanged']) => void;
     onminLengthChanged?: (value: ojComboboxOneEventMap<any, any, any>['minLengthChanged']) => void;
     onoptionRendererChanged?: (value: ojComboboxOneEventMap<any, any, any>['optionRendererChanged']) => void;
@@ -1553,7 +1563,7 @@ export interface SelectManyIntrinsicProps extends Partial<Readonly<ojSelectManyS
     onojAnimateEnd?: (value: ojSelectManyEventMap<any, any, any>['ojAnimateEnd']) => void;
     /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojSelectManyEventMap<any, any, any>['ojAnimateStart']) => void;
-    onlabelledByChanged?: (value: ojSelectManyEventMap<any, any, any>['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojSelectManyEventMap<any, any, any>['labelledByChanged']) => void;
     onmaximumResultCountChanged?: (value: ojSelectManyEventMap<any, any, any>['maximumResultCountChanged']) => void;
     onminimumResultsForSearchChanged?: (value: ojSelectManyEventMap<any, any, any>['minimumResultsForSearchChanged']) => void;
     onoptionRendererChanged?: (value: ojSelectManyEventMap<any, any, any>['optionRendererChanged']) => void;
@@ -1584,7 +1594,7 @@ export interface SelectOneIntrinsicProps extends Partial<Readonly<ojSelectOneSet
     onojAnimateEnd?: (value: ojSelectOneEventMap<any, any, any>['ojAnimateEnd']) => void;
     /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojSelectOneEventMap<any, any, any>['ojAnimateStart']) => void;
-    onlabelledByChanged?: (value: ojSelectOneEventMap<any, any, any>['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojSelectOneEventMap<any, any, any>['labelledByChanged']) => void;
     onmaximumResultCountChanged?: (value: ojSelectOneEventMap<any, any, any>['maximumResultCountChanged']) => void;
     onminimumResultsForSearchChanged?: (value: ojSelectOneEventMap<any, any, any>['minimumResultsForSearchChanged']) => void;
     onoptionRendererChanged?: (value: ojSelectOneEventMap<any, any, any>['optionRendererChanged']) => void;

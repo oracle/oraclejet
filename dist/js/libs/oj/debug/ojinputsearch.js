@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -360,8 +360,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
      * <p>
      * It is up to the application developer to set an aria-label on the Input Search.
      * </p>
-     * @typeparam {object} K Type of key of the dataprovider
-     * @typeparam {object} D Type of data from the dataprovider
+     * @typeparam K Type of key of the dataprovider
+     * @typeparam D Type of data from the dataprovider
      * @ojmetadata description "An Input Search is an input field that the user can type search text into."
      * @ojmetadata displayName "Input Search"
      * @ojmetadata main "ojs/ojinputsearch"
@@ -379,7 +379,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
      *     "minColumns": "2"
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/19/reference-api/oj.ojInputSearch.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojInputSearch.html"
      * @ojmetadata propertyLayout [
      *   {
      *     "propertyGroup": "common",
@@ -1272,7 +1272,16 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             }
             else {
                 var dropdownElem = props.element.element;
-                dropdownElem.css(pos);
+                // Make a local position css object
+                let localPositionCss = { ...pos };
+                var availableSpace = ojpopupcore.PositionUtils.calcAvailablePopupSize(pos, props);
+                // constrain the dropdown size to the available space
+                localPositionCss.maxHeight = availableSpace.height;
+                // don't change maxWidth if pos.left is < 0 because it can result in the dropdown flickering
+                if (pos.left >= 0) {
+                    localPositionCss.maxWidth = availableSpace.width;
+                }
+                dropdownElem.css(localPositionCss);
                 this._updateState({ dropdownAbove: props.vertical === 'bottom' });
             }
         }
@@ -1284,7 +1293,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
             const isMobile = agentInfo.os === oj.AgentUtils.OS.ANDROID ||
                 agentInfo.os === oj.AgentUtils.OS.IOS ||
                 agentInfo.os === oj.AgentUtils.OS.WINDOWSPHONE;
-            const inputType = 'search';
+            const inputType = isMobile ? 'search' : 'text';
             const autocompleteFloatingElem = state.autocompleteFloatingText
                 ? this._renderAutocompleteFloatingText(state.autocompleteFloatingText, displayValue)
                 : null;

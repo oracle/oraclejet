@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -869,7 +869,13 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
     // the dateStyleShortYear option to the NativeDateTimeConverter.
     const mo = ojconverterPreferences.getMergedDateTimePreferencesWithOptions(mappedOptions);
 
-    if (mo && mo.isoStrFormat === 'local' && mo.twoDigitYearStart=== 1 && mo.timeZone !== undefined && mo.timeStyle === undefined) {
+    if (
+      mo &&
+      mo.isoStrFormat === 'local' &&
+      mo.twoDigitYearStart === 1 &&
+      mo.timeZone !== undefined &&
+      mo.timeStyle === undefined
+    ) {
       // This is to fix an issue with our input-date component with year < 100 and User Preferences with timeZone.
       // If we have a timeZone then our getOffset calculation is off with year < 100, causes our dates to be off by 1 day.
       // To fix this, we remove the explicitly set timezone.
@@ -1092,7 +1098,14 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    * </p>
    *
    * @property {string=} timeZone - The possible values of the timeZone property are valid IANA
-   * timezone IDs. If the users want to pass an offset, they can use one of the Etc/GMT timezone IDs.
+   * timezone IDs such as 'America/Los_Angeles' or 'Europe/Paris'.
+   *
+   * <p>
+   * As of JET 12.0, if the <code>timeZone</code> is not specified and <code>isoStrFormat</code> is set
+   * to <code>'offset'</code> or <code>'zulu'</code>, the converter will automatically fall back to
+   * the system (browser) time zone.
+   * </p>
+   *
    * <p style='padding-left: 5px;'>
    * <table class="generic-table styling-table">
    *   <thead>
@@ -1108,10 +1121,8 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
    *     </tr>
    *     <tr>
    *       <td>Offset</td>
-   *       <td>Etc/GMT-8. The offset is positive if the local time zone is behind UTC and negative if it is ahead.
-   *           For example Etc/GMT-8 is equivalent to UTC+8.
-   *           The offset range is between Etc/GMT-14 and Etc/GMT+12 (UTC-12 and UTC+14).
-   *           Etc/GMT only supports +/-hh and not +/-hh:mm.</td>
+   *       <td>+08:00, -05:00. The offset is positive if the local time zone is ahead of UTC and negative if it is behind.
+   *           The offset range is between UTC-12:00 and UTC+14:00.</td>
    *     </tr>
    *   </tbody>
    * </table>

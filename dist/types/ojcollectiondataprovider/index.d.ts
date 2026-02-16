@@ -1,5 +1,6 @@
 import { Collection } from '../ojmodel';
 import { DataProvider, FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, FetchListResult, FetchListParameters } from '../ojdataprovider';
+/** @deprecated since 20.0.0 - CollectionDataProvider has been deprecated, use RESTDataProvider instead. */
 declare class CollectionDataProvider<K, D> implements DataProvider<K, D> {
     constructor(collection: Collection);
     addEventListener(eventType: string, listener: EventListener): void;

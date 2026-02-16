@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -6149,6 +6149,13 @@ oj.__registerWidget(
               // caller will set valid option, since usually we go on to call validators after
               // converters and don't want to set pending->valid->pending again.
             } catch (error) {
+              // JET-76177 Issue with OJ-INPUT-TEXT component BigDecimalStringConverter/NativeNumberConverter throwing untranslable message on invalid user input
+              if (error && error.cause === 'userInput') {
+                const cvtError = getTranslatedString(
+                  'oj-converter.number.parseError.detail'
+                );
+                throw new Error(cvtError, { cause: error.cause });
+              }
               throw error;
             }
           }

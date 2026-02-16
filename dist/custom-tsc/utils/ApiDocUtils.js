@@ -25,11 +25,25 @@ function generateDoclets(metaUtilObj) {
         events,
         slots
     };
+    createTypeParameterMapping(metaUtilObj);
     metaUtilObj['context'] = context;
     createTypeDefs(metaUtilObj);
     createTypeDefsFromSignature(metaUtilObj);
     genericSignatureFixupForTypedefs(metaUtilObj);
     context.properties = getPropertyDoclets(metaUtilObj.fullMetadata.properties, topContainerDoclet, metaUtilObj);
+    // check if we have styleVariableSet metadata
+    const styleVariableSet = (metaUtilObj.fullMetadata['jsdoc'] && metaUtilObj.fullMetadata['jsdoc']['styleVariableSet']) ||
+        [];
+    // if we do, add the style variable set doclets to the context
+    if (styleVariableSet && Array.isArray(styleVariableSet) && styleVariableSet.length > 0) {
+        context.properties = context.properties.concat(getStyleVariableSetFromMetadata(styleVariableSet, metaUtilObj, topContainerDoclet));
+    }
+    // check if we have styleClasses metadata
+    const styleClasses = (metaUtilObj.fullMetadata['jsdoc'] && metaUtilObj.fullMetadata['jsdoc']['styleClasses']) || [];
+    // if we do, add the style class doclets to the context
+    if (styleClasses && Array.isArray(styleClasses) && styleClasses.length > 0) {
+        context.properties = context.properties.concat(getStyleClassesFromMetadata(metaUtilObj, styleClasses, topContainerDoclet, null));
+    }
     context.methods = getMethodDoclets(metaUtilObj, topContainerDoclet);
     context.events = getEventDoclets(metaUtilObj, topContainerDoclet);
     context.slots = getSlotDoclets(metaUtilObj, topContainerDoclet);
@@ -108,6 +122,7 @@ function getResourceDoclet(metaUtilObj) {
  */
 function getClassDoclet(metaUtilObj) {
     let vcompdoclet;
+    let isCoreJet = metaUtilObj.fullMetadata.type === 'core';
     let custElemName = metaUtilObj.fullMetadata.name;
     // we will consider namespace to be the first part of the dash separated custom element name
     let namespace = custElemName.split('-')[0].toLowerCase().trim();
@@ -116,7 +131,11 @@ function getClassDoclet(metaUtilObj) {
     if (pack) {
         namespace = pack;
     }
-    const vcompName = metaUtilObj.componentName;
+    // if we are processing a core JET vcomponent, the namespace will be 'oj'
+    if (isCoreJet) {
+        namespace = 'oj';
+    }
+    const vcompName = isCoreJet ? `oj${metaUtilObj.componentName}` : metaUtilObj.componentName;
     const vcompLongName = `${namespace}.${vcompName}`;
     vcompdoclet = {
         id: vcompLongName,
@@ -153,7 +172,7 @@ function getClassDoclet(metaUtilObj) {
     vcompdoclet.ojtsvcomponent = true;
     let signExpr = {
         target: 'Type',
-        value: `interface ${vcompdoclet['domInterface']}${typeParamsDeclaration} extends JetElement<${vcompName}ElementSettableProperties${typeParamsRef}>`
+        value: `interface ${vcompdoclet['domInterface']}${typeParamsDeclaration} extends JetElement<${metaUtilObj.componentName}ElementSettableProperties${typeParamsRef}>`
     };
     if (typeParamsDeclaration) {
         signExpr['genericParameters'] = metaUtilObj.fullMetadata['jsdoc']['typeparams'];
@@ -168,9 +187,17 @@ function getClassDoclet(metaUtilObj) {
         // TODO: Only pass 'antiPattern' type through once supported in API Doc (JET-58988)
         vcompdoclet.tsdeprecated = metaUtilObj.fullMetadata.status.filter((statObj) => statObj.type !== 'antiPattern');
     }
-    if (metaUtilObj.fullMetadata.extension && metaUtilObj.fullMetadata.extension['themes']) {
-        vcompdoclet.ojunsupportedthemes =
-            metaUtilObj.fullMetadata.extension['themes']['unsupportedThemes'];
+    if (metaUtilObj.fullMetadata.extension) {
+        if (metaUtilObj.fullMetadata.extension['themes']) {
+            vcompdoclet.ojunsupportedthemes =
+                metaUtilObj.fullMetadata.extension['themes']['unsupportedThemes'];
+        }
+        // we need to copy the extension keys as well, needed by the audit metadata
+        const supportedKeys = Object.keys(metaUtilObj.fullMetadata.extension).filter((key) => key !== 'webelement');
+        vcompdoclet['extension'] = {};
+        if (supportedKeys && Array.isArray(supportedKeys)) {
+            supportedKeys.forEach((key) => (vcompdoclet['extension'][key] = metaUtilObj.fullMetadata.extension[key]));
+        }
     }
     const dirName = vcompdoclet.meta.path;
     const arrDirs = path_1.default.resolve(dirName).split(path_1.default.sep);
@@ -291,6 +318,7 @@ function getObservedGlobalProps(metaUtilObj, topContainerDoclet) {
                     type: { names: ['string'] }
                 });
             }
+            doclet.ojvalueskeeporder = true;
         }
         handleEnumValues(prop, doclet);
         doclets.push(doclet);
@@ -328,12 +356,16 @@ function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased 
             type: { names: [prop['type']] }
         };
         doclet.optional = prop['optional'];
+        if (prop.displayName) {
+            doclet.ojdisplayname = prop.displayName;
+        }
         if (prop.writeback) {
             doclet.ojwriteback = true;
         }
         if (prop.readOnly) {
             doclet.readonly = true;
         }
+        setShortDescription(doclet, prop);
         doclet.description = prop.description || '';
         if (prop['jsdoc']) {
             doclet.description = prop['jsdoc']['description'] || doclet.description;
@@ -367,9 +399,22 @@ function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased 
             if (status && status.some((stat) => stat.target === 'propertyValue')) {
                 setStatusOnPropertyValues(doclet, status);
             }
+            doclet.ojvalueskeeporder = true;
         }
+        addExampleToDoclet(doclet, prop);
         if (prop.value !== undefined) {
             handlePropertyDefaultValue(prop, doclet);
+        }
+        else if (metaUtilObj.defaultPropToNode) {
+            // if the property is optional and doesn't have a explicit default value, we can check the defaultPropToNode structure in metaUtilObj
+            // where we map each property name to its initializer NodeObject. If the initializer is not undefined, we can set the default value
+            // to the initializer's text value when the property has an object type and does not have sub-properties. For an ObjectLiteral initializer,
+            // we set the default value on it's subproperties (see processComplexProperties function), we can't set the defaultvalue on the top level property.
+            //
+            let initializerNode = metaUtilObj.defaultPropToNode[key];
+            if (initializerNode && prop.type === 'object' && !prop.properties) {
+                doclet.defaultvalue = initializerNode.getText();
+            }
         }
         typeIsTsSignature = handlePropertyType(prop, doclet, metaUtilObj, null);
         handleEnumValues(prop, doclet);
@@ -385,6 +430,117 @@ function getPropertyDoclets(properties, parentDoclet, metaUtilObj, isArrayBased 
     }
     return doclets;
 }
+function getStyleVariableSetFromMetadata(styleVariableSet, metaUtilObj, parentDoclet) {
+    let doclets = [];
+    // if we have a style variable set, we need to create a property doclet for each style variable set
+    if (styleVariableSet && Array.isArray(styleVariableSet)) {
+        styleVariableSet.forEach((svs) => {
+            const propName = svs.name;
+            const propLongName = `${parentDoclet.longname}.${propName}`;
+            let doclet = {
+                id: propLongName,
+                name: propName,
+                description: svs.description || '',
+                memberof: parentDoclet.longname,
+                meta: metaUtilObj.fullMetadata['jsdoc']['meta'],
+                kind: 'member',
+                longname: propLongName
+            };
+            if (svs.displayName) {
+                doclet['ojdisplayname'] = svs.displayName;
+            }
+            doclet.ojstylevariables =
+                svs.styleVariables && svs.styleVariables.length > 0 ? svs.styleVariables : [];
+            doclet.ojstylevariableset = doclet.name;
+            doclet.isstylevariableset = true;
+            doclets.push(doclet);
+        });
+    }
+    return doclets;
+}
+function getStyleClassesFromMetadata(metaUtilObj, styleClasses, parentDoclet, qParentName) {
+    let styleDoclets = [];
+    // if we have a styleClasses, we need to create a property doclet for each style class
+    if (Array.isArray(styleClasses)) {
+        styleClasses.forEach((styleClass) => {
+            const propName = qParentName ? `${qParentName}.${styleClass.name}` : styleClass.name;
+            const propLongName = `${parentDoclet.longname}.${propName}`;
+            let doclet = {
+                id: propLongName,
+                name: propName,
+                description: styleClass.description || '',
+                memberof: parentDoclet.longname,
+                meta: metaUtilObj.fullMetadata['jsdoc']['meta'],
+                kind: 'member',
+                longname: propLongName
+            };
+            if (styleClass.status) {
+                const statuses = styleClass.status;
+                statuses.forEach((status) => {
+                    if (!status.type || status.type !== 'antiPattern') {
+                        doclet.tsdeprecated = doclet.tsdeprecated ?? [];
+                        doclet.tsdeprecated.push(status);
+                    }
+                    else {
+                        doclet['ojdeprecated'] = doclet['ojdeprecated'] ?? [];
+                        doclet['ojdeprecated'].push(status);
+                    }
+                });
+            }
+            if (styleClass.extension && styleClass.extension['jet']) {
+                let example = styleClass.extension['jet'].example;
+                if (example) {
+                    doclet['tsexamples'] = doclet['tsexamples'] || [];
+                    doclet['tsexamples'].push(example);
+                }
+            }
+            if (styleClass.scope) {
+                doclet['ojstylescope'] = styleClass.scope;
+            }
+            if (styleClass.kind === 'class') {
+                doclet['ojstyleclass'] = doclet.name;
+                doclet['isstyleclass'] = true;
+            }
+            else if (styleClass.kind === 'set') {
+                doclet['ojstyleset '] = doclet.name;
+                doclet['isstyleset'] = true;
+                if (styleClass.styleRelation) {
+                    doclet['ojstylerelation'] = styleClass.styleRelation;
+                }
+                if (styleClass['styleSelector']) {
+                    doclet['ojstyleselector'] = styleClass['styleSelector'];
+                }
+                if (styleClass.styleItems) {
+                    let styleItemsArr = getStyleClassesFromMetadata(metaUtilObj, styleClass.styleItems, parentDoclet, doclet.name);
+                    if (styleItemsArr && styleItemsArr.length > 0) {
+                        styleItemsArr.forEach((item) => {
+                            doclet['ojstylesetitems'] = doclet['ojstylesetitems'] || [];
+                            doclet['ojstylesetitems'].push(item.name);
+                        });
+                        styleDoclets = styleDoclets.concat(styleItemsArr);
+                    }
+                }
+            }
+            else if (styleClass.kind === 'template') {
+                doclet['ojstyletemplate'] = doclet.name;
+                doclet['isstyletemplate'] = true;
+                if (styleClass.styleSelector) {
+                    doclet['ojstyleselector'] = styleClass.styleSelector;
+                }
+                if (styleClass.tokens) {
+                    // just create the ojstyletemplatetokens array and reference StylingTemplateTokens class
+                    // which is going to be present when these doclets gets merged with the jsdoc created doclets
+                    styleClass.tokens.forEach((token) => {
+                        doclet['ojstyletemplatetokens'] = doclet['ojstyletemplatetokens'] || [];
+                        doclet['ojstyletemplatetokens'].push(`StylingTemplateTokens.${token.name}`);
+                    });
+                }
+            }
+            styleDoclets.push(doclet);
+        });
+    }
+    return styleDoclets;
+}
 /**
  * Generates an array of JSDoc type method doclets for a given custom element VComponent.
  * @param metaUtilObj Utility object that collects custom element related metadata during the compilation process.
@@ -396,6 +552,10 @@ function getMethodDoclets(metaUtilObj, parentDoclet) {
     let doclets = [];
     for (const key in methods) {
         const method = methods[key];
+        if (method.visible === false) {
+            // skip methods that are not visible
+            continue;
+        }
         const name = key;
         const longName = `${parentDoclet.longname}#${name}`;
         let rtnDescription;
@@ -412,6 +572,10 @@ function getMethodDoclets(metaUtilObj, parentDoclet) {
         if (parentDoclet.ojmodulecontainer) {
             // this is an exported utility function so mark as being exported (for jsdoc)
             doclet.ojexports = true;
+        }
+        setShortDescription(doclet, method);
+        if (method.displayName) {
+            doclet.ojdisplayname = method.displayName;
         }
         doclet.description = method.description || '';
         // make sure we clone original params because later on we will modify it to comply with the jsdoc doclet structure
@@ -438,6 +602,7 @@ function getMethodDoclets(metaUtilObj, parentDoclet) {
                 });
             }
         }
+        addExampleToDoclet(doclet, method);
         // update the parameter type signature with any typedef if applicable
         if (doclet.params) {
             doclet.params = doclet.params.map((param) => {
@@ -504,10 +669,11 @@ function processSlots(slots, parentDoclet, metaUtilObj, isDynamic = false) {
             longname: longName,
             scope: 'instance'
         };
-        if (isDynamic) {
-            doclet.dynamicSlot = true;
+        if (slot.displayName) {
+            doclet.ojdisplayname = slot.displayName;
         }
         if (isDynamic) {
+            doclet.dynamicSlot = true;
             // for description look up metadata attached to the dynamicSlotsInfo items
             const contextItem = metaUtilObj.dynamicSlotsInfo.find((item) => item.key === key);
             const metadata = contextItem?.metadata;
@@ -520,6 +686,9 @@ function processSlots(slots, parentDoclet, metaUtilObj, isDynamic = false) {
                 }
                 else {
                     doclet.description = metadata['description'] || '';
+                    if (doclet.description.length > 0) {
+                        doclet.ojshortdesc = doclet.ojshortdesc;
+                    }
                 }
                 if (metadata['jsdoc'] && metadata['jsdoc']['ignore']) {
                     doclet.ojhidden = true;
@@ -543,19 +712,71 @@ function processSlots(slots, parentDoclet, metaUtilObj, isDynamic = false) {
                 }
             }
         }
+        setShortDescription(doclet, slot);
         doclet.optional = slot['optional'];
         if (slot.status) {
             doclet.tsdeprecated = slot.status.filter((stat) => stat.type === 'deprecated');
         }
-        doclet.ojchild = isDefault;
-        doclet.ojslot = !isDefault;
+        addExampleToDoclet(doclet, slot);
+        if (isDefault) {
+            doclet.ojchild = true;
+        }
+        else {
+            doclet.ojslot = true;
+        }
         // only do this for dynamic template slots
         if (isDynamic && name !== 'DynamicSlot') {
             doclet.ojtemplateslotprops = key;
         }
-        // get the data properties if there are any (these are documented the props on $current in case of templateSlots)
+        // get the data properties if there are any (these are documenting the props on $current in case of templateSlots)
         if (slot.data) {
-            doclet.properties = processComplexProperties(slot.data, metaUtilObj);
+            // if we have a reftype, then we will not process the data properties
+            // but we will create a link to the reftype
+            if (slot['jsdoc'] && slot['jsdoc']['reftype']) {
+                // validate the reftype
+                let slotDataSignature = slot['jsdoc']['reftype'];
+                let slotDataTypeDef = slot['jsdoc']['reftype'];
+                let typeIsTypedef = false;
+                if (Array.isArray(metaUtilObj.typeDefinitions)) {
+                    metaUtilObj.typeDefinitions.forEach((td) => {
+                        let regex = new RegExp('\\b' + td.name + '(?!\\.)\\b');
+                        if (regex.test(slotDataSignature)) {
+                            typeIsTypedef = true;
+                            // if it's not a Core Jet type replace the original type ref name with the qualified name
+                            if (!td.coreJetModule ||
+                                getTopContainerDoclet(metaUtilObj).ojmodule === td.coreJetModule[td.name]) {
+                                //replace the TypeDef name in the original signature with the qualified name
+                                //[oj.ojStreamList.ItemTemplateContext]{@link oj.ojStreamList.ItemTemplateContext})
+                                let qualifiedName = `${getTopContainerDoclet(metaUtilObj).id}.${td.name}`;
+                                let qualifiedNameLink = `[${qualifiedName}]{@link ${qualifiedName}}`;
+                                slotDataSignature = slotDataSignature.replace(new RegExp('\\b' + td.name + '\\b', 'g'), qualifiedNameLink);
+                                slotDataTypeDef = slotDataTypeDef.replace(new RegExp('\\b' + td.name + '\\b', 'g'), qualifiedName);
+                            }
+                            else {
+                                let qualifiedName = `${td.coreJetModule[td.name]}.${td.name}`;
+                                let qualifiedNameLink = `[${td.name}]{@link ${qualifiedName}}`;
+                                slotDataSignature = slotDataSignature.replace(new RegExp('\\b' + td.name + '\\b', 'g'), qualifiedNameLink);
+                                slotDataTypeDef = slotDataTypeDef.replace(new RegExp('\\b' + td.name + '\\b', 'g'), qualifiedName);
+                            }
+                        }
+                    });
+                    if (typeIsTypedef) {
+                        // Remove generics from the slotDataTypeDef (e.g., "TypeName<T>" -> "TypeName")
+                        doclet.ojtemplateslotprops = slotDataTypeDef.replace(/<[^>]*>/g, '');
+                        // remove generics from the slotDataSignature as well for the description
+                        slotDataSignature = slotDataSignature.replace(/<[^>]*>/g, '');
+                        doclet.description =
+                            `<p style="background-color: RGB(var(--oj-palette-info-rgb-30)); border: 2px solid #ddd"><strong>Note:</strong> When the template is executed for each item, it will have access to the binding context containing the following properties: ${slotDataSignature}</p>` +
+                                doclet.description;
+                    }
+                    else {
+                        doclet.properties = processComplexProperties(slot.data, metaUtilObj);
+                    }
+                }
+            }
+            else {
+                doclet.properties = processComplexProperties(slot.data, metaUtilObj);
+            }
         }
         doclets = doclets.concat(doclet);
     }
@@ -583,19 +804,100 @@ function getEventDoclets(metaUtilObj, parentDoclet) {
             longname: longName,
             scope: 'instance'
         };
+        if (event.bubbles) {
+            doclet.bubbles = true;
+        }
+        setShortDescription(doclet, event);
+        if (event.displayName) {
+            doclet.ojdisplayname = event.displayName;
+        }
         doclet.description = event.description || '';
         if (event['jsdoc']) {
             doclet.description = event['jsdoc']['description'] || doclet.description;
             if (event['jsdoc']['ignore']) {
                 doclet.ojhidden = true;
             }
+            if (event['jsdoc']['since']) {
+                doclet.since = event['jsdoc']['since'];
+            }
         }
         if (event.status) {
             doclet.tsdeprecated = event.status.filter((stat) => stat.type === 'deprecated');
         }
+        addExampleToDoclet(doclet, event);
         // get the data properties if there are any (these are documented the props on $current in case of templateSlots)
         if (event.detail) {
-            doclet.properties = processComplexProperties(event.detail, metaUtilObj);
+            // if we have a reftype, then we will not process the data properties
+            // but we will create a link to the reftype
+            if (event['jsdoc'] && event['jsdoc']['reftype']) {
+                // validate the reftype
+                let eventDetailSignature = event['jsdoc']['reftype'];
+                const cancelableEvent = event.cancelable || false;
+                // If the event is cancelable, there is only one detail type. In case the detail type is expressed as a Typedef,
+                // we will need to include the 'accept' generated property in the detail type's property list
+                let typeIsTypedef = false;
+                if (Array.isArray(metaUtilObj.typeDefinitions)) {
+                    metaUtilObj.typeDefinitions.forEach((td) => {
+                        let regex = new RegExp('\\b' + td.name + '(?!\\.)\\b');
+                        if (regex.test(eventDetailSignature)) {
+                            typeIsTypedef = true;
+                            let qualifiedName = '';
+                            // if it's not a Core Jet type replace the original type ref name with the qualified name
+                            if (!td.coreJetModule ||
+                                getTopContainerDoclet(metaUtilObj).ojmodule === td.coreJetModule[td.name]) {
+                                //replace the TypeDef name in the original signature with the qualified name
+                                //[oj.ojStreamList.ItemTemplateContext]{@link oj.ojStreamList.ItemTemplateContext})
+                                qualifiedName = `${getTopContainerDoclet(metaUtilObj).id}.${td.name}`;
+                                let qualifiedNameLink = `[${qualifiedName}]{@link ${qualifiedName}}`;
+                                eventDetailSignature = eventDetailSignature.replace(new RegExp('\\b' + td.name + '\\b', 'g'), qualifiedNameLink);
+                            }
+                            else {
+                                qualifiedName = `${td.coreJetModule[td.name]}.${td.name}`;
+                                let qualifiedNameLink = `[${td.name}]{@link ${qualifiedName}}`;
+                                eventDetailSignature = eventDetailSignature.replace(new RegExp('\\b' + td.name + '\\b', 'g'), qualifiedNameLink);
+                            }
+                            if (cancelableEvent) {
+                                let eventDetailTypeDef = getTypeDefDefinitionById(qualifiedName, metaUtilObj);
+                                if (eventDetailTypeDef && eventDetailTypeDef.kind === 'typedef') {
+                                    // If does not exists yet, append the 'accept' property to the list of properties that defines the Typedef of the event detail.
+                                    eventDetailTypeDef.properties = eventDetailTypeDef.properties || [];
+                                    let acceptPropExists = eventDetailTypeDef.properties.some((prop) => prop.name === 'accept');
+                                    if (!acceptPropExists) {
+                                        const acceptProp = {
+                                            name: 'accept',
+                                            tstype: [
+                                                {
+                                                    target: 'Type',
+                                                    value: '(acceptPromise:Promise<void>) => void',
+                                                    for: 'accept',
+                                                    jsdocOverride: true
+                                                }
+                                            ],
+                                            description: event.detail['accept']['description'],
+                                            type: { names: ['function'] }
+                                        };
+                                        eventDetailTypeDef.properties.push(acceptProp);
+                                    }
+                                }
+                                // break out of forEach
+                                return;
+                            }
+                        }
+                    });
+                    if (typeIsTypedef) {
+                        eventDetailSignature = eventDetailSignature.replace(/</g, '&lt;');
+                        doclet.description =
+                            `<p style="background-color: RGB(var(--oj-palette-info-rgb-30)); border: 2px solid #ddd"><strong>Note:</strong> The event detail contains the following properties: ${eventDetailSignature}</p>` +
+                                doclet.description;
+                    }
+                    else {
+                        doclet.properties = processComplexProperties(event.detail, metaUtilObj);
+                    }
+                }
+            }
+            else {
+                doclet.properties = processComplexProperties(event.detail, metaUtilObj);
+            }
         }
         doclets = doclets.concat(doclet);
     }
@@ -612,13 +914,14 @@ function processComplexProperties(properties, metaUtilObj) {
         if (prop['jsdoc']) {
             mappedProp['description'] = prop['jsdoc']['description'] || mappedProp['description'];
             if (prop['jsdoc']['ignore']) {
-                mappedProp['ojhidden'] = true;
+                continue; // skip this property if it is marked as ignored
+                //mappedProp['ojhidden'] = true;
             }
         }
         mappedProp['optional'] = prop['optional'];
         typeIsTypedef = handlePropertyType(prop, mappedProp, metaUtilObj, key);
         handleEnumValues(prop, mappedProp);
-        if (prop.value) {
+        if (prop.value !== undefined) {
             handlePropertyDefaultValue(prop, mappedProp);
         }
         if (prop.status) {
@@ -638,7 +941,10 @@ function processComplexProperties(properties, metaUtilObj) {
                     type: { names: ['string'] }
                 });
             }
+            mappedProp['ojvalueskeeporder'] = true;
         }
+        addExampleToDoclet(mappedProp, prop);
+        setShortDescription(mappedProp, prop);
         if (prop.type == 'Array<object>') {
             let subprops = prop.properties;
             if (prop['extension'] &&
@@ -678,6 +984,16 @@ function createTypedef(typeDefMD, metaUtilObj, parent) {
         }
         let genericTypeParams = typeDefMD['genericsDeclaration'];
         if (genericTypeParams) {
+            // if we have generic type params we need to see if we have to map to the component's generic type params
+            const genericsArray = typeDefMD['genericsTypeParamsArray'] ?? [];
+            if (metaUtilObj['typeParameterMapping']) {
+                genericsArray.forEach(tp => {
+                    // propsClassTypeParamsArray contains the type parameters declared at the Props type level, while 
+                    // propsTypeParamsArray contains the type parameters declared at the component level.
+                    let mappedParamName = metaUtilObj['typeParameterMapping'][tp] || tp;
+                    genericTypeParams = genericTypeParams.replace(new RegExp('\\b' + tp + '\\b', 'g'), mappedParamName);
+                });
+            }
             doclet.tsgenerictype = {
                 target: 'Type',
                 value: genericTypeParams,
@@ -912,9 +1228,14 @@ function handlePropertyType(prop, doclet, metaUtilObj, propName) {
     if (prop['reftype'] && prop.isApiDocSignature) {
         // see if we can replace in the reftype prop signature the type with the longname of a typedef that we already created
         let propSignature = prop['reftype'];
+        let isTypeParameter = false;
+        if (isTypeParameterType(prop, metaUtilObj)) {
+            isTypeParameter = true;
+            propSignature = propSignature.replace(new RegExp('\\b' + prop['reftype'] + '\\b', 'g'), metaUtilObj['typeParameterMapping'][prop['reftype']]);
+        }
         let coreJetModule;
         let qualifiedNames = new Set();
-        if (Array.isArray(metaUtilObj.typeDefinitions)) {
+        if (!isTypeParameter && Array.isArray(metaUtilObj.typeDefinitions)) {
             metaUtilObj.typeDefinitions.forEach((td) => {
                 let regex = new RegExp('\\b' + td.name + '(?!\\.)\\b');
                 if (regex.test(propSignature)) {
@@ -982,6 +1303,9 @@ function handleTypeDefDefaultValues(prop, typeDef) {
     }
 }
 function handlePropertyDefaultValue(prop, doclet) {
+    const isPropertyStringType = (prop) => {
+        return prop['type'] === 'string' || /\bstring\b/.test(prop['type']);
+    };
     let defaultValue = prop.value;
     // try to remove any TS type casting from default value like "somval as sometype"
     if (typeof defaultValue === 'string') {
@@ -992,13 +1316,14 @@ function handlePropertyDefaultValue(prop, doclet) {
     }
     else if (Array.isArray(defaultValue)) {
         if (prop['type'] === 'Array<string>') {
-            defaultValue = `[${defaultValue.map((x) => `"${x}"`).join(', ')}]`;
+            defaultValue = `[${defaultValue.map((x) => `'${x}'`).join(', ')}]`;
         }
         else {
             defaultValue = `[${defaultValue.join(', ')}]`;
         }
     }
-    doclet['defaultvalue'] = prop['type'] === 'string' ? `"${defaultValue}"` : defaultValue;
+    doclet['defaultvalue'] =
+        isPropertyStringType(prop) && defaultValue != null ? `'${defaultValue}'` : defaultValue;
 }
 function handleEnumValues(prop, doclet) {
     if (prop.enumValues) {
@@ -1230,5 +1555,40 @@ function isExportedType(doclet, options) {
             exportedTypes && exportedTypes.findIndex((_type) => _typeNamesMatch(_type, doclet.name)) > -1;
     }
     return isExported;
+}
+function addExampleToDoclet(doclet, source) {
+    if (source['jsdoc'] && source['jsdoc']['example']) {
+        doclet['tsexamples'] = doclet['tsexamples'] || [];
+        source['jsdoc']['example'].forEach((example) => {
+            doclet['tsexamples'].push(example);
+        });
+    }
+}
+function setShortDescription(doclet, source) {
+    const shortDesc = source.description ?? '';
+    const longDesc = source['jsdoc'] && source['jsdoc']['description'] ? source['jsdoc']['description'] : '';
+    if (shortDesc.length > 0 && longDesc.length >= 0 && shortDesc !== longDesc) {
+        doclet.ojshortdesc = source.description;
+    }
+}
+/**
+ * Creates a map of the generics used at the component level to the generics used at the props level.
+ * This is needed to be able to replace the generic type parameters in the typedef signatures (using Props generics)
+ * with the correct ones when we are creating the typedefs for the props.
+ * @param metaUtilObj The utility object that collected all component related metadata during the metadataTransform
+ */
+function createTypeParameterMapping(metaUtilObj) {
+    if (metaUtilObj.classTypeParamsNodes && metaUtilObj.propsClassTypeParamsArray && metaUtilObj.propsTypeParamsArray) {
+        const mapping = {};
+        metaUtilObj.propsClassTypeParamsArray.forEach((tp, idx) => {
+            mapping[tp] = metaUtilObj.propsTypeParamsArray[idx];
+        });
+        if (Object.keys(mapping).length > 0) {
+            metaUtilObj['typeParameterMapping'] = mapping;
+        }
+    }
+}
+function isTypeParameterType(prop, metaUtilObj) {
+    return prop.type === 'any' && prop.reftype && prop.isApiDocSignature && metaUtilObj['typeParameterMapping'] && metaUtilObj['typeParameterMapping'][prop.reftype];
 }
 //# sourceMappingURL=ApiDocUtils.js.map
