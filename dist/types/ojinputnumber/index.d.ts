@@ -15,6 +15,7 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
     /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<number>>;
     autocomplete: 'on' | 'off' | string;
+    /** @deprecated since 20.0.0 - This is not recommended for accessibility reasons. */
     autofocus: boolean;
     converter: Converter<number>;
     displayOptions?: {
@@ -24,6 +25,7 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     max: number | null;
     min: number | null;
@@ -195,6 +197,7 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
     /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<number>>;
     autocomplete: 'on' | 'off' | string;
+    /** @deprecated since 20.0.0 - This is not recommended for accessibility reasons. */
     autofocus: boolean;
     converter: Converter<number>;
     displayOptions?: {
@@ -204,6 +207,7 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     max: number | null;
     min: number | null;
@@ -340,10 +344,10 @@ export interface InputNumberIntrinsicProps extends Partial<Readonly<ojInputNumbe
     onojAnimateStart?: (value: ojInputNumberEventMap['ojAnimateStart']) => void;
     /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojInputNumberEventMap['asyncValidatorsChanged']) => void;
     onautocompleteChanged?: (value: ojInputNumberEventMap['autocompleteChanged']) => void;
-    onautofocusChanged?: (value: ojInputNumberEventMap['autofocusChanged']) => void;
+    /** @deprecated since 20.0.0 */ onautofocusChanged?: (value: ojInputNumberEventMap['autofocusChanged']) => void;
     onconverterChanged?: (value: ojInputNumberEventMap['converterChanged']) => void;
     ondisplayOptionsChanged?: (value: ojInputNumberEventMap['displayOptionsChanged']) => void;
-    onlabelledByChanged?: (value: ojInputNumberEventMap['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojInputNumberEventMap['labelledByChanged']) => void;
     onmaxChanged?: (value: ojInputNumberEventMap['maxChanged']) => void;
     onminChanged?: (value: ojInputNumberEventMap['minChanged']) => void;
     onplaceholderChanged?: (value: ojInputNumberEventMap['placeholderChanged']) => void;

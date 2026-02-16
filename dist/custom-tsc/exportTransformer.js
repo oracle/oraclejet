@@ -47,7 +47,7 @@ let allMonoPacks;
 //const collectedReexports = new Map<string, ReexportedType[]>();
 /**
  * Transformer run after the metadata transformer and before the code
- * is compiled to JavaScript so we can add any missing import statements.
+ * is compiled to JavaScript so we can add any missing export statements.
  * @param buildOptions
  */
 function moduleExportTransformer(program, buildOptions) {

@@ -1,0 +1,59 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+
+
+@include module-include-once("redwood.variables.train.scoped") {
+  
+  /* train                      */
+  /* -------------------------- */
+.oj-color-invert {
+  // default
+  --oj-train-button-bg-color:                  transparent;
+  --oj-train-button-border-color:              var(--oj-core-border-color-enabled);
+  --oj-train-button-text-color:                var(--oj-core-text-color-secondary);
+  --oj-train-label-color:                      var(--oj-core-text-color-secondary);
+  --oj-train-connector-color:                  var(--oj-core-border-color-enabled);
+
+ 
+  // visited
+  --oj-train-button-bg-color-visited:          rgb(var(--oj-palette-success-rgb-120));
+  --oj-train-button-border-color-visited:      transparent;
+  --oj-train-button-text-color-visited:        var(--oj-core-neutral-contrast);
+  --oj-train-label-color-visited:              var(--oj-core-text-color-primary);
+ 
+  // hover
+  --oj-train-button-bg-color-hover:            transparent;
+  --oj-train-button-border-color-hover:        var(--oj-core-border-color-enabled);
+  --oj-train-button-text-color-hover:          var(--oj-core-text-color-secondary);
+  --oj-train-step-bg-color-hover:              var(--oj-core-bg-color-hover);
+ 
+  // active
+  --oj-train-button-bg-color-active:           transparent;
+  --oj-train-button-border-color-active:       var(--oj-core-border-color-enabled);
+  --oj-train-button-text-color-active:         var(--oj-core-text-color-secondary);;
+  --oj-train-step-bg-color-active:             var(--oj-core-bg-color-active);
+ 
+  // selected
+  --oj-train-button-bg-color-selected:         rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-train-button-border-color-selected:     transparent;
+  --oj-train-button-text-color-selected:       rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-train-label-color-selected:             var(--oj-core-text-color-primary);
+  --oj-train-connector-color-selected:         var(--oj-core-border-color-enabled);
+ 
+  // disabled
+  --oj-train-button-bg-color-disabled:         transparent;
+  --oj-train-button-border-color-disabled:     var(--oj-core-color-disabled-2);
+  --oj-train-button-text-color-disabled:       var(--oj-core-text-color-disabled);
+  --oj-train-label-color-disabled:             var(--oj-core-text-color-disabled);
+ 
+ }
+
+  :root.oj-scale-sm {
+    --oj-train-label-font-size:                 var(--oj-typography-body-md-font-size);
+  }
+
+  :root.oj-scale-md {
+    --oj-train-label-font-size:                 var(--oj-typography-body-md-font-size);
+  }
+}

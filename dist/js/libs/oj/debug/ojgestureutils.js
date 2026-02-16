@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -144,7 +144,6 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
     var _touchMoveListener;
     var _isSelectionPending;
     var _getIsSelectionPending;
-    let isMenuOpenedTouching;
 
     // Does 2 things:
     // 1) Prevents native context menu / callout from appearing in Mobile Safari.  E.g. for links, native CM has "Open in New Tab".
@@ -323,6 +322,7 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
       document.addEventListener('selectstart', _browserSelectStartListener, { passive: true });
 
       if (isIOS) {
+        /* This code was only used from JET 17 -> JET 19 as we decided to remove it because it conflicts with the VoiceOver triple tap to open a ContextMenu */
         let _iosOpenedContextMenu;
         let _timeNeededForSelection;
         let _iosStartTime;
@@ -433,23 +433,6 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
         });
         return;
       }
-    } else {
-      const _touchEndListener = function () {
-        setTimeout(() => {
-          if (isMenuOpenedTouching) {
-            if (contextMenu) {
-              // We check if focus was moved for some reason from menu. Looks like focus is moved when anchor is the last one that has focus after touch end
-              if (!contextMenu.contains(document.activeElement)) {
-                contextMenu.focus();
-              }
-            }
-            isMenuOpenedTouching = false;
-          }
-        }, 1000);
-      };
-      // eslint-disable-next-line no-param-reassign
-      rootNode._touchEndListener = _touchEndListener;
-      document.addEventListener('touchend', _touchEndListener, { passive: false });
     }
     // At least some of the time, the pressHold gesture also fires a click event same as a short tap.  Prevent that here.
     var _clickListener = function (event) {
@@ -489,7 +472,6 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
         contextMenuPressHoldTimer = setTimeout( // @HTMLUpdateOK
           () => {
             launch.bind(undefined, event, 'touch', true)();
-            isMenuOpenedTouching = true;
           },
           pressHoldThreshold
         );

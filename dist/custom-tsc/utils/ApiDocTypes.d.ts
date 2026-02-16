@@ -12,6 +12,8 @@ type JsDocMemberDocletType = {
     since?: MetadataTypes.ComponentMetadata['since'];
     tsdeprecated?: MetadataTypes.Status[];
     displayName?: string;
+    ojdisplayname?: string;
+    ojshortdesc?: string;
 };
 export type JsDocComponentType = JsDocMemberDocletType & {
     kind: 'class';
@@ -43,14 +45,18 @@ export type JsDocUtilityType = JsDocMemberDocletType & {
 export type JsDocPropertyType = JsDocMemberDocletType & {
     kind: 'member';
     optional?: boolean;
-    type: JsDocType;
+    type?: JsDocType;
     defaultvalue?: string;
     ojwriteback?: boolean;
     readonly?: boolean;
     dynamicSlotDef?: string;
     ojvalues?: JsDocPropValueType[];
+    ojvalueskeeporder?: boolean;
     properties?: JsDocPropertyType[];
     observedGlobalProp?: boolean;
+    ojstylevariables?: MetadataTypes.StyleVariable[];
+    ojstylevariableset?: string;
+    isstylevariableset?: boolean;
 };
 export type JsDocMethodType = JsDocMemberDocletType & {
     kind: 'function';
@@ -60,6 +66,7 @@ export type JsDocMethodType = JsDocMemberDocletType & {
 };
 export type JsDocEventType = JsDocMemberDocletType & {
     kind: 'event';
+    bubbles?: boolean;
     properties?: JsDocPropertyType[];
 };
 export type JsDocTypeDefType = JsDocMemberDocletType & {
@@ -101,6 +108,12 @@ export type JsDocParamsType = {
     optional?: boolean;
     defaultvalue?: string;
     tstype?: JsDocTsType[];
+};
+export type JsDocStyleVariableSetType = {
+    name: string;
+    displayName: string;
+    description?: string;
+    styleVariables: MetadataTypes.StyleVariable[];
 };
 type JsDocType = {
     names: string[];

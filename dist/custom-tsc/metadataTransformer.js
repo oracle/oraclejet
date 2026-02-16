@@ -194,7 +194,11 @@ function generateClassElementMetadata(classNode, progImportMaps) {
     // We use the build options to pass metadata and other info across transformers
     // (including the dtsTransformer)
     storeMetadataInBuildOptions(metaUtilObj);
-    writeMetaFiles(metaUtilObj);
+    // write out component metadata files for this component only when this transformer process is NOT 
+    // for emiting API Doc metadata only
+    if (!_BUILD_OPTIONS.emitMetadataOnly) {
+        writeMetaFiles(metaUtilObj);
+    }
     return MetaUtils.addMetadataToClassNode(vcompClassInfo, metaUtilObj.rtMetadata);
 }
 function generateFunctionalElementMetadata(functionalCompNode, progImportMaps) {
@@ -256,7 +260,11 @@ function generateFunctionalElementMetadata(functionalCompNode, progImportMaps) {
         // We use the build options to pass metadata and other info across transformers
         // (including the dtsTransformer)
         storeMetadataInBuildOptions(metaUtilObj);
-        writeMetaFiles(metaUtilObj);
+        // write out component metadata files for this component only when this transformer process is NOT 
+        // for emiting API Doc metadata only
+        if (!_BUILD_OPTIONS.emitMetadataOnly) {
+            writeMetaFiles(metaUtilObj);
+        }
         // Return an updated functional VComponent node, where additional arguments are injected
         // into the component registration call, etc.
         return MetaUtils.updateFunctionalVCompNode(functionalCompNode, vcompFunctionInfo, metaUtilObj);

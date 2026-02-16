@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -10,7 +10,7 @@ import ojSet from 'ojs/ojset';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 import { BehaviorSubject } from 'ojs/ojobservable';
 import ojMap from 'ojs/ojmap';
-import { SortUtils, DataProviderMutationEvent, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
+import { SortUtils, DataProviderMutationEvent, DataProviderRefreshEvent, DataProviderUtils } from 'ojs/ojdataprovider';
 import { KeySetImpl } from 'ojs/ojkeyset';
 
 /**
@@ -282,6 +282,11 @@ class FlattenedTreeDataProviderView {
         var _a;
         this.dataProvider = dataProvider;
         this.options = options;
+        // current is last requested
+        this._currentCriteria = {
+            sortCriteria: null,
+            filterCriterion: null
+        };
         // cache is last returned by a fetch call for implicit sort cases
         this._cacheInstantiated = false;
         this._createAddItem = (event, insertIndex) => {
@@ -584,8 +589,9 @@ class FlattenedTreeDataProviderView {
                     const parentKey = event.parentKey;
                     if ((parentKey === null || (this._isExpanded(parentKey) && this._containsKey(parentKey))) &&
                         !this._containsKey(key) &&
-                        (!this._currentFilterCriteria ||
-                            (this._currentFilterCriteria && this._currentFilterCriteria.filter(event.data)))) {
+                        (!this._currentCriteria.filterCriterion ||
+                            (this._currentCriteria.filterCriterion &&
+                                this._currentCriteria.filterCriterion.filter(event.data)))) {
                         const children = this._getChildrenFromCacheByParentKey(parentKey);
                         const sortComparator = SortUtils.getNaturalSortCriteriaComparator(this._cacheSortCriteria);
                         let added = false;
@@ -629,8 +635,9 @@ class FlattenedTreeDataProviderView {
                         // doesn't already exist
                         !this._containsKey(key) &&
                         // isn't filtered out
-                        (!this._currentFilterCriteria ||
-                            (this._currentFilterCriteria && this._currentFilterCriteria.filter(event.data)))) {
+                        (!this._currentCriteria.filterCriterion ||
+                            (this._currentCriteria.filterCriterion &&
+                                this._currentCriteria.filterCriterion.filter(event.data)))) {
                         const beforeKey = event.beforeKey;
                         if (beforeKey != null) {
                             // if the before key is in the cache add before it, otherwise pass until next loop
@@ -687,9 +694,9 @@ class FlattenedTreeDataProviderView {
                         eventsInBucket.forEach((eventInBucket) => {
                             const key = eventInBucket.key;
                             if (!this._containsKey(key) &&
-                                (!this._currentFilterCriteria ||
-                                    (this._currentFilterCriteria &&
-                                        this._currentFilterCriteria.filter(eventInBucket.data)))) {
+                                (!this._currentCriteria.filterCriterion ||
+                                    (this._currentCriteria.filterCriterion &&
+                                        this._currentCriteria.filterCriterion.filter(eventInBucket.data)))) {
                                 const indexFromParent = eventInBucket.index;
                                 let item;
                                 if (indexFromParent === 0) {
@@ -736,9 +743,9 @@ class FlattenedTreeDataProviderView {
                 const key = event.key;
                 if ((parentKey === null || (this._isExpanded(parentKey) && this._containsKey(parentKey))) &&
                     !this._containsKey(key) &&
-                    (!this._currentFilterCriteria ||
-                        (this._currentFilterCriteria &&
-                            this._currentFilterCriteria.filter(event.data) &&
+                    (!this._currentCriteria.filterCriterion ||
+                        (this._currentCriteria.filterCriterion &&
+                            this._currentCriteria.filterCriterion.filter(event.data) &&
                             this._isKeyDone(parentKey)))) {
                     if (parentKey === null) {
                         this._pushAddToCache(event);
@@ -785,33 +792,6 @@ class FlattenedTreeDataProviderView {
         let operationAddEventDetail = null;
         let operationRemoveEventDetail = null;
         let operationUpdateEventDetail = null;
-        const addEvent = mutationEventDetail.detail.add;
-        if (addEvent && addEvent.data && addEvent.data.length) {
-            const addMetadataArray = [];
-            const addDataArray = [];
-            const addIndexArray = [];
-            const addBeforeKeys = [];
-            const addParentKeys = [];
-            const addAfterKeySet = new Set();
-            const addKeySet = new Set();
-            this._processAddEvent(addEvent);
-            // at this point the cache is up to date
-            // we would now loop the events to see how to translate the event keys to their place in the cache
-            addEvent.keys.forEach((key) => {
-                const { index, item } = this._getItemAndIndexByKey(key);
-                if (item != null) {
-                    addDataArray.push(item.data);
-                    addMetadataArray.push(item.metadata);
-                    addIndexArray.push(index);
-                    addParentKeys.push(item.metadata.parentKey);
-                    addKeySet.add(key);
-                    addBeforeKeys.push(this._getKeyByIndex(index + 1));
-                }
-            });
-            if (addKeySet.size > 0) {
-                operationAddEventDetail = new this.DataProviderAddOperationEventDetail(this, addKeySet, addAfterKeySet, addBeforeKeys, addMetadataArray, addDataArray, addIndexArray);
-            }
-        }
         const removeEvent = mutationEventDetail.detail.remove;
         if (removeEvent && removeEvent.data && removeEvent.data.length) {
             const removeKeys = removeEvent.metadata.map((metadata) => {
@@ -839,6 +819,33 @@ class FlattenedTreeDataProviderView {
             });
             if (removeKeySet.size > 0) {
                 operationRemoveEventDetail = new this.DataProviderOperationEventDetail(this, removeKeySet, removeMetadataArray, removeDataArray, removeIndexArray);
+            }
+        }
+        const addEvent = mutationEventDetail.detail.add;
+        if (addEvent && addEvent.data && addEvent.data.length) {
+            const addMetadataArray = [];
+            const addDataArray = [];
+            const addIndexArray = [];
+            const addBeforeKeys = [];
+            const addParentKeys = [];
+            const addAfterKeySet = new Set();
+            const addKeySet = new Set();
+            this._processAddEvent(addEvent);
+            // at this point the cache is up to date
+            // we would now loop the events to see how to translate the event keys to their place in the cache
+            addEvent.keys.forEach((key) => {
+                const { index, item } = this._getItemAndIndexByKey(key);
+                if (item != null) {
+                    addDataArray.push(item.data);
+                    addMetadataArray.push(item.metadata);
+                    addIndexArray.push(index);
+                    addParentKeys.push(item.metadata.parentKey);
+                    addKeySet.add(key);
+                    addBeforeKeys.push(this._getKeyByIndex(index + 1));
+                }
+            });
+            if (addKeySet.size > 0) {
+                operationAddEventDetail = new this.DataProviderAddOperationEventDetail(this, addKeySet, addAfterKeySet, addBeforeKeys, addMetadataArray, addDataArray, addIndexArray);
             }
         }
         const updateEvent = mutationEventDetail.detail.update;
@@ -952,11 +959,14 @@ class FlattenedTreeDataProviderView {
         const iteratorFunction = async () => {
             return await this._taskQueue.enqueue(async () => {
                 this._fetchSize = params != null ? params.size : -1;
-                if (!this._isSameCriteria(params?.sortCriteria, params?.filterCriterion)) {
+                if (!DataProviderUtils.isSameFetchParameters(this._currentCriteria, params, [
+                    'sortCriteria',
+                    'filterCriterion'
+                ])) {
                     this._clearCaches();
                 }
-                this._currentSortCriteria = params?.sortCriteria;
-                this._currentFilterCriteria = params?.filterCriterion;
+                this._currentCriteria.sortCriteria = params?.sortCriteria;
+                this._currentCriteria.filterCriterion = params?.filterCriterion;
                 const currentOffset = this._mapClientIdToIteratorInfo.get(newIterator._clientId);
                 const clonedParams = Object.assign({}, params);
                 clonedParams.offset = currentOffset;
@@ -1017,9 +1027,12 @@ class FlattenedTreeDataProviderView {
         const clonedParams = Object.assign({}, params);
         clonedParams.size = size;
         clonedParams.offset = offset;
-        if (this._isSameCriteria(clonedParams.sortCriteria, clonedParams.filterCriterion)) {
-            this._currentSortCriteria = clonedParams.sortCriteria;
-            this._currentFilterCriteria = clonedParams.filterCriterion;
+        if (DataProviderUtils.isSameFetchParameters(this._currentCriteria, clonedParams, [
+            'sortCriteria',
+            'filterCriterion'
+        ])) {
+            this._currentCriteria.sortCriteria = clonedParams.sortCriteria;
+            this._currentCriteria.filterCriterion = clonedParams.filterCriterion;
             // same criteria, check to see if we have the results cached
             if (this._doesCacheSatisfyParameters(clonedParams)) {
                 return Promise.resolve(this._getFetchByOffsetResultsFromCache(clonedParams));
@@ -1028,16 +1041,10 @@ class FlattenedTreeDataProviderView {
         else {
             // new criteria, refetch from the beginning
             this._clearCaches();
-            this._currentSortCriteria = clonedParams.sortCriteria;
-            this._currentFilterCriteria = clonedParams.filterCriterion;
+            this._currentCriteria.sortCriteria = clonedParams.sortCriteria;
+            this._currentCriteria.filterCriterion = clonedParams.filterCriterion;
         }
         return this._fetchByOffsetFromDataProvider(clonedParams);
-    }
-    _isSameCriteria(sortCriteria, filterCriterion) {
-        return (((this._cacheSortCriteria == null && sortCriteria == null) ||
-            oj.Object.compareValues(this._currentSortCriteria, sortCriteria)) &&
-            ((this._currentFilterCriteria == null && filterCriterion == null) ||
-                oj.Object.__innerEquals(this._currentFilterCriteria, filterCriterion)));
     }
     _doesCacheSatisfyParameters(params, isExpand = false, fetchCountSoFar = 0) {
         if (params.size === -1) {
@@ -1364,7 +1371,7 @@ class FlattenedTreeDataProviderView {
             }
             const item = this._getItem(itemIndex);
             const insertIndex = itemIndex + 1;
-            const params = new this.FetchByOffsetParameters(this, 0, this._fetchSize, this._currentSortCriteria, this._currentFilterCriteria, null);
+            const params = new this.FetchByOffsetParameters(this, 0, this._fetchSize, this._currentCriteria.sortCriteria, this._currentCriteria.filterCriterion, null);
             const fetchDetails = this._getFetchDetails(0, key, item.metadata.treeDepth + 1, insertIndex, true);
             this._notDoneKeyMap.set(key, true);
             let { descendentsAddedCount } = await this._fetchChildrenByOffsetFromDataProvider(dataProvider, params, fetchDetails);

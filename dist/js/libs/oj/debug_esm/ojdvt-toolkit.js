@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -19851,6 +19851,19 @@ EventManager.prototype.isDndSupported = function () {
  */
 EventManager.prototype.OnDndDragStart = function (event) {
   var $event = ToolkitUtils.getEventForSyntax(this._context, event);
+
+  // JET-35772 - In mobile, our dnd polyfill triggers drag and drop
+  // on touch drag of the target. But touch + hold on the target triggers the native
+  // HTML5 drag and drop. This conflicts with the fact that we use
+  // touch + hold for bringing up the tooltip.
+  // Solution is to suppress the native touch + hold dragstart event.
+  // Native events always have event.isTrusted === true, and synthetic events
+  // from polyfill or test environment always have event.isTrusted === false.
+  if (Agent.isTouchDevice() && $event.isTrusted) {
+    event.preventDefault();
+    return;
+  }
+
   var dataTransfer = $event.dataTransfer;
 
   // Pass if the dataTransfer is already loaded, since the event is already handled by another event manager

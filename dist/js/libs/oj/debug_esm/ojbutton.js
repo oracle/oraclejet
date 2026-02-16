@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2724,15 +2724,6 @@ if (oj.ButtonLegacy) {
    * </ul>
    * </li>
    * </ul>
-   *
-   *
-   * <h3 id="perf-section">
-   *   Performance
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
-   * </h3>
-   *
-   * <p>In lieu of stamping a menu button in a table, dataGrid, or other container, consider placing a single Menu Button outside of the
-   * container that acts on the currently selected row or cell.
    *
    * <h3 id="state-section">
    *   Setting Component State

@@ -536,13 +536,13 @@ export namespace ojFilePicker {
     }
     interface ojSelect extends CustomEvent<SelectDetail & {}> {
     }
-    type acceptChanged = JetElementCustomEventStrict<ojFilePicker['accept']>;
-    type captureChanged = JetElementCustomEventStrict<ojFilePicker['capture']>;
-    type disabledChanged = JetElementCustomEventStrict<ojFilePicker['disabled']>;
-    type primaryTextChanged = JetElementCustomEventStrict<ojFilePicker['primaryText']>;
-    type secondaryTextChanged = JetElementCustomEventStrict<ojFilePicker['secondaryText']>;
-    type selectOnChanged = JetElementCustomEventStrict<ojFilePicker['selectOn']>;
-    type selectionModeChanged = JetElementCustomEventStrict<ojFilePicker['selectionMode']>;
+    type acceptChanged = JetElementCustomEventStrict<FilePickerElement['accept']>;
+    type captureChanged = JetElementCustomEventStrict<FilePickerElement['capture']>;
+    type disabledChanged = JetElementCustomEventStrict<FilePickerElement['disabled']>;
+    type primaryTextChanged = JetElementCustomEventStrict<FilePickerElement['primaryText']>;
+    type secondaryTextChanged = JetElementCustomEventStrict<FilePickerElement['secondaryText']>;
+    type selectOnChanged = JetElementCustomEventStrict<FilePickerElement['selectOn']>;
+    type selectionModeChanged = JetElementCustomEventStrict<FilePickerElement['selectionMode']>;
 }
 export type ojFilePickerEventMap = FilePickerElementEventMap;
 export type ojFilePickerSettableProperties = FilePickerElementSettableProperties;

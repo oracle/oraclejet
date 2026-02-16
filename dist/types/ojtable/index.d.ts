@@ -51,6 +51,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     editRow: ojTable.EditRow<K> | null;
     readonly firstSelectedRow: ojcommontypes.ItemContext<K, D>;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
+    insertRowDisplay: ojTable.InsertRowDisplay<K> | null;
     layout: 'contents' | 'fixed';
     row: {
         editable?: ((item: Item<K, D>) => 'on' | 'off') | null;
@@ -190,6 +191,9 @@ export namespace ojTable {
     interface ojBeforeRowAddEnd extends CustomEvent<{
         accept: Function;
         cancelAdd: boolean;
+        insertContext?: {
+            setInsertedItem: Function;
+        };
         [propName: string]: any;
     }> {
     }
@@ -264,6 +268,8 @@ export namespace ojTable {
     // tslint:disable-next-line interface-over-type-literal
     type horizontalGridVisibleChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["horizontalGridVisible"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type insertRowDisplayChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["insertRowDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type layoutChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["layout"]>;
     // tslint:disable-next-line interface-over-type-literal
     type rowChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["row"]>;
@@ -295,11 +301,13 @@ export namespace ojTable {
         columnKey: keyof D;
         datasource: DataProvider<K, D> | null;
         submitAddRow?: ((param0: boolean) => void);
+        type: 'insert' | 'add';
     };
     // tslint:disable-next-line interface-over-type-literal
     type AddRowTemplateContext<K, D> = {
         datasource: DataProvider<K, D> | null;
         submitAddRow?: ((param0: boolean) => void);
+        type: 'insert' | 'add';
     };
     // tslint:disable-next-line interface-over-type-literal
     type CellTemplateContext<K, D> = {
@@ -488,8 +496,8 @@ export namespace ojTable {
     };
     // tslint:disable-next-line interface-over-type-literal
     type HeaderRendererContext<K, D> = {
-        columnHeaderDefaultRenderer?: ((param0: object, param1: ((param0: Element) => void)) => void);
-        columnHeaderSortableIconRenderer?: ((param0: object, param1: ((param0: Element) => void)) => void);
+        columnHeaderDefaultRenderer?: ((param0: object, param1: ((param0: object) => void)) => void);
+        columnHeaderSortableIconRenderer?: ((param0: object, param1: ((param0: object) => void)) => void);
         columnIndex: number;
         componentElement: Element;
         data: string;
@@ -507,6 +515,11 @@ export namespace ojTable {
         /** @deprecated since 10.0.0 - Use HeaderTemplateContext.headerText instead. */
         data: any;
         headerText: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type InsertRowDisplay<K> = {
+        position: 'before' | 'after';
+        rowKey: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type RowRendererContext<K, D> = {
@@ -606,6 +619,7 @@ export interface ojTableEventMap<K, D> extends baseComponentEventMap<ojTableSett
     'editRowChanged': JetElementCustomEvent<ojTable<K, D>["editRow"]>;
     'firstSelectedRowChanged': JetElementCustomEvent<ojTable<K, D>["firstSelectedRow"]>;
     'horizontalGridVisibleChanged': JetElementCustomEvent<ojTable<K, D>["horizontalGridVisible"]>;
+    'insertRowDisplayChanged': JetElementCustomEvent<ojTable<K, D>["insertRowDisplay"]>;
     'layoutChanged': JetElementCustomEvent<ojTable<K, D>["layout"]>;
     'rowChanged': JetElementCustomEvent<ojTable<K, D>["row"]>;
     'rowRendererChanged': JetElementCustomEvent<ojTable<K, D>["rowRenderer"]>;
@@ -667,6 +681,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     editRow: ojTable.EditRow<K> | null;
     readonly firstSelectedRow: ojcommontypes.ItemContext<K, D>;
     horizontalGridVisible: 'auto' | 'enabled' | 'disabled';
+    insertRowDisplay: ojTable.InsertRowDisplay<K> | null;
     layout: 'contents' | 'fixed';
     row: {
         editable?: ((item: Item<K, D>) => 'on' | 'off') | null;
@@ -787,6 +802,9 @@ export namespace TableElement {
     interface ojBeforeRowAddEnd extends CustomEvent<{
         accept: Function;
         cancelAdd: boolean;
+        insertContext?: {
+            setInsertedItem: Function;
+        };
         [propName: string]: any;
     }> {
     }
@@ -861,6 +879,8 @@ export namespace TableElement {
     // tslint:disable-next-line interface-over-type-literal
     type horizontalGridVisibleChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["horizontalGridVisible"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type insertRowDisplayChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["insertRowDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type layoutChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["layout"]>;
     // tslint:disable-next-line interface-over-type-literal
     type rowChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["row"]>;
@@ -892,11 +912,13 @@ export namespace TableElement {
         columnKey: keyof D;
         datasource: DataProvider<K, D> | null;
         submitAddRow?: ((param0: boolean) => void);
+        type: 'insert' | 'add';
     };
     // tslint:disable-next-line interface-over-type-literal
     type AddRowTemplateContext<K, D> = {
         datasource: DataProvider<K, D> | null;
         submitAddRow?: ((param0: boolean) => void);
+        type: 'insert' | 'add';
     };
     // tslint:disable-next-line interface-over-type-literal
     type CellTemplateContext<K, D> = {
@@ -1085,8 +1107,8 @@ export namespace TableElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type HeaderRendererContext<K, D> = {
-        columnHeaderDefaultRenderer?: ((param0: object, param1: ((param0: Element) => void)) => void);
-        columnHeaderSortableIconRenderer?: ((param0: object, param1: ((param0: Element) => void)) => void);
+        columnHeaderDefaultRenderer?: ((param0: object, param1: ((param0: object) => void)) => void);
+        columnHeaderSortableIconRenderer?: ((param0: object, param1: ((param0: object) => void)) => void);
         columnIndex: number;
         componentElement: Element;
         data: string;
@@ -1104,6 +1126,11 @@ export namespace TableElement {
         /** @deprecated since 10.0.0 - Use HeaderTemplateContext.headerText instead. */
         data: any;
         headerText: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type InsertRowDisplay<K> = {
+        position: 'before' | 'after';
+        rowKey: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type RowRendererContext<K, D> = {
@@ -1206,6 +1233,7 @@ export interface TableIntrinsicProps extends Partial<Readonly<ojTableSettablePro
     oneditRowChanged?: (value: ojTableEventMap<any, any>['editRowChanged']) => void;
     onfirstSelectedRowChanged?: (value: ojTableEventMap<any, any>['firstSelectedRowChanged']) => void;
     onhorizontalGridVisibleChanged?: (value: ojTableEventMap<any, any>['horizontalGridVisibleChanged']) => void;
+    oninsertRowDisplayChanged?: (value: ojTableEventMap<any, any>['insertRowDisplayChanged']) => void;
     onlayoutChanged?: (value: ojTableEventMap<any, any>['layoutChanged']) => void;
     onrowChanged?: (value: ojTableEventMap<any, any>['rowChanged']) => void;
     onrowRendererChanged?: (value: ojTableEventMap<any, any>['rowRendererChanged']) => void;

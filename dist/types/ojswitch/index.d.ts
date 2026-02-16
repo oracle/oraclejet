@@ -11,6 +11,7 @@ export interface ojSwitch extends editableValue<boolean, ojSwitchSettablePropert
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     readonly: boolean;
     readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
@@ -103,6 +104,7 @@ export interface ojSwitchSettableProperties extends editableValueSettablePropert
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     readonly: boolean;
     readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
@@ -172,7 +174,7 @@ export interface SwitchIntrinsicProps extends Partial<Readonly<ojSwitchSettableP
     onojAnimateStart?: (value: ojSwitchEventMap['ojAnimateStart']) => void;
     ondisabledChanged?: (value: ojSwitchEventMap['disabledChanged']) => void;
     ondisplayOptionsChanged?: (value: ojSwitchEventMap['displayOptionsChanged']) => void;
-    onlabelledByChanged?: (value: ojSwitchEventMap['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojSwitchEventMap['labelledByChanged']) => void;
     onreadonlyChanged?: (value: ojSwitchEventMap['readonlyChanged']) => void;
     onreadonlyUserAssistanceShownChanged?: (value: ojSwitchEventMap['readonlyUserAssistanceShownChanged']) => void;
     onvalueChanged?: (value: ojSwitchEventMap['valueChanged']) => void;

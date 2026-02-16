@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -238,7 +238,14 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
    *
    * @ojoracleicon 'oj-ux-ico-tree-view'
    * @ojuxspecs ['tree-view']
-   *
+   * @ojlegacymetadata requirements [
+   *    {
+   *      type: "anyOf",
+   *      label: "accessibility",
+   *      properties: ["aria-label", "aria-labelledby"],
+   *      slots: [""]
+   *    }
+   * ]
    * @classdesc
    * <h3 id="treeViewOverview-section">
    *   JET TreeView
@@ -304,6 +311,14 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
    *   &lt;/ul>
    * &lt;/oj-tree-view>
    * </code></pre>
+   *
+   * <h3 id="progressive-loading-section">
+   *   Progressive Loading
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#progressive-loading-section"></a>
+   * </h3>
+   * <p>
+   *  This component supports loading indicators. Loading indicators are only shown after a pre-defined time has elapsed during the data provider fetch.
+   * </p>
    *
    * <h3 id="touch-section">
    *   Touch End User Information
@@ -385,6 +400,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
    *   Accessibility
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
+   *
+   * {@ojinclude "name":"accessibilityDoc"}
+   *
    * <p> <b>Important:</b> Treeview does not support actionable content (i.e. Buttons, Links, etc) inside it's templated content.</p>
    * <p>To facilitate drag and drop including item reordering using only keyboard, application must ensure that either to expose the functionality using context menu, and/or
    * allow users to perform the functionality with the appropriate keystroke.  You can find examples of how this can be done in the cookbook demos.</p>
@@ -445,6 +463,14 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
   //-----------------------------------------------------
   //                   Fragments
   //-----------------------------------------------------
+  /**
+   * <p>
+   * </p>
+   *
+   * @ojfragment accessibilityDoc - Used for accessibility information
+   * @memberof oj.ojTreeView
+   */
+
   /**
    * <table class="keyboard-table">
    *   <thead>
@@ -1610,8 +1636,16 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
               var delay = self._getShowStatusDelay();
               if (self._isSkeletonSupported()) {
                 self._skeletonTimeout = setTimeout(function () {
-                  var rootMap = self._expandedChildrenMap.get(null);
-                  if (parentKey === null) {
+                  const rootMap = self._expandedChildrenMap.get(null);
+                  // render initial skeletons if parentKey is null or a child of root is still fetching
+                  const skeletonContainer = self._getSkeletonContainer(self.element[0]);
+                  if (
+                    parentKey === null ||
+                    (rootMap?.length > 0 &&
+                      self.m_fetching.size > 0 &&
+                      !skeletonContainer &&
+                      !self.m_dataSource.dataSource)
+                  ) {
                     self._changeStatusMessage(null, false);
                     self._renderInitialSkeletons();
                   } else if (
@@ -1619,9 +1653,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                     !self._isParentSkeletonRendered(parentKey) &&
                     !self._isLeafOnlySelectionEnabled()
                   ) {
-                    var parentItem = self._getItemByKey(parentKey);
+                    const parentItem = self._getItemByKey(parentKey);
                     if (parentItem) {
-                      var parentSubtree = self._getSubtree(parentItem);
+                      const parentSubtree = self._getSubtree(parentItem);
                       if (!parentSubtree) {
                         self._renderChildSkeletons(parentKey);
                         self._changeStatusMessage(parentKey, false);
@@ -1678,6 +1712,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                       };
                     }
                   }
+
                   return {
                     values: values,
                     shouldRemoveSkeleton: false
@@ -1800,8 +1835,15 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             ulElem.classList.add(this.constants.OJ_TREEVIEW_LIST);
             ulElem.setAttribute('role', 'group');
             var skeletonContainer = this._getSkeletonContainer(this.element[0]);
+            const isRoot = params.parentElem.isSameNode(this.element[0]);
+            const rootMap = this._expandedChildrenMap.get(null);
             if (
-              (skeletonContainer && this._isSkeletonSupported()) ||
+              (this._isSkeletonSupported() &&
+                (skeletonContainer ||
+                  (isRoot &&
+                    rootMap?.length > 0 &&
+                    this.m_fetching.size > 0 &&
+                    !this.m_dataSource.dataSource))) ||
               this._isLeafOnlySelectionEnabled()
             ) {
               ulElem.style.display = 'none';
@@ -2769,6 +2811,13 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                 }
               });
             } else {
+              // fall back for allKeySet inital where children are being fetched but skeleton was never rendered
+              const skeletons = self.element[0].getElementsByClassName(
+                self.constants.OJ_TREEVIEW_SKELETON_CONTAINER
+              );
+              if (response.shouldRemoveSkeleton && skeletons.length === 0) {
+                self._getRoot().style.display = 'block';
+              }
               self._renderItems(params).then(function () {
                 self._expandAfterFetch(item, animate, event);
                 if (self.isReady() && self._isLeafOnlySelectionEnabled()) {
@@ -3829,14 +3878,22 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           DataCollectionUtils.isArrowLeftKeyEvent(eventKey) ||
           DataCollectionUtils.isArrowRightKeyEvent(eventKey)
         ) {
+          const itemKey = this._getKey(currentItem);
+          const isFetching = this.m_fetching.has(itemKey);
           var isRTL = this._GetReadingDirection() === 'rtl';
           var isEnd =
             (!isRTL && DataCollectionUtils.isArrowRightKeyEvent(eventKey)) ||
             (isRTL && DataCollectionUtils.isArrowLeftKeyEvent(eventKey));
           if (isEnd && !this._isLeaf(currentItem) && !this._isExpanded(currentItem)) {
+            if (isFetching) {
+              return;
+            }
             event.preventDefault(); // prevent scrolling the page
             this._expand(currentItem, true, event);
           } else if (!isEnd && !this._isLeaf(currentItem) && this._isExpanded(currentItem)) {
+            if (isFetching) {
+              return;
+            }
             event.preventDefault(); // prevent scrolling the page
             this._collapse(currentItem, true, event);
           } else {
@@ -4208,6 +4265,17 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         var callback = dropOptions[eventType];
         var targetItem = this._getClosestItem(event.target);
         if (!targetItem) {
+          if (eventType === 'dragEnter' || eventType === 'dragOver') {
+            event.preventDefault();
+          }
+
+          if (eventType === 'drop') {
+            dropOptions = this._getDropOptions?.();
+            callback = dropOptions?.[eventType];
+            if (typeof callback === 'function') {
+              callback(event.originalEvent, {});
+            }
+          }
           return;
         }
 
@@ -4285,9 +4353,6 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
                 // using height here because we pad the width giving incorrect fontSize
                 dropLineOffset += disclosureIcon.offsetHeight;
               }
-            }
-            if (this._isExpanded(targetItem) && position !== 'before') {
-              dropLineOffset += 8; // line up with children even though dropline is still on parent
             }
             this._removeDropClass(targetItem);
             var width = targetItem.offsetWidth - parseInt(dropLineOffset, 10) + 'px';
@@ -4430,7 +4495,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
       /**
        * {@ojinclude "name":"nodeContextDoc"}
        * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
-       * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+       * @returns {ojTreeView.ItemContext<K, D>|null} {@ojinclude "name":"nodeContextReturn"}
        *
        * @example {@ojinclude "name":"nodeContextExample"}
        *

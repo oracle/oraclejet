@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2848,7 +2848,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     showHoverEffect() {
-      this._dataAreaLayer.addChild(this.Displayable);
+      if (
+        this._dataAreaLayer.getChildIndex(this.Displayable) === -1 ||
+        this._dataAreaLayer.getNumChildren() - 1 !==
+          this._dataAreaLayer.getChildIndex(this.Displayable)
+      ) {
+        this._dataAreaLayer.addChild(this.Displayable);
+      }
       super.showHoverEffect();
     }
 
@@ -2857,8 +2863,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      * @override
      */
     hideHoverEffect() {
-      if (this.isSelected()) this._dataAreaLayer.addChild(this.Displayable);
-      else this._dataAreaLayer.addChildAt(this.Displayable, 0);
+      if (
+        this.isSelected() &&
+        this._dataAreaLayer.getNumChildren() - 1 !==
+          this._dataAreaLayer.getChildIndex(this.Displayable)
+      ) {
+        this._dataAreaLayer.addChild(this.Displayable);
+      } else if (this._dataAreaLayer.getChildIndex(this.Displayable) !== 0) {
+        this._dataAreaLayer.addChildAt(this.Displayable, 0);
+      }
       super.hideHoverEffect();
     }
 

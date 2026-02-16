@@ -748,6 +748,8 @@ export namespace ojDataGrid {
     // tslint:disable-next-line interface-over-type-literal
     type ColumnHeaderTemplateContext<D> = HeaderTemplateContext<D>;
     // tslint:disable-next-line interface-over-type-literal
+    type RenderNoDataTemplate = import('ojs/ojvcomponent').TemplateSlot<{}>;
+    // tslint:disable-next-line interface-over-type-literal
     type RenderRowEndHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
     type RowEndHeaderLabelTemplateContext<D> = LabelTemplateContext<D>;
@@ -1543,6 +1545,8 @@ export namespace DataGridElement {
     type RenderColumnHeaderTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<HeaderTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal
     type ColumnHeaderTemplateContext<D> = HeaderTemplateContext<D>;
+    // tslint:disable-next-line interface-over-type-literal
+    type RenderNoDataTemplate = import('ojs/ojvcomponent').TemplateSlot<{}>;
     // tslint:disable-next-line interface-over-type-literal
     type RenderRowEndHeaderLabelTemplate<D> = import('ojs/ojvcomponent').TemplateSlot<LabelTemplateContext<D>>;
     // tslint:disable-next-line interface-over-type-literal

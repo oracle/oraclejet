@@ -5,6 +5,7 @@ import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropert
 export interface ojSelectBase<V, D, SP extends ojSelectBaseSettableProperties<V, D>> extends editableValue<V, SP> {
     data: DataProvider<V, D>;
     itemText: keyof D | ((itemContext: ojcommontypes.ItemContext<V, D>) => string);
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     matchBy: Array<TextFilter<D>['matchBy']> | null;
     placeholder: string;
@@ -108,6 +109,7 @@ export interface ojSelectBaseEventMap<V, D, SP extends ojSelectBaseSettablePrope
 export interface ojSelectBaseSettableProperties<V, D> extends editableValueSettableProperties<V> {
     data: DataProvider<V, D>;
     itemText: keyof D | ((itemContext: ojcommontypes.ItemContext<V, D>) => string);
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     matchBy: Array<TextFilter<D>['matchBy']> | null;
     placeholder: string;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -185,6 +185,14 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
      *
      * @ojoracleicon 'oj-ux-ico-menu-modal'
      * @ojuxspecs ['menu']
+     *  @ojlegacymetadata requirements [
+     *    {
+     *      type: "anyOf",
+     *      label: "accessibility",
+     *      properties: ["aria-label", "aria-labelledby"],
+     *      slots: [""]
+     *    }
+     * ]
      *
      * @classdesc
      * <h3 id="menuOverview-section">
@@ -299,6 +307,8 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
      *   Accessibility
      *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
      * </h3>
+     *
+     * {@ojinclude "name":"accessibilityDoc"}
      *
      * <p>The app should supply either an <code class="prettyprint">aria-label</code> or <code class="prettyprint">aria-labelledby</code>
      * attribute on the menu's root element, except possibly for menu buttons as discussed below. These attributes should not be supplied
@@ -455,6 +465,13 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
     //-----------------------------------------------------
     //                   Fragments
     //-----------------------------------------------------
+    /**
+     * <p>
+     * </p>
+     *
+     * @ojfragment accessibilityDoc - Used for accessibility information
+     * @memberof oj.ojMenu
+     */
 
     /**
      * <table class="keyboard-table">

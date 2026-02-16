@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -604,13 +604,6 @@ function _getNumberDefaultConverter() {
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
    *
-   * <h5>LabelledBy attribute</h5>
-   * <p>
-   * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
-   * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
-   * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
-   * to add a label for the form component.
-   * </p>
    *
    * <h5>DescribedBy attribute</h5>
    * <p>
@@ -623,10 +616,14 @@ function _getNumberDefaultConverter() {
    * Formatting messages using html tags is not supported in the core pack component.
    * </p>
    *
-   * <h5>Usage in Dynamic Form</h5>
+   * <h5>Converter Errors and Validator Errors</h5>
    * <p>
-   * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+   * Using instances of ConverterError, ValidatorError, or JavaScript objects duck typing Message to show custom
+   * validation and conversion errors is not supported in the core pack component. To show a converter error or a validator error,
+   * use the native JavaScript Error with the detail string instead.
+   * For example, <code class="prettyprint">throw new Error('error message detail')</code>.
    * </p>
+   *
    * @example <caption>Declare the oj-input-number component with no attributes specified:</caption>
    * &lt;oj-input-number>&lt;/oj-input-number>
    *
@@ -1062,6 +1059,7 @@ function _getNumberDefaultConverter() {
        * @memberof oj.ojInputNumber
        * @ojshortdesc Specifies whether the component will get input focus when the page is loaded. See the Help documentation for more information.
        * @ojextension {_COPY_TO_INNER_ELEM: true}
+       * @ojdeprecated {since: '20.0.0', description: 'This is not recommended for accessibility reasons.'}
        */
       autofocus: false,
       // TODO: revisit
@@ -1223,6 +1221,7 @@ function _getNumberDefaultConverter() {
        * @instance
        * @since 7.0.0
        * @memberof oj.ojInputNumber
+       * @ojdeprecated {since: '20.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
        */
       labelledBy: null,
 

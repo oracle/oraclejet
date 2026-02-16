@@ -604,6 +604,7 @@ export namespace ojDiagram {
         itemData: D2 | D2[];
         parentElement: Element;
         points: any[] | string;
+        /** @deprecated since 20.0.0 - PreviousState has been deprecated. If needed, the application can manually track the previous state. */
         previousState: {
             focused: boolean;
             hovered: boolean;
@@ -715,6 +716,7 @@ export namespace ojDiagram {
         id: K1;
         itemData: D1;
         parentElement: Element;
+        /** @deprecated since 20.0.0 - PreviousState has been deprecated. If needed, the application can manually track the previous state. */
         previousState: {
             expanded: boolean;
             focused: boolean;
@@ -1334,6 +1336,7 @@ export interface ojDiagramNode<K1 = any, D1 = any> extends dvtBaseComponent<ojDi
         /** @deprecated since 17.0.0 - Node sourceSelected property has been deprecated. Please use custom renderer or template instead. */
         sourceSelected?: string;
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number;
     };
@@ -1413,6 +1416,7 @@ export interface ojDiagramNodeSettableProperties<K1 = any, D1 = any> extends dvt
         /** @deprecated since 17.0.0 - Node sourceSelected property has been deprecated. Please use custom renderer or template instead. */
         sourceSelected?: string;
         svgClassName?: string;
+        /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number;
     };
@@ -1575,6 +1579,7 @@ export namespace DiagramElement {
         itemData: D2 | D2[];
         parentElement: Element;
         points: any[] | string;
+        /** @deprecated since 20.0.0 - PreviousState has been deprecated. If needed, the application can manually track the previous state. */
         previousState: {
             focused: boolean;
             hovered: boolean;
@@ -1686,6 +1691,7 @@ export namespace DiagramElement {
         id: K1;
         itemData: D1;
         parentElement: Element;
+        /** @deprecated since 20.0.0 - PreviousState has been deprecated. If needed, the application can manually track the previous state. */
         previousState: {
             expanded: boolean;
             focused: boolean;

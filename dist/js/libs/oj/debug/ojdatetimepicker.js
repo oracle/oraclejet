@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2121,13 +2121,6 @@ var __oj_input_date_time_metadata =
    * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
    * </p>
    *
-   * <h5>LabelledBy attribute</h5>
-   * <p>
-   * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
-   * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
-   * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
-   * to add a label for the form component.
-   * </p>
    *
    * <h5>DescribedBy attribute</h5>
    * <p>
@@ -2138,6 +2131,14 @@ var __oj_input_date_time_metadata =
    * <h5>Formatted messages</h5>
    * <p>
    * Formatting messages using HTML tags is not supported in the core pack component.
+   * </p>
+   *
+   * <h5>Converter Errors and Validator Errors</h5>
+   * <p>
+   * Using instances of ConverterError, ValidatorError, or JavaScript objects duck typing Message to show custom
+   * validation and conversion errors is not supported in the core pack component. To show a converter error or a validator error,
+   * use the native JavaScript Error with the detail string instead.
+   * For example, <code class="prettyprint">throw new Error('error message detail')</code>.
    * </p>
    */
   // --------------------------------------------------- oj.ojInputDate Styling Start ------------------------------------------------------------
@@ -4421,7 +4422,9 @@ var __oj_input_date_time_metadata =
           // while the user is interacting with the dropdown.
           event.stopPropagation();
 
-          if (event.target.hasAttribute('data-oj-dropdownnofocuschange')) {
+          if (event?.target?.hasAttribute('data-oj-dropdownnofocuschange')) {
+            // JET-64260 - Prevent the browser from blurring the active element, specifically focus drop to <body>.
+            // This is an issue on iOS Safari during mousedown in header/edge areas of the popup.
             event.preventDefault();
           }
         },
@@ -5724,9 +5727,17 @@ var __oj_input_date_time_metadata =
       let selectors =
         '.oj-datepicker-prev-icon.oj-enabled, .oj-datepicker-next-icon.oj-enabled,' +
         '.oj-datepicker-current, .oj-datepicker-month, .oj-datepicker-year, .oj-datepicker-calendar td a';
-      this._dpDiv.find(selectors).click((e) => {
-        e.preventDefault();
-      });
+      this._dpDiv
+        .find(selectors)
+        .on('mousedown', (e) => {
+          // JET-64260 - Prevent default on both mousedown and click to avoid focus loss to body specifically on iOS.
+          // Use case for this bug fix is an inputdate within a table. Open picker, click next month, and the datepicker closes because the focus was lost
+          // and table has code to close pickers when the focus is lost.
+          e.preventDefault();
+        })
+        .on('click', (e) => {
+          e.preventDefault();
+        });
     },
 
     _setupNewView: function (focusOnCalendar, view, dayOverId) {
@@ -5928,17 +5939,17 @@ var __oj_input_date_time_metadata =
       this._currentDay = $('a', td).html(); // @HTMLUpdateOK
       this._currentMonth = month;
       this._currentYear = year;
-
-      var converterUtils = ojconverterutilsI18n.IntlConverterUtils;
-      var value = this.options.value;
       var tempDate = toJSDateFullYear(this._currentYear, this._currentMonth, this._currentDay);
+      const value = this.options.value;
+      let updatedValue;
+      const converterUtils = ojconverterutilsI18n.IntlConverterUtils;
 
       if (value) {
         // need to preserve the time portion when of ojInputDateTime, so update only year, month, and date
         try {
           // After this method call the value is a local datetime. no offset, no zulu. It will get converted
           // back in the switchDone method when the user clicks the Done button or closes the picker.
-          value = converterUtils._dateTime(value, {
+          updatedValue = converterUtils._dateTime(value, {
             fullYear: tempDate.getFullYear(),
             month: tempDate.getMonth(),
             date: tempDate.getDate()
@@ -5947,14 +5958,14 @@ var __oj_input_date_time_metadata =
           Logger.info(
             'The value of the InputDateTime element should be an ISOString, please use a valid ISOString'
           );
-          value = converterUtils.dateToLocalIso(tempDate);
+          updatedValue = converterUtils.dateToLocalIso(tempDate);
         }
       } else {
         // per discussion when date doesn't exist use local isostring
-        value = converterUtils.dateToLocalIso(tempDate);
+        updatedValue = converterUtils.dateToLocalIso(tempDate);
       }
 
-      this._setDisplayAndValue(value, {});
+      this._setDisplayAndValue(updatedValue, {});
       // remove this class, since we have a value now.
       // Only do this for oj-input-date, since oj-input-date-time doesn't
       // update its value until done is pressed.
@@ -10793,6 +10804,14 @@ var __oj_input_date_time_metadata =
    * <p>
    * Formatting messages using HTML tags is not supported in the core pack component.
    * </p>
+   *
+   * <h5>Converter Errors and Validator Errors</h5>
+   * <p>
+   * Using instances of ConverterError, ValidatorError, or JavaScript objects duck typing Message to show custom
+   * validation and conversion errors is not supported in the core pack component. To show a converter error or a validator error,
+   * use the native JavaScript Error with the detail string instead.
+   * For example, <code class="prettyprint">throw new Error('error message detail')</code>.
+   * </p>
    */
   // --------------------------------------------------- oj.ojInputTime Styling Start ------------------------------------------------------------
   /**
@@ -11708,18 +11727,16 @@ var __oj_input_date_time_metadata =
       var div = document.createElement('div');
       div.id = this._GetSubId(this._TIME_PICKER_ID);
       var cssClasses = 'oj-timepicker-content';
-      // JET-51605 - done and cancel buttons are not accessible when trying to input time
-      // setting the oj-timepicker-mobile-content makes the wheel picker 100vh. But we do not
-      // want this for oj-input-date-time as the popup includes the buttons to set the selected
-      // time as well as to switch to the date picker. These controls are outside the wheel picker
-      // so setting this to 100vh completely hides this. So, set the css style classes based on
-      // where this timepicker is being used.
+      // JET-51605 - done and cancel buttons are not accessible when trying to input time.
+      // JET-69105 - Removed 100vh height from the mobile timepicker container to prevent it
+      // from expanding to full screen. This change also resolves the issue where the picker
+      // incorrectly opened as a dropdown — it now correctly opens as a modal.
+      // Retained the class name 'oj-timepicker-mobile-content' for consistency across usages.
+
       if (Config.getDeviceRenderMode() === 'phone') {
-        const mobileCSSStlyeClass = this._isContainedInDateTimePicker()
-          ? ' oj-timepicker-datetime-mobile-content'
-          : ' oj-timepicker-mobile-content';
-        cssClasses += mobileCSSStlyeClass;
+        cssClasses += ' oj-timepicker-mobile-content';
       }
+
       div.className = cssClasses;
       div.setAttribute('data-oj-dropdownnofocuschange', '');
       wheelPicker.appendChild(div);
@@ -11737,7 +11754,7 @@ var __oj_input_date_time_metadata =
             initialFocus: 'none',
             role: 'dialog',
             chrome: 'default',
-            modality: _isLargeScreen ? 'modeless' : 'modal',
+            modality: _isLargeScreen() ? 'modeless' : 'modal',
             open: function () {},
             beforeClose: function () {},
             animateStart: function (event, ui) {
@@ -12176,11 +12193,15 @@ var __oj_input_date_time_metadata =
 
     _setupResizePopupBind: function () {
       this._resizePopupBind = function () {
-        $('.oj-timepicker-content', this._wheelPicker)[_isLargeScreen ? 'removeClass' : 'addClass'](
+        $('.oj-timepicker-content', this._wheelPicker)[_isLargeScreen() ? 'removeClass' : 'addClass'](
           'oj-timepicker-fixedheight'
         );
         if (this._isIndependentInput() && ojcomponentcore.isComponentInitialized(this._popUpWheelPicker, 'ojPopup')) {
-          this._popUpWheelPicker.ojPopup('option', 'modality', _isLargeScreen ? 'modeless' : 'modal');
+          this._popUpWheelPicker.ojPopup(
+            'option',
+            'modality',
+            _isLargeScreen() ? 'modeless' : 'modal'
+          );
         }
       }.bind(this);
       window.addEventListener('resize', this._resizePopupBind, false);
@@ -13593,7 +13614,7 @@ var __oj_input_date_time_metadata =
       // ojPopup open must be passed the input container (this.element.parent)
       // as the launcher so that any event within the container won't auto-dismiss
       // the dialog.
-      if (!_isLargeScreen) {
+      if (!_isLargeScreen()) {
         popUpWheelPicker.ojPopup('open', this.element[0].parentNode.parentNode, {
           my: { horizontal: 'center', vertical: 'bottom' },
           at: { horizontal: 'center', vertical: 'bottom' },

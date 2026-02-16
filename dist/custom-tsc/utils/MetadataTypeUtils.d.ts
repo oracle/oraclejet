@@ -106,7 +106,7 @@ export declare function getComplexPropertyMetadataForType(tsType: ts.Type, metaO
  */
 export declare function processComplexPropertyMetadata(property: string, metaObj: MetaTypes.ALL_TYPES, complexMD: MetaTypes.ComplexPropertyMetadata, dtMetadata: MetaTypes.ExtendedPropertiesMetadata): void;
 export declare function getSubstituteTypeForCircularReference(metaObj: MetaTypes.ALL_TYPES): string;
-export declare function getAllMetadataForDeclaration(declarationWithType: ts.HasType, scope: MetaTypes.MDScope, context: MetaTypes.MDContext, propertyPath: string[] | null, declSymbol: ts.Symbol | null, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ExtendedPropertiesMetadata | MetaTypes.ExtendedEventDetailsMetadata | MetaTypes.ExtendedSlotDataMetadata;
+export declare function getAllMetadataForDeclaration(declarationWithType: ts.HasType, scope: MetaTypes.MDScope, context: MetaTypes.MDContext, propertyPath: string[] | null, declSymbol: ts.Symbol | null, metaUtilObj: MetaTypes.MetaUtilObj, realTypeToCheck?: ts.TypeNode | null): MetaTypes.ExtendedPropertiesMetadata | MetaTypes.ExtendedEventDetailsMetadata | MetaTypes.ExtendedSlotDataMetadata;
 /**
  * Returns true if the type is not any of the below:
  * 1) Array (only for RT MD)
@@ -142,6 +142,7 @@ export declare function getPossibleTypeDef(prop: string, memberSymbol: ts.Symbol
  * @returns
  */
 export declare function getTypeDefMetadata(typedefType: ts.Type, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.TypedefObj;
+export declare function createTypeDefinitionForPropertyDeclaration(subProps: Record<string, MetaTypes.ExtendedPropertiesMetadata>, memberSymbol: ts.Symbol, property: string, metaObj: any, context: MetaTypes.MDContext, scope: MetaTypes.MDScope, metaUtilObj: MetaTypes.MetaUtilObj, seenTypeDefs?: Set<string> | null): void;
 /**
  * Utility function that checks if a given typeRefNode is a local export.
  * @param typeRefNode The TypeReferenceNode to check

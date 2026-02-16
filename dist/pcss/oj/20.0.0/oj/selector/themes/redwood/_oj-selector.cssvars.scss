@@ -1,0 +1,13 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+@import "../../../radio-checkbox/themes/redwood/_oj-radiocheckbox.cssvars.scss";
+@import "../../../collection/themes/redwood/_oj-collection.cssvars.scss";
+// scoped cssvars override
+@import "../../../text-field/themes/redwood/_oj-text-field-scoped.cssvars.scss";
+@import "../../../radio-checkbox/themes/redwood/_oj-radiocheckbox-scoped.cssvars.scss";
+
+  @include module-include-once("redwood.variables.selector") {
+
+  }

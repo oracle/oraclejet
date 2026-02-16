@@ -42,15 +42,33 @@ export namespace RowDataGridProvider {
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemMetadata<D, K, R> = {
-        columnEndHeader?: (item: GridHeaderItem<D>) => GridHeaderMetadata;
-        columnEndHeaderLabel?: (item: GridItem<D>) => GridItemMetadata;
-        columnHeader?: (item: GridHeaderItem<D>) => GridHeaderMetadata;
-        columnHeaderLabel?: (item: GridItem<D>) => GridItemMetadata;
-        databody?: (item: GridBodyItem<D>) => GridBodyItemMetadata<K, R>;
-        rowEndHeader?: (item: GridHeaderItem<D>) => GridHeaderMetadata;
-        rowEndHeaderLabel?: (item: GridItem<D>) => GridItemMetadata;
-        rowHeader?: (item: GridHeaderItem<D>) => GridHeaderMetadata;
-        rowHeaderLabel?: (item: GridItem<D>) => GridItemMetadata;
+        columnEndHeader?: (item: GridHeaderItem<{
+            data: D;
+        }>) => GridHeaderMetadata;
+        columnEndHeaderLabel?: (item: GridItem<{
+            data: D;
+        }>) => GridItemMetadata;
+        columnHeader?: (item: GridHeaderItem<{
+            data: D;
+        }>) => GridHeaderMetadata;
+        columnHeaderLabel?: (item: GridItem<{
+            data: D;
+        }>) => GridItemMetadata;
+        databody?: (item: GridBodyItem<{
+            data: D;
+        }>) => GridBodyItemMetadata<K, R>;
+        rowEndHeader?: (item: GridHeaderItem<{
+            data: D;
+        }>) => GridHeaderMetadata;
+        rowEndHeaderLabel?: (item: GridItem<{
+            data: D;
+        }>) => GridItemMetadata;
+        rowHeader?: (item: GridHeaderItem<{
+            data: D;
+        }>) => GridHeaderMetadata;
+        rowHeaderLabel?: (item: GridItem<{
+            data: D;
+        }>) => GridItemMetadata;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NestedHeader = {

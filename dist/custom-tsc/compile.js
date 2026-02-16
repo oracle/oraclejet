@@ -111,24 +111,39 @@ Upgrade your JET project to TypeScript version ${__SUPPORTED_TS_VERSION}
     let emitResult;
     // Any error in the transformer is a RT error as far as the compiler is concerned.
     // 1. If it is a syntax error in the ts/tsx file (like let messageTime?: string = 1), these will be caught by the TS compiler
-    // before any of the compiler after or before plug-ins are called, so the emit returns successfully and the diagnostic messages
+    // before any of the compiler's after or before transformer plug-ins are called, so the emit returns successfully and the diagnostic messages
     // will be collected after emit by calling the handleDiagnosticMessages function below
     // 2. If it is an application error (we passed the syntax checking and either the application throws an application Error or is a JS runtime error)
     // we capture that in the try/catch block.
     // We collect all diagnostic and error messages and return to the caller.
-    // For testing error handling, we will call compiler with a build option called isolationMode set to true. In this case, we proceed
+    // For testing the error handling, we will call the compiler with a buildOptions where 'isolationMode' = true. In this case, we proceed
     // calling emit on a file-by-file basis so that we can capture all syntax and error messages.
+    // choose transformers based on buildOptions.emitMetadataOnly
+    const emitMetadataOnly = !!_buildOptions.emitMetadataOnly;
     const EmitOptions = {
         before: [
-            ...(_isVDomTransformerConfigEnabled ? [(0, vdomTransformer_1.default)(program)] : []),
-            ...(!_buildOptions.isolationMode ? [(0, sharedCommentScanner_1.extractSharedComments)()] : []),
-            ...(!_buildOptions.isolationMode ? [(0, exportTransformer_1.default)(program, _buildOptions)] : []),
+            ...(!emitMetadataOnly && _isVDomTransformerConfigEnabled ? [(0, vdomTransformer_1.default)(program)] : []),
+            ...(!emitMetadataOnly
+                ? !_buildOptions.isolationMode
+                    ? [(0, exportTransformer_1.default)(program, _buildOptions)]
+                    : []
+                : []),
+            ...(!emitMetadataOnly
+                ? !_buildOptions.isolationMode
+                    ? [(0, sharedCommentScanner_1.extractSharedComments)()]
+                    : []
+                : [(0, sharedCommentScanner_1.extractSharedComments)()]), // include extractSharedComments even in metadata-only if needed
             (0, metadataTransformer_1.default)(program, _buildOptions),
-            (0, decoratorTransformer_1.default)(_buildOptions),
-            (0, importTransformer_1.default)(_buildOptions),
-            (0, utilityTransformer_1.default)(program, _buildOptions)
+            // other runtime-only before transforms only when NOT metadata-only
+            ...(!emitMetadataOnly
+                ? [
+                    (0, decoratorTransformer_1.default)(_buildOptions),
+                    (0, importTransformer_1.default)(_buildOptions),
+                    (0, utilityTransformer_1.default)(program, _buildOptions)
+                ]
+                : [])
         ],
-        afterDeclarations: [(0, dtsTransformer_1.default)(program, _buildOptions)]
+        afterDeclarations: emitMetadataOnly ? [] : [(0, dtsTransformer_1.default)(program, _buildOptions)]
     };
     if (_buildOptions.isolationMode) {
         program.getSourceFiles().forEach((sf) => {
@@ -142,27 +157,45 @@ Upgrade your JET project to TypeScript version ${__SUPPORTED_TS_VERSION}
         });
     }
     else {
-        try {
-            emitResult = program.emit(undefined, undefined, undefined, undefined, EmitOptions);
-            if (_buildOptions.debug) {
-                const results = _buildOptions.programExportMaps?.getAllModuleTypeExports();
-                console.log(results);
+        const diagnostics = ts.getPreEmitDiagnostics(program);
+        // When in metadata-only mode, filter out non-critical errors
+        const criticalErrors = diagnostics.filter((diag) => {
+            // In metadata-only mode, only halt on syntax errors
+            if (emitMetadataOnly) {
+                return diag.category === ts.DiagnosticCategory.Error && diag.code < 2300; // Syntax errors are below 2300
             }
-            // jsdoc-style doclet json file generation happens after emit so that we can gather all
-            // sharable comment blocks (in the "before" phase, see the extractSharedComments transformer)
-            // and apply where needed in the generateApiDoc call.
-            _buildOptions.sharedContent = sharedCommentScanner_1.sharedDocs;
-            (0, ApiDocFileUtils_1.generateApiDoc)(_buildOptions, sharedContentDir);
+            return true;
+        });
+        if (criticalErrors.length === 0 || emitMetadataOnly) {
+            try {
+                emitResult = program.emit(undefined, undefined, undefined, undefined, EmitOptions);
+                if (_buildOptions.debug) {
+                    const results = _buildOptions.programExportMaps?.getAllModuleTypeExports();
+                    console.log(results);
+                }
+                // jsdoc-style doclet json file generation happens after emit so that we can gather all
+                // sharable comment blocks (in the "before" phase, see the extractSharedComments transformer)
+                // and apply where needed in the generateApiDoc call.
+                _buildOptions.sharedContent = sharedCommentScanner_1.sharedDocs;
+                (0, ApiDocFileUtils_1.generateApiDoc)(_buildOptions, sharedContentDir);
+            }
+            catch (e) {
+                errors.push(processEmitError(e));
+                return { errors, parsedTsconfigJson };
+            }
         }
-        catch (e) {
-            errors.push(processEmitError(e));
+        else {
+            handleDiagnosticMessages(program, { diagnostics: [], emitSkipped: true }, errors);
             return { errors, parsedTsconfigJson };
         }
     }
-    handleDiagnosticMessages(program, emitResult, errors);
-    // if compile ended with no errors, assemble the type declaration files
-    if (errors.length == 0 && parsedTsconfigJson.compilerOptions.declaration) {
-        (0, dtsTransformer_2.assembleTypes)(buildOptions);
+    // Only show diagnostics for non-metadata-only builds
+    if (!emitMetadataOnly) {
+        handleDiagnosticMessages(program, emitResult, errors);
+        // if compile ended with no errors, assemble the type declaration files
+        if (errors.length == 0 && parsedTsconfigJson.compilerOptions.declaration) {
+            (0, dtsTransformer_2.assembleTypes)(buildOptions);
+        }
     }
     return {
         errors,

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -9,7 +9,7 @@ import { jsx } from 'preact/jsx-runtime';
 import { Component } from 'preact';
 import { Root, customElement } from 'ojs/ojvcomponent';
 import { getTranslatedString } from 'ojs/ojtranslation';
-import { KEYBOARD_KEYS, handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, getActionableElementsInNode, disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
+import { KEYBOARD_KEYS, handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, getScrollEventElement, getActionableElementsInNode, disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
 import Context from 'ojs/ojcontext';
 import { IteratingDataProviderContentHandler, IteratingTreeDataProviderContentHandler } from 'ojs/ojvcollection';
 import oj from 'ojs/ojcore-base';
@@ -374,6 +374,19 @@ var StreamList_1;
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  *  </h3>
+ * To make your component accessible, the application is required to include contextual information for screen readers using one or more the following methods as appropriate:
+ *  <ul>
+ *   <li>aria-label</li>
+ *   <li>aria-labelledby</li>
+ *  </ul>
+ *
+ * <h3 id="progressive-loading-section">
+ *   Progressive Loading
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#progressive-loading-section"></a>
+ * </h3>
+ * <p>
+ *  This component supports loading indicators. Loading indicators are only shown after a pre-defined time has elapsed during the data provider fetch.
+ * </p>
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -450,8 +463,8 @@ var StreamList_1;
  *   </tbody>
  * </table>
  *
- * @typeparam {object} K Type of key of the dataprovider
- * @typeparam {object} D Type of data from the dataprovider
+ * @typeparam K Type of key of the dataprovider
+ * @typeparam D Type of data from the dataprovider
  * @ojmetadata description "A stream list displays data in an activity stream feed."
  * @ojmetadata displayName "Stream List"
  * @ojmetadata main "ojs/ojstreamlist"
@@ -469,8 +482,17 @@ var StreamList_1;
  *     ]
  *   }
  * }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/19/reference-api/oj.ojStreamList.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojStreamList.html"
  * @ojmetadata since "9.0.0"
+ * @ojlegacymetadata requirements [
+ *    {
+ *      type: "anyOf",
+ *      label: "accessibility",
+ *      properties: ["aria-label", "aria-labelledby"],
+ *      slots: [""]
+ *    }
+ * ]
+ *
  */
 let StreamList = StreamList_1 = class StreamList extends Component {
     constructor(props) {
@@ -1045,13 +1067,13 @@ let StreamList = StreamList_1 = class StreamList extends Component {
         return -1;
     }
     _unregisterScrollHandler() {
-        const scrollElement = this._getScrollEventElement();
-        scrollElement.removeEventListener('scroll', this.scrollListener);
+        this.scrollEventElement?.removeEventListener('scroll', this.scrollListener);
+        this.scrollEventElement = null;
     }
     _registerScrollHandler() {
-        const scrollElement = this._getScrollEventElement();
         this._unregisterScrollHandler();
-        scrollElement.addEventListener('scroll', this.scrollListener);
+        this.scrollEventElement = this._getScrollEventElement();
+        this.scrollEventElement?.addEventListener('scroll', this.scrollListener);
     }
     _updateScrollPosition() {
         const scrollPosition = {};
@@ -1136,11 +1158,7 @@ let StreamList = StreamList_1 = class StreamList extends Component {
             if (typeof scroller === 'string') {
                 scroller = document.querySelector(scroller);
             }
-            // only cross browser way to guarantee scroll events
-            if (scroller === document.body || scroller === document.documentElement) {
-                return window;
-            }
-            return scroller;
+            return getScrollEventElement(scroller);
         }
         return this.getRootElement();
     }

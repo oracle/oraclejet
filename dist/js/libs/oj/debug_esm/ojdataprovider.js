@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -923,6 +923,26 @@ var DataProviderUtils;
     }
     DataProviderUtils.doesAttributeExistInFilterCriterion = doesAttributeExistInFilterCriterion;
     /**
+     * Returns true if previousParams and currentParams ara same
+     * @param {Object} previousParams
+     * @param {Object} currentParams
+     * @param {Array} paramsList Array of parameter name to compare
+     */
+    DataProviderUtils.isSameFetchParameters = (previousParamsObj, currentParamsObj, paramsList) => {
+        for (let i = 0; i < paramsList.length; i++) {
+            const prevParameter = previousParamsObj?.[paramsList[i]];
+            const curParameter = currentParamsObj?.[paramsList[i]];
+            // considering null and undefined as equal
+            if (!(prevParameter == curParameter) &&
+                !(paramsList[i] === 'filterCriterion' &&
+                    oj$1.Object.__innerEquals(prevParameter, curParameter)) &&
+                !oj$1.Object.compareValues(prevParameter, curParameter)) {
+                return false;
+            }
+        }
+        return true;
+    };
+    /**
      * @private
      */
     function containsKey(array, key) {
@@ -1059,7 +1079,7 @@ var SortUtils;
 
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -1070,10 +1090,13 @@ class DataCache {
             const eventsMap = new Map();
             const keysInCache = [];
             let keyIndex = 0;
-            eventDetail[DataCache._KEYS].forEach((key) => {
+            const eventDetailKeys = eventDetail[DataCache._KEYS];
+            const eventDetailData = eventDetail[DataCache._DATA];
+            const eventDetailMetadata = this._deriveMetadataFromKey(eventDetail[DataCache._METADATA], eventDetailKeys);
+            eventDetailKeys.forEach((key) => {
                 eventsMap.set(key, {
-                    data: eventDetail[DataCache._DATA]?.[keyIndex],
-                    metadata: eventDetail[DataCache._METADATA]?.[keyIndex]
+                    data: eventDetailData?.[keyIndex],
+                    metadata: eventDetailMetadata?.[keyIndex]
                 });
                 keyIndex++;
             });
@@ -1086,7 +1109,7 @@ class DataCache {
                 eventDetail[DataCache._DATA]?.forEach((data, index) => {
                     eventDetailDataArray.push({
                         data: data,
-                        metadata: eventDetail[DataCache._METADATA][index]
+                        metadata: eventDetailMetadata[index]
                     });
                 });
                 eventDetailDataArray.sort((a, b) => {
@@ -1143,7 +1166,7 @@ class DataCache {
                     data: eventDetail[DataCache._DATA] ? [] : eventDetail[DataCache._DATA],
                     indexes: eventDetail[DataCache._INDEXES] ? [] : eventDetail[DataCache._INDEXES],
                     keys: new Set(),
-                    metadata: eventDetail[DataCache._METADATA] ? [] : eventDetail[DataCache._METADATA],
+                    metadata: eventDetailMetadata ? [] : eventDetailMetadata,
                     parentKeys: eventDetail.parentKeys ? [] : eventDetail.parentKeys,
                     transient: eventDetail.transient
                 };
@@ -1154,7 +1177,7 @@ class DataCache {
                         eventDetailCopy.addBeforeKeys?.push(eventDetail[DataCache._BEFOREKEYS][index]);
                         eventDetailCopy.data?.push(eventDetail[DataCache._DATA][index]);
                         eventDetailCopy.indexes?.push(eventDetail[DataCache._INDEXES][index]);
-                        eventDetailCopy.metadata?.push(eventDetail[DataCache._METADATA][index]);
+                        eventDetailCopy.metadata?.push(eventDetailMetadata[index]);
                         eventDetailCopy.parentKeys?.push(eventDetail.parentKeys[index]);
                         eventDetailCopy.keys.add(key);
                     }
@@ -2344,4 +2367,55 @@ class DataProviderFeatureChecker {
 }
 oj$1._registerLegacyNamespaceProp('DataProviderFeatureChecker', DataProviderFeatureChecker);
 
-export { AttributeFilterOperator, CompoundFilterOperator, DataCache, DataProviderFeatureChecker, DataProviderMutationEvent, DataProviderRefreshEvent, DataProviderUtils, FetchByKeysMixin, FetchByOffsetMixin, FilterFactory, FilterUtils, SortUtils, wrapWithAbortHandling };
+/**
+ * @license
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * @ignore
+ */
+class KeyCache {
+    constructor() {
+        this._items = [];
+        this._done = false;
+    }
+    getIndexByKey(searchKey) {
+        return this._items.findIndex((key) => {
+            return oj$1.Object.compareValues(key, searchKey);
+        });
+    }
+    spliceKeys(start, deleteCount, ...keys) {
+        this._items.splice(start, deleteCount, ...keys);
+    }
+    getKeys(offset = 0, size = -1) {
+        return this._items.slice(offset, size !== -1 ? offset + size : undefined);
+    }
+    getSparseIndex(start = 0, end = this._items.length) {
+        for (let i = start; i < end; i++) {
+            if (this._items[i] === undefined) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    isDone() {
+        return this._done;
+    }
+    setDone(done) {
+        this._done = done;
+    }
+    getSize() {
+        return this._items.length;
+    }
+    reset() {
+        this._items = [];
+        this._done = false;
+    }
+    addKey(key, index) {
+        this._items.splice(index, 0, key);
+    }
+    disregardAfterIndex(index) {
+        this._items.length = index + 1;
+    }
+}
+
+export { AttributeFilterOperator, CompoundFilterOperator, DataCache, DataProviderFeatureChecker, DataProviderMutationEvent, DataProviderRefreshEvent, DataProviderUtils, FetchByKeysMixin, FetchByOffsetMixin, FilterFactory, FilterUtils, KeyCache, SortUtils, wrapWithAbortHandling };

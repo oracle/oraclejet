@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -48,6 +48,18 @@
   ERROR: logger.LEVELS.ERROR,
   WARNING: logger.LEVELS.WARN,
   DEBUG: logger.LEVELS.DEBUG
+}
+// ability to override the default violations from command line
+if (env.opts.query.violations) {
+  try{
+    // the query parameter is not a valid a JSON string (missing dbl quotes from keys), we need to convert it to a valid JSON object
+    const convertedJSONString = env.opts.query.violations.replace(/([{,]\s*)([A-Za-z0-9_]+)(\s*:)/g, '$1"$2"$3');
+    const options = JSON.parse(convertedJSONString);
+    env.opts.violations = {...env.opts.violations, ...options }
+  } catch (e) {
+    // do nothing
+    logger.warn("Error parsing violations query parameter, using default violations");
+  }
 }
 
 env.opts.loggingLevel = env.opts.query.loggingLevel || env.opts.loggingLevel;

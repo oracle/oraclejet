@@ -41,14 +41,13 @@ const TypeUtils = __importStar(require("./MetadataTypeUtils"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
 const TransformerError_1 = require("./TransformerError");
 const ImportMaps_1 = require("../shared/ImportMaps");
-const Utils_1 = require("../shared/Utils");
 // NOTE:  need to differentiate between 'once' and 'onFoo'!
 const _REGEX_RESERVED_EVENT_PREFIX = new RegExp(/^on[A-Z]/);
 // 'details' key for singleton event payloads (i.e., primitives or
 // objects whose sub-properties are "not walkable", such as arrays,
 // tuples, Maps, Sets, etc.
 const SINGLETON_KEY = '';
-function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
+function generateEventsMetadata(memberKey, propDeclaration, memberSymbol, metaUtilObj) {
     let isEvent = false;
     const exportToAlias = metaUtilObj.progImportMaps.getMap(ImportMaps_1.IMAP.exportToAlias, propDeclaration);
     const types = TypeUtils.getPropertyTypes(propDeclaration);
@@ -83,7 +82,7 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
             metaUtilObj.fullMetadata.events = {};
         }
         metaUtilObj.rtMetadata.events[eventProp] = rtEventMeta;
-        metaUtilObj.fullMetadata.events[eventProp] = Object.assign({}, rtEventMeta, getDtMetadataForEvent(propDeclaration, eventTypeNode, rtEventMeta.cancelable ?? false, metaUtilObj));
+        metaUtilObj.fullMetadata.events[eventProp] = Object.assign({}, rtEventMeta, getDtMetadataForEvent(memberKey, propDeclaration, memberSymbol, eventTypeNode, rtEventMeta.cancelable ?? false, metaUtilObj));
     }
     // Otherwise, if this is not an Event, check whether the property name begins with
     // the reserved 'on' prefix.
@@ -94,7 +93,7 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
     }
     return isEvent;
 }
-function getDtMetadataForEvent(propDeclaration, typeNode, isCancelable, metaUtilObj) {
+function getDtMetadataForEvent(prop, propDeclaration, memberSymbol, typeNode, isCancelable, metaUtilObj) {
     const checker = metaUtilObj.typeChecker;
     const dt = MetaUtils.getDtMetadata(propDeclaration, MetaTypes.MDContext.EVENT, null, metaUtilObj);
     const typeRefNode = typeNode;
@@ -105,6 +104,7 @@ function getDtMetadataForEvent(propDeclaration, typeNode, isCancelable, metaUtil
             accept: {
                 description: 'This method can be called with an application-created Promise to cancel this event asynchronously.  The Promise should be resolved or rejected to accept or cancel the event, respectively.',
                 reftype: '(param: Promise<void>) => void',
+                isApiDocSignature: true,
                 type: 'function'
             }
         };
@@ -113,6 +113,16 @@ function getDtMetadataForEvent(propDeclaration, typeNode, isCancelable, metaUtil
     if (typeRefNode?.typeArguments && typeRefNode.typeArguments.length) {
         const detailNode = typeRefNode.typeArguments[0];
         const typeObject = checker.getTypeAtLocation(detailNode);
+        const propertyPath = [prop];
+        const metaObj = TypeUtils.getAllMetadataForDeclaration(propDeclaration, MetaTypes.MDScope.DT, MetaTypes.MDContext.EVENT, propertyPath, memberSymbol, metaUtilObj, detailNode);
+        if (metaObj && metaObj.typeDefs) {
+            // loop through the typeObjects discovered during metadata discovery and attempt to create TypeDefs
+            const eventDataTypeStr = metaObj.rawType;
+            let stack = new Set();
+            if (eventDataTypeStr) {
+                MetaUtils.createTypeDefinitionFromTypeDefObj(metaObj.typeDefs, metaUtilObj, stack);
+            }
+        }
         let eventDetailName;
         let genericsInfo;
         let mappedTypesInfo;
@@ -185,12 +195,16 @@ function getDtMetadataForEvent(propDeclaration, typeNode, isCancelable, metaUtil
             }
         }
         if (detailObj) {
-            const checkNode = mappedTypesInfo?.wrappedTypeNode ?? detailNode;
-            if (ts.isTypeReferenceNode(checkNode) && TypeUtils.isLocalExport(checkNode, metaUtilObj)) {
-                const typeDefName = (0, Utils_1.getTypeNameFromTypeReference)(checkNode);
+            if (metaObj && metaObj.reftype && metaObj.isApiDocSignature) {
                 dt['jsdoc'] = dt['jsdoc'] || {};
-                dt['jsdoc']['typedef'] = typeDefName;
+                dt['jsdoc']['reftype'] = metaObj.reftype;
             }
+            // const checkNode = mappedTypesInfo?.wrappedTypeNode ?? detailNode;
+            // if (ts.isTypeReferenceNode(checkNode) && TypeUtils.isLocalExport(checkNode, metaUtilObj)) {
+            //   const typeDefName = getTypeNameFromTypeReference(checkNode);
+            //   dt['jsdoc'] = dt['jsdoc'] || {};
+            //   dt['jsdoc']['typedef'] = typeDefName;
+            // }
         }
     }
     if (detailObj || cancelableDetail) {

@@ -70,9 +70,18 @@ for (let event in data.events) {
 }
 if (props){
   for (let prop of props) {
-    let propEvent = `'${prop}Changed': JetElementCustomEventStrict<${data.vcomponentName}${data.classTypeParams}["${prop}"]>;`; ?>
-  <?js= propEvent ?>
-<?js
+    let propEvent = `'${prop}Changed': JetElementCustomEventStrict<${data.vcomponentName}${data.classTypeParams}["${prop}"]>;`;
+    // JET-73600:
+    // for a readOnly writeback property, let's not reference the type of the property we just added previously on the custom JetElement
+    // but rather the original type of the payload of the callback function from the source. We do this so that we don't get the optional original
+    // non-optional nature of the readonly property leaked here.
+    if (Array.isArray(data.readOnlyProps) && data.readOnlyProps.indexOf(prop) > -1){
+      // Uppercase the property name
+      let uppercaseProp = prop.charAt(0).toUpperCase() + prop.slice(1);
+      propEvent = `'${prop}Changed': JetElementCustomEventStrict<Parameters<Required<${data.propsName}${data.typeParams}>['on${uppercaseProp}Changed']>[0]>;`;
+    } ?>
+    <?js= propEvent ?>
+  <?js
   }
 }?>
 }

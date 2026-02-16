@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -478,11 +478,6 @@ var __oj_checkboxset_metadata =
      * <h5>Formatted messages</h5>
      * <p>
      * Formatting messages using html tags is not supported in the core pack component.
-     * </p>
-     *
-     * <h5>Usage in Dynamic Form</h5>
-     * <p>
-     * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
      * </p>
      *
      * <h5>Disabling individual options</h5>

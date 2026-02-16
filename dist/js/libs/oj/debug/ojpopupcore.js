@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -3150,14 +3150,14 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     var scrollLeft = within.isWindow ? within.scrollLeft : 0;
     var scrollTop = within.isWindow ? within.scrollTop : 0;
 
-    var elemLeft = element.left;
-    var elemRight = element.left + element.width;
-    var elemTop = element.top;
-    var elemBottom = element.top + element.height;
-    var targetLeft = target.left;
-    var targetRight = target.left + target.width;
-    var targetTop = target.top;
-    var targetBottom = target.top + target.height;
+    var elemLeft = Math.round(element.left);
+    var elemRight = elemLeft + Math.round(element.width);
+    var elemTop = Math.round(element.top);
+    var elemBottom = elemTop + Math.round(element.height);
+    var targetLeft = Math.round(target.left);
+    var targetRight = targetLeft + Math.round(target.width);
+    var targetTop = Math.round(target.top);
+    var targetBottom = targetTop + Math.round(target.height);
     var withinLeft = within.offset.left + scrollLeft + paddingLeft;
     // eslint-disable-next-line no-mixed-operators
     var withinRight = within.offset.left + within.width + scrollLeft - paddingRight;

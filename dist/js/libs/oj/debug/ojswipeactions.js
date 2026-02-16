@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -198,6 +198,7 @@ var __oj_swipe_actions_metadata =
               offcanvas = event.target.parentNode.parentNode;
               if (offcanvas.classList.contains('oj-offcanvas-open')) {
                 self._close({ selector: offcanvas, _animate: false });
+                this.element[0].parentNode.focus();
                 event.preventDefault();
               }
             } else if (event.keyCode === 13) {
@@ -323,8 +324,9 @@ var __oj_swipe_actions_metadata =
           this._close({ selector: theOption.parentNode }).then(
             function () {
               this._fireActionEvent(theOption, event);
-              // case for keyboard, need to restore focus
-              if (actionTarget == null) {
+              // case for keyboard and touch device, need to restore focus
+              const isTouchDevice = DomUtils.isTouchSupported();
+              if (actionTarget == null || isTouchDevice) {
                 this.element[0].parentNode.focus();
               }
             }.bind(this)

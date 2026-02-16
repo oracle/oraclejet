@@ -329,8 +329,8 @@ interface SuggestionItemTemplateContext<Key, Data> {
  * <p>
  * It is up to the application developer to set an aria-label on the Input Search.
  * </p>
- * @typeparam {object} K Type of key of the dataprovider
- * @typeparam {object} D Type of data from the dataprovider
+ * @typeparam K Type of key of the dataprovider
+ * @typeparam D Type of data from the dataprovider
  * @ojmetadata description "An Input Search is an input field that the user can type search text into."
  * @ojmetadata displayName "Input Search"
  * @ojmetadata main "ojs/ojinputsearch"
@@ -600,7 +600,7 @@ export namespace InputSearchElement {
     }
     type autocompleteChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['autocomplete']>;
     type placeholderChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['placeholder']>;
-    type rawValueChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['rawValue']>;
+    type rawValueChanged<K, D> = JetElementCustomEventStrict<Parameters<Required<Props<K, D>>['onRawValueChanged']>[0]>;
     type suggestionItemTextChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['suggestionItemText']>;
     type suggestionsChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['suggestions']>;
     type valueChanged<K, D> = JetElementCustomEventStrict<InputSearchElement<K, D>['value']>;
@@ -611,7 +611,7 @@ export interface InputSearchElementEventMap<K, D> extends HTMLElementEventMap {
     'ojValueAction': InputSearchElement.ojValueAction<K, D>;
     'autocompleteChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['autocomplete']>;
     'placeholderChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['placeholder']>;
-    'rawValueChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['rawValue']>;
+    'rawValueChanged': JetElementCustomEventStrict<Parameters<Required<Props<K, D>>['onRawValueChanged']>[0]>;
     'suggestionItemTextChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['suggestionItemText']>;
     'suggestionsChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['suggestions']>;
     'valueChanged': JetElementCustomEventStrict<InputSearchElement<K, D>['value']>;

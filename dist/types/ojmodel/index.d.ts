@@ -2,6 +2,7 @@
 export class ajax {
     constructor(settings?: object);
 }
+/** @deprecated since 20.0.0 - Collection has been deprecated, we no longer recommend using this paradigm. */
 export class Collection {
     changes: number[];
     comparator: null | string | ((param0: Model, param1?: Model) => number);

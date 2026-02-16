@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,7 +8,7 @@
 import { forwardRef } from 'preact/compat';
 import { jsx } from 'preact/jsx-runtime';
 import { h, options, Component, createRef, render, cloneElement, Fragment, createContext } from 'preact';
-import { JetElementError, CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, publicToPrivateName, toSymbolizedValue, LifecycleElementState, addPrivatePropGetterSetters } from 'ojs/ojcustomelement-utils';
+import { JetElementError, CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, publicToPrivateName, toSymbolizedValue, LifecycleElementState, ElementState, addPrivatePropGetterSetters } from 'ojs/ojcustomelement-utils';
 import { getElementRegistration, isElementRegistered, isVComponent, getElementDescriptor, registerElement as registerElement$1 } from 'ojs/ojcustomelement-registry';
 import { useLayoutEffect, useContext, useMemo, useCallback } from 'preact/hooks';
 import { EnvironmentContext, RootEnvironmentProvider } from '@oracle/oraclejet-preact/UNSAFE_Environment';
@@ -3604,7 +3604,9 @@ class VComponentState extends LifecycleElementState {
         // take longer than a microtask to resolve and the element might disconnect while waiting for the promises.
         // This makes the binding provider promise a) irrelevant and b) likely to blow up if we proceeded.
         return Promise.all([translationPromise, templateEnginePromise]).then(() => {
-            return this.Element.isConnected ? super.GetPreCreatedPromise() : Promise.reject();
+            return this.Element.isConnected
+                ? super.GetPreCreatedPromise()
+                : Promise.reject(ElementState._DISCONNECTED);
         });
     }
     /**
@@ -3907,7 +3909,15 @@ function overrideRender(tagName, constructor, metadata, observedPropsSet) {
                 vcompProps: props,
                 observedPropsSet,
                 elemRefObj: this[ELEMENT_REF_OBJ]
-            }, children: jsx(BusyContextProvider, { elemRefObj: this[ELEMENT_REF_OBJ], children: jsx(InternalComp, { instance: this, baseRender: componentRender, props: componentProps, state: state, context: context, tagName: tagName, metadata: metadata }) }) }));
+            }, children: tagName === 'oj-c-select-single' || tagName === 'oj-c-select-multiple' ? (InternalComp({
+                instance: this,
+                tagName,
+                metadata,
+                state,
+                context,
+                baseRender: componentRender,
+                props: componentProps
+            })) : (jsx(BusyContextProvider, { elemRefObj: this[ELEMENT_REF_OBJ], children: jsx(InternalComp, { instance: this, baseRender: componentRender, props: componentProps, state: state, context: context, tagName: tagName, metadata: metadata }) })) }));
     };
 }
 function addPropGetterSetters(proto, properties) {

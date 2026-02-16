@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventtarget, ojarraydataproviderimpl) { 'use strict';
+define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl', 'ojs/ojconfig'], function (ojeventtarget, ojarraydataproviderimpl, ojconfig) { 'use strict';
 
     /**
      * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -120,7 +120,7 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
      * @expose
      * @memberof MutableArrayDataProvider
      * @instance
-     * @property {D[]} data
+     * @type {D[]}
      * @ojsignature {target: "Type", value: "D[]"}
      */
 
@@ -498,6 +498,7 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
          * Apply sort comparators
          */
         _getSortComparator(sortCriteria) {
+            const collator = new Intl.Collator(ojconfig.getLocale(), { numeric: true, sensitivity: 'base' });
             return (x, y) => {
                 const sortComparators = this.options != null ? this.options.sortComparators : null;
                 let i, direction, attribute, comparator, xval, yval;
@@ -528,10 +529,7 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
                             if (strY === 'null' || strY === 'undefined') {
                                 return -1;
                             }
-                            compareResult = strX.localeCompare(strY, undefined, {
-                                numeric: true,
-                                sensitivity: 'base'
-                            });
+                            compareResult = collator.compare(strX, strY);
                         }
                         else {
                             if (strX === 'null' || strX === 'undefined') {
@@ -540,10 +538,7 @@ define(['ojs/ojeventtarget', 'ojs/ojarraydataproviderimpl'], function (ojeventta
                             if (strY === 'null' || strY === 'undefined') {
                                 return 1;
                             }
-                            compareResult = strY.localeCompare(strX, undefined, {
-                                numeric: true,
-                                sensitivity: 'base'
-                            });
+                            compareResult = collator.compare(strY, strX);
                         }
                         if (compareResult != 0) {
                             return compareResult;

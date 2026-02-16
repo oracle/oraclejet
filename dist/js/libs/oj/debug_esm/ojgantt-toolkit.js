@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -21251,24 +21251,25 @@ class Gantt extends TimeComponent {
    */
   _processInitialSelections() {
     var selection = this.Options['selection'];
-    if (selection == null || selection.length === 0) return;
 
     if (this.isSelectionSupported()) {
-      var keySet = new this._context.KeySetImpl(selection);
-      var rowObjs = this.getRowLayoutObjs();
       var targets = [];
-      for (var i = 0; i < rowObjs.length; i++) {
-        var rowObj = rowObjs[i];
-        var taskObjs = rowObj['taskObjs'];
-        for (var j = 0; j < taskObjs.length; j++) {
-          var taskObj = taskObjs[j];
-          if (keySet.has(taskObj['id'])) {
-            // Ensure taskNode exists by explicitly rendering the task into DOM, even if it's not visible yet.
-            // TODO: See if we can avoid this for performance reasons, and set selection as we bring things into view.
-            // In many use cases, only a small proportion of all tasks are selected, so performance shouldn't be an issue.
-            this._dataLayoutManager.ensureInDOM(taskObj, 'task');
-            var taskNode = taskObj['node'];
-            targets.push(taskNode);
+      if (selection && selection.length > 0) {
+        var keySet = new this._context.KeySetImpl(selection);
+        var rowObjs = this.getRowLayoutObjs();
+        for (var i = 0; i < rowObjs.length; i++) {
+          var rowObj = rowObjs[i];
+          var taskObjs = rowObj['taskObjs'];
+          for (var j = 0; j < taskObjs.length; j++) {
+            var taskObj = taskObjs[j];
+            if (keySet.has(taskObj['id'])) {
+              // Ensure taskNode exists by explicitly rendering the task into DOM, even if it's not visible yet.
+              // TODO: See if we can avoid this for performance reasons, and set selection as we bring things into view.
+              // In many use cases, only a small proportion of all tasks are selected, so performance shouldn't be an issue.
+              this._dataLayoutManager.ensureInDOM(taskObj, 'task');
+              var taskNode = taskObj['node'];
+              targets.push(taskNode);
+            }
           }
         }
       }

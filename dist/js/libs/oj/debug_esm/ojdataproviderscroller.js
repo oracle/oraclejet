@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -114,7 +114,10 @@ DataProviderContentHandler.prototype.IsReady = function () {
  * Sets any aria attributes on the root element
  * @protected
  */
-DataProviderContentHandler.prototype.setRootAriaProperties = function () {
+DataProviderContentHandler.prototype.setRootAriaProperties = function (isSkipRole) {
+  if (isSkipRole) {
+    return;
+  }
   if (this.shouldUseGridRole()) {
     this.m_root.setAttribute('role', 'grid');
   } else if (this.IsHierarchical()) {
@@ -629,13 +632,18 @@ DataProviderContentHandler.prototype.handleModelMutateEvent = function (event) {
       this.getValidatedEventDetailPromise = null;
     });
   }
+  // reset root aria properties to reflect updated row count
+  this.setRootAriaProperties(true);
 };
 
 /**
  * @protected
  */
 // eslint-disable-next-line no-unused-vars
-DataProviderContentHandler.prototype.handleModelRefreshEvent = function (event) {};
+DataProviderContentHandler.prototype.handleModelRefreshEvent = function (event) {
+  // reset root aria properties to reflect updated row count
+  this.setRootAriaProperties(true);
+};
 
 /**
  * @private
@@ -1937,7 +1945,15 @@ IteratingDataProviderContentHandler.prototype.notifyAttached = function () {
  * Sets aria-rowcount or aria-colcount
  * @override
  */
-IteratingDataProviderContentHandler.prototype.setAriaRowOrColCount = function (root, value) {
+IteratingDataProviderContentHandler.prototype.setAriaRowOrColCount = function (value) {
+  // in card layout mode, this.m_superRoot would be the original root element, and this.m_root would be the inner ul element that contains the card item
+  // we should set aria-rowcount/colcount on the original root element
+  const root = this.m_superRoot ?? this.m_root;
+
+  // note that this.m_root may have been cleared before the getTotalSize promise resolves
+  // (this happened in oj-select-single unit tests)
+  if (!root) return;
+
   if (this.isCardLayout()) {
     root.setAttribute('aria-colcount', value);
   } else {
@@ -1949,8 +1965,8 @@ IteratingDataProviderContentHandler.prototype.setAriaRowOrColCount = function (r
  * Sets aria properties on root
  * @override
  */
-IteratingDataProviderContentHandler.prototype.setRootAriaProperties = function () {
-  IteratingDataProviderContentHandler.superclass.setRootAriaProperties.call(this);
+IteratingDataProviderContentHandler.prototype.setRootAriaProperties = function (isSkipRole) {
+  IteratingDataProviderContentHandler.superclass.setRootAriaProperties.call(this, isSkipRole);
 
   // for high-water mark scrolling, we'll need to add additional wai-aria attribute since not
   // all items are in the DOM
@@ -1959,13 +1975,7 @@ IteratingDataProviderContentHandler.prototype.setRootAriaProperties = function (
     this.getDataProvider()
       .getTotalSize()
       .then(function (size) {
-        // self.m_root may have been cleared before the getTotalSize promise resolves
-        // (this happened in oj-select-single unit tests)
-        if (self.m_root) {
-          // if count is unknown, then use max count
-          const value = size === -1 ? self._getMaxCount() : size;
-          self.setAriaRowOrColCount(self.m_root, value);
-        }
+        self.setAriaRowOrColCount(size);
       });
   }
 };
@@ -3061,9 +3071,9 @@ IteratingDataProviderContentHandler.prototype._getAnimateShowContentPromise = fu
         this._isLoadMoreOnScroll()
       ) {
         // update aria rowcount once all data is loaded
-        const root = this.m_superRoot ? this.m_superRoot : this.m_root;
+        // only checking this.m_root because children are still under this.m_root
         const value = this.getItems(this.m_root).length;
-        this.setAriaRowOrColCount(root, value);
+        this.setAriaRowOrColCount(value);
       }
       return skipPostProcessing;
     })
@@ -3447,6 +3457,7 @@ IteratingDataProviderContentHandler.prototype.handleModelRefreshEvent = function
   if (this.m_root == null) {
     return;
   }
+  IteratingDataProviderContentHandler.superclass.handleModelRefreshEvent.call(this);
 
   // any outstanding idle-time rendering should immediately be stopped
   this._cancelIdleCallback();

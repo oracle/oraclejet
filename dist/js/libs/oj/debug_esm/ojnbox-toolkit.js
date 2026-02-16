@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Point, Rectangle, OutputText, GradientParser, LinearGradientFill, ArrayUtils, EventFactory, ResourceUtils, Displayable, KeyboardEvent, Agent, BlackBoxAnimationHandler, CSSStyle, JsonUtils, DataAnimationHandler, Container, TextUtils, Rect, Stroke, ColorUtils, ImageMarker, SimpleMarker, PatternFill, ToolkitUtils, ClipPath, AnimMoveTo, Playable, CustomAnimation, SolidFill, Animator, AnimMoveBy, AnimFadeOut, SelectionEffectUtils, MouseEvent, KeyboardHandler, EventManager, KeyboardFocusEffect, SimpleScrollableContainer, IconButton, AnimFadeIn, Shadow, AnimScaleTo, PathUtils, Path, Matrix, Automation, BaseComponentDefaults, CategoryRolloverHandler, BaseComponent, BaseComponentCache, SelectionHandler } from 'ojs/ojdvt-toolkit';
+import { Point, Rectangle, OutputText, GradientParser, LinearGradientFill, ArrayUtils, EventFactory, ResourceUtils, Displayable, KeyboardEvent, Agent, BlackBoxAnimationHandler, CSSStyle, JsonUtils, DataAnimationHandler, Container, TextUtils, Rect, Stroke, ColorUtils, ImageMarker, SimpleMarker, PatternFill, ToolkitUtils, ClipPath, AnimMoveTo, Playable, CustomAnimation, SolidFill, Animator, AnimMoveBy, AnimFadeOut, SelectionEffectUtils, MouseEvent, KeyboardHandler, EventManager, KeyboardFocusEffect, SimpleScrollableContainer, IconButton, AnimFadeIn, Shadow, ARIA_LABEL_STATE_DELIMITER, AriaUtils, AnimScaleTo, PathUtils, Path, Matrix, Automation, BaseComponentDefaults, CategoryRolloverHandler, BaseComponent, BaseComponentCache, SelectionHandler } from 'ojs/ojdvt-toolkit';
 import { getTranslatedString } from 'ojs/ojtranslation';
 
 /**
@@ -5447,8 +5447,17 @@ class DvtNBoxCell extends Container {
       states.push(translations.stateMaximized);
     else if (DvtNBoxDataUtils.isCellMinimized(this._nbox, cellIndex))
       states.push(translations.stateMinimized);
-    states.push([translations.labelSize, this.getNodeCount()]);
-    return Displayable.generateAriaLabel(this.getData()['shortDesc'], states);
+    var countDesc = [
+      translations.labelSize,
+      this._nbox.getOptions()['countLabel'] ? this.getCountLabel() : this.getNodeCount()
+    ].join(ARIA_LABEL_STATE_DELIMITER);
+    var shortDesc = this.getData()['shortDesc'];
+    var desc = shortDesc
+      ? [countDesc, Displayable.resolveShortDesc(shortDesc)].join(
+          AriaUtils.ARIA_LABEL_DESC_DELIMITE
+        )
+      : countDesc;
+    return Displayable.generateAriaLabel(desc, states);
   }
 
   //---------------------------------------------------------------------//

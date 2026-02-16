@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1108,6 +1108,7 @@ var __oj_range_slider_metadata =
          * @instance
          * @since 7.0.0
          * @memberof oj.ojSlider
+         * @ojdeprecated {since: '20.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
          */
         /**
          * <p>
@@ -1148,6 +1149,7 @@ var __oj_range_slider_metadata =
          * @instance
          * @since 8.2.0
          * @memberof oj.ojRangeSlider
+         * @ojdeprecated {since: '20.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
          */
         labelledBy: null,
 

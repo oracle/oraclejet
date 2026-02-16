@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1590,6 +1590,16 @@ var __oj_status_meter_gauge_metadata =
    *
    * @ojoracleicon 'oj-ux-ico-gauge-rating'
    * @ojuxspecs ['gauge']
+   *
+   * @ojlegacymetadata requirements [
+   *    {
+   *      type: "anyOf",
+   *      label: "accessibility",
+   *      properties: ["aria-label", "aria-labelledby", "labelled-by"],
+   *      slots: [""]
+   *    }
+   * ]
+   *
    * @ojdeprecated [
    *  {
    *    type: "maintenance",
@@ -2431,6 +2441,15 @@ var __oj_status_meter_gauge_metadata =
    *
    * @ojoracleicon 'oj-ux-ico-linear-status'
    * @ojuxspecs ['gauge']
+   *
+   * @ojlegacymetadata requirements [
+   *    {
+   *      type: "anyOf",
+   *      label: "accessibility",
+   *      properties: ["aria-label", "aria-labelledby", "labelled-by"],
+   *      slots: [""]
+   *    }
+   * ]
    *
    * @classdesc
    * <h3 id="statusMeterGaugeOverview-section">
@@ -3429,6 +3448,11 @@ var __oj_status_meter_gauge_metadata =
    * <h5>thresholds[].max attribute </h5>
    * <p>
    * thresholds[].max is optional in oj-rating-gauge but required in oj-c-rating-gauge.
+   * </p>
+   * <h5>preserve-aspect-ratio attribute </h5>
+   * <p>
+   * The preserve-aspect-ratio attribute is not supported in oj-c-rating-gauge.
+   * </p>
    * @ojfragment migrationDoc
    * @memberof oj.ojRatingGauge
    */

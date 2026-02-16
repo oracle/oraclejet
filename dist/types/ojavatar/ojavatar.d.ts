@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -497,12 +497,12 @@ export interface AvatarElementSettablePropertiesLenient extends Partial<AvatarEl
 }
 export type ojAvatar = AvatarElement;
 export namespace ojAvatar {
-    type backgroundChanged = JetElementCustomEventStrict<ojAvatar['background']>;
-    type iconClassChanged = JetElementCustomEventStrict<ojAvatar['iconClass']>;
-    type initialsChanged = JetElementCustomEventStrict<ojAvatar['initials']>;
-    type shapeChanged = JetElementCustomEventStrict<ojAvatar['shape']>;
-    type sizeChanged = JetElementCustomEventStrict<ojAvatar['size']>;
-    type srcChanged = JetElementCustomEventStrict<ojAvatar['src']>;
+    type backgroundChanged = JetElementCustomEventStrict<AvatarElement['background']>;
+    type iconClassChanged = JetElementCustomEventStrict<AvatarElement['iconClass']>;
+    type initialsChanged = JetElementCustomEventStrict<AvatarElement['initials']>;
+    type shapeChanged = JetElementCustomEventStrict<AvatarElement['shape']>;
+    type sizeChanged = JetElementCustomEventStrict<AvatarElement['size']>;
+    type srcChanged = JetElementCustomEventStrict<AvatarElement['src']>;
 }
 export type ojAvatarEventMap = AvatarElementEventMap;
 export type ojAvatarSettableProperties = AvatarElementSettableProperties;

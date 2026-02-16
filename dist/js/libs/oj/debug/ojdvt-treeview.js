@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -5325,7 +5325,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var highlightMode = options['highlightMode'];
       if (highlightMode === 'descendants') {
         var obj = tree.EventManager.getCurrentHoverObj();
-        this._highlightDescendants(obj);
+        if (tree.EventManager.hasDescendants(obj)) this._highlightDescendants(obj);
       } else {
         // Perform the highlighting
         dvt.CategoryRolloverHandler.highlight(
@@ -5552,6 +5552,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     getCurrentHoverObj() {
       return this._currentHoverItem;
+    }
+
+    /**
+     * Returns whether the object has descendants
+     * @param {Object}
+     * @returns {boolean} whether the object has descendents
+     */
+    hasDescendants(obj) {
+      return true;
     }
 
     /**
@@ -6978,6 +6987,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     RotateEndTouch() {
       this.GetView().__endRotation();
     }
+
+    /**
+     * @override
+     */
+    hasDescendants(obj) {
+      return obj !== null && obj.getId() !== DvtSunburstEventManager.ROTATION_ID;
+    }
   }
   DvtSunburstEventManager.ROTATION_ID = '_rotationShape'; // id used to identify the shape used for rotation
 
@@ -7313,7 +7329,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     __moveToHoverLayer(displayable) {
       // Move the object to the hover layer
-      this._hoverLayer.addChild(displayable);
+      if (
+        this._hoverLayer.getNumChildren() === 0 ||
+        this._hoverLayer.getNumChildren() - 1 !== this._hoverLayer.getChildIndex(displayable)
+      ) {
+        this._hoverLayer.addChild(displayable);
+      }
     }
 
     /**
@@ -7322,7 +7343,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     __moveToSelectedLayer(displayable) {
       // Move the object to the selected layer
-      this._selectedLayer.addChild(displayable);
+      if (
+        this._selectedLayer.getNumChildren() === 0 ||
+        this._selectedLayer.getNumChildren() - 1 !== this._selectedLayer.getChildIndex(displayable)
+      ) {
+        this._selectedLayer.addChild(displayable);
+      }
 
       // Also reapply the shadow.  Use a clone since the object is static and may be used elsewhere in the page.
       //  and : Disable shadows in safari and ff due to rendering issues.

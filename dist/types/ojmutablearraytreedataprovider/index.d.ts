@@ -3,7 +3,7 @@ import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults
 import ArrayDataProvider = require('../ojarraydataprovider');
 import TreeDataProvider = require('../ojtreedataprovider');
 export class MutableArrayTreeDataProvider<K, D> implements TreeDataProvider<K, D> {
-    data: any;
+    data: D[];
     constructor(data: any, keyAttribute: string | '@value', options?: MutableArrayTreeDataProvider.Options<D>);
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;

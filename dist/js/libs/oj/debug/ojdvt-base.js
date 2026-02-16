@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -49,7 +49,7 @@ define(['ojs/ojdataprovider', 'ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcon
    *
    * <p>The application is also responsible for including contextual information for
    * screen readers using one or more the following methods as appropriate:
-   * aria-label, aria-labelledby, aria-describedby.</p>
+   * aria-label, aria-labelledby.</p>
    *
    * @ojfragment a11yKeyboard
    * @memberof oj.dvtBaseComponent

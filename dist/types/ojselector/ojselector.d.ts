@@ -103,6 +103,12 @@ type State = {
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
+ * To make your component accessible, the application is required to include contextual information for screen readers using one or more the following methods as appropriate:
+ *  <ul>
+ *   <li>aria-labelledby</li>
+ *   <li>aria-label</li>
+ *   <li>aria-describedby</li>
+ *  </ul>
  *
  * <p>Application must specify a value for the aria-label attribute with a meaningful description of the purpose of this selector in order for this to be accessible.</p>
  *
@@ -111,13 +117,14 @@ type State = {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
  * </h3>
  * To migrate from oj-selector to oj-c-selector or oj-c-selector-all, you need to revise the import statement and references to oj-selector in your app. Please note the changes between the two components below.
+ * Note that when migrate to oj-c-selector-all, the indeterminate attribute is no longer needed.
  * <h5 id="dataprovider-key-type-migration"></h5>
  *
  * <h5>selection-mode attribute</h5>
  * <p>For selection-mode="single"|"multiple", please use oj-c-selector; for selection-mode="all", please use oj-c-selector-all.</p>
  *
  *
- * @typeparam {object} K Type of key
+ * @typeparam K Type of key
  * @ojmetadata description "The selector component renders checkboxes in collections to support selection."
  * @ojmetadata displayName "Selector"
  * @ojmetadata main "ojs/ojselector"
@@ -138,6 +145,15 @@ type State = {
  * }
  * @ojmetadata help "%JET_API_DOC_URL%oj.ojSelector.html"
  * @ojmetadata since "9.0.0"
+ * @ojlegacymetadata requirements [
+ *    {
+ *      type: "anyOf",
+ *      label: "accessibility",
+ *      properties: ["aria-label", "aria-labelledby"],
+ *      slots: [""]
+ *    }
+ * ]
+ *
  */
 /**
  * This export corresponds to the Selector Preact component. For the oj-selector custom element, import SelectorElement instead.

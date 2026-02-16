@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -752,6 +752,9 @@ CoreRouter.prototype.getUrlForNavigation = function (...routes) {
  * @private
  */
 CoreRouter.prototype._getPathname = function (routes) {
+  if (routes.length === 0) {
+    return urlAdapter.getUrlForRoutes([]);
+  }
   routes.forEach(function ({ params }) {
     if (params) {
       // Only primitive values in params object

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -239,6 +239,19 @@ interface ItemTemplateContext<Key, Data> {
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  *  </h3>
+ * To make your component accessible, the application is required to include contextual information for screen readers using one or more the following methods as appropriate:
+ *  <ul>
+ *   <li>aria-label</li>
+ *   <li>aria-labelledby</li>
+ *  </ul>
+ *
+ * <h3 id="progressive-loading-section">
+ *   Progressive Loading
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#progressive-loading-section"></a>
+ * </h3>
+ * <p>
+ *  This component supports loading indicators. Loading indicators are only shown after a pre-defined time has elapsed during the data provider fetch.
+ * </p>
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -315,8 +328,8 @@ interface ItemTemplateContext<Key, Data> {
  *   </tbody>
  * </table>
  *
- * @typeparam {object} K Type of key of the dataprovider
- * @typeparam {object} D Type of data from the dataprovider
+ * @typeparam K Type of key of the dataprovider
+ * @typeparam D Type of data from the dataprovider
  * @ojmetadata description "A stream list displays data in an activity stream feed."
  * @ojmetadata displayName "Stream List"
  * @ojmetadata main "ojs/ojstreamlist"
@@ -336,6 +349,15 @@ interface ItemTemplateContext<Key, Data> {
  * }
  * @ojmetadata help "%JET_API_DOC_URL%oj.ojStreamList.html"
  * @ojmetadata since "9.0.0"
+ * @ojlegacymetadata requirements [
+ *    {
+ *      type: "anyOf",
+ *      label: "accessibility",
+ *      properties: ["aria-label", "aria-labelledby"],
+ *      slots: [""]
+ *    }
+ * ]
+ *
  */
 /**
  * This export corresponds to the StreamList Preact component. For the oj-stream-list custom element, import StreamListElement instead.
@@ -356,6 +378,7 @@ export declare class StreamList<K extends string | number, D> extends Component<
     private height;
     private focusInHandler;
     private focusOutHandler;
+    private scrollEventElement;
     constructor(props: Readonly<Props<K, D>>);
     static defaultProps: Partial<Props<any, any>>;
     private static readonly debounceThreshold;

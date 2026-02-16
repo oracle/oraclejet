@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -595,34 +595,24 @@ define(['exports', 'ojs/ojdataprovider', 'ojs/ojset', 'ojs/ojcore-base', 'ojs/oj
          */
         _getCachedIndexMap(sortCriteria, cacheObj) {
             if (cacheObj &&
-                cacheObj['indexMap'] &&
-                cacheObj['mutationSequenceNum'] === this._mutationSequenceNum) {
-                return cacheObj['indexMap'];
+                cacheObj.indexMap &&
+                cacheObj.mutationSequenceNum === this._mutationSequenceNum) {
+                return cacheObj.indexMap;
             }
-            const dataIndexes = this.implOptions.getData().map((value, index) => {
-                return index;
-            });
-            const indexMap = this._sortData(dataIndexes, sortCriteria);
-            if (cacheObj) {
-                cacheObj['indexMap'] = indexMap;
-                cacheObj['mutationSequenceNum'] = this._mutationSequenceNum;
-            }
-            return indexMap;
-        }
-        /**
-         * Sort data
-         */
-        _sortData(indexMap, sortCriteria) {
-            const rowData = this.implOptions.getData();
-            const indexedData = indexMap.map((index) => {
-                return { index: index, value: rowData[index] };
+            const dataIndexMap = this.implOptions.getData().map((value, index) => {
+                return { value, index };
             });
             if (sortCriteria != null) {
-                indexedData.sort(this.implOptions.getSortComparator(sortCriteria));
+                dataIndexMap.sort(this.implOptions.getSortComparator(sortCriteria));
             }
-            return indexedData.map((item) => {
+            const indexMap = dataIndexMap.map((item) => {
                 return item.index;
             });
+            if (cacheObj) {
+                cacheObj.indexMap = indexMap;
+                cacheObj.mutationSequenceNum = this._mutationSequenceNum;
+            }
+            return indexMap;
         }
         queueMutationEvent(changes) {
             this._mutationEvent = this._createMutationEvent(changes);

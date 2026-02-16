@@ -5,10 +5,7 @@ import BufferingDataProvider = require('../ojbufferingdataprovider');
 declare class BufferingTreeDataProvider<K, D> implements TreeDataProvider<K, D> {
     constructor(dataProvider: DataProvider<K, D>, options?: BufferingTreeDataProvider.Options<K, D>);
     addEventListener(eventType: string, listener: EventListener): void;
-    addItem(item: Item<K, D>, addDetail?: {
-        nullParentKey?: K;
-        addBeforeKey?: K | null;
-    }): void;
+    addItem(item: Item<K, D>, addDetail?: BufferingTreeDataProvider.AddDetail<K>): Item<K, D>;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
     createOptimizedKeySet?(initialSet?: Set<K>): Set<K>;
@@ -29,6 +26,16 @@ declare class BufferingTreeDataProvider<K, D> implements TreeDataProvider<K, D> 
     updateItem(item: Item<K, D>): void;
 }
 declare namespace BufferingTreeDataProvider {
+    // tslint:disable-next-line interface-over-type-literal
+    type AddDetail<K> = ({
+        nullParentKey?: K;
+    } & ({
+        addBeforeKey: K | null;
+        addAfterKey?: never;
+    } | {
+        addBeforeKey?: never;
+        addAfterKey: K;
+    }));
     // tslint:disable-next-line interface-over-type-literal
     type Options<K, D> = {
         keyGenerator?: (value: Partial<D>) => K;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -455,6 +455,27 @@ var __oj_select_single_metadata =
    * <a href="oj.ojOption.html">&lt;oj-option></a> and
    * <a href="oj.ojOptgroup.html">&lt;oj-optgroup></a> child tags is not supported.  For cases with
    * a small set of fixed data, use an <a href="ArrayDataProvider.html">ArrayDataProvider</a>.</p>
+   *
+   * <h4>Data Fetch Limit</h4>
+   * <p>Unlike oj-list-view and oj-table, the oj-select-single component does not
+   * support a scroll-policy-options.max-count property directly.
+   * To configure a fetch limit, you must define a custom collectionTemplate
+   * and apply the desired scroll-policy-options.max-count on the collection
+   * component used within it. By default, if no collectionTemplate is
+   * specified, oj-select-single renders a oj-list-view internally, which
+   * has a default fetch limit of 500 items.</p>
+   *
+   * <pre class="prettyprint"><code>
+   * &lt;oj-select-single>
+   *   &lt;template slot="collectionTemplate" data-oj-as="collection">
+   *     &lt;oj-list-view scroll-policy-options.max-count="1000">
+   *       &lt;template slot="itemTemplate" data-oj-as="item">
+   *         ...
+   *       &lt;/template>
+   *     &lt;/oj-list-view>
+   *   &lt;/template>
+   * &lt;/oj-select-single>
+   * </code></pre>
    *
    * {@ojinclude "name":"selectComboDifferences"}
    *
@@ -2343,13 +2364,6 @@ var __oj_select_single_metadata =
      * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
      * </p>
      *
-     * <h5>LabelledBy attribute</h5>
-     * <p>
-     * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
-     * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
-     * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
-     * to add a label for the form component.
-     * </p>
      *
      * <h5>DescribedBy attribute</h5>
      * <p>
@@ -2422,11 +2436,6 @@ var __oj_select_single_metadata =
      * </pre>
      * </p>
      *
-     * </p>
-     *
-     * <h5>Usage in Dynamic Form</h5>
-     * <p>
-     * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
      * </p>
      *
      * <h5>Limitations</h5>

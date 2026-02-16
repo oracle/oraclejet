@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1167,6 +1167,7 @@ oj.__registerWidget(
        * @memberof oj.inputBase
        * @ojshortdesc Specifies whether the component will get input focus when the page is loaded. See the Help documentation for more information.
        * @ojextension {_COPY_TO_INNER_ELEM: true}
+       * @ojdeprecated {since: '20.0.0', description: 'This is not recommended for accessibility reasons.'}
        */
       autofocus: false,
       /**
@@ -1206,6 +1207,7 @@ oj.__registerWidget(
        * @instance
        * @since 7.0.0
        * @memberof oj.inputBase
+       * @ojdeprecated {since: '20.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
        */
       labelledBy: null,
       /**
@@ -3212,13 +3214,6 @@ oj.__registerWidget(
  * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
  * </p>
  *
- * <h5>LabelledBy attribute</h5>
- * <p>
- * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
- * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
- * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
- * to add a label for the form component.
- * </p>
  *
  * <h5>DescribedBy attribute</h5>
  * <p>
@@ -3231,9 +3226,12 @@ oj.__registerWidget(
  * Formatting messages using html tags is not supported in the core pack component.
  * </p>
  *
- * <h5>Usage in Dynamic Form</h5>
+ * <h5>Converter Errors and Validator Errors</h5>
  * <p>
- * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+ * Using instances of ConverterError, ValidatorError, or JavaScript objects duck typing Message to show custom
+ * validation and conversion errors is not supported in the core pack component. To show a converter error or a validator error,
+ * use the native JavaScript Error with the detail string instead.
+ * For example, <code class="prettyprint">throw new Error('error message detail')</code>.
  * </p>
  *
  * @example <caption>Initialize the oj-input-password element with no attributess specified:</caption>
@@ -3858,10 +3856,6 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
  * attribute to the corresponding value.
  * </p>
  *
- * <h5>List attribute</h5>
- * <p>
- * The list attribute is no longer supported.
- * </p>
  *
  * <h5>MessagesCustom attribute</h5>
  * <p>
@@ -3953,13 +3947,6 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
  * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
  * </p>
  *
- * <h5>LabelledBy attribute</h5>
- * <p>
- * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
- * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
- * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
- * to add a label for the form component.
- * </p>
  *
  * <h5>DescribedBy attribute</h5>
  * <p>
@@ -3972,9 +3959,12 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
  * Formatting messages using html tags is not supported in the core pack component.
  * </p>
  *
- * <h5>Usage in Dynamic Form</h5>
+ * <h5>Converter Errors and Validator Errors</h5>
  * <p>
- * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+ * Using instances of ConverterError, ValidatorError, or JavaScript objects duck typing Message to show custom
+ * validation and conversion errors is not supported in the core pack component. To show a converter error or a validator error,
+ * use the native JavaScript Error with the detail string instead.
+ * For example, <code class="prettyprint">throw new Error('error message detail')</code>.
  * </p>
  *
  * @example <caption>Declare the oj-input-text component with no attributes specified:</caption>
@@ -4259,6 +4249,7 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
      * @type {string}
      * @public
      * @ojextension {_COPY_TO_INNER_ELEM: true}
+     * @ojdeprecated {since: '20.0.0', description: 'This is not supported in the Redwood UX specification.'}
      */
     list: '',
 
@@ -5029,13 +5020,6 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
  * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
  * </p>
  *
- * <h5>LabelledBy attribute</h5>
- * <p>
- * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
- * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
- * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
- * to add a label for the form component.
- * </p>
  *
  * <h5>DescribedBy attribute</h5>
  * <p>
@@ -5048,9 +5032,12 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
  * Formatting messages using html tags is not supported in the core pack component.
  * </p>
  *
- * <h5>Usage in Dynamic Form</h5>
+ * <h5>Converter Errors and Validator Errors</h5>
  * <p>
- * Using the component in oj-dyn-form is not supported in this release, use oj-dynamic-form instead.
+ * Using instances of ConverterError, ValidatorError, or JavaScript objects duck typing Message to show custom
+ * validation and conversion errors is not supported in the core pack component. To show a converter error or a validator error,
+ * use the native JavaScript Error with the detail string instead.
+ * For example, <code class="prettyprint">throw new Error('error message detail')</code>.
  * </p>
  *
  * @example <caption>Initialize the textarea with no attributes specified:</caption>

@@ -112,8 +112,8 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
                 }
             }
             else if (!generateObservedGlobalPropsMetadata(prop, propDeclaration, metaUtilObj, isValueDeclaration) &&
-                !(0, MetadataSlotUtils_1.generateSlotsMetadata)(prop, propDeclaration, metaUtilObj) &&
-                !(0, MetadataEventUtils_1.generateEventsMetadata)(prop, propDeclaration, metaUtilObj)) {
+                !(0, MetadataSlotUtils_1.generateSlotsMetadata)(prop, propDeclaration, memberSymbol, metaUtilObj) &&
+                !(0, MetadataEventUtils_1.generateEventsMetadata)(prop, propDeclaration, memberSymbol, metaUtilObj)) {
                 // Check whether VComponent author incorrectly migrated the component, and
                 // we have already encountered a read-only writeback property of this name.
                 if (readOnlyPropNameNodes.find((item) => item.name === prop)) {

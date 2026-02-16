@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -3743,38 +3743,93 @@ var __oj_data_grid_metadata =
    * @private
    */
   DvtDataGrid.prototype._updateGridlines = function () {
-    var horizontalGridlines = this.m_options.getHorizontalGridlines();
-    var verticalGridlines = this.m_options.getVerticalGridlines();
-    var dir = this.getResources().isRTLMode() ? 'right' : 'left';
+    const horizontalGridlines = this.m_options.getHorizontalGridlines();
+    const verticalGridlines = this.m_options.getVerticalGridlines();
+    const dir = this.getResources().isRTLMode() ? 'right' : 'left';
 
-    if (this.m_databody && this.m_databody.firstChild) {
-      let cells = this.m_databody.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
-      let lastRow = this._getLastAxis('row');
-      let lastColumn = this._getLastAxis('column');
-      for (let i = 0; i < cells.length; i++) {
-        let cell = cells[i];
-        let indexes = this.getCellIndexes(cell);
-        if (
-          verticalGridlines === 'hidden' ||
-          (indexes.column === lastColumn &&
-            (this.getRowHeaderWidth() + this.getElementDir(cell, dir) + this.getElementWidth(cell) >=
-              this.getWidth() ||
-              this.m_endRowEndHeader > -1))
-        ) {
-          this.m_utils.addCSSClassName(cell, this.getMappedStyle('borderVerticalNone'));
-        } else {
-          this.m_utils.removeCSSClassName(cell, this.getMappedStyle('borderVerticalNone'));
-        }
+    if (!this.m_databody?.firstChild) {
+      return;
+    }
 
-        if (
-          horizontalGridlines === 'hidden' ||
-          (indexes.row === lastRow &&
-            (this.getRowBottom(cell, null) >= this.getHeight() || this.m_endColEndHeader > -1))
-        ) {
-          this.m_utils.addCSSClassName(cell, this.getMappedStyle('borderHorizontalNone'));
-        } else {
-          this.m_utils.removeCSSClassName(cell, this.getMappedStyle('borderHorizontalNone'));
-        }
+    let cells = [...this.m_databody.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'))];
+
+    if (this._hasFrozenRows()) {
+      cells = cells.concat([
+        ...this.m_databodyFrozenRow.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'))
+      ]);
+    }
+    if (this._hasFrozenColumns()) {
+      cells = cells.concat([
+        ...this.m_databodyFrozenCol.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'))
+      ]);
+    }
+
+    if (this._hasFrozenRows() || this._hasFrozenColumns()) {
+      if (this.m_hasHorizontalScroller) {
+        const rowHeaders = this.m_rowHeader.querySelectorAll(
+          '.' + this.getMappedStyle('borderHorizontalNone')
+        );
+        rowHeaders.forEach((header) => {
+          if (!(this._isLastRow(this._getIndex(header)) && !this._hasFrozenColumns())) {
+            header.classList.remove(this.getMappedStyle('borderHorizontalNone'));
+          }
+        });
+        const rowEndHeaders = this.m_rowEndHeader.querySelectorAll(
+          '.' + this.getMappedStyle('borderHorizontalNone')
+        );
+        rowEndHeaders.forEach((header) => {
+          if (!(this._isLastRow(this._getIndex(header)) && !this._hasFrozenColumns())) {
+            header.classList.remove(this.getMappedStyle('borderHorizontalNone'));
+          }
+        });
+      }
+      if (this.m_hasVerticalScroller) {
+        const colHeaders = this.m_colHeader.querySelectorAll(
+          '.' + this.getMappedStyle('borderVerticalNone')
+        );
+        colHeaders.forEach((header) => {
+          if (!(this._isLastColumn(this._getIndex(header)) && !this._hasFrozenRows())) {
+            header.classList.remove(this.getMappedStyle('borderVerticalNone'));
+          }
+        });
+        const colEndHeaders = this.m_colEndHeader.querySelectorAll(
+          '.' + this.getMappedStyle('borderVerticalNone')
+        );
+        colEndHeaders.forEach((header) => {
+          if (!(this._isLastColumn(this._getIndex(header)) && !this._hasFrozenRows())) {
+            header.classList.remove(this.getMappedStyle('borderVerticalNone'));
+          }
+        });
+      }
+    }
+
+    const lastRow = this._getLastAxis('row');
+    const lastColumn = this._getLastAxis('column');
+    for (let i = 0; i < cells.length; i++) {
+      const cell = cells[i];
+      const isFrozen = cell.classList.contains(this.getMappedStyle('frozenCell'));
+      const indexes = this.getCellIndexes(cell);
+      if (
+        verticalGridlines === 'hidden' ||
+        (indexes.column === lastColumn &&
+          (this.getRowHeaderWidth() + this.getElementDir(cell, dir) + this.getElementWidth(cell) >=
+            this.getWidth() ||
+            this.m_endRowEndHeader > -1) &&
+          (!isFrozen || (isFrozen && !this.m_hasVerticalScroller)))
+      ) {
+        this.m_utils.addCSSClassName(cell, this.getMappedStyle('borderVerticalNone'));
+      } else {
+        this.m_utils.removeCSSClassName(cell, this.getMappedStyle('borderVerticalNone'));
+      }
+      if (
+        horizontalGridlines === 'hidden' ||
+        (indexes.row === lastRow &&
+          (this.getRowBottom(cell, null) >= this.getHeight() || this.m_endColEndHeader > -1) &&
+          (!isFrozen || (isFrozen && !this.m_hasHorizontalScroller)))
+      ) {
+        this.m_utils.addCSSClassName(cell, this.getMappedStyle('borderHorizontalNone'));
+      } else {
+        this.m_utils.removeCSSClassName(cell, this.getMappedStyle('borderHorizontalNone'));
       }
     }
   };
@@ -4971,6 +5026,9 @@ var __oj_data_grid_metadata =
     this.m_sortContainerHeight = null;
     this.m_editCell = null;
 
+    this.m_rowHeaderContextMap = null;
+    this.m_colHeaderContextMap = null;
+
     this._resetSkeletonProperties();
     this._destroyEditableClone();
     this._clearFocusoutTimeout();
@@ -5824,33 +5882,6 @@ var __oj_data_grid_metadata =
 
     var scrollbarSize = this.m_utils.getScrollbarSize();
 
-    var shouldBuildEmpty = this._databodyEmpty();
-    var empty;
-    var emptyHeight;
-    var emptyWidth;
-
-    // check if there's no data
-    if (shouldBuildEmpty) {
-      // could be getting here in the handle resize of an empty grid
-      if (this.m_empty == null) {
-        empty = this._buildEmptyText();
-        emptyHeight = this.getElementHeight(empty);
-        emptyWidth = this.getElementWidth(empty);
-        databodyScroller = databody.firstChild;
-        if (emptyHeight > this.getElementHeight(databodyScroller)) {
-          this._setAllScrollableRegions('height', Math.max(emptyHeight, availableHeight));
-        }
-        if (emptyWidth > this.getElementWidth(databodyScroller)) {
-          this._setAllScrollableRegions('width', Math.max(emptyWidth, availableWidth));
-        }
-        this.m_databody.firstChild.appendChild(empty); // @HTMLUpdateOK
-      } else {
-        empty = this.m_empty;
-      }
-    }
-
-    var databodyContentWidth = this.getElementWidth(databody.firstChild);
-    var databodyContentHeight = this.getElementHeight(databody.firstChild);
     // determine which scrollbars are required, if needing one forces need of the other, allows rendering within the root div
     var isDatabodyHorizontalScrollbarRequired =
       this.isDatabodyHorizontalScrollbarRequired(availableWidth);
@@ -5889,8 +5920,42 @@ var __oj_data_grid_metadata =
       }
     }
 
+    var shouldBuildEmpty = this._databodyEmpty();
+    var empty;
+    var emptyHeight;
+    var emptyWidth;
+
+    // check if there's no data
+    if (shouldBuildEmpty) {
+      // could be getting here in the handle resize of an empty grid
+      if (this.m_empty == null) {
+        empty = this._buildEmptyText();
+        emptyHeight = this.getElementHeight(empty);
+        emptyWidth = this.getElementWidth(empty);
+        databodyScroller = databody.firstChild;
+        // when empty dimensions are bigger than the scroller
+        if (emptyHeight > this.getElementHeight(databodyScroller)) {
+          let scrollSize = isDatabodyHorizontalScrollbarRequired ? scrollbarSize : 0;
+          this._setAllScrollableRegions(
+            'height',
+            Math.max(emptyHeight, availableHeight - scrollSize)
+          );
+        }
+        if (emptyWidth > this.getElementWidth(databodyScroller)) {
+          let scrollSize = isDatabodyVerticalScrollbarRequired ? scrollbarSize : 0;
+          this._setAllScrollableRegions('width', Math.max(emptyWidth, availableWidth - scrollSize));
+        }
+        this.m_databody.firstChild.appendChild(empty); // @HTMLUpdateOK
+      } else {
+        empty = this.m_empty;
+      }
+    }
+
     this.m_hasHorizontalScroller = isDatabodyHorizontalScrollbarRequired;
     this.m_hasVerticalScroller = isDatabodyVerticalScrollbarRequired;
+
+    var databodyContentWidth = this.getElementWidth(databody.firstChild);
+    var databodyContentHeight = this.getElementHeight(databody.firstChild);
 
     var databodyHeight;
     var rowHeaderHeight;
@@ -5902,14 +5967,17 @@ var __oj_data_grid_metadata =
         databodyContentHeight + (isDatabodyHorizontalScrollbarRequired ? scrollbarSize : 0),
         availableHeight
       );
-      rowHeaderHeight = isDatabodyHorizontalScrollbarRequired
-        ? databodyHeight - scrollbarSize
-        : databodyHeight;
+      rowHeaderHeight =
+        isDatabodyHorizontalScrollbarRequired && !this._hasFrozenColumns()
+          ? databodyHeight - scrollbarSize
+          : databodyHeight;
     } else {
       databodyHeight = availableHeight;
       rowHeaderHeight = Math.min(
         databodyContentHeight,
-        isDatabodyHorizontalScrollbarRequired ? databodyHeight - scrollbarSize : databodyHeight
+        isDatabodyHorizontalScrollbarRequired && !this._hasFrozenColumns()
+          ? databodyHeight - scrollbarSize
+          : databodyHeight
       );
     }
 
@@ -5918,14 +5986,17 @@ var __oj_data_grid_metadata =
         databodyContentWidth + (isDatabodyVerticalScrollbarRequired ? scrollbarSize : 0),
         availableWidth
       );
-      columnHeaderWidth = isDatabodyVerticalScrollbarRequired
-        ? databodyWidth - scrollbarSize
-        : databodyWidth;
+      columnHeaderWidth =
+        isDatabodyVerticalScrollbarRequired && !this._hasFrozenRows()
+          ? databodyWidth - scrollbarSize
+          : databodyWidth;
     } else {
       databodyWidth = availableWidth;
       columnHeaderWidth = Math.min(
         databodyContentWidth,
-        isDatabodyVerticalScrollbarRequired ? databodyWidth - scrollbarSize : databodyWidth
+        isDatabodyVerticalScrollbarRequired && !this._hasFrozenRows()
+          ? databodyWidth - scrollbarSize
+          : databodyWidth
       );
     }
 
@@ -6328,12 +6399,14 @@ var __oj_data_grid_metadata =
     let maxColKnownCount = this.getDatabodyCount('column', 'maxCountKnown');
     let totalHeight = 0;
     let totalWidth = 0;
+    const avgHeight = this.m_avgRowHeight == null ? 0 : this.m_avgRowHeight;
+    const avgWidth = this.m_avgColWidth == null ? 0 : this.m_avgColWidth;
 
     if (!isHWS) {
       if (this.getDataSource().getCount('row') < 0) {
-        totalHeight = maxRowKnownCount * this.m_avgRowHeight;
+        totalHeight = maxRowKnownCount * avgHeight;
       } else {
-        totalHeight = rowCount * this.m_avgRowHeight;
+        totalHeight = rowCount * avgHeight;
       }
     } else {
       totalHeight = endRowPixel; // HWS
@@ -6341,9 +6414,9 @@ var __oj_data_grid_metadata =
 
     if (!isHWS) {
       if (this.getDataSource().getCount('column') < 0) {
-        totalWidth = maxColKnownCount * this.m_avgColWidth;
+        totalWidth = maxColKnownCount * avgWidth;
       } else {
-        totalWidth = colCount * this.m_avgColWidth;
+        totalWidth = colCount * avgWidth;
       }
     } else {
       totalWidth = endColPixel; // HWS
@@ -6397,9 +6470,19 @@ var __oj_data_grid_metadata =
   };
 
   DvtDataGrid.prototype.getDatabodyCount = function (axis, type) {
-    const hidden = axis === 'row' ? this.m_hiddenRows : this.m_hiddenColumns;
-    const frozenIndex = axis === 'row' ? this.m_frozenRowIndex : this.m_frozenColIndex;
-    const maxYet = axis === 'row' ? this.m_maxRowYet : this.m_maxColYet;
+    let hidden;
+    let frozenCount;
+    let maxYetCount;
+
+    if (axis === 'row') {
+      maxYetCount = this.m_maxRowYet + 1;
+      frozenCount = this.m_frozenRowIndex + 1;
+      hidden = this.m_hiddenRows;
+    } else {
+      maxYetCount = this.m_maxColYet + 1;
+      frozenCount = this.m_frozenColIndex + 1;
+      hidden = this.m_hiddenColumns;
+    }
 
     const totalCount = this.getDataSource().getCount(axis);
     let count = totalCount;
@@ -6409,15 +6492,15 @@ var __oj_data_grid_metadata =
         (axis === 'row' && this._hasFrozenRows()) ||
         (axis === 'column' && this._hasFrozenColumns())
       ) {
-        count -= frozenIndex + 1 + this._getHiddenCountBeforeIndex(frozenIndex + 1, axis);
+        count -= frozenCount + this._getHiddenCountBeforeIndex(frozenCount, axis);
       }
     } else if (type === 'maxCountKnown') {
-      count = maxYet - this._getHiddenCountBeforeIndex(maxYet, axis);
+      count = maxYetCount - this._getHiddenCountBeforeIndex(maxYetCount, axis);
       if (
         (axis === 'row' && this._hasFrozenRows()) ||
         (axis === 'column' && this._hasFrozenColumns())
       ) {
-        count -= frozenIndex + 1 + this._getHiddenCountBeforeIndex(frozenIndex + 1, axis);
+        count -= frozenCount + this._getHiddenCountBeforeIndex(frozenCount, axis);
       }
     }
     return count;
@@ -6442,12 +6525,17 @@ var __oj_data_grid_metadata =
     remove,
     axis
   ) {
-    var i = 0;
-    while (i < headerLevels) {
-      let lastHeader = this._getHeaderByIndex(headerIndex, axis, i);
+    let i = 0;
+    let lastHeader = this._getHeaderByIndex(headerIndex, axis, i);
+    while (i < headerLevels && lastHeader != null) {
+      lastHeader = this._getHeaderByIndex(headerIndex, axis, i);
+      const scrollBarBorderNeeded =
+        axis === 'row'
+          ? this.m_hasHorizontalScroller && this._hasFrozenColumns()
+          : this.m_hasVerticalScroller && this._hasFrozenRows();
       if (remove) {
         this.m_utils.removeCSSClassName(lastHeader, className);
-      } else {
+      } else if (!scrollBarBorderNeeded) {
         this.m_utils.addCSSClassName(lastHeader, className);
       }
       i += this.getHeaderCellDepth(lastHeader);
@@ -6558,11 +6646,17 @@ var __oj_data_grid_metadata =
       if (this.m_rowEndHeaderFrozen?.firstChild?.childNodes?.length) {
         tags.push(...this.m_rowEndHeaderFrozen.firstChild.childNodes);
       }
+      const groupingContainerStyle = this.getMappedStyle('groupingcontainer');
+      // Identify if the endHeader is a groupingcontainer and apply style to the first child.
       for (i = 0; i < tags.length; i++) {
+        let tag = tags[i];
+        if (tag.classList.contains(groupingContainerStyle)) {
+          tag = tag.firstChild;
+        }
         if (bw) {
-          this.m_utils.addCSSClassName(tags[i], style);
+          this.m_utils.addCSSClassName(tag, style);
         } else {
-          this.m_utils.removeCSSClassName(tags[i], style);
+          this.m_utils.removeCSSClassName(tag, style);
         }
       }
     } else {
@@ -6724,12 +6818,15 @@ var __oj_data_grid_metadata =
     const databodyFrozenRow = this.m_databodyFrozenRow;
 
     if (databodyFrozenCol) {
-      databodyFrozenColumnWidth = this.getElementWidth(databodyFrozenCol);
+      databodyFrozenColumnWidth = this.getElementWidth(databodyFrozenCol) + 1;
     }
     if (databodyFrozenRow) {
-      databodyFrozenRowHeight = this.getElementHeight(databodyFrozenRow);
+      databodyFrozenRowHeight = this.getElementHeight(databodyFrozenRow) + 1;
     }
-
+    const horizontalScrollBarSize =
+      this.m_hasHorizontalScroller && !this._hasFrozenColumns() ? scrollbarSize : 0;
+    const verticalScrollBarSize =
+      this.m_hasVerticalScroller && !this._hasFrozenRows() ? scrollbarSize : 0;
     // rather than removing and appending the nodes every time just adjust the live ones
     if (this.m_endRowHeader !== -1 && this.m_endColHeader !== -1) {
       labelHeight = this.m_headerLabels.column.length
@@ -6742,36 +6839,50 @@ var __oj_data_grid_metadata =
       // frozenRowDatabody container's height to be added to row,col header heights
       rhScrollbarSpacerTop = rowHeaderHeight + colHeaderHeight + databodyFrozenRowHeight;
       rhScrollbarSpacerHeight =
-        colEndHeaderHeight + (this.m_hasHorizontalScroller ? scrollbarSize : 0);
+        this.m_endColEndHeader === -1
+          ? height - rowHeaderHeight - colHeaderHeight - databodyFrozenRowHeight
+          : colEndHeaderHeight + horizontalScrollBarSize;
 
       // frozenColumnDatabody container's width to be added to row,col header widths
       chScrollbarSpacerDirVal = rowHeaderWidth + colHeaderWidth + databodyFrozenColumnWidth;
-      chScrollbarSpacerWidth = rowEndHeaderWidth + (this.m_hasVerticalScroller ? scrollbarSize : 0);
+      chScrollbarSpacerWidth =
+        this.m_endRowEndHeader === -1
+          ? width - colHeaderWidth - rowHeaderWidth - databodyFrozenColumnWidth
+          : rowEndHeaderWidth + verticalScrollBarSize;
     } else if (this.m_endRowHeader !== -1 && this.m_endColHeader === -1) {
       labelHeight = colHeaderHeight;
 
       rhScrollbarSpacerTop = rowHeaderHeight + colHeaderHeight + databodyFrozenRowHeight;
       rhScrollbarSpacerHeight =
-        colEndHeaderHeight + (this.m_hasHorizontalScroller ? scrollbarSize : 0);
+        this.m_endColEndHeader === -1
+          ? height - rowHeaderHeight - colHeaderHeight - databodyFrozenRowHeight
+          : colEndHeaderHeight + horizontalScrollBarSize;
 
       chScrollbarSpacerDirVal = rowHeaderWidth;
       chScrollbarSpacerWidth =
-        rowEndHeaderWidth +
-        colHeaderWidth +
-        databodyFrozenColumnWidth +
-        (this.m_hasVerticalScroller ? scrollbarSize : 0);
+        this.m_columnHeaderLevelCount === null &&
+        this.m_headerLabels.rowEnd.length === 0 &&
+        this.m_rowEndHeaderLevelCount === null &&
+        this.m_hasVerticalScroller
+          ? width - rowHeaderWidth
+          : colHeaderWidth + rowEndHeaderWidth + databodyFrozenColumnWidth + verticalScrollBarSize;
     } else if (this.m_endRowHeader === -1 && this.m_endColHeader !== -1) {
       labelWidth = rowHeaderWidth;
 
       rhScrollbarSpacerTop = colHeaderHeight;
       rhScrollbarSpacerHeight =
-        colEndHeaderHeight +
-        rowHeaderHeight +
-        databodyFrozenRowHeight +
-        (this.m_hasHorizontalScroller ? scrollbarSize : 0);
+        this.m_rowHeaderLevelCount === null &&
+        this.m_headerLabels.columnEnd.length === 0 &&
+        this.m_columnEndHeaderLevelCount === null &&
+        this.m_hasHorizontalScroller
+          ? height - colHeaderHeight
+          : rowHeaderHeight + colEndHeaderHeight + databodyFrozenRowHeight + horizontalScrollBarSize;
 
       chScrollbarSpacerDirVal = rowHeaderWidth + colHeaderWidth + databodyFrozenColumnWidth;
-      chScrollbarSpacerWidth = rowEndHeaderWidth + (this.m_hasVerticalScroller ? scrollbarSize : 0);
+      chScrollbarSpacerWidth =
+        this.m_endRowEndHeader === -1
+          ? width - colHeaderWidth - rowHeaderWidth - databodyFrozenColumnWidth
+          : rowEndHeaderWidth + verticalScrollBarSize;
     } else {
       buildEndCorners = false;
     }
@@ -6781,7 +6892,9 @@ var __oj_data_grid_metadata =
       } else {
         corner = document.createElement('div');
         corner.id = this.createSubId('corner');
-        corner.className = this.getMappedStyle('topcorner');
+        if (colHeaderHeight > 0 && rowHeaderWidth > 0) {
+          corner.className = this.getMappedStyle('topcorner');
+        }
       }
 
       this.setElementWidth(corner, rowHeaderWidth);
@@ -6844,6 +6957,7 @@ var __oj_data_grid_metadata =
         chScrollbarSpacerWidth,
         chScrollbarSpacerHeight
       );
+      this._adjustHeaderBorders();
     } else {
       this.m_headerLabels.row = [];
       this.m_headerLabels.column = [];
@@ -6880,10 +6994,7 @@ var __oj_data_grid_metadata =
         dir
       );
       if (this.m_endRowEndHeader !== -1) {
-        this.setElementWidth(
-          bottomCorner,
-          rowEndHeaderWidth + (this.m_hasVerticalScroller ? scrollbarSize : 0)
-        );
+        this.setElementWidth(bottomCorner, rowEndHeaderWidth + verticalScrollBarSize);
       } else {
         this.setElementWidth(
           bottomCorner,
@@ -6892,10 +7003,7 @@ var __oj_data_grid_metadata =
       }
 
       if (this.m_endColEndHeader !== -1) {
-        this.setElementHeight(
-          bottomCorner,
-          colEndHeaderHeight + (this.m_hasHorizontalScroller ? scrollbarSize : 0)
-        );
+        this.setElementHeight(bottomCorner, colEndHeaderHeight + horizontalScrollBarSize);
       } else {
         this.setElementHeight(
           bottomCorner,
@@ -6956,26 +7064,75 @@ var __oj_data_grid_metadata =
         : this.m_rowHeaderScrollbarSpacer;
     let headerScrollbarSpacer;
     let hasScroller = false;
-    if (disabledHeaderAxis === 'column') {
-      if (this.m_hasVerticalScroller || this.m_endRowEndHeader !== -1) {
+    const rtl = this.getResources().isRTLMode();
+    if (disabledHeaderAxis === 'column' && height > 0) {
+      if (this.m_hasVerticalScroller || this.m_endRowEndHeader !== -1 || this.m_endRowHeader !== -1) {
         hasScroller = true;
         if (this.m_columnHeaderScrollbarSpacer != null) {
           headerScrollbarSpacer = this.m_columnHeaderScrollbarSpacer;
         } else {
           headerScrollbarSpacer = document.createElement('div');
           headerScrollbarSpacer.id = this.createSubId('chSbSpacer');
+        }
+        if (
+          this.m_endRowEndHeader !== -1 ||
+          (this.m_headerLabels.row.length > 0 && this.m_columnHeaderLevelCount === null) ||
+          (this.m_endRowEndHeader === -1 && this.m_hasVerticalScroller)
+        ) {
           headerScrollbarSpacer.className = this.getMappedStyle('colheaderspacer');
+        } else {
+          headerScrollbarSpacer.classList.remove(this.getMappedStyle('colheaderspacer'));
+        }
+
+        if (rtl && this.m_columnHeaderLevelCount != null) {
+          headerScrollbarSpacer.style.borderRightWidth = '1px';
+        } else if (!rtl && this.m_columnHeaderLevelCount != null) {
+          headerScrollbarSpacer.style.borderLeftWidth = '1px';
+        }
+
+        if (rtl && !this.m_hasVerticalScroller && !this.m_hasHorizontalScroller) {
+          headerScrollbarSpacer.style.borderLeftWidth = '1px';
+        } else if (!rtl && !this.m_hasVerticalScroller && !this.m_hasHorizontalScroller) {
+          headerScrollbarSpacer.style.borderRightWidth = '1px';
         }
       }
-    } else if (disabledHeaderAxis === 'row') {
-      if (this.m_hasHorizontalScroller || this.m_endColEndHeader !== -1) {
+    } else if (disabledHeaderAxis === 'row' && width > 0) {
+      if (
+        this.m_hasHorizontalScroller ||
+        this.m_endColEndHeader !== -1 ||
+        this.m_endColHeader !== -1
+      ) {
         hasScroller = true;
         if (this.m_rowHeaderScrollbarSpacer != null) {
           headerScrollbarSpacer = this.m_rowHeaderScrollbarSpacer;
         } else {
           headerScrollbarSpacer = document.createElement('div');
           headerScrollbarSpacer.id = this.createSubId('rhSbSpacer');
+        }
+        if (
+          this.m_endColEndHeader !== -1 ||
+          (this.m_headerLabels.column.length > 0 && this.m_rowHeaderLevelCount === null) ||
+          (this.m_endColEndHeader === -1 && this.m_hasHorizontalScroller)
+        ) {
           headerScrollbarSpacer.className = this.getMappedStyle('rowheaderspacer');
+        } else {
+          headerScrollbarSpacer.classList.remove(this.getMappedStyle('rowheaderspacer'));
+        }
+        if (rtl) {
+          headerScrollbarSpacer.style.borderLeftWidth = '1px';
+        } else {
+          headerScrollbarSpacer.style.borderRightWidth = '1px';
+        }
+        if (
+          this.m_headerLabels.columnEnd.length === 0 &&
+          !this.m_hasVerticalScroller &&
+          !this.m_hasHorizontalScroller
+        ) {
+          headerScrollbarSpacer.style.borderBottomWidth = '1px';
+        }
+
+        if (this.m_endRowHeader === -1) {
+          headerScrollbarSpacer.style.borderTopWidth = '0';
         }
       }
     }
@@ -7133,19 +7290,20 @@ var __oj_data_grid_metadata =
    * @private
    */
   DvtDataGrid.prototype._getCellAtPixel = function (x, y) {
-    var cells = this.m_databody.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
-    var dir = this.getResources().isRTLMode() ? 'right' : 'left';
+    const cells = this.m_databody?.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
+    const dir = this.getResources().isRTLMode() ? 'right' : 'left';
+    if (cells) {
+      for (var i = 0; i < cells.length; i++) {
+        var cell = cells[i];
+        var cellLeft = this.getElementDir(cell, dir);
+        var cellRight = cellLeft + this.getElementWidth(cell);
 
-    for (var i = 0; i < cells.length; i++) {
-      var cell = cells[i];
-      var cellLeft = this.getElementDir(cell, dir);
-      var cellRight = cellLeft + this.getElementWidth(cell);
-
-      if (cellLeft <= x && x < cellRight) {
-        var cellTop = this.getElementDir(cell, 'top');
-        var cellBottom = cellTop + this.getElementHeight(cell);
-        if (cellTop <= y && y < cellBottom) {
-          return cell;
+        if (cellLeft <= x && x < cellRight) {
+          var cellTop = this.getElementDir(cell, 'top');
+          var cellBottom = cellTop + this.getElementHeight(cell);
+          if (cellTop <= y && y < cellBottom) {
+            return cell;
+          }
         }
       }
     }
@@ -8643,8 +8801,10 @@ var __oj_data_grid_metadata =
             var label = document.createElement('div');
             var labelData = headerSet.getLabel(i);
             var labelMetadata;
+            let hasLabel = labelData !== null;
             if (this._isDataGridProvider()) {
               labelMetadata = headerSet.getLabelMetadata(i);
+              hasLabel = labelMetadata != null;
             }
             var dimension = this._getLabelDimension(axis, i);
 
@@ -8653,7 +8813,7 @@ var __oj_data_grid_metadata =
               labelContentDiv = document.createElement('div');
               labelContentDiv.classList.add(this.getMappedStyle('headerLabelCellContent'));
             }
-            if (labelData != null) {
+            if (hasLabel) {
               var labelContext = this._createLabelContext(
                 axis,
                 i,
@@ -10075,10 +10235,11 @@ var __oj_data_grid_metadata =
         headerContentDiv.classList.add(this.getMappedStyle('headerCellContent'));
       }
 
+      const contextIndex = isAppend || insert ? index : index - headerExtent + 1;
       // build headerContext to pass to renderer
       headerContext = this.createHeaderContext(
         axis,
-        isAppend || insert ? index : index - headerExtent + 1,
+        contextIndex,
         headerData,
         headerMetadata,
         header,
@@ -10087,6 +10248,18 @@ var __oj_data_grid_metadata =
         headerDepth,
         headerContentDiv
       );
+      // cache headerContext information for future use
+      if (axis === 'row') {
+        if (!this.m_rowHeaderContextMap) {
+          this.m_rowHeaderContextMap = {};
+        }
+        this.m_rowHeaderContextMap[contextIndex] = headerContext;
+      } else if (axis === 'column') {
+        if (!this.m_colHeaderContextMap) {
+          this.m_colHeaderContextMap = {};
+        }
+        this.m_colHeaderContextMap[contextIndex] = headerContext;
+      }
       // prettier-ignore
       header.setAttribute( // @HTMLUpdateOK
         this.getResources().getMappedAttribute('container'),
@@ -11736,6 +11909,7 @@ var __oj_data_grid_metadata =
     var rowRange = cellRange[0];
     var rowStart = rowRange.start;
     var rowCount = cellSet.getCount('row');
+    var columnCount = cellSet.getCount('column');
 
     // for short fetch it would be equal for long fetch it would be > (bottom) or < (top)
     var rowRangeNeedsUpdate =
@@ -11771,7 +11945,6 @@ var __oj_data_grid_metadata =
 
     var columnRange = cellRange[1];
     var columnStart = columnRange.start;
-    var columnCount = cellSet.getCount('column');
 
     let frozenColumnIndex = this.m_frozenColIndex;
     if (
@@ -11911,6 +12084,15 @@ var __oj_data_grid_metadata =
           this.m_colHeaderFrozen !== null &&
           this.m_rowHeaderFrozen !== null
         ) {
+          let frozenCornerRowCountRender;
+          let frozenCornerColumnCountRender;
+          if (rowStart > 0 && columnStart > 0) {
+            frozenCornerRowCountRender = frozenCornerRowCount;
+            frozenCornerColumnCountRender = frozenCornerColumnCount;
+          } else {
+            frozenCornerRowCountRender = Math.min(rowCount, frozenCornerRowCount);
+            frozenCornerColumnCountRender = Math.min(columnCount, frozenCornerColumnCount);
+          }
           addResult = this._populateFrozenContainer(
             this.m_databodyFrozenCorner.firstChild,
             frozenCornerCellSet,
@@ -11918,8 +12100,8 @@ var __oj_data_grid_metadata =
             top,
             0,
             left,
-            Math.min(rowCount, frozenCornerRowCount),
-            Math.min(columnCount, frozenCornerColumnCount)
+            frozenCornerRowCountRender,
+            frozenCornerColumnCountRender
           );
           if (
             this._isHighWatermarkScrolling() ||
@@ -11933,10 +12115,6 @@ var __oj_data_grid_metadata =
             frozenColRowStart = this.m_frozenRowIndex + 1;
             rowCount = rowCountInit - (this.m_frozenRowIndex + 1);
             columnCount = colCountInit - (this.m_frozenColIndex + 1);
-          }
-          // if the viewport is filled with frozen section, then update endRowPixel so that fillviewport is handled properly.
-          if (columnCount === 0) {
-            this.m_endRowPixel += addResult.totalRowHeight;
           }
         }
         if (this._hasFrozenRows() && this.m_rowHeaderFrozen !== null) {
@@ -11961,6 +12139,10 @@ var __oj_data_grid_metadata =
             frozenRowCount,
             frozenRowColCount
           );
+          // if the viewport is filled with frozen section, then update endColPixel so that fillviewport is handled properly.
+          if (rowCount === 0) {
+            this.m_endColPixel += addResult.totalColumnWidth;
+          }
         }
         if (this._hasFrozenColumns() && this.m_colHeaderFrozen !== null) {
           if (
@@ -12051,7 +12233,7 @@ var __oj_data_grid_metadata =
         this._hasFrozenRows() &&
         this.m_rowHeaderFrozen !== null &&
         frozenRowCellSet !== undefined &&
-        (this.m_databodyFrozenRow.firstChild.childElementCount || !this._isHighWatermarkScrolling())
+        columnRangeNeedsUpdate
       ) {
         let frozenContainerTop = 0;
         addResult = this._populateFrozenContainer(
@@ -12127,20 +12309,22 @@ var __oj_data_grid_metadata =
       left = isAppend ? this.m_endColPixel : this.m_startColPixel;
       top = rowStart >= this.m_startRow ? this.m_startRowPixel : this.m_endRowPixel;
       // if databody doesnt have any cells, pick the left value of the last child in frozen row.
+      const lastChild = this.m_databodyFrozenRow?.firstChild?.lastChild;
       if (
         !this.m_databody.firstChild.childElementCount &&
         isAppend &&
         this._hasFrozenRows() &&
-        this.m_initialized
+        this.m_initialized &&
+        lastChild
       ) {
         const dir = this.getResources().isRTLMode() ? 'right' : 'left';
-        const lastChild = this.m_databodyFrozenRow.firstChild.lastChild;
         left = this.getElementDir(lastChild, dir) + this.getElementWidth(lastChild);
       }
       if (
         this._hasFrozenRows() &&
         this.m_rowHeaderFrozen !== null &&
-        frozenRowCellSet !== undefined
+        frozenRowCellSet !== undefined &&
+        lastChild
       ) {
         let frozenContainerTop = 0;
         addResult = this._populateFrozenContainer(
@@ -12340,6 +12524,26 @@ var __oj_data_grid_metadata =
         this._checkScrollPosition();
       }
 
+      if (this.m_extendScrollHeader) {
+        this.m_shouldFocus = false;
+        this._makeHeaderSelectionFrontierFocus();
+        this.m_anchorSelectionElement = this.m_active;
+        let header = this._getHeaderByIndex(
+          this.m_extendScrollHeader.index,
+          this.m_extendScrollHeader.axis,
+          this.m_extendScrollHeader.level
+        );
+
+        const headerInfo = {
+          index: this.m_extendScrollHeader.index,
+          axis: this.m_extendScrollHeader.axis,
+          level: this.m_extendScrollHeader.level,
+          type: 'header'
+        };
+        this._setActive(header, headerInfo);
+        this.m_extendScrollHeader = null;
+      }
+
       // highlight focus cell or header if specified
       if (this.m_scrollIndexAfterFetch != null) {
         this.scrollToIndex(this.m_scrollIndexAfterFetch);
@@ -12379,11 +12583,13 @@ var __oj_data_grid_metadata =
         // 2: a delete triggered a fillViewport that shrunk and expanded the databody, the check that the end pixel was below the databody height then beyond it
         if (
           this.m_resizeRequired === true ||
-          this.m_endRowPixel - totalRowHeight < this.getElementHeight(databody)
+          this.m_endRowPixel - totalRowHeight < this.getElementHeight(databody) ||
+          this.m_endColPixel - totalColumnWidth < this.getElementWidth(databody)
         ) {
           this.resizeGrid();
+        } else {
+          this._updateGridlines();
         }
-
         var cleanDirection;
         // clean up rows outside of viewport (for non high-water mark scrolling only)
         if (rowRangeNeedsUpdate) {
@@ -12961,11 +13167,10 @@ var __oj_data_grid_metadata =
 
             // do not put borders on far edge column, edge row, turn off gridlines
             if (
-              !cell.classList.contains(this.getMappedStyle('frozenCell')) &&
-              (verticalGridlines === 'hidden' ||
-                (this._isLastColumn(columnIndex + (extents.column - 1)) &&
-                  (this.getRowHeaderWidth() + left + width >= this.getWidth() ||
-                    this.m_endRowEndHeader !== -1)))
+              verticalGridlines === 'hidden' ||
+              (this._isLastColumn(columnIndex + (extents.column - 1)) &&
+                (this.getRowHeaderWidth() + left + width >= this.getWidth() ||
+                  this.m_endRowEndHeader !== -1))
             ) {
               this.m_utils.addCSSClassName(cell, this.getMappedStyle('borderVerticalNone'));
             }
@@ -13247,16 +13452,14 @@ var __oj_data_grid_metadata =
     // in the case of no headers this gets called everytime, so added firstPass to make sure it's only the first time
     // initialized doesn't matter because of scroll behavior
     if (endHeader === -1) {
-      var shimHeaderContext = this.createHeaderContext(
-        axis,
-        index,
-        null,
-        { key: key },
-        null,
-        0,
-        0,
-        1
-      );
+      var shimHeaderContext;
+      if (axis === 'row' && this.m_rowHeaderContextMap) {
+        shimHeaderContext = this.m_rowHeaderContextMap[index];
+      } else if (axis === 'column' && this.m_colHeaderContextMap) {
+        shimHeaderContext = this.m_colHeaderContextMap[index];
+      }
+      shimHeaderContext =
+        shimHeaderContext || this.createHeaderContext(axis, index, null, { key: key }, null, 0, 0, 1);
       var inlineStyle = this.m_options.getInlineStyle(axis, shimHeaderContext);
       var styleClass = this.m_options.getStyleClass(axis, shimHeaderContext);
       dimensionOf = document.createElement('div');
@@ -13900,6 +14103,10 @@ var __oj_data_grid_metadata =
    * @param {number} scrollTop
    */
   DvtDataGrid.prototype._initiateScroll = function (scrollLeft, scrollTop) {
+    if (this._databodyEmpty()) {
+      return;
+    }
+
     this.m_utils.setElementScrollLeft(this.m_databody, scrollLeft);
     this.m_databody.scrollTop = scrollTop;
     // scroll to be enabled, if all regions within the grid are frozen and scroll is initiated.
@@ -14161,7 +14368,7 @@ var __oj_data_grid_metadata =
         scrollerDimension = this.getElementHeight(this.m_databody.firstChild);
         maxDimension = this.m_utils._getMaxDivHeightForScrolling();
         maxScroll = this._getMaxScrollHeight();
-        avgDimension = this.m_avgRowHeight;
+        avgDimension = this.m_avgRowHeight == null ? 0 : this.m_avgRowHeight;
         hiddenItems = this.m_hiddenRows;
         scrollbarSize = this.m_hasHorizontalScroller ? this.m_utils.getScrollbarSize() : 0;
         total = Math.max(
@@ -14175,7 +14382,7 @@ var __oj_data_grid_metadata =
         scrollerDimension = this.getElementWidth(this.m_databody.firstChild);
         maxDimension = this.m_utils._getMaxDivWidthForScrolling();
         maxScroll = this._getMaxScrollWidth();
-        avgDimension = this.m_avgColWidth;
+        avgDimension = this.m_avgColWidth == null ? 0 : this.m_avgColWidth;
         hiddenItems = this.m_hiddenColumns;
         scrollbarSize = this.m_hasVerticalScroller ? this.m_utils.getScrollbarSize() : 0;
         total = Math.max(
@@ -14192,12 +14399,17 @@ var __oj_data_grid_metadata =
 
       if (maxDimension > scrollerDimension) {
         let currentIndex = Math.floor(scrollDir / avgDimension);
-        hiddenItems.forEach((index) => {
-          if (index < currentIndex) {
-            currentIndex += 1;
-          }
-        });
-        start = this.getVisibleCellIndexInDirection(axis, currentIndex, direction);
+        // when avgDimension is 0, currentIndex is infinite, we are assigning scroll start to 0
+        if (!Number.isFinite(currentIndex)) {
+          start = 0;
+        } else {
+          hiddenItems.forEach((index) => {
+            if (index < currentIndex) {
+              currentIndex += 1;
+            }
+          });
+          start = this.getVisibleCellIndexInDirection(axis, currentIndex, direction);
+        }
       } else if (maxDimension <= scrollerDimension) {
         start = Math.floor(total * oversizeRatio);
       }
@@ -15124,10 +15336,12 @@ var __oj_data_grid_metadata =
       // eslint-disable-next-line no-param-reassign
       endPixel -= dimensionValue;
 
-      element = headerElements[headerElements.length - 1];
-      isHeader = this.m_utils.containsCSSClassName(element, className);
-      header = isHeader ? element : element.firstChild;
-      dimensionValue = this.getElementDir(header, dimension);
+      if (headerElements[headerElements.length - 1]) {
+        element = headerElements[headerElements.length - 1];
+        isHeader = this.m_utils.containsCSSClassName(element, className);
+        header = isHeader ? element : element.firstChild;
+        dimensionValue = this.getElementDir(header, dimension);
+      }
     }
     this.deleteHiddenIndicators(deleteArray, headersContainer);
 
@@ -15506,13 +15720,23 @@ var __oj_data_grid_metadata =
         !insideSelection ||
         (this._isDatabodyCellActive() &&
           index.row !== this.m_active.indexes.row &&
-          index.column !== this.m_active.indexes.column)
+          index.column !== this.m_active.indexes.column) ||
+        (this._isHeaderCellActive() &&
+          this.m_active.index === index &&
+          this.m_active.axis === this.getHeaderCellAxis(element))
       ) {
         if (this._isSelectionEnabled()) {
-          this.handleDatabodyClickSelection(event.originalEvent);
-        } else {
+          if (isCell) {
+            this.handleDatabodyClickSelection(event.originalEvent);
+          } else if (isHeader) {
+            this.handleHeaderClickSelection(event.originalEvent);
+          }
+        } else if (isCell) {
           // activate on a tap
           this.handleDatabodyClickActive(event.originalEvent);
+        } else if (isHeader) {
+          // activate on a tap
+          this.handleHeaderClickActive(event.originalEvent);
         }
       }
     }
@@ -15562,13 +15786,13 @@ var __oj_data_grid_metadata =
       if (
         (axis === 'column' || axis === 'columnEnd') &&
         this.m_selectionFrontier &&
-        this.m_selectionFrontier.axis === 'column'
+        (this.m_selectionFrontier.axis === 'column' || this.m_selectionFrontier.axis === 'columnEnd')
       ) {
         capabilities.resizeHeight = disable;
       } else if (
         (axis === 'row' || axis === 'rowEnd') &&
         this.m_selectionFrontier &&
-        this.m_selectionFrontier.axis === 'row'
+        (this.m_selectionFrontier.axis === 'row' || this.m_selectionFrontier.axis === 'rowEnd')
       ) {
         capabilities.resizeWidth = disable;
       }
@@ -16351,7 +16575,7 @@ var __oj_data_grid_metadata =
         !this.m_databodyMove
       ) {
         // only allow drag on left click
-        if (event.button === 0) {
+        if (event.button === 0 && !event.shiftKey) {
           this.m_headerDragState = true;
         }
 
@@ -16366,18 +16590,6 @@ var __oj_data_grid_metadata =
       } else {
         // remove current selection and just make header active.
         this.handleHeaderClickActive(event, null, true);
-      }
-    }
-
-    if (this.m_options.isFloodFillEnabled()) {
-      if (this.m_bottomFloodFillIconContainer && this.m_bottomFloodFillIconContainer.parentNode) {
-        this.m_bottomFloodFillIconContainer.parentNode.removeChild(
-          this.m_bottomFloodFillIconContainer
-        );
-        this.m_bottomFloodFillIconContainer.removeEventListener(
-          'mouseover',
-          this.handleDatabodyMouseMove
-        );
       }
     }
 
@@ -19594,7 +19806,14 @@ var __oj_data_grid_metadata =
     }
 
     const offset = range.offset;
-    const count = range.count;
+    const rangeCount = range.count;
+    const axisCount = axis === 'row' ? cellSet.rowCount : cellSet.columnCount;
+    const axisEnd = axis === 'row' ? cellSet.rowEnd : cellSet.columnEnd;
+    const requestedEnd = offset + rangeCount;
+    const availableEnd = axisEnd + axisCount;
+
+    const count = requestedEnd >= availableEnd ? axisCount : rangeCount;
+
     let indexes = new Array(count).fill(offset).map((x, y) => x + y);
     let dimensions = 0;
     let frozenDimensions = 0;
@@ -20110,60 +20329,63 @@ var __oj_data_grid_metadata =
         let index = context.index;
         let extent = context.extent;
         let level = context.level;
-
+        let existingGroupingContainer;
         if (patchBefore) {
-          let existingGroupingContainer = this._getHeaderContainer(
-            index - 1,
-            level,
-            root,
-            levelCount
-          );
-          let existingHeader = existingGroupingContainer.firstChild;
-          let existingHeaderContext =
-            existingHeader[this.getResources().getMappedAttribute('context')];
-          context.extent += existingHeaderContext.extent;
-          context.index = existingHeaderContext.index;
-
-          let existingExtent = this._getAttribute(existingGroupingContainer, 'extent', true);
-          this._setAttribute(existingGroupingContainer, 'extent', existingExtent + extent);
-
-          let existingDimension = this.getElementDir(existingHeader, dimension);
-          let addDimension = this.getElementDir(header, dimension);
-          this.setElementDir(header, existingDimension + addDimension, dimension);
-
-          let existingDir = this.getElementDir(existingHeader, adjustDimension);
-          this.setElementDir(header, existingDir, adjustDimension);
-          existingGroupingContainer.replaceChild(header, existingHeader);
+          existingGroupingContainer = this._getHeaderContainer(index - 1, level, root, levelCount);
         } else if (patchAfter) {
-          let existingGroupingContainer = this._getHeaderContainer(
+          existingGroupingContainer = this._getHeaderContainer(
             index + extent,
             level,
             root,
             levelCount
           );
-          let existingHeader = existingGroupingContainer.firstChild;
-          let existingHeaderContext =
-            existingHeader[this.getResources().getMappedAttribute('context')];
-          context.extent += existingHeaderContext.extent;
-          context.index = existingHeaderContext.index - extent;
-
-          let existingExtent = this._getAttribute(existingGroupingContainer, 'extent', true);
-          this._setAttribute(existingGroupingContainer, 'extent', existingExtent + extent);
-
-          let existingStart = this._getAttribute(existingGroupingContainer, 'start', true);
-          this._setAttribute(existingGroupingContainer, 'start', existingStart - extent);
-
-          let existingDimension = this.getElementDir(existingHeader, dimension);
-          let addDimension = this.getElementDir(header, dimension);
-          this.setElementDir(header, existingDimension + addDimension, dimension);
-
-          let existingDir = this.getElementDir(existingHeader, adjustDimension);
-          this.setElementDir(header, existingDir - addDimension, adjustDimension);
-          existingGroupingContainer.replaceChild(header, existingHeader);
         } else {
-          let existingGroupingContainer = this._getHeaderContainer(index, level, root, levelCount);
-          if (existingGroupingContainer) {
-            // the container exists, insert the header
+          existingGroupingContainer = this._getHeaderContainer(index, level, root, levelCount);
+        }
+
+        if (existingGroupingContainer) {
+          if (patchBefore || patchAfter) {
+            const existingHeader = existingGroupingContainer.firstChild;
+            const existingHeaderContext =
+              existingHeader[this.getResources().getMappedAttribute('context')];
+
+            context.extent += existingHeaderContext.extent;
+            context.index = patchBefore
+              ? existingHeaderContext.index
+              : existingHeaderContext.index - extent;
+
+            const existingExtent = this._getAttribute(existingGroupingContainer, 'extent', true);
+            this._setAttribute(existingGroupingContainer, 'extent', existingExtent + extent);
+
+            const existingDimension = this.getElementDir(existingHeader, dimension);
+            const addDimension = this.getElementDir(header, dimension);
+            this.setElementDir(header, existingDimension + addDimension, dimension);
+
+            const existingDir = this.getElementDir(existingHeader, adjustDimension);
+            if (patchBefore) {
+              this.setElementDir(header, existingDir, adjustDimension);
+            } else {
+              this.setElementDir(header, existingDir - addDimension, adjustDimension);
+              let existingStart = this._getAttribute(existingGroupingContainer, 'start', true);
+              this._setAttribute(existingGroupingContainer, 'start', existingStart - extent);
+            }
+
+            existingGroupingContainer.replaceChild(header, existingHeader);
+            let innerGroupingContainer = groupingContainer.querySelector(
+              '.' + this.getMappedStyle('groupingcontainer')
+            );
+            if (innerGroupingContainer) {
+              insertGroupingContainer(
+                innerGroupingContainer,
+                root,
+                levelCount,
+                start,
+                dimension,
+                adjustDimension,
+                groupingAxis
+              );
+            }
+          } else {
             let prevHeader = this._getHeaderByIndex(index - 1, groupingAxis, level);
             if (prevHeader === null || prevHeader.parentNode !== existingGroupingContainer) {
               let insertAt =
@@ -20179,47 +20401,30 @@ var __oj_data_grid_metadata =
             } else {
               existingGroupingContainer.appendChild(header); // @HTMLUpdateOK
             }
-          } else {
-            // the container doesn't exist insert the whole container after the previous one
-            let previousGroupingContainer = this._getHeaderContainer(
-              index - 1,
-              level,
-              root,
-              levelCount
-            );
-            if (previousGroupingContainer === null) {
-              let scroller = root.firstChild;
-              if (scroller.firstChild) {
-                scroller.insertBefore(groupingContainer, scroller.firstChild); // @HTMLUpdateOK
-              } else {
-                scroller.appendChild(groupingContainer); // @HTMLUpdateOK
-              }
-            } else if (previousGroupingContainer.nextSibling) {
-              // prettier-ignore
-              previousGroupingContainer.parentNode.insertBefore( // @HTMLUpdateOK
+          }
+        } else {
+          // the container doesn't exist insert the whole container after the previous one
+          let previousGroupingContainer = this._getHeaderContainer(
+            index - 1,
+            level,
+            root,
+            levelCount
+          );
+          if (previousGroupingContainer === null) {
+            let scroller = root.firstChild;
+            if (scroller.firstChild) {
+              scroller.insertBefore(groupingContainer, scroller.firstChild); // @HTMLUpdateOK
+            } else {
+              scroller.appendChild(groupingContainer); // @HTMLUpdateOK
+            }
+          } else if (previousGroupingContainer.nextSibling) {
+            // prettier-ignore
+            previousGroupingContainer.parentNode.insertBefore( // @HTMLUpdateOK
                 groupingContainer,
                 previousGroupingContainer.nextSibling
-              );
-            } else {
-              previousGroupingContainer.parentNode.appendChild(groupingContainer); // @HTMLUpdateOK
-            }
-          }
-        }
-
-        if (patchBefore || patchAfter) {
-          let innerGroupingContainer = groupingContainer.querySelector(
-            '.' + this.getMappedStyle('groupingcontainer')
-          );
-          if (innerGroupingContainer) {
-            insertGroupingContainer(
-              innerGroupingContainer,
-              root,
-              levelCount,
-              start,
-              dimension,
-              adjustDimension,
-              groupingAxis
             );
+          } else {
+            previousGroupingContainer.parentNode.appendChild(groupingContainer); // @HTMLUpdateOK
           }
         }
       }
@@ -22186,7 +22391,8 @@ var __oj_data_grid_metadata =
       let fullRefresh = true;
       if (
         detail.disregardAfterColumnOffset != null &&
-        this._getCellOrHeaderByIndex(detail.disregardAfterColumnOffset, 'column')
+        this._getCellOrHeaderByIndex(detail.disregardAfterColumnOffset, 'column') &&
+        (!this._hasFrozenColumns() || this.m_frozenColIndex < detail.disregardAfterColumnOffset)
       ) {
         eventDetail.axis = 'column';
         const offset = detail.disregardAfterColumnOffset + 1;
@@ -22198,7 +22404,8 @@ var __oj_data_grid_metadata =
       }
       if (
         detail.disregardAfterRowOffset != null &&
-        this._getCellOrHeaderByIndex(detail.disregardAfterRowOffset, 'row')
+        this._getCellOrHeaderByIndex(detail.disregardAfterRowOffset, 'row') &&
+        (!this._hasFrozenColumns() || this.m_frozenRowIndex < detail.disregardAfterRowOffset)
       ) {
         eventDetail.axis = 'row';
         const offset = detail.disregardAfterRowOffset + 1;
@@ -22227,6 +22434,16 @@ var __oj_data_grid_metadata =
     this.m_focusOnRefresh = this.m_root.contains(document.activeElement);
 
     this.m_updateScrollPostionOnRefreshCallback(left, top);
+
+    if (this._hasFrozenRows()) {
+      this.m_frozenRowIndex = this.m_options._getFreezeIndex('row');
+      this._removeFrozenIndicator('row');
+    }
+
+    if (this._hasFrozenColumns()) {
+      this.m_frozenColIndex = this.m_options._getFreezeIndex('column');
+      this._removeFrozenIndicator('column');
+    }
 
     // if we are visible, make sure we are visible, and just refresh the datagrid
     // if we are hidden we want to change the state to refresh so the wrapper know to call refresh when we are shown.
@@ -22265,6 +22482,8 @@ var __oj_data_grid_metadata =
     this.m_fetching = {};
 
     // reset ranges
+    this.m_rowHeaderContextMap = null;
+    this.m_colHeaderContextMap = null;
     this.m_startRow = startRow;
     this.m_endRow = -1;
     this.m_maxRowYet = -1;
@@ -22826,6 +23045,15 @@ var __oj_data_grid_metadata =
    */
   DvtDataGrid.prototype._isDatabodyCellActive = function () {
     return this.m_active != null && this.m_active.type === 'cell';
+  };
+
+  /**
+   * Is the header cell active
+   * @return {boolean} true if active element is a header
+   * @private
+   */
+  DvtDataGrid.prototype._isHeaderCellActive = function () {
+    return this.m_active != null && this.m_active.type === 'header';
   };
 
   /**
@@ -23876,6 +24104,12 @@ var __oj_data_grid_metadata =
       if (this.m_root.id != null) {
         label = [this.m_root.id, label].join(' ');
       }
+      if (this.m_root.getAttribute('aria-labelledby') != null) {
+        label = [this.m_root.getAttribute('aria-labelledby'), label].join(' ');
+      }
+      if (this.m_root.getAttribute('aria-describedby') != null) {
+        label = [this.m_root.getAttribute('aria-describedby'), label].join(' ');
+      }
       label = [this.createSubId('summary'), label].join(' ');
       this.m_externalFocus = false;
     }
@@ -24790,6 +25024,16 @@ var __oj_data_grid_metadata =
       case this.keyCodes.DOWN_KEY:
         if (axis === 'row' || axis === 'rowEnd') {
           newElement = this._getHeaderByIndex(start, axis, level);
+          newIndex = this._getIndex(newElement, axis);
+          while (newElement != null && this.isHeaderHidden(newElement)) {
+            newIndex =
+              level !== levelCount - 1
+                ? this._getAttribute(newElement.parentNode, 'start', true) +
+                  this._getAttribute(newElement.parentNode, 'extent', true)
+                : newIndex + 1;
+            newElement = this._getHeaderByIndex(newIndex, axis, level);
+          }
+          let newLevel = newElement != null ? this.getHeaderCellLevel(newElement) : level;
           if (this._isSelectionEnabled() && !this.m_discontiguousSelection) {
             // unhighlight and clear selection
             this._clearSelection(event);
@@ -24799,8 +25043,8 @@ var __oj_data_grid_metadata =
             newElement,
             {
               type: 'header',
-              index: start,
-              level: level,
+              index: newIndex,
+              level: newLevel,
               axis: axis
             },
             event
@@ -24828,6 +25072,18 @@ var __oj_data_grid_metadata =
           } else if (level === levelCount - 1) {
             newIndex = axis === 'column' ? this.m_startRowHeader : this.m_endRowHeader;
             newElement = this._getHeaderByIndex(newIndex, 'row', this.m_rowHeaderLevelCount - 1);
+            let i = 1;
+            while (newElement != null && this.isHeaderHidden(newElement) && newIndex > 0) {
+              newIndex = newIndex - 1 - i;
+              newElement = this._getHeaderByIndex(newIndex, 'row', level);
+              i += 1;
+            }
+            newIndex =
+              newElement != null && level !== levelCount - 1
+                ? this._getAttribute(newElement.parentNode, 'start', true)
+                : this.findNextNonHiddenIndex(newIndex, 'row');
+
+            let newLevel = newElement != null ? this.getHeaderCellLevel(newElement) : level;
             if (this._isSelectionEnabled() && !this.m_discontiguousSelection) {
               // unhighlight and clear selection
               this._clearSelection(event);
@@ -24839,7 +25095,7 @@ var __oj_data_grid_metadata =
                 {
                   type: 'header',
                   index: newIndex,
-                  level: level,
+                  level: newLevel,
                   axis: 'row'
                 },
                 event
@@ -25775,7 +26031,14 @@ var __oj_data_grid_metadata =
                 });
                 newCellIndex = this.createIndex(firstVisibleRowIndex, index);
               } else if (this._isHighWatermarkScrolling()) {
-                newCellIndex = this.createIndex(this.m_endRow, index);
+                const lastVisibleRowIndex = this.getVisibleCellIndexInDirection(
+                  'row',
+                  this.m_endRow,
+                  {
+                    up: true
+                  }
+                );
+                newCellIndex = this.createIndex(lastVisibleRowIndex, index);
               } else {
                 let lastVisibleRowIndex = this.getVisibleCellIndexInDirection(
                   'row',
@@ -26661,9 +26924,11 @@ var __oj_data_grid_metadata =
               let newColIndex = this.getVisibleCellIndexInDirection('column', column + 1, {
                 right: true
               });
-              if (newColIndex !== column) {
-                newCellIndex = this.createIndex(row, newColIndex);
-                this.extendSelection(newCellIndex, event, keyCode);
+              if (!(this._isLastColumn(newColIndex) && this.isHidden('column', newColIndex))) {
+                if (newColIndex !== column) {
+                  newCellIndex = this.createIndex(row, newColIndex);
+                  this.extendSelection(newCellIndex, event, keyCode);
+                }
               }
             } else {
               let visibleColumnIndex = column + columnExtent;
@@ -26902,16 +27167,28 @@ var __oj_data_grid_metadata =
         ) {
           if (isExtend) {
             let newRowIndex = this.getVisibleCellIndexInDirection('row', row + 1, { down: true });
-            if (newRowIndex !== row) {
-              newCellIndex = this.createIndex(newRowIndex, column);
-              this.extendSelection(newCellIndex, event, keyCode);
+            if (!(this._isLastRow(newRowIndex) && this.isHidden('row', newRowIndex))) {
+              if (newRowIndex !== row) {
+                newCellIndex = this.createIndex(newRowIndex, column);
+                this.extendSelection(newCellIndex, event, keyCode);
+              }
             }
           } else {
-            let visibleRowIndex = this.getVisibleCellIndexInDirection('row', row + rowExtent, {
-              down: true
-            });
+            let visibleRowIndex = row + rowExtent;
+            let columnEndHeader = false;
+
+            while (this.isHidden('row', visibleRowIndex)) {
+              if (this._isLastRow(visibleRowIndex)) {
+                visibleRowIndex = this.getVisibleCellIndexInDirection('row', visibleRowIndex, {
+                  up: true
+                });
+                columnEndHeader = true;
+                break;
+              }
+              visibleRowIndex += 1;
+            }
             // if it's last visible row
-            if (visibleRowIndex > this._getLastAxis('row') && changeRegions) {
+            if (columnEndHeader && this.m_endColEndHeader !== -1) {
               header = this._getHeaderByIndex(
                 this.m_trueIndex.column,
                 'columnEnd',
@@ -27097,15 +27374,12 @@ var __oj_data_grid_metadata =
       var scrollTop;
       if (row < this.m_startRow) {
         scrollTop = this.m_avgRowHeight * row;
-        if (
-          !this._isHighWatermarkScrolling() &&
-          this._hasFrozenRows() &&
-          row <= this.m_frozenRowIndex
-        ) {
-          scrollTop = this.m_currentScrollTop;
-        }
         if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
-          scrollTop = this.m_avgRowHeight * (row - (this.m_frozenRowIndex + 1));
+          if (row <= this.m_frozenRowIndex) {
+            scrollTop = this.m_currentScrollTop;
+          } else {
+            scrollTop = this.m_avgRowHeight * (row - (this.m_frozenRowIndex + 1));
+          }
         }
       } else {
         scrollTop = this.m_avgRowHeight * (row + 1) - viewportBottom + viewportTop;
@@ -27170,15 +27444,12 @@ var __oj_data_grid_metadata =
           hiddenColumnsInDirection = this.hiddenColumnsInDirection(column, { left: true });
           hiddenLength = hiddenColumnsInDirection.length;
           scrollLeft = this.m_avgColWidth * (column - hiddenLength);
-          if (
-            !this._isHighWatermarkScrolling() &&
-            this._hasFrozenColumns() &&
-            column <= this.m_frozenColIndex
-          ) {
-            scrollLeft = this.m_currentScrollLeft;
-          }
           if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
-            scrollLeft = this.m_avgColWidth * (column - (this.m_frozenColIndex + 1) - hiddenLength);
+            if (column <= this.m_frozenColIndex) {
+              scrollLeft = this.m_currentScrollLeft;
+            } else {
+              scrollLeft = this.m_avgColWidth * (column - (this.m_frozenColIndex + 1) - hiddenLength);
+            }
           }
         } else {
           hiddenColumnsInDirection = this.hiddenColumnsInDirection(column, { right: true });
@@ -27890,13 +28161,11 @@ var __oj_data_grid_metadata =
         fillDirection = event.keyCode === this.keyCodes.D_KEY ? 'down' : 'end';
         if (fillDirection === 'down') {
           sourceRange.endIndex.row = sourceRange.startIndex.row;
-          targetRange.startIndex.row = sourceRange.startIndex.row + 1;
           if (targetRange.startIndex.row <= targetRange.endIndex.row) {
             validKeyDown = true;
           }
         } else {
           sourceRange.endIndex.column = sourceRange.startIndex.column;
-          targetRange.startIndex.column = sourceRange.startIndex.column + 1;
           if (targetRange.startIndex.column <= targetRange.endIndex.column) {
             validKeyDown = true;
           }
@@ -27904,11 +28173,21 @@ var __oj_data_grid_metadata =
       } else if (event.type === 'contextmenu') {
         validKeyDown = true;
         fillDirection = 'down';
-        let index = this.m_active.indexes;
-        sourceRange = this.createRange(index, index);
-        if (index.row >= selectionStart.row && index.row <= selectionEnd.row) {
-          if (index.column < selectionEnd.column || index.column > selectionStart.column) {
+        let index;
+        if (this.m_active.type === 'header') {
+          index = this.m_active.index;
+          let axis = this.m_active.axis;
+          sourceRange.endIndex = sourceRange.startIndex;
+          if (axis === 'row') {
             fillDirection = 'end';
+          }
+        } else if (this.m_active.type === 'cell') {
+          index = this.m_active.indexes;
+          sourceRange = this.createRange(index, index);
+          if (index.row >= selectionStart.row && index.row <= selectionEnd.row) {
+            if (index.column < selectionEnd.column || index.column > selectionStart.column) {
+              fillDirection = 'end';
+            }
           }
         }
       }
@@ -28623,10 +28902,16 @@ var __oj_data_grid_metadata =
    * @return {boolean} true if the databody is empty
    */
   DvtDataGrid.prototype._databodyEmpty = function () {
-    if (this.m_databody.firstChild == null || this.m_databody.firstChild.firstChild == null) {
-      return true;
+    const isEmpty = !this.m_databody?.firstChild?.firstChild;
+    if (!this._hasFrozenRows() && !this._hasFrozenColumns()) {
+      return isEmpty;
     }
-    return false;
+    return (
+      isEmpty &&
+      !this.m_databodyFrozenRow?.firstChild?.firstChild &&
+      !this.m_databodyFrozenCol?.firstChild?.firstChild &&
+      !this.m_databodyFrozenCorner?.firstChild?.firstChild
+    );
   };
 
   DvtDataGrid.prototype._databodyEmptyState = function () {
@@ -29612,7 +29897,7 @@ var __oj_data_grid_metadata =
     cellExtreme
   ) {
     var changeFocus = true;
-    var changeRegions = true;
+    var changeRegions = this.m_utils.ctrlEquivalent(event);
     var editing;
 
     if (this.m_active != null) {
@@ -29625,13 +29910,42 @@ var __oj_data_grid_metadata =
           this._exitActionableMode();
         }
 
+        // to avoid eslint no-param-reassign
+        let keyCodeCopy = keyCode;
+        if (this.getResources().isRTLMode()) {
+          if (keyCode === this.keyCodes.LEFT_KEY) {
+            keyCodeCopy = this.keyCodes.RIGHT_KEY;
+          } else if (keyCode === this.keyCodes.RIGHT_KEY) {
+            keyCodeCopy = this.keyCodes.LEFT_KEY;
+          }
+        }
+
+        if (!isExtend) {
+          if (keyCodeCopy === this.keyCodes.LEFT_KEY) {
+            if (this.isFirstOrFirstNonHiddenIndex(this.m_active.indexes.column, 'column')) {
+              changeRegions = true;
+            }
+          } else if (keyCodeCopy === this.keyCodes.UP_KEY) {
+            if (this.isFirstOrFirstNonHiddenIndex(this.m_active.indexes.row, 'row')) {
+              changeRegions = true;
+            }
+          } else if (keyCodeCopy === this.keyCodes.RIGHT_KEY) {
+            if (this.isLastOrLastNonHiddenIndex(this.m_active.indexes.column, 'column')) {
+              changeRegions = true;
+            }
+          } else if (keyCodeCopy === this.keyCodes.DOWN_KEY) {
+            if (this.isLastOrLastNonHiddenIndex(this.m_active.indexes.row, 'row')) {
+              changeRegions = true;
+            }
+          }
+        }
         if (changeFocus) {
           if (this.m_options.isFloodFillEnabled()) {
             this._removeFloodFillAffordance();
           }
           var oldActive = this.m_active;
           var returnVal = this.handleFocusChange(
-            keyCode,
+            keyCodeCopy,
             isExtend,
             event,
             changeRegions,
@@ -29655,7 +29969,7 @@ var __oj_data_grid_metadata =
       } else if (this.m_active.type === 'label') {
         return this.handleLabelFocusChange(keyCode, event, isExtend, jumpToHeaders);
       } else if (this.m_active.type === 'empty') {
-        return this.handleNoDataFocusChange(keyCode, isExtend, event, changeRegions);
+        return this.handleNoDataFocusChange(keyCode, isExtend, event, true);
       }
     }
     return false;
@@ -29866,7 +30180,11 @@ var __oj_data_grid_metadata =
       index = this.m_active.indexes.row;
       start = index;
       end = index;
-      level = this.m_rowHeaderLevelCount - 1;
+      if (this.m_endRowHeader !== -1) {
+        level = this.m_rowHeaderLevelCount - 1;
+      } else if (this.m_endRowEndHeader !== -1) {
+        level = this.m_rowEndHeaderLevelCount - 1;
+      }
     } else {
       if (
         this.m_active == null ||
@@ -29877,7 +30195,11 @@ var __oj_data_grid_metadata =
       }
       index = this.m_active.index;
       level = this.m_active.level;
-      if (this.m_rowHeaderLevelCount - 1 === level) {
+
+      if (
+        (this.m_endRowHeader !== -1 && this.m_rowHeaderLevelCount - 1 === level) ||
+        (this.m_endRowEndHeader !== -1 && this.m_rowEndHeaderLevelCount - 1 === level)
+      ) {
         start = index;
         end = index;
       } else {
@@ -29895,8 +30217,10 @@ var __oj_data_grid_metadata =
       }
     }
 
-    // set the frontier as it would be with header selection
-    this.setHeaderSelectionFrontier('row', end, index, level, element, true);
+    if (this.m_endRowHeader !== -1 || this.m_endRowEndHeader !== -1) {
+      // set the frontier as it would be with header selection
+      this.setHeaderSelectionFrontier('row', end, index, level, element, true);
+    }
 
     if (this._shouldDeselectHeader(index, extent, 'row')) {
       var rangeStart = this.createIndex(index, 0);
@@ -30442,13 +30766,13 @@ var __oj_data_grid_metadata =
     const selectionAxis = this._getSelectionAxis(resizingElementAxis);
     if (
       this.m_selection &&
-      this.m_selection.length &&
+      this.m_selection.length > 0 &&
       allowResizeWithinSelection &&
       !this.m_discontiguousSelection &&
       (dimension === 'rowHeight' || dimension === 'columnWidth')
     ) {
       const indices = [];
-      if (!this._isHeaderSelected(context, selectionAxis)) {
+      if (!this._isHeaderSelected(context, selectionAxis) || selectedHeadersSet.size === 0) {
         indices.push(resizingElementIndex + context.extent - 1);
       } else {
         selectedHeadersSet.forEach((header) => {
@@ -31776,38 +32100,44 @@ var __oj_data_grid_metadata =
 
     var databodyHeight;
     var rowHeaderHeight;
+    var databodyWidth;
+    var columnHeaderWidth;
+
     if (this.m_endColEndHeader !== -1) {
       databodyHeight = Math.min(
         databodyContentHeight + (isDatabodyHorizontalScrollbarRequired ? scrollbarSize : 0),
         availableHeight
       );
-      rowHeaderHeight = isDatabodyHorizontalScrollbarRequired
-        ? databodyHeight - scrollbarSize
-        : databodyHeight;
+      rowHeaderHeight =
+        isDatabodyHorizontalScrollbarRequired && !this._hasFrozenColumns()
+          ? databodyHeight - scrollbarSize
+          : databodyHeight;
     } else {
       databodyHeight = availableHeight;
       rowHeaderHeight = Math.min(
         databodyContentHeight,
-        isDatabodyHorizontalScrollbarRequired ? databodyHeight - scrollbarSize : databodyHeight
+        isDatabodyHorizontalScrollbarRequired && !this._hasFrozenColumns()
+          ? databodyHeight - scrollbarSize
+          : databodyHeight
       );
     }
-
-    var databodyWidth;
-    var columnHeaderWidth;
 
     if (this.m_endRowEndHeader !== -1) {
       databodyWidth = Math.min(
         databodyContentWidth + (isDatabodyVerticalScrollbarRequired ? scrollbarSize : 0),
         availableWidth
       );
-      columnHeaderWidth = isDatabodyVerticalScrollbarRequired
-        ? databodyWidth - scrollbarSize
-        : databodyWidth;
+      columnHeaderWidth =
+        isDatabodyVerticalScrollbarRequired && !this._hasFrozenRows()
+          ? databodyWidth - scrollbarSize
+          : databodyWidth;
     } else {
       databodyWidth = availableWidth;
       columnHeaderWidth = Math.min(
         databodyContentWidth,
-        isDatabodyVerticalScrollbarRequired ? databodyWidth - scrollbarSize : databodyWidth
+        isDatabodyVerticalScrollbarRequired && !this._hasFrozenRows()
+          ? databodyWidth - scrollbarSize
+          : databodyWidth
       );
     }
 
@@ -33710,8 +34040,18 @@ var __oj_data_grid_metadata =
     var ranges = this.GetSelection();
     for (var i = 0; i < ranges.length; i += 1) {
       var elems = this.getElementsInRange(ranges[i], startRow, endRow, startCol, endCol);
+      this.unhighlightElems(elems);
       this.highlightElems(elems);
       this._applyBorderClassesAroundRange(elems, ranges[i], true, 'Selected');
+      if (
+        (ranges[i].endIndex?.row === -1 || ranges[i].endIndex?.column === -1) &&
+        this.m_options.isFloodFillEnabled() &&
+        this._isSelectionEnabled() &&
+        !this.m_discontiguousSelection &&
+        this.m_bottomFloodFillIconContainer !== null
+      ) {
+        this._moveFloodFillAffordance();
+      }
       if (this.m_dragIndex && elems && elems.length) {
         for (let j = 0; j < elems.length; j++) {
           this._highlightElement(elems[j], ['dragSourceOpaque']);
@@ -33842,7 +34182,7 @@ var __oj_data_grid_metadata =
   };
 
   /**
-   * Handles discontiguous header set active from databody
+   * Handles discontiguous header set active from databody and fires selection
    * @param {Event} event triggering the operation
    * @param {string} axis header axis
    * @param {Element|null} header to be set active
@@ -33877,6 +34217,7 @@ var __oj_data_grid_metadata =
       false
     );
     this.rehighlightSelection();
+    this._compareSelectionAndFire(event, currentSelection);
   };
 
   /**
@@ -34371,6 +34712,7 @@ var __oj_data_grid_metadata =
     var previous = this.GetSelection();
     this.m_selection = [];
 
+    this.m_anchorSelectionElement = null;
     this._compareSelectionAndFire(event, previous);
   };
 
@@ -34392,9 +34734,15 @@ var __oj_data_grid_metadata =
    * @param {number} rowStart the end row index
    * @param {number} rowEnd the start row index
    * @param {Event} event the dom event that triggers the selection
+   * @param {boolean} popPreviousOnNextSelect whether to pop previous selection
    * @private
    */
-  DvtDataGrid.prototype._selectEntireRow = function (rowStart, rowEnd, event) {
+  DvtDataGrid.prototype._selectEntireRow = function (
+    rowStart,
+    rowEnd,
+    event,
+    popPreviousOnNextSelect
+  ) {
     // create the start and end index then selects the range
     var startIndex = this.createIndex(rowStart, 0);
     var endIndex = this.createIndex(rowEnd, -1);
@@ -34405,13 +34753,15 @@ var __oj_data_grid_metadata =
       this._selectRange(
         this.createIndex(returnObj.min.row),
         this.createIndex(returnObj.max.row),
-        event
+        event,
+        popPreviousOnNextSelect
       );
     } else {
       this._selectRange(
         this.createIndex(returnObj.min.row, 0),
         this.createIndex(returnObj.max.row, -1),
-        event
+        event,
+        popPreviousOnNextSelect
       );
     }
   };
@@ -34421,9 +34771,15 @@ var __oj_data_grid_metadata =
    * @param {number} columnStart the column start index
    * @param {number} columnEnd the column end index
    * @param {Event} event the dom event that triggers the selection
+   * @param {boolean} popPreviousOnNextSelect whether to pop previous selection
    * @private
    */
-  DvtDataGrid.prototype._selectEntireColumn = function (columnStart, columnEnd, event) {
+  DvtDataGrid.prototype._selectEntireColumn = function (
+    columnStart,
+    columnEnd,
+    event,
+    popPreviousOnNextSelect
+  ) {
     // create the start and end index then selects the range
     var startIndex = this.createIndex(0, columnStart);
     var endIndex = this.createIndex(-1, columnEnd);
@@ -34432,7 +34788,8 @@ var __oj_data_grid_metadata =
     this._selectRange(
       this.createIndex(0, returnObj.min.column),
       this.createIndex(-1, returnObj.max.column),
-      event
+      event,
+      popPreviousOnNextSelect
     );
   };
 
@@ -34441,21 +34798,32 @@ var __oj_data_grid_metadata =
    * @param {Object} startIndex the start row/column indexes
    * @param {Object} endIndex the end row/column indexes
    * @param {Event} event the dom event that triggers the selection
+   * @param {boolean} popPreviousOnNextSelect whether to pop previous selection
    * @private
    */
-  DvtDataGrid.prototype._selectRange = function (startIndex, endIndex, event) {
+  DvtDataGrid.prototype._selectRange = function (
+    startIndex,
+    endIndex,
+    event,
+    popPreviousOnNextSelect
+  ) {
     // no longer clear selection, if it is cleared here we can't return anything for previous selection
     this.unhighlightSelection();
-    this._createRangeWithKeys(startIndex, endIndex, this._selectRangeCallback.bind(this, event));
+    this._createRangeWithKeys(
+      startIndex,
+      endIndex,
+      this._selectRangeCallback.bind(this, event, popPreviousOnNextSelect)
+    );
   };
 
   /**
    * Callback for once the new range is constructed
    * @param {Event} event the dom event that triggers the selection
    * @param {Object} newRange the new range to be selected
+   * @param {boolean} popPrevious whether to pop previous selection
    * @private
    */
-  DvtDataGrid.prototype._selectRangeCallback = function (event, newRange) {
+  DvtDataGrid.prototype._selectRangeCallback = function (event, popPrevious, newRange) {
     var selection;
 
     // We need to pass the option change event the previous selection.
@@ -34479,6 +34847,11 @@ var __oj_data_grid_metadata =
     } else {
       selection = previous.slice(0);
     }
+
+    if (popPrevious) {
+      selection = selection.slice(0, Math.max(0, selection.length - 1));
+    }
+
     selection.push(newRange);
     this.m_selection = selection;
 
@@ -34610,6 +34983,15 @@ var __oj_data_grid_metadata =
     // reset focus on previous selection frontier
     this._resetSelectionFrontierFocus();
 
+    if (
+      direction === this.keyCodes.DOWN_KEY &&
+      this.m_endRowHeader === -1 &&
+      this.m_selection[this.m_selection.length - 1].endIndex.column === -1
+    ) {
+      // eslint-disable-next-line no-param-reassign
+      index.column = -1;
+    }
+
     // update the selctionFrontier, more complicated dues to merged cells
     var returnObj = this._updateSelectionFrontier(anchor, index, direction);
     var minIndex = returnObj.min;
@@ -34717,6 +35099,16 @@ var __oj_data_grid_metadata =
 
     var sourceParent = isDeselect ? this.m_deselectInfo.sourceParent : this._getActiveElement();
     if (!sourceParent) {
+      if (!this._isHighWatermarkScrolling()) {
+        this._extendSelectionHeaderVirtualScroll(
+          event,
+          isExtend,
+          isDeselect,
+          targetEnd,
+          targetContext,
+          targetElement
+        );
+      }
       return;
     }
     var sourceParentContext = sourceParent[this.getResources().getMappedAttribute('context')];
@@ -34751,6 +35143,10 @@ var __oj_data_grid_metadata =
       if (this.m_active.type === 'header') {
         axis = this.m_active.axis;
         anchor = this.m_active.index;
+        if (!this._isHighWatermarkScrolling() && this.m_anchorSelectionElement) {
+          anchor = this.m_anchorSelectionElement.index;
+          axis = this.m_anchorSelectionElement.axis;
+        }
       }
     }
 
@@ -34768,6 +35164,7 @@ var __oj_data_grid_metadata =
       extent = sourceParentContext.extent;
     }
 
+    var popPreviousOnNextSelect = false;
     // pop if anchors match so we don't duplicate a selection
     if (isExtend && !isDeselect) {
       var previousAnchor = this.m_selection[this.m_selection.length - 1];
@@ -34777,7 +35174,7 @@ var __oj_data_grid_metadata =
 
       // check that the anchor and the selection frontier index match the previous anchor start and end indices
       if (previousAnchor && this.checkCorners(axis, anchor, previousAnchor)) {
-        this.m_selection.pop();
+        popPreviousOnNextSelect = true;
       }
     }
 
@@ -34820,6 +35217,10 @@ var __oj_data_grid_metadata =
       }
     }
 
+    if (!this._isHighWatermarkScrolling() && this.m_anchorSelectionElement) {
+      anchor = this.m_anchorSelectionElement.index;
+    }
+
     if (targetContext.cell) {
       this.setHeaderSelectionFrontier(
         axis,
@@ -34838,6 +35239,83 @@ var __oj_data_grid_metadata =
         /** @type {Element} */ (targetElement),
         true
       );
+      if (this._isHighWatermarkScrolling()) {
+        const headerInfo = {
+          index: targetContext.index,
+          axis: axis,
+          level: targetContext.level,
+          type: 'header'
+        };
+        this.m_shouldFocus = false;
+        this.scrollToHeader(headerInfo);
+      } else {
+        const headerInfo = { index: targetContext.index, axis: axis, level: targetContext.level };
+        this.m_shouldFocus = false;
+        this.scrollToHeader(headerInfo);
+        let endIndex = axis === 'row' ? this.m_endRow : this.m_endCol;
+        if (targetContext.index + targetContext.extent >= endIndex) {
+          this.m_extendScrollHeader = headerInfo;
+        }
+      }
+    }
+
+    if (!isDeselect && axis) {
+      if (axis.indexOf('column') !== -1) {
+        this._selectEntireColumn(anchor, endpoint, event, popPreviousOnNextSelect);
+      } else if (axis.indexOf('row') !== -1) {
+        this._selectEntireRow(anchor, endpoint, event, popPreviousOnNextSelect);
+      }
+    } else {
+      var range;
+      var start = Math.min(anchor, endpoint);
+      var end = Math.max(anchor, endpoint);
+      if (axis != null && axis.indexOf('row') !== -1) {
+        range = this.createRange(this.createIndex(start, 0), this.createIndex(end, -1));
+      } else {
+        range = this.createRange(this.createIndex(0, start), this.createIndex(-1, end));
+      }
+      var trimmedRange = this._trimRangeForSelectionMode(range);
+      this._deselectRange(trimmedRange, event);
+    }
+  };
+
+  DvtDataGrid.prototype._extendSelectionHeaderVirtualScroll = function (
+    event,
+    isExtend,
+    isDeselect,
+    targetEnd,
+    targetContext,
+    targetElement
+  ) {
+    let axis = this.m_active.axis;
+    let anchor = this.m_active.index;
+    let endpoint = targetEnd;
+
+    if (isExtend && !isDeselect) {
+      var previousAnchor = this.m_selection[this.m_selection.length - 1];
+
+      // unhighlight selection now
+      this.unhighlightSelection();
+
+      // check that the anchor and the selection frontier index match the previous anchor start and end indices
+      if (previousAnchor && this.checkCorners(axis, anchor, previousAnchor)) {
+        this.m_selection.pop();
+      }
+    }
+
+    this.setHeaderSelectionFrontier(
+      axis,
+      endpoint,
+      targetContext.index,
+      targetContext.level,
+      /** @type {Element} */ (targetElement),
+      true
+    );
+    const headerInfo = { index: targetContext.index, axis: axis, level: targetContext.level };
+    this.m_shouldFocus = false;
+    this.scrollToHeader(headerInfo);
+    if (targetContext.index === this.m_endRow) {
+      this.m_extendScrollHeader = headerInfo;
     }
 
     if (!isDeselect && axis) {
@@ -35146,7 +35624,7 @@ var __oj_data_grid_metadata =
     }
 
     // focus on the frontier cell
-    this._makeSelectionFrontierFocus();
+    this._makeSelectionFrontierFocus(event);
 
     this._compareSelectionAndFire(event, previous);
   };
@@ -35178,7 +35656,7 @@ var __oj_data_grid_metadata =
    * Make the selection frontier focusable.
    * @private
    */
-  DvtDataGrid.prototype._makeSelectionFrontierFocus = function () {
+  DvtDataGrid.prototype._makeSelectionFrontierFocus = function (event) {
     // make sure there is a selection frontier and it's not the same as the active cell
     if (
       this.m_selectionFrontier == null ||
@@ -35215,6 +35693,56 @@ var __oj_data_grid_metadata =
       ? rowOrCell[0].firstChild
       : rowOrCell[0];
     this._setAriaProperties(this._createActiveObject(cell), null, cell);
+    const context = this.getResources().getMappedAttribute('context');
+    const dir = this.getResources().isRTLMode() ? 'right' : 'left';
+    const left = this.getElementDir(cell, dir);
+    const top = this.getElementDir(cell, 'top');
+    let right = left + this.getElementWidth(cell);
+    let bottom = top + this.getElementHeight(cell);
+    if (
+      this._isHighWatermarkScrolling() &&
+      ((event.key === 'ArrowRight' &&
+        cell[context].indexes.column + cell[context].extents.column - 1 === this.m_endCol) ||
+        (event.key === 'ArrowDown' &&
+          cell[context].indexes.row + cell[context].extents.row - 1 === this.m_endRow)) &&
+      this._isCellBoundaryInViewport(left, right, top, bottom)
+    ) {
+      if (event.key === 'ArrowRight') {
+        this.scrollTo(
+          this.m_currentScrollLeft + this.getDefaultColumnWidth(),
+          this.m_currentScrollTop
+        );
+      } else {
+        this.scrollTo(this.m_currentScrollLeft, this.m_currentScrollTop + this.getDefaultRowHeight());
+      }
+    }
+  };
+
+  DvtDataGrid.prototype._makeHeaderSelectionFrontierFocus = function () {
+    // need to check how it works for nested headers (different levels)
+    if (
+      this.m_selectionFrontier == null ||
+      (this.m_selectionFrontier.axis === this.m_active.axis &&
+        this.m_selectionFrontier.index === this.m_active.index)
+    ) {
+      return;
+    }
+
+    // unset focus properties on active cell first
+    let activeHeader = this._getHeaderByIndex(
+      this.m_active.index,
+      this.m_active.axis,
+      this.m_active.level
+    );
+    if (activeHeader) {
+      this._unsetAriaProperties(activeHeader);
+      let header = this._getHeaderByIndex(
+        this.m_selectionFrontier.index,
+        this.m_selectionFrontier.axis,
+        this.m_selectionFrontier.level
+      );
+      this._setAriaProperties(this._createActiveObject(header), null, header, true);
+    }
   };
 
   /**
@@ -35281,6 +35809,15 @@ var __oj_data_grid_metadata =
     // In case we are row based single selection mode
     if (this.isMultipleSelection()) {
       this.m_headerDragState = true;
+    }
+
+    if (
+      this.m_options.isFloodFillEnabled() &&
+      this._isSelectionEnabled() &&
+      !this.m_discontiguousSelection
+    ) {
+      this._addFloodfillAffordance(event);
+      this._moveFloodFillAffordance();
     }
   };
 
@@ -37362,6 +37899,10 @@ var __oj_data_grid_metadata =
     const disclosureIcon = this._getDisclosureIcon(header);
     this.m_utils.removeCSSClassName(disclosureIcon, this.getMappedStyle('collapsed'));
     this.m_utils.addCSSClassName(disclosureIcon, this.getMappedStyle('expanded'));
+    // flip title for hover feedback
+    if (disclosureIcon?.parentElement) {
+      disclosureIcon.parentElement.title = this.getResources().getTranslatedText('collapsedText');
+    }
     this.fireEvent('expandRequest', details);
     // set scrollOnRefresh flag if required.
     // if (expandRequest) {
@@ -37387,6 +37928,10 @@ var __oj_data_grid_metadata =
     const disclosureIcon = this._getDisclosureIcon(header);
     this.m_utils.removeCSSClassName(disclosureIcon, this.getMappedStyle('expanded'));
     this.m_utils.addCSSClassName(disclosureIcon, this.getMappedStyle('collapsed'));
+    // flip title for hover feedback
+    if (disclosureIcon?.parentElement) {
+      disclosureIcon.parentElement.title = this.getResources().getTranslatedText('expandedText');
+    }
     this.fireEvent('collapseRequest', details);
     // set scrollOnRefresh flag if required.
     // if (collapseRequest) {
@@ -39226,7 +39771,14 @@ var __oj_data_grid_metadata =
    *
    * @ojoracleicon 'oj-ux-ico-tables-basic'
    * @ojuxspecs ['data-grid']
-   *
+   * @ojlegacymetadata requirements [
+   *    {
+   *      type: "anyOf",
+   *      label: "accessibility",
+   *      properties: ["aria-label", "aria-labelledby"],
+   *      slots: [""]
+   *    }
+   * ]
    * @classdesc
    * <h3 id="datagridOverview-section">
    *   JET DataGrid
@@ -39251,6 +39803,15 @@ var __oj_data_grid_metadata =
    * It is important to understand the limitations detailed there to understand if you should write your own.
    * Developers can also create their own DataGridProvider by implementing the DataGridProvider interface. See the cookbook for an example of a custom DataGridProvider.</p>
    *
+   * <h3 id="progressive-loading-section">
+   *   Progressive Loading
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#progressive-loading-section"></a>
+   * </h3>
+   * <p>
+   *  This component supports loading indicators. Loading indicators are only shown after a pre-defined time has elapsed during the data provider fetch.
+   * </p>
+   *
+   *
    * <h3 id="touch-section">
    *   Touch End User Information
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -39270,7 +39831,13 @@ var __oj_data_grid_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    *
+   * To make your component accessible, the application is required to include contextual information for screen readers using one or more the following methods as appropriate:
+   *  <ul>
+   *   <li>aria-labelledby</li>
+   *   <li>aria-label</li>
+   *  </ul>
    * <p>Since <code class="prettyprint">role="application"</code> is used in the DataGrid, application should always apply an <code class="prettyprint">aria-label</code> to the DataGrid element so that it can distinguish from other elements with application role.</p>
+   *
    * <p>Nesting collection components such as ListView, Table, TreeView, and DataGrid inside of DataGrid is not supported.</p>
    * <h4>Custom Colors</h4>
    * <p>Using colors, including background and text colors, is not accessible if it is the only way information is conveyed.
@@ -40336,6 +40903,25 @@ var __oj_data_grid_metadata =
    *   &lt;template slot='columnEndHeaderLabelTemplate' data-oj-as='cell'>
    *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
    *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+
+  /**
+   * <p>The <code class="prettyprint">noData</code> slot is used to specify the content to display when the datagrid is empty.
+   * The slot content must be a &lt;template> element.  If not specified then a default no data message will be displayed.
+   *
+   * @ojslot noData
+   * @ojshortdesc The noData slot is used to specify the content to render when the datagrid is empty.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops {}
+   * @ojlegacymetadata templateSlotAlias "noDataTemplate"
+   *
+   * @example <caption>Initialize the DataGrid with a <code class="prettyprint">noData</code> slot specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='noData'>
+   *     &lt;span>&lt;oj-button>Add item&lt;/span>
+   *   &lt;/template>
    * &lt;/oj-data-grid>
    */
 
@@ -41746,8 +42332,7 @@ var __oj_data_grid_metadata =
 
       /**
        * <p>Default Freeze count on datagrid columns. Gettable & settable property for freeze column, supports writeback.
-       * The number of columns frozen in the DataGrid. This property is currently only supported when scroll-policy="loadMoreOnScroll".
-       * To enable end user frozen column modification see the header.column.freezable property.
+       * The number of columns frozen in the DataGrid. To enable end user frozen column modification see the header.column.freezable property.
        * When the user modifies the frozen region this value will be updated.
        *
        * @ojwriteback
@@ -41773,8 +42358,7 @@ var __oj_data_grid_metadata =
       frozenColumnCount: null,
       /**
        * <p>Default Freeze count on datagrid rows. Gettable & settable property for freeze row, supports writeback.
-       * The number of rows frozen in the DataGrid. This property is currently only supported when scroll-policy="loadMoreOnScroll".
-       * To enable end user frozen row modification see the header.row.freezable property.
+       * The number of rows frozen in the DataGrid. To enable end user frozen row modification see the header.row.freezable property.
        * When the user modifies the frozen region this value will be updated.
        *
        * @ojwriteback
@@ -47566,9 +48150,63 @@ var __oj_data_grid_metadata =
     return this.m_floodFillRange;
   };
 
+  DvtDataGrid.prototype._extendFloodFillSelectionOnAxis = function (index, event) {
+    let anchor;
+    let selectionRange;
+    let fillPossible;
+    if (!selectionRange) {
+      selectionRange = this.m_selection;
+    }
+    let rangeStartIndex = selectionRange[0].startIndex;
+    let rangeEndIndex = selectionRange[0].endIndex;
+    let fillDirection;
+    if (this.m_active.axis === 'column') {
+      fillPossible = true;
+      if (
+        index.row < this.m_endRow ||
+        (index.column >= rangeStartIndex.column && index.column <= rangeEndIndex.column)
+      ) {
+        fillPossible = false;
+      } else {
+        fillDirection = 'left';
+        if (index.column > rangeEndIndex.column) {
+          fillDirection = 'right';
+        }
+      }
+    } else {
+      fillPossible = true;
+      if (
+        index.column < this.m_endCol ||
+        (index.row >= rangeStartIndex.row && index.row <= rangeEndIndex.row)
+      ) {
+        fillPossible = false;
+      } else {
+        fillDirection = 'top';
+        if (index.row > rangeEndIndex.row) {
+          fillDirection = 'bottom';
+        }
+      }
+    }
+
+    if (!fillPossible) {
+      this.unhighlightFloodFillRange();
+      this.m_floodFillRange = [];
+    } else {
+      let minIndex = rangeStartIndex;
+      let maxIndex = index;
+      this._createRangeWithKeys(
+        minIndex,
+        maxIndex,
+        this._extendFloodFillSelectionCallback.bind(this, event, anchor, fillDirection)
+      );
+    }
+  };
+
   DvtDataGrid.prototype.extendFloodFillSelection = function (index, event) {
     // prevent cell selection when extending a row/column selection
+    // overriden by JET-75262
     if (this.m_active.type === 'header') {
+      this._extendFloodFillSelectionOnAxis(index, event);
       return;
     }
 
@@ -47800,6 +48438,23 @@ var __oj_data_grid_metadata =
       if (this.m_bottomFloodFillIconContainer != null) {
         // get the cells for left/right alignment
         var bottomIconCell = this._getCellByIndex(selection[selection.length - 1].endIndex);
+        let lastSelection = selection[selection.length - 1];
+        // header selection
+        if (
+          bottomIconCell === null &&
+          (lastSelection.endIndex.row === -1 || lastSelection.endIndex.column === -1)
+        ) {
+          let rowIndex;
+          let columnIndex;
+          if (lastSelection.endIndex.row === -1) {
+            rowIndex = this.m_endRow;
+            columnIndex = lastSelection.endIndex.column;
+          } else {
+            rowIndex = lastSelection.endIndex.row;
+            columnIndex = this.m_endCol;
+          }
+          bottomIconCell = this._getCellByIndex({ row: rowIndex, column: columnIndex });
+        }
         if (bottomIconCell) {
           // 1 for border
           this.setElementDir(
@@ -49900,19 +50555,27 @@ var __oj_data_grid_metadata =
   };
 
   DvtDataGrid.prototype._removeFrozenIndicator = function (axis) {
+    const root = this.m_root;
+
+    const removeChild = (node) => {
+      if (node && node.parentNode === root) {
+        root.removeChild(node);
+      }
+    };
+
     if (axis === 'column') {
       let hasEndHeaders = this.m_endColEndHeader !== -1;
-      this.m_root.removeChild(this.m_databodyColFrozenTarget);
-      this.m_root.removeChild(this.m_colHeaderFrozenTarget);
+      removeChild(this.m_databodyColFrozenTarget);
+      removeChild(this.m_colHeaderFrozenTarget);
       if (hasEndHeaders) {
-        this.m_root.removeChild(this.m_colEndHeaderFrozenTarget);
+        removeChild(this.m_colEndHeaderFrozenTarget);
       }
     } else {
       let hasEndHeaders = this.m_endRowEndHeader !== -1;
-      this.m_root.removeChild(this.m_databodyRowFrozenTarget);
-      this.m_root.removeChild(this.m_rowHeaderFrozenTarget);
+      removeChild(this.m_databodyRowFrozenTarget);
+      removeChild(this.m_rowHeaderFrozenTarget);
       if (hasEndHeaders) {
-        this.m_root.removeChild(this.m_rowEndHeaderFrozenTarget);
+        removeChild(this.m_rowEndHeaderFrozenTarget);
       }
     }
   };
@@ -50046,7 +50709,7 @@ var __oj_data_grid_metadata =
     }
 
     const frozenColumnIndex = this.m_frozenColIndex;
-    if (this._hasFrozenColumns()) {
+    if (this._hasFrozenColumns() && !this._getEmptyElement()) {
       this._addFrozenIndicator(
         'column',
         0,
@@ -50102,7 +50765,7 @@ var __oj_data_grid_metadata =
       this.setElementDir(rowEndHeader, dirValue, dir);
     }
     const frozenRowIndex = this.m_frozenRowIndex;
-    if (this._hasFrozenRows()) {
+    if (this._hasFrozenRows() && !this._getEmptyElement()) {
       this._addFrozenIndicator(
         'row',
         colHeaderHeight + databodyFrozenRowHeight,
@@ -50246,6 +50909,13 @@ var __oj_data_grid_metadata =
       ((axis === 'row' && !this._hasFrozenRows()) || (axis === 'column' && !this._hasFrozenColumns()))
     ) {
       return isFeasible;
+    }
+
+    if (
+      this.m_initialized &&
+      ((axis === 'column' && this._hasFrozenColumns()) || (axis === 'row' && this._hasFrozenRows()))
+    ) {
+      return true;
     }
     if (startResults && endResults) {
       // if application tries to freeze an index beyond the fetch count.
@@ -50517,7 +51187,7 @@ var __oj_data_grid_metadata =
         cell = this._getCellByIndex(this.m_selection[0].endIndex);
       }
       const index = cell[context].indexes;
-      if (index.row < this.m_frozenRowIndex + 1) {
+      if (this._hasFrozenRows() && index.row < this.m_frozenRowIndex + 1) {
         withinFrozen = true;
       }
       if (this.m_endRowHeader !== -1 && this.m_endRowEndHeader !== -1) {
@@ -50537,7 +51207,7 @@ var __oj_data_grid_metadata =
     } else {
       let headerIndex = header[context].index;
       let endHeaderIndex;
-      if (headerIndex < this.m_frozenRowIndex + 1) {
+      if (this._hasFrozenRows() && headerIndex < this.m_frozenRowIndex + 1) {
         withinFrozen = true;
       }
 
@@ -50552,12 +51222,7 @@ var __oj_data_grid_metadata =
     if (
       !this._isHighWatermarkScrolling() &&
       !withinFrozen &&
-      ((this._hasFrozenColumns() && this.m_startCol > this.m_frozenColIndex + 1) ||
-        (this._hasFrozenRows() && this.m_startRow > this.m_frozenRowIndex + 1) ||
-        (this._hasFrozenColumns() &&
-          this._hasFrozenRows() &&
-          (this.m_startCol > this.m_frozenColIndex + 1 ||
-            this.m_startRow > this.m_frozenRowIndex + 1)) ||
+      ((this._hasFrozenRows() && this.m_startRow > this.m_frozenRowIndex + 1) ||
         (!this._hasFrozenRows() && this.m_startRow > 0))
     ) {
       return;
@@ -50634,7 +51299,7 @@ var __oj_data_grid_metadata =
       let index = cell[context].indexes;
       let headerIndex;
       let endHeaderIndex;
-      if (index.column < this.m_frozenColIndex + 1) {
+      if (this._hasFrozenColumns() && index.column < this.m_frozenColIndex + 1) {
         withinFrozen = true;
       }
 
@@ -50655,7 +51320,7 @@ var __oj_data_grid_metadata =
     } else {
       let headerIndex = header[context].index;
       let endHeaderIndex;
-      if (headerIndex < this.m_frozenColIndex + 1) {
+      if (this._hasFrozenColumns() && headerIndex < this.m_frozenColIndex + 1) {
         withinFrozen = true;
       }
 
@@ -50671,11 +51336,6 @@ var __oj_data_grid_metadata =
       !this._isHighWatermarkScrolling() &&
       !withinFrozen &&
       ((this._hasFrozenColumns() && this.m_startCol > this.m_frozenColIndex + 1) ||
-        (this._hasFrozenRows() && this.m_startRow > this.m_frozenRowIndex + 1) ||
-        (this._hasFrozenColumns() &&
-          this._hasFrozenRows() &&
-          (this.m_startCol > this.m_frozenColIndex + 1 ||
-            this.m_startRow > this.m_frozenRowIndex + 1)) ||
         (!this._hasFrozenColumns() && this.m_startCol > 0))
     ) {
       return;
@@ -50739,6 +51399,22 @@ var __oj_data_grid_metadata =
       rootContainer = endRoot;
       startHeader = axis === 'column' ? this.m_startColEndHeader : this.m_startRowEndHeader;
     }
+
+    // On Virtual scrolling, when initialized, startRowHeader and startColHeader are updated according to frozen section in handleHeadersFetchSuccess
+    // The adjustedIndex accounts to the frozen count so, to get the right header, startHeader needs to be adjusted.
+    if (
+      !this._isHighWatermarkScrolling() &&
+      this.m_initialized &&
+      headerLevelCount === 1 &&
+      startHeader > 0
+    ) {
+      if (axis === 'row' && this._hasFrozenRows()) {
+        startHeader -= this.m_frozenRowIndex + 1;
+      } else if (axis === 'column' && this._hasFrozenColumns()) {
+        startHeader -= this.m_frozenColIndex + 1;
+      }
+    }
+
     header = this._getHeaderByIndexFromRoot(
       adjustedIndex,
       headerLevelCount - 1,
@@ -51217,7 +51893,7 @@ var __oj_data_grid_metadata =
 
     if (this.m_databodyFrozenCorner) {
       frozenCornerCells = this._getFrozenAxisCells(axis, endIndex);
-      if (calculateWidthFromCorner && cells.length > 0) {
+      if (calculateWidthFromCorner && !this._getEmptyElement()) {
         let lastCell = frozenCornerCells[frozenCornerCells.length - 1];
         cellsWidthToAdjust = this.getElementDir(lastCell, dir) + this.getElementWidth(lastCell);
       }
@@ -51244,14 +51920,16 @@ var __oj_data_grid_metadata =
         this.getMappedStyle('frozenCell'),
         newStartIndex
       );
-    } else if (headers.length !== 0) {
-      headers.forEach((frozenHeader) => {
-        cellsWidthToAdjust += this.getElementWidth(frozenHeader);
-      });
-    } else {
-      endHeaders.forEach((frozenHeader) => {
-        cellsWidthToAdjust += this.getElementWidth(frozenHeader);
-      });
+    } else if (frozenCornerCells.length === 0) {
+      if (headers.length !== 0) {
+        headers.forEach((frozenHeader) => {
+          cellsWidthToAdjust += this.getElementWidth(frozenHeader);
+        });
+      } else if (endHeaders.length !== 0) {
+        endHeaders.forEach((frozenHeader) => {
+          cellsWidthToAdjust += this.getElementWidth(frozenHeader);
+        });
+      }
     }
 
     this._appendElementsToFrozenContainer(
@@ -51278,7 +51956,7 @@ var __oj_data_grid_metadata =
     if (endIndex + 1 <= this._getMaxRight()) {
       this._shiftCellsAlongAxis(axis, -cellsWidthToAdjust, endIndex + 1, true);
 
-      if (this.m_databodyFrozenRow && this._hasFrozenRows() && cells.length > 0) {
+      if (this.m_databodyFrozenRow && this._hasFrozenRows() && !this._getEmptyElement()) {
         this._shiftFrozenCellsAlongAxis(axis, -cellsWidthToAdjust, endIndex + 1, true);
       }
 
@@ -51476,14 +52154,16 @@ var __oj_data_grid_metadata =
         this.getMappedStyle('frozenCell'),
         newStartIndex
       );
-    } else if (headers.length !== 0) {
-      headers.forEach((frozenHeader) => {
-        cellsHeightToAdjust += this.getElementHeight(frozenHeader);
-      });
-    } else {
-      endHeaders.forEach((frozenHeader) => {
-        cellsHeightToAdjust += this.getElementHeight(frozenHeader);
-      });
+    } else if (frozenCornerCells.length === 0) {
+      if (headers.length !== 0) {
+        headers.forEach((frozenHeader) => {
+          cellsHeightToAdjust += this.getElementHeight(frozenHeader);
+        });
+      } else if (endHeaders.length !== 0) {
+        endHeaders.forEach((frozenHeader) => {
+          cellsHeightToAdjust += this.getElementHeight(frozenHeader);
+        });
+      }
     }
 
     this._appendElementsToFrozenContainer(
@@ -51509,7 +52189,7 @@ var __oj_data_grid_metadata =
 
     if (endIndex + 1 <= this._getMaxBottom()) {
       this._shiftCellsAlongAxis(axis, -cellsHeightToAdjust, endIndex + 1, true);
-      if (this.m_databodyFrozenCol && this._hasFrozenColumns() && cells.length > 0) {
+      if (this.m_databodyFrozenCol && this._hasFrozenColumns() && !this._getEmptyElement()) {
         this._shiftFrozenCellsAlongAxis(axis, -cellsHeightToAdjust, endIndex + 1, true);
       }
 
@@ -51823,6 +52503,10 @@ var __oj_data_grid_metadata =
    */
   DvtDataGrid.prototype._removeCellsFromFrozenColumnContainer = function (index) {
     const frozenIndex = this.m_frozenColIndex;
+    // just return if new frozen index matches existing frozen index
+    if (frozenIndex === index) {
+      return;
+    }
     const axis = 'column';
     const dir = this.getResources().isRTLMode() ? 'right' : 'left';
 
@@ -51951,12 +52635,14 @@ var __oj_data_grid_metadata =
           dirValue += this.getElementWidth(cells[i]);
         }
       }
-    } else if (headers.length !== 0 || endHeaders.length !== 0) {
+    } else if (frozenCornerCells.length === 0) {
+      // check for frozenCornerCells cs totalFrozenCellsWidth, cellsWidthToAdjust is already calculated above
+      // when there are no databody cells
       if (headers.length !== 0) {
         headers.forEach((frozenHeader) => {
           totalFrozenCellsWidth += this.getElementWidth(frozenHeader);
         });
-      } else {
+      } else if (endHeaders.length !== 0) {
         endHeaders.forEach((frozenHeader) => {
           totalFrozenCellsWidth += this.getElementWidth(frozenHeader);
         });
@@ -52014,9 +52700,10 @@ var __oj_data_grid_metadata =
     }
 
     if (
-      (this._isHighWatermarkScrolling() && frozenIndex + 1 <= this.m_endCol) ||
-      (!this._isHighWatermarkScrolling() &&
-        (this.m_startCol === 0 || this.m_startCol <= this.m_frozenColIndex + 1))
+      (this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() &&
+          (this.m_startCol === 0 || this.m_startCol <= this.m_frozenColIndex + 1))) &&
+      frozenIndex + 1 <= this.m_endCol
     ) {
       this._shiftCellsAlongAxis(axis, cellsWidthToAdjust, frozenIndex + 1, true);
       if (this.m_databodyFrozenRow) {
@@ -52024,9 +52711,10 @@ var __oj_data_grid_metadata =
       }
     }
     if (
-      this._isHighWatermarkScrolling() ||
-      (!this._isHighWatermarkScrolling() && this.m_startCol === 0) ||
-      this.m_startCol <= this.m_frozenColIndex + 1
+      (this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() && this.m_startCol === 0) ||
+        this.m_startCol <= this.m_frozenColIndex + 1) &&
+      frozenIndex + 1 <= this.m_endCol
     ) {
       this._shiftHeadersAlongAxisInContainer(
         this.m_colHeader.firstChild,
@@ -52065,7 +52753,7 @@ var __oj_data_grid_metadata =
 
     let newColDir;
     let newColWidth;
-    if (cells.length !== 0) {
+    if (cells.length !== 0 || !this._getEmptyElement()) {
       newColDir = frozenSectionWidth + databodyFrozenColDirValue;
       newColWidth = databodyFrozenRowWidth + cellsWidthToAdjust;
       // adjust databody section width based on availability.
@@ -52124,6 +52812,10 @@ var __oj_data_grid_metadata =
    */
   DvtDataGrid.prototype._removeCellsFromFrozenRowContainer = function (index) {
     const frozenIndex = this.m_frozenRowIndex;
+    // just return if new frozen index matches existing frozen index
+    if (frozenIndex === index) {
+      return;
+    }
     const axis = 'row';
     const dir = this.getResources().isRTLMode() ? 'right' : 'left';
 
@@ -52252,12 +52944,14 @@ var __oj_data_grid_metadata =
           }
         }
       }
-    } else if (headers.length !== 0 || endHeaders.length !== 0) {
+    } else if (frozenCornerCells.length === 0) {
+      // check for frozenCornerCells cs totalFrozenCellsHeight, cellsHeightToAdjust is already calculated above
+      // when there are no databody cells
       if (headers.length !== 0) {
         headers.forEach((frozenHeader) => {
           totalFrozenCellsHeight += this.getElementHeight(frozenHeader);
         });
-      } else {
+      } else if (endHeaders.length !== 0) {
         endHeaders.forEach((frozenHeader) => {
           totalFrozenCellsHeight += this.getElementHeight(frozenHeader);
         });
@@ -52315,10 +53009,10 @@ var __oj_data_grid_metadata =
       }
     }
 
+    // frozenIndex + 1 <= this.m_endRow, for HWS or VS, end index should be greater to shift cells
     if (
-      (this._isHighWatermarkScrolling() && frozenIndex + 1 <= this.m_endRow) ||
-      (!this._isHighWatermarkScrolling() &&
-        (this.m_startRow === 0 || this.m_startRow <= this.m_frozenRowIndex + 1))
+      (this._isHighWatermarkScrolling() || this.m_startRow <= this.m_frozenRowIndex + 1) &&
+      frozenIndex + 1 <= this.m_endRow
     ) {
       this._shiftCellsAlongAxis(axis, cellsHeightToAdjust, frozenIndex + 1, true);
       if (this.m_databodyFrozenCol) {
@@ -52326,9 +53020,10 @@ var __oj_data_grid_metadata =
       }
     }
     if (
-      this._isHighWatermarkScrolling() ||
-      (!this._isHighWatermarkScrolling() && this.m_startRow === 0) ||
-      this.m_startRow <= this.m_frozenRowIndex + 1
+      (this._isHighWatermarkScrolling() ||
+        (!this._isHighWatermarkScrolling() && this.m_startRow === 0) ||
+        this.m_startRow <= this.m_frozenRowIndex + 1) &&
+      frozenIndex + 1 <= this.m_endRow
     ) {
       this._shiftHeadersAlongAxisInContainer(
         this.m_rowHeader.firstChild,
@@ -52348,7 +53043,7 @@ var __oj_data_grid_metadata =
 
     let newRowTop;
     let newRowHeight;
-    if (cells.length !== 0) {
+    if (cells.length !== 0 || !this._getEmptyElement()) {
       newRowTop = frozenSectionHeight + databodyFrozenRowTop;
       newRowHeight = databodyFrozenColHeight + cellsHeightToAdjust;
       // adjust databody section height based on availability.
@@ -52842,7 +53537,7 @@ var __oj_data_grid_metadata =
     let offsetY = Math.max(0, event.offsetY);
 
     if (axis === 'row') {
-      if (this.m_rowHeaderFrozenTarget) {
+      if (this.m_rowHeaderFrozenTarget && this.m_rowHeaderFrozenTarget.offsetWidth > 0) {
         let headerClone = this.m_rowHeaderFrozenTarget.cloneNode(true);
         headerClone.style.top = `${dndContainerTop}px`;
         headerClone.style[dir] = `${dndContainerDir}px`;
@@ -52856,8 +53551,11 @@ var __oj_data_grid_metadata =
       databodyClone.style.top = `${dndContainerTop}px`;
       databodyClone.style[dir] = `${dndContainerDir}px`;
       dndContainer.appendChild(databodyClone);
-      dndContainerDir += this.getElementWidth(this.m_databodyRowFrozenTarget);
-      if (this.m_rowEndHeaderFrozenTarget) {
+      const databodyWidth =
+        this.m_databody.offsetWidth +
+        (this.m_databodyFrozenCol ? this.m_databodyFrozenCol.offsetWidth : 0);
+      dndContainerDir += databodyWidth;
+      if (this.m_rowEndHeaderFrozenTarget && this.m_rowEndHeaderFrozenTarget.offsetWidth > 0) {
         if (event.target === this.m_rowEndHeaderFrozenTarget) {
           offsetX += dndContainerDir;
         }
@@ -52870,7 +53568,7 @@ var __oj_data_grid_metadata =
       offsetHeight = this.getElementHeight(this.m_databodyRowFrozenTarget);
       offsetWidth = dndContainerDir;
     } else {
-      if (this.m_colHeaderFrozenTarget) {
+      if (this.m_colHeaderFrozenTarget && this.m_colHeaderFrozenTarget.offsetHeight > 0) {
         let headerClone = this.m_colHeaderFrozenTarget.cloneNode(true);
         headerClone.style.top = `${dndContainerTop}px`;
         headerClone.style[dir] = `${dndContainerDir}px`;
@@ -52884,8 +53582,11 @@ var __oj_data_grid_metadata =
       databodyClone.style.top = `${dndContainerTop}px`;
       databodyClone.style[dir] = `${dndContainerDir}px`;
       dndContainer.appendChild(databodyClone);
-      dndContainerTop += this.getElementHeight(this.m_databodyColFrozenTarget);
-      if (this.m_colEndHeaderFrozenTarget) {
+      const databodyHeight =
+        this.m_databody.offsetHeight +
+        (this.m_databodyFrozenRow ? this.m_databodyFrozenRow.offsetHeight : 0);
+      dndContainerTop += databodyHeight;
+      if (this.m_colEndHeaderFrozenTarget && this.m_colEndHeaderFrozenTarget.offsetHeight > 0) {
         if (event.target === this.m_colEndHeaderFrozenTarget) {
           offsetY += dndContainerTop;
         }
@@ -53215,7 +53916,8 @@ var __oj_data_grid_metadata =
     leftStart,
     isHeaderLoaded,
     rowAppend,
-    columnAppend
+    columnAppend,
+    isFrozenRegion
   ) {
     const skeletonDefaultWidth = this.getDefaultColumnWidth();
     const skeletonDefaultHeight = this.getDefaultRowHeight();
@@ -53328,14 +54030,16 @@ var __oj_data_grid_metadata =
         }
         top = rowAppend ? top + heights[i] : top - heights[i];
       }
-      this.m_skeletonRowStart = rowStart;
-      this.m_skeletonRowEnd = rowStart + rowCount - 1;
-      this.m_skeletonColStart = columnStart;
-      this.m_skeletonColEnd = columnStart + columnCount - 1;
-      this.m_skeletonColStartPixel = columnAppend ? leftStart : left;
-      this.m_skeletonColEndPixel = columnAppend ? left : leftStart;
-      this.m_skeletonRowStartPixel = rowAppend ? topStart : top;
-      this.m_skeletonRowEndPixel = rowAppend ? top : topStart;
+      if (!isFrozenRegion) {
+        this.m_skeletonRowStart = rowStart;
+        this.m_skeletonRowEnd = rowStart + rowCount - 1;
+        this.m_skeletonColStart = columnStart;
+        this.m_skeletonColEnd = columnStart + columnCount - 1;
+        this.m_skeletonColStartPixel = columnAppend ? leftStart : left;
+        this.m_skeletonColEndPixel = columnAppend ? left : leftStart;
+        this.m_skeletonRowStartPixel = rowAppend ? topStart : top;
+        this.m_skeletonRowEndPixel = rowAppend ? top : topStart;
+      }
     }
 
     if (fragment.childElementCount > 0) {
@@ -53611,19 +54315,11 @@ var __oj_data_grid_metadata =
     // based on current scroll position check whether more skeletons are need to be rendered
     if (this.m_prevScrollLeft > scrollLeft && skeletonColStartPixel > viewportLeft) {
       // scroll to left of data region or currently rendered skeletons
-      row =
-        !this._isHighWatermarkScrolling() &&
-        this._hasFrozenRows() &&
-        rowStart === this.m_frozenRowIndex + 1
-          ? 0
-          : rowStart;
+      row = rowStart;
       top = rowStartPixel;
       rowCount =
         Math.max(skeletonRowEnd, this._getMaxBottom(), 0) - Math.min(skeletonRowStart, row) + 1;
       column = Math.min(skeletonColStart - columnCount, columnStart);
-      if (!this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
-        column = column <= this.m_frozenColIndex ? this.m_frozenColIndex + 1 : column;
-      }
       left = Math.min(
         skeletonColStartPixel,
         columnStartPixel + columnCount * this.getDefaultColumnWidth()
@@ -53648,7 +54344,7 @@ var __oj_data_grid_metadata =
         top = this._getMaxTopPixel();
         left = columnAppend ? this._getMaxRightPixel() : this._getMaxLeftPixel();
       } else {
-        row = this._hasFrozenRows() && rowStart === this.m_frozenRowIndex + 1 ? 0 : rowStart;
+        row = rowStart;
         top = rowStartPixel;
         rowCount =
           Math.max(skeletonRowEnd, this._getMaxBottom(), 0) - Math.min(skeletonRowStart, row) + 1;
@@ -53659,19 +54355,11 @@ var __oj_data_grid_metadata =
       axis = 'column';
     } else if (this.m_prevScrollTop > scrollTop && skeletonRowStartPixel > viewportTop) {
       // scroll above the data region or currently rendered skeletons
-      column =
-        !this._isHighWatermarkScrolling() &&
-        this._hasFrozenColumns() &&
-        columnStart === this.m_frozenColIndex + 1
-          ? 0
-          : columnStart;
+      column = columnStart;
       left = columnStartPixel;
       columnCount =
         Math.max(skeletonColEnd, this._getMaxRight(), 0) - Math.min(skeletonColStart, column) + 1;
       row = Math.min(skeletonRowStart - rowCount, rowStart);
-      if (!this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
-        row = row <= this.m_frozenRowIndex ? this.m_frozenRowIndex + 1 : row;
-      }
       top = Math.min(skeletonRowStartPixel, rowStartPixel + rowCount * this.getDefaultRowHeight());
       rowAppend = false;
       axis = 'row';
@@ -53717,6 +54405,38 @@ var __oj_data_grid_metadata =
       return;
     }
 
+    // adding skeletons in frozen column databody region
+    if (axis === 'row' && !this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+      this.addSkeletonCells(
+        axis,
+        rowCount,
+        this.m_frozenColIndex + 1,
+        row,
+        0,
+        top,
+        0,
+        false,
+        rowAppend,
+        columnAppend,
+        true
+      );
+    }
+    // adding skeletons in frozen row databody region
+    if (axis === 'column' && !this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+      this.addSkeletonCells(
+        axis,
+        this.m_frozenRowIndex + 1,
+        columnCount,
+        0,
+        column,
+        0,
+        left,
+        false,
+        rowAppend,
+        columnAppend,
+        true
+      );
+    }
     this.addSkeletonCells(
       axis,
       rowCount,
@@ -53727,7 +54447,8 @@ var __oj_data_grid_metadata =
       left,
       false,
       rowAppend,
-      columnAppend
+      columnAppend,
+      false
     );
   };
 
@@ -53781,6 +54502,36 @@ var __oj_data_grid_metadata =
     if (this.isHeaderFetchComplete() && !this.m_headerInvalid) {
       // remove earlier skeleton cells
       this.hideStatusText();
+      if (axis === 'row' && !this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
+        this.addSkeletonCells(
+          axis,
+          rowCount,
+          this.m_frozenColIndex + 1,
+          rowStart,
+          0,
+          top,
+          0,
+          true,
+          rowAppend,
+          columnAppend,
+          true
+        );
+      }
+      if (axis === 'column' && !this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
+        this.addSkeletonCells(
+          axis,
+          this.m_frozenRowIndex + 1,
+          columnCount,
+          0,
+          columnStart,
+          0,
+          left,
+          true,
+          rowAppend,
+          columnAppend,
+          true
+        );
+      }
       this.addSkeletonCells(
         axis,
         rowCount,
@@ -53791,36 +54542,9 @@ var __oj_data_grid_metadata =
         left,
         true,
         rowAppend,
-        columnAppend
+        columnAppend,
+        false
       );
-      if (axis === 'row' && !this._isHighWatermarkScrolling() && this._hasFrozenColumns()) {
-        this.addSkeletonCells(
-          axis,
-          rowCount,
-          this.m_frozenColIndex + 1,
-          rowStart,
-          0,
-          top,
-          left,
-          true,
-          rowAppend,
-          columnAppend
-        );
-      }
-      if (axis === 'column' && !this._isHighWatermarkScrolling() && this._hasFrozenRows()) {
-        this.addSkeletonCells(
-          axis,
-          this.m_frozenRowIndex + 1,
-          columnCount,
-          0,
-          columnStart,
-          top,
-          left,
-          true,
-          rowAppend,
-          columnAppend
-        );
-      }
     }
   };
 
@@ -56464,10 +57188,16 @@ var __oj_data_grid_metadata =
           if (axisArray.length > 0) {
             let firstIndex = axisArray[0];
             let lastIndex = axisArray[axisArray.length - 1];
+            let isActualLastIndex;
+            if (axis === 'column' || axis === 'columnEnd') {
+              isActualLastIndex = this._isLastColumn(lastIndex);
+            } else if (axis === 'row' || axis === 'rowEnd') {
+              isActualLastIndex = this._isLastRow(lastIndex);
+            }
             if (
               this.containsHiddenItems(axisArray, axis).length > 0 ||
-              this.isFirstOrFirstNonHiddenIndex(firstIndex, axis) ||
-              this.isLastOrLastNonHiddenIndex(lastIndex, axis)
+              (this.isFirstOrFirstNonHiddenIndex(firstIndex, axis) && firstIndex !== 0) ||
+              (this.isLastOrLastNonHiddenIndex(lastIndex, axis) && !isActualLastIndex)
             ) {
               canUnhide = true;
             }
@@ -56566,7 +57296,10 @@ var __oj_data_grid_metadata =
           canUnhide = true;
         }
       } else if (
-        this.areAllAxisElementsSelectedViaOtherAxis(dimensionAxis) &&
+        !(
+          this.areAllAxisElementsSelectedViaOtherAxis('column') &&
+          this.areAllAxisElementsSelectedViaOtherAxis('row')
+        ) &&
         hiddenItems.length > 0
       ) {
         canUnhide = true;

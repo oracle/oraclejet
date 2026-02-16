@@ -275,7 +275,7 @@ template {
 }
 
 .oj-theme-json {
-  font-family: '{"name":"alta","targetPlatform":"web","behavior":"alta","jetReleaseVersion":"v19.0.0"}';
+  font-family: '{"name":"alta","targetPlatform":"web","behavior":"alta","jetReleaseVersion":"v20.0.0"}';
 }
 
 .oj-helper-hidden-accessible {
@@ -10972,9 +10972,7 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* Styling for the header element. */
 .oj-table-header {
-  height: 2.75em;
   color: hsla(0, 0%, 0%, 0.85);
-  border-bottom: 1px solid hsl(203, 2%, 90%);
   font-size: inherit;
   overflow: hidden;
 }
@@ -10983,19 +10981,11 @@ table.oj-table-element.oj-table-column-header-resizing {
 .oj-table-legacy-scroll .oj-table-header {
   display: block;
   position: relative;
-  height: calc(2.75em - 1px);
 }
 
 /* Grid display styling for the header element. */
 .oj-table-grid-display .oj-table-header {
-  height: 2.28571rem;
   background-color: hsl(203, 2%, 97%);
-  border-bottom: 1px solid hsl(203, 2%, 88%);
-}
-
-/* Styling for the header element when table has vertical or horizontal scrollbars. */
-.oj-table-grid-display .oj-table-legacy-scroll .oj-table-header {
-  height: calc(2.28571rem - 1px);
 }
 
 .oj-table-sticky .oj-table-header,
@@ -11005,19 +10995,22 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* Styling for the header row element. */
 .oj-table-header-row {
-  height: calc(2.75em - 1px);
+  height: 2.75em;
+  border-bottom: 1px solid hsl(203, 2%, 90%);
+  box-sizing: border-box;
   font-size: inherit;
   vertical-align: middle;
 }
 
 /* Grid display table styling for the header row element. */
 .oj-table-grid-display .oj-table-header-row {
-  height: calc(2.28571rem - 1px);
+  height: 2.28571rem;
+  border-bottom: 1px solid hsl(203, 2%, 88%);
 }
 
 /* Styling for the header row element when table is scrollable. */
 .oj-table-legacy-scroll .oj-table-header-row {
-  min-height: calc(2.75em - 1px);
+  min-height: 2.75em;
   height: auto;
   display: block;
   position: relative;
@@ -11025,7 +11018,7 @@ table.oj-table-element.oj-table-column-header-resizing {
 
 /* Grid display table styling for the header row element when table is scrollable. */
 .oj-table-legacy-scroll.oj-table-grid-display .oj-table-header-row {
-  min-height: calc(2.28571rem - 1px);
+  min-height: 2.28571rem;
 }
 
 /* Styling for the column header elements. */

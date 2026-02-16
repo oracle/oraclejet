@@ -19,6 +19,7 @@ export interface inputBase<V, SP extends inputBaseSettableProperties<V, SV>, SV 
     /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<V>>;
     autocomplete: 'on' | 'off' | string;
+    /** @deprecated since 20.0.0 - This is not recommended for accessibility reasons. */
     autofocus: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
@@ -27,6 +28,7 @@ export interface inputBase<V, SP extends inputBaseSettableProperties<V, SV>, SV 
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     placeholder: string;
     readonly rawValue: RV;
@@ -157,6 +159,7 @@ export interface inputBaseSettableProperties<V, SV = V, RV = V> extends editable
     /** @deprecated since 8.0.0 - Use the validators property instead for either regular Validators or AsyncValidators. */
     asyncValidators: Array<AsyncValidator<V>>;
     autocomplete: 'on' | 'off' | string;
+    /** @deprecated since 20.0.0 - This is not recommended for accessibility reasons. */
     autofocus: boolean;
     displayOptions?: {
         converterHint?: 'display' | 'none';
@@ -165,6 +168,7 @@ export interface inputBaseSettableProperties<V, SV = V, RV = V> extends editable
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
     labelledBy: string | null;
     placeholder: string;
     readonly rawValue: RV;
@@ -360,6 +364,7 @@ export interface ojInputText<V = any> extends inputBase<V, ojInputTextSettablePr
         countBy?: 'codePoint' | 'codeUnit';
         max: number | null;
     };
+    /** @deprecated since 20.0.0 - This is not supported in the Redwood UX specification. */
     list: string;
     virtualKeyboard: 'auto' | 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
     translations: {
@@ -502,6 +507,7 @@ export interface ojInputTextSettableProperties<V = any> extends inputBaseSettabl
         countBy?: 'codePoint' | 'codeUnit';
         max: number | null;
     };
+    /** @deprecated since 20.0.0 - This is not supported in the Redwood UX specification. */
     list: string;
     virtualKeyboard: 'auto' | 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
     translations: {
@@ -888,7 +894,7 @@ export interface InputPasswordIntrinsicProps extends Partial<Readonly<ojInputPas
     onvalueChanged?: (value: ojInputPasswordEventMap<any>['valueChanged']) => void;
     /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojInputPasswordEventMap<any>['asyncValidatorsChanged']) => void;
     onautocompleteChanged?: (value: ojInputPasswordEventMap<any>['autocompleteChanged']) => void;
-    onautofocusChanged?: (value: ojInputPasswordEventMap<any>['autofocusChanged']) => void;
+    /** @deprecated since 20.0.0 */ onautofocusChanged?: (value: ojInputPasswordEventMap<any>['autofocusChanged']) => void;
     ondescribedByChanged?: (value: ojInputPasswordEventMap<any>['describedByChanged']) => void;
     ondisabledChanged?: (value: ojInputPasswordEventMap<any>['disabledChanged']) => void;
     ondisplayOptionsChanged?: (value: ojInputPasswordEventMap<any>['displayOptionsChanged']) => void;
@@ -896,7 +902,7 @@ export interface InputPasswordIntrinsicProps extends Partial<Readonly<ojInputPas
     onhelpHintsChanged?: (value: ojInputPasswordEventMap<any>['helpHintsChanged']) => void;
     onlabelEdgeChanged?: (value: ojInputPasswordEventMap<any>['labelEdgeChanged']) => void;
     onlabelHintChanged?: (value: ojInputPasswordEventMap<any>['labelHintChanged']) => void;
-    onlabelledByChanged?: (value: ojInputPasswordEventMap<any>['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojInputPasswordEventMap<any>['labelledByChanged']) => void;
     onmessagesCustomChanged?: (value: ojInputPasswordEventMap<any>['messagesCustomChanged']) => void;
     onplaceholderChanged?: (value: ojInputPasswordEventMap<any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojInputPasswordEventMap<any>['rawValueChanged']) => void;
@@ -916,11 +922,11 @@ export interface InputTextIntrinsicProps extends Partial<Readonly<ojInputTextSet
     onclearIconChanged?: (value: ojInputTextEventMap<any>['clearIconChanged']) => void;
     onconverterChanged?: (value: ojInputTextEventMap<any>['converterChanged']) => void;
     onlengthChanged?: (value: ojInputTextEventMap<any>['lengthChanged']) => void;
-    onlistChanged?: (value: ojInputTextEventMap<any>['listChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlistChanged?: (value: ojInputTextEventMap<any>['listChanged']) => void;
     onvirtualKeyboardChanged?: (value: ojInputTextEventMap<any>['virtualKeyboardChanged']) => void;
     /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojInputTextEventMap<any>['asyncValidatorsChanged']) => void;
     onautocompleteChanged?: (value: ojInputTextEventMap<any>['autocompleteChanged']) => void;
-    onautofocusChanged?: (value: ojInputTextEventMap<any>['autofocusChanged']) => void;
+    /** @deprecated since 20.0.0 */ onautofocusChanged?: (value: ojInputTextEventMap<any>['autofocusChanged']) => void;
     ondescribedByChanged?: (value: ojInputTextEventMap<any>['describedByChanged']) => void;
     ondisabledChanged?: (value: ojInputTextEventMap<any>['disabledChanged']) => void;
     ondisplayOptionsChanged?: (value: ojInputTextEventMap<any>['displayOptionsChanged']) => void;
@@ -928,7 +934,7 @@ export interface InputTextIntrinsicProps extends Partial<Readonly<ojInputTextSet
     onhelpHintsChanged?: (value: ojInputTextEventMap<any>['helpHintsChanged']) => void;
     onlabelEdgeChanged?: (value: ojInputTextEventMap<any>['labelEdgeChanged']) => void;
     onlabelHintChanged?: (value: ojInputTextEventMap<any>['labelHintChanged']) => void;
-    onlabelledByChanged?: (value: ojInputTextEventMap<any>['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojInputTextEventMap<any>['labelledByChanged']) => void;
     onmessagesCustomChanged?: (value: ojInputTextEventMap<any>['messagesCustomChanged']) => void;
     onplaceholderChanged?: (value: ojInputTextEventMap<any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojInputTextEventMap<any>['rawValueChanged']) => void;
@@ -953,7 +959,7 @@ export interface TextAreaIntrinsicProps extends Partial<Readonly<ojTextAreaSetta
     onrowsChanged?: (value: ojTextAreaEventMap<any>['rowsChanged']) => void;
     /** @deprecated since 8.0.0 */ onasyncValidatorsChanged?: (value: ojTextAreaEventMap<any>['asyncValidatorsChanged']) => void;
     onautocompleteChanged?: (value: ojTextAreaEventMap<any>['autocompleteChanged']) => void;
-    onautofocusChanged?: (value: ojTextAreaEventMap<any>['autofocusChanged']) => void;
+    /** @deprecated since 20.0.0 */ onautofocusChanged?: (value: ojTextAreaEventMap<any>['autofocusChanged']) => void;
     ondescribedByChanged?: (value: ojTextAreaEventMap<any>['describedByChanged']) => void;
     ondisabledChanged?: (value: ojTextAreaEventMap<any>['disabledChanged']) => void;
     ondisplayOptionsChanged?: (value: ojTextAreaEventMap<any>['displayOptionsChanged']) => void;
@@ -961,7 +967,7 @@ export interface TextAreaIntrinsicProps extends Partial<Readonly<ojTextAreaSetta
     onhelpHintsChanged?: (value: ojTextAreaEventMap<any>['helpHintsChanged']) => void;
     onlabelEdgeChanged?: (value: ojTextAreaEventMap<any>['labelEdgeChanged']) => void;
     onlabelHintChanged?: (value: ojTextAreaEventMap<any>['labelHintChanged']) => void;
-    onlabelledByChanged?: (value: ojTextAreaEventMap<any>['labelledByChanged']) => void;
+    /** @deprecated since 20.0.0 */ onlabelledByChanged?: (value: ojTextAreaEventMap<any>['labelledByChanged']) => void;
     onmessagesCustomChanged?: (value: ojTextAreaEventMap<any>['messagesCustomChanged']) => void;
     onplaceholderChanged?: (value: ojTextAreaEventMap<any>['placeholderChanged']) => void;
     onrawValueChanged?: (value: ojTextAreaEventMap<any>['rawValueChanged']) => void;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -788,6 +788,16 @@ var __oj_legend_section_metadata =
  * @ojoracleicon 'oj-ux-ico-legend'
  * @ojuxspecs ['legend']
  *
+ *  @ojlegacymetadata requirements [
+ *    {
+ *      type: "anyOf",
+ *      label: "accessibility",
+ *      properties: ["aria-label", "aria-labelledby"],
+ *      slots: [""]
+ *    }
+ * ]
+ *
+ *
  * @classdesc
  * <h3 id="legendOverview-section">
  *   JET Legend
@@ -810,9 +820,8 @@ var __oj_legend_section_metadata =
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
- * To make your component accessible, the application is required to include contextual information for screender readers using one or more the following methods as appropriate:
+ * To make your component accessible, the application is required to include contextual information for screen readers using one or more the following methods as appropriate:
  *  <ul>
- *   <li>aria-describedby</li>
  *   <li>aria-labelledby</li>
  *   <li>aria-label</li>
  *   <li>short-desc property of your items</li>

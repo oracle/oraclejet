@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -47,7 +47,7 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojcachediteratorresultsdataprovider
      * @memberof ojdataproviderfactory
      * @method
      * @name getEnhancedDataProvider
-     * @param {Object} dataProvider - The base DataProvider to enhance.
+     * @param {DataProvider} dataProvider - The base DataProvider to enhance.
      * <p>If this is a TreeDataProvider, the base DataProvider and each DataProvider returned by getChildDataProvider will be enhanced.</p>
      * @param {Object} capabilityConfigurations - Capabilities being requested.  The capabilities of the base DataProvider will be checked
      * to see if it already supports at least the requested capabilities.  Any capability it doesn't support will be provided by wrapping DataProviders.
@@ -56,7 +56,7 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojcachediteratorresultsdataprovider
      * @return {Object} The outermost wrapping DataProvider.  This may be the base DataProvider itself if it already supports all of the requested capabilities.
      * @ojsignature [{target: "Type", value:"<K, D>", for: "genericTypeParameters"},
      *              {target: "Type", value:"DataProvider<K, D>", for:"dataProvider"},
-     *              {target: "Type", value:"CapabilityConfigurations", for:"capabilityConfigurations"},
+     *              {target: "Type", value:"ojdataproviderfactory.CapabilityConfigurations", for:"capabilityConfigurations"},
      *              {target: "Type", value:"DataProvider<K, D>", for:"returns"}]
      */
 
@@ -64,7 +64,7 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojcachediteratorresultsdataprovider
      *
      * @ojexports
      * @memberof ojdataproviderfactory
-     * @typedef {Object} CapabilityConfigurations
+     * @typedef {Object} ojdataproviderfactory.CapabilityConfigurations
      * @property {Object=} fetchFirst - If "visitedByCurrentIterator" is specified for the "caching" property and base dataprovider does not support caching, then enhance the base DataProvider
      * to cache the results returned by its iterators. Cached results, if available, can be returned when fetchByKeys, fetchByOffset, or
      * containsKeys is called on the enhanced DataProvider. If fetchFirst caching and fetchByOffset caching both are specified then fetchByOffset caching wins over fetchFirst.

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -69,7 +69,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojgestureutils',
      *     ]
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/19/reference-api/oj.ojButton.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojButton.html"
      * @ojmetadata propertyLayout [
      *   {
      *     "propertyGroup": "common",
@@ -339,7 +339,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojgestureutils',
             let title = props.title;
             const buttonLabel = props.label || defaultSlot;
             if (buttonLabel) {
-                title = this.state.derivedTitle || title || props.label;
+                !props.disabled && (title = this.state.derivedTitle || title || props.label);
                 if (props.display === 'icons' && (startIconContent || endIconContent)) {
                     // For icon-only buttons
                     if (props.label) {

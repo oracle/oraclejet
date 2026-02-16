@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1321,6 +1321,9 @@ var __oj_gantt_reference_object_metadata =
       "type": "string",
       "value": ""
     },
+    "shortDesc": {
+      "type": "string"
+    },
     "start": {
       "type": "string",
       "value": ""
@@ -1824,8 +1827,12 @@ var __oj_gantt_reference_object_metadata =
    *    and values of any specified properties would override those from <a href="#taskDefaults">task-defaults</a>.
    * @property {Array.<Object>} [referenceObjects] An array of reference objects associated with the row.
    * @ojsignature [{target: "Type", value: "Array<oj.ojGantt.RowTask<K2,D2>>", for: "tasks", jsdocOverride:true},
-   *               {target: "Type", value: "Array<Partial<oj.ojGantt.ReferenceObject>>", for: "referenceObjects", jsdocOverride:true},
+   *               {target: "Type", value: "Array<Partial<oj.ojGantt.RowReferenceObject>>", for: "referenceObjects", jsdocOverride:true},
    *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for:"genericTypeParameters"}]
+   */
+  /**
+   * @typedef {Object} oj.ojGantt.RowReferenceObject
+   * @ojimportmembers oj.ojGanttRowReferenceObjectProperties
    */
   /**
    * Object type that defines a gantt data row item for the no template case, when data is set using the row-data attribute.
@@ -1834,7 +1841,7 @@ var __oj_gantt_reference_object_metadata =
    * @property {Array.<Object>} [tasks] The tasks associated with the row.
    * @property {Array.<Object>} [referenceObjects] An array of reference objects associated with the row.
    * @ojsignature [{target: "Type", value: "Array<oj.ojGantt.DataTask<K2, D2>>", for: "tasks", jsdocOverride:true},
-   *               {target: "Type", value: "Array<Partial<oj.ojGantt.ReferenceObject>>", for: "referenceObjects", jsdocOverride:true},
+   *               {target: "Type", value: "Array<Partial<oj.ojGantt.RowReferenceObject>>", for: "referenceObjects", jsdocOverride:true},
    *               {target: "Type", value: "<K3=any, D3=any, K2=any, D2=any>", for: "genericTypeParameters"}]
    */
   /**
@@ -2577,6 +2584,7 @@ var __oj_gantt_reference_object_metadata =
 
   /**
    * @ojcomponent oj.ojGanttReferenceObject
+   * @ojimportmembers oj.ojGanttRowReferenceObjectProperties
    * @ojsignature {target: "Type", value:"class ojGanttReferenceObject extends JetElement<ojGanttReferenceObjectSettableProperties>"}
    * @ojslotcomponent
    * @ojsubcomponenttype data
@@ -2607,80 +2615,6 @@ var __oj_gantt_reference_object_metadata =
    * &lt;/oj-gantt>
    * </code>
    * </pre>
-   */
-
-  /**
-   * A space delimited list of CSS style classes defining the style of the reference object.
-   * Note that only CSS style applicable to SVG elements can be used.
-   * @expose
-   * @name svgClassName
-   * @memberof! oj.ojGanttReferenceObject
-   * @instance
-   * @type {string=}
-   * @default ""
-   *
-   * @example <caption>Initialize the gantt row reference object with the
-   * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
-   * &lt;oj-gantt-reference-object svg-class-name="[[$current.data.className]]">&lt;/oj-gantt-reference-object>
-   */
-  /**
-   * The CSS style defining the style of the reference object. Only SVG CSS style properties are supported.
-   * @expose
-   * @name svgStyle
-   * @memberof! oj.ojGanttReferenceObject
-   * @instance
-   * @type {Object=}
-   * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
-   * @default {}
-   *
-   * @example <caption>Initialize the gantt row reference object with the
-   * <code class="prettyprint">svg-style</code> attribute specified:</caption>
-   * &lt;oj-gantt-reference-object svg-style="[[$current.data.style]]">&lt;/oj-gantt-reference-object>
-   */
-  /**
-   * The start time value of this reference object.
-   * See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on the required string formats.
-   * @expose
-   * @name start
-   * @ojshortdesc The start time value of this reference object. See the Help documentation for more information.
-   * @memberof! oj.ojGanttReferenceObject
-   * @instance
-   * @type {string=}
-   * @ojformat date-time
-   * @default ""
-   *
-   * @example <caption>Initialize the gantt row reference object with the
-   * <code class="prettyprint">start</code> attribute specified:</caption>
-   * &lt;oj-gantt-reference-object start="[[$current.data.start]]">&lt;/oj-gantt-reference-object>
-   */
-  /**
-   * The end time value of this reference object.
-   * See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on the required string formats.
-   * @expose
-   * @name end
-   * @ojshortdesc The end time value of this reference object. See the Help documentation for more information.
-   * @memberof! oj.ojGanttReferenceObject
-   * @instance
-   * @type {string=}
-   * @ojformat date-time
-   * @default ""
-   *
-   * @example <caption>Initialize the gantt row reference object with the
-   * <code class="prettyprint">end</code> attribute specified:</caption>
-   * &lt;oj-gantt-reference-object end="[[$current.data.end]]">&lt;/oj-gantt-reference-object>
-   */
-  /**
-   * The description of the reference object. This is used for accessibility.
-   * @expose
-   * @name shortDesc
-   * @memberof! oj.ojGanttDependencyProperties
-   * @instance
-   * @type {?string=}
-   * @default null
-   *
-   * @example <caption>Initialize the gantt row reference object with the
-   * <code class="prettyprint">short-desc</code> attribute specified:</caption>
-   * &lt;oj-gantt-reference-object short-desc="[[$current.data.shortDesc]]">&lt;/oj-gantt-reference-object>
    */
 
   /**
@@ -2838,6 +2772,15 @@ var __oj_gantt_reference_object_metadata =
    *
    * @ojoracleicon 'oj-ux-ico-chart-gantt'
    * @ojuxspecs ['Gantt']
+   *
+   *  @ojlegacymetadata requirements [
+   *    {
+   *      type: "anyOf",
+   *      label: "accessibility",
+   *      properties: ["aria-label", "aria-labelledby"],
+   *      slots: [""]
+   *    }
+   * ]
    *
    * @classdesc
    * <h3 id="GanttOverview-section">
@@ -3027,7 +2970,6 @@ var __oj_gantt_reference_object_metadata =
        *         "id": "d1",
        *         "predecessorTaskId": "task1",
        *         "successorTaskId": "task2",
-       *         "svgStyle": {"stroke": "red"},
        *         "type": "startFinish"
        *     },
        *     {
@@ -4313,6 +4255,7 @@ var __oj_gantt_reference_object_metadata =
          * @type {string}
          * @ojsignature {target: "Type", value: "?"}
          * @default ""
+         * @ojdeprecated {since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
          */
         svgClassName: '',
         /**
@@ -4327,6 +4270,7 @@ var __oj_gantt_reference_object_metadata =
          * @type {Object}
          * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
+         * @ojdeprecated {since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
          */
         svgStyle: {},
         /**
@@ -4400,6 +4344,7 @@ var __oj_gantt_reference_object_metadata =
            * @instance
            * @type {string}
            * @ojsignature {target: "Type", value: "?"}
+           * @ojdeprecated {since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
            * @default ""
            */
           svgClassName: '',
@@ -4415,6 +4360,7 @@ var __oj_gantt_reference_object_metadata =
            * @type {Object}
            * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default {}
+           * @ojdeprecated {since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
            */
           svgStyle: {}
         },
@@ -4468,6 +4414,7 @@ var __oj_gantt_reference_object_metadata =
            * @type {string}
            * @ojsignature {target: "Type", value: "?"}
            * @default ""
+           * @ojdeprecated {since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
            */
           svgClassName: '',
           /**
@@ -4482,6 +4429,7 @@ var __oj_gantt_reference_object_metadata =
            * @type {Object}
            * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default {}
+           * @ojdeprecated {since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
            */
           svgStyle: {}
         },
@@ -4508,6 +4456,7 @@ var __oj_gantt_reference_object_metadata =
            * @type {string}
            * @ojsignature {target: "Type", value: "?"}
            * @default ""
+           * @ojdeprecated {since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
            */
           svgClassName: '',
           /**
@@ -4522,6 +4471,7 @@ var __oj_gantt_reference_object_metadata =
            * @type {Object}
            * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default {}
+           * @ojdeprecated {since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
            */
           svgStyle: {}
         },
@@ -4548,6 +4498,7 @@ var __oj_gantt_reference_object_metadata =
            * @type {string}
            * @ojsignature {target: "Type", value: "?"}
            * @default ""
+           * @ojdeprecated {since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
            */
           svgClassName: '',
           /**
@@ -4562,6 +4513,7 @@ var __oj_gantt_reference_object_metadata =
            * @type {Object}
            * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default {}
+           * @ojdeprecated {since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
            */
           svgStyle: {}
         },
@@ -4588,6 +4540,7 @@ var __oj_gantt_reference_object_metadata =
            * @type {string}
            * @ojsignature {target: "Type", value: "?"}
            * @default ""
+           * @ojdeprecated {since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
            */
           svgClassName: '',
           /**
@@ -4602,6 +4555,7 @@ var __oj_gantt_reference_object_metadata =
            * @type {Object}
            * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default {}
+           * @ojdeprecated {since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate." }
            */
           svgStyle: {}
         }

@@ -17,6 +17,7 @@ export type ApiDocOptions = {
     sharedContent?: SharedContentType;
     componentToApiDoc?: Record<string, Array<AllJsDocTypes>>;
     programExportMaps?: ExportMaps;
+    exclude?: Array<string>;
 };
 export type CoreBuildOptions = {
     dtDir: string;
@@ -42,6 +43,7 @@ export type CoreBuildOptions = {
     dependenciesMap?: Map<string, JETComp>;
     disabledExceptionKeys?: Array<string>;
     legacyWebElementSet?: Set<string>;
+    emitMetadataOnly?: boolean;
 };
 export type BuildOptions = ApiDocOptions & CoreBuildOptions;
 export default function compile({ tsconfigJson, buildOptions }: CompileOptions): {

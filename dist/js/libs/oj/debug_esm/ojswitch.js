@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -542,6 +542,7 @@ const ARIA_DISABLED = 'aria-disabled';
        * @instance
        * @since 7.0.0
        * @memberof oj.ojSwitch
+       * @ojdeprecated {since: '20.0.0', description: 'This is an internal API and is not supported in the Redwood UX specification.'}
        */
       labelledBy: null,
       /**
@@ -997,6 +998,14 @@ const ARIA_DISABLED = 'aria-disabled';
      */
     _switchEvents: {
       keydown: function (event) {
+        // JET-76679 - Tabbing to Learn more... toggles the swtich
+        // We should only be reacting to the changes if one presses the key when focused on
+        // the switch track or thumb (child DOM of track)
+        if (!isAncestorOrSelf(this.switchTrack[0], event.target)) {
+          // Event not originated from the thumb or track, so do not react
+          return;
+        }
+
         const keyCode = event.which || event.keyCode;
         // ENTER and SPACE will change the switch
         if (keyCode === $.ui.keyCode.ENTER || keyCode === $.ui.keyCode.SPACE) {
@@ -1005,6 +1014,14 @@ const ARIA_DISABLED = 'aria-disabled';
         }
       },
       keyup: function (event) {
+        // JET-76679 - Tabbing to Learn more... toggles the swtich
+        // We should only be reacting to the changes if one presses the key when focused on
+        // the switch track or thumb (child DOM of track)
+        if (!isAncestorOrSelf(this.switchTrack[0], event.target)) {
+          // Event not originated from the thumb or track, so do not react
+          return;
+        }
+
         const keyCode = event.which || event.keyCode;
         // ENTER and SPACE will change the switch
         if (keyCode === $.ui.keyCode.ENTER || keyCode === $.ui.keyCode.SPACE) {

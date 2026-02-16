@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -56,6 +56,12 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdo
      *   Accessibility
      *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
      * </h3>
+     * To make your component accessible, the application is required to include contextual information for screen readers using one or more the following methods as appropriate:
+     *  <ul>
+     *   <li>aria-labelledby</li>
+     *   <li>aria-label</li>
+     *   <li>aria-describedby</li>
+     *  </ul>
      *
      * <p>Application must specify a value for the aria-label attribute with a meaningful description of the purpose of this selector in order for this to be accessible.</p>
      *
@@ -64,13 +70,14 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdo
      *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
      * </h3>
      * To migrate from oj-selector to oj-c-selector or oj-c-selector-all, you need to revise the import statement and references to oj-selector in your app. Please note the changes between the two components below.
+     * Note that when migrate to oj-c-selector-all, the indeterminate attribute is no longer needed.
      * <h5 id="dataprovider-key-type-migration"></h5>
      *
      * <h5>selection-mode attribute</h5>
      * <p>For selection-mode="single"|"multiple", please use oj-c-selector; for selection-mode="all", please use oj-c-selector-all.</p>
      *
      *
-     * @typeparam {object} K Type of key
+     * @typeparam K Type of key
      * @ojmetadata description "The selector component renders checkboxes in collections to support selection."
      * @ojmetadata displayName "Selector"
      * @ojmetadata main "ojs/ojselector"
@@ -89,8 +96,17 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdo
      *     "icon": "oj-ux-ico-check-square"
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/19/reference-api/oj.ojSelector.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojSelector.html"
      * @ojmetadata since "9.0.0"
+     * @ojlegacymetadata requirements [
+     *    {
+     *      type: "anyOf",
+     *      label: "accessibility",
+     *      properties: ["aria-label", "aria-labelledby"],
+     *      slots: [""]
+     *    }
+     * ]
+     *
      */
     exports.Selector = class Selector extends preact.Component {
         constructor(props) {

@@ -1,12 +1,12 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import { DataProviderRefreshEvent } from 'ojs/ojdataprovider';
+import { KeyCache, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
 import ojMap from 'ojs/ojmap';
 import ojSet from 'ojs/ojset';
@@ -169,6 +169,13 @@ import { BufferingDataProviderUtils, EditBuffer } from 'ojs/ojbufferingutils';
  */
 
 /**
+ * @typedef {Object} BufferingDataProvider.AddDetail
+ * @ojsignature [{target: "Type", value: "<K>", for: "genericTypeParameters"},
+ *               {target: "Type",
+ *               value: "({ addBeforeKey: K | null, addAfterKey?: never} | { addBeforeKey?: never, addAfterKey: K})"}]
+ */
+
+/**
  * @inheritdoc
  * @memberof BufferingDataProvider
  * @instance
@@ -322,12 +329,14 @@ import { BufferingDataProviderUtils, EditBuffer } from 'ojs/ojbufferingutils';
  * @method
  * @name addItem
  * @param {Item<K, D>} item - an Item object that represents the row.
- * @param {Object=} addDetail - object that represents addBefore Row. If addItem method is called only with item
- * parameter then item will be added at the top. If addBeforeKey is provided and that key exist in base dataprovider then item will be added before that key.
- * If addBeforeKey is null or provided key doesn't exist in base dataprovider then item will be added at the end.
+ * @param {BufferingDataProvider.AddDetail=} addDetail - object that represents additional add details. To insert at particular position, either addBeforeKey or addAfterKey should be sepecifed. If addItem method is called only with item
+ * parameter then item will be added at the top. If addBeforeKey is provided and that key exist in the base dataprovider then item will be added before that key.
+ * If addBeforeKey is null or provided key doesn't exist in base dataprovider then item will be added at the end. If addAfterKey is provided and that key exist
+ * in base dataprovider then item will be added after that key otherwise item will be added at the end.
+ * @return {Item<K, D>} added item
  * @throws {Error} if an "add" or "update" entry already exists for the same key.
  * @ojsignature {target: "Type",
- *               value: "(item: Item<K, D>, addDetail?: {addBeforeKey?: K | null}): void"}
+ *               value: "(item: Item<K, D>, addDetail?: BufferingDataProvider.AddDetail<K>): Item<K, D>"}
  */
 
 /**
@@ -531,6 +540,7 @@ class BufferingDataProvider {
         var _a;
         this._dataProvider = _dataProvider;
         this._options = _options;
+        this.keyCache = new KeyCache();
         this.AsyncIterable = (_a = class {
                 constructor(_parent, _asyncIterator) {
                     this._parent = _parent;
@@ -568,6 +578,7 @@ class BufferingDataProvider {
         this.dataProvider = _dataProvider;
         this.options = _options;
         this._addEventListeners();
+        this.ignoreAfterTransaction = { index: -1 };
     }
     containsKeys(params) {
         return BufferingDataProviderUtils.containsKeys(params, this.editBuffer, this.dataProvider);
@@ -576,7 +587,7 @@ class BufferingDataProvider {
         return BufferingDataProviderUtils.fetchByKeys(params, this.editBuffer, this.dataProvider);
     }
     removeItem(item) {
-        const mutationEvent = BufferingDataProviderUtils.removeItem(item, this.lastIterator, this.editBuffer);
+        const mutationEvent = BufferingDataProviderUtils.removeItem(item, this.lastIterator, this.keyCache, this.editBuffer);
         this.dispatchEvent(mutationEvent);
         this.dispatchSubmittableChangeEvent(this.editBuffer);
     }
@@ -591,12 +602,15 @@ class BufferingDataProvider {
             addItem.metadata = Object.assign({}, item.metadata);
             addItem.metadata.key = BufferingDataProviderUtils.generateKey(item.data, this.customKeyGenerator);
         }
-        const mutationEvent = BufferingDataProviderUtils.addItem(addItem, this.editBuffer, this.lastIterator, addDetail);
+        const mutationEvent = BufferingDataProviderUtils.addItem(addItem, this.editBuffer, this.lastIterator, this.keyCache, addDetail);
         this.dispatchEvent(mutationEvent);
         this.dispatchSubmittableChangeEvent(this.editBuffer);
+        return addItem;
     }
     fetchByOffset(params) {
-        return BufferingDataProviderUtils.fetchByOffset(params, this.editBuffer, this.dataProvider);
+        const lastFetchParams = this.lastFetchByOffsetParameters;
+        this.lastFetchByOffsetParameters = params;
+        return BufferingDataProviderUtils.fetchByOffset(params, this.editBuffer, this.keyCache, lastFetchParams, this.dataProvider, this.ignoreAfterTransaction);
     }
     fetchFirst(params) {
         this.lastSortCriteria = params ? params.sortCriteria : null;
@@ -637,11 +651,14 @@ class BufferingDataProvider {
         });
     }
     setItemStatus(editItem, newStatus, error, newKey) {
-        const editBuffer = BufferingDataProviderUtils.setItemStatus(editItem, newStatus, this.generatedKeyMap, this.editBuffer, error, newKey);
+        const { editBuffer, mutationEvent } = BufferingDataProviderUtils.setItemStatus(editItem, newStatus, this.generatedKeyMap, this.editBuffer, error, newKey);
         if (editBuffer) {
             // If any item is changing status, we may have submittable items.
             // Call dispatchSubmittableChangeEvent, which will figure out if we need to fire submittableChange event.
             this.dispatchSubmittableChangeEvent(editBuffer);
+        }
+        if (mutationEvent) {
+            this.dispatchEvent(mutationEvent);
         }
     }
     dispatchSubmittableChangeEvent(editBuffer) {

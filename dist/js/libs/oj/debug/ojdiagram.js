@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -4871,7 +4871,8 @@ var __oj_diagram_link_metadata =
    * @ojdeprecated [{target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." },
    *                {target:"property", for: "renderDefaultFocus", since: "17.0.0", description: "Implement the focus effect in the custom template instead." },
    *                {target:"property", for: "renderDefaultHover", since: "17.0.0", description: "Implement the hover effect in the custom template instead." },
-   *                {target:"property", for: "renderDefaultSelection", since: "17.0.0", description: "Implement the selection effect in the custom template instead." }] */
+   *                {target:"property", for: "renderDefaultSelection", since: "17.0.0", description: "Implement the selection effect in the custom template instead." },
+   *                {target:"property", for: "previousState", since: "20.0.0", description: "PreviousState has been deprecated. If needed, the application can manually track the previous state." }] */
 
   /**
    * @typedef {Object} oj.ojDiagram.LinkRendererContext
@@ -4933,7 +4934,8 @@ var __oj_diagram_link_metadata =
    *            {target: "Type", value: "oj.ojDiagram.Link<K2, K1>", for: "data"},
    *            {target: "Type", value: "D2|D2[]", for: "itemData"},
    *            {target: "Type", value: "<K1,K2,D2>", for: "genericTypeParameters"}]
-   * @ojdeprecated {target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." }
+   * @ojdeprecated [{target:"property", for: "componentElement", since: "16.0.0", description: "The componentElement property is deprecated. This shouldn't be needed, as the component template with access to this context is unique to the component." },
+   *                {target:"property", for: "previousState", since: "20.0.0", description: "PreviousState has been deprecated. If needed, the application can manually track the previous state." }]
    */
 
   /**

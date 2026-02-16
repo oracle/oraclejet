@@ -67,6 +67,7 @@ exports.isClassDeclaration = isClassDeclaration;
 exports.getEnumStringsFromUnion = getEnumStringsFromUnion;
 exports.getPossibleTypeDef = getPossibleTypeDef;
 exports.getTypeDefMetadata = getTypeDefMetadata;
+exports.createTypeDefinitionForPropertyDeclaration = createTypeDefinitionForPropertyDeclaration;
 exports.isLocalExport = isLocalExport;
 exports.getReturnTypeForFunction = getReturnTypeForFunction;
 exports.getDeclarationOfAType = getDeclarationOfAType;
@@ -458,6 +459,58 @@ function getSignatureFromType(type, context, scope, isPropSignatureType, seen, m
             // If type is treated as any, then don't add back in a filtered union with null
             // since any already includes null (and no reftype required)
             unionWithNull = false;
+        }
+        else if (type['flags'] & ts.TypeFlags.IndexedAccess) {
+            const ia = type;
+            const idxT = ia.indexType;
+            let idxName;
+            // first check if we have named index (string or number literal)
+            // example: TypeRef['foo'] or TypeRef[0]
+            if (idxT && idxT.flags & ts.TypeFlags.StringLiteral) {
+                idxName = idxT.value;
+            }
+            else if (idxT && idxT.flags & ts.TypeFlags.NumberLiteral) {
+                idxName = idxT.value;
+            }
+            if (idxName !== undefined) {
+                // Resolve conditional wrappers (e.g., TypeRef<T>) to their apparent type
+                let obj = ia.objectType;
+                if (MetaUtils.isConditionalType(obj)) {
+                    obj = checker.getApparentType(obj);
+                }
+                // Unwrap NonNullable<T> wrapper if present
+                obj = unwrapNonNullableUtilityType(obj, checker);
+                // Find the concrete property on the resolved object type
+                const propSym = obj.getProperty(String(idxName));
+                if (propSym) {
+                    const propType = checker.getTypeOfSymbol(propSym);
+                    typeObj = getSignatureFromType(propType, context, scope, isPropSignatureType, seen, metaUtilObj);
+                }
+                else {
+                    // Fallback: keep the symbolic form
+                    const str = checker.typeToString(type);
+                    typeObj = { type: str, reftype: str, isApiDocSignature: true };
+                }
+            }
+            else {
+                // Non-literal indices: handle the D[keyof D] pattern as 'any',
+                // otherwise keep symbolic form for API Doc.
+                if (MetaUtils.isIndexedAccessTypeParameters(type)) {
+                    typeObj = { type: 'any', reftype: strType, isApiDocSignature: true };
+                    if (unionWithNull) {
+                        typeObj.reftype += _OR_NULL;
+                        unionWithNull = false;
+                    }
+                    if (unionWithUndefined) {
+                        typeObj.reftype += _OR_UNDEFINED;
+                        unionWithUndefined = false;
+                    }
+                }
+                else {
+                    const str = checker.typeToString(type);
+                    typeObj = { type: str, reftype: str, isApiDocSignature: true };
+                }
+            }
         }
         else if (MetaUtils.isIndexedAccessTypeParameters(type)) {
             // The expectation is that indexed access type declarations
@@ -1449,7 +1502,7 @@ function processComplexPropertyMetadata(property, metaObj, complexMD, dtMetadata
 function getSubstituteTypeForCircularReference(metaObj) {
     return metaObj.isArrayOfObject ? 'Array<object>' : 'object';
 }
-function getAllMetadataForDeclaration(declarationWithType, scope, context, propertyPath, declSymbol, metaUtilObj) {
+function getAllMetadataForDeclaration(declarationWithType, scope, context, propertyPath, declSymbol, metaUtilObj, realTypeToCheck) {
     let metadata = {
         type: 'any'
     };
@@ -1524,6 +1577,10 @@ function getAllMetadataForDeclaration(declarationWithType, scope, context, prope
         //        OTHERWISE, use the standard TypeChecker call.
         if (context & MetaTypes.MDContext.METHOD_RETURN) {
             type = (0, Utils_1.getFunctionReturnTsType)(declarationWithType, metaUtilObj.typeChecker);
+        }
+        else if ((context == MetaTypes.MDContext.SLOT || context == MetaTypes.MDContext.EVENT) &&
+            realTypeToCheck) {
+            type = metaUtilObj.typeChecker.getTypeAtLocation(realTypeToCheck);
         }
         else if (declSymbol && !readOnlyProp) {
             type = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(declSymbol, declarationWithType);
@@ -1752,6 +1809,7 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, context, prop
             //   d) TypeReference (with or without generics)
             //   e) type literal
             //   f) IndexedAccessType that references an object or Array<object> (optionally unioned with null and/or undefined)
+            //   g) MappedType that resolves to an object or Array<object> (optionally unioned with null and/or undefined)
             const typeRefNode = getTypeRefNodeForPropDeclaration(declaration, metaUtilObj);
             //ex: arrPropInlLit: Array<{prop1:string}>
             if (typeRefNode) {
@@ -1794,7 +1852,8 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, context, prop
     }
     // Do a quick check to see if the symbol type could be an object literal or a type we can walk
     // Also make sure we are not looking for subprops for object unions.
-    // this was needed because in getSubPropertyMembersInfo we are getting the memebrs of the
+    // this was needed because in getSubPropertyMembersInfo we are getting the members of the symbolType and if it is a union
+    // we end up getting the members of the first type in the union which is not correct.
     // TODO
     // Note: this is to be backward compatible with previous functionality where we did not process
     //       array of union types, but we should rethink this aproach.
@@ -2175,7 +2234,7 @@ function getSubPropertyMembersInfo(type, seen, scope, context, propertyPath, nes
         if (!propDeclaration) {
             propDeclaration = symbol.declarations[0];
         }
-        const metaObj = getAllMetadataForDeclaration(propDeclaration, scope == MetaTypes.MDScope.RT ? MetaTypes.MDScope.RT_EXTENDED : scope, nestedArrayStack.length === 0 ? context : context | MetaTypes.MDContext.EXTENSION_MD, updatedPath, symbol, metaUtilObj);
+        const metaObj = getAllMetadataForDeclaration(propDeclaration, scope == MetaTypes.MDScope.RT ? MetaTypes.MDScope.RT_EXTENDED : scope, nestedArrayStack.length === 0 ? context : context | MetaTypes.MDContext.EXTENSION_MD, updatedPath, mappedTypeSymbol ?? symbol, metaUtilObj);
         let typeName = metaObj.type;
         // Check for circular reference
         const circularRefInfo = checkForCircularReference(metaObj, seen);
@@ -2363,7 +2422,7 @@ function isJetCollectionType(typeName, symbolType) {
     return isJetCollectionType;
 }
 /**
- * Checks of a given type object is defined in our Core JET libraries and returns the module name where it was defined.
+ * Checks if a given type object is defined in our Core JET libraries and returns the module name where it was defined.
  */
 function getCoreJetModule(symbolType) {
     let jetModule;
@@ -2374,15 +2433,50 @@ function getCoreJetModule(symbolType) {
             declaration = declaration.parent;
         }
         const sourceFile = declaration;
-        const sourceFileName = sourceFile.fileName;
-        if (sourceFile.isDeclarationFile && sourceFileName) {
-            const match = sourceFileName.match(_REGEX_CORE_JET_TYPES);
-            if (match) {
-                jetModule = match[1];
+        jetModule = getOjModuleName(sourceFile);
+    }
+    return jetModule;
+}
+function getOjModuleName(sourceFile) {
+    if (sourceFile) {
+        const filePath = sourceFile.fileName;
+        if (filePath) {
+            const normalizedPath = filePath.replace(/\\/g, '/');
+            // Case 1: runtime source file
+            const RUNTIME_MARKER = 'jet/rt/src/main/javascript/oracle/oj/';
+            const runtimeIdx = normalizedPath.indexOf(RUNTIME_MARKER);
+            if (runtimeIdx >= 0) {
+                const rest = normalizedPath.substring(runtimeIdx + RUNTIME_MARKER.length);
+                const [firstSegment] = rest.split('/');
+                return firstSegment || null;
+            }
+            // Case 2: declaration file from types/oj[module]/index.d.ts
+            if (sourceFile.isDeclarationFile) {
+                const match = normalizedPath.match(_REGEX_CORE_JET_TYPES);
+                if (match) {
+                    return match[1];
+                }
             }
         }
     }
-    return jetModule;
+    return null;
+}
+function isDefinedInThisModule(typedefType, metaUtilObj) {
+    // Try to get the declaration node for the type
+    const decl = typedefType?.aliasSymbol?.declarations?.[0] || typedefType?.symbol?.declarations?.[0];
+    if (!decl)
+        return false;
+    // Walk up to the source file
+    let node = decl;
+    while (node && !ts.isSourceFile(node)) {
+        node = node.parent;
+    }
+    if (ts.isSourceFile(node)) {
+        const fileName = node.fileName;
+        // Compare to the current module's file name
+        return !!fileName && fileName.indexOf(metaUtilObj.fullMetadata['jsdoc'].meta.filename) > -1;
+    }
+    return false;
 }
 function isPropertyTypeParameter(propDecl, checker) {
     if (!propDecl.type)
@@ -2399,6 +2493,27 @@ function isPropertyTypeParameter(propDecl, checker) {
     }
     return false;
 }
+/**
+ * Determines and returns the non-ParenthesizedTypeNode wrapped inside
+ * any number of ParenthesizedTypeNode wrappers. TypeScript’s parser preserves
+ * parentheses in the AST. If a type is written with wrapping parentheses, the top-level node
+ * may be ParenthesizedTypeNode.
+ * After unwrapping, the top-level kind is the inner node’s kind.
+ * (string)
+ * Before: ParenthesizedTypeNode → StringKeyword
+ * After unwrapping: StringKeyword
+ * (Foo)
+ * Before: ParenthesizedTypeNode → TypeReferenceNode(Foo)
+ * After: TypeReferenceNode(Foo)
+ * (Foo | null)
+ * Before: ParenthesizedTypeNode → UnionTypeNode(Foo, null)
+ * After: UnionTypeNode
+ * ((A & B))
+ * Before: ParenthesizedTypeNode → ParenthesizedTypeNode → IntersectionTypeNode(A, B)
+ * After: IntersectionTypeNode
+ * @param tNode a ts.TypeNode object that might be wrapped with ParenthesizedTypeNode
+ * @returns The non-ParenthesizedTypeNode type node
+ */
 function getNonParenthesizedTypeNode(tNode) {
     while (ts.isParenthesizedTypeNode(tNode)) {
         tNode = tNode.type;
@@ -2445,9 +2560,9 @@ function getTypeRefNodeForPropDeclaration(declaration, metaUtilObj) {
         // ex: ObjectTypeRef[]
         typeRefNode = getNonParenthesizedTypeNode(declTypeNode.elementType);
     }
-    else if (ts.isIndexedAccessTypeNode(declTypeNode)) {
-        // ex: TypeRef['foo']
-        // return the IndexedAccessTypeNode as-is, caller will perform special processing...
+    else if (ts.isIndexedAccessTypeNode(declTypeNode) || ts.isMappedTypeNode(declTypeNode)) {
+        // ex: TypeRef['foo'] or [key in keyof TypeRef]?: boolean
+        // return the MappedType or the IndexedAccessTypeNode as-is, caller will perform special processing...
         typeRefNode = declTypeNode;
     }
     else if (ts.isTypeReferenceNode(declTypeNode) || ts.isTypeLiteralNode(declTypeNode)) {
@@ -2469,7 +2584,9 @@ function getTypeRefNodeForPropDeclaration(declaration, metaUtilObj) {
         const filteredUnion = typeRefNode.types.filter(nullOrUndefinedTypeNodeFilter);
         if (filteredUnion.length == 1) {
             const result = getNonParenthesizedTypeNode(filteredUnion[0]);
-            if (ts.isTypeReferenceNode(result) || ts.isTypeLiteralNode(result)) {
+            if (ts.isTypeReferenceNode(result) ||
+                ts.isTypeLiteralNode(result) ||
+                ts.isMappedTypeNode(result)) {
                 typeRefNode = result;
             }
         }
@@ -2692,6 +2809,14 @@ function getTypeDefMetadata(typedefType, metaUtilObj) {
                     }
                 }
             }
+        }
+    }
+    let isLegacyJetComponent = metaUtilObj.fullMetadata.type === 'core';
+    // if we are dealing with a src from a core JET component, we need to check if the type is defined in this module
+    // if so, we need to create the typedef for it, otherwise will just mark it as a core JET type
+    if (isCoreJetType && isLegacyJetComponent) {
+        if (isDefinedInThisModule(typedefType, metaUtilObj)) {
+            isCoreJetType = false;
         }
     }
     // if the type is NOT coming from core JET, proceed otherwise skip further processing, we will not create a typedef

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2025, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -965,21 +965,23 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcustomelement-utils
          */
         _postprocessClassNameValue(val) {
             let newVal;
-            if (Array.isArray(val)) {
-                newVal = val.join(' ');
-            }
-            else if (typeof val !== 'string') {
-                newVal = Object.keys(val)
-                    .reduce((acc, key) => {
-                    if (val[key]) {
-                        acc.push(key);
-                    }
-                    return acc;
-                }, [])
-                    .join(' ');
-            }
-            else {
-                newVal = val;
+            if (val != null) {
+                if (Array.isArray(val)) {
+                    newVal = val.join(' ');
+                }
+                else if (typeof val !== 'string') {
+                    newVal = Object.keys(val)
+                        .reduce((acc, key) => {
+                        if (val[key]) {
+                            acc.push(key);
+                        }
+                        return acc;
+                    }, [])
+                        .join(' ');
+                }
+                else {
+                    newVal = val;
+                }
             }
             return newVal;
         }
