@@ -2421,7 +2421,7 @@ const NumberConverter = function () {
 };
 
 // Subclass from oj.Object
-oj.Object.createSubclass(NumberConverter, Converter, 'oj.NumberConverter');
+oj$1.Object.createSubclass(NumberConverter, Converter, 'oj.NumberConverter');
 
 /**
  * Initializes the number converter instance with the set options.

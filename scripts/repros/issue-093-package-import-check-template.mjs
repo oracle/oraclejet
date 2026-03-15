@@ -209,6 +209,44 @@ const checks = [
         throw new Error('no time zones returned');
       }
     }
+  },
+  {
+    name: 'ojconverter-number',
+    run: async () => {
+      const mod = await import('@oracle/oraclejet/ojconverter-number');
+      const converter = new mod.IntlNumberConverter();
+      const formatted = converter.format(1234.5);
+      if (typeof formatted !== 'string' || formatted.length === 0) {
+        throw new Error(`unexpected converter-number output: ${formatted}`);
+      }
+    }
+  },
+  {
+    name: 'ojconverter-datetime',
+    run: async () => {
+      const mod = await import('@oracle/oraclejet/ojconverter-datetime');
+      const converter = new mod.IntlDateTimeConverter();
+      const formatted = converter.format('2024-01-02T00:00:00');
+      if (typeof formatted !== 'string' || formatted.length === 0) {
+        throw new Error(`unexpected converter-datetime output: ${formatted}`);
+      }
+    }
+  },
+  {
+    name: 'ojvalidator-daterestriction',
+    run: async () => {
+      const mod = await import('@oracle/oraclejet/ojvalidator-daterestriction');
+      const validator = new mod.default({ dayFormatter: () => ({ disabled: false }) });
+      validator.validate('2024-01-02');
+    }
+  },
+  {
+    name: 'ojvalidator-datetimerange',
+    run: async () => {
+      const mod = await import('@oracle/oraclejet/ojvalidator-datetimerange');
+      const validator = new mod.default({ min: '2024-01-01T00:00:00', max: '2024-12-31T23:59:59' });
+      validator.validate('2024-06-01T12:00:00');
+    }
   }
 ];
 

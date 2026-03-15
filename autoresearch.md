@@ -11,7 +11,7 @@ Expose representative Oracle JET modules through native package subpath imports 
 ## How to Run
 `./autoresearch.sh`
 
-The script packs the current repo, installs it into a temp project, imports representative package subpaths from the installed package, runs a light behavior check for each one, and prints `METRIC esm_package_entrypoints_passed=<count>`. The current workload spans 16 checks across utilities, data providers, converters, validators, config locale switching, URL adapters, locale data, and timezone data.
+The script packs the current repo, installs it into a temp project, imports representative package subpaths from the installed package, runs a light behavior check for each one, and prints `METRIC esm_package_entrypoints_passed=<count>`. The current workload spans 20 checks across utilities, data providers, converters, date validators, config locale switching, URL adapters, locale data, and timezone data.
 
 ## Files in Scope
 - `scripts/repros/issue-093-esm-imports.mjs` - direct-file ESM smoke harness
@@ -43,4 +43,5 @@ The script packs the current repo, installs it into a temp project, imports repr
 - The remaining gap was package ergonomics: direct file imports worked, but package subpath imports like `@oracle/oraclejet/ojkeyset` still failed because `package.json` had no ESM export map
 - Adding package-level `exports` raised the installed-package benchmark from `0` to `7`
 - Broadening the installed-package benchmark to 13 checks exposed one more Node-hosted gap: `ojconverter-localdate` failed because `ojthemeutils.parseJSONFromFontFamily()` touched `window` unconditionally while converter preferences only needed a null/default fallback
-- The next workload broadening step adds `ojlocaledata`, `ojtimeutils`, and `ojtimezoneutils`, and also makes the `setLocale()` checks load locale data before switching locales so the dynamic locale bundle path gets exercised instead of only the translation bundle path
+- The next workload broadening step added `ojlocaledata`, `ojtimeutils`, and `ojtimezoneutils`, and made the `setLocale()` checks load locale data before switching locales so the dynamic locale bundle path got exercised instead of only the translation bundle path
+- The next benchmark broadening step adds `ojconverter-number`, `ojconverter-datetime`, `ojvalidator-daterestriction`, and `ojvalidator-datetimerange` to catch remaining alias-mismatch failures in the older converter stack
