@@ -7,10 +7,13 @@
  */
 import oj from './ojcore-base.js';
 import { getLocale } from './ojconfig.js';
-import ojldimport from './localeElements/en-US.js';
+import { loadMergedAmdBundle } from './ojamdloader.js';
 import { CalendarUtils } from './ojcalendarutils.js';
 
-var ojld = ojldimport;
+var ojld = await loadMergedAmdBundle(
+  new URL('../resources/nls/localeElements.js', import.meta.url),
+  new URL('../resources/nls/en-US/localeElements.js', import.meta.url)
+);
 
 /**
  * @namespace oj.LocaleData

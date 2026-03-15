@@ -7,7 +7,7 @@
  */
 import oj from './ojcore-base.js';
 import { __getBundle } from './ojlocaledata.js';
-import ojtd from './timezoneData/en-US.js';
+import { loadMergedAmdBundle } from './ojamdloader.js';
 
 /**
  * Internal utilities for dealing with timezone data
@@ -49,7 +49,12 @@ TimezoneData._bundleNames = [];
 
 (function () {
   TimezoneData.__registerBundleName('/timezoneData');
-  TimezoneData.__mergeIntoLocaleElements(typeof ojtd === 'undefined' ? {} : ojtd);
 })();
+
+const initialTimezoneBundle = await loadMergedAmdBundle(
+  new URL('../resources/nls/timezoneData.js', import.meta.url),
+  new URL('../resources/nls/en-US/timezoneData.js', import.meta.url)
+);
+TimezoneData.__mergeIntoLocaleElements(initialTimezoneBundle);
 
 export default TimezoneData;
