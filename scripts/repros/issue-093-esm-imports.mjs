@@ -1,4 +1,34 @@
 #!/usr/bin/env node
+const runSetLocale = async (config, locale) =>
+  new Promise((resolve, reject) => {
+    const cleanup = () => {
+      clearTimeout(timer);
+      process.removeListener('unhandledRejection', onFailure);
+      process.removeListener('uncaughtException', onFailure);
+    };
+    const onFailure = (err) => {
+      cleanup();
+      reject(err instanceof Error ? err : new Error(String(err)));
+    };
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error(`timeout waiting for ${locale} locale`));
+    }, 2000);
+
+    process.once('unhandledRejection', onFailure);
+    process.once('uncaughtException', onFailure);
+
+    try {
+      config.setLocale(locale, () => {
+        const resolvedLocale = config.getLocale();
+        cleanup();
+        resolve(resolvedLocale);
+      });
+    } catch (err) {
+      onFailure(err);
+    }
+  });
+
 const checks = [
   {
     name: 'ojlogger',
@@ -54,6 +84,26 @@ const checks = [
       const provider = new mod.default([{ id: 1, label: 'A' }], { keyAttributes: 'id' });
       if (provider.isEmpty() !== 'no') {
         throw new Error(`unexpected provider empty state: ${provider.isEmpty()}`);
+      }
+    }
+  },
+  {
+    name: 'ojconfig-setLocale-fr',
+    run: async () => {
+      const config = await import(new URL('../../dist/js/libs/oj/debug_esm/ojconfig.js', import.meta.url));
+      const locale = await runSetLocale(config, 'fr');
+      if (locale !== 'fr') {
+        throw new Error(`unexpected locale after fr switch: ${locale}`);
+      }
+    }
+  },
+  {
+    name: 'ojconfig-setLocale-de',
+    run: async () => {
+      const config = await import(new URL('../../dist/js/libs/oj/debug_esm/ojconfig.js', import.meta.url));
+      const locale = await runSetLocale(config, 'de');
+      if (locale !== 'de') {
+        throw new Error(`unexpected locale after de switch: ${locale}`);
       }
     }
   }

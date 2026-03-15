@@ -11,7 +11,7 @@ Make the shipped `debug_esm` Oracle JET modules self-contained enough to load un
 ## How to Run
 `./autoresearch.sh`
 
-The script imports 5 representative `debug_esm` modules and runs a small behavior check for each one, then prints `METRIC esm_modules_passed=<count>`.
+The script imports representative `debug_esm` modules, runs a small behavior check for each one, and also exercises `ojconfig.setLocale()` for 2 locales, then prints `METRIC esm_modules_passed=<count>`.
 
 ## Files in Scope
 - `scripts/repros/issue-093-esm-imports.mjs` - representative ESM import harness
@@ -36,3 +36,5 @@ The script imports 5 representative `debug_esm` modules and runs a small behavio
 - Rewriting `ojs/*` specifiers to relative `./*.js` imports and marking `debug_esm` as `type: module` raised the representative import count from `1` to `3`
 - The remaining failures were traced to an AMD-plugin translation import in `ojconfig.js` and a stray `oj.DataProvider` global assignment in `ojdataprovider.js`
 - A generated ESM shim for the root translations bundle plus the `oj$1.DataProvider` fix brought the stronger behavior-checked benchmark to `5/5`
+- The next benchmark broadening step added `ojconfig.setLocale('fr')` and `ojconfig.setLocale('de')`, which initially failed because the dynamic locale-loading path kept AMD `ojL10n!` semantics
+- Generating ESM locale shims under `debug_esm/ojtranslations/` and rewiring `ojconfig.setLocale()` to those shims raised the locale-switch benchmark from `5` to `7`

@@ -6,7 +6,7 @@
  * @ignore
  */
 import oj from './ojcore-base.js';
-import ojt from './ojtranslations.js';
+import ojt from './ojtranslations/en.js';
 import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 /**
@@ -93,10 +93,11 @@ Config.getLocale = function () {
  */
 Config.setLocale = function (locale, callback) {
   var prefix = 'ojL10n!ojtranslations/nls/';
-  var translationBundle = prefix + locale + '/ojtranslations';
+  var translationLocale = locale === 'root' ? 'root' : locale;
+  var translationBundle = `./ojtranslations/${translationLocale}.js`;
   /* ojWebpackError: 'Config.setLocale() is not supported when the ojs/ojcore module has been bundled by Webpack' */
   const translationPromise = import(translationBundle).then((translations) => {
-    trans = translations;
+    trans = translations.default || translations;
   });
   var promises = [translationPromise];
 
