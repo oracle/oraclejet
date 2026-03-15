@@ -40,4 +40,6 @@ The script packs the current repo, installs it into a temp project, imports repr
 - A generated ESM shim for the root translations bundle plus the `oj$1.DataProvider` fix brought the stronger behavior-checked benchmark to `5/5`
 - Adding `ojconfig.setLocale('fr')` and `ojconfig.setLocale('de')` exposed the dynamic locale-loading path still using AMD `ojL10n!` semantics
 - Generating ESM locale shims under `debug_esm/ojtranslations/` and rewiring `ojconfig.setLocale()` to those shims raised the locale-switch benchmark from `5` to `7`
-- The remaining gap is package ergonomics: direct file imports now work, but package subpath imports like `@oracle/oraclejet/ojkeyset` still fail because `package.json` has no ESM export map
+- The remaining gap was package ergonomics: direct file imports worked, but package subpath imports like `@oracle/oraclejet/ojkeyset` still failed because `package.json` had no ESM export map
+- Adding package-level `exports` raised the installed-package benchmark from `0` to `7`
+- Broadening the installed-package benchmark to 13 checks exposed one more Node-hosted gap: `ojconverter-localdate` failed because `ojthemeutils.parseJSONFromFontFamily()` touched `window` unconditionally while converter preferences only needed a null/default fallback

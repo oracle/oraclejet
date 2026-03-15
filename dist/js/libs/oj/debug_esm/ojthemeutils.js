@@ -136,6 +136,15 @@ ThemeUtils.clearCache = function () {
  * @static
  */
 ThemeUtils.parseJSONFromFontFamily = function (selector) {
+  if (
+    typeof document === 'undefined' ||
+    typeof window === 'undefined' ||
+    !document.head ||
+    typeof window.getComputedStyle !== 'function'
+  ) {
+    return null;
+  }
+
   // NOTE: I first tried code inspired by
   // https://css-tricks.com/making-sass-talk-to-javascript-with-json/
   // so I was using :before and content, for example
