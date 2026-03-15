@@ -11,7 +11,7 @@ Expose representative Oracle JET modules through native package subpath imports 
 ## How to Run
 `./autoresearch.sh`
 
-The script packs the current repo, installs it into a temp project, imports representative package subpaths from the installed package, runs a light behavior check for each one, and prints `METRIC esm_package_entrypoints_passed=<count>`.
+The script packs the current repo, installs it into a temp project, imports representative package subpaths from the installed package, runs a light behavior check for each one, and prints `METRIC esm_package_entrypoints_passed=<count>`. The current workload spans 13 checks across utilities, data providers, converters, validators, config locale switching, and URL adapters.
 
 ## Files in Scope
 - `scripts/repros/issue-093-esm-imports.mjs` - direct-file ESM smoke harness
@@ -30,7 +30,7 @@ The script packs the current repo, installs it into a temp project, imports repr
 - Do not rely on external bundler aliases or a fake `ojs` npm package
 - Keep AMD builds untouched
 - Preserve `npm pack --dry-run`
-- Avoid overfitting to one module, use the representative installed-package import-and-behavior set
+- Avoid overfitting to one module, use the representative installed-package import-and-behavior set across multiple subsystems
 
 ## What's Been Tried
 - Baseline direct imports showed only `ojlogger.js` loading cleanly

@@ -105,6 +105,70 @@ const checks = [
         throw new Error(`unexpected locale after de switch: ${locale}`);
       }
     }
+  },
+  {
+    name: 'ojtranslation',
+    run: async () => {
+      const translation = await import('@oracle/oraclejet/ojtranslation');
+      const value = translation.getTranslatedString('oj-validator.required.summary');
+      if (typeof value !== 'string' || value.length === 0) {
+        throw new Error(`unexpected translation output: ${value}`);
+      }
+    }
+  },
+  {
+    name: 'ojconverter-localdate',
+    run: async () => {
+      const { LocalDateConverter } = await import('@oracle/oraclejet/ojconverter-localdate');
+      const converter = new LocalDateConverter();
+      const formatted = converter.format('2024-01-02');
+      const parsed = converter.parse(formatted);
+      if (parsed !== '2024-01-02') {
+        throw new Error(`unexpected parsed date: ${parsed}`);
+      }
+    }
+  },
+  {
+    name: 'ojvalidator-length',
+    run: async () => {
+      const mod = await import('@oracle/oraclejet/ojvalidator-length');
+      const validator = new mod.default({ min: 2, max: 4 });
+      validator.validate('abcd');
+    }
+  },
+  {
+    name: 'ojasyncvalidator-length',
+    run: async () => {
+      const mod = await import('@oracle/oraclejet/ojasyncvalidator-length');
+      const validator = new mod.default({ min: 2, max: 4 });
+      await validator.validate('abcd');
+    }
+  },
+  {
+    name: 'ojurlpathadapter',
+    run: async () => {
+      globalThis.document ||= { location: { pathname: '/', search: '' } };
+      const mod = await import('@oracle/oraclejet/ojurlpathadapter');
+      const adapter = new mod.default('/');
+      const url = adapter.getUrlForRoutes([{ path: 'alpha', params: { q: 1 } }]);
+      if (typeof url !== 'string' || !url.includes('alpha')) {
+        throw new Error(`unexpected url output: ${url}`);
+      }
+    }
+  },
+  {
+    name: 'ojarraytreedataprovider',
+    run: async () => {
+      const mod = await import('@oracle/oraclejet/ojarraytreedataprovider');
+      const provider = new mod.default([{ id: 'root', title: 'Root', children: [{ id: 'child', title: 'Child' }] }], {
+        keyAttributes: 'id',
+        childrenAttribute: 'children'
+      });
+      const child = provider.getChildDataProvider('root');
+      if (!child) {
+        throw new Error('missing child data provider');
+      }
+    }
   }
 ];
 
