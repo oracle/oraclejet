@@ -391,6 +391,7 @@ define(['exports', 'ojs/ojconfig', 'ojs/ojconverter-preferences'], function (exp
             lenientParse: options.lenientParse ?? 'full',
             roundDuringParse: options.roundDuringParse ?? false,
             roundingMode: options.roundingMode ?? 'HALF_UP',
+            signDisplay: options.signDisplay ?? 'auto',
             separators: {
                 decimal: options.separators?.decimal ?? getLocaleData(locale).decimalSeparator,
                 group: options.separators?.group ?? _getDefaultGroupingSeparator(native, locale)
@@ -449,6 +450,9 @@ define(['exports', 'ojs/ojconfig', 'ojs/ojconverter-preferences'], function (exp
                 break;
             default:
                 throw new Error('Invalid format style');
+        }
+        if (options.signDisplay !== undefined) {
+            nativeOpts.signDisplay = options.signDisplay;
         }
         return nativeOpts;
     }
