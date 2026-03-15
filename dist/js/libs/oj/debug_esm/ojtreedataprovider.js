@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore';
+import oj from './ojcore.js';
 
 const TreeDataProvider = function () {};
 // mapping variable definition, used in a no-require environment. Maps the TreeDataProvider function object to the name used in the require callback.

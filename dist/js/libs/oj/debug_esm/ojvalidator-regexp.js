@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore';
-import { applyParameters, getTranslatedString } from 'ojs/ojtranslation';
-import Validator from 'ojs/ojvalidator';
-import { ValidatorError } from 'ojs/ojvalidation-error';
+import oj from './ojcore.js';
+import { applyParameters, getTranslatedString } from './ojtranslation.js';
+import Validator from './ojvalidator.js';
+import { ValidatorError } from './ojvalidation-error.js';
 
 /**
  * Constructs a RegExpValidator that ensures the value matches the provided pattern.

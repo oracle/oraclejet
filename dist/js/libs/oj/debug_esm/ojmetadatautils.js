@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { AttributeUtils } from 'ojs/ojcustomelement-utils';
+import oj from './ojcore-base.js';
+import { AttributeUtils } from './ojcustomelement-utils.js';
 
 /**
  * Component Metadata utilities.

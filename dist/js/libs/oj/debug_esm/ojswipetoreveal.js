@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import Context from 'ojs/ojcontext';
-import { setupPanToReveal, _getOuterWrapper, close, tearDownPanToReveal } from 'ojs/ojoffcanvas';
+import Context from './ojcontext.js';
+import { setupPanToReveal, _getOuterWrapper, close, tearDownPanToReveal } from './ojoffcanvas.js';
 import 'touchr';
 
 /**

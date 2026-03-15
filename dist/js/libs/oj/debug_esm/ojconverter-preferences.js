@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { error } from 'ojs/ojlogger';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import { error } from './ojlogger.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
 import { formatWithYearFormat as formatWithYearFormat$1 } from '@oracle/oraclejet-preact/UNSAFE_IntlDateTime';
 
 /**

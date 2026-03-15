@@ -5,13 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojcomponentcore';
+import oj from './ojcore-base.js';
+import './ojcomponentcore.js';
 import $ from 'jquery';
-import 'ojs/ojdvt-base';
-import { Sunburst } from 'ojs/ojdvt-treeview';
-import { AllKeySetImpl } from 'ojs/ojkeyset';
-import { getResourceUrl } from 'ojs/ojconfig';
+import './ojdvt-base.js';
+import { Sunburst } from './ojdvt-treeview.js';
+import { AllKeySetImpl } from './ojkeyset.js';
+import { getResourceUrl } from './ojconfig.js';
 
 /**
  * <table class="keyboard-table">

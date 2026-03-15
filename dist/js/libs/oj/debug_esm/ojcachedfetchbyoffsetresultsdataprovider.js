@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { wrapWithAbortHandling } from 'ojs/ojdataprovider';
-import { EventTargetMixin } from 'ojs/ojeventtarget';
+import oj from './ojcore-base.js';
+import { wrapWithAbortHandling } from './ojdataprovider.js';
+import { EventTargetMixin } from './ojeventtarget.js';
 
 /**
  * @license

@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojindexer';
-import 'ojs/ojdatasource-common';
+import oj from './ojcore-base.js';
+import './ojindexer.js';
+import './ojdatasource-common.js';
 
 /**
  * Implementation of the IndexerModel and TreeDataSource based on an array of data set.

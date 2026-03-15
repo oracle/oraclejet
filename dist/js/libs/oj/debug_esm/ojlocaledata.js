@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { getLocale } from 'ojs/ojconfig';
+import oj from './ojcore-base.js';
+import { getLocale } from './ojconfig.js';
 import ojldimport from 'ojL10n!ojtranslations/nls/localeElements';
-import { CalendarUtils } from 'ojs/ojcalendarutils';
+import { CalendarUtils } from './ojcalendarutils.js';
 
 var ojld = ojldimport;
 

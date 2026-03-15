@@ -6,7 +6,7 @@
  * @ignore
  */
 import { observable, pureComputed } from 'knockout';
-import { info } from 'ojs/ojlogger';
+import { info } from './ojlogger.js';
 
 /**
  * A Knockout adapter, to be used in conjunction with {@link CoreRouter}, to allow

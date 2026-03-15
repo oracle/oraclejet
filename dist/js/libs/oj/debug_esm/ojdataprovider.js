@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj$1 from 'ojs/ojcore-base';
-import { error, warn } from 'ojs/ojlogger';
-import { GenericEvent } from 'ojs/ojeventtarget';
+import oj$1 from './ojcore-base.js';
+import { error, warn } from './ojlogger.js';
+import { GenericEvent } from './ojeventtarget.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -291,7 +291,7 @@ import { GenericEvent } from 'ojs/ojeventtarget';
  * }
  * </code></pre>
  */
-oj.DataProvider = function () {};
+oj$1.DataProvider = function () {};
 
 /**
  * Get an AsyncIterable object for iterating the data. Iterating data on this AsyncIterable object can be

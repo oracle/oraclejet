@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcomponentcore';
-import oj from 'ojs/ojcore-base';
+import './ojcomponentcore.js';
+import oj from './ojcore-base.js';
 
 // This is not used but in order for the build to include the code it must export something
 class ButtonLegacy {

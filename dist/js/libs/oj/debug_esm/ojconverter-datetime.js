@@ -5,15 +5,15 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { OraI18nUtils, IntlConverterUtils as IntlConverterUtils$1 } from 'ojs/ojconverterutils-i18n';
-import Converter from 'ojs/ojconverter';
-import { __getBundle } from 'ojs/ojlocaledata';
-import { NativeParserImpl, NativeDateTimePatternConverter, NativeDateTimeConverter } from 'ojs/ojconverter-nativedatetime';
-import { getLocale } from 'ojs/ojconfig';
-import oj$1 from 'ojs/ojcore-base';
-import { getMergedDateTimePreferencesWithOptions } from 'ojs/ojconverter-preferences';
-import { AvailableTimeZones } from 'ojs/ojavailabletimezones';
-import { _processConverterError } from 'ojs/ojconverter-datetimeerror';
+import { OraI18nUtils, IntlConverterUtils as IntlConverterUtils$1 } from './ojconverterutils-i18n.js';
+import Converter from './ojconverter.js';
+import { __getBundle } from './ojlocaledata.js';
+import { NativeParserImpl, NativeDateTimePatternConverter, NativeDateTimeConverter } from './ojconverter-nativedatetime.js';
+import { getLocale } from './ojconfig.js';
+import oj$1 from './ojcore-base.js';
+import { getMergedDateTimePreferencesWithOptions } from './ojconverter-preferences.js';
+import { AvailableTimeZones } from './ojavailabletimezones.js';
+import { _processConverterError } from './ojconverter-datetimeerror.js';
 
 /**
  * DateTimeConverter Contract.

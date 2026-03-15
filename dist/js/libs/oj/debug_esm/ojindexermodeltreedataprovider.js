@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import ArrayDataProvider from 'ojs/ojarraydataprovider';
-import ArrayTreeDataProvider from 'ojs/ojarraytreedataprovider';
-import 'ojs/ojindexer';
+import oj from './ojcore-base.js';
+import { getTranslatedString } from './ojtranslation.js';
+import ArrayDataProvider from './ojarraydataprovider.js';
+import ArrayTreeDataProvider from './ojarraytreedataprovider.js';
+import './ojindexer.js';
 
 /**
  * Implementation of the IndexerModel and TreeDataProvider based on an array of data set.

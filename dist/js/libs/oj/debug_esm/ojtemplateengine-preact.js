@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { TemplateEngineUtils, PreactTemplate } from 'ojs/ojtemplateengine-utils';
+import { TemplateEngineUtils, PreactTemplate } from './ojtemplateengine-utils.js';
 
 /**
  * JET Template Engine implementation for used by legacy components with 'preact'

@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Collection, Events, Model } from 'ojs/ojmodel';
-import 'ojs/ojdatasource-common';
+import { Collection, Events, Model } from './ojmodel.js';
+import './ojdatasource-common.js';
 import $ from 'jquery';
 
 /**

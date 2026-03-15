@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import ojt from 'ojL10n!ojtranslations/nls/ojtranslations';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import oj from './ojcore-base.js';
+import ojt from './ojtranslations.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 /**
  * @namespace oj.Config
@@ -277,11 +277,11 @@ Config._getEngineByType = function (templateProp) {
     let promise;
     switch (templateProp) {
       case PREACT_TEMPLATE_PROMISE:
-        promise = import('ojs/ojtemplateengine-preact');
+        promise = import('./ojtemplateengine-preact.js');
         break;
       case TEMPLATE_ENGINE_KO:
       default:
-        promise = import('ojs/ojtemplateengine-ko');
+        promise = import('./ojtemplateengine-ko.js');
     }
     Config[templateProp] = promise.then((engine) => engine.default);
   }

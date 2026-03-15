@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { RESTDataProvider } from 'ojs/ojrestdataprovider';
-import { DataProviderRefreshEvent, DataProviderMutationEvent, DataProviderFeatureChecker } from 'ojs/ojdataprovider';
-import ojSet from 'ojs/ojset';
-import ojMap from 'ojs/ojmap';
+import { EventTargetMixin } from './ojeventtarget.js';
+import { RESTDataProvider } from './ojrestdataprovider.js';
+import { DataProviderRefreshEvent, DataProviderMutationEvent, DataProviderFeatureChecker } from './ojdataprovider.js';
+import ojSet from './ojset.js';
+import ojMap from './ojmap.js';
 
 class RESTTreeDataProvider {
     constructor(options) {

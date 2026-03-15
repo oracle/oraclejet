@@ -5,23 +5,23 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojdataprovider';
-import oj from 'ojs/ojcore-base';
-import { JsonUtils, Agent, Context } from 'ojs/ojdvt-toolkit';
-import Context$1 from 'ojs/ojcontext';
-import { __getTemplateEngine, getLocale } from 'ojs/ojconfig';
-import ojMap from 'ojs/ojmap';
-import * as LocaleData from 'ojs/ojlocaledata';
-import { subtreeAttached, __GetWidgetConstructor } from 'ojs/ojcomponentcore';
+import './ojdataprovider.js';
+import oj from './ojcore-base.js';
+import { JsonUtils, Agent, Context } from './ojdvt-toolkit.js';
+import Context$1 from './ojcontext.js';
+import { __getTemplateEngine, getLocale } from './ojconfig.js';
+import ojMap from './ojmap.js';
+import * as LocaleData from './ojlocaledata.js';
+import { subtreeAttached, __GetWidgetConstructor } from './ojcomponentcore.js';
 import $ from 'jquery';
-import KeySetImpl from 'ojs/ojkeysetimpl';
-import { getCSSTimeUnitAsMillis, isTouchSupported, addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
-import { ColorAttributeGroupHandler, AttributeGroupHandler, ShapeAttributeGroupHandler } from 'ojs/ojattributegrouphandler';
-import { error } from 'ojs/ojlogger';
-import 'ojs/ojcustomelement';
-import { AttributeUtils, CustomElementUtils, JetElementError } from 'ojs/ojcustomelement-utils';
-import { checkEnumValues } from 'ojs/ojmetadatautils';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
+import KeySetImpl from './ojkeysetimpl.js';
+import { getCSSTimeUnitAsMillis, isTouchSupported, addResizeListener, removeResizeListener } from './ojdomutils.js';
+import { ColorAttributeGroupHandler, AttributeGroupHandler, ShapeAttributeGroupHandler } from './ojattributegrouphandler.js';
+import { error } from './ojlogger.js';
+import './ojcustomelement.js';
+import { AttributeUtils, CustomElementUtils, JetElementError } from './ojcustomelement-utils.js';
+import { checkEnumValues } from './ojmetadatautils.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
 import 'ojdnd';
 
 /**

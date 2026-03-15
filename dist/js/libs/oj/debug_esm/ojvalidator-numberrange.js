@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore';
-import * as Translations from 'ojs/ojtranslation';
-import Validator from 'ojs/ojvalidator';
-import { ValidatorError } from 'ojs/ojvalidation-error';
-import ConverterUtils from 'ojs/ojconverterutils';
+import oj from './ojcore.js';
+import * as Translations from './ojtranslation.js';
+import Validator from './ojvalidator.js';
+import { ValidatorError } from './ojvalidation-error.js';
+import ConverterUtils from './ojconverterutils.js';
 
 /**
  * Constructs a NumberRangeValidator that ensures the value provided is within a given range.

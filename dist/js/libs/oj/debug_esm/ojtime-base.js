@@ -5,15 +5,15 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import 'ojs/ojdvt-base';
-import 'ojs/ojcomponentcore';
-import { getFirstDayOfWeek } from 'ojs/ojlocaledata';
-import { error } from 'ojs/ojlogger';
-import { IntlDateTimeConverter } from 'ojs/ojconverter-datetime';
-import * as ConverterUtils from 'ojs/ojconverterutils-i18n';
-import * as NumberConverter from 'ojs/ojconverter-number';
+import './ojdvt-base.js';
+import './ojcomponentcore.js';
+import { getFirstDayOfWeek } from './ojlocaledata.js';
+import { error } from './ojlogger.js';
+import { IntlDateTimeConverter } from './ojconverter-datetime.js';
+import * as ConverterUtils from './ojconverterutils-i18n.js';
+import * as NumberConverter from './ojconverter-number.js';
 
 /**
  * @ojcomponent oj.dvtTimeComponent

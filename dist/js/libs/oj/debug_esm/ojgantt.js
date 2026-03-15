@@ -5,18 +5,18 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { isTouchSupported } from 'ojs/ojdomutils';
-import 'ojs/ojtime-base';
-import { Gantt } from 'ojs/ojgantt-toolkit';
-import 'ojs/ojkeyset';
-import 'ojs/ojdvttimecomponentscale';
-import { error } from 'ojs/ojlogger';
-import { IntlDateTimeConverter } from 'ojs/ojconverter-datetime';
-import { IntlNumberConverter } from 'ojs/ojconverter-number';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import { setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import { isTouchSupported } from './ojdomutils.js';
+import './ojtime-base.js';
+import { Gantt } from './ojgantt-toolkit.js';
+import './ojkeyset.js';
+import './ojdvttimecomponentscale.js';
+import { error } from './ojlogger.js';
+import { IntlDateTimeConverter } from './ojconverter-datetime.js';
+import { IntlNumberConverter } from './ojconverter-number.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.

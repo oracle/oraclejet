@@ -6,13 +6,13 @@
  * @ignore
  */
 import { contextFor, computed, observable, applyBindingsToDescendants, pureComputed, utils, cleanNode } from 'knockout';
-import BindingProviderImpl from 'ojs/ojkoshared';
-import { TemplateEngineUtils, PreactTemplate } from 'ojs/ojtemplateengine-utils';
-import oj from 'ojs/ojcore';
-import { getTemplateContent } from 'ojs/ojhtmlutils';
-import { CACHED_BINDING_PROVIDER, AttributeUtils } from 'ojs/ojcustomelement-utils';
-import Context from 'ojs/ojcontext';
-import { warn } from 'ojs/ojlogger';
+import BindingProviderImpl from './ojkoshared.js';
+import { TemplateEngineUtils, PreactTemplate } from './ojtemplateengine-utils.js';
+import oj from './ojcore.js';
+import { getTemplateContent } from './ojhtmlutils.js';
+import { CACHED_BINDING_PROVIDER, AttributeUtils } from './ojcustomelement-utils.js';
+import Context from './ojcontext.js';
+import { warn } from './ojlogger.js';
 
 const _propertyContribsCache = new WeakMap();
 class TemplateEngineKoInternal {

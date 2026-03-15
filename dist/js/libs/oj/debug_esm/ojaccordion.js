@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { warn } from 'ojs/ojlogger';
-import 'ojs/ojcomponentcore';
-import 'ojs/ojcollapsible';
+import { warn } from './ojlogger.js';
+import './ojcomponentcore.js';
+import './ojcollapsible.js';
 
 var __oj_accordion_metadata = 
 {

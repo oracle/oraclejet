@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { DataProviderRefreshEvent, DataProviderMutationEvent, FilterFactory, FilterUtils, wrapWithAbortHandling } from 'ojs/ojdataprovider';
-import ojSet from 'ojs/ojset';
-import ojMap from 'ojs/ojmap';
-import { deepFreeze } from 'ojs/ojmetadatautils';
+import { EventTargetMixin } from './ojeventtarget.js';
+import { DataProviderRefreshEvent, DataProviderMutationEvent, FilterFactory, FilterUtils, wrapWithAbortHandling } from './ojdataprovider.js';
+import ojSet from './ojset.js';
+import ojMap from './ojmap.js';
+import { deepFreeze } from './ojmetadatautils.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

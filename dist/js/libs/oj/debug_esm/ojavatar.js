@@ -6,8 +6,8 @@
  * @ignore
  */
 import { jsxs, jsx } from 'preact/jsx-runtime';
-import { customElement } from 'ojs/ojvcomponent';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
+import { customElement } from './ojvcomponent.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
 import { Component } from 'preact';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {

@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { getExpressionEvaluator } from 'ojs/ojconfig';
-import { AttributeUtils } from 'ojs/ojcustomelement-utils';
+import { getExpressionEvaluator } from './ojconfig.js';
+import { AttributeUtils } from './ojcustomelement-utils.js';
 
 /**
  * @namespace

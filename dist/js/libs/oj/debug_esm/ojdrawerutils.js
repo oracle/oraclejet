@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { getReadingDirection } from 'ojs/ojdomutils';
+import { getReadingDirection } from './ojdomutils.js';
 
 // @ts-ignore
 // @ts-ignore

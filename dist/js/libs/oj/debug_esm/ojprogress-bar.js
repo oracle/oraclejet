@@ -6,9 +6,9 @@
  * @ignore
  */
 import { jsx } from 'preact/jsx-runtime';
-import { Root, customElement } from 'ojs/ojvcomponent';
+import { Root, customElement } from './ojvcomponent.js';
 import { Component } from 'preact';
-import { getTranslatedString } from 'ojs/ojtranslation';
+import { getTranslatedString } from './ojtranslation.js';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;

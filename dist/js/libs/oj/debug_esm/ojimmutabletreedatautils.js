@@ -46,10 +46,10 @@
  * @ojtsexample <caption>Find path of 'Today'</caption>
  * import {
  *  MutableArrayTreeDataProvider
- * } from 'ojs/ojmutablearraytreedataprovider';
+ * } from './ojmutablearraytreedataprovider.js';
  * import {
  *  findPathByData
- * } from 'ojs/ojimmutabletreedatautils';
+ * } from './ojimmutabletreedatautils.js';
  * const baseData = [
  *   {title:"News", id:"news"},
  *   {title:"Blogs", id:"blogs", "children": [
@@ -104,11 +104,11 @@
  * @ojtsexample <caption>Add a child node to 'Today'</caption>
  * import {
  *  MutableArrayTreeDataProvider
- * } from 'ojs/ojmutablearraytreedataprovider';
+ * } from './ojmutablearraytreedataprovider.js';
  * import {
  *  addNode,
  *  findPathByData
- * } from 'ojs/ojimmutabletreedatautils';
+ * } from './ojimmutabletreedatautils.js';
  * const baseData = [
  *   {title:"News", id:"news"},
  *   {title:"Blogs", id:"blogs", "children": [
@@ -152,11 +152,11 @@
  * @ojtsexample <caption>Add a new node before 'Archive' by using -1 in path array</caption>
  * import {
  *  MutableArrayTreeDataProvider
- * } from 'ojs/ojmutablearraytreedataprovider';
+ * } from './ojmutablearraytreedataprovider.js';
  * import {
  *  addNode,
  *  findPathByData
- * } from 'ojs/ojimmutabletreedatautils';
+ * } from './ojimmutabletreedatautils.js';
  * const baseData = [
  *   {title:"News", id:"news"},
  *   {title:"Blogs", id:"blogs", "children": [
@@ -226,11 +226,11 @@
  * @ojtsexample <caption>Update 'Today' title</caption>
  * import {
  *  MutableArrayTreeDataProvider
- * } from 'ojs/ojmutablearraytreedataprovider';
+ * } from './ojmutablearraytreedataprovider.js';
  * import {
  *  replaceNode,
  *  findPathByData
- * } from 'ojs/ojimmutabletreedatautils';
+ * } from './ojimmutabletreedatautils.js';
  * const baseData = [
  *   {title:"News", id:"news"},
  *   {title:"Blogs", id:"blogs", "children": [
@@ -292,11 +292,11 @@
  * @ojtsexample <caption>Remove node 'Today'</caption>
  * import {
  *  MutableArrayTreeDataProvider
- * } from 'ojs/ojmutablearraytreedataprovider';
+ * } from './ojmutablearraytreedataprovider.js';
  * import {
  *  removeNode,
  *  findPathByData
- * } from 'ojs/ojimmutabletreedatautils';
+ * } from './ojimmutabletreedatautils.js';
  * const baseData = [
  *   {title:"News", id:"news"},
  *   {title:"Blogs", id:"blogs", "children": [
@@ -364,10 +364,10 @@
  * @ojtsexample <caption>Add node</caption>
  * import {
  *  MutableArrayTreeDataProvider
- * } from 'ojs/ojmutablearraytreedataprovider';
+ * } from './ojmutablearraytreedataprovider.js';
  * import {
  *  spliceNode
- * } from 'ojs/ojimmutabletreedatautils';
+ * } from './ojimmutabletreedatautils.js';
  * const oldData = [
       { title: 'News', id: 'news' },
       {
@@ -386,10 +386,10 @@
 * @ojtsexample <caption>remove node</caption>
 * import {
 *  MutableArrayTreeDataProvider
-* } from 'ojs/ojmutablearraytreedataprovider';
+* } from './ojmutablearraytreedataprovider.js';
 * import {
 *  spliceNode
-* } from 'ojs/ojimmutabletreedatautils';
+* } from './ojimmutabletreedatautils.js';
 * const oldData = [
       { title: 'News', id: 'news' },
       {
@@ -407,10 +407,10 @@
 * @ojtsexample <caption>update node</caption>
 * import {
 *  MutableArrayTreeDataProvider
-* } from 'ojs/ojmutablearraytreedataprovider';
+* } from './ojmutablearraytreedataprovider.js';
 * import {
 *  spliceNode
-* } from 'ojs/ojimmutabletreedatautils';
+* } from './ojimmutabletreedatautils.js';
 * const oldData = [
       { title: 'News', id: 'news' },
       {

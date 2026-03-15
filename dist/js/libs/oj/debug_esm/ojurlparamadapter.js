@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import UrlPathAdapter from 'ojs/ojurlpathadapter';
+import UrlPathAdapter from './ojurlpathadapter.js';
 
 // The old (8.0.0) paramter name
 var _OLD_PARAM_NAME = '_ojCoreRouter';

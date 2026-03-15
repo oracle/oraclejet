@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { ArrayDataProviderImpl, getCapability, createOptimizedKeySet, createOptimizedKeyMap, getVal } from 'ojs/ojarraydataproviderimpl';
-import { getLocale } from 'ojs/ojconfig';
+import { EventTargetMixin } from './ojeventtarget.js';
+import { ArrayDataProviderImpl, getCapability, createOptimizedKeySet, createOptimizedKeyMap, getVal } from './ojarraydataproviderimpl.js';
+import { getLocale } from './ojconfig.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

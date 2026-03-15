@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore';
+import oj from './ojcore.js';
 import $, { error as error$1 } from 'jquery';
-import { error } from 'ojs/ojlogger';
+import { error } from './ojlogger.js';
 import 'ojdnd';
-import 'ojs/ojlistview';
+import './ojlistview.js';
 
 /**
  * @ignore

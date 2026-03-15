@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore';
+import oj from './ojcore.js';
 import { observableArray, isObservable, observable } from 'knockout';
-import { Collection, Events, Model } from 'ojs/ojmodel';
+import { Collection, Events, Model } from './ojmodel.js';
 
 /**
  * @namespace oj.KnockoutUtils

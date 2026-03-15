@@ -6,7 +6,7 @@
  * @ignore
  */
 import { jsx, jsxs } from 'preact/jsx-runtime';
-import { customElement } from 'ojs/ojvcomponent';
+import { customElement } from './ojvcomponent.js';
 import { Component } from 'preact';
 import { useRef, useEffect } from 'preact/hooks';
 

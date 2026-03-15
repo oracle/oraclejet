@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojcomponentcore';
+import oj from './ojcore-base.js';
+import './ojcomponentcore.js';
 import $ from 'jquery';
-import { PictoChart } from 'ojs/ojpictochart-toolkit';
-import 'ojs/ojdvt-base';
+import { PictoChart } from './ojpictochart-toolkit.js';
+import './ojdvt-base.js';
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.

@@ -5,13 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import oj from 'ojs/ojcore-base';
-import DvtAttributeUtils from 'ojs/ojdvt-base';
+import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import oj from './ojcore-base.js';
+import DvtAttributeUtils from './ojdvt-base.js';
 import $ from 'jquery';
-import { ThematicMap, DvtBaseMapManager } from 'ojs/ojthematicmap-toolkit';
-import { warn } from 'ojs/ojlogger';
-import { getLocale, getResourceUrl } from 'ojs/ojconfig';
+import { ThematicMap, DvtBaseMapManager } from './ojthematicmap-toolkit.js';
+import { warn } from './ojlogger.js';
+import { getLocale, getResourceUrl } from './ojconfig.js';
 
 var __oj_thematic_map_metadata = 
 {

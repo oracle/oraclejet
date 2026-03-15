@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcore';
-import 'ojs/ojcomponentcore';
-import 'ojs/ojlabel';
-import oj from 'ojs/ojcore-base';
+import './ojcore.js';
+import './ojcomponentcore.js';
+import './ojlabel.js';
+import oj from './ojcore-base.js';
 
 /**
  * @ojcomponent oj.ojLabelValue

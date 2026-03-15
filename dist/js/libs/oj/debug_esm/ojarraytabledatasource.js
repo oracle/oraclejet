@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { info } from 'ojs/ojlogger';
-import { applyParameters } from 'ojs/ojtranslation';
-import { TableDataSource } from 'ojs/ojdatasource-common';
+import { info } from './ojlogger.js';
+import { applyParameters } from './ojtranslation.js';
+import { TableDataSource } from './ojdatasource-common.js';
 
 /**
  * @export

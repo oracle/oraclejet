@@ -7,10 +7,10 @@
  */
 import { virtualElements } from 'knockout';
 import $ from 'jquery';
-import oj from 'ojs/ojcore-base';
-import { getReadingDirection } from 'ojs/ojdomutils';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import { startAnimation } from 'ojs/ojanimation';
+import oj from './ojcore-base.js';
+import { getReadingDirection } from './ojdomutils.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import { startAnimation } from './ojanimation.js';
 
 /**
  * A collection of ModuleAnimation implementations that can be specified on the "animation"

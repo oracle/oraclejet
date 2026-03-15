@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { __getBundle } from 'ojs/ojlocaledata';
+import oj from './ojcore-base.js';
+import { __getBundle } from './ojlocaledata.js';
 import ojtd from 'ojL10n!ojtranslations/nls/timezoneData';
 
 /**

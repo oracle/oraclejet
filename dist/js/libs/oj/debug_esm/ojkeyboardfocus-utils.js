@@ -6,9 +6,9 @@
  * @ignore
  */
 import $ from 'jquery';
-import oj from 'ojs/ojcore-base';
-import { ZOrderUtils } from 'ojs/ojpopupcore';
-import { getLogicalParent } from 'ojs/ojdomutils';
+import oj from './ojcore-base.js';
+import { ZOrderUtils } from './ojpopupcore.js';
+import { getLogicalParent } from './ojdomutils.js';
 
 /**
  * @private

@@ -5,12 +5,12 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { getTranslatedString } from 'ojs/ojtranslation';
+import oj from './ojcore-base.js';
+import { getTranslatedString } from './ojtranslation.js';
 import $ from 'jquery';
 import { DateTimeUtils } from '@oracle/oraclejet-preact/UNSAFE_IntlDateTime';
-import ConverterUtils from 'ojs/ojconverterutils';
-import { ConverterError } from 'ojs/ojvalidation-error';
+import ConverterUtils from './ojconverterutils.js';
+import { ConverterError } from './ojvalidation-error.js';
 
 /*
  DESCRIPTION

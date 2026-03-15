@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import KeySetImpl from 'ojs/ojkeysetimpl';
+import KeySetImpl from './ojkeysetimpl.js';
 
 /**
  * Implementation of the ES6 Map API:

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rect, Matrix, Dimension, ClipPath, Animator, Point, Rectangle, Easing, Agent, ToolkitUtils, KeyboardHandler, KeyboardEvent, BaseComponent } from 'ojs/ojdvt-toolkit';
+import { EventManager, MouseEvent, EventFactory, Playable, Timer, Container, Rect, Matrix, Dimension, ClipPath, Animator, Point, Rectangle, Easing, Agent, ToolkitUtils, KeyboardHandler, KeyboardEvent, BaseComponent } from './ojdvt-toolkit.js';
 
 /**
  * @constructor

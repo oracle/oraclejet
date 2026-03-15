@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Obj, Point, ArrayUtils, BaseComponentDefaults, CSSStyle, Agent, ColorUtils, JsonUtils, Container, Stroke, Line, SimpleMarker, Displayable, HtmlTooltipManager, ResourceUtils, SelectionEffectUtils, MouseEvent, KeyboardEvent, KeyboardHandler, Rectangle, TextUtils, BackgroundOutputText, OutputText, BackgroundMultilineText, MultilineText, TextObjPeer, EventManager, EventFactory, ToolkitUtils, Dimension, Rect, SimpleObjPeer, PathUtils, Path, Automation, BaseComponent, Math as Math$1, PatternFill, LinearGradientFill, SolidFill, Matrix, Polygon, Circle, CustomDatatipPeer, CustomAnimation, Animator, SvgDocumentUtils, IconButton, AnimFadeIn, AnimFadeOut, ParallelPlayable, Shape, Polyline, DataAnimationHandler, SequentialPlayable, AnimPopIn, PolygonUtils, LayoutUtils, ImageMarker, PixelMap, ClipPath, CategoryRolloverHandler, PanZoomHandler, MarqueeHandler, SimpleScrollbar, AriaUtils, SelectionHandler, BlackBoxAnimationHandler, Playable, Context, BaseComponentCache } from 'ojs/ojdvt-toolkit';
-import { LinearScaleAxisValueFormatter, BaseAxisInfo, DataAxisInfoMixin } from 'ojs/ojdvt-axis';
-import { Legend } from 'ojs/ojlegend-toolkit';
-import { Overview } from 'ojs/ojdvt-overview';
+import { Obj, Point, ArrayUtils, BaseComponentDefaults, CSSStyle, Agent, ColorUtils, JsonUtils, Container, Stroke, Line, SimpleMarker, Displayable, HtmlTooltipManager, ResourceUtils, SelectionEffectUtils, MouseEvent, KeyboardEvent, KeyboardHandler, Rectangle, TextUtils, BackgroundOutputText, OutputText, BackgroundMultilineText, MultilineText, TextObjPeer, EventManager, EventFactory, ToolkitUtils, Dimension, Rect, SimpleObjPeer, PathUtils, Path, Automation, BaseComponent, Math as Math$1, PatternFill, LinearGradientFill, SolidFill, Matrix, Polygon, Circle, CustomDatatipPeer, CustomAnimation, Animator, SvgDocumentUtils, IconButton, AnimFadeIn, AnimFadeOut, ParallelPlayable, Shape, Polyline, DataAnimationHandler, SequentialPlayable, AnimPopIn, PolygonUtils, LayoutUtils, ImageMarker, PixelMap, ClipPath, CategoryRolloverHandler, PanZoomHandler, MarqueeHandler, SimpleScrollbar, AriaUtils, SelectionHandler, BlackBoxAnimationHandler, Playable, Context, BaseComponentCache } from './ojdvt-toolkit.js';
+import { LinearScaleAxisValueFormatter, BaseAxisInfo, DataAxisInfoMixin } from './ojdvt-axis.js';
+import { Legend } from './ojlegend-toolkit.js';
+import { Overview } from './ojdvt-overview.js';
 
 const DvtChartDataItemUtils = {
   /**

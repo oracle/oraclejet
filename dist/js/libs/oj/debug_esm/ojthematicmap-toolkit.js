@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Rectangle, Point, PathUtils, Container, Shape, Path, Image, Stroke, OutputText, Polyline, CSSStyle, Matrix, EventFactory, DataAnimationHandler, BlackBoxAnimationHandler, Rect, ParallelPlayable, DisplayableUtils, SolidFill, BaseComponent, Agent, Obj, KeyboardEvent, Displayable, SelectionEffectUtils, MouseEvent, KeyboardHandler, SimpleMarker, CustomAnimation, Animator, AnimFadeOut, AnimFadeIn, Automation, BaseComponentDefaults, JsonUtils, EventManager, SelectionHandler, ArrayUtils, ImageMarker, ImageLoader, ColorUtils, LayoutUtils, CategoryRolloverHandler, ToolkitUtils } from 'ojs/ojdvt-toolkit';
-import { PanZoomCanvasKeyboardHandler, PanZoomComponent } from 'ojs/ojdvt-panzoomcanvas';
+import { Rectangle, Point, PathUtils, Container, Shape, Path, Image, Stroke, OutputText, Polyline, CSSStyle, Matrix, EventFactory, DataAnimationHandler, BlackBoxAnimationHandler, Rect, ParallelPlayable, DisplayableUtils, SolidFill, BaseComponent, Agent, Obj, KeyboardEvent, Displayable, SelectionEffectUtils, MouseEvent, KeyboardHandler, SimpleMarker, CustomAnimation, Animator, AnimFadeOut, AnimFadeIn, Automation, BaseComponentDefaults, JsonUtils, EventManager, SelectionHandler, ArrayUtils, ImageMarker, ImageLoader, ColorUtils, LayoutUtils, CategoryRolloverHandler, ToolkitUtils } from './ojdvt-toolkit.js';
+import { PanZoomCanvasKeyboardHandler, PanZoomComponent } from './ojdvt-panzoomcanvas.js';
 
 var DvtBaseMapManager;
 /**

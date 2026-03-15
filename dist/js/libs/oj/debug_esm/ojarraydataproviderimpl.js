@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { wrapWithAbortHandling, FilterFactory, DataProviderRefreshEvent, DataProviderMutationEvent } from 'ojs/ojdataprovider';
-import ojSet from 'ojs/ojset';
-import oj from 'ojs/ojcore-base';
-import ojMap from 'ojs/ojmap';
-import { warn } from 'ojs/ojlogger';
+import { wrapWithAbortHandling, FilterFactory, DataProviderRefreshEvent, DataProviderMutationEvent } from './ojdataprovider.js';
+import ojSet from './ojset.js';
+import oj from './ojcore-base.js';
+import ojMap from './ojmap.js';
+import { warn } from './ojlogger.js';
 
 const _ATDEFAULT = '@default';
 const getFetchCapability = () => {

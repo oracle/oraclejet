@@ -5,22 +5,22 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import Context from 'ojs/ojcontext';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { __GetWidgetConstructor } from 'ojs/ojcomponentcore';
-import { fadeIn, startAnimation, fadeOut } from 'ojs/ojanimation';
-import { isTouchSupported, getCSSTimeUnitAsMillis, isMetaKeyPressed } from 'ojs/ojdomutils';
-import { error, info } from 'ojs/ojlogger';
-import { __getTemplateEngine } from 'ojs/ojconfig';
-import { KeySetImpl, KeySetUtils, AllKeySetImpl } from 'ojs/ojkeyset';
-import 'ojs/ojselector';
+import Context from './ojcontext.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
+import { __GetWidgetConstructor } from './ojcomponentcore.js';
+import { fadeIn, startAnimation, fadeOut } from './ojanimation.js';
+import { isTouchSupported, getCSSTimeUnitAsMillis, isMetaKeyPressed } from './ojdomutils.js';
+import { error, info } from './ojlogger.js';
+import { __getTemplateEngine } from './ojconfig.js';
+import { KeySetImpl, KeySetUtils, AllKeySetImpl } from './ojkeyset.js';
+import './ojselector.js';
 import 'ojdnd';
-import { CustomElementUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
-import { areKeySetsEqual, applyRendererContent, disableAllFocusableElements, isArrowUpKeyEvent, isArrowDownKeyEvent, isSpaceBarKeyEvent, isFromDefaultSelector, isArrowLeftKeyEvent, isArrowRightKeyEvent, isLetterAKeyEvent, isSafari, getAddEventKeysResult, getEventDetail } from 'ojs/ojdatacollection-common';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import OjSet from 'ojs/ojset';
+import { CustomElementUtils, ElementUtils } from './ojcustomelement-utils.js';
+import { areKeySetsEqual, applyRendererContent, disableAllFocusableElements, isArrowUpKeyEvent, isArrowDownKeyEvent, isSpaceBarKeyEvent, isFromDefaultSelector, isArrowLeftKeyEvent, isArrowRightKeyEvent, isLetterAKeyEvent, isSafari, getAddEventKeysResult, getEventDetail } from './ojdatacollection-common.js';
+import { getTranslatedString } from './ojtranslation.js';
+import OjSet from './ojset.js';
 
 class TreeviewSelectionManager {
   constructor(
@@ -1583,7 +1583,7 @@ class TreeviewSelectionManager {
       if (self.m_dataSource == null) {
         data = self.options.data;
         if (!oj.DataProviderFeatureChecker.isTreeDataProvider(data)) {
-          var adapterPromise = import('ojs/ojtreedataprovideradapter');
+          var adapterPromise = import('./ojtreedataprovideradapter.js');
           if (!adapterPromise) {
             throw new Error('Error adapting a TreeDataSource');
           }

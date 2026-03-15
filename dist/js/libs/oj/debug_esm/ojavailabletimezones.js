@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { __getBundle } from 'ojs/ojlocaledata';
-import { OraI18nUtils } from 'ojs/ojconverterutils-i18n';
-import { getLocale } from 'ojs/ojconfig';
-import { getISODateOffset } from 'ojs/ojconverter-nativedatetime';
+import { __getBundle } from './ojlocaledata.js';
+import { OraI18nUtils } from './ojconverterutils-i18n.js';
+import { getLocale } from './ojconfig.js';
+import { getISODateOffset } from './ojconverter-nativedatetime.js';
 
 // OraI18nUtils is an undocumented class that is ok for other JET code to call
 // but we don't want it to be a public API. So we need to cast it to any here.

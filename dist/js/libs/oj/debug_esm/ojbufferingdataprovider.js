@@ -5,13 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { KeyCache, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import ojMap from 'ojs/ojmap';
-import ojSet from 'ojs/ojset';
-import { BufferingDataProviderSubmittableChangeEvent } from 'ojs/ojbufferingdataproviderevents';
-import { BufferingDataProviderUtils, EditBuffer } from 'ojs/ojbufferingutils';
+import oj from './ojcore-base.js';
+import { KeyCache, DataProviderRefreshEvent } from './ojdataprovider.js';
+import { EventTargetMixin } from './ojeventtarget.js';
+import ojMap from './ojmap.js';
+import ojSet from './ojset.js';
+import { BufferingDataProviderSubmittableChangeEvent } from './ojbufferingdataproviderevents.js';
+import { BufferingDataProviderUtils, EditBuffer } from './ojbufferingutils.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

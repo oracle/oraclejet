@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { SortUtils, FilterFactory, DataProviderUtils, wrapWithAbortHandling, DataProviderMutationEvent } from 'ojs/ojdataprovider';
-import ojMap from 'ojs/ojmap';
+import oj from './ojcore-base.js';
+import { SortUtils, FilterFactory, DataProviderUtils, wrapWithAbortHandling, DataProviderMutationEvent } from './ojdataprovider.js';
+import ojMap from './ojmap.js';
 
 class BufferingDataProviderUtils {
     static fetchByKeysFromBuffer(params, editBuffer) {

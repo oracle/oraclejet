@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { warn, error } from 'ojs/ojlogger';
+import oj from './ojcore-base.js';
+import { warn, error } from './ojlogger.js';
 
 const _OJ_THEME_JSON = 'oj-theme-json';
 

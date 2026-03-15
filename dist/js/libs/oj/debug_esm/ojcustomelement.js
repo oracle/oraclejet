@@ -5,13 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore';
-import { info, warn } from 'ojs/ojlogger';
-import { CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, JetElementError } from 'ojs/ojcustomelement-utils';
-import { getElementProperties, getElementDescriptor } from 'ojs/ojcustomelement-registry';
-import { getPropertyMetadata, getFlattenedAttributes, checkEnumValues, getDefaultValue } from 'ojs/ojmetadatautils';
-import { whenDocumentReady } from 'ojs/ojbootstrap';
-import oj$1 from 'ojs/ojcore-base';
+import oj from './ojcore.js';
+import { info, warn } from './ojlogger.js';
+import { CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, JetElementError } from './ojcustomelement-utils.js';
+import { getElementProperties, getElementDescriptor } from './ojcustomelement-registry.js';
+import { getPropertyMetadata, getFlattenedAttributes, checkEnumValues, getDefaultValue } from './ojmetadatautils.js';
+import { whenDocumentReady } from './ojbootstrap.js';
+import oj$1 from './ojcore-base.js';
 
 /**
  * Custom element bridge prototype.

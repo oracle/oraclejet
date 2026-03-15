@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { stringToNodeArray } from 'ojs/ojhtmlutils';
+import oj from './ojcore-base.js';
+import { stringToNodeArray } from './ojhtmlutils.js';
 
 /**
  * @namespace

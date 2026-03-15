@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Rectangle, ResourceUtils, OutputText, TextUtils, MultilineText, Automation, EventManager, TouchEvent, KeyboardEvent, KeyboardHandler, Agent, EventFactory, BaseComponent, Rect, Container, SelectionEffectUtils, CustomDatatipPeer, SimpleObjPeer, CSSStyle, BlackBoxAnimationHandler, CustomAnimation, Animator, ParallelPlayable, AriaUtils, Displayable, BaseComponentDefaults, JsonUtils, ColorUtils, Cache, Polygon, Circle, Path, DisplayableUtils, PathUtils, PolygonUtils, LinearGradientFill, Matrix, Use, ImageMarker, ImageLoader, ClipPath, Math as Math$1, Line, Stroke, Shadow, Easing } from 'ojs/ojdvt-toolkit';
-import { LinearScaleAxisValueFormatter, DataAxisInfoMixin, BaseAxisInfo } from 'ojs/ojdvt-axis';
+import { Rectangle, ResourceUtils, OutputText, TextUtils, MultilineText, Automation, EventManager, TouchEvent, KeyboardEvent, KeyboardHandler, Agent, EventFactory, BaseComponent, Rect, Container, SelectionEffectUtils, CustomDatatipPeer, SimpleObjPeer, CSSStyle, BlackBoxAnimationHandler, CustomAnimation, Animator, ParallelPlayable, AriaUtils, Displayable, BaseComponentDefaults, JsonUtils, ColorUtils, Cache, Polygon, Circle, Path, DisplayableUtils, PathUtils, PolygonUtils, LinearGradientFill, Matrix, Use, ImageMarker, ImageLoader, ClipPath, Math as Math$1, Line, Stroke, Shadow, Easing } from './ojdvt-toolkit.js';
+import { LinearScaleAxisValueFormatter, DataAxisInfoMixin, BaseAxisInfo } from './ojdvt-axis.js';
 
 /**
  * Style related utility functions for gauge components.

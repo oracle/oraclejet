@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { GenericEvent } from 'ojs/ojeventtarget';
+import { GenericEvent } from './ojeventtarget.js';
 
 class BufferingDataProviderSubmittableChangeEvent extends GenericEvent {
     constructor(detail) {

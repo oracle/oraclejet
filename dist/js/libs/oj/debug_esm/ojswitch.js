@@ -5,12 +5,12 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcore';
-import { EditableValueUtils } from 'ojs/ojeditablevalue';
-import oj from 'ojs/ojcore-base';
+import './ojcore.js';
+import { EditableValueUtils } from './ojeditablevalue.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { isAncestorOrSelf, unwrap, recentTouchEnd } from 'ojs/ojdomutils';
-import FocusUtils from 'ojs/ojfocusutils';
+import { isAncestorOrSelf, unwrap, recentTouchEnd } from './ojdomutils.js';
+import FocusUtils from './ojfocusutils.js';
 
 (function () {
 var __oj_switch_metadata = 

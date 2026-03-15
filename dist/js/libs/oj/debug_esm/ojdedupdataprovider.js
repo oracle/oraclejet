@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { DataProviderMutationEvent } from 'ojs/ojdataprovider';
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import CachedIteratorResultsDataProvider from 'ojs/ojcachediteratorresultsdataprovider';
+import oj from './ojcore-base.js';
+import { DataProviderMutationEvent } from './ojdataprovider.js';
+import { EventTargetMixin } from './ojeventtarget.js';
+import CachedIteratorResultsDataProvider from './ojcachediteratorresultsdataprovider.js';
 
 /**
  * @license

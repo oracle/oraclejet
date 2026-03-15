@@ -5,15 +5,15 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import 'ojs/ojdvt-base';
-import { TimeAxis } from 'ojs/ojtimeaxis-toolkit';
-import { getFirstDayOfWeek } from 'ojs/ojlocaledata';
-import { IntlDateTimeConverter } from 'ojs/ojconverter-datetime';
-import * as ConverterUtils from 'ojs/ojconverterutils-i18n';
-import * as NumberConverter from 'ojs/ojconverter-number';
+import { setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import './ojdvt-base.js';
+import { TimeAxis } from './ojtimeaxis-toolkit.js';
+import { getFirstDayOfWeek } from './ojlocaledata.js';
+import { IntlDateTimeConverter } from './ojconverter-datetime.js';
+import * as ConverterUtils from './ojconverterutils-i18n.js';
+import * as NumberConverter from './ojconverter-number.js';
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.

@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import oj from 'ojs/ojcore-base';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
 
 /**

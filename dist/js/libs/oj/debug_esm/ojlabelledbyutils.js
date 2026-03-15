@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojlabel';
+import './ojlabel.js';
 
 /**
  * @class oj.LabelledByUtils

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { warn } from 'ojs/ojlogger';
+import { warn } from './ojlogger.js';
 import * as Hammer from 'hammerjs';
 import { Manager } from 'hammerjs';
 import $ from 'jquery';

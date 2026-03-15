@@ -5,27 +5,27 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { EditableValueUtils } from 'ojs/ojeditablevalue';
-import { PositionUtils, PopupService } from 'ojs/ojpopupcore';
-import 'ojs/ojinputtext';
-import 'ojs/ojlistview';
-import 'ojs/ojhighlighttext';
-import oj from 'ojs/ojcore-base';
+import { EditableValueUtils } from './ojeditablevalue.js';
+import { PositionUtils, PopupService } from './ojpopupcore.js';
+import './ojinputtext.js';
+import './ojlistview.js';
+import './ojhighlighttext.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { getReadingDirection, isAncestorOrSelf, isAncestor, addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
-import { warn, error } from 'ojs/ojlogger';
-import { getDeviceType, getDeviceRenderMode, __getTemplateEngine } from 'ojs/ojconfig';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import FocusUtils from 'ojs/ojfocusutils';
-import { DataProviderRefreshEvent, DataProviderFeatureChecker } from 'ojs/ojdataprovider';
-import Context from 'ojs/ojcontext';
-import { KeySetImpl } from 'ojs/ojkeyset';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
-import { getEnhancedDataProvider } from 'ojs/ojdataproviderfactory';
-import ListDataProviderView from 'ojs/ojlistdataproviderview';
-import TreeDataProviderView from 'ojs/ojtreedataproviderview';
-import { getTimer } from 'ojs/ojtimerutils';
-import { DebouncingDataProviderView } from 'ojs/ojdebouncingdataproviderview';
+import { getReadingDirection, isAncestorOrSelf, isAncestor, addResizeListener, removeResizeListener } from './ojdomutils.js';
+import { warn, error } from './ojlogger.js';
+import { getDeviceType, getDeviceRenderMode, __getTemplateEngine } from './ojconfig.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
+import FocusUtils from './ojfocusutils.js';
+import { DataProviderRefreshEvent, DataProviderFeatureChecker } from './ojdataprovider.js';
+import Context from './ojcontext.js';
+import { KeySetImpl } from './ojkeyset.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
+import { getEnhancedDataProvider } from './ojdataproviderfactory.js';
+import ListDataProviderView from './ojlistdataproviderview.js';
+import TreeDataProviderView from './ojtreedataproviderview.js';
+import { getTimer } from './ojtimerutils.js';
+import { DebouncingDataProviderView } from './ojdebouncingdataproviderview.js';
 
 /**
  * @private

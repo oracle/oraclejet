@@ -5,18 +5,18 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcore';
-import 'ojs/ojcomponentcore';
-import 'ojs/ojslider';
+import './ojcore.js';
+import './ojcomponentcore.js';
+import './ojslider.js';
 import 'jqueryui-amd/widgets/draggable';
-import 'ojs/ojtouchproxy';
-import 'ojs/ojeditablevalue';
-import oj from 'ojs/ojcore-base';
+import './ojtouchproxy.js';
+import './ojeditablevalue.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import Color from 'ojs/ojcolor';
-import { isTouchSupported } from 'ojs/ojdomutils';
-import { warn, error } from 'ojs/ojlogger';
-import LabeledByUtils from 'ojs/ojlabelledbyutils';
+import Color from './ojcolor.js';
+import { isTouchSupported } from './ojdomutils.js';
+import { warn, error } from './ojlogger.js';
+import LabeledByUtils from './ojlabelledbyutils.js';
 
 (function () {
   //  ojColorSpectrum class names

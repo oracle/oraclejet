@@ -5,15 +5,15 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcomponentcore';
-import oj from 'ojs/ojcore-base';
-import DvtAttributeUtils from 'ojs/ojdvt-base';
+import './ojcomponentcore.js';
+import oj from './ojcore-base.js';
+import DvtAttributeUtils from './ojdvt-base.js';
 import $ from 'jquery';
-import { error } from 'ojs/ojlogger';
-import * as ConverterUtils from 'ojs/ojconverterutils-i18n';
-import * as NumberConverter from 'ojs/ojconverter-number';
-import LabelledByUtils from 'ojs/ojlabelledbyutils';
-import { LedGauge, RatingGauge, StatusMeterGauge } from 'ojs/ojgauge-toolkit';
+import { error } from './ojlogger.js';
+import * as ConverterUtils from './ojconverterutils-i18n.js';
+import * as NumberConverter from './ojconverter-number.js';
+import LabelledByUtils from './ojlabelledbyutils.js';
+import { LedGauge, RatingGauge, StatusMeterGauge } from './ojgauge-toolkit.js';
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.

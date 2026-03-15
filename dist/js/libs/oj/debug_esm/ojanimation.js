@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { getReadingDirection } from 'ojs/ojdomutils';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import { warn, error } from 'ojs/ojlogger';
+import { getReadingDirection } from './ojdomutils.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import { warn, error } from './ojlogger.js';
 
 const _TRANSLATE = 'translate(';
 const _TRANSLATE2 = ') translateZ(0)';

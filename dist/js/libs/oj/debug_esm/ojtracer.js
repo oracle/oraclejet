@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 /**
  * Contains telemetry utility functions

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import BindingProviderImpl from 'ojs/ojkoshared';
+import BindingProviderImpl from './ojkoshared.js';
 
 /**
  * Utility class with functions for interacting with the JET binding provider.

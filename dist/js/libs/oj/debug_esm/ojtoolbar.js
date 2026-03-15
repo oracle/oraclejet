@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { _OJ_CONTAINER_ATTR, __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { warn } from 'ojs/ojlogger';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
+import { _OJ_CONTAINER_ATTR, __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import { warn } from './ojlogger.js';
 
 (function () {
   // Toolbar wrapper function, to keep "private static members" private

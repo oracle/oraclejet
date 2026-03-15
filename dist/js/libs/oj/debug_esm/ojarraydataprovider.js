@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { SortUtils } from 'ojs/ojdataprovider';
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { ArrayDataProviderImpl, getCapability, createOptimizedKeySet, createOptimizedKeyMap, getVal } from 'ojs/ojarraydataproviderimpl';
+import oj from './ojcore-base.js';
+import { SortUtils } from './ojdataprovider.js';
+import { EventTargetMixin } from './ojeventtarget.js';
+import { ArrayDataProviderImpl, getCapability, createOptimizedKeySet, createOptimizedKeyMap, getVal } from './ojarraydataproviderimpl.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojcomponentcore';
-import oj$1 from 'ojs/ojcore';
+import oj from './ojcore-base.js';
+import './ojcomponentcore.js';
+import oj$1 from './ojcore.js';
 import $ from 'jquery';
 
 (function () {

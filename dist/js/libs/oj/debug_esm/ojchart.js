@@ -5,14 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import DvtAttributeUtils from 'ojs/ojdvt-base';
-import 'ojs/ojcomponentcore';
+import oj from './ojcore-base.js';
+import DvtAttributeUtils from './ojdvt-base.js';
+import './ojcomponentcore.js';
 import $ from 'jquery';
-import * as ConverterUtils from 'ojs/ojconverterutils-i18n';
-import * as NumberConverter from 'ojs/ojconverter-number';
-import { error } from 'ojs/ojlogger';
-import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
+import * as ConverterUtils from './ojconverterutils-i18n.js';
+import * as NumberConverter from './ojconverter-number.js';
+import { error } from './ojlogger.js';
+import { Chart, SparkChart } from './ojchart-toolkit.js';
 
 /**
  * Object type that defines an axis line.

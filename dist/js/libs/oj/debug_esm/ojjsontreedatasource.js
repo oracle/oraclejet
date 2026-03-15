@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojdatasource-common';
-import { error } from 'ojs/ojlogger';
+import oj from './ojcore-base.js';
+import './ojdatasource-common.js';
+import { error } from './ojlogger.js';
 
 /**
  * A JsonNodeSet represents a collection of nodes.  The JsonNodeSet is an object returned by the success callback

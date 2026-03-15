@@ -5,27 +5,27 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { EditableValueUtils } from 'ojs/ojeditablevalue';
-import 'ojs/ojoptgroup';
-import 'ojs/ojoption';
-import 'ojs/ojhighlighttext';
-import 'ojs/ojprogress-circle';
-import oj from 'ojs/ojcore-base';
+import { EditableValueUtils } from './ojeditablevalue.js';
+import './ojoptgroup.js';
+import './ojoption.js';
+import './ojhighlighttext.js';
+import './ojprogress-circle.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { getReadingDirection, isAncestorOrSelf } from 'ojs/ojdomutils';
-import ojSet from 'ojs/ojset';
-import { getTimer } from 'ojs/ojtimerutils';
-import { parseJSONFromFontFamily, getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import Context from 'ojs/ojcontext';
-import ListDataProviderView from 'ojs/ojlistdataproviderview';
-import TreeDataProviderView from 'ojs/ojtreedataproviderview';
-import { getAbortReason } from 'ojs/ojabortreason';
-import { DebouncingDataProviderView } from 'ojs/ojdebouncingdataproviderview';
-import { PositionUtils, ZOrderUtils, PopupService } from 'ojs/ojpopupcore';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import { warn, info, error } from 'ojs/ojlogger';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
-import { setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
+import { getReadingDirection, isAncestorOrSelf } from './ojdomutils.js';
+import ojSet from './ojset.js';
+import { getTimer } from './ojtimerutils.js';
+import { parseJSONFromFontFamily, getCachedCSSVarValues } from './ojthemeutils.js';
+import Context from './ojcontext.js';
+import ListDataProviderView from './ojlistdataproviderview.js';
+import TreeDataProviderView from './ojtreedataproviderview.js';
+import { getAbortReason } from './ojabortreason.js';
+import { DebouncingDataProviderView } from './ojdebouncingdataproviderview.js';
+import { PositionUtils, ZOrderUtils, PopupService } from './ojpopupcore.js';
+import { getTranslatedString } from './ojtranslation.js';
+import { warn, info, error } from './ojlogger.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
+import { setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
 
 (function () {
   var bindingMeta = {

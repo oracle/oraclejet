@@ -5,16 +5,16 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcore';
-import 'ojs/ojjquery-hammer';
-import 'ojs/ojcomponentcore';
-import 'ojs/ojpopup';
-import oj from 'ojs/ojcore-base';
+import './ojcore.js';
+import './ojjquery-hammer.js';
+import './ojcomponentcore.js';
+import './ojpopup.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
 import { Press, Tap } from 'hammerjs';
-import { info } from 'ojs/ojlogger';
-import Context from 'ojs/ojcontext';
-import { isTouchSupported, validateURL, PRESS_HOLD_THRESHOLD, recentTouchStart, unwrap } from 'ojs/ojdomutils';
+import { info } from './ojlogger.js';
+import Context from './ojcontext.js';
+import { isTouchSupported, validateURL, PRESS_HOLD_THRESHOLD, recentTouchStart, unwrap } from './ojdomutils.js';
 
 (function () {
   /**

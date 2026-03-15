@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { getNoJQFocusHandlers as getNoJQFocusHandlers$1 } from 'ojs/ojdomutils';
-import { error, warn } from 'ojs/ojlogger';
-import { getFocusableElementsInNode as getFocusableElementsInNode$1, checkVisibility, disableElement as disableElement$1, disableAllFocusableElements as disableAllFocusableElements$1, enableAllFocusableElements as enableAllFocusableElements$1, getActionableElementsInNode as getActionableElementsInNode$1, getLogicalChildPopup as getLogicalChildPopup$1 } from 'ojs/ojkeyboardfocus-utils';
-import { DataProviderUtils } from 'ojs/ojdataprovider';
+import oj from './ojcore-base.js';
+import { getNoJQFocusHandlers as getNoJQFocusHandlers$1 } from './ojdomutils.js';
+import { error, warn } from './ojlogger.js';
+import { getFocusableElementsInNode as getFocusableElementsInNode$1, checkVisibility, disableElement as disableElement$1, disableAllFocusableElements as disableAllFocusableElements$1, enableAllFocusableElements as enableAllFocusableElements$1, getActionableElementsInNode as getActionableElementsInNode$1, getLogicalChildPopup as getLogicalChildPopup$1 } from './ojkeyboardfocus-utils.js';
+import { DataProviderUtils } from './ojdataprovider.js';
 
 /**
  * This class contains utility methods used by the data collection components (DataGrid, Listview, and Table).

@@ -5,16 +5,16 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojoption';
-import oj from 'ojs/ojcore-base';
+import './ojoption.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { isTouchSupported, recentTouchEnd, unwrap } from 'ojs/ojdomutils';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { __GetWidgetConstructor, _OJ_CONTAINER_ATTR, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import ChildMutationObserver from 'ojs/ojchildmutationobserver';
-import LabelledByUtils from 'ojs/ojlabelledbyutils';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
-import 'ojs/ojbutton2';
+import { isTouchSupported, recentTouchEnd, unwrap } from './ojdomutils.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
+import { __GetWidgetConstructor, _OJ_CONTAINER_ATTR, setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import ChildMutationObserver from './ojchildmutationobserver.js';
+import LabelledByUtils from './ojlabelledbyutils.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
+import './ojbutton2.js';
 
 var __oj_menu_button_metadata = 
 {

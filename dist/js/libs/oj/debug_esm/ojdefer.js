@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import BindingProviderImpl from 'ojs/ojkoshared';
+import BindingProviderImpl from './ojkoshared.js';
 import { bindingHandlers, applyBindingsToDescendants } from 'knockout';
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 
 (function () {
   BindingProviderImpl.addPostprocessor({

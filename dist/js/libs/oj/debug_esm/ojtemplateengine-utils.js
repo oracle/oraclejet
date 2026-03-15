@@ -7,11 +7,11 @@
  */
 import { jsx } from 'preact/jsx-runtime';
 import { render } from 'preact';
-import oj from 'ojs/ojcore-base';
-import { CACHED_BINDING_PROVIDER, convertPrivatePropFromPreact, transformPreactValue, ElementUtils, KoBindingUtils } from 'ojs/ojcustomelement-utils';
-import { getPropertiesForElementTag } from 'ojs/ojcustomelement-registry';
-import { getPropertyMetadata } from 'ojs/ojmetadatautils';
-import { info } from 'ojs/ojlogger';
+import oj from './ojcore-base.js';
+import { CACHED_BINDING_PROVIDER, convertPrivatePropFromPreact, transformPreactValue, ElementUtils, KoBindingUtils } from './ojcustomelement-utils.js';
+import { getPropertiesForElementTag } from './ojcustomelement-registry.js';
+import { getPropertyMetadata } from './ojmetadatautils.js';
+import { info } from './ojlogger.js';
 
 const ROW = Symbol('row');
 class PreactTemplate {

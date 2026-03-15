@@ -6,7 +6,7 @@
  * @ignore
  */
 import { jsx } from 'preact/jsx-runtime';
-import 'ojs/ojmenu';
+import './ojmenu.js';
 import { Component } from 'preact';
 
 class VMenu extends Component {

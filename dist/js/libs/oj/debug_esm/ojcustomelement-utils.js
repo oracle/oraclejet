@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { isElementRegistered, getElementRegistration, getElementDescriptor, getMetadata, getElementProperties } from 'ojs/ojcustomelement-registry';
-import Context from 'ojs/ojcontext';
-import { warn } from 'ojs/ojlogger';
-import { verifyThemeVersion } from 'ojs/ojthemeutils';
+import oj from './ojcore-base.js';
+import { isElementRegistered, getElementRegistration, getElementDescriptor, getMetadata, getElementProperties } from './ojcustomelement-registry.js';
+import Context from './ojcontext.js';
+import { warn } from './ojlogger.js';
+import { verifyThemeVersion } from './ojthemeutils.js';
 
 const _SUPPORTED_TYPES_MAP = {};
 /**
@@ -125,7 +125,7 @@ ElementUtils._RESERVED_TAGS = new Set([
 ElementUtils._ELEMENT_NAME_REGEXP = /^[a-z][.0-9_a-z]*-[-.0-9_a-z]*$/;
 
 /**
- * This list should be kept in sync with GlobalProps from "ojs/ojvcomponent"
+ * This list should be kept in sync with GlobalProps from './ojvcomponent.js'
  *
  * This list provides a map of global property to attribute names
  * where the attribute name is used for both key and value if no property

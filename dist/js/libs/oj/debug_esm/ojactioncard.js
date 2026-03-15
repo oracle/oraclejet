@@ -6,10 +6,10 @@
  * @ignore
  */
 import { jsx } from 'preact/jsx-runtime';
-import { Root, customElement } from 'ojs/ojvcomponent';
+import { Root, customElement } from './ojvcomponent.js';
 import { Component, createRef } from 'preact';
-import { recentPointer } from 'ojs/ojdomutils';
-import { isEventClickthroughDisabled } from 'ojs/ojdatacollection-common';
+import { recentPointer } from './ojdomutils.js';
+import { isEventClickthroughDisabled } from './ojdatacollection-common.js';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;

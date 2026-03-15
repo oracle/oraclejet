@@ -10,20 +10,20 @@ import 'jqueryui-amd/unique-id';
 import 'jqueryui-amd/keycode';
 import 'jqueryui-amd/focusable';
 import 'jqueryui-amd/tabbable';
-import oj from 'ojs/ojcore';
+import oj from './ojcore.js';
 import $ from 'jquery';
-import Message from 'ojs/ojmessaging';
-import { info, error } from 'ojs/ojlogger';
-import { getDefaultValue, getPropertyMetadata, getFlattenedAttributes } from 'ojs/ojmetadatautils';
-import oj$1 from 'ojs/ojcore-base';
-import { fixResizeListeners, dispatchEvent, recentTouchEnd, isTouchSupported, makeFocusable, getReadingDirection } from 'ojs/ojdomutils';
-import 'ojs/ojcustomelement';
-import { CustomElementUtils, ElementUtils, transformPreactValue, addPrivatePropGetterSetters, ElementState, AttributeUtils, JetElementError } from 'ojs/ojcustomelement-utils';
-import { isElementRegistered, getElementProperties, registerElement } from 'ojs/ojcustomelement-registry';
-import { DefaultsUtils } from 'ojs/ojdefaultsutils';
-import { applyParameters, getComponentTranslations } from 'ojs/ojtranslation';
-import 'ojs/ojfocusutils';
-import { startDetectContextMenuGesture, stopDetectContextMenuGesture } from 'ojs/ojgestureutils';
+import Message from './ojmessaging.js';
+import { info, error } from './ojlogger.js';
+import { getDefaultValue, getPropertyMetadata, getFlattenedAttributes } from './ojmetadatautils.js';
+import oj$1 from './ojcore-base.js';
+import { fixResizeListeners, dispatchEvent, recentTouchEnd, isTouchSupported, makeFocusable, getReadingDirection } from './ojdomutils.js';
+import './ojcustomelement.js';
+import { CustomElementUtils, ElementUtils, transformPreactValue, addPrivatePropGetterSetters, ElementState, AttributeUtils, JetElementError } from './ojcustomelement-utils.js';
+import { isElementRegistered, getElementProperties, registerElement } from './ojcustomelement-registry.js';
+import { DefaultsUtils } from './ojdefaultsutils.js';
+import { applyParameters, getComponentTranslations } from './ojtranslation.js';
+import './ojfocusutils.js';
+import { startDetectContextMenuGesture, stopDetectContextMenuGesture } from './ojgestureutils.js';
 
 /**
  * This picks a strategy for where to put each piece of information

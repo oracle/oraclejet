@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import ArrayDataProvider from 'ojs/ojarraydataprovider';
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { warn } from 'ojs/ojlogger';
+import oj from './ojcore-base.js';
+import ArrayDataProvider from './ojarraydataprovider.js';
+import { EventTargetMixin } from './ojeventtarget.js';
+import { warn } from './ojlogger.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -334,7 +334,7 @@ import { warn } from 'ojs/ojlogger';
  *   "FetchByKeysParameters","ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters", "FetchByOffsetResults",
  *   "FetchListResult","FetchListParameters"]}
  * @ojtsexample
- * import { MutableArrayTreeDataProvider } from "ojs/ojmutablearraytreedataprovider";
+ * import { MutableArrayTreeDataProvider } from './ojmutablearraytreedataprovider.js';
  * // First initialize the tree data.  This can be defined locally or read from file.
  * const treeData = [
  *                  {"attr": {"id": "dir1", "title": "Directory 1"},

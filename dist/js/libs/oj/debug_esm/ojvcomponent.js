@@ -8,19 +8,19 @@
 import { forwardRef } from 'preact/compat';
 import { jsx } from 'preact/jsx-runtime';
 import { h, options, Component, createRef, render, cloneElement, Fragment, createContext } from 'preact';
-import { JetElementError, CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, publicToPrivateName, toSymbolizedValue, LifecycleElementState, ElementState, addPrivatePropGetterSetters } from 'ojs/ojcustomelement-utils';
-import { getElementRegistration, isElementRegistered, isVComponent, getElementDescriptor, registerElement as registerElement$1 } from 'ojs/ojcustomelement-registry';
+import { JetElementError, CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, publicToPrivateName, toSymbolizedValue, LifecycleElementState, ElementState, addPrivatePropGetterSetters } from './ojcustomelement-utils.js';
+import { getElementRegistration, isElementRegistered, isVComponent, getElementDescriptor, registerElement as registerElement$1 } from './ojcustomelement-registry.js';
 import { useLayoutEffect, useContext, useMemo, useCallback } from 'preact/hooks';
 import { EnvironmentContext, RootEnvironmentProvider } from '@oracle/oraclejet-preact/UNSAFE_Environment';
-import oj from 'ojs/ojcore-base';
-import { patchSlotParent, OJ_SLOT_REMOVE } from 'ojs/ojpreact-patch';
-import { error, info, warn } from 'ojs/ojlogger';
-import { getPropertyMetadata, getComplexPropertyMetadata, checkEnumValues, getFlattenedAttributes, deepFreeze } from 'ojs/ojmetadatautils';
+import oj from './ojcore-base.js';
+import { patchSlotParent, OJ_SLOT_REMOVE } from './ojpreact-patch.js';
+import { error, info, warn } from './ojlogger.js';
+import { getPropertyMetadata, getComplexPropertyMetadata, checkEnumValues, getFlattenedAttributes, deepFreeze } from './ojmetadatautils.js';
 import { LayerContext } from '@oracle/oraclejet-preact/UNSAFE_Layer';
-import { getLayerContext } from 'ojs/ojlayerutils';
-import { getLocale } from 'ojs/ojconfig';
-import Context from 'ojs/ojcontext';
-import { getTranslationBundlePromise, registerTranslationBundleLoaders } from 'ojs/ojtranslationbundleutils';
+import { getLayerContext } from './ojlayerutils.js';
+import { getLocale } from './ojconfig.js';
+import Context from './ojcontext.js';
+import { getTranslationBundlePromise, registerTranslationBundleLoaders } from './ojtranslationbundleutils.js';
 import { BusyStateContext } from '@oracle/oraclejet-preact/hooks/UNSAFE_useBusyStateContext';
 
 let _slotIdCount = 0;
@@ -1651,7 +1651,7 @@ if (isPreactDebugEnabled) {
  * custom element tag via the <a href="#customElement">&#64;customElement</a> decorator:
  * </p>
  * <pre class="prettyprint"><code>import { Component, ComponentChild } from 'preact';
- * import { customElement, GlobalProps } from 'ojs/ojvcomponent';
+ * import { customElement, GlobalProps } from './ojvcomponent.js';
  *
  * &#64;customElement('oj-hello-world')
  * export class HelloWorld extends Component&lt;GlobalProps&gt; {
@@ -1663,7 +1663,7 @@ if (isPreactDebugEnabled) {
  * Function-based components register their custom element tag with the VComponent
  * framework via the <a href="#registerCustomElement">registerCustomElement</a>
  * function:
- * <pre class="prettyprint"><code>import { registerCustomElement } from 'ojs/ojvcomponent';
+ * <pre class="prettyprint"><code>import { registerCustomElement } from './ojvcomponent.js';
  *
  * export const HelloWorld = registerCustomElement(
  *   'oj-hello-world',
@@ -1786,7 +1786,7 @@ if (isPreactDebugEnabled) {
  *   the above Props type (including some default values) ends up looking like:
  * </p>
  * <pre class="prettyprint"><code>import { Component, ComponentChild } from 'preact';
- * import { customElement, ExtendGlobalProps } from 'ojs/ojvcomponent';
+ * import { customElement, ExtendGlobalProps } from './ojvcomponent.js';
  *
  * type Props = {
  *   greeting?: string;
@@ -1875,7 +1875,7 @@ if (isPreactDebugEnabled) {
  *   VComponent-specific <a href="#Slot">Slot</a> type:
  * </p>
  * <pre class="prettyprint"><code>import { Component, ComponentChildren } from 'preact';
- * import { customElement, ExtendGlobalProps, Slot } from 'ojs/ojvcomponent';
+ * import { customElement, ExtendGlobalProps, Slot } from './ojvcomponent.js';
  *
  * type Props = {
  *   // This indicates that the VComponent accepts arbitrary
@@ -1967,7 +1967,7 @@ if (isPreactDebugEnabled) {
  *   type is used:
  * </p>
  * <pre class="prettyprint"><code>import { Component } from "preact";
- * import { customElement, ExtendGlobalProps, TemplateSlot } from "ojs/ojvcomponent";
+ * import { customElement, ExtendGlobalProps, TemplateSlot } from './ojvcomponent.js';
  *
  * type Props = {
  *   // This indicates that the VComponent exposes a template
@@ -2035,7 +2035,7 @@ if (isPreactDebugEnabled) {
  *   following declaration indicates that the component fires a
  *   "greetingComplete" event:
  * </p>
- * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, Action } from 'ojs/ojvcomponent';
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, Action } from './ojvcomponent.js';
  *
  * type Props = {
  *   onGreetingComplete?: Action;
@@ -2150,7 +2150,7 @@ if (isPreactDebugEnabled) {
  *   Can be converted into a writeback property by adding a second property named
  *   "onValueChanged":
  * </p>
- * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, PropertyChanged } from "ojs/ojvcomponent";
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, PropertyChanged } from './ojvcomponent.js';
  *
  * type Props = {
  *   value?: string;
@@ -2236,7 +2236,7 @@ if (isPreactDebugEnabled) {
  *   exposes "greeting" and "name" properties and also observes the global
  *   "id" and "tabIndex" props:
  * </p>
- * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, ObservedGlobalProps } from 'ojs/ojvcomponent';
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, ObservedGlobalProps } from './ojvcomponent.js';
  *
  * type Props = {
  *   greeting?: string;
@@ -2259,7 +2259,7 @@ if (isPreactDebugEnabled) {
  *   indexed access type reference to the same global prop. Note that the following variation of the
  *   previous example is functionally equivalent:
  * </p>
- * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, GlobalProps, ObservedGlobalProps } from 'ojs/ojvcomponent';
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, GlobalProps, ObservedGlobalProps } from './ojvcomponent.js';
  *
  * type Props = {
  *   greeting?: string;
@@ -2289,7 +2289,7 @@ if (isPreactDebugEnabled) {
  * <p>
  *   For example, consider this case of a VComponent that renders a link:
  * </p>
- * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, ObservedGlobalProps } from "ojs/ojvcomponent";
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, ObservedGlobalProps } from './ojvcomponent.js';
  * import { Component, ComponentChild } from "preact";
  *
  * type Props = {
@@ -2320,7 +2320,7 @@ if (isPreactDebugEnabled) {
  *   named "Root".  The <a href="#Root">Root</a> component is exported from the
  *   "ojs/ojvcomponent" module, so we add this in our import list:
  * </p>
- * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, ObservedGlobalProps, Root } from "ojs/ojvcomponent";
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, ObservedGlobalProps, Root } from './ojvcomponent.js';
  * </code></pre>
  * <p>
  *   And then we can include the Root component in the virtual DOM tree,
@@ -2617,7 +2617,7 @@ if (isPreactDebugEnabled) {
  *   ExtendGlobalProps is a convenience type for combining component-specific
  *   properties with GlobalProps, e.g.:
  * </p>
- * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps } from 'ojs/ojvcomponent';
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps } from './ojvcomponent.js';
  *
  * // These are the component-specific props:
  * type Props = {
@@ -2874,7 +2874,7 @@ if (isPreactDebugEnabled) {
  *   with Preact's ComponentChildren type or with the <a href="#Slot">Slot</a> type as needed:
  * </p>
  * <pre class="prettyprint"><code>import { Component, ComponentChildren } from 'preact';
- * import { customElement, ExtendGlobalProps, ImplicitBusyContext, Slot } from 'ojs/ojvcomponent';
+ * import { customElement, ExtendGlobalProps, ImplicitBusyContext, Slot } from './ojvcomponent.js';
  *
  * type Props = {
  *   // This indicates that the VComponent accepts arbitrary (non-slot) children,
@@ -2986,7 +2986,7 @@ if (isPreactDebugEnabled) {
  * import { h, Ref } from 'preact';
  * import { useImperativeHandle, useRef } from 'preact/hooks';
  * import { forwardRef } from 'preact/compat';
- * import { registerCustomElement } from 'ojs/ojvcomponent';
+ * import { registerCustomElement } from './ojvcomponent.js';
  *
  * type Props = Readonly<{
  *   labelEdge?: 'inside' | 'start' | 'top';
@@ -3149,9 +3149,9 @@ if (isPreactDebugEnabled) {
  *   Putting this all together, we end up with a component like this:
  * </p>
  * <pre class="prettyprint"><code>import { Component, ComponentChild } from 'preact';
- * import { customElement, ExtendGlobalProps, ObservedGlobalProps, getUniqueId } from 'ojs/ojvcomponent';
- * import "ojs/ojinputtext";
- * import "ojs/ojlabel";
+ * import { customElement, ExtendGlobalProps, ObservedGlobalProps, getUniqueId } from './ojvcomponent.js';
+ * import './ojinputtext.js';
+ * import './ojlabel.js';
  *
  * export type Props = ObservedGlobalProps&lt;'id'&gt;;
  *
@@ -3208,7 +3208,7 @@ if (isPreactDebugEnabled) {
  *   Here is a simple example:
  * </p>
  * <pre class="prettyprint"><code>
- * import { registerCustomElement } from 'ojs/ojvcomponent';
+ * import { registerCustomElement } from './ojvcomponent.js';
  *
  * export type Props = Readonly<{
  *   message?: string;
@@ -3639,7 +3639,7 @@ class VComponentState extends LifecycleElementState {
      * Once loaded, the template engine is cached in a class variable.
      */
     _getTemplateEnginePromise() {
-        return import('ojs/ojvcomponent-template').then((eng) => {
+        return import('./ojvcomponent-template.js').then((eng) => {
             VComponentState._cachedTemplateEngine = eng;
         });
     }

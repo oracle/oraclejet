@@ -5,13 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import { virtualElements, applyBindingsToDescendants, contextFor, observable, ignoreDependencies, applyBindings, cleanNode, bindingHandlers, utils, computed } from 'knockout';
-import 'ojs/ojcustomelement';
-import { CustomElementUtils, AttributeUtils } from 'ojs/ojcustomelement-utils';
-import BindingProviderImpl from 'ojs/ojkoshared';
-import { warn, error } from 'ojs/ojlogger';
-import TemplateEngine from 'ojs/ojtemplateengine-ko';
+import './ojcustomelement.js';
+import { CustomElementUtils, AttributeUtils } from './ojcustomelement-utils.js';
+import BindingProviderImpl from './ojkoshared.js';
+import { warn, error } from './ojlogger.js';
+import TemplateEngine from './ojtemplateengine-ko.js';
 
 /**
  * @ignore

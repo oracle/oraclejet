@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import DataSourceAdapter from 'ojs/ojdataprovideradapter-base';
-import { DataProviderMutationEvent, DataProviderRefreshEvent, FetchByKeysMixin, FetchByOffsetMixin } from 'ojs/ojdataprovider';
-import KeyMap from 'ojs/ojmap';
+import oj from './ojcore-base.js';
+import DataSourceAdapter from './ojdataprovideradapter-base.js';
+import { DataProviderMutationEvent, DataProviderRefreshEvent, FetchByKeysMixin, FetchByOffsetMixin } from './ojdataprovider.js';
+import KeyMap from './ojmap.js';
 
 class TreeDataSourceAdapter extends DataSourceAdapter {
     constructor(treeDataSource) {

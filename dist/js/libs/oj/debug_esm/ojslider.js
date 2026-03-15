@@ -5,14 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcore';
-import { EditableValueUtils } from 'ojs/ojeditablevalue';
+import './ojcore.js';
+import { EditableValueUtils } from './ojeditablevalue.js';
 import 'jqueryui-amd/widgets/draggable';
-import 'ojs/ojtouchproxy';
-import oj from 'ojs/ojcore-base';
+import './ojtouchproxy.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import { getReadingDirection, unwrap } from 'ojs/ojdomutils';
+import { getTranslatedString } from './ojtranslation.js';
+import { getReadingDirection, unwrap } from './ojdomutils.js';
 
 (function () {
   var bindingMeta = {

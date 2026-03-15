@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcustomelement';
-import { CustomElementUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
-import { isElementRegistered } from 'ojs/ojcustomelement-registry';
+import './ojcustomelement.js';
+import { CustomElementUtils, ElementUtils } from './ojcustomelement-utils.js';
+import { isElementRegistered } from './ojcustomelement-registry.js';
 
 /**
  * Child mutation observer.

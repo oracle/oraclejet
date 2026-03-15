@@ -5,17 +5,17 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import DvtAttributeUtils from 'ojs/ojdvt-base';
-import * as DiagramUtils from 'ojs/ojdiagram-utils';
+import oj from './ojcore-base.js';
+import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import DvtAttributeUtils from './ojdvt-base.js';
+import * as DiagramUtils from './ojdiagram-utils.js';
 import $ from 'jquery';
-import { Diagram } from 'ojs/ojdiagram-toolkit';
-import * as Logger from 'ojs/ojlogger';
-import { error } from 'ojs/ojlogger';
-import { KeySetImpl } from 'ojs/ojkeyset';
-import 'ojs/ojdatasource-common';
-import { enableAllFocusableElements, disableAllFocusableElements, getActionableElementsInNode, getFocusableElementsInNode } from 'ojs/ojkeyboardfocus-utils';
+import { Diagram } from './ojdiagram-toolkit.js';
+import * as Logger from './ojlogger.js';
+import { error } from './ojlogger.js';
+import { KeySetImpl } from './ojkeyset.js';
+import './ojdatasource-common.js';
+import { enableAllFocusableElements, disableAllFocusableElements, getActionableElementsInNode, getFocusableElementsInNode } from './ojkeyboardfocus-utils.js';
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.

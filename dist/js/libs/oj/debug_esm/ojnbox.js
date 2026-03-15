@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojcomponentcore';
-import DvtAttributeUtils from 'ojs/ojdvt-base';
+import oj from './ojcore-base.js';
+import './ojcomponentcore.js';
+import DvtAttributeUtils from './ojdvt-base.js';
 import $ from 'jquery';
-import { NBox } from 'ojs/ojnbox-toolkit';
+import { NBox } from './ojnbox-toolkit.js';
 
 var __oj_n_box_metadata = 
 {

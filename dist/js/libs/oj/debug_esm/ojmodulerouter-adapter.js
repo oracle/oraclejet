@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { error } from 'ojs/ojlogger';
-import { createConfig } from 'ojs/ojmodule-element-utils';
-import * as ModuleAnimations from 'ojs/ojmoduleanimations';
+import { error } from './ojlogger.js';
+import { createConfig } from './ojmodule-element-utils.js';
+import * as ModuleAnimations from './ojmoduleanimations.js';
 import { observable } from 'knockout';
 
 /**

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { IntlNumberConverter } from 'ojs/ojconverter-number';
+import { IntlNumberConverter } from './ojconverter-number.js';
 
 /**
  * Calculated axis information and drawable creation.  This class should

@@ -6,9 +6,9 @@
  * @ignore
  */
 import { jsx } from 'preact/jsx-runtime';
-import { Root, customElement } from 'ojs/ojvcomponent';
+import { Root, customElement } from './ojvcomponent.js';
 import { Component, createRef } from 'preact';
-import { recentPointer } from 'ojs/ojdomutils';
+import { recentPointer } from './ojdomutils.js';
 import { useEffect } from 'preact/hooks';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {

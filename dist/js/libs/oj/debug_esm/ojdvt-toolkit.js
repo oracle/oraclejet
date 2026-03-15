@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
 
 /**
  * Base object for HTML toolkit derivative objects.

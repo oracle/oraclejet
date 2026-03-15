@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import { bindingHandlers, utils, virtualElements, computed, ignoreDependencies, cleanNode, contextFor, bindingProvider, applyBindings } from 'knockout';
-import { error } from 'ojs/ojlogger';
-import Context from 'ojs/ojcontext';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import { error } from './ojlogger.js';
+import Context from './ojcontext.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 /**
  * ojModule Conventions

@@ -5,17 +5,17 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import Context from 'ojs/ojcontext';
-import { applyRendererContent, getEventDetail, isRequestIdleCallbackSupported, calculateOffsetTop, getDefaultScrollBarWidth, isFetchAborted, isElementIntersectingScrollerBounds, isIterateAfterDoneNotAllowed } from 'ojs/ojdatacollection-common';
-import { __getTemplateEngine } from 'ojs/ojconfig';
-import { fadeOut, fadeIn } from 'ojs/ojanimation';
-import { info, log, error } from 'ojs/ojlogger';
-import DomScroller from 'ojs/ojdomscroller';
-import KeySet from 'ojs/ojset';
-import KeyMap from 'ojs/ojmap';
-import { getAbortReason } from 'ojs/ojabortreason';
+import Context from './ojcontext.js';
+import { applyRendererContent, getEventDetail, isRequestIdleCallbackSupported, calculateOffsetTop, getDefaultScrollBarWidth, isFetchAborted, isElementIntersectingScrollerBounds, isIterateAfterDoneNotAllowed } from './ojdatacollection-common.js';
+import { __getTemplateEngine } from './ojconfig.js';
+import { fadeOut, fadeIn } from './ojanimation.js';
+import { info, log, error } from './ojlogger.js';
+import DomScroller from './ojdomscroller.js';
+import KeySet from './ojset.js';
+import KeyMap from './ojmap.js';
+import { getAbortReason } from './ojabortreason.js';
 
 /**
  * Base class for IteratingDataProviderContentHandler and TreeDataProviderContentHandler

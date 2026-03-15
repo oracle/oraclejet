@@ -5,17 +5,17 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { getCachedCSSVarValues, parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import oj from './ojcore-base.js';
+import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import { getCachedCSSVarValues, parseJSONFromFontFamily } from './ojthemeutils.js';
 import $ from 'jquery';
-import { isTouchSupported, getReadingDirection } from 'ojs/ojdomutils';
-import { isMobileTouchDevice, disableElement } from 'ojs/ojdatacollection-common';
-import { NavigationListDndContext } from 'ojs/ojnavigationlistdnd';
-import 'ojs/ojlistview';
-import Context from 'ojs/ojcontext';
-import 'ojs/ojmenu';
-import 'ojs/ojbutton';
+import { isTouchSupported, getReadingDirection } from './ojdomutils.js';
+import { isMobileTouchDevice, disableElement } from './ojdatacollection-common.js';
+import { NavigationListDndContext } from './ojnavigationlistdnd.js';
+import './ojlistview.js';
+import Context from './ojcontext.js';
+import './ojmenu.js';
+import './ojbutton.js';
 
 (function () {
 var __oj_navigation_list_metadata = 

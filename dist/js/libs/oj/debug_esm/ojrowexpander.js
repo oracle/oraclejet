@@ -5,13 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojdatasource-common';
-import oj from 'ojs/ojcore-base';
+import './ojdatasource-common.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { isMetaKeyPressed } from 'ojs/ojdomutils';
-import { __GetWidgetConstructor } from 'ojs/ojcomponentcore';
-import { warn } from 'ojs/ojlogger';
-import { isSpaceBarKeyEvent, isEnterKeyEvent, isArrowRightKeyEvent, isArrowLeftKeyEvent, isNumberFiveKeyEvent } from 'ojs/ojdatacollection-common';
+import { isMetaKeyPressed } from './ojdomutils.js';
+import { __GetWidgetConstructor } from './ojcomponentcore.js';
+import { warn } from './ojlogger.js';
+import { isSpaceBarKeyEvent, isEnterKeyEvent, isArrowRightKeyEvent, isArrowLeftKeyEvent, isNumberFiveKeyEvent } from './ojdatacollection-common.js';
 
 (function () {
 var __oj_row_expander_metadata = 

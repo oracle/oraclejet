@@ -11,13 +11,13 @@
  */
 const TEST_OBJ_NAME = '__ojwebdrivertest_proxy';
 const modules = {
-    BusyContext: () => import('ojs/ojcontext').then(({ default: Context }) => Context.getPageContext().getBusyContext()),
+    BusyContext: () => import('./ojcontext.js').then(({ default: Context }) => Context.getPageContext().getBusyContext()),
     Chai: () => import('chai').then(({ default: Chai }) => Chai),
-    Core: () => import('ojs/ojcore-base').then(({ default: Core }) => Core),
-    CspExpressionEvaluator: () => import('ojs/ojcspexpressionevaluator').then(({ default: CspExpressionEvaluator }) => CspExpressionEvaluator),
-    CustomElementUtils: () => import('ojs/ojcustomelement-utils').then(({ CustomElementUtils }) => CustomElementUtils),
-    KeySet: () => import('ojs/ojkeyset'),
-    KeyUtils: () => import('ojs/ojcore-base').then(({ default: { KeyUtils } }) => KeyUtils),
+    Core: () => import('./ojcore-base.js').then(({ default: Core }) => Core),
+    CspExpressionEvaluator: () => import('./ojcspexpressionevaluator.js').then(({ default: CspExpressionEvaluator }) => CspExpressionEvaluator),
+    CustomElementUtils: () => import('./ojcustomelement-utils.js').then(({ CustomElementUtils }) => CustomElementUtils),
+    KeySet: () => import('./ojkeyset.js'),
+    KeyUtils: () => import('./ojcore-base.js').then(({ default: { KeyUtils } }) => KeyUtils),
     Knockout: () => import('knockout')
 };
 const cachedModules = {};

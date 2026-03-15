@@ -5,16 +5,16 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { PositionUtils, ZOrderUtils, PopupService, PopupLiveRegion, PopupSkipLink, PopupWhenReadyMediator } from 'ojs/ojpopupcore';
-import oj from 'ojs/ojcore-base';
+import { PositionUtils, ZOrderUtils, PopupService, PopupLiveRegion, PopupSkipLink, PopupWhenReadyMediator } from './ojpopupcore.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import Context from 'ojs/ojcontext';
-import { isAncestorOrSelf, getCSSLengthAsInt, removeResizeListener, addResizeListener, isTouchSupported } from 'ojs/ojdomutils';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { startAnimation } from 'ojs/ojanimation';
-import FocusUtils from 'ojs/ojfocusutils';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import Context from './ojcontext.js';
+import { isAncestorOrSelf, getCSSLengthAsInt, removeResizeListener, addResizeListener, isTouchSupported } from './ojdomutils.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
+import { setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import { startAnimation } from './ojanimation.js';
+import FocusUtils from './ojfocusutils.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 (function () {
   /**

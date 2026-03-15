@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { getElementRegistration } from 'ojs/ojcustomelement-registry';
+import { getElementRegistration } from './ojcustomelement-registry.js';
 
 const STATIC_PROPAGATION = Symbol('StaticContextPropagation');
 const CONSUMED_CONTEXT = Symbol('ConsumedContext');

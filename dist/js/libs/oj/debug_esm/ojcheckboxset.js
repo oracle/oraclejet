@@ -5,15 +5,15 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcomponentcore';
-import { EditableValueUtils } from 'ojs/ojeditablevalue';
-import 'ojs/ojradiocheckbox';
-import 'ojs/ojoption';
-import oj from 'ojs/ojcore-base';
+import './ojcomponentcore.js';
+import { EditableValueUtils } from './ojeditablevalue.js';
+import './ojradiocheckbox.js';
+import './ojoption.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { warn } from 'ojs/ojlogger';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import LabeledByUtils from 'ojs/ojlabelledbyutils';
+import { warn } from './ojlogger.js';
+import { getTranslatedString } from './ojtranslation.js';
+import LabeledByUtils from './ojlabelledbyutils.js';
 
 (function () {
 var __oj_checkboxset_metadata = 

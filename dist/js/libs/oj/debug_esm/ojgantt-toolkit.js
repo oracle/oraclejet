@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { BaseComponentDefaults, CSSStyle, Agent, Container, ToolkitUtils, Path, Stroke, PathUtils, KeyboardEvent, MouseEvent, Rect, OutputText, IconButton, Displayable, Obj, SelectionEffectUtils, ColorUtils, ResourceUtils, TouchEvent, Rectangle, AriaUtils, EventFactory, Point, EventManager, ClipPath, TextUtils, SolidFill, JsonUtils, Line, AnimFadeIn, Easing, AnimFadeOut, CustomAnimation, ParallelPlayable, Playable, Animator, Automation, SvgShapeUtils, SimpleScrollbar, LayoutUtils, Dimension, MarqueeHandler, Matrix, SelectionHandler } from 'ojs/ojdvt-toolkit';
-import { TimeComponent, TimeComponentEventManager, TimeComponentKeyboardHandler } from 'ojs/ojdvt-timecomponent';
-import { TimeAxisUtils as TimeAxisUtils$1, TimeAxis } from 'ojs/ojtimeaxis-toolkit';
+import { BaseComponentDefaults, CSSStyle, Agent, Container, ToolkitUtils, Path, Stroke, PathUtils, KeyboardEvent, MouseEvent, Rect, OutputText, IconButton, Displayable, Obj, SelectionEffectUtils, ColorUtils, ResourceUtils, TouchEvent, Rectangle, AriaUtils, EventFactory, Point, EventManager, ClipPath, TextUtils, SolidFill, JsonUtils, Line, AnimFadeIn, Easing, AnimFadeOut, CustomAnimation, ParallelPlayable, Playable, Animator, Automation, SvgShapeUtils, SimpleScrollbar, LayoutUtils, Dimension, MarqueeHandler, Matrix, SelectionHandler } from './ojdvt-toolkit.js';
+import { TimeComponent, TimeComponentEventManager, TimeComponentKeyboardHandler } from './ojdvt-timecomponent.js';
+import { TimeAxisUtils as TimeAxisUtils$1, TimeAxis } from './ojtimeaxis-toolkit.js';
 
 /**
  * Style related utility functions for Gantt.

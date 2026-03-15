@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore';
+import oj from './ojcore.js';
 import $ from 'jquery';
-import Context from 'ojs/ojcontext';
-import Message from 'ojs/ojmessaging';
-import 'ojs/ojknockout';
+import Context from './ojcontext.js';
+import Message from './ojmessaging.js';
+import './ojknockout.js';
 import { isWriteableObservable, isObservable } from 'knockout';
 
 /**

@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
+import oj from './ojcore-base.js';
+import { setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
 import $ from 'jquery';
-import 'ojs/ojdvt-base';
-import { TagCloud } from 'ojs/ojtagcloud-toolkit';
+import './ojdvt-base.js';
+import { TagCloud } from './ojtagcloud-toolkit.js';
 
 /**
  * <table class="keyboard-table">

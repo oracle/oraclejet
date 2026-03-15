@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import CachedIteratorResultsDataProvider from 'ojs/ojcachediteratorresultsdataprovider';
-import CachedFetchByOffsetResultsDataProvider from 'ojs/ojcachedfetchbyoffsetresultsdataprovider';
-import DedupDataProvider from 'ojs/ojdedupdataprovider';
-import MutateEventFilteringDataProvider from 'ojs/ojmutateeventfilteringdataprovider';
+import { EventTargetMixin } from './ojeventtarget.js';
+import CachedIteratorResultsDataProvider from './ojcachediteratorresultsdataprovider.js';
+import CachedFetchByOffsetResultsDataProvider from './ojcachedfetchbyoffsetresultsdataprovider.js';
+import DedupDataProvider from './ojdedupdataprovider.js';
+import MutateEventFilteringDataProvider from './ojmutateeventfilteringdataprovider.js';
 
 /**
  *

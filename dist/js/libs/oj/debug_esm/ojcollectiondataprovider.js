@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { FilterUtils } from 'ojs/ojdataprovider';
-import { CollectionTableDataSource } from 'ojs/ojcollectiontabledatasource';
-import 'ojs/ojdataprovideradapter';
+import oj from './ojcore-base.js';
+import { FilterUtils } from './ojdataprovider.js';
+import { CollectionTableDataSource } from './ojcollectiontabledatasource.js';
+import './ojdataprovideradapter.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

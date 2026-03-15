@@ -5,12 +5,12 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojcomponentcore';
+import oj from './ojcore-base.js';
+import './ojcomponentcore.js';
 import $ from 'jquery';
-import 'ojs/ojdvt-base';
-import { Treemap } from 'ojs/ojdvt-treeview';
-import { AllKeySetImpl } from 'ojs/ojkeyset';
+import './ojdvt-base.js';
+import { Treemap } from './ojdvt-treeview.js';
+import { AllKeySetImpl } from './ojkeyset.js';
 
 var __oj_treemap_metadata = 
 {

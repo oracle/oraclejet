@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import SyncValidatorAdapter from 'ojs/ojasyncvalidator-adapter';
+import SyncValidatorAdapter from './ojasyncvalidator-adapter.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -73,7 +73,7 @@ class AsyncRegExpValidator extends SyncValidatorAdapter {
     }
     _InitLoadingPromise() {
         if (!this._loadingPromise) {
-            this._loadingPromise = import('ojs/ojvalidator-regexp');
+            this._loadingPromise = import('./ojvalidator-regexp.js');
         }
     }
 }

@@ -5,17 +5,17 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { subtreeShown, subtreeHidden, subtreeDetached, subtreeAttached, setComponentOption } from 'ojs/ojcomponentcore';
-import { error, info } from 'ojs/ojlogger';
-import { setLogicalParent, isTouchSupported, isChromeEvent, isAncestor, unwrap, isAncestorOrSelf, getCSSLengthAsFloat, getCSSLengthAsInt, getScrollBarWidth, getReadingDirection } from 'ojs/ojdomutils';
-import { OJ_POPUP, patchPopupParent } from 'ojs/ojpreact-patch';
+import { subtreeShown, subtreeHidden, subtreeDetached, subtreeAttached, setComponentOption } from './ojcomponentcore.js';
+import { error, info } from './ojlogger.js';
+import { setLogicalParent, isTouchSupported, isChromeEvent, isAncestor, unwrap, isAncestorOrSelf, getCSSLengthAsFloat, getCSSLengthAsInt, getScrollBarWidth, getReadingDirection } from './ojdomutils.js';
+import { OJ_POPUP, patchPopupParent } from './ojpreact-patch.js';
 import 'jqueryui-amd/position';
-import Context from 'ojs/ojcontext';
+import Context from './ojcontext.js';
 import { jsx } from 'preact/jsx-runtime';
 import { Component } from 'preact';
-import { ElementUtils } from 'ojs/ojcustomelement-utils';
+import { ElementUtils } from './ojcustomelement-utils.js';
 
 /**
  * Invokes the callback function with the touchstart event if the touch sequence
