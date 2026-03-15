@@ -26,6 +26,16 @@
     "THIRDPARTYLICENSE.txt",
     "SECURITY.md"
   ],
+  "exports": {
+    "./package.json": "./package.json",
+    "./dist/*": "./dist/*",
+    "./ojtranslations/*": "./dist/js/libs/oj/debug_esm/ojtranslations/*.js",
+    "./*": {
+      "types": "./dist/types/*/index.d.ts",
+      "import": "./dist/js/libs/oj/debug_esm/*.js",
+      "default": "./dist/js/libs/oj/debug_esm/*.js"
+    }
+  },
   "typesVersions": {
     "*": {
       "*": [
