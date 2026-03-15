@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { __GetWidgetConstructor } from 'ojs/ojcomponentcore';
+import { __GetWidgetConstructor } from './ojcomponentcore.js';
 
 /**
  * This class contains all utility methods used by the data grid collection model.

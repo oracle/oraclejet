@@ -5,14 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { subtreeDetached, subtreeAttached, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { warn } from 'ojs/ojlogger';
-import Context from 'ojs/ojcontext';
-import { getDeviceRenderMode, getAutomationMode } from 'ojs/ojconfig';
-import { setScrollLeft, calculateScrollLeft, addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
+import { subtreeDetached, subtreeAttached, setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import { warn } from './ojlogger.js';
+import Context from './ojcontext.js';
+import { getDeviceRenderMode, getAutomationMode } from './ojconfig.js';
+import { setScrollLeft, calculateScrollLeft, addResizeListener, removeResizeListener } from './ojdomutils.js';
 import 'touchr';
 
 var __oj_conveyor_belt_metadata = 

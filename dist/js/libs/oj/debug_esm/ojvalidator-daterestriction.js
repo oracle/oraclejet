@@ -5,13 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore';
-import * as Translations from 'ojs/ojtranslation';
-import Validator from 'ojs/ojvalidator';
-import { ValidatorError } from 'ojs/ojvalidation-error';
-import { IntlDateTimeConverter } from 'ojs/ojconverter-datetime';
-import { IntlConverterUtils } from 'ojs/ojconverterutils-i18n';
-import ConverterUtils from 'ojs/ojconverterutils';
+import oj from './ojcore.js';
+import * as Translations from './ojtranslation.js';
+import Validator from './ojvalidator.js';
+import { ValidatorError } from './ojvalidation-error.js';
+import { IntlDateTimeConverter } from './ojconverter-datetime.js';
+import { IntlConverterUtils } from './ojconverterutils-i18n.js';
+import ConverterUtils from './ojconverterutils.js';
 
 /**
  * Constructs a DateRestrictionValidator that ensures the value provided is

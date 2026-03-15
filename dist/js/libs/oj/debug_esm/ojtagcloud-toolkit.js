@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { KeyboardHandler, KeyboardEvent, ToolkitUtils, Displayable, CSSStyle, MouseEvent, Agent, Automation, BaseComponentDefaults, EventManager, EventFactory, BackgroundOutputText, CustomAnimation, Animator, AnimFadeOut, AnimFadeIn, ColorUtils, OutputText, Rectangle, Dimension, Rect, ArrayUtils, JsonUtils, SelectionEffectUtils, Legend, LayoutUtils, BaseComponent, Container, BlackBoxAnimationHandler, DataAnimationHandler, CategoryRolloverHandler, SelectionHandler } from 'ojs/ojdvt-toolkit';
+import { KeyboardHandler, KeyboardEvent, ToolkitUtils, Displayable, CSSStyle, MouseEvent, Agent, Automation, BaseComponentDefaults, EventManager, EventFactory, BackgroundOutputText, CustomAnimation, Animator, AnimFadeOut, AnimFadeIn, ColorUtils, OutputText, Rectangle, Dimension, Rect, ArrayUtils, JsonUtils, SelectionEffectUtils, Legend, LayoutUtils, BaseComponent, Container, BlackBoxAnimationHandler, DataAnimationHandler, CategoryRolloverHandler, SelectionHandler } from './ojdvt-toolkit.js';
 
 /**
  * @param {dvt.EventManager} manager The owning dvt.EventManager

@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import oj from './ojcore-base.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
 
 /**
  * @namespace GanttUtils

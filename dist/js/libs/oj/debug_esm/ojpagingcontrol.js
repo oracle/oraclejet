@@ -5,18 +5,18 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojdataprovider';
-import 'ojs/ojinputtext';
-import 'ojs/ojjquery-hammer';
-import 'ojs/ojpagingmodel';
-import oj from 'ojs/ojcore-base';
+import './ojdataprovider.js';
+import './ojinputtext.js';
+import './ojjquery-hammer.js';
+import './ojpagingmodel.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { addResizeListener, isTouchSupported, removeResizeListener } from 'ojs/ojdomutils';
-import Context from 'ojs/ojcontext';
+import { addResizeListener, isTouchSupported, removeResizeListener } from './ojdomutils.js';
+import Context from './ojcontext.js';
 import { DIRECTION_VERTICAL, DIRECTION_HORIZONTAL, Swipe, Manager } from 'hammerjs';
-import { error } from 'ojs/ojlogger';
-import { IntlNumberConverter } from 'ojs/ojconverter-number';
-import NumberRangeValidator from 'ojs/ojvalidator-numberrange';
+import { error } from './ojlogger.js';
+import { IntlNumberConverter } from './ojconverter-number.js';
+import NumberRangeValidator from './ojvalidator-numberrange.js';
 
 (function () {
 var __oj_paging_control_metadata = 

@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { NativeDateTimePatternConverter, NativeDateTimeConverter } from 'ojs/ojconverter-nativedatetime';
-import { getMergedDateTimePreferencesWithOptions } from 'ojs/ojconverter-preferences';
-import { _processConverterError } from 'ojs/ojconverter-datetimeerror';
+import { NativeDateTimePatternConverter, NativeDateTimeConverter } from './ojconverter-nativedatetime.js';
+import { getMergedDateTimePreferencesWithOptions } from './ojconverter-preferences.js';
+import { _processConverterError } from './ojconverter-datetimeerror.js';
 import { DateTimeUtils } from '@oracle/oraclejet-preact/UNSAFE_IntlDateTime';
 
 // A date-only converter that merges in user preferences, if any.

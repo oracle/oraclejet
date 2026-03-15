@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { getLocale } from 'ojs/ojconfig';
-import { getMergedNumberPreferencesWithOptions } from 'ojs/ojconverter-preferences';
+import { getLocale } from './ojconfig.js';
+import { getMergedNumberPreferencesWithOptions } from './ojconverter-preferences.js';
 
 const _DECIMAL_SEP = '.';
 const _MINUS = '-';

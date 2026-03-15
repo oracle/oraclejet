@@ -5,14 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { subtreeShown, subtreeHidden } from 'ojs/ojcomponentcore';
-import Context from 'ojs/ojcontext';
-import { unwrap, isValidIdentifier } from 'ojs/ojdomutils';
-import 'ojs/ojcustomelement';
-import 'ojs/ojanimation';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import { subtreeShown, subtreeHidden } from './ojcomponentcore.js';
+import Context from './ojcontext.js';
+import { unwrap, isValidIdentifier } from './ojdomutils.js';
+import './ojcustomelement.js';
+import './ojanimation.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 var __oj_collapsible_metadata = 
 {

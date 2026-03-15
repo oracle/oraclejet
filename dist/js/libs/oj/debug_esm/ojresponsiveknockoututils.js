@@ -5,12 +5,12 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { isComposite } from 'ojs/ojcustomelement-registry';
+import oj from './ojcore-base.js';
+import { isComposite } from './ojcustomelement-registry.js';
 import { observable, pureComputed } from 'knockout';
 import $ from 'jquery';
-import { getFrameworkQuery, FRAMEWORK_QUERY_KEY, SCREEN_RANGE } from 'ojs/ojresponsiveutils';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import { getFrameworkQuery, FRAMEWORK_QUERY_KEY, SCREEN_RANGE } from './ojresponsiveutils.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 const _createMediaQueryObservableInternal = function (queryString, componentElement) {
   if (queryString == null) {

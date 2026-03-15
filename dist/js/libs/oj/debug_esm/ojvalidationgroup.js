@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj$1 from 'ojs/ojcore-base';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
-import Context from 'ojs/ojcontext';
-import { info } from 'ojs/ojlogger';
-import { __GetWidgetConstructor } from 'ojs/ojcomponentcore';
+import oj$1 from './ojcore-base.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
+import Context from './ojcontext.js';
+import { info } from './ojlogger.js';
+import { __GetWidgetConstructor } from './ojcomponentcore.js';
 
 /**
  * @ojcomponent oj.ojValidationGroup

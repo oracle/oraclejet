@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import KeySetImpl$1 from 'ojs/ojkeysetimpl';
+import oj from './ojcore-base.js';
+import KeySetImpl$1 from './ojkeysetimpl.js';
 
 /**
  * A set of unique keys that will not change once it's created.  It contains mutation methods that will create a copy of this set.

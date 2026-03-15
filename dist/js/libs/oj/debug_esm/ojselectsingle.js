@@ -5,13 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { LovDropdown, LovUtils } from 'ojs/ojselectbase';
-import oj from 'ojs/ojcore-base';
-import { KeySetImpl } from 'ojs/ojkeyset';
+import { LovDropdown, LovUtils } from './ojselectbase.js';
+import oj from './ojcore-base.js';
+import { KeySetImpl } from './ojkeyset.js';
 import $ from 'jquery';
-import { setDefaultOptions } from 'ojs/ojcomponentcore';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import { warn } from 'ojs/ojlogger';
+import { setDefaultOptions } from './ojcomponentcore.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import { warn } from './ojlogger.js';
 
 (function () {
 var __oj_select_single_metadata = 

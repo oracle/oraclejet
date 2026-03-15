@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { getWeekendStart, getWeekendEnd } from 'ojs/ojlocaledata';
+import oj from './ojcore-base.js';
+import { getWeekendStart, getWeekendEnd } from './ojlocaledata.js';
 
 /**
  * @namespace TimeUtils

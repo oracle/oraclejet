@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj$1 from 'ojs/ojcore-base';
-import oj$2 from 'ojs/ojcore';
+import oj$1 from './ojcore-base.js';
+import oj$2 from './ojcore.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

@@ -5,17 +5,17 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import 'ojs/ojcontext';
-import 'ojs/ojbutton';
-import { EditableValueUtils } from 'ojs/ojeditablevalue';
-import { setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { unwrap, recentTouchEnd } from 'ojs/ojdomutils';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { error, warn } from 'ojs/ojlogger';
-import NumberRangeValidator from 'ojs/ojvalidator-numberrange';
-import { IntlNumberConverter } from 'ojs/ojconverter-number';
+import './ojcontext.js';
+import './ojbutton.js';
+import { EditableValueUtils } from './ojeditablevalue.js';
+import { setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import { unwrap, recentTouchEnd } from './ojdomutils.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
+import { error, warn } from './ojlogger.js';
+import NumberRangeValidator from './ojvalidator-numberrange.js';
+import { IntlNumberConverter } from './ojconverter-number.js';
 
 (function () {
 var __oj_input_number_metadata = 

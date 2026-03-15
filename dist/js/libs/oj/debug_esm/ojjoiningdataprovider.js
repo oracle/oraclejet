@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import ojMap from 'ojs/ojmap';
-import ojSet from 'ojs/ojset';
-import { wrapWithAbortHandling, FilterUtils } from 'ojs/ojdataprovider';
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { warn } from 'ojs/ojlogger';
+import ojMap from './ojmap.js';
+import ojSet from './ojset.js';
+import { wrapWithAbortHandling, FilterUtils } from './ojdataprovider.js';
+import { EventTargetMixin } from './ojeventtarget.js';
+import { warn } from './ojlogger.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

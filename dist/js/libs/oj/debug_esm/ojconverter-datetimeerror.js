@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { getTranslatedString } from 'ojs/ojtranslation';
+import { getTranslatedString } from './ojtranslation.js';
 
 const _processConverterError = (e, formatter, exampleType = 'date') => {
     const cause = e.cause;

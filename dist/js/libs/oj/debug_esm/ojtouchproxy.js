@@ -6,7 +6,7 @@
  * @ignore
  */
 import $ from 'jquery';
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 
 const _TouchProxy = function (elem) {
   this._init(elem);

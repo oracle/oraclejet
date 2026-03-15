@@ -5,13 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import { observableArray } from 'knockout';
-import ArrayTreeDataProvider from 'ojs/ojarraytreedataprovider';
-import ArrayDataProvider from 'ojs/ojarraydataprovider';
-import { DataProviderMutationEvent, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import KeyMap from 'ojs/ojmap';
+import ArrayTreeDataProvider from './ojarraytreedataprovider.js';
+import ArrayDataProvider from './ojarraydataprovider.js';
+import { DataProviderMutationEvent, DataProviderRefreshEvent } from './ojdataprovider.js';
+import { EventTargetMixin } from './ojeventtarget.js';
+import KeyMap from './ojmap.js';
 
 /* jslint browser: true,devel:true*/
 /**

@@ -7,17 +7,17 @@
  */
 import { jsx } from 'preact/jsx-runtime';
 import { Component } from 'preact';
-import { Root, customElement } from 'ojs/ojvcomponent';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import { KEYBOARD_KEYS, handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, getScrollEventElement, getActionableElementsInNode, disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
-import Context from 'ojs/ojcontext';
-import { IteratingDataProviderContentHandler, IteratingTreeDataProviderContentHandler } from 'ojs/ojvcollection';
-import oj from 'ojs/ojcore-base';
-import { KeySetImpl } from 'ojs/ojkeyset';
-import 'ojs/ojtreedataprovider';
-import { fadeOut } from 'ojs/ojanimation';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import { makeFocusable } from 'ojs/ojdomutils';
+import { Root, customElement } from './ojvcomponent.js';
+import { getTranslatedString } from './ojtranslation.js';
+import { KEYBOARD_KEYS, handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, getScrollEventElement, getActionableElementsInNode, disableAllFocusableElements, enableAllFocusableElements } from './ojdatacollection-common.js';
+import Context from './ojcontext.js';
+import { IteratingDataProviderContentHandler, IteratingTreeDataProviderContentHandler } from './ojvcollection.js';
+import oj from './ojcore-base.js';
+import { KeySetImpl } from './ojkeyset.js';
+import './ojtreedataprovider.js';
+import { fadeOut } from './ojanimation.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import { makeFocusable } from './ojdomutils.js';
 
 /**
  * Class that interacts with DataProvider on behalf of the component

@@ -5,22 +5,22 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { info } from 'ojs/ojlogger';
-import { getTemplateContent } from 'ojs/ojhtmlutils';
-import { CustomElementUtils, AttributeUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
-import { getMetadata, getPropertiesForElementTag, isElementRegistered } from 'ojs/ojcustomelement-registry';
+import { info } from './ojlogger.js';
+import { getTemplateContent } from './ojhtmlutils.js';
+import { CustomElementUtils, AttributeUtils, ElementUtils } from './ojcustomelement-utils.js';
+import { getMetadata, getPropertiesForElementTag, isElementRegistered } from './ojcustomelement-registry.js';
 import { Component, Fragment, h, render } from 'preact';
 import { jsx } from 'preact/jsx-runtime';
-import Context from 'ojs/ojcontext';
-import { ReportBusyContext } from 'ojs/ojvcomponent';
-import { withDataProvider } from 'ojs/ojdataproviderhandler';
-import { ManageTabStops } from 'ojs/ojpreact-managetabstops';
-import { getPropagationMetadataViaCache, CONSUMED_CONTEXT, STATIC_PROPAGATION } from 'ojs/ojbindpropagation';
-import { getExpressionEvaluator } from 'ojs/ojconfig';
-import { getPropertyMetadata } from 'ojs/ojmetadatautils';
-import { PROXY_SYMBOL, CspExpressionEvaluatorInternal } from 'ojs/ojcspexpressionevaluator-internal';
-import { performMonitoredWriteback } from 'ojs/ojmonitoring';
-import { IDENTIFIER, ARRAY_EXP, LITERAL, OBJECT_EXP, PROPERTY, UNARY_EXP, CONDITIONAL_EXP, CALL_EXP } from 'ojs/ojexpparser';
+import Context from './ojcontext.js';
+import { ReportBusyContext } from './ojvcomponent.js';
+import { withDataProvider } from './ojdataproviderhandler.js';
+import { ManageTabStops } from './ojpreact-managetabstops.js';
+import { getPropagationMetadataViaCache, CONSUMED_CONTEXT, STATIC_PROPAGATION } from './ojbindpropagation.js';
+import { getExpressionEvaluator } from './ojconfig.js';
+import { getPropertyMetadata } from './ojmetadatautils.js';
+import { PROXY_SYMBOL, CspExpressionEvaluatorInternal } from './ojcspexpressionevaluator-internal.js';
+import { performMonitoredWriteback } from './ojmonitoring.js';
+import { IDENTIFIER, ARRAY_EXP, LITERAL, OBJECT_EXP, PROPERTY, UNARY_EXP, CONDITIONAL_EXP, CALL_EXP } from './ojexpparser.js';
 
 class Props {
 }

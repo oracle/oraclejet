@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import ojMap from 'ojs/ojmap';
-import oj from 'ojs/ojcore-base';
+import ojMap from './ojmap.js';
+import oj from './ojcore-base.js';
 
 /**
  * @namespace

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { BaseComponentDefaults, CSSStyle, Agent, OutputText, KeyboardEvent, MouseEvent, TouchEvent, Container, ClipPath, Path, PathUtils, ToolkitUtils, Stroke, TextUtils, SimpleObjPeer, Line, BaseComponent } from 'ojs/ojdvt-toolkit';
+import { BaseComponentDefaults, CSSStyle, Agent, OutputText, KeyboardEvent, MouseEvent, TouchEvent, Container, ClipPath, Path, PathUtils, ToolkitUtils, Stroke, TextUtils, SimpleObjPeer, Line, BaseComponent } from './ojdvt-toolkit.js';
 
 class DvtTimeAxisCalendar {
   constructor() {

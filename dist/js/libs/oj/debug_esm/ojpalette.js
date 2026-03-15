@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { getColorValue } from 'ojs/ojpaletteutils';
+import { getColorValue } from './ojpaletteutils.js';
 
 /**
  * Adapted from D3.js -- d3-scale-chromatic

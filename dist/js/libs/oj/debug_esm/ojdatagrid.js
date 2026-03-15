@@ -6,27 +6,27 @@
  * @ignore
  */
 import 'touchr';
-import 'ojs/ojdatasource-common';
-import 'ojs/ojdatacollection-utils';
-import 'ojs/ojinputnumber';
-import 'ojs/ojmenu';
-import 'ojs/ojmenuselectmany';
-import 'ojs/ojdialog';
-import 'ojs/ojbutton';
+import './ojdatasource-common.js';
+import './ojdatacollection-utils.js';
+import './ojinputnumber.js';
+import './ojmenu.js';
+import './ojmenuselectmany.js';
+import './ojdialog.js';
+import './ojbutton.js';
 import 'ojdnd';
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import { FormVariantContext } from '@oracle/oraclejet-preact/hooks/UNSAFE_useFormVariantContext';
-import { _OJ_CONTAINER_ATTR, subtreeAttached, __GetWidgetConstructor } from 'ojs/ojcomponentcore';
-import Context from 'ojs/ojcontext';
-import { isIE, isEdge, isMobileTouchDevice, isIos, isMac, isWebkit, applyMergedInlineStyles, applyRendererContent, disableAllFocusableElements, enableAllFocusableElements, getFocusableElementsInNode, isContextMenuKeyEvent, getActionableElementsInNode, handleActionableTab, handleActionablePrevTab, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
-import { setScrollLeft, isTouchSupported, removeResizeListener, addResizeListener, getCSSTimeUnitAsMillis } from 'ojs/ojdomutils';
-import { __getTemplateEngine } from 'ojs/ojconfig';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
-import { getAllLogicalChildPopups } from 'ojs/ojkeyboardfocus-utils';
+import { _OJ_CONTAINER_ATTR, subtreeAttached, __GetWidgetConstructor } from './ojcomponentcore.js';
+import Context from './ojcontext.js';
+import { isIE, isEdge, isMobileTouchDevice, isIos, isMac, isWebkit, applyMergedInlineStyles, applyRendererContent, disableAllFocusableElements, enableAllFocusableElements, getFocusableElementsInNode, isContextMenuKeyEvent, getActionableElementsInNode, handleActionableTab, handleActionablePrevTab, disableDefaultBrowserStyling } from './ojdatacollection-common.js';
+import { setScrollLeft, isTouchSupported, removeResizeListener, addResizeListener, getCSSTimeUnitAsMillis } from './ojdomutils.js';
+import { __getTemplateEngine } from './ojconfig.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
+import { getAllLogicalChildPopups } from './ojkeyboardfocus-utils.js';
 import $ from 'jquery';
-import { error } from 'ojs/ojlogger';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { loadAllPendingBundles } from 'ojs/ojtranslationbundleutils';
+import { error } from './ojlogger.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
+import { loadAllPendingBundles } from './ojtranslationbundleutils.js';
 
 // eslint-disable-next-line wrap-iife
 (function () {
@@ -39755,8 +39755,8 @@ async function getPreactTranslationPromise$1() {
   return loadAllPendingBundles();
 }
 
-// import { ImmutableSet } from 'ojs/ojkeyset';
-// import { DataGridProvider } from 'ojs/ojdatagridprovider';
+// import { ImmutableSet } from './ojkeyset.js';
+// import { DataGridProvider } from './ojdatagridprovider.js';
 
 /**
  * @ojcomponent oj.ojDataGrid

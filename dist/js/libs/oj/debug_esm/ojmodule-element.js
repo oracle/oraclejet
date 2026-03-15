@@ -6,10 +6,10 @@
  * @ignore
  */
 import { observable, ignoreDependencies } from 'knockout';
-import Context from 'ojs/ojcontext';
-import 'ojs/ojmodule';
-import { register } from 'ojs/ojcomposite';
-import { OJ_BIND_CONVERTED_NODE } from 'ojs/ojcustomelement-utils';
+import Context from './ojcontext.js';
+import './ojmodule.js';
+import { register } from './ojcomposite.js';
+import { OJ_BIND_CONVERTED_NODE } from './ojcustomelement-utils.js';
 
 /**
  * @ojcomponent oj.ojModule

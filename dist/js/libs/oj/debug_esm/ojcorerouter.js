@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { info } from 'ojs/ojlogger';
-import { BehaviorSubject } from 'ojs/ojobservable';
-import UrlPathAdapter from 'ojs/ojurlpathadapter';
+import { info } from './ojlogger.js';
+import { BehaviorSubject } from './ojobservable.js';
+import UrlPathAdapter from './ojurlpathadapter.js';
 
 /**
  * An interface describing the object used by {@link CoreRouter} to represent

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import * as Translations from 'ojs/ojtranslation';
+import * as Translations from './ojtranslation.js';
 import { DateTimeUtils } from '@oracle/oraclejet-preact/UNSAFE_IntlDateTime';
 
 // This class is used to validate that a local date (a date with no time element) falls within

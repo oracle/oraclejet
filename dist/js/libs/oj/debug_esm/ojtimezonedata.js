@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { __getBundle } from 'ojs/ojlocaledata';
-import ojtd from 'ojL10n!ojtranslations/nls/timezoneData';
+import oj from './ojcore-base.js';
+import { __getBundle } from './ojlocaledata.js';
+import { loadMergedAmdBundle } from './ojamdloader.js';
 
 /**
  * Internal utilities for dealing with timezone data
@@ -49,7 +49,12 @@ TimezoneData._bundleNames = [];
 
 (function () {
   TimezoneData.__registerBundleName('/timezoneData');
-  TimezoneData.__mergeIntoLocaleElements(typeof ojtd === 'undefined' ? {} : ojtd);
 })();
+
+const initialTimezoneBundle = await loadMergedAmdBundle(
+  new URL('../resources/nls/timezoneData.js', import.meta.url),
+  new URL('../resources/nls/en-US/timezoneData.js', import.meta.url)
+);
+TimezoneData.__mergeIntoLocaleElements(initialTimezoneBundle);
 
 export default TimezoneData;

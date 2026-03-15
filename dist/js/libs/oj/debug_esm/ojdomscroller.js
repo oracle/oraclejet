@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { getScrollEventElement, CHECKVIEWPORT_THRESHOLD } from 'ojs/ojdatacollection-common';
-import { warn } from 'ojs/ojlogger';
+import { getScrollEventElement, CHECKVIEWPORT_THRESHOLD } from './ojdatacollection-common.js';
+import { warn } from './ojlogger.js';
 
 /* jslint browser: true*/
 /**

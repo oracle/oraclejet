@@ -5,15 +5,15 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcore';
+import './ojcore.js';
 import $ from 'jquery';
-import 'ojs/ojthemeutils';
-import { EditableValueUtils } from 'ojs/ojeditablevalue';
-import oj from 'ojs/ojcore-base';
-import { unwrap, isAncestorOrSelf } from 'ojs/ojdomutils';
-import LengthFilter from 'ojs/ojfilter-length';
-import RegExpValidator from 'ojs/ojvalidator-regexp';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import './ojthemeutils.js';
+import { EditableValueUtils } from './ojeditablevalue.js';
+import oj from './ojcore-base.js';
+import { unwrap, isAncestorOrSelf } from './ojdomutils.js';
+import LengthFilter from './ojfilter-length.js';
+import RegExpValidator from './ojvalidator-regexp.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 (function () {
   var bindingMeta = {

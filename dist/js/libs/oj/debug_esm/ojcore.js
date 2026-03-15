@@ -5,14 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import * as Logger from 'ojs/ojlogger';
-import Context from 'ojs/ojcontext';
-import * as Config from 'ojs/ojconfig';
-import * as ResponsiveUtils from 'ojs/ojresponsiveutils';
-import * as ThemeUtils from 'ojs/ojthemeutils';
-import * as TimerUtils from 'ojs/ojtimerutils';
-import * as Translations from 'ojs/ojtranslation';
+import oj from './ojcore-base.js';
+import * as Logger from './ojlogger.js';
+import Context from './ojcontext.js';
+import * as Config from './ojconfig.js';
+import * as ResponsiveUtils from './ojresponsiveutils.js';
+import * as ThemeUtils from './ojthemeutils.js';
+import * as TimerUtils from './ojtimerutils.js';
+import * as Translations from './ojtranslation.js';
 
 /**
  * @ojoverviewdoc ModuleLoadingOverview - [5]JET Module Loading
@@ -36,10 +36,10 @@ import * as Translations from 'ojs/ojtranslation';
  * //Loading a JET component in your Typescript code
  *
  * //To typecheck the element APIs, import as below.
- * import {ojAccordion} from "ojs/ojaccordion";
+ * import {ojAccordion} from './ojaccordion.js';
  *
  * //For the transpiled javascript to load the element's module, import as below
- * import "ojs/ojaccordion";</code></pre>
+ * import './ojaccordion.js';</code></pre>
  * <h4>One return value</h4>
  *  <p>Some modules directly return a single object or constructor function.  Applications would typically call functions on the returned
  *     object or instantiate new objects via the constructor function.  For example, the 'ojs/ojcontext' module
@@ -61,7 +61,7 @@ import * as Translations from 'ojs/ojtranslation';
  *  </p>
  * <pre class="prettyprint"><code>
  * //TypeScript example
- * import {ColorAttributeGroupHandler, ShapeAttributeGroupHandler} from "ojs/ojattributegrouphandler";
+ * import {ColorAttributeGroupHandler, ShapeAttributeGroupHandler} from './ojattributegrouphandler.js';
  *  let colorHandler = new ColorAttributeGroupHandler();
  *  let shapeHandler = new ShapeAttributeGroupHandler({'0-2 years': 'triangleDown',
  *                                                     '3-5 years': 'circle',
@@ -80,7 +80,7 @@ import * as Translations from 'ojs/ojtranslation';
  *   };
  *
  * //Another example
- * import * as Logger from "ojs/ojlogger";
+ * import * as Logger from './ojlogger.js';
  *  Logger.log("Please enter a valid input");
  * </code></pre>
  *

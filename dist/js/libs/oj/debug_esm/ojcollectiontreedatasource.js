@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojdatasource-common';
-import { Collection, Model, Events } from 'ojs/ojmodel';
+import oj from './ojcore-base.js';
+import './ojdatasource-common.js';
+import { Collection, Model, Events } from './ojmodel.js';
 
 /**
  * A CollectionNodeSet represents a collection of nodes.  The CollectionNodeSet is an object returned by the success callback

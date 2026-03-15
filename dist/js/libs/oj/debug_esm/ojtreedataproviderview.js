@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import ListDataProviderView from 'ojs/ojlistdataproviderview';
+import oj from './ojcore-base.js';
+import ListDataProviderView from './ojlistdataproviderview.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

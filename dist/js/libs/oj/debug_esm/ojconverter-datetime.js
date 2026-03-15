@@ -5,15 +5,15 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { OraI18nUtils, IntlConverterUtils as IntlConverterUtils$1 } from 'ojs/ojconverterutils-i18n';
-import Converter from 'ojs/ojconverter';
-import { __getBundle } from 'ojs/ojlocaledata';
-import { NativeParserImpl, NativeDateTimePatternConverter, NativeDateTimeConverter } from 'ojs/ojconverter-nativedatetime';
-import { getLocale } from 'ojs/ojconfig';
-import oj$1 from 'ojs/ojcore-base';
-import { getMergedDateTimePreferencesWithOptions } from 'ojs/ojconverter-preferences';
-import { AvailableTimeZones } from 'ojs/ojavailabletimezones';
-import { _processConverterError } from 'ojs/ojconverter-datetimeerror';
+import { OraI18nUtils, IntlConverterUtils as IntlConverterUtils$1 } from './ojconverterutils-i18n.js';
+import Converter from './ojconverter.js';
+import { __getBundle } from './ojlocaledata.js';
+import { NativeParserImpl, NativeDateTimePatternConverter, NativeDateTimeConverter } from './ojconverter-nativedatetime.js';
+import { getLocale } from './ojconfig.js';
+import oj$1 from './ojcore-base.js';
+import { getMergedDateTimePreferencesWithOptions } from './ojconverter-preferences.js';
+import { AvailableTimeZones } from './ojavailabletimezones.js';
+import { _processConverterError } from './ojconverter-datetimeerror.js';
 
 /**
  * DateTimeConverter Contract.
@@ -41,7 +41,7 @@ const DateTimeConverter = function (options) {
 };
 
 // Subclass from oj.Object
-oj.Object.createSubclass(DateTimeConverter, Converter, 'oj.DateTimeConverter');
+oj$1.Object.createSubclass(DateTimeConverter, Converter, 'oj.DateTimeConverter');
 
 /**
  * Initializes the date time converter instance with the set options.
@@ -86,7 +86,7 @@ DateTimeConverter.prototype.format = function (value) {
  * @ojdeprecated {since: '11.0.0', description: 'Use !!(resolvedOptions()["hour"] && !resolvedOptions()["hour12"])'}
  */
 DateTimeConverter.prototype.isHourInDaySet = function () {
-  oj.Assert.failedInAbstractFunction();
+  oj$1.Assert.failedInAbstractFunction();
 };
 
 /**
@@ -101,7 +101,7 @@ DateTimeConverter.prototype.isHourInDaySet = function () {
  * @ojdeprecated {since: '11.0.0', description: 'Use !!(resolvedOptions()["hour"] && resolvedOptions()["hour12"])'}
  */
 DateTimeConverter.prototype.isHourInAMPMSet = function () {
-  oj.Assert.failedInAbstractFunction();
+  oj$1.Assert.failedInAbstractFunction();
 };
 
 /**
@@ -116,7 +116,7 @@ DateTimeConverter.prototype.isHourInAMPMSet = function () {
  * @ojdeprecated {since: '11.0.0', description: 'Use resolvedOptions()["minute"] !== undefined'}
  */
 DateTimeConverter.prototype.isMinuteSet = function () {
-  oj.Assert.failedInAbstractFunction();
+  oj$1.Assert.failedInAbstractFunction();
 };
 
 /**
@@ -131,7 +131,7 @@ DateTimeConverter.prototype.isMinuteSet = function () {
  * @ojdeprecated {since: '11.0.0', description: 'Use resolvedOptions()["second"] !== undefined'}
  */
 DateTimeConverter.prototype.isSecondSet = function () {
-  oj.Assert.failedInAbstractFunction();
+  oj$1.Assert.failedInAbstractFunction();
 };
 
 /**
@@ -146,7 +146,7 @@ DateTimeConverter.prototype.isSecondSet = function () {
  * @ojdeprecated {since: '11.0.0', description: 'Use resolvedOptions()["millisecond"] !== undefined'}
  */
 DateTimeConverter.prototype.isMilliSecondSet = function () {
-  oj.Assert.failedInAbstractFunction();
+  oj$1.Assert.failedInAbstractFunction();
 };
 
 /**
@@ -161,7 +161,7 @@ DateTimeConverter.prototype.isMilliSecondSet = function () {
  * @ojdeprecated {since: '11.0.0', description: 'Use resolvedOptions()["year"] !== undefined'}
  */
 DateTimeConverter.prototype.isYearSet = function () {
-  oj.Assert.failedInAbstractFunction();
+  oj$1.Assert.failedInAbstractFunction();
 };
 
 /**
@@ -176,7 +176,7 @@ DateTimeConverter.prototype.isYearSet = function () {
  * @ojdeprecated {since: '11.0.0', description: 'Use resolvedOptions()["month"] !== undefined'}
  */
 DateTimeConverter.prototype.isMonthSet = function () {
-  oj.Assert.failedInAbstractFunction();
+  oj$1.Assert.failedInAbstractFunction();
 };
 
 /**
@@ -191,7 +191,7 @@ DateTimeConverter.prototype.isMonthSet = function () {
  * @ojdeprecated {since: '11.0.0', description: 'Use resolvedOptions()["day"] !== undefined'}
  */
 DateTimeConverter.prototype.isDaySet = function () {
-  oj.Assert.failedInAbstractFunction();
+  oj$1.Assert.failedInAbstractFunction();
 };
 
 /**
@@ -206,7 +206,7 @@ DateTimeConverter.prototype.isDaySet = function () {
  * @ojdeprecated {since: '11.0.0', description: 'Use resolvedOptions()["weekday"] !== undefined'}
  */
 DateTimeConverter.prototype.isDayNameSet = function () {
-  oj.Assert.failedInAbstractFunction();
+  oj$1.Assert.failedInAbstractFunction();
 };
 
 /**
@@ -225,7 +225,7 @@ DateTimeConverter.prototype.isDayNameSet = function () {
  */
 // eslint-disable-next-line no-unused-vars
 DateTimeConverter.prototype.calculateWeek = function (value) {
-  oj.Assert.failedInAbstractFunction();
+  oj$1.Assert.failedInAbstractFunction();
 };
 
 /**

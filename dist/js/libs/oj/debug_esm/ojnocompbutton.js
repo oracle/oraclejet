@@ -6,7 +6,7 @@
  * @ignore
  */
 import $ from 'jquery';
-import { makeFocusable } from 'ojs/ojdomutils';
+import { makeFocusable } from './ojdomutils.js';
 
 /**
  * @class NocompButtonUtils

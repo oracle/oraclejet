@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { CSSStyle, BaseComponent, Agent, Container, ClipPath, ToolkitUtils, TransientButton, EventManager, Rectangle, Rect, SvgDocumentUtils, MouseEvent, Point, KeyboardHandler, KeyboardEvent } from 'ojs/ojdvt-toolkit';
-import { TimeAxisUtils } from 'ojs/ojtimeaxis-toolkit';
+import { CSSStyle, BaseComponent, Agent, Container, ClipPath, ToolkitUtils, TransientButton, EventManager, Rectangle, Rect, SvgDocumentUtils, MouseEvent, Point, KeyboardHandler, KeyboardEvent } from './ojdvt-toolkit.js';
+import { TimeAxisUtils } from './ojtimeaxis-toolkit.js';
 
 /**
  * Style related utility functions for TimeComponent.

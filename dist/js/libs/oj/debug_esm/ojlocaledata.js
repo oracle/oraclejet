@@ -5,12 +5,15 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { getLocale } from 'ojs/ojconfig';
-import ojldimport from 'ojL10n!ojtranslations/nls/localeElements';
-import { CalendarUtils } from 'ojs/ojcalendarutils';
+import oj from './ojcore-base.js';
+import { getLocale } from './ojconfig.js';
+import { loadMergedAmdBundle } from './ojamdloader.js';
+import { CalendarUtils } from './ojcalendarutils.js';
 
-var ojld = ojldimport;
+var ojld = await loadMergedAmdBundle(
+  new URL('../resources/nls/localeElements.js', import.meta.url),
+  new URL('../resources/nls/en-US/localeElements.js', import.meta.url)
+);
 
 /**
  * @namespace oj.LocaleData

@@ -6,13 +6,13 @@
  * @ignore
  */
 import { jsx, jsxs } from 'preact/jsx-runtime';
-import { recentTouchEnd, makeFocusable, getNoJQFocusHandlers } from 'ojs/ojdomutils';
-import { startDetectContextMenuGesture, stopDetectContextMenuGesture } from 'ojs/ojgestureutils';
-import { getUniqueId, Root, customElement } from 'ojs/ojvcomponent';
+import { recentTouchEnd, makeFocusable, getNoJQFocusHandlers } from './ojdomutils.js';
+import { startDetectContextMenuGesture, stopDetectContextMenuGesture } from './ojgestureutils.js';
+import { getUniqueId, Root, customElement } from './ojvcomponent.js';
 import { Component, createRef } from 'preact';
-import { VMenu } from 'ojs/ojvmenu';
-import 'ojs/ojvcomponent-binding';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
+import { VMenu } from './ojvmenu.js';
+import './ojvcomponent-binding.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;

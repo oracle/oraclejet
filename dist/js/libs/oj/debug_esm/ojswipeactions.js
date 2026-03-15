@@ -5,16 +5,16 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojoption';
+import './ojoption.js';
 import 'touchr';
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { isTouchSupported, dispatchEvent } from 'ojs/ojdomutils';
-import Context from 'ojs/ojcontext';
-import { __getTemplateEngine } from 'ojs/ojconfig';
-import { close, open } from 'ojs/ojoffcanvas';
-import { tearDownSwipeActions, setupSwipeActions } from 'ojs/ojswipetoreveal';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import { isTouchSupported, dispatchEvent } from './ojdomutils.js';
+import Context from './ojcontext.js';
+import { __getTemplateEngine } from './ojconfig.js';
+import { close, open } from './ojoffcanvas.js';
+import { tearDownSwipeActions, setupSwipeActions } from './ojswipetoreveal.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 (function () {
 var __oj_swipe_actions_metadata = 

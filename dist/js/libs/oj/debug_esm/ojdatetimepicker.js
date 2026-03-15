@@ -5,30 +5,30 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcore';
+import './ojcore.js';
 import $ from 'jquery';
-import { EditableValueUtils } from 'ojs/ojeditablevalue';
-import 'ojs/ojinputtext';
-import 'ojs/ojconverterutils';
-import 'ojs/ojanimation';
-import 'ojs/ojpopup';
-import 'ojs/ojbutton';
-import oj from 'ojs/ojcore-base';
-import { getDeviceRenderMode, getLocale } from 'ojs/ojconfig';
+import { EditableValueUtils } from './ojeditablevalue.js';
+import './ojinputtext.js';
+import './ojconverterutils.js';
+import './ojanimation.js';
+import './ojpopup.js';
+import './ojbutton.js';
+import oj from './ojcore-base.js';
+import { getDeviceRenderMode, getLocale } from './ojconfig.js';
 import { Swipe, DIRECTION_HORIZONTAL, Pan, DIRECTION_VERTICAL, Tap } from 'hammerjs';
-import { isComponentInitialized, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { IntlConverterUtils, OraI18nUtils } from 'ojs/ojconverterutils-i18n';
-import DateTimeRangeValidator from 'ojs/ojvalidator-datetimerange';
-import DateRestrictionValidator from 'ojs/ojvalidator-daterestriction';
-import { IntlDateTimeConverter } from 'ojs/ojconverter-datetime';
-import { getFirstDayOfWeek, getDayNames, getMonthNames, __getBundle } from 'ojs/ojlocaledata';
-import { info, warn, error, warning } from 'ojs/ojlogger';
-import { getCachedCSSVarValues, parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import Context from 'ojs/ojcontext';
-import FocusUtils from 'ojs/ojfocusutils';
-import { makeFocusable, isTouchSupported } from 'ojs/ojdomutils';
-import LabeledByUtils from 'ojs/ojlabelledbyutils';
-import { PositionUtils } from 'ojs/ojpopupcore';
+import { isComponentInitialized, setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import { IntlConverterUtils, OraI18nUtils } from './ojconverterutils-i18n.js';
+import DateTimeRangeValidator from './ojvalidator-datetimerange.js';
+import DateRestrictionValidator from './ojvalidator-daterestriction.js';
+import { IntlDateTimeConverter } from './ojconverter-datetime.js';
+import { getFirstDayOfWeek, getDayNames, getMonthNames, __getBundle } from './ojlocaledata.js';
+import { info, warn, error, warning } from './ojlogger.js';
+import { getCachedCSSVarValues, parseJSONFromFontFamily } from './ojthemeutils.js';
+import Context from './ojcontext.js';
+import FocusUtils from './ojfocusutils.js';
+import { makeFocusable, isTouchSupported } from './ojdomutils.js';
+import LabeledByUtils from './ojlabelledbyutils.js';
+import { PositionUtils } from './ojpopupcore.js';
 
 (function () {
   var bindingMeta = {

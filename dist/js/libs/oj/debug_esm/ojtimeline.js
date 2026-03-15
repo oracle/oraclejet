@@ -5,15 +5,15 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import 'ojs/ojtime-base';
-import 'ojs/ojkeyset';
-import { Timeline } from 'ojs/ojtimeline-toolkit';
-import { IntlDateTimeConverter } from 'ojs/ojconverter-datetime';
-import 'ojs/ojdvttimecomponentscale';
-import { enableAllFocusableElements, disableAllFocusableElements, getActionableElementsInNode } from 'ojs/ojkeyboardfocus-utils';
+import { setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import './ojtime-base.js';
+import './ojkeyset.js';
+import { Timeline } from './ojtimeline-toolkit.js';
+import { IntlDateTimeConverter } from './ojconverter-datetime.js';
+import './ojdvttimecomponentscale.js';
+import { enableAllFocusableElements, disableAllFocusableElements, getActionableElementsInNode } from './ojkeyboardfocus-utils.js';
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.

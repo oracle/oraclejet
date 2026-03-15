@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Point, Rectangle, OutputText, GradientParser, LinearGradientFill, ArrayUtils, EventFactory, ResourceUtils, Displayable, KeyboardEvent, Agent, BlackBoxAnimationHandler, CSSStyle, JsonUtils, DataAnimationHandler, Container, TextUtils, Rect, Stroke, ColorUtils, ImageMarker, SimpleMarker, PatternFill, ToolkitUtils, ClipPath, AnimMoveTo, Playable, CustomAnimation, SolidFill, Animator, AnimMoveBy, AnimFadeOut, SelectionEffectUtils, MouseEvent, KeyboardHandler, EventManager, KeyboardFocusEffect, SimpleScrollableContainer, IconButton, AnimFadeIn, Shadow, ARIA_LABEL_STATE_DELIMITER, AriaUtils, AnimScaleTo, PathUtils, Path, Matrix, Automation, BaseComponentDefaults, CategoryRolloverHandler, BaseComponent, BaseComponentCache, SelectionHandler } from 'ojs/ojdvt-toolkit';
-import { getTranslatedString } from 'ojs/ojtranslation';
+import { Point, Rectangle, OutputText, GradientParser, LinearGradientFill, ArrayUtils, EventFactory, ResourceUtils, Displayable, KeyboardEvent, Agent, BlackBoxAnimationHandler, CSSStyle, JsonUtils, DataAnimationHandler, Container, TextUtils, Rect, Stroke, ColorUtils, ImageMarker, SimpleMarker, PatternFill, ToolkitUtils, ClipPath, AnimMoveTo, Playable, CustomAnimation, SolidFill, Animator, AnimMoveBy, AnimFadeOut, SelectionEffectUtils, MouseEvent, KeyboardHandler, EventManager, KeyboardFocusEffect, SimpleScrollableContainer, IconButton, AnimFadeIn, Shadow, ARIA_LABEL_STATE_DELIMITER, AriaUtils, AnimScaleTo, PathUtils, Path, Matrix, Automation, BaseComponentDefaults, CategoryRolloverHandler, BaseComponent, BaseComponentCache, SelectionHandler } from './ojdvt-toolkit.js';
+import { getTranslatedString } from './ojtranslation.js';
 
 /**
  * Utility functions for NBox.

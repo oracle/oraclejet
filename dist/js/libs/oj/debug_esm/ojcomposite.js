@@ -5,14 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { stringToNodeArray } from 'ojs/ojhtmlutils';
-import { info, warn } from 'ojs/ojlogger';
-import { getDefaultValue } from 'ojs/ojmetadatautils';
-import 'ojs/ojcomposite-knockout';
-import 'ojs/ojcustomelement';
-import { LifecycleElementState, CustomElementUtils, ElementUtils, transformPreactValue, addPrivatePropGetterSetters, JetElementError, CHILD_BINDING_PROVIDER } from 'ojs/ojcustomelement-utils';
-import { getElementDescriptor, getElementRegistration, registerElement, isElementRegistered, isComposite } from 'ojs/ojcustomelement-registry';
+import oj from './ojcore-base.js';
+import { stringToNodeArray } from './ojhtmlutils.js';
+import { info, warn } from './ojlogger.js';
+import { getDefaultValue } from './ojmetadatautils.js';
+import './ojcomposite-knockout.js';
+import './ojcustomelement.js';
+import { LifecycleElementState, CustomElementUtils, ElementUtils, transformPreactValue, addPrivatePropGetterSetters, JetElementError, CHILD_BINDING_PROVIDER } from './ojcustomelement-utils.js';
+import { getElementDescriptor, getElementRegistration, registerElement, isElementRegistered, isComposite } from './ojcustomelement-registry.js';
 
 const CompositeInternal = {};
 

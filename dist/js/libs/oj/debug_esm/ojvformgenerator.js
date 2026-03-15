@@ -7,10 +7,10 @@
  */
 import { jsxs, jsx } from 'preact/jsx-runtime';
 import { Fragment, Component, toChildArray } from 'preact';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import 'ojs/ojlabel';
-import { ElementUtils } from 'ojs/ojcustomelement-utils';
-import { addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import './ojlabel.js';
+import { ElementUtils } from './ojcustomelement-utils.js';
+import { addResizeListener, removeResizeListener } from './ojdomutils.js';
 
 // VStartLabeler function component adds the dom for the
 function VStartLabeler(props) {

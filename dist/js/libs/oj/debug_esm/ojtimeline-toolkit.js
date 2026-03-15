@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { KeyboardEvent, Agent, EventManager, ResourceUtils, HtmlTooltipManager, CSSStyle, PathUtils, JsonUtils, Rect, MouseEvent, Displayable, Point, Automation, BaseComponentDefaults, Container, Stroke, Polygon, Path, ToolkitUtils, Animator, Image, OutputText, TextUtils, Line, Timer, AriaUtils, EventFactory, SimpleMarker, ColorUtils, SolidFill, LinearGradientFill, Obj, IconButton, ClipPath, Matrix, TransientButton, Rectangle, SimpleScrollbar, LayoutUtils, Dimension, Easing, SelectionEffectUtils, BaseComponent, ParallelPlayable, AnimFadeOut, Playable, AnimFadeIn, SelectionHandler } from 'ojs/ojdvt-toolkit';
-import { TimeComponentKeyboardHandler, TimeComponent, TimeComponentEventManager } from 'ojs/ojdvt-timecomponent';
-import { TimeAxisUtils, TimeAxis } from 'ojs/ojtimeaxis-toolkit';
-import { getLogicalChildPopup } from 'ojs/ojkeyboardfocus-utils';
-import { OverviewParser, Overview, OverviewUtils } from 'ojs/ojdvt-overview';
+import { KeyboardEvent, Agent, EventManager, ResourceUtils, HtmlTooltipManager, CSSStyle, PathUtils, JsonUtils, Rect, MouseEvent, Displayable, Point, Automation, BaseComponentDefaults, Container, Stroke, Polygon, Path, ToolkitUtils, Animator, Image, OutputText, TextUtils, Line, Timer, AriaUtils, EventFactory, SimpleMarker, ColorUtils, SolidFill, LinearGradientFill, Obj, IconButton, ClipPath, Matrix, TransientButton, Rectangle, SimpleScrollbar, LayoutUtils, Dimension, Easing, SelectionEffectUtils, BaseComponent, ParallelPlayable, AnimFadeOut, Playable, AnimFadeIn, SelectionHandler } from './ojdvt-toolkit.js';
+import { TimeComponentKeyboardHandler, TimeComponent, TimeComponentEventManager } from './ojdvt-timecomponent.js';
+import { TimeAxisUtils, TimeAxis } from './ojtimeaxis-toolkit.js';
+import { getLogicalChildPopup } from './ojkeyboardfocus-utils.js';
+import { OverviewParser, Overview, OverviewUtils } from './ojdvt-overview.js';
 
 /**
  * Timeline keyboard handler.

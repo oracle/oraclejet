@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcomponentcore';
-import 'ojs/ojoption';
-import 'ojs/ojdataprovider';
-import { register } from 'ojs/ojcomposite';
+import './ojcomponentcore.js';
+import './ojoption.js';
+import './ojdataprovider.js';
+import { register } from './ojcomposite.js';
 
 /**
  * @ojcomponent oj.ojMenuSelectMany

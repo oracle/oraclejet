@@ -6,7 +6,7 @@
  * @ignore
  */
 import { observable, utils } from 'knockout';
-import { ExpandedKeySet, KeySetImpl } from 'ojs/ojkeyset';
+import { ExpandedKeySet, KeySetImpl } from './ojkeyset.js';
 
 class ObservableExpandedKeySet {
     constructor(initialValue) {

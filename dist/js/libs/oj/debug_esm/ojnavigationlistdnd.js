@@ -6,8 +6,8 @@
  * @ignore
  */
 import $ from 'jquery';
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojlistviewdnd';
+import oj from './ojcore-base.js';
+import './ojlistviewdnd.js';
 
 /**
  * @ignore

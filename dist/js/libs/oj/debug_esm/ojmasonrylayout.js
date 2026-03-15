@@ -5,16 +5,16 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import Context from 'ojs/ojcontext';
-import { getAutomationMode } from 'ojs/ojconfig';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import { subtreeAttached, subtreeDetached, subtreeHidden, subtreeShown } from 'ojs/ojcomponentcore';
-import { startAnimation } from 'ojs/ojanimation';
-import { warn } from 'ojs/ojlogger';
-import { isTouchSupported, addResizeListener, removeResizeListener, isAncestor } from 'ojs/ojdomutils';
-import FocusUtils from 'ojs/ojfocusutils';
+import Context from './ojcontext.js';
+import { getAutomationMode } from './ojconfig.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import { subtreeAttached, subtreeDetached, subtreeHidden, subtreeShown } from './ojcomponentcore.js';
+import { startAnimation } from './ojanimation.js';
+import { warn } from './ojlogger.js';
+import { isTouchSupported, addResizeListener, removeResizeListener, isAncestor } from './ojdomutils.js';
+import FocusUtils from './ojfocusutils.js';
 import 'ojdnd';
 
 var __oj_masonry_layout_metadata = 

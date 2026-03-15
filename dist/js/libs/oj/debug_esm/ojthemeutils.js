@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { warn, error } from 'ojs/ojlogger';
+import oj from './ojcore-base.js';
+import { warn, error } from './ojlogger.js';
 
 const _OJ_THEME_JSON = 'oj-theme-json';
 
@@ -136,6 +136,15 @@ ThemeUtils.clearCache = function () {
  * @static
  */
 ThemeUtils.parseJSONFromFontFamily = function (selector) {
+  if (
+    typeof document === 'undefined' ||
+    typeof window === 'undefined' ||
+    !document.head ||
+    typeof window.getComputedStyle !== 'function'
+  ) {
+    return null;
+  }
+
   // NOTE: I first tried code inspired by
   // https://css-tricks.com/making-sass-talk-to-javascript-with-json/
   // so I was using :before and content, for example

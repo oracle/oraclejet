@@ -6,13 +6,13 @@
  * @ignore
  */
 import { jsx } from 'preact/jsx-runtime';
-import oj from 'ojs/ojcore-base';
-import { recentPointer } from 'ojs/ojdomutils';
-import { Root, customElement } from 'ojs/ojvcomponent';
+import oj from './ojcore-base.js';
+import { recentPointer } from './ojdomutils.js';
+import { Root, customElement } from './ojvcomponent.js';
 import { Component, createRef } from 'preact';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import { pickFiles } from 'ojs/ojfilepickerutils';
-import FocusUtils from 'ojs/ojfocusutils';
+import { getTranslatedString } from './ojtranslation.js';
+import { pickFiles } from './ojfilepickerutils.js';
+import FocusUtils from './ojfocusutils.js';
 import 'jqueryui-amd/tabbable';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {

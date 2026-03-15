@@ -8,16 +8,16 @@
 import { jsx, jsxs } from 'preact/jsx-runtime';
 import { useCallback, useEffect, useState, useContext, useRef, useLayoutEffect, useMemo, useImperativeHandle } from 'preact/hooks';
 import { Fragment, Component, createContext, cloneElement, createRef } from 'preact';
-import { getLocale, getDeviceType } from 'ojs/ojconfig';
-import oj from 'ojs/ojcore-base';
-import { error, warn, info, log } from 'ojs/ojlogger';
-import { SoundUtils } from 'ojs/ojsoundutils';
-import { startAnimation } from 'ojs/ojanimation';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import Context from 'ojs/ojcontext';
-import { withDataProvider } from 'ojs/ojdataproviderhandler';
-import { Root, customElement } from 'ojs/ojvcomponent';
-import 'ojs/ojbutton';
+import { getLocale, getDeviceType } from './ojconfig.js';
+import oj from './ojcore-base.js';
+import { error, warn, info, log } from './ojlogger.js';
+import { SoundUtils } from './ojsoundutils.js';
+import { startAnimation } from './ojanimation.js';
+import { getTranslatedString } from './ojtranslation.js';
+import Context from './ojcontext.js';
+import { withDataProvider } from './ojdataproviderhandler.js';
+import { Root, customElement } from './ojvcomponent.js';
+import './ojbutton.js';
 
 /**
  * A Component for rendering the message close button

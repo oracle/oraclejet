@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { info } from 'ojs/ojlogger';
+import { info } from './ojlogger.js';
 
 var _a;
 class AsyncIteratorWrapper {

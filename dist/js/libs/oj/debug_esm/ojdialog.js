@@ -5,18 +5,18 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { PositionUtils, ZOrderUtils, PopupService, PopupWhenReadyMediator } from 'ojs/ojpopupcore';
-import 'ojs/ojbutton';
+import { PositionUtils, ZOrderUtils, PopupService, PopupWhenReadyMediator } from './ojpopupcore.js';
+import './ojbutton.js';
 import 'jqueryui-amd/widgets/mouse';
 import 'jqueryui-amd/widgets/draggable';
 import $ from 'jquery';
-import oj from 'ojs/ojcore-base';
-import { isAncestorOrSelf, removeResizeListener, addResizeListener, getCSSLengthAsFloat } from 'ojs/ojdomutils';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import { subtreeAttached, subtreeDetached, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { startAnimation } from 'ojs/ojanimation';
-import FocusUtils from 'ojs/ojfocusutils';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import oj from './ojcore-base.js';
+import { isAncestorOrSelf, removeResizeListener, addResizeListener, getCSSLengthAsFloat } from './ojdomutils.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import { subtreeAttached, subtreeDetached, setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import { startAnimation } from './ojanimation.js';
+import FocusUtils from './ojfocusutils.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 (function () {
   const OJ_RESIZABLE_HANDLE_SELECTOR = '.oj-resizable-handle';

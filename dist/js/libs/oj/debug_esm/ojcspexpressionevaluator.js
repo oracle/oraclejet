@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { CspExpressionEvaluatorInternal } from 'ojs/ojcspexpressionevaluator-internal';
-import 'ojs/ojkoshared';
+import { CspExpressionEvaluatorInternal } from './ojcspexpressionevaluator-internal.js';
+import './ojkoshared.js';
 
 /**
  * @license

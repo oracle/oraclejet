@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { DataAxisInfoMixin, LinearScaleAxisValueFormatter } from 'ojs/ojdvt-axis';
+import { DataAxisInfoMixin, LinearScaleAxisValueFormatter } from './ojdvt-axis.js';
 
 function getLabelFormatInfo(options) {
     let axisOptions = {};

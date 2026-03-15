@@ -6,11 +6,11 @@
  * @ignore
  */
 import 'touchr';
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import Context from 'ojs/ojcontext';
-import { tearDownPullToRefresh, setupPullToRefresh } from 'ojs/ojpulltorefresh';
-import { error } from 'ojs/ojlogger';
+import Context from './ojcontext.js';
+import { tearDownPullToRefresh, setupPullToRefresh } from './ojpulltorefresh.js';
+import { error } from './ojlogger.js';
 
 var __oj_refresher_metadata = 
 {

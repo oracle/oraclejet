@@ -6,17 +6,17 @@
  * @ignore
  */
 import { jsx, jsxs } from 'preact/jsx-runtime';
-import { Root, customElement } from 'ojs/ojvcomponent';
+import { Root, customElement } from './ojvcomponent.js';
 import { Component, createRef } from 'preact';
 import $ from 'jquery';
-import { slideIn, slideOut } from 'ojs/ojanimation';
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojpopup';
-import { PopupService, ZOrderUtils } from 'ojs/ojpopupcore';
-import { DrawerUtils, DrawerConstants } from 'ojs/ojdrawerutils';
+import { slideIn, slideOut } from './ojanimation.js';
+import oj from './ojcore-base.js';
+import './ojpopup.js';
+import { PopupService, ZOrderUtils } from './ojpopupcore.js';
+import { DrawerUtils, DrawerConstants } from './ojdrawerutils.js';
 import Hammer from 'hammerjs';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
-import Context from 'ojs/ojcontext';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
+import Context from './ojcontext.js';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;

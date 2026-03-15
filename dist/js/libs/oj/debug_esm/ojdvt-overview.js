@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { BaseComponentDefaults, EventManager, SvgDocumentUtils, Point, MouseEvent, Agent, Rect, PathUtils, Path, ToolkitUtils, OutputText, Container, Line, Stroke, TextUtils, TouchEvent, CSSStyle, Animator, Easing, BackgroundOutputText, EventFactory, KeyboardEvent } from 'ojs/ojdvt-toolkit';
+import { BaseComponentDefaults, EventManager, SvgDocumentUtils, Point, MouseEvent, Agent, Rect, PathUtils, Path, ToolkitUtils, OutputText, Container, Line, Stroke, TextUtils, TouchEvent, CSSStyle, Animator, Easing, BackgroundOutputText, EventFactory, KeyboardEvent } from './ojdvt-toolkit.js';
 
 /**
  * Default values and utility functions for component versioning.

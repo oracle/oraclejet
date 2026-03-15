@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { getLocale } from 'ojs/ojconfig';
+import { getLocale } from './ojconfig.js';
 import { matchTranslationBundle as matchTranslationBundle$1 } from '@oracle/oraclejet-preact/utils/UNSAFE_matchTranslationBundle';
 import supportedLocales from '@oracle/oraclejet-preact/resources/nls/supportedLocales';
 

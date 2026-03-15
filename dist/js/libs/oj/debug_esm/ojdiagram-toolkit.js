@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { BaseComponentDefaults, CSSStyle, CategoryRolloverHandler, Obj, Point, Matrix, Rectangle, PathUtils, Polygon, Polyline, Circle, Rect, Container, Stroke, Path, SelectionEffectUtils, ToolkitUtils, JsonUtils, Agent, MultilineText, OutputText, TextUtils, BackgroundMultilineText, BackgroundOutputText, Displayable, ResourceUtils, MouseEvent, KeyboardEvent, ArrayUtils, CustomAnimation, Animator, Playable, AnimFadeOut, AnimFadeIn, BaseComponent, ImageMarker, SimpleMarker, PatternFill, KeyboardHandler, AnimScaleTo, SolidFill, EventManager, IconButton, EventFactory, ClipPath, Dimension, Automation, DataAnimationHandler, BlackBoxAnimationHandler, SelectionHandler } from 'ojs/ojdvt-toolkit';
-import { PanZoomCanvasKeyboardHandler, PanZoomComponent, PanZoomCanvas } from 'ojs/ojdvt-panzoomcanvas';
-import { getLogicalChildPopup } from 'ojs/ojkeyboardfocus-utils';
-import { Overview } from 'ojs/ojdvt-overview';
-import { isElementRegistered } from 'ojs/ojcustomelement-registry';
+import { BaseComponentDefaults, CSSStyle, CategoryRolloverHandler, Obj, Point, Matrix, Rectangle, PathUtils, Polygon, Polyline, Circle, Rect, Container, Stroke, Path, SelectionEffectUtils, ToolkitUtils, JsonUtils, Agent, MultilineText, OutputText, TextUtils, BackgroundMultilineText, BackgroundOutputText, Displayable, ResourceUtils, MouseEvent, KeyboardEvent, ArrayUtils, CustomAnimation, Animator, Playable, AnimFadeOut, AnimFadeIn, BaseComponent, ImageMarker, SimpleMarker, PatternFill, KeyboardHandler, AnimScaleTo, SolidFill, EventManager, IconButton, EventFactory, ClipPath, Dimension, Automation, DataAnimationHandler, BlackBoxAnimationHandler, SelectionHandler } from './ojdvt-toolkit.js';
+import { PanZoomCanvasKeyboardHandler, PanZoomComponent, PanZoomCanvas } from './ojdvt-panzoomcanvas.js';
+import { getLogicalChildPopup } from './ojkeyboardfocus-utils.js';
+import { Overview } from './ojdvt-overview.js';
+import { isElementRegistered } from './ojcustomelement-registry.js';
 
 /**
  * Default values and utility functions for component versioning.

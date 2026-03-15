@@ -5,17 +5,17 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import Context from 'ojs/ojcontext';
-import { isTouchSupported } from 'ojs/ojdomutils';
-import { getTranslatedString } from 'ojs/ojtranslation';
+import Context from './ojcontext.js';
+import { isTouchSupported } from './ojdomutils.js';
+import { getTranslatedString } from './ojtranslation.js';
 import { Pan, DIRECTION_VERTICAL } from 'hammerjs';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import 'ojs/ojjquery-hammer';
-import 'ojs/ojcomponentcore';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import './ojjquery-hammer.js';
+import './ojcomponentcore.js';
 import 'touchr';
-import 'ojs/ojprogress-circle';
+import './ojprogress-circle.js';
 
 /**
  * @namespace PullToRefreshUtils

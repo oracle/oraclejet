@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojdatasource-common';
+import oj from './ojcore-base.js';
+import './ojdatasource-common.js';
 
 /**
  * @class ArrayCellSet

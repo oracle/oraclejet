@@ -7,16 +7,16 @@
  */
 import { jsx } from 'preact/jsx-runtime';
 import { h, Component } from 'preact';
-import { Root, customElement } from 'ojs/ojvcomponent';
-import oj from 'ojs/ojcore-base';
-import { handleActionablePrevTab, handleActionableTab, disableAllFocusableElements, getNoJQFocusHandlers, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
-import { fadeOut, slideIn, fadeIn, slideOut } from 'ojs/ojanimation';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import Context from 'ojs/ojcontext';
-import { info } from 'ojs/ojlogger';
-import { IteratingDataProviderContentHandler } from 'ojs/ojvcollection';
-import { makeFocusable, getCSSTimeUnitAsMillis } from 'ojs/ojdomutils';
+import { Root, customElement } from './ojvcomponent.js';
+import oj from './ojcore-base.js';
+import { handleActionablePrevTab, handleActionableTab, disableAllFocusableElements, getNoJQFocusHandlers, enableAllFocusableElements } from './ojdatacollection-common.js';
+import { fadeOut, slideIn, fadeIn, slideOut } from './ojanimation.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
+import { getTranslatedString } from './ojtranslation.js';
+import Context from './ojcontext.js';
+import { info } from './ojlogger.js';
+import { IteratingDataProviderContentHandler } from './ojvcollection.js';
+import { makeFocusable, getCSSTimeUnitAsMillis } from './ojdomutils.js';
 
 /**
  * Default class that controls how the items are layout in WaterfallLayout.  In the future release,

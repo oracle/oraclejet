@@ -5,22 +5,22 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcore';
-import 'ojs/ojknockout';
-import 'ojs/ojbutton';
-import 'ojs/ojjquery-hammer';
-import oj from 'ojs/ojcore-base';
+import './ojcore.js';
+import './ojknockout.js';
+import './ojbutton.js';
+import './ojjquery-hammer.js';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
 import { observable } from 'knockout';
-import { startAnimation } from 'ojs/ojanimation';
-import { isTouchSupported, getReadingDirection } from 'ojs/ojdomutils';
-import { subtreeHidden } from 'ojs/ojcomponentcore';
-import { register } from 'ojs/ojcomposite';
-import Context from 'ojs/ojcontext';
+import { startAnimation } from './ojanimation.js';
+import { isTouchSupported, getReadingDirection } from './ojdomutils.js';
+import { subtreeHidden } from './ojcomponentcore.js';
+import { register } from './ojcomposite.js';
+import Context from './ojcontext.js';
 import { Swipe, DIRECTION_ALL } from 'hammerjs';
-import { info } from 'ojs/ojlogger';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import { getComponentTranslations, getTranslatedString } from 'ojs/ojtranslation';
+import { info } from './ojlogger.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import { getComponentTranslations, getTranslatedString } from './ojtranslation.js';
 
 const ojMessage = {};
 
@@ -1169,7 +1169,7 @@ MessageViewModel.prototype._formatTimestamp = function () {
 };
 
 MessageViewModel.prototype._getConverterPromise = function (timestamp) {
-  const dateTimeConverterLoadPromise = import('ojs/ojconverter-datetime');
+  const dateTimeConverterLoadPromise = import('./ojconverter-datetime.js');
   return dateTimeConverterLoadPromise.then(
     function (__DateTimeConverter) {
       // use default format as in UX specs

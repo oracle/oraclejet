@@ -6,8 +6,8 @@
  * @ignore
  */
 import $ from 'jquery';
-import { PRESS_HOLD_THRESHOLD, isTouchSupported } from 'ojs/ojdomutils';
-import oj from 'ojs/ojcore-base';
+import { PRESS_HOLD_THRESHOLD, isTouchSupported } from './ojdomutils.js';
+import oj from './ojcore-base.js';
 
 /* jslint browser: true*/
 

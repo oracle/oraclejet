@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { subtreeHidden, subtreeShown } from 'ojs/ojcomponentcore';
-import 'ojs/ojcustomelement';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
-import oj from 'ojs/ojcore-base';
+import { subtreeHidden, subtreeShown } from './ojcomponentcore.js';
+import './ojcustomelement.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
+import oj from './ojcore-base.js';
 
 /**
  * @ojcomponent oj.ojSwitcher

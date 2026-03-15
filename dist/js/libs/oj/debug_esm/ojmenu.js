@@ -6,20 +6,20 @@
  * @ignore
  */
 import $ from 'jquery';
-import 'ojs/ojjquery-hammer';
-import { PositionUtils, ZOrderUtils, PopupService, PopupWhenReadyMediator } from 'ojs/ojpopupcore';
-import 'ojs/ojoption';
-import oj from 'ojs/ojcore-base';
+import './ojjquery-hammer.js';
+import { PositionUtils, ZOrderUtils, PopupService, PopupWhenReadyMediator } from './ojpopupcore.js';
+import './ojoption.js';
+import oj from './ojcore-base.js';
 import { Swipe, DIRECTION_HORIZONTAL } from 'hammerjs';
-import Context from 'ojs/ojcontext';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { _OJ_CONTAINER_ATTR, subtreeShown, __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { startAnimation } from 'ojs/ojanimation';
-import { warn } from 'ojs/ojlogger';
-import { getDeviceRenderMode } from 'ojs/ojconfig';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
-import { isElementRegistered } from 'ojs/ojcustomelement-registry';
-import { getTranslatedString } from 'ojs/ojtranslation';
+import Context from './ojcontext.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
+import { _OJ_CONTAINER_ATTR, subtreeShown, __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import { startAnimation } from './ojanimation.js';
+import { warn } from './ojlogger.js';
+import { getDeviceRenderMode } from './ojconfig.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
+import { isElementRegistered } from './ojcustomelement-registry.js';
+import { getTranslatedString } from './ojtranslation.js';
 
 (function () {
   // -----------------------------------------------------------------------------

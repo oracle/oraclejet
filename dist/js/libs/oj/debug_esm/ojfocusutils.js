@@ -6,8 +6,8 @@
  * @ignore
  */
 import $ from 'jquery';
-import oj from 'ojs/ojcore-base';
-import { isAncestorOrSelf } from 'ojs/ojdomutils';
+import oj from './ojcore-base.js';
+import { isAncestorOrSelf } from './ojdomutils.js';
 
 /**
  * Focus utilities.

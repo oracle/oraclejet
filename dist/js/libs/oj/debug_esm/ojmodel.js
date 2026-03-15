@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { warn, error } from 'ojs/ojlogger';
+import oj from './ojcore-base.js';
+import { warn, error } from './ojlogger.js';
 import $ from 'jquery';
-import { getLocale } from 'ojs/ojconfig';
+import { getLocale } from './ojconfig.js';
 
 /**
  * @constructor

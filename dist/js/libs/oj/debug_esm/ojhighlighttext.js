@@ -7,8 +7,8 @@
  */
 import { jsx } from 'preact/jsx-runtime';
 import { Component } from 'preact';
-import { Root, customElement } from 'ojs/ojvcomponent';
-import oj from 'ojs/ojcore-base';
+import { Root, customElement } from './ojvcomponent.js';
+import oj from './ojcore-base.js';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;

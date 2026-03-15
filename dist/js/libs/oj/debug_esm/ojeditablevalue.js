@@ -5,25 +5,25 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter, isComponentInitialized } from 'ojs/ojcomponentcore';
-import 'ojs/ojpopup';
-import { isAncestorOrSelf, isAncestor, isTouchSupported, isHTMLContent, cleanHtml, validateURL, makeFocusable } from 'ojs/ojdomutils';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import Context from 'ojs/ojcontext';
+import oj from './ojcore-base.js';
+import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter, isComponentInitialized } from './ojcomponentcore.js';
+import './ojpopup.js';
+import { isAncestorOrSelf, isAncestor, isTouchSupported, isHTMLContent, cleanHtml, validateURL, makeFocusable } from './ojdomutils.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import Context from './ojcontext.js';
 import $ from 'jquery';
-import 'ojs/ojlabel';
-import FocusUtils from 'ojs/ojfocusutils';
-import { error, info, warn } from 'ojs/ojlogger';
-import RequiredValidator from 'ojs/ojvalidator-required';
-import LabelledByUtils from 'ojs/ojlabelledbyutils';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import Message from 'ojs/ojmessaging';
-import ConverterUtils from 'ojs/ojconverterutils';
-import { ConverterError, ValidatorError } from 'ojs/ojvalidation-error';
+import './ojlabel.js';
+import FocusUtils from './ojfocusutils.js';
+import { error, info, warn } from './ojlogger.js';
+import RequiredValidator from './ojvalidator-required.js';
+import LabelledByUtils from './ojlabelledbyutils.js';
+import { getTranslatedString } from './ojtranslation.js';
+import Message from './ojmessaging.js';
+import ConverterUtils from './ojconverterutils.js';
+import { ConverterError, ValidatorError } from './ojvalidation-error.js';
 import { Press } from 'hammerjs';
-import 'ojs/ojjquery-hammer';
-import { startAnimation } from 'ojs/ojanimation';
+import './ojjquery-hammer.js';
+import { startAnimation } from './ojanimation.js';
 
 /**
  * Base class for rendering the 'inside' labels. This is so InsideLabelStrategy

@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import Converter from 'ojs/ojconverter';
-import { ConverterError } from 'ojs/ojvalidation-error';
+import oj from './ojcore-base.js';
+import { getTranslatedString } from './ojtranslation.js';
+import Converter from './ojconverter.js';
+import { ConverterError } from './ojvalidation-error.js';
 
 /**
  * ColorConverter Contract.

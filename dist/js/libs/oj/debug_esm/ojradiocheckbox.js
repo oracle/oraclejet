@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import { error, warn } from 'ojs/ojlogger';
-import { subtreeAttached } from 'ojs/ojcomponentcore';
+import { error, warn } from './ojlogger.js';
+import { subtreeAttached } from './ojcomponentcore.js';
 
 /**
  * The _ojRadio component enhances a browser input element into one that is

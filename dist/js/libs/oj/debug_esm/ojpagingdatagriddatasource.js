@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import Message from 'ojs/ojmessaging';
-import 'ojs/ojpagingtabledatasource';
+import oj from './ojcore-base.js';
+import Message from './ojmessaging.js';
+import './ojpagingtabledatasource.js';
 
 /**
  * @class PagingCellSet

@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { warn } from 'ojs/ojlogger';
+import oj from './ojcore-base.js';
+import { warn } from './ojlogger.js';
 
 /**
  * @namespace

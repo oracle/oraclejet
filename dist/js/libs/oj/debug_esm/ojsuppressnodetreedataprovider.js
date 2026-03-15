@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { wrapWithAbortHandling } from 'ojs/ojdataprovider';
+import { EventTargetMixin } from './ojeventtarget.js';
+import { wrapWithAbortHandling } from './ojdataprovider.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

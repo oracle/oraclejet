@@ -5,15 +5,15 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { info, error } from 'ojs/ojlogger';
-import { OraI18nUtils, IntlConverterUtils } from 'ojs/ojconverterutils-i18n';
-import { __getBundle } from 'ojs/ojlocaledata';
-import Converter from 'ojs/ojconverter';
-import { getTranslatedString } from 'ojs/ojtranslation';
-import { getLocale } from 'ojs/ojconfig';
-import oj$1 from 'ojs/ojcore-base';
-import { ConverterError } from 'ojs/ojvalidation-error';
-import { getMergedNumberPreferencesWithOptions } from 'ojs/ojconverter-preferences';
+import { info, error } from './ojlogger.js';
+import { OraI18nUtils, IntlConverterUtils } from './ojconverterutils-i18n.js';
+import { __getBundle } from './ojlocaledata.js';
+import Converter from './ojconverter.js';
+import { getTranslatedString } from './ojtranslation.js';
+import { getLocale } from './ojconfig.js';
+import oj$1 from './ojcore-base.js';
+import { ConverterError } from './ojvalidation-error.js';
+import { getMergedNumberPreferencesWithOptions } from './ojconverter-preferences.js';
 
 /* xeslint-disable no-param-reassign */
 /**
@@ -2421,7 +2421,7 @@ const NumberConverter = function () {
 };
 
 // Subclass from oj.Object
-oj.Object.createSubclass(NumberConverter, Converter, 'oj.NumberConverter');
+oj$1.Object.createSubclass(NumberConverter, Converter, 'oj.NumberConverter');
 
 /**
  * Initializes the number converter instance with the set options.

@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { wrapWithAbortHandling, DataProviderFeatureChecker } from 'ojs/ojdataprovider';
+import oj from './ojcore-base.js';
+import { wrapWithAbortHandling, DataProviderFeatureChecker } from './ojdataprovider.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

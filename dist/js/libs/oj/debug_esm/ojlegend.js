@@ -5,12 +5,12 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import DvtAttributeUtils from 'ojs/ojdvt-base';
+import oj from './ojcore-base.js';
+import { setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import DvtAttributeUtils from './ojdvt-base.js';
 import $ from 'jquery';
-import { Legend } from 'ojs/ojlegend-toolkit';
-import { AllKeySetImpl } from 'ojs/ojkeyset';
+import { Legend } from './ojlegend-toolkit.js';
+import { AllKeySetImpl } from './ojkeyset.js';
 
 var __oj_legend_metadata = 
 {

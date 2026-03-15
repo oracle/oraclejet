@@ -29,8 +29,8 @@
  *
  * <pre class="prettyprint">
  * <code>
- * import { consumedBindings, providedBindings } from "ojs/ojvcomponent-binding";
- * import { customElement, ExtendGlobalProps } from "ojs/ojvcomponent";
+ * import { consumedBindings, providedBindings } from './ojvcomponent-binding.js';
+ * import { customElement, ExtendGlobalProps } from './ojvcomponent.js';
  * import { Component } from "preact";
  *
  * type Props = Readonly<{

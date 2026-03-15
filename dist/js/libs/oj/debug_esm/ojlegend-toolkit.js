@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { SelectionEffectUtils, IconButton, Displayable, Agent, MouseEvent, KeyboardHandler, Rectangle, Rect, Automation, BaseComponentDefaults, CSSStyle, TextUtils, EventManager, SimpleMarker, EventFactory, SimpleObjPeer, JsonUtils, ToolkitUtils, KeyboardEvent, SimpleScrollableContainer, Container, Dimension, LayoutUtils, OutputText, ImageMarker, PatternFill, Line, Stroke, BaseComponent, CategoryRolloverHandler, Obj, ResourceUtils, AriaUtils } from 'ojs/ojdvt-toolkit';
+import { SelectionEffectUtils, IconButton, Displayable, Agent, MouseEvent, KeyboardHandler, Rectangle, Rect, Automation, BaseComponentDefaults, CSSStyle, TextUtils, EventManager, SimpleMarker, EventFactory, SimpleObjPeer, JsonUtils, ToolkitUtils, KeyboardEvent, SimpleScrollableContainer, Container, Dimension, LayoutUtils, OutputText, ImageMarker, PatternFill, Line, Stroke, BaseComponent, CategoryRolloverHandler, Obj, ResourceUtils, AriaUtils } from './ojdvt-toolkit.js';
 
 /**
  * Utility functions for Legend.

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { wrapWithAbortHandling } from 'ojs/ojdataprovider';
+import { wrapWithAbortHandling } from './ojdataprovider.js';
 
 /**
  * Helper class for debouncing fetch requests.

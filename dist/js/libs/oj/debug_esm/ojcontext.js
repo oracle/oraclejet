@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { option, LEVEL_LOG, log, info, error } from 'ojs/ojlogger';
-import { getMetadata } from 'ojs/ojcustomelement-registry';
+import oj from './ojcore-base.js';
+import { option, LEVEL_LOG, log, info, error } from './ojlogger.js';
+import { getMetadata } from './ojcustomelement-registry.js';
 
 /**
  * Internally used by the {@link oj.BusyContext} to track a components state

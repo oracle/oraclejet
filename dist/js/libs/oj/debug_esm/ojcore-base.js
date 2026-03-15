@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { error, log, warn, info } from 'ojs/ojlogger';
-import 'ojs/ojwebdrivertest-proxy';
+import { error, log, warn, info } from './ojlogger.js';
+import './ojwebdrivertest-proxy.js';
 
 /**
  * Defines the oj namespace

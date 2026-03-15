@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { wrapWithAbortHandling, DataProviderRefreshEvent, FilterFactory } from 'ojs/ojdataprovider';
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { BehaviorSubject } from 'ojs/ojobservable';
+import oj from './ojcore-base.js';
+import { wrapWithAbortHandling, DataProviderRefreshEvent, FilterFactory } from './ojdataprovider.js';
+import { EventTargetMixin } from './ojeventtarget.js';
+import { BehaviorSubject } from './ojobservable.js';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors

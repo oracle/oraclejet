@@ -9,7 +9,7 @@ import { jsx } from 'preact/jsx-runtime';
 import { Fragment } from 'preact';
 import { useRef, useEffect } from 'preact/hooks';
 import { useTabbableMode } from '@oracle/oraclejet-preact/hooks/UNSAFE_useTabbableMode';
-import { disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojkeyboardfocus-utils';
+import { disableAllFocusableElements, enableAllFocusableElements } from './ojkeyboardfocus-utils.js';
 
 /**
  * The ManageTabStops component is used to provide tabbable mode for legacy components

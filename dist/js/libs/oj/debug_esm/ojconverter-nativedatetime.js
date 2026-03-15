@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { getLocale } from 'ojs/ojconfig';
+import { getLocale } from './ojconfig.js';
 import { getFormatParse, normalizeIsoString, CalendarUtils, NativeParserImpl, DateTimeUtils, getISODateOffset, NativeDateTimeConstants } from '@oracle/oraclejet-preact/UNSAFE_IntlDateTime';
 export { NativeParserImpl, getISODateOffset } from '@oracle/oraclejet-preact/UNSAFE_IntlDateTime';
-import { warn } from 'ojs/ojlogger';
+import { warn } from './ojlogger.js';
 import { FormatParseError } from '@oracle/oraclejet-preact/UNSAFE_IntlFormatParse';
 export { FormatParseError } from '@oracle/oraclejet-preact/UNSAFE_IntlFormatParse';
 

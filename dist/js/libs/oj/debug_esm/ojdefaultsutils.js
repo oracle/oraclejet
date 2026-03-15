@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { deepFreeze, getDefaultValues } from 'ojs/ojmetadatautils';
+import { deepFreeze, getDefaultValues } from './ojmetadatautils.js';
 
 /**
  * Utility methods for handling defaults coming from metadata,

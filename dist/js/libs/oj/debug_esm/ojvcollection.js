@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { getEventDetail, CHECKVIEWPORT_THRESHOLD, getScrollEventElement } from 'ojs/ojdatacollection-common';
-import { info, warn, error } from 'ojs/ojlogger';
-import CachedIteratorResultsDataProvider from 'ojs/ojcachediteratorresultsdataprovider';
-import DomScroller from 'ojs/ojdomscroller';
+import oj from './ojcore-base.js';
+import { getEventDetail, CHECKVIEWPORT_THRESHOLD, getScrollEventElement } from './ojdatacollection-common.js';
+import { info, warn, error } from './ojlogger.js';
+import CachedIteratorResultsDataProvider from './ojcachediteratorresultsdataprovider.js';
+import DomScroller from './ojdomscroller.js';
 
 /**
  * Base class that generates content from a DataProvider on behalf of the component

@@ -6,21 +6,21 @@
  * @ignore
  */
 import { bindingHandlers, computed, utils, computedContext, virtualElements, applyBindingsToDescendants, version, unwrap, ignoreDependencies, isObservable, isWriteableObservable, contextFor, cleanNode, observable, pureComputed } from 'knockout';
-import BindingProviderImpl from 'ojs/ojkoshared';
-import oj$1 from 'ojs/ojcore';
-import { isElementRegistered, isComposite, isVComponent, getMetadata } from 'ojs/ojcustomelement-registry';
-import * as DomUtils from 'ojs/ojdomutils';
-import { setInKoCleanExternal } from 'ojs/ojdomutils';
-import { error, info } from 'ojs/ojlogger';
-import { AttributeUtils, CustomElementUtils, JetElementError, KoBindingUtils, OJ_BIND_CONVERTED_NODE, ElementUtils } from 'ojs/ojcustomelement-utils';
-import { performMonitoredWriteback } from 'ojs/ojmonitoring';
-import { CONSUMED_CONTEXT, getPropagationMetadataViaCache, STATIC_PROPAGATION } from 'ojs/ojbindpropagation';
-import KeySetImpl from 'ojs/ojkeysetimpl';
-import Context from 'ojs/ojcontext';
-import templateEngine from 'ojs/ojtemplateengine-ko';
-import oj$2 from 'ojs/ojcore-base';
-import * as KnockoutTemplateUtils from 'ojs/ojknockouttemplateutils';
-import * as ResponsiveKnockoutUtils from 'ojs/ojresponsiveknockoututils';
+import BindingProviderImpl from './ojkoshared.js';
+import oj$1 from './ojcore.js';
+import { isElementRegistered, isComposite, isVComponent, getMetadata } from './ojcustomelement-registry.js';
+import * as DomUtils from './ojdomutils.js';
+import { setInKoCleanExternal } from './ojdomutils.js';
+import { error, info } from './ojlogger.js';
+import { AttributeUtils, CustomElementUtils, JetElementError, KoBindingUtils, OJ_BIND_CONVERTED_NODE, ElementUtils } from './ojcustomelement-utils.js';
+import { performMonitoredWriteback } from './ojmonitoring.js';
+import { CONSUMED_CONTEXT, getPropagationMetadataViaCache, STATIC_PROPAGATION } from './ojbindpropagation.js';
+import KeySetImpl from './ojkeysetimpl.js';
+import Context from './ojcontext.js';
+import templateEngine from './ojtemplateengine-ko.js';
+import oj$2 from './ojcore-base.js';
+import * as KnockoutTemplateUtils from './ojknockouttemplateutils.js';
+import * as ResponsiveKnockoutUtils from './ojresponsiveknockoututils.js';
 
 /**
  * @ojoverviewdoc BindingOverview - [4]JET Binding Elements

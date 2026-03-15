@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { DataGridProviderUpdateEvent, DataGridProviderRefreshEvent, DataGridProviderRemoveEvent, DataGridProviderAddEvent } from 'ojs/ojdatagridprovider';
-import { EventTargetMixin } from 'ojs/ojeventtarget';
-import { KeyCache, DataProviderUtils } from 'ojs/ojdataprovider';
-import { KeySetImpl } from 'ojs/ojkeyset';
+import { DataGridProviderUpdateEvent, DataGridProviderRefreshEvent, DataGridProviderRemoveEvent, DataGridProviderAddEvent } from './ojdatagridprovider.js';
+import { EventTargetMixin } from './ojeventtarget.js';
+import { KeyCache, DataProviderUtils } from './ojdataprovider.js';
+import { KeySetImpl } from './ojkeyset.js';
 
 class RowDataGridProvider {
     constructor(dataProvider, options) {

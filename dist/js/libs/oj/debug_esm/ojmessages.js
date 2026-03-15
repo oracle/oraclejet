@@ -5,22 +5,22 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
 import { cleanNode, pureComputed } from 'knockout';
-import * as AnimationUtils from 'ojs/ojanimation';
-import Context from 'ojs/ojcontext';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
-import { getComponentTranslations, getTranslatedString, applyParameters } from 'ojs/ojtranslation';
-import { register } from 'ojs/ojcomposite';
-import { subtreeShown, subtreeHidden } from 'ojs/ojcomponentcore';
-import { error } from 'ojs/ojlogger';
-import { isAncestor, getReadingDirection, isAncestorOrSelf } from 'ojs/ojdomutils';
-import 'ojs/ojknockout';
-import { ZOrderUtils, PositionUtils, PopupService } from 'ojs/ojpopupcore';
-import 'ojs/ojmessage';
-import 'ojs/ojdataprovider';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import * as AnimationUtils from './ojanimation.js';
+import Context from './ojcontext.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
+import { getComponentTranslations, getTranslatedString, applyParameters } from './ojtranslation.js';
+import { register } from './ojcomposite.js';
+import { subtreeShown, subtreeHidden } from './ojcomponentcore.js';
+import { error } from './ojlogger.js';
+import { isAncestor, getReadingDirection, isAncestorOrSelf } from './ojdomutils.js';
+import './ojknockout.js';
+import { ZOrderUtils, PositionUtils, PopupService } from './ojpopupcore.js';
+import './ojmessage.js';
+import './ojdataprovider.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 /* jslint browser: true*/
 

@@ -5,14 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { getTranslatedString } from 'ojs/ojtranslation';
+import oj from './ojcore-base.js';
+import { getTranslatedString } from './ojtranslation.js';
 import $ from 'jquery';
 import { Pan, DIRECTION_VERTICAL } from 'hammerjs';
-import Context from 'ojs/ojcontext';
-import 'ojs/ojjquery-hammer';
-import 'ojs/ojcomponentcore';
-import { unwrap, isTouchSupported, removeResizeListener, addResizeListener } from 'ojs/ojdomutils';
+import Context from './ojcontext.js';
+import './ojjquery-hammer.js';
+import './ojcomponentcore.js';
+import { unwrap, isTouchSupported, removeResizeListener, addResizeListener } from './ojdomutils.js';
 
 (function () {
 var __oj_indexer_metadata = 

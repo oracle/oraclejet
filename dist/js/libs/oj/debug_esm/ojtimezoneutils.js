@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { AvailableTimeZones } from 'ojs/ojavailabletimezones';
-import 'ojs/ojtimezonedata';
+import { AvailableTimeZones } from './ojavailabletimezones.js';
+import './ojtimezonedata.js';
 
 /**
  * A utility class for retrieving available timezones. NOTE: This module automatically

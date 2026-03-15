@@ -5,25 +5,25 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
-import 'ojs/ojcustomelement';
-import { DataProviderContentHandler, IteratingDataProviderContentHandler } from 'ojs/ojdataproviderscroller';
-import Context from 'ojs/ojcontext';
-import { __getTemplateEngine } from 'ojs/ojconfig';
-import { parseJSONFromFontFamily, getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { enableAllFocusableElements, isFetchAborted, disableAllFocusableElements, isFirefox, isMobileTouchDevice, isIos, isElementIntersectingScrollerBounds, getBrowserVersion, isIE, isElementOrAncestorFocusable, isAndroid, isWindows, isEventClickthroughDisabled, handleActionablePrevTab, handleActionableTab, getFocusableElementsInNode, isEdge, getScrollEventElement, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
-import { fadeIn, startAnimation } from 'ojs/ojanimation';
-import { info, error, warn, log } from 'ojs/ojlogger';
-import { KeySet, KeySetImpl, KeySetUtils } from 'ojs/ojkeyset';
-import KeyMap from 'ojs/ojmap';
-import { getAbortReason } from 'ojs/ojabortreason';
-import { unwrap, removeResizeListener, addResizeListener, getCSSTimeUnitAsMillis, setScrollLeft, isTouchSupported, isMetaKeyPressed } from 'ojs/ojdomutils';
-import 'ojs/ojdataprovideradapter';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
-import { getLogicalChildPopup } from 'ojs/ojkeyboardfocus-utils';
-import { ListViewIndexerModel } from 'ojs/ojindexer';
+import './ojcustomelement.js';
+import { DataProviderContentHandler, IteratingDataProviderContentHandler } from './ojdataproviderscroller.js';
+import Context from './ojcontext.js';
+import { __getTemplateEngine } from './ojconfig.js';
+import { parseJSONFromFontFamily, getCachedCSSVarValues } from './ojthemeutils.js';
+import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from './ojcomponentcore.js';
+import { enableAllFocusableElements, isFetchAborted, disableAllFocusableElements, isFirefox, isMobileTouchDevice, isIos, isElementIntersectingScrollerBounds, getBrowserVersion, isIE, isElementOrAncestorFocusable, isAndroid, isWindows, isEventClickthroughDisabled, handleActionablePrevTab, handleActionableTab, getFocusableElementsInNode, isEdge, getScrollEventElement, disableDefaultBrowserStyling } from './ojdatacollection-common.js';
+import { fadeIn, startAnimation } from './ojanimation.js';
+import { info, error, warn, log } from './ojlogger.js';
+import { KeySet, KeySetImpl, KeySetUtils } from './ojkeyset.js';
+import KeyMap from './ojmap.js';
+import { getAbortReason } from './ojabortreason.js';
+import { unwrap, removeResizeListener, addResizeListener, getCSSTimeUnitAsMillis, setScrollLeft, isTouchSupported, isMetaKeyPressed } from './ojdomutils.js';
+import './ojdataprovideradapter.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
+import { getLogicalChildPopup } from './ojkeyboardfocus-utils.js';
+import { ListViewIndexerModel } from './ojindexer.js';
 
 (function () {
 var __oj_list_view_metadata = 
@@ -3493,7 +3493,7 @@ const _ojListView = _ListViewUtils.clazz(
           new oj.TableDataSourceAdapter(data)
         );
       } else if (typeof oj.TreeDataSource !== 'undefined' && data instanceof oj.TreeDataSource) {
-        var adapterPromise = import('ojs/ojtreedataprovideradapter');
+        var adapterPromise = import('./ojtreedataprovideradapter.js');
         if (!adapterPromise) {
           throw new Error('Error adapting a TreeDataSource');
         }

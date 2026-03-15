@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj$1 from 'ojs/ojcore-base';
-import 'ojs/ojrowexpander';
-import 'ojs/ojdatasource-common';
+import oj$1 from './ojcore-base.js';
+import './ojrowexpander.js';
+import './ojdatasource-common.js';
 
 /**
  * @class FlattenedTreeCellSet

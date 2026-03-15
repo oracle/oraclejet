@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import { bindingProvider, components, ignoreDependencies, virtualElements, nativeTemplateEngine, templateSources, utils, expressionRewriting } from 'knockout';
-import { getExpressionEvaluator } from 'ojs/ojconfig';
-import { error } from 'ojs/ojlogger';
-import { getTemplateContent } from 'ojs/ojhtmlutils';
+import { getExpressionEvaluator } from './ojconfig.js';
+import { error } from './ojlogger.js';
+import { getTemplateContent } from './ojhtmlutils.js';
 
 /**
  * @private

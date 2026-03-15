@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { ImageMarker, CustomAnimation, Animator, AnimFadeOut, AnimFadeIn, SimpleMarker, Stroke, Agent, KeyboardHandler, KeyboardEvent, EventManager, Container, Point, SelectionEffectUtils, Displayable, HtmlTooltipManager, ResourceUtils, MouseEvent, Automation, BaseComponentDefaults, CSSStyle, EventFactory, Rect, Map2D, ClipPath, ArrayUtils, BaseComponent, Dimension, ToolkitUtils, Rectangle, DataAnimationHandler, SelectionHandler, CategoryRolloverHandler, BlackBoxAnimationHandler, AnimPopIn, ParallelPlayable, JsonUtils } from 'ojs/ojdvt-toolkit';
+import { ImageMarker, CustomAnimation, Animator, AnimFadeOut, AnimFadeIn, SimpleMarker, Stroke, Agent, KeyboardHandler, KeyboardEvent, EventManager, Container, Point, SelectionEffectUtils, Displayable, HtmlTooltipManager, ResourceUtils, MouseEvent, Automation, BaseComponentDefaults, CSSStyle, EventFactory, Rect, Map2D, ClipPath, ArrayUtils, BaseComponent, Dimension, ToolkitUtils, Rectangle, DataAnimationHandler, SelectionHandler, CategoryRolloverHandler, BlackBoxAnimationHandler, AnimPopIn, ParallelPlayable, JsonUtils } from './ojdvt-toolkit.js';
 
 /**
  * @param {PictoChart} picto

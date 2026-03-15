@@ -5,17 +5,17 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
+import oj from './ojcore-base.js';
 import $ from 'jquery';
 import { Swipe, DIRECTION_LEFT, DIRECTION_RIGHT, DIRECTION_UP, DIRECTION_DOWN, Pan, DIRECTION_HORIZONTAL, TouchInput } from 'hammerjs';
-import Context from 'ojs/ojcontext';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { subtreeShown, subtreeHidden } from 'ojs/ojcomponentcore';
-import { warn } from 'ojs/ojlogger';
-import { getReadingDirection, makeFocusable, isChromeEvent, isLogicalAncestorOrSelf, isTouchSupported } from 'ojs/ojdomutils';
-import FocusUtils from 'ojs/ojfocusutils';
-import 'ojs/ojjquery-hammer';
-import { ZOrderUtils } from 'ojs/ojpopupcore';
+import Context from './ojcontext.js';
+import { getCachedCSSVarValues } from './ojthemeutils.js';
+import { subtreeShown, subtreeHidden } from './ojcomponentcore.js';
+import { warn } from './ojlogger.js';
+import { getReadingDirection, makeFocusable, isChromeEvent, isLogicalAncestorOrSelf, isTouchSupported } from './ojdomutils.js';
+import FocusUtils from './ojfocusutils.js';
+import './ojjquery-hammer.js';
+import { ZOrderUtils } from './ojpopupcore.js';
 
 /**
  * @namespace

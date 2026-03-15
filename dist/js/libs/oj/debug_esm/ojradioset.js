@@ -5,16 +5,16 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcore';
+import './ojcore.js';
 import $ from 'jquery';
-import 'ojs/ojcomponentcore';
-import { EditableValueUtils } from 'ojs/ojeditablevalue';
-import 'ojs/ojradiocheckbox';
-import 'ojs/ojoption';
-import 'ojs/ojdataprovider';
-import oj from 'ojs/ojcore-base';
-import { warn } from 'ojs/ojlogger';
-import LabeledByUtils from 'ojs/ojlabelledbyutils';
+import './ojcomponentcore.js';
+import { EditableValueUtils } from './ojeditablevalue.js';
+import './ojradiocheckbox.js';
+import './ojoption.js';
+import './ojdataprovider.js';
+import oj from './ojcore-base.js';
+import { warn } from './ojlogger.js';
+import LabeledByUtils from './ojlabelledbyutils.js';
 
 (function () {
 var __oj_radioset_metadata = 

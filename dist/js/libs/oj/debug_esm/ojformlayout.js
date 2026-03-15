@@ -5,14 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcore';
-import 'ojs/ojcomponentcore';
-import 'ojs/ojlabel';
-import oj from 'ojs/ojcore-base';
-import { addResizeListener, removeResizeListener, isAncestorOrSelf } from 'ojs/ojdomutils';
-import Context from 'ojs/ojcontext';
-import { error } from 'ojs/ojlogger';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import './ojcore.js';
+import './ojcomponentcore.js';
+import './ojlabel.js';
+import oj from './ojcore-base.js';
+import { addResizeListener, removeResizeListener, isAncestorOrSelf } from './ojdomutils.js';
+import Context from './ojcontext.js';
+import { error } from './ojlogger.js';
+import { parseJSONFromFontFamily } from './ojthemeutils.js';
 import { FormVariantContext } from '@oracle/oraclejet-preact/hooks/UNSAFE_useFormVariantContext';
 
 /**

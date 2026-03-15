@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import ojt from 'ojL10n!ojtranslations/nls/ojtranslations';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import oj from './ojcore-base.js';
+import { loadMergedAmdBundle } from './ojamdloader.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 /**
  * @namespace oj.Config
@@ -23,7 +23,10 @@ const Config = {};
 const TEMPLATE_ENGINE_KO = Symbol();
 const PREACT_TEMPLATE_PROMISE = Symbol();
 
-let trans = ojt;
+let trans = {
+  _ojLocale_: 'en',
+  ...(await loadMergedAmdBundle(new URL('../resources/nls/ojtranslations.js', import.meta.url)))
+};
 let deploymentMode = 'production';
 
 /**
@@ -92,11 +95,13 @@ Config.getLocale = function () {
  * @memberof oj.Config
  */
 Config.setLocale = function (locale, callback) {
-  var prefix = 'ojL10n!ojtranslations/nls/';
-  var translationBundle = prefix + locale + '/ojtranslations';
+  var translationLocale = locale === 'root' ? 'root' : locale;
   /* ojWebpackError: 'Config.setLocale() is not supported when the ojs/ojcore module has been bundled by Webpack' */
-  const translationPromise = import(translationBundle).then((translations) => {
-    trans = translations;
+  const translationPromise = loadMergedAmdBundle(
+    new URL('../resources/nls/ojtranslations.js', import.meta.url),
+    new URL(`../resources/nls/${translationLocale}/ojtranslations.js`, import.meta.url)
+  ).then((translations) => {
+    trans = { _ojLocale_: translationLocale, ...translations };
   });
   var promises = [translationPromise];
 
@@ -108,22 +113,21 @@ Config.setLocale = function (locale, callback) {
   // translation bundle, this code will do that without
   // incurring the download hit of the ojs/ojlocaledata module.
   if (oj.LocaleData) {
-    var localeBundle = prefix + locale + '/localeElements';
-    const localePromise = import(localeBundle).then((localeElements) => {
-      if (localeElements) {
-        oj.LocaleData.__updateBundle(Object.assign({}, localeElements.default));
-      }
+    const localePromise = loadMergedAmdBundle(
+      new URL('../resources/nls/localeElements.js', import.meta.url),
+      new URL(`../resources/nls/${translationLocale}/localeElements.js`, import.meta.url)
+    ).then((localeElements) => {
+      oj.LocaleData.__updateBundle(Object.assign({}, localeElements));
     });
     promises.push(localePromise);
     if (oj.TimezoneData) {
-      var tzBundlesPromises = oj.TimezoneData.__getBundleNames().map((bundleName) =>
-        import(`${prefix}${locale}${bundleName}`)
-      );
-      promises.push(
-        Promise.all(tzBundlesPromises).then((timezoneBundles) => {
-          timezoneBundles.forEach(oj.TimezoneData.__mergeIntoLocaleElements);
-        })
-      );
+      const timezonePromise = loadMergedAmdBundle(
+        new URL('../resources/nls/timezoneData.js', import.meta.url),
+        new URL(`../resources/nls/${translationLocale}/timezoneData.js`, import.meta.url)
+      ).then((timezoneData) => {
+        oj.TimezoneData.__mergeIntoLocaleElements(timezoneData);
+      });
+      promises.push(timezonePromise);
     }
   }
   Promise.all(promises).then(() => {
@@ -277,11 +281,11 @@ Config._getEngineByType = function (templateProp) {
     let promise;
     switch (templateProp) {
       case PREACT_TEMPLATE_PROMISE:
-        promise = import('ojs/ojtemplateengine-preact');
+        promise = import('./ojtemplateengine-preact.js');
         break;
       case TEMPLATE_ENGINE_KO:
       default:
-        promise = import('ojs/ojtemplateengine-ko');
+        promise = import('./ojtemplateengine-ko.js');
     }
     Config[templateProp] = promise.then((engine) => engine.default);
   }

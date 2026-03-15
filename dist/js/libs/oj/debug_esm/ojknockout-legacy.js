@@ -6,14 +6,14 @@
  * @ignore
  */
 import 'jqueryui-amd/widget';
-import BindingProviderImpl from 'ojs/ojkoshared';
+import BindingProviderImpl from './ojkoshared.js';
 import * as ko from 'knockout';
 import { bindingHandlers, applyBindingsToDescendants, ignoreDependencies, computed, utils, isObservable, isWriteableObservable, toJS, jsonExpressionRewriting, renderTemplate, virtualElements } from 'knockout';
-import { error } from 'ojs/ojlogger';
-import oj from 'ojs/ojcore';
+import { error } from './ojlogger.js';
+import oj from './ojcore.js';
 import $ from 'jquery';
-import { ComponentBinding as ComponentBinding$1, ComponentChangeTracker, __ExpressionUtils } from 'ojs/ojknockout-base';
-import { isTouchSupported } from 'ojs/ojdomutils';
+import { ComponentBinding as ComponentBinding$1, ComponentChangeTracker, __ExpressionUtils } from './ojknockout-base.js';
+import { isTouchSupported } from './ojdomutils.js';
 
 /**
  * This is extension of the ComponentBinding class defined in ojknockout-base.

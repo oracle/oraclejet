@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore';
+import oj from './ojcore.js';
 
 /**
  * Validator Contract

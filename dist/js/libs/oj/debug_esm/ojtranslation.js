@@ -5,8 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { getConfigBundle } from 'ojs/ojconfig';
+import oj from './ojcore-base.js';
+import { getConfigBundle } from './ojconfig.js';
 
 /**
  * @namespace oj.Translations

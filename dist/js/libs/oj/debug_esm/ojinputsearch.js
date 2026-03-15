@@ -6,21 +6,21 @@
  * @ignore
  */
 import { jsx, jsxs } from 'preact/jsx-runtime';
-import { recentTouchEnd, getReadingDirection } from 'ojs/ojdomutils';
-import 'ojs/ojlistdataproviderview';
-import oj from 'ojs/ojcore-base';
-import { getDeviceRenderMode, getDeviceType } from 'ojs/ojconfig';
-import Context from 'ojs/ojcontext';
-import { error } from 'ojs/ojlogger';
-import { parseJSONFromFontFamily, getCachedCSSVarValues } from 'ojs/ojthemeutils';
-import { getTimer } from 'ojs/ojtimerutils';
-import { getTranslatedString } from 'ojs/ojtranslation';
+import { recentTouchEnd, getReadingDirection } from './ojdomutils.js';
+import './ojlistdataproviderview.js';
+import oj from './ojcore-base.js';
+import { getDeviceRenderMode, getDeviceType } from './ojconfig.js';
+import Context from './ojcontext.js';
+import { error } from './ojlogger.js';
+import { parseJSONFromFontFamily, getCachedCSSVarValues } from './ojthemeutils.js';
+import { getTimer } from './ojtimerutils.js';
+import { getTranslatedString } from './ojtranslation.js';
 import { Component } from 'preact';
-import { HighlightText } from 'ojs/ojhighlighttext';
-import { getUniqueId, Root, customElement } from 'ojs/ojvcomponent';
-import { PositionUtils, VPopup } from 'ojs/ojpopupcore';
-import { getAbortReason } from 'ojs/ojabortreason';
-import { DebouncingDataProviderView } from 'ojs/ojdebouncingdataproviderview';
+import { HighlightText } from './ojhighlighttext.js';
+import { getUniqueId, Root, customElement } from './ojvcomponent.js';
+import { PositionUtils, VPopup } from './ojpopupcore.js';
+import { getAbortReason } from './ojabortreason.js';
+import { DebouncingDataProviderView } from './ojdebouncingdataproviderview.js';
 
 class InputSearchSkeleton extends Component {
     constructor(props) {

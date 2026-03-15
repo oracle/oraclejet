@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import 'ojs/ojcomponentcore';
+import oj from './ojcore-base.js';
+import './ojcomponentcore.js';
 import $ from 'jquery';
-import 'ojs/ojcustomelement';
-import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import './ojcustomelement.js';
+import { CustomElementUtils } from './ojcustomelement-utils.js';
 
 /**
  * @constructor

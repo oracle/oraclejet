@@ -5,11 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj from 'ojs/ojcore-base';
-import { DataProviderRefreshEvent, DataProviderMutationEvent } from 'ojs/ojdataprovider';
-import { Model } from 'ojs/ojmodel';
-import DataSourceAdapter from 'ojs/ojdataprovideradapter-base';
-import { GenericEvent, EventTargetMixin } from 'ojs/ojeventtarget';
+import oj from './ojcore-base.js';
+import { DataProviderRefreshEvent, DataProviderMutationEvent } from './ojdataprovider.js';
+import { Model } from './ojmodel.js';
+import DataSourceAdapter from './ojdataprovideradapter-base.js';
+import { GenericEvent, EventTargetMixin } from './ojeventtarget.js';
 
 class TableDataSourceAdapter extends DataSourceAdapter {
     constructor(tableDataSource) {

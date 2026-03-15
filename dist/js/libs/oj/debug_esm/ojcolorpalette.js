@@ -5,18 +5,18 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import 'ojs/ojcomponentcore';
-import 'ojs/ojarraytabledatasource';
-import 'ojs/ojlistview';
-import 'ojs/ojeditablevalue';
-import oj from 'ojs/ojcore-base';
-import oj$1 from 'ojs/ojcore';
+import './ojcomponentcore.js';
+import './ojarraytabledatasource.js';
+import './ojlistview.js';
+import './ojeditablevalue.js';
+import oj from './ojcore-base.js';
+import oj$1 from './ojcore.js';
 import $ from 'jquery';
-import Color from 'ojs/ojcolor';
-import ColorConverter from 'ojs/ojconverter-color';
-import { error, warn } from 'ojs/ojlogger';
-import Context from 'ojs/ojcontext';
-import LabeledByUtils from 'ojs/ojlabelledbyutils';
+import Color from './ojcolor.js';
+import ColorConverter from './ojconverter-color.js';
+import { error, warn } from './ojlogger.js';
+import Context from './ojcontext.js';
+import LabeledByUtils from './ojlabelledbyutils.js';
 
 (function () {
 var __oj_color_palette_metadata = 
