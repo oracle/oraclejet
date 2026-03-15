@@ -92,7 +92,6 @@ Config.getLocale = function () {
  * @memberof oj.Config
  */
 Config.setLocale = function (locale, callback) {
-  var prefix = 'ojL10n!ojtranslations/nls/';
   var translationLocale = locale === 'root' ? 'root' : locale;
   var translationBundle = `./ojtranslations/${translationLocale}.js`;
   /* ojWebpackError: 'Config.setLocale() is not supported when the ojs/ojcore module has been bundled by Webpack' */
@@ -109,20 +108,18 @@ Config.setLocale = function (locale, callback) {
   // translation bundle, this code will do that without
   // incurring the download hit of the ojs/ojlocaledata module.
   if (oj.LocaleData) {
-    var localeBundle = prefix + locale + '/localeElements';
+    var localeBundle = `./localeElements/${translationLocale}.js`;
     const localePromise = import(localeBundle).then((localeElements) => {
       if (localeElements) {
-        oj.LocaleData.__updateBundle(Object.assign({}, localeElements.default));
+        oj.LocaleData.__updateBundle(Object.assign({}, localeElements.default || localeElements));
       }
     });
     promises.push(localePromise);
     if (oj.TimezoneData) {
-      var tzBundlesPromises = oj.TimezoneData.__getBundleNames().map((bundleName) =>
-        import(`${prefix}${locale}${bundleName}`)
-      );
+      const timezoneBundle = `./timezoneData/${translationLocale}.js`;
       promises.push(
-        Promise.all(tzBundlesPromises).then((timezoneBundles) => {
-          timezoneBundles.forEach(oj.TimezoneData.__mergeIntoLocaleElements);
+        import(timezoneBundle).then((timezoneData) => {
+          oj.TimezoneData.__mergeIntoLocaleElements(timezoneData.default || timezoneData);
         })
       );
     }

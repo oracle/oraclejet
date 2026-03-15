@@ -1,0 +1,595 @@
+const data = {
+  "supplemental": {
+    "version": {
+      "cldrVersion": "38"
+    }
+  },
+  "main": {
+    "uk": {
+      "identity": {
+        "version": {
+          "_cldrVersion": "38"
+        },
+        "language": "uk"
+      },
+      "dates": {
+        "timeZoneNames": {
+          "zone": {
+            "America": {
+              "Adak": {
+                "exemplarCity": "Адак"
+              },
+              "Anchorage": {
+                "exemplarCity": "Анкоридж"
+              },
+              "Anguilla": {
+                "exemplarCity": "Анґілья"
+              },
+              "Belem": {
+                "exemplarCity": "Белен"
+              },
+              "Belize": {
+                "exemplarCity": "Беліз"
+              },
+              "Boa_Vista": {
+                "exemplarCity": "Боа-Віста"
+              },
+              "Bogota": {
+                "exemplarCity": "Боґота"
+              },
+              "Buenos_Aires": {
+                "exemplarCity": "Буенос-Айрес"
+              },
+              "Caracas": {
+                "exemplarCity": "Каракас"
+              },
+              "Chicago": {
+                "exemplarCity": "Чікаґо"
+              },
+              "Chihuahua": {
+                "exemplarCity": "Чіуауа"
+              },
+              "Costa_Rica": {
+                "exemplarCity": "Коста-Ріка"
+              },
+              "Creston": {
+                "exemplarCity": "Крестон"
+              },
+              "Denver": {
+                "exemplarCity": "Денвер"
+              },
+              "Detroit": {
+                "exemplarCity": "Детройт"
+              },
+              "Edmonton": {
+                "exemplarCity": "Едмонтон"
+              },
+              "El_Salvador": {
+                "exemplarCity": "Сальвадор"
+              },
+              "Glace_Bay": {
+                "exemplarCity": "Ґлейс-Бей"
+              },
+              "Godthab": {
+                "exemplarCity": "Нуук"
+              },
+              "Guatemala": {
+                "exemplarCity": "Ґватемала"
+              },
+              "Guayaquil": {
+                "exemplarCity": "Ґуаякіль"
+              },
+              "Guyana": {
+                "exemplarCity": "Ґайана"
+              },
+              "Halifax": {
+                "exemplarCity": "Галіфакс"
+              },
+              "Havana": {
+                "exemplarCity": "Гавана"
+              },
+              "Indianapolis": {
+                "exemplarCity": "Індіанаполіс"
+              },
+              "Lima": {
+                "exemplarCity": "Ліма"
+              },
+              "Los_Angeles": {
+                "exemplarCity": "Лос-Анджелес"
+              },
+              "Managua": {
+                "exemplarCity": "Манаґуа"
+              },
+              "Manaus": {
+                "exemplarCity": "Манаус"
+              },
+              "Mazatlan": {
+                "exemplarCity": "Масатлан"
+              },
+              "Merida": {
+                "exemplarCity": "Меріда"
+              },
+              "Mexico_City": {
+                "exemplarCity": "Мехіко"
+              },
+              "Miquelon": {
+                "exemplarCity": "Мікелон"
+              },
+              "Montevideo": {
+                "exemplarCity": "Монтевідео"
+              },
+              "New_York": {
+                "exemplarCity": "Нью-Йорк"
+              },
+              "Noronha": {
+                "exemplarCity": "Норонья"
+              },
+              "Panama": {
+                "exemplarCity": "Панама"
+              },
+              "Phoenix": {
+                "exemplarCity": "Фінікс"
+              },
+              "Puerto_Rico": {
+                "exemplarCity": "Пуерто-Ріко"
+              },
+              "Regina": {
+                "exemplarCity": "Реджайна"
+              },
+              "Santiago": {
+                "exemplarCity": "Сантьяґо"
+              },
+              "Sao_Paulo": {
+                "exemplarCity": "Сан-Паулу"
+              },
+              "Scoresbysund": {
+                "exemplarCity": "Іттоккортоорміут"
+              },
+              "St_Johns": {
+                "exemplarCity": "Сент-Джонс"
+              },
+              "Tijuana": {
+                "exemplarCity": "Тіхуана"
+              },
+              "Toronto": {
+                "exemplarCity": "Торонто"
+              },
+              "Vancouver": {
+                "exemplarCity": "Ванкувер"
+              },
+              "Winnipeg": {
+                "exemplarCity": "Вінніпеґ"
+              }
+            },
+            "Atlantic": {
+              "Azores": {
+                "exemplarCity": "Азорські Острови"
+              },
+              "Bermuda": {
+                "exemplarCity": "Бермуди"
+              },
+              "Canary": {
+                "exemplarCity": "Канарські Острови"
+              },
+              "Cape_Verde": {
+                "exemplarCity": "Кабо-Верде"
+              },
+              "Reykjavik": {
+                "exemplarCity": "Рейкʼявік"
+              },
+              "South_Georgia": {
+                "exemplarCity": "Південна Джорджія"
+              },
+              "Stanley": {
+                "exemplarCity": "Стенлі"
+              }
+            },
+            "Europe": {
+              "Amsterdam": {
+                "exemplarCity": "Амстердам"
+              },
+              "Athens": {
+                "exemplarCity": "Афіни"
+              },
+              "Belgrade": {
+                "exemplarCity": "Белград"
+              },
+              "Berlin": {
+                "exemplarCity": "Берлін"
+              },
+              "Brussels": {
+                "exemplarCity": "Брюссель"
+              },
+              "Bucharest": {
+                "exemplarCity": "Бухарест"
+              },
+              "Budapest": {
+                "exemplarCity": "Будапешт"
+              },
+              "Copenhagen": {
+                "exemplarCity": "Копенгаген"
+              },
+              "Dublin": {
+                "exemplarCity": "Дублін"
+              },
+              "Helsinki": {
+                "exemplarCity": "Гельсінкі"
+              },
+              "Istanbul": {
+                "exemplarCity": "Стамбул"
+              },
+              "Kaliningrad": {
+                "exemplarCity": "Калінінград"
+              },
+              "Kiev": {
+                "exemplarCity": "Київ"
+              },
+              "Lisbon": {
+                "exemplarCity": "Лісабон"
+              },
+              "London": {
+                "exemplarCity": "Лондон"
+              },
+              "Luxembourg": {
+                "exemplarCity": "Люксембург"
+              },
+              "Madrid": {
+                "exemplarCity": "Мадрид"
+              },
+              "Moscow": {
+                "exemplarCity": "Москва"
+              },
+              "Oslo": {
+                "exemplarCity": "Осло"
+              },
+              "Paris": {
+                "exemplarCity": "Париж"
+              },
+              "Prague": {
+                "exemplarCity": "Прага"
+              },
+              "Riga": {
+                "exemplarCity": "Рига"
+              },
+              "Rome": {
+                "exemplarCity": "Рим"
+              },
+              "Samara": {
+                "exemplarCity": "Самара"
+              },
+              "Sofia": {
+                "exemplarCity": "Софія"
+              },
+              "Stockholm": {
+                "exemplarCity": "Стокгольм"
+              },
+              "Tallinn": {
+                "exemplarCity": "Таллінн"
+              },
+              "Tirane": {
+                "exemplarCity": "Тирана"
+              },
+              "Vienna": {
+                "exemplarCity": "Відень"
+              },
+              "Vilnius": {
+                "exemplarCity": "Вільнюс"
+              },
+              "Warsaw": {
+                "exemplarCity": "Варшава"
+              },
+              "Zurich": {
+                "exemplarCity": "Цюріх"
+              }
+            },
+            "Africa": {
+              "Abidjan": {
+                "exemplarCity": "Абіджан"
+              },
+              "Addis_Ababa": {
+                "exemplarCity": "Аддис-Абеба"
+              },
+              "Algiers": {
+                "exemplarCity": "Алжир"
+              },
+              "Bangui": {
+                "exemplarCity": "Банґі"
+              },
+              "Blantyre": {
+                "exemplarCity": "Блантайр"
+              },
+              "Cairo": {
+                "exemplarCity": "Каїр"
+              },
+              "Casablanca": {
+                "exemplarCity": "Касабланка"
+              },
+              "Ceuta": {
+                "exemplarCity": "Сеута"
+              },
+              "Djibouti": {
+                "exemplarCity": "Джібуті"
+              },
+              "Harare": {
+                "exemplarCity": "Хараре"
+              },
+              "Johannesburg": {
+                "exemplarCity": "Йоганнесбурґ"
+              },
+              "Khartoum": {
+                "exemplarCity": "Хартум"
+              },
+              "Lagos": {
+                "exemplarCity": "Лаґос"
+              },
+              "Maputo": {
+                "exemplarCity": "Мапуту"
+              },
+              "Mogadishu": {
+                "exemplarCity": "Моґадішо"
+              },
+              "Nairobi": {
+                "exemplarCity": "Найробі"
+              },
+              "Nouakchott": {
+                "exemplarCity": "Нуакшотт"
+              },
+              "Tripoli": {
+                "exemplarCity": "Тріполі"
+              },
+              "Tunis": {
+                "exemplarCity": "Туніс"
+              }
+            },
+            "Asia": {
+              "Aden": {
+                "exemplarCity": "Аден"
+              },
+              "Almaty": {
+                "exemplarCity": "Алмати"
+              },
+              "Amman": {
+                "exemplarCity": "Амман"
+              },
+              "Anadyr": {
+                "exemplarCity": "Анадир"
+              },
+              "Aqtau": {
+                "exemplarCity": "Актау"
+              },
+              "Aqtobe": {
+                "exemplarCity": "Актобе"
+              },
+              "Ashgabat": {
+                "exemplarCity": "Ашгабат"
+              },
+              "Baghdad": {
+                "exemplarCity": "Багдад"
+              },
+              "Bahrain": {
+                "exemplarCity": "Бахрейн"
+              },
+              "Baku": {
+                "exemplarCity": "Баку"
+              },
+              "Bangkok": {
+                "exemplarCity": "Бангкок"
+              },
+              "Beirut": {
+                "exemplarCity": "Бейрут"
+              },
+              "Brunei": {
+                "exemplarCity": "Бруней"
+              },
+              "Calcutta": {
+                "exemplarCity": "Колката"
+              },
+              "Colombo": {
+                "exemplarCity": "Коломбо"
+              },
+              "Damascus": {
+                "exemplarCity": "Дамаск"
+              },
+              "Dhaka": {
+                "exemplarCity": "Дакка"
+              },
+              "Dubai": {
+                "exemplarCity": "Дубай"
+              },
+              "Gaza": {
+                "exemplarCity": "Газа"
+              },
+              "Hong_Kong": {
+                "exemplarCity": "Гонконг"
+              },
+              "Irkutsk": {
+                "exemplarCity": "Іркутськ"
+              },
+              "Jakarta": {
+                "exemplarCity": "Джакарта"
+              },
+              "Jerusalem": {
+                "exemplarCity": "Єрусалим"
+              },
+              "Kabul": {
+                "exemplarCity": "Кабул"
+              },
+              "Kamchatka": {
+                "exemplarCity": "Камчатка"
+              },
+              "Karachi": {
+                "exemplarCity": "Карачі"
+              },
+              "Katmandu": {
+                "exemplarCity": "Катманду"
+              },
+              "Krasnoyarsk": {
+                "exemplarCity": "Красноярськ"
+              },
+              "Kuala_Lumpur": {
+                "exemplarCity": "Куала-Лумпур"
+              },
+              "Kuwait": {
+                "exemplarCity": "Кувейт"
+              },
+              "Magadan": {
+                "exemplarCity": "Магадан"
+              },
+              "Manila": {
+                "exemplarCity": "Маніла"
+              },
+              "Muscat": {
+                "exemplarCity": "Маскат"
+              },
+              "Nicosia": {
+                "exemplarCity": "Нікосія"
+              },
+              "Novosibirsk": {
+                "exemplarCity": "Новосибірськ"
+              },
+              "Omsk": {
+                "exemplarCity": "Омськ"
+              },
+              "Qatar": {
+                "exemplarCity": "Катар"
+              },
+              "Rangoon": {
+                "exemplarCity": "Янгон"
+              },
+              "Riyadh": {
+                "exemplarCity": "Ер-Ріяд"
+              },
+              "Saigon": {
+                "exemplarCity": "Хошимін"
+              },
+              "Seoul": {
+                "exemplarCity": "Сеул"
+              },
+              "Shanghai": {
+                "exemplarCity": "Шанхай"
+              },
+              "Singapore": {
+                "exemplarCity": "Сінгапур"
+              },
+              "Taipei": {
+                "exemplarCity": "Тайбей"
+              },
+              "Tashkent": {
+                "exemplarCity": "Ташкент"
+              },
+              "Tehran": {
+                "exemplarCity": "Тегеран"
+              },
+              "Tokyo": {
+                "exemplarCity": "Токіо"
+              },
+              "Vladivostok": {
+                "exemplarCity": "Владивосток"
+              },
+              "Yakutsk": {
+                "exemplarCity": "Якутськ"
+              },
+              "Yekaterinburg": {
+                "exemplarCity": "Єкатеринбург"
+              }
+            },
+            "Indian": {
+              "Chagos": {
+                "exemplarCity": "Чаґос"
+              },
+              "Cocos": {
+                "exemplarCity": "Кокосові Острови"
+              }
+            },
+            "Australia": {
+              "Adelaide": {
+                "exemplarCity": "Аделаїда"
+              },
+              "Brisbane": {
+                "exemplarCity": "Брісбен"
+              },
+              "Currie": {
+                "exemplarCity": "Каррі"
+              },
+              "Darwin": {
+                "exemplarCity": "Дарвін"
+              },
+              "Hobart": {
+                "exemplarCity": "Гобарт"
+              },
+              "Lord_Howe": {
+                "exemplarCity": "Лорд-Хау"
+              },
+              "Perth": {
+                "exemplarCity": "Перт"
+              },
+              "Sydney": {
+                "exemplarCity": "Сідней"
+              }
+            },
+            "Pacific": {
+              "Auckland": {
+                "exemplarCity": "Окленд"
+              },
+              "Easter": {
+                "exemplarCity": "Острів Пасхи"
+              },
+              "Fiji": {
+                "exemplarCity": "Фіджі"
+              },
+              "Gambier": {
+                "exemplarCity": "Гамбʼє"
+              },
+              "Guam": {
+                "exemplarCity": "Гуам"
+              },
+              "Honolulu": {
+                "exemplarCity": "Гонолулу"
+              },
+              "Kwajalein": {
+                "exemplarCity": "Кваджалейн"
+              },
+              "Marquesas": {
+                "exemplarCity": "Маркізькі острови"
+              },
+              "Midway": {
+                "exemplarCity": "Мідвей"
+              },
+              "Norfolk": {
+                "exemplarCity": "Норфолк"
+              },
+              "Noumea": {
+                "exemplarCity": "Нумеа"
+              },
+              "Pago_Pago": {
+                "exemplarCity": "Паго-Паго"
+              },
+              "Pitcairn": {
+                "exemplarCity": "Піткерн"
+              },
+              "Tongatapu": {
+                "exemplarCity": "Тонгатапу"
+              }
+            },
+            "Antarctica": {
+              "DumontDUrville": {
+                "exemplarCity": "Дюмон-дʼЮрвіль"
+              },
+              "McMurdo": {
+                "exemplarCity": "Мак-Мердо"
+              },
+              "Syowa": {
+                "exemplarCity": "Сьова"
+              },
+              "Vostok": {
+                "exemplarCity": "Восток"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+export default data;

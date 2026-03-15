@@ -7,7 +7,7 @@
  */
 import oj from './ojcore-base.js';
 import { getLocale } from './ojconfig.js';
-import ojldimport from 'ojL10n!ojtranslations/nls/localeElements';
+import ojldimport from './localeElements/en-US.js';
 import { CalendarUtils } from './ojcalendarutils.js';
 
 var ojld = ojldimport;

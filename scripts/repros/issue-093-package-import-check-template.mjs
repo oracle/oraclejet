@@ -90,9 +90,14 @@ const checks = [
     name: 'ojconfig-setLocale-fr',
     run: async () => {
       const config = await import('@oracle/oraclejet/ojconfig');
+      const localeData = await import('@oracle/oraclejet/ojlocaledata');
       const locale = await runSetLocale(config, 'fr');
       if (locale !== 'fr') {
         throw new Error(`unexpected locale after fr switch: ${locale}`);
+      }
+      const firstDay = localeData.getFirstDayOfWeek();
+      if (typeof firstDay !== 'number') {
+        throw new Error(`unexpected first day after fr switch: ${firstDay}`);
       }
     }
   },
@@ -100,9 +105,14 @@ const checks = [
     name: 'ojconfig-setLocale-de',
     run: async () => {
       const config = await import('@oracle/oraclejet/ojconfig');
+      const localeData = await import('@oracle/oraclejet/ojlocaledata');
       const locale = await runSetLocale(config, 'de');
       if (locale !== 'de') {
         throw new Error(`unexpected locale after de switch: ${locale}`);
+      }
+      const firstDay = localeData.getFirstDayOfWeek();
+      if (typeof firstDay !== 'number') {
+        throw new Error(`unexpected first day after de switch: ${firstDay}`);
       }
     }
   },
@@ -167,6 +177,36 @@ const checks = [
       const child = provider.getChildDataProvider('root');
       if (!child) {
         throw new Error('missing child data provider');
+      }
+    }
+  },
+  {
+    name: 'ojlocaledata',
+    run: async () => {
+      const mod = await import('@oracle/oraclejet/ojlocaledata');
+      const firstDay = mod.getFirstDayOfWeek();
+      if (typeof firstDay !== 'number') {
+        throw new Error(`unexpected first day: ${firstDay}`);
+      }
+    }
+  },
+  {
+    name: 'ojtimeutils',
+    run: async () => {
+      const mod = await import('@oracle/oraclejet/ojtimeutils');
+      const refs = mod.getWeekendReferenceObjects('2024-01-01T00:00:00.000Z', '2024-01-31T00:00:00.000Z');
+      if (!Array.isArray(refs)) {
+        throw new Error('weekend refs not array');
+      }
+    }
+  },
+  {
+    name: 'ojtimezoneutils',
+    run: async () => {
+      const mod = await import('@oracle/oraclejet/ojtimezoneutils');
+      const zones = mod.getAvailableTimeZones();
+      if (!Array.isArray(zones) || zones.length === 0) {
+        throw new Error('no time zones returned');
       }
     }
   }

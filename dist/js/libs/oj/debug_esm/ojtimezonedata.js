@@ -7,7 +7,7 @@
  */
 import oj from './ojcore-base.js';
 import { __getBundle } from './ojlocaledata.js';
-import ojtd from 'ojL10n!ojtranslations/nls/timezoneData';
+import ojtd from './timezoneData/en-US.js';
 
 /**
  * Internal utilities for dealing with timezone data
