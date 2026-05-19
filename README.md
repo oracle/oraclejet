@@ -1,4 +1,4 @@
-# Oracle JET version 20.0.0
+# Oracle JET version 20.1.0
 
 ## About Oracle JET
 

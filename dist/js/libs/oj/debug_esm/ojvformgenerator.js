@@ -10,7 +10,7 @@ import { Fragment, Component, toChildArray } from 'preact';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import 'ojs/ojlabel';
 import { ElementUtils } from 'ojs/ojcustomelement-utils';
-import { addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
+import { addResizeListenerSliding, removeResizeListener } from 'ojs/ojdomutils';
 
 // VStartLabeler function component adds the dom for the
 function VStartLabeler(props) {
@@ -367,7 +367,7 @@ class VRowFormGenerator extends Component {
     }
     componentDidMount() {
         this._updateAvailableColumns();
-        addResizeListener(this.formDivRef, this._updateAvailableColumns, 25);
+        addResizeListenerSliding(this.formDivRef, this._updateAvailableColumns, 25, 500);
     }
     componentDidUpdate() {
         this._updateAvailableColumns();

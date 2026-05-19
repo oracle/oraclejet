@@ -145,7 +145,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
      *     "module": "ojs/ojdrawerlayout"
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojDrawerLayout.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojDrawerLayout.html"
      * @ojmetadata since "11.0.0"
      */
     exports.DrawerLayout = DrawerLayout_1 = class DrawerLayout extends preact.Component {

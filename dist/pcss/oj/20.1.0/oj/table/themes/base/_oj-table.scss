@@ -1620,6 +1620,14 @@
     max-width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
   }
 
+  .oj-table-multiple-row-selection .oj-table-gutter-start-header-cell,
+  .oj-table-multiple-row-selection .oj-table-gutter-start-body-cell,
+  .oj-table-multiple-row-selection .oj-table-gutter-start-footer-cell {
+    width: calc(var(--oj-core-gutter-start, 0.625rem) - 0.625rem);
+    min-width: calc(var(--oj-core-gutter-start, 0.625rem) - 0.625rem);
+    max-width: calc(var(--oj-core-gutter-start, 0.625rem) - 0.625rem);
+  }
+
   .oj-table-gutter-end-header-cell,
   .oj-table-gutter-end-body-cell,
   .oj-table-gutter-end-footer-cell {

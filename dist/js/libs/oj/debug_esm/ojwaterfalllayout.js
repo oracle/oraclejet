@@ -795,7 +795,7 @@ var WaterfallLayout_1;
  *     ]
  *   }
  * }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojWaterfallLayout.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojWaterfallLayout.html"
  * @ojmetadata since "9.0.0"
  * @ojlegacymetadata requirements [
  *    {
@@ -897,6 +897,75 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         this._touchStartHandler = (event) => {
             this._handleTouchOrClickEvent(event);
         };
+        /**
+         * The method that makes batch updates for container width and card width, otherwise updating card and container widths in different observers with debounced threshold results in a visible delay of updating columns
+         */
+        this.handlePendingResizes = () => {
+            const root = this.getRootElement();
+            if (this._pendingResizes && this.contentHandler && root) {
+                let isCardWidthChanged = false;
+                let isCardHeightChanged = false;
+                if (this._pendingResizes.cards) {
+                    let width;
+                    for (const [key, value] of Object.entries(this._pendingResizes.cards)) {
+                        // assume all cards have same width, we can update the itemWidth only once if it's changed
+                        if (width == null) {
+                            width = value.width;
+                            const itemWidth = this.contentHandler.getLayout().getItemWidth();
+                            this.setState({ observedItemWidth: width });
+                            if (itemWidth !== undefined && itemWidth !== width) {
+                                this.contentHandler.getLayout().setItemWidth(width);
+                                isCardWidthChanged = true;
+                            }
+                        }
+                        // for each card, update the height in cache if it's changed
+                        const height = value.height;
+                        const cache = this.contentHandler.getLayout().getPosition(key);
+                        if (cache && cache.height !== height) {
+                            this.contentHandler.getLayout().setPosition(key, { ...cache, height });
+                            isCardHeightChanged = true;
+                        }
+                    }
+                }
+                if (this._pendingResizes.root) {
+                    const currWidth = this.state.width;
+                    const newWidth = this._pendingResizes.root.width;
+                    if (Math.abs(newWidth - currWidth) > WaterfallLayout_1.minResizeWidthThreshold) {
+                        // skeleton width might be zero because waterfall is hidden, and therefore needs to be re-calculated
+                        const skeleton = root.querySelector('.oj-waterfalllayout-skeleton');
+                        if (skeleton && this.skeletonWidth == 0) {
+                            this.skeletonWidth = skeleton.clientWidth;
+                        }
+                        this.setState({ width: newWidth });
+                        if (this.getSkeletonPositions() != null) {
+                            this._updatePositionsForSkeletons(newWidth);
+                        }
+                        else if (this.getPositions() != null) {
+                            this.contentHandler.getLayout().setWidth(newWidth);
+                            if (this.renderCompleted) {
+                                this.contentHandler.handleResizeWidth(newWidth);
+                            }
+                        }
+                    }
+                    const currHeight = this.state.height;
+                    const newHeight = this._pendingResizes.root.height;
+                    if (Math.abs(newHeight - currHeight) > 1 && newHeight !== this.state.contentHeight) {
+                        this.setState({ height: newHeight });
+                    }
+                }
+                if (isCardWidthChanged) {
+                    // columns are recalculated when container width changes which occurs first, then card width changes are re-calculated however at this point columns are based on stale value of card widths
+                    // so recalculate columns whenever the card width changes so that incases where width increases from 0 to valid value columns are recalculated based on new non zero value.
+                    this.contentHandler.getLayout()._initializeColumnsInfo();
+                }
+                if (isCardHeightChanged) {
+                    // recalculate positions whenever the card size is changed
+                    this.contentHandler.getLayout().recalculatePositions(0);
+                    this.setState({ positions: this.contentHandler.getLayout().getPositions() });
+                }
+            }
+            this._pendingResizes = null;
+        };
         this.setRootElement = (element) => {
             this.root = element;
         };
@@ -919,7 +988,8 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             skeletonPositions: null,
             width: 0,
             height: 0,
-            contentHeight: 0
+            contentHeight: 0,
+            observedItemWidth: 0
         };
     }
     render() {
@@ -969,14 +1039,6 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             scroller: this._getScroller()
         };
     }
-    _debounce(callback, wait) {
-        let timeout = null;
-        return (...args) => {
-            const next = () => callback(...args);
-            clearTimeout(timeout);
-            timeout = setTimeout(next, wait);
-        };
-    }
     /**
      * An optional component lifecycle method called after the
      * virtual component has been initially rendered and inserted into the
@@ -1007,36 +1069,20 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         }
         // register a ResizeObserver (note ResizeObserver is not in lib.dom.ts yet...)
         if (window['ResizeObserver']) {
-            const resizeObserver = new window['ResizeObserver'](this._debounce((entries) => {
+            const resizeObserver = new window['ResizeObserver']((entries) => {
+                if (this._pendingResizes == null) {
+                    // We always initialize _pendingResizes object with cards to avoid extra null checks in batching logic and when we update cards in entries.
+                    this._pendingResizes = { cards: {} };
+                    setTimeout(this.handlePendingResizes, WaterfallLayout_1.batchUpdateThreshold); // @HTMLUpdateOK
+                }
                 entries.forEach((entry) => {
-                    if (entry.target === root && entry.contentRect) {
-                        const currWidth = this.state.width;
-                        const newWidth = Math.round(entry.contentRect.width);
-                        if (Math.abs(newWidth - currWidth) > WaterfallLayout_1.minResizeWidthThreshold) {
-                            // skeleton width might be zero because waterfall is hidden, and therefore needs to be re-calculated
-                            const skeleton = root.querySelector('.oj-waterfalllayout-skeleton');
-                            if (skeleton && this.skeletonWidth == 0) {
-                                this.skeletonWidth = skeleton.clientWidth;
-                            }
-                            this.setState({ width: newWidth });
-                            if (this.getSkeletonPositions() != null) {
-                                this._updatePositionsForSkeletons(newWidth);
-                            }
-                            else if (this.getPositions() != null && this.contentHandler) {
-                                this.contentHandler.getLayout().setWidth(newWidth);
-                                if (this.renderCompleted) {
-                                    this.contentHandler.handleResizeWidth(newWidth);
-                                }
-                            }
-                        }
-                        const currHeight = this.state.height;
-                        const newHeight = Math.round(entry.contentRect.height);
-                        if (Math.abs(newHeight - currHeight) > 1 && newHeight !== this.state.contentHeight) {
-                            this.setState({ height: newHeight });
-                        }
+                    if (entry.target === root) {
+                        const height = entry.contentBoxSize[0].blockSize;
+                        const width = entry.contentBoxSize[0].inlineSize;
+                        this._pendingResizes.root = { height, width };
                     }
                 });
-            }, WaterfallLayout_1.debounceThreshold));
+            });
             resizeObserver.observe(root);
             this.resizeObserver = resizeObserver;
         }
@@ -1163,33 +1209,19 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             }
             if (this.props.cardSizing === 'dynamic') {
                 if (!this.cardResizeObserver && window['ResizeObserver']) {
-                    this.cardResizeObserver = new window['ResizeObserver'](this._debounce((entries) => {
-                        let isCardSizeChanged = false;
-                        entries.forEach((entry, index) => {
-                            // assume all cards have same width, we can update the itemWidth only once if it's changed
-                            if (index === 0) {
-                                const width = entry.borderBoxSize[0].inlineSize;
-                                const itemWidth = this.contentHandler.getLayout().getItemWidth();
-                                if (itemWidth !== undefined && itemWidth !== width) {
-                                    this.contentHandler.getLayout().setItemWidth(width);
-                                    isCardSizeChanged = true;
-                                }
-                            }
-                            // for each card, update the height in cache if it's changed
-                            const height = entry.borderBoxSize[0].blockSize;
-                            const key = this.contentHandler.getKey(entry.target);
-                            const cache = this.contentHandler.getLayout().getPosition(key);
-                            if (cache && cache.height !== height) {
-                                this.contentHandler.getLayout().setPosition(key, { ...cache, height });
-                                isCardSizeChanged = true;
-                            }
-                        });
-                        if (isCardSizeChanged) {
-                            // recalcualte positions whenever the card size is changed
-                            this.contentHandler.getLayout().recalculatePositions(0);
-                            this.setState({ positions: this.contentHandler.getLayout().getPositions() });
+                    this.cardResizeObserver = new window['ResizeObserver']((entries) => {
+                        if (this._pendingResizes == null) {
+                            // We always initialize _pendingResizes object with cards to avoid extra null checks in batching logic and when we update cards in entries.
+                            this._pendingResizes = { cards: {} };
+                            setTimeout(this.handlePendingResizes, WaterfallLayout_1.batchUpdateThreshold); // @HTMLUpdateOK
                         }
-                    }, WaterfallLayout_1.debounceThreshold));
+                        entries.forEach((entry) => {
+                            const height = entry.borderBoxSize[0].blockSize;
+                            const width = entry.borderBoxSize[0].inlineSize;
+                            const key = this.contentHandler.getKey(entry.target);
+                            this._pendingResizes.cards[key] = { height, width };
+                        });
+                    });
                 }
                 // observe every time to ensure all items are observed, just in case the items are not available at the beginning
                 if (this.cardResizeObserver) {
@@ -1341,6 +1373,10 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             const currentData = state.renderedData;
             return updater(currentData);
         }.bind(this));
+    }
+    isNotEmpty() {
+        const data = this.getData();
+        return data != null && data.value && data.value.data.length > 0;
     }
     getSkeletonPositions() {
         return this.state.skeletonPositions;
@@ -1552,7 +1588,14 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         return { height: this.state.contentHeight + 'px' };
     }
     _getRootElementStyle() {
-        return this.props.scrollPolicyOptions.scroller != null ? { overflow: 'hidden' } : null;
+        const rootScroll = this.props.scrollPolicyOptions.scroller != null ? { overflow: 'hidden' } : null;
+        // When the data is not empty, container or card width is 0 and it is dynamic resizing mode we want to make the component transparent so that the screen is blank until new size kicks
+        const rootOpacity = this.isNotEmpty() &&
+            (this.state.width === 0 ||
+                (this.state.observedItemWidth === 0 && this.props.cardSizing === 'dynamic'))
+            ? { opacity: 0 }
+            : null;
+        return { ...rootScroll, ...rootOpacity };
     }
     /**
      * Renders the initial skeletons
@@ -1720,7 +1763,8 @@ WaterfallLayout.defaultProps = {
     tabManagement: 'initial'
 };
 WaterfallLayout.minResizeWidthThreshold = 10;
-WaterfallLayout.debounceThreshold = 100;
+// We make use of throttle like approach to do batch updates of container and card dimensions
+WaterfallLayout.batchUpdateThreshold = 100;
 WaterfallLayout._CSS_Vars = {
     showIndicatorDelay: '--oj-private-core-global-loading-indicator-delay-duration',
     cardAnimationDelay: '--oj-private-animation-global-card-entrance-delay-increment'

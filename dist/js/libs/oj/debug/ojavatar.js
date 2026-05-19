@@ -122,7 +122,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'ojs/ojthemeutils',
      *     "minColumns": "1"
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojAvatar.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojAvatar.html"
      * @ojmetadata propertyLayout [
      *   {
      *     "propertyGroup": "common",

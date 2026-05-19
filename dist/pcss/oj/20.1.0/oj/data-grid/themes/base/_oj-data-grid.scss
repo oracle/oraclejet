@@ -897,6 +897,7 @@
   .oj-datagrid-row-drop-target-line {
     border-bottom: 2px solid var(--oj-core-drag-drop-line-color);
     position: absolute;
+    pointer-events: none;
   }
 
   .oj-datagrid-col-drop-target-line {
@@ -909,6 +910,7 @@
       border-left: 2px solid var(--oj-core-drag-drop-line-color);
       position: absolute;
     }
+    pointer-events: none;
   }
 
   .oj-datagrid-row-frozen-indicator {

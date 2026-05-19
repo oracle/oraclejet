@@ -137,7 +137,13 @@ DomUtils.isAncestorOrSelf = function (ancestorNode, node) {
  * @param {boolean=} useResizeObserver - use ResizeObserver-based implementation if supported by the browser
  * @export
  */
-DomUtils.addResizeListener = function (elem, listener, collapseEventTimeout, useResizeObserver) {
+DomUtils.addResizeListener = function (
+  elem,
+  listener,
+  collapseEventTimeout,
+  useResizeObserver,
+  options
+) {
   let map = DomUtils._RSZ_TRKR;
   if (useResizeObserver) {
     map = DomUtils._RSZ_TRKR_OBS;
@@ -150,7 +156,7 @@ DomUtils.addResizeListener = function (elem, listener, collapseEventTimeout, use
     map.set(elem, tracker);
     tracker.start();
   }
-  tracker.addListener(listener, collapseEventTimeout);
+  tracker.addListener(listener, collapseEventTimeout, options);
 };
 
 /**
@@ -170,6 +176,30 @@ DomUtils.removeResizeListener = function (elem, listener) {
       map.delete(elem);
     }
   }
+};
+
+/**
+ * Adds a resize listener with sliding-window debounce + max-wait semantics.
+ *
+ * @param {!Element} elem - node where the listener should be added
+ * @param {!Function} listener - listener to be added. The listener will receive
+ * two parameters: 1) the new width in pixels; 2) the new height in pixels
+ * @param {number} collapseEventTimeout - debounce interval in ms (sliding window)
+ * @param {number=} maxWaitMs - hard max wait time in ms before we force an invocation
+ * @param {boolean=} useResizeObserver - use ResizeObserver-based implementation if supported by the browser
+ * @export
+ */
+DomUtils.addResizeListenerSliding = function (
+  elem,
+  listener,
+  collapseEventTimeout,
+  maxWaitMs,
+  useResizeObserver
+) {
+  DomUtils.addResizeListener(elem, listener, collapseEventTimeout, useResizeObserver, {
+    collapseStrategy: 'sliding',
+    maxWaitMs
+  });
 };
 
 /**
@@ -281,7 +311,7 @@ DomUtils._ResizeTracker = function (div, useResizeObserver) {
   var _scrollListener = null;
   var _resizeObserver = null;
 
-  this.addListener = function (listener, collapseEventTimeout) {
+  this.addListener = function (listener, collapseEventTimeout, options) {
     if (
       collapseEventTimeout === undefined ||
       isNaN(collapseEventTimeout) ||
@@ -289,17 +319,26 @@ DomUtils._ResizeTracker = function (div, useResizeObserver) {
     ) {
       _listeners.add(listener);
     } else {
+      var opts = options || {};
+      var collapseStrategy = opts.collapseStrategy || 'legacy';
+
       // See comments above for _fireResizeDomEvent.
       var _wrappedOrigListener = () => {
         listener.apply(null, arguments);
         div.dispatchEvent(new Event('oj-resize'));
       };
-      _collapsingManagers.push(
-        new DomUtils._collapsingListenerManager(
-          _fireResizeDomEvent ? _wrappedOrigListener : listener,
-          collapseEventTimeout
-        )
-      );
+
+      var callback = _fireResizeDomEvent ? _wrappedOrigListener : listener;
+      var manager =
+        collapseStrategy === 'sliding'
+          ? new DomUtils._slidingCollapsingListenerManager(
+              callback,
+              collapseEventTimeout,
+              opts.maxWaitMs
+            )
+          : new DomUtils._collapsingListenerManager(callback, collapseEventTimeout);
+
+      _collapsingManagers.push(manager);
       _collapsingListeners.push(listener);
     }
   };
@@ -538,6 +577,99 @@ DomUtils._collapsingListenerManager = function (originalCallback, timeout) {
       window.clearTimeout(_timerId);
       _timerId = null;
     }
+  };
+};
+
+/**
+ * Sliding‑window debounce manager with a max wait time.
+ *
+ * @param {number} timeout – normal debounce interval (using a sliding window).
+ * @param {number} maxWaitMs - max time we allow to wait before we must invoke the listener,
+ * even if resize events keep arriving. Your timeout should be < maxWaitMs.
+ *
+ * Behavior:
+ *   – Every resize event stores the newest width/height (`_lastArgs`).
+ *   – The regular timer (`_timerId`) is (re)started on each event,
+ *     to implement a sliding‑window debounce.
+ *   – The max‑wait timer (`_maxTimerId`) is started only on the first
+ *     event of a burst and forces a callback after `maxWaitMs` if the
+ *     regular timer hasn't fired yet.
+ */
+DomUtils._slidingCollapsingListenerManager = function (originalCallback, timeout, maxWaitMs) {
+  let _lastArgs = null; // most recent width/height args
+  let _timerId = null; // regular sliding‑window timer
+  let _maxTimerId = null; // hard‑max‑wait timer
+
+  let _maxWaitMs = maxWaitMs;
+  if (
+    typeof _maxWaitMs !== 'number' ||
+    !isFinite(_maxWaitMs) ||
+    _maxWaitMs <= 0 ||
+    _maxWaitMs <= timeout
+  ) {
+    _maxWaitMs = timeout * 2;
+  }
+
+  const _clearAllTimers = function () {
+    if (_timerId != null) {
+      window.clearTimeout(_timerId);
+      _timerId = null;
+    }
+    if (_maxTimerId != null) {
+      window.clearTimeout(_maxTimerId);
+      _maxTimerId = null;
+    }
+  };
+
+  const _reset = function () {
+    _clearAllTimers();
+    _lastArgs = null;
+  };
+
+  // Helper that calls the user‑provided listener.
+  const _invokeListener = function () {
+    if (_lastArgs == null) {
+      return;
+    }
+    originalCallback.apply(null, _lastArgs);
+    _reset();
+  };
+
+  // Function called for every resize event.
+  const _callback = function () {
+    // Remember the most recent dimensions.
+    _lastArgs = Array.prototype.slice.call(arguments);
+
+    // Sliding‑window timer (restart on each event).
+    if (_timerId != null) {
+      window.clearTimeout(_timerId);
+    }
+    _timerId = window.setTimeout(function () {
+      // No events for `timeout` ms → fire.
+      _invokeListener();
+    }, timeout);
+
+    // Max‑wait timer
+    if (_maxTimerId == null) {
+      // First resize in the current burst → start the hard limit timer.
+      _maxTimerId = window.setTimeout(function () {
+        // Hard wait elapsed with continuous events → force a callback.
+        _invokeListener();
+      }, _maxWaitMs);
+    }
+    // (Subsequent events simply reset the sliding‑window timer;
+    // the max‑wait timer stays untouched until it fires or we clear it.)
+  };
+
+  // -----------------------------------------------------------------
+  // Public API required by the tracker
+  // -----------------------------------------------------------------
+  this.getCallback = function () {
+    return _callback;
+  };
+
+  this.stop = function () {
+    _reset();
   };
 };
 
@@ -1300,6 +1432,7 @@ const cleanHtml = DomUtils.cleanHtml;
 const isAncestor = DomUtils.isAncestor;
 const isAncestorOrSelf = DomUtils.isAncestorOrSelf;
 const addResizeListener = DomUtils.addResizeListener;
+const addResizeListenerSliding = DomUtils.addResizeListenerSliding;
 const removeResizeListener = DomUtils.removeResizeListener;
 const fixResizeListeners = DomUtils.fixResizeListeners;
 const isMetaKeyPressed = DomUtils.isMetaKeyPressed;
@@ -1327,4 +1460,4 @@ const recentPointer = DomUtils.recentPointer;
 const getNoJQFocusHandlers = DomUtils.getNoJQFocusHandlers;
 const makeFocusable = DomUtils.makeFocusable;
 
-export { PRESS_HOLD_THRESHOLD, addResizeListener, calculateScrollLeft, cleanHtml, dispatchEvent, fixResizeListeners, getCSSLengthAsFloat, getCSSLengthAsInt, getCSSTimeUnitAsMillis, getLogicalParent, getNoJQFocusHandlers, getReadingDirection, getScrollBarWidth, isAncestor, isAncestorOrSelf, isChromeEvent, isHTMLContent, isLogicalAncestorOrSelf, isMetaKeyPressed, isTouchSupported, isValidIdentifier, makeFocusable, recentPointer, recentTouchEnd, recentTouchStart, removeResizeListener, setInKoCleanExternal, setLogicalParent, setScrollLeft, unwrap, validateURL };
+export { PRESS_HOLD_THRESHOLD, addResizeListener, addResizeListenerSliding, calculateScrollLeft, cleanHtml, dispatchEvent, fixResizeListeners, getCSSLengthAsFloat, getCSSLengthAsInt, getCSSTimeUnitAsMillis, getLogicalParent, getNoJQFocusHandlers, getReadingDirection, getScrollBarWidth, isAncestor, isAncestorOrSelf, isChromeEvent, isHTMLContent, isLogicalAncestorOrSelf, isMetaKeyPressed, isTouchSupported, isValidIdentifier, makeFocusable, recentPointer, recentTouchEnd, recentTouchStart, removeResizeListener, setInKoCleanExternal, setLogicalParent, setScrollLeft, unwrap, validateURL };

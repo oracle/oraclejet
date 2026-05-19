@@ -595,7 +595,7 @@ class CachedIteratorResultsDataProvider {
         params = params || {};
         const cachedFetchParams = {};
         cachedFetchParams.size = params.size;
-        cachedFetchParams.attributes = params.attributes ? Object.assign({}, params.attributes) : null;
+        cachedFetchParams.attributes = params.attributes ? Object.assign([], params.attributes) : null;
         cachedFetchParams.filterDef = params.filterCriterion
             ? CachedIteratorResultsDataProvider._getFilterDef(params.filterCriterion)
             : null;

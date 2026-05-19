@@ -374,7 +374,7 @@
 }
 
 .oj-theme-json {
-  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v20.0.0"}' !important;
+  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v20.1.0"}' !important;
 }
 
 .oj-helper-hidden-accessible {
@@ -16299,8 +16299,12 @@ html[dir=rtl] .oj-datagrid-bottom-corner {
 .oj-datagrid-row-drop-target-line {
   border-bottom: 2px solid var(--oj-core-drag-drop-line-color);
   position: absolute;
+  pointer-events: none;
 }
 
+.oj-datagrid-col-drop-target-line {
+  pointer-events: none;
+}
 html:not([dir=rtl]) .oj-datagrid-col-drop-target-line {
   border-right: 2px solid var(--oj-core-drag-drop-line-color);
   position: absolute;
@@ -28388,6 +28392,14 @@ html[dir=rtl] .oj-table-sort .oj-table-column-header-show-required-icon {
   width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
   min-width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
   max-width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
+}
+
+.oj-table-multiple-row-selection .oj-table-gutter-start-header-cell,
+.oj-table-multiple-row-selection .oj-table-gutter-start-body-cell,
+.oj-table-multiple-row-selection .oj-table-gutter-start-footer-cell {
+  width: calc(var(--oj-core-gutter-start, 0.625rem) - 0.625rem);
+  min-width: calc(var(--oj-core-gutter-start, 0.625rem) - 0.625rem);
+  max-width: calc(var(--oj-core-gutter-start, 0.625rem) - 0.625rem);
 }
 
 .oj-table-gutter-end-header-cell,

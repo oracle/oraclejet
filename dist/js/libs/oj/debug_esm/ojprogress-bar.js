@@ -77,7 +77,7 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
  *     ]
  *   }
  * }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojProgressBar.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojProgressBar.html"
  * @ojmetadata propertyLayout [
  *   {
  *     "propertyGroup": "common",

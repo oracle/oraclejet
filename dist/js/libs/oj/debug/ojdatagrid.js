@@ -1496,6 +1496,7 @@ var __oj_data_grid_metadata =
     this.attributes.dropIndex = 'data-oj-dropIndex';
     this.attributes.dropLevel = 'data-oj-dropLevel';
     this.attributes.dropAxis = 'data-oj-dropAxis';
+    this.attributes.dropPos = 'data-oj-dropPos';
   };
 
   oj._registerLegacyNamespaceProp('DataGridResources', DataGridResources);
@@ -7046,6 +7047,7 @@ var __oj_data_grid_metadata =
     section.addEventListener('dragstart', this.handleCornerDragStart.bind(this), false);
     section.addEventListener('dragend', this.handleCornerDragEnd.bind(this), false);
     section.addEventListener('dragover', this.handleCornerDragOver.bind(this), false);
+    section.addEventListener('dragleave', this.handleCornerDragLeave.bind(this), false);
     section.addEventListener('drop', this.handleCornerDrop.bind(this), false);
     section.addEventListener('dragenter', this.handleCornerDragEnter.bind(this), false);
   };
@@ -49213,6 +49215,9 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype.handleColumnDragLeave = function (event) {
     let dropContext = this._getDropContext(event, this.m_dropColumnIndex, 'column');
     var returnValue = this._invokeDndCallback('drop', 'columns', 'dragLeave', event, dropContext);
+    if (this.m_pivotInProgress) {
+      this._removePivotDropTargetLine();
+    }
 
     this.m_dropColumnIndex = null;
     return returnValue;
@@ -54988,7 +54993,8 @@ var __oj_data_grid_metadata =
         this.m_pivotDropTarget == null ||
         !(
           this._getAttribute(this.m_pivotDropTarget, 'dropLevel', true) === dragOverLevel &&
-          this._getAttribute(this.m_pivotDropTarget, 'dropAxis') === dragOverAxis
+          this._getAttribute(this.m_pivotDropTarget, 'dropAxis') === dragOverAxis &&
+          this._getAttribute(this.m_pivotDropTarget, 'dropPos') === position
         )
       ) {
         this._addPivotDropTargetLine(
@@ -55006,6 +55012,14 @@ var __oj_data_grid_metadata =
         position: position
       };
       this._invokeDropCallback(`${dragOverAxis}Labels`, 'dragOver', event, dropContext);
+    } else {
+      this._removePivotDropTargetLine();
+    }
+  };
+
+  DvtDataGrid.prototype.handleCornerDragLeave = function () {
+    if (this.m_pivotInProgress) {
+      this._removePivotDropTargetLine();
     }
   };
 
@@ -55028,6 +55042,7 @@ var __oj_data_grid_metadata =
     this.m_pivotDropHeaderTarget = document.createElement('div');
     this._setAttribute(this.m_pivotDropTarget, 'dropLevel', level);
     this._setAttribute(this.m_pivotDropTarget, 'dropAxis', axis);
+    this._setAttribute(this.m_pivotDropTarget, 'dropPos', position);
 
     let headerElem = label;
     let databodyElem = this.m_colHeader;
@@ -55218,10 +55233,9 @@ var __oj_data_grid_metadata =
     ];
   };
 
-  DvtDataGrid.prototype._getLabelRelativePosition = function (event, axis) {
-    let target = event.target;
+  DvtDataGrid.prototype._getLabelRelativePosition = function (event, axis, dragOverLabel) {
     let dir = this.getResources().isRTLMode() ? 'right' : 'left';
-    let elementBoundingRect = target.getBoundingClientRect();
+    let elementBoundingRect = dragOverLabel.getBoundingClientRect();
     let position = 'before';
 
     let relativePos;
@@ -55295,6 +55309,7 @@ var __oj_data_grid_metadata =
     if (this.m_pivotDropTarget) {
       this.m_pivotDropTarget.removeAttribute(this.getResources().getMappedAttribute('dropLevel'));
       this.m_pivotDropTarget.removeAttribute(this.getResources().getMappedAttribute('dropAxis'));
+      this.m_pivotDropTarget.removeAttribute(this.getResources().getMappedAttribute('dropPos'));
     }
     this._remove(this.m_pivotDropHeaderTarget);
     this.m_pivotDropTarget = null;
@@ -55444,7 +55459,8 @@ var __oj_data_grid_metadata =
           this.m_pivotDropTarget == null ||
           !(
             this._getAttribute(this.m_pivotDropTarget, 'dropLevel', true) === dragOverLevel &&
-            this._getAttribute(this.m_pivotDropTarget, 'dropAxis') === dragOverAxis
+            this._getAttribute(this.m_pivotDropTarget, 'dropAxis') === dragOverAxis &&
+            this._getAttribute(this.m_pivotDropTarget, 'dropPos') === position
           )
         ) {
           dropLineTop =
@@ -55478,6 +55494,8 @@ var __oj_data_grid_metadata =
           position: position
         };
         this._invokeDropCallback(`${dragOverAxis}Labels`, 'dragOver', event, dropContext);
+      } else {
+        this._removePivotDropTargetLine();
       }
     }
   };

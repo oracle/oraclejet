@@ -2277,8 +2277,7 @@ var __oj_input_date_time_metadata =
     _CURRENT_CLASS: 'oj-datepicker-current-day',
     _DAYOVER_CLASS: 'oj-datepicker-days-cell-over',
     _UNSELECTABLE_CLASS: 'oj-datepicker-unselectable',
-
-    _DATEPICKER_DIALOG_DESCRIPTION_ID: 'oj-datepicker-dialog-desc',
+    // _DATEPICKER_DIALOG_DESCRIPTION_ID: 'oj-datepicker-dialog-desc',
     _DATEPICKER_DESCRIPTION_ID: 'oj-datepicker-desc',
     _CALENDAR_DESCRIPTION_ID: 'oj-datepicker-calendar',
     _MAIN_DIV_ID: 'oj-datepicker-div',
@@ -4373,10 +4372,6 @@ var __oj_input_date_time_metadata =
           role: 'dialog',
           modality: _isLargeScreen() ? 'modeless' : 'modal',
           open: function () {
-            self._popUpDpDiv.attr(
-              'aria-describedby',
-              self._GetSubId(self._DATEPICKER_DIALOG_DESCRIPTION_ID)
-            );
             if (self.options.datePicker.showOn === 'image') {
               self._dpDiv.find('.oj-datepicker-calendar').focus();
             }
@@ -6963,14 +6958,6 @@ var __oj_input_date_time_metadata =
 
       // we only need the description spans rendered once, as they don't change for each month instance.
       var needsDescSpans = this._drawYear === drawYear && this._drawMonth === drawMonth;
-
-      if (needsDescSpans) {
-        html +=
-          "<span aria-hidden='true' class='oj-helper-hidden-accessible' id='" +
-          this._GetSubId(this._DATEPICKER_DIALOG_DESCRIPTION_ID) +
-          "'>";
-        html += this._EscapeXSS(this.getTranslatedString('picker')) + '</span>';
-      }
 
       html +=
         "<span aria-hidden='true' class='oj-helper-hidden-accessible' id='" +

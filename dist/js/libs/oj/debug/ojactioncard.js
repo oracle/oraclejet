@@ -131,7 +131,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdo
      *                                  }
      *                                ]
      *                              }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojActionCard.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojActionCard.html"
      * @ojmetadata since "9.1.0"
      */
     exports.ActionCard = class ActionCard extends preact.Component {
