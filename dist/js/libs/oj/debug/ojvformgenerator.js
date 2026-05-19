@@ -362,7 +362,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojthemeutils', 'ojs/ojla
         }
         componentDidMount() {
             this._updateAvailableColumns();
-            DomUtils.addResizeListener(this.formDivRef, this._updateAvailableColumns, 25);
+            DomUtils.addResizeListenerSliding(this.formDivRef, this._updateAvailableColumns, 25, 500);
         }
         componentDidUpdate() {
             this._updateAvailableColumns();

@@ -3423,7 +3423,9 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         busyContext.whenReady().then(
           function () {
             var hasFocus = this.GetFocusElement();
-            hasFocus.focus();
+            // added prevent scroll to deal with inconsistencies in different
+            // browser scrolling behavior with focus during dialog animations
+            hasFocus.focus({ preventScroll: true });
             this._trigger('focus');
           }.bind(this)
         );

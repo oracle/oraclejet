@@ -473,7 +473,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojtr
      *     ]
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojStreamList.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojStreamList.html"
      * @ojmetadata since "9.0.0"
      * @ojlegacymetadata requirements [
      *    {

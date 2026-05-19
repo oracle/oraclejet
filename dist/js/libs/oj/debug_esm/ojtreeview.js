@@ -3514,7 +3514,7 @@ class TreeviewSelectionManager {
       return function () {
         if (this.m_fetching.get(key) === 1) {
           this.m_fetching.delete(key);
-        } else {
+        } else if (this.m_fetching.has(key)) {
           this.m_fetching.set(key, this.m_fetching.get(key) - 1);
         }
         busyContextPromise();

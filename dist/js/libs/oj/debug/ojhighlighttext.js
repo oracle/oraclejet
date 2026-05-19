@@ -57,7 +57,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
      *     "icon": "oj-ux-ico-background-color"
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojHighlightText.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojHighlightText.html"
      * @ojmetadata propertyLayout [
      *   {
      *     "propertyGroup": "common",

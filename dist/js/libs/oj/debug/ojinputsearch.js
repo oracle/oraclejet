@@ -379,7 +379,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
      *     "minColumns": "2"
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojInputSearch.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojInputSearch.html"
      * @ojmetadata propertyLayout [
      *   {
      *     "propertyGroup": "common",

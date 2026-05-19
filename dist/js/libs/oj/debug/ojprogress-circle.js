@@ -65,7 +65,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojtr
      *     ]
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojProgressCircle.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojProgressCircle.html"
      * @ojmetadata propertyLayout [
      *   {
      *     "propertyGroup": "common",

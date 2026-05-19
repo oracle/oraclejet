@@ -2050,6 +2050,10 @@ const _ojListView = _ListViewUtils.clazz(
           } else {
             // on right click we should prevent focus from shifting to first item
             self.m_preActive = true;
+
+            // set current item but don't shift the focus
+            const item = self.FindItem($(event.target));
+            self.SetCurrentItem(item, event, true);
           }
         },
         mouseup: function (event) {
@@ -2600,6 +2604,7 @@ const _ojListView = _ListViewUtils.clazz(
     _resetState: function () {
       this._unregisterScrollHandler();
       this.m_active = null;
+      this.m_preActive = null;
       this.m_isExpandAll = null;
       this.m_disclosing = null;
       this.m_itemHeight = null;

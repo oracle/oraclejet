@@ -70,7 +70,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'preact/h
      *     "minColumns": "2"
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojListItemLayout.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojListItemLayout.html"
      * @ojmetadata since "9.0.0"
      * @ojmetadata styleClasses [
      *   {

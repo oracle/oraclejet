@@ -152,7 +152,7 @@ var DrawerLayout_1;
  *     "module": "ojs/ojdrawerlayout"
  *   }
  * }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20/reference-api/oj.ojDrawerLayout.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojDrawerLayout.html"
  * @ojmetadata since "11.0.0"
  */
 let DrawerLayout = DrawerLayout_1 = class DrawerLayout extends Component {

@@ -28578,6 +28578,7 @@ Table.prototype._setOptions = function (options, flags) {
           (value?.row !== Table._OPTION_SELECTION_MODES._MULTIPLE_TOGGLE &&
             this.options.selectionMode?.row === Table._OPTION_SELECTION_MODES._MULTIPLE))
       ) {
+        this._clearCachedStyling();
         this._clearCachedMetadata();
         requiresHeaderRefresh = true;
       } else if (key === 'verticalGridVisible' || key === 'display') {

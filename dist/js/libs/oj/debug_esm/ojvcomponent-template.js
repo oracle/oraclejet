@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { info } from 'ojs/ojlogger';
+import { error, info } from 'ojs/ojlogger';
 import { getTemplateContent } from 'ojs/ojhtmlutils';
 import { CustomElementUtils, AttributeUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
 import { getMetadata, getPropertiesForElementTag, isElementRegistered } from 'ojs/ojcustomelement-registry';
@@ -320,11 +320,17 @@ class VTemplateEngine {
         }
         const proxy = currentObj
             ? createRecursiveProxy(currentObj, '', (identifier, value) => {
-                const lastItem = this._expressionPaths[this._expressionPaths.length - 1];
-                if (lastItem && identifier.startsWith(`${lastItem.identifier}.`)) {
-                    this._expressionPaths.pop();
+                if (this._expressionPaths == null) {
+                    // bindingContext proxy should never be exposed when this._expressionPaths is undefined
+                    error('Unexpected bindingContext proxy detected - no expression paths available');
                 }
-                this._expressionPaths.push({ identifier, value });
+                else {
+                    const lastItem = this._expressionPaths[this._expressionPaths.length - 1];
+                    if (lastItem && identifier.startsWith(`${lastItem.identifier}.`)) {
+                        this._expressionPaths.pop();
+                    }
+                    this._expressionPaths.push({ identifier, value });
+                }
             })
             : currentObj;
         return proxy;
@@ -1296,6 +1302,7 @@ class VTemplateEngine {
             type: PROPERTY,
             key: { type: LITERAL, value: eventPropName },
             value: this._createCallNodeWithContext((bindingContext) => {
+                const unwrappedContext = _unwrapBindingContext(bindingContext, engineContext[TEMPLATE_ALIAS]);
                 return (event) => {
                     valuesArray.forEach((propItem, index) => {
                         let newValue = event.detail.value;
@@ -1309,7 +1316,7 @@ class VTemplateEngine {
                             propExprEvaluator = this._cspEvaluator.createEvaluator(propExpr).evaluate;
                             propExprEvaluators.push(propExprEvaluator);
                         }
-                        const value = propExprEvaluator([bindingContext, bindingContext.$data]);
+                        const value = propExprEvaluator([unwrappedContext, unwrappedContext.$data]);
                         let writer;
                         if (engineContext[BINDING_PROVIDER] &&
                             engineContext[BINDING_PROVIDER].__IsObservable(value)) {
@@ -1319,7 +1326,7 @@ class VTemplateEngine {
                             const writerExpr = this._getPropertyWriterExpression(propExpr);
                             if (writerExpr !== null) {
                                 const writerEvaluator = this._cspEvaluator.createEvaluator(writerExpr).evaluate;
-                                writer = this._getWriter(writerEvaluator([bindingContext.$data || {}, bindingContext]));
+                                writer = this._getWriter(writerEvaluator([unwrappedContext.$data || {}, unwrappedContext]));
                             }
                         }
                         performMonitoredWriteback(property, writer, event, newValue);
@@ -1330,10 +1337,10 @@ class VTemplateEngine {
                             this._cspEvaluator.createEvaluator(existingCallbackExpr).evaluate;
                     }
                     const existingCallback = callbackExprEvaluator
-                        ? callbackExprEvaluator([bindingContext, bindingContext.$data])
+                        ? callbackExprEvaluator([unwrappedContext, unwrappedContext.$data])
                         : null;
                     if (existingCallback) {
-                        existingCallback(event, _proxyUnwrap(bindingContext.$current) || bindingContext.$data, bindingContext);
+                        existingCallback(event, unwrappedContext.$current || unwrappedContext.$data, unwrappedContext);
                     }
                 };
             })

@@ -2056,6 +2056,10 @@ var __oj_list_view_metadata =
             } else {
               // on right click we should prevent focus from shifting to first item
               self.m_preActive = true;
+
+              // set current item but don't shift the focus
+              const item = self.FindItem($(event.target));
+              self.SetCurrentItem(item, event, true);
             }
           },
           mouseup: function (event) {
@@ -2606,6 +2610,7 @@ var __oj_list_view_metadata =
       _resetState: function () {
         this._unregisterScrollHandler();
         this.m_active = null;
+        this.m_preActive = null;
         this.m_isExpandAll = null;
         this.m_disclosing = null;
         this.m_itemHeight = null;

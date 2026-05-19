@@ -204,6 +204,7 @@ type State = {
     width: number;
     height: number;
     contentHeight: number;
+    observedItemWidth: number;
 };
 interface ItemTemplateContext<Key, Data> {
     /**
@@ -376,11 +377,12 @@ export declare class WaterfallLayout<K extends string | number, D> extends Compo
     private delayShowSkeletonsTimeout;
     private mouseDownTarget;
     private mutationObserver;
+    private _pendingResizes;
     constructor();
     static defaultProps: Partial<Props<any, any>>;
     private gutterWidth;
     private static readonly minResizeWidthThreshold;
-    private static readonly debounceThreshold;
+    private static readonly batchUpdateThreshold;
     private static readonly _CSS_Vars;
     private readonly _findFocusItem;
     private readonly _handleFocusIn;
@@ -391,7 +393,10 @@ export declare class WaterfallLayout<K extends string | number, D> extends Compo
     private readonly _touchStartHandler;
     render(): import("preact").JSX.Element;
     private _getScrollPolicyOptions;
-    private _debounce;
+    /**
+     * The method that makes batch updates for container width and card width, otherwise updating card and container widths in different observers with debounced threshold results in a visible delay of updating columns
+     */
+    private handlePendingResizes;
     /**
      * An optional component lifecycle method called after the
      * virtual component has been initially rendered and inserted into the
@@ -434,6 +439,7 @@ export declare class WaterfallLayout<K extends string | number, D> extends Compo
     private getData;
     private setData;
     private updateData;
+    private isNotEmpty;
     private getSkeletonPositions;
     private setSkeletonPositions;
     private getPositions;
