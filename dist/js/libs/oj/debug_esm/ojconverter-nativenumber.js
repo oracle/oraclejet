@@ -392,6 +392,7 @@ function getResolvedAndNativeOptions(options, locale) {
         lenientParse: options.lenientParse ?? 'full',
         roundDuringParse: options.roundDuringParse ?? false,
         roundingMode: options.roundingMode ?? 'HALF_UP',
+        signDisplay: options.signDisplay ?? 'auto',
         separators: {
             decimal: options.separators?.decimal ?? getLocaleData(locale).decimalSeparator,
             group: options.separators?.group ?? _getDefaultGroupingSeparator(native, locale)
@@ -450,6 +451,9 @@ function _getNativeOptions(options) {
             break;
         default:
             throw new Error('Invalid format style');
+    }
+    if (options.signDisplay !== undefined) {
+        nativeOpts.signDisplay = options.signDisplay;
     }
     return nativeOpts;
 }
