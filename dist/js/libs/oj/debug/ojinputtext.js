@@ -2433,7 +2433,7 @@ var __oj_text_area_metadata =
           var helperDescribedById = this._GetSubId(this._INPUT_HELPER_KEY);
 
           describedBy += ' ' + helperDescribedById;
-          this.element.attr('aria-describedby', describedBy);
+          this.element.attr('aria-describedby', describedBy.trim());
           this._inputHelper = $(
             "<div class='oj-helper-hidden-accessible' aria-hidden='true' id='" +
               helperDescribedById +
