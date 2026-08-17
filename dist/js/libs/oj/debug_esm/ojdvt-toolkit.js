@@ -952,6 +952,7 @@ Matrix.prototype.isIdentity = function () {
 const ToolkitUtils = {};
 
 Obj.createSubclass(ToolkitUtils, Obj);
+const _NOOPENER_WINDOW_FEATURES = 'noopener,noreferrer';
 /** @const **/
 ToolkitUtils.SVG_NS = 'http://www.w3.org/2000/svg';
 /** @const **/
@@ -961,6 +962,60 @@ ToolkitUtils.XLINK_NS = 'http://www.w3.org/1999/xlink';
 ToolkitUtils._IMAGE_URL_CACHE = {};
 /** @private **/
 ToolkitUtils._ICON_CACHE = {};
+
+/**
+ * Validates link URL protocol before browser navigation.
+ * Copied from DomUtils.validateURL to avoid adding an ojdomutils dependency to DVT toolkit.
+ * @param {string} href URL to validate.
+ * @param {Array=} whitelist optional list of the allowed protocols.
+ * @throws {Error} if the URL uses an invalid protocol.
+ * @private
+ */
+const _validateURL = function (href, whitelist) {
+  var allowed = whitelist || ['http:', 'https:'];
+
+  var link = document.createElement('a');
+  link.href = href;
+
+  var protocol = link.protocol;
+  if (protocol != null) {
+    protocol = protocol.toLowerCase();
+  }
+  // Security issues JET-79830, JET-79570, and JET-79644 flagged the legacy
+  // empty-protocol allowance. IE11 returned '' for some relative URLs, but IE11
+  // is no longer supported. Modern browsers resolve relative URLs against the
+  // document URL before exposing the protocol, so an empty protocol is not
+  // treated as valid.
+  if (allowed.indexOf(protocol) < 0) {
+    throw new Error(protocol + ' is not a valid URL protocol');
+  }
+};
+
+/**
+ * Encodes an SVG definition ID for use as the fragment portion of a URL.
+ * @param {string} id The SVG definition ID.
+ * @return {string} The encoded fragment ID.
+ */
+const _encodeSvgUrlFragmentId = function (id) {
+  return encodeURIComponent(id).replace(/[!'()*]/g, function (ch) {
+    return '%' + ch.charCodeAt(0).toString(16).toUpperCase();
+  });
+};
+
+/**
+ * Escapes a value for interpolation inside a quoted CSS string.
+ * @param {string} value The CSS string value.
+ * @return {string} The escaped CSS string value.
+ */
+const _escapeCssString = function (value) {
+  return value.replace(/["\\\n\r\f]/g, function (ch) {
+    if (ch === '"') return '\\"';
+    if (ch === '\\') return '\\\\';
+    if (ch === '\n') return '\\A ';
+    if (ch === '\r') return '\\D ';
+    return '\\C ';
+  });
+};
 
 /**
  * Creates and returns a new SVG document with the specified id.
@@ -1208,10 +1263,14 @@ ToolkitUtils.getLinkCallback = function (target, dest) {
     // DVT ES6 TODO: Added missing 'self' ref - Trung
     var self = this;
     var callback = function () {
+      if (dest) {
+        _validateURL(dest);
+      }
+
       if (target == null) {
         self.location = dest;
       } else {
-        var newWindow = window.open(dest, target);
+        var newWindow = window.open(dest, target, _NOOPENER_WINDOW_FEATURES);
         if (newWindow) newWindow.focus();
       }
     };
@@ -1227,13 +1286,13 @@ ToolkitUtils.getLinkCallback = function (target, dest) {
  */
 ToolkitUtils.getUrlPathById = function (id) {
   // If <base> is defined on the document, we have to use the full URL.
-  // document.baseURI is not supported in IE, so we have to check if the <base> tag exists in the document.
+  // document.baseURI is not supported in IE, so fall back to checking for the <base> tag.
   var hasBase =
-    Agent.browser === 'ie' || Agent.browser === 'edge'
+    document.baseURI == null
       ? document.querySelector('base') != null
       : document.URL != document.baseURI;
   var root = hasBase ? document.URL.split('#')[0] + '#' : '#';
-  return root + id;
+  return root + _encodeSvgUrlFragmentId(id);
 };
 
 /**
@@ -1242,7 +1301,7 @@ ToolkitUtils.getUrlPathById = function (id) {
  * @return {string} URL attribute value.
  */
 ToolkitUtils.getUrlById = function (id) {
-  return 'url(' + ToolkitUtils.getUrlPathById(id) + ')';
+  return 'url("' + _escapeCssString(ToolkitUtils.getUrlPathById(id)) + '")';
 };
 
 /**
@@ -10289,33 +10348,8 @@ HtmlTooltipManager.prototype._showTextAtPosition = function (
     while (outerElem.hasChildNodes()) outerElem.removeChild(outerElem.firstChild);
   }
 
-  // Make replacements on the text string as needed
   if (typeof text == 'string') {
-    // For security, turn HTML brackets into strings to disable tags.
-    text = text.replace(/(<|&#60;)/g, '&lt;');
-    text = text.replace(/(>|&#62;)/g, '&gt;');
-
-    // Support a subset of HTML tags, including bold, italic, and table tags.
-    text = HtmlTooltipManager._restoreTag(text, 'b');
-    text = HtmlTooltipManager._restoreTag(text, 'i');
-    text = HtmlTooltipManager._restoreTag(text, 'table');
-    text = HtmlTooltipManager._restoreTag(text, 'tr');
-    text = HtmlTooltipManager._restoreTag(text, 'td');
-
-    // Replace logical newlines sequences
-    text = text.replace(/\n/g, '<br>');
-    text = text.replace(/\\n/g, '<br>');
-    text = text.replace(/&#92;n/g, '<br>');
-    text = HtmlTooltipManager._restoreTag(text, 'br');
-
-    // Create the tooltip element
-    tooltipDOM = document.createElement('span');
-    tooltipDOM.style.visibility = 'inherit';
-    tooltipDOM.style.width = null;
-    tooltipDOM.style.height = null;
-
-    // Set the text
-    tooltipDOM.innerHTML = text; //@HTMLUpdateOK
+    tooltipDOM = HtmlTooltipManager._createTooltipTextElement(text);
   } else if (canModify) tooltipDOM = text; // the text is an element or array of elements to be appended directly
 
   // Apply default class and border color on the outer element only if the user hasn't specified them ( + 21150376)
@@ -10686,19 +10720,233 @@ HtmlTooltipManager.prototype.getCustomTooltip = function (tooltipFunc, dataConte
   return tooltip;
 };
 
+/** @private @const */
+HtmlTooltipManager._SUPPORTED_TOOLTIP_TAGS = {
+  b: true,
+  i: true,
+  br: true,
+  table: true,
+  tr: true,
+  td: true
+};
+
+/** @private @const */
+HtmlTooltipManager._TOOLTIP_ENTITY_MAP = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  nbsp: String.fromCharCode(160)
+};
+
 /**
- * Restores a supported HTML tag.
- * All HTML brackets are converted into &gt; and &lt; for security reasons, to prevent people from adding unsupported
- * elements. This method restores the brackets for the supported element only.
- * @param {string} text The HTML string.
- * @param {string} tag The tag name to be restored.
- * @return {string} The updated HTML string.
+ * Creates a tooltip span from a string without parsing the string as HTML.
+ * Supported tooltip tags are converted to DOM nodes and all other markup is rendered as text.
+ * @param {string} text The tooltip string.
+ * @return {HTMLSpanElement}
  * @private
  */
-HtmlTooltipManager._restoreTag = function (text, tag) {
-  // Match the following: <tag...>, </tag...>, and <tag.../>
-  var regExp = new RegExp('&lt;(/?)(' + tag + ')(?=[\\s&/])([^&]*)(/?)&gt;', 'g');
-  return text.replace(regExp, '<$1' + tag + '$3$4>');
+HtmlTooltipManager._createTooltipTextElement = function (text) {
+  var tooltipDOM = document.createElement('span');
+  tooltipDOM.style.visibility = 'inherit';
+  tooltipDOM.style.width = null;
+  tooltipDOM.style.height = null;
+
+  HtmlTooltipManager._appendTooltipTextContent(
+    tooltipDOM,
+    HtmlTooltipManager._decodeTooltipEntities(text)
+  );
+  return tooltipDOM;
+};
+
+/**
+ * Appends tooltip string content to an element using only DOM APIs.
+ * @param {Element} root The element receiving tooltip content.
+ * @param {string} text The tooltip string.
+ * @private
+ */
+HtmlTooltipManager._appendTooltipTextContent = function (root, text) {
+  var stack = [root];
+  var index = 0;
+
+  while (index < text.length) {
+    if (text.charAt(index) === '\n') {
+      HtmlTooltipManager._appendTooltipLineBreak(stack[stack.length - 1]);
+      index += 1;
+      continue;
+    }
+
+    if (text.charAt(index) === '\\' && text.charAt(index + 1) === 'n') {
+      HtmlTooltipManager._appendTooltipLineBreak(stack[stack.length - 1]);
+      index += 2;
+      continue;
+    }
+
+    if (text.indexOf('&#92;n', index) === index) {
+      HtmlTooltipManager._appendTooltipLineBreak(stack[stack.length - 1]);
+      index += 6;
+      continue;
+    }
+
+    var tag = HtmlTooltipManager._parseTooltipTag(text, index);
+    if (tag) {
+      if (tag.name === 'br') {
+        HtmlTooltipManager._appendTooltipLineBreak(stack[stack.length - 1]);
+      } else if (tag.closing) {
+        HtmlTooltipManager._closeTooltipTag(stack, tag.name);
+      } else {
+        var element = document.createElement(tag.name); // @HTMLUpdateOK
+        stack[stack.length - 1].appendChild(element);
+        stack.push(element);
+      }
+      index = tag.end;
+      continue;
+    }
+
+    if (text.charAt(index) === '<') {
+      var tagEnd = text.indexOf('>', index + 1);
+      var literalEnd = tagEnd >= 0 ? tagEnd + 1 : index + 1;
+      HtmlTooltipManager._appendTooltipText(
+        stack[stack.length - 1],
+        text.substring(index, literalEnd)
+      );
+      index = literalEnd;
+    } else {
+      var textEnd = HtmlTooltipManager._getNextTooltipSpecialTokenIndex(text, index + 1);
+      HtmlTooltipManager._appendTooltipText(
+        stack[stack.length - 1],
+        text.substring(index, textEnd)
+      );
+      index = textEnd;
+    }
+  }
+};
+
+/**
+ * Parses a supported tooltip tag at the specified index.
+ * @param {string} text The tooltip string.
+ * @param {number} index The index to parse.
+ * @return {{name:string, closing:boolean, end:number}|null}
+ * @private
+ */
+HtmlTooltipManager._parseTooltipTag = function (text, index) {
+  if (text.charAt(index) !== '<') return null;
+
+  var tagEnd = text.indexOf('>', index + 1);
+  if (tagEnd < 0) return null;
+
+  var position = index + 1;
+  var closing = text.charAt(position) === '/';
+  if (closing) position += 1;
+
+  var tagStart = position;
+  while (position < tagEnd && /[a-z]/.test(text.charAt(position))) {
+    position += 1;
+  }
+
+  var tagName = text.substring(tagStart, position);
+  if (!HtmlTooltipManager._SUPPORTED_TOOLTIP_TAGS[tagName]) return null;
+  if (!HtmlTooltipManager._isTooltipTagBoundary(text, position, tagEnd)) return null;
+
+  return {
+    name: tagName,
+    closing: closing,
+    end: tagEnd + 1
+  };
+};
+
+/**
+ * Returns the next index that needs token-level tooltip handling.
+ * @param {string} text The tooltip string.
+ * @param {number} index The index to start scanning from.
+ * @return {number}
+ * @private
+ */
+HtmlTooltipManager._getNextTooltipSpecialTokenIndex = function (text, index) {
+  while (index < text.length) {
+    if (
+      text.charAt(index) === '<' ||
+      text.charAt(index) === '\n' ||
+      (text.charAt(index) === '\\' && text.charAt(index + 1) === 'n')
+    ) {
+      return index;
+    }
+    index += 1;
+  }
+  return index;
+};
+
+/**
+ * Returns whether a parsed tag name is followed by a valid tag boundary.
+ * @param {string} text The tooltip string.
+ * @param {number} index The index after the parsed tag name.
+ * @param {number} tagEnd The index of the closing angle bracket.
+ * @return {boolean}
+ * @private
+ */
+HtmlTooltipManager._isTooltipTagBoundary = function (text, index, tagEnd) {
+  return index === tagEnd || /\s/.test(text.charAt(index)) || text.charAt(index) === '/';
+};
+
+/**
+ * Closes the most recent matching supported tooltip tag.
+ * @param {Array<Element>} stack The open tooltip element stack.
+ * @param {string} tagName The tag name to close.
+ * @private
+ */
+HtmlTooltipManager._closeTooltipTag = function (stack, tagName) {
+  for (var i = stack.length - 1; i > 0; i--) {
+    if (stack[i].tagName.toLowerCase() === tagName) {
+      stack.length = i;
+      return;
+    }
+  }
+};
+
+/**
+ * Appends a line break to tooltip content.
+ * @param {Element} parent The parent element.
+ * @private
+ */
+HtmlTooltipManager._appendTooltipLineBreak = function (parent) {
+  parent.appendChild(document.createElement('br')); // @HTMLUpdateOK
+};
+
+/**
+ * Appends decoded text to tooltip content.
+ * @param {Element} parent The parent element.
+ * @param {string} text The text to append.
+ * @private
+ */
+HtmlTooltipManager._appendTooltipText = function (parent, text) {
+  if (text) {
+    parent.appendChild(document.createTextNode(text));
+  }
+};
+
+/**
+ * Decodes only the common entities supported in DVT tooltip string content.
+ * @param {string} text The text to decode.
+ * @return {string}
+ * @private
+ */
+HtmlTooltipManager._decodeTooltipEntities = function (text) {
+  return text.replace(
+    /&(#x[0-9a-fA-F]+|#[0-9]+|amp|lt|gt|quot|apos|nbsp);/g,
+    function (match, entity) {
+      if (entity.charAt(0) === '#') {
+        var radix = entity.charAt(1).toLowerCase() === 'x' ? 16 : 10;
+        var value = parseInt(entity.substring(radix === 16 ? 2 : 1), radix);
+        if (!isNaN(value) && value >= 0 && value <= 0x10ffff) {
+          return String.fromCodePoint ? String.fromCodePoint(value) : String.fromCharCode(value);
+        }
+        return match;
+      }
+
+      return HtmlTooltipManager._TOOLTIP_ENTITY_MAP[entity];
+    }
+  );
 };
 
 /**
@@ -15529,6 +15777,17 @@ const JsonUtils = new Object();
 Obj.createSubclass(JsonUtils, Obj);
 
 /**
+ * Returns true if the key provided should be blocked from merge utilities.
+ * Specifically keys that could cause prototype pollution issues are included.
+ * @param {string} key
+ * @return {boolean}
+ * @private
+ */
+JsonUtils._isBlockedKey = function (key) {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+};
+
+/**
  * Returns a deep clone of the object.
  * @param {object} obj The object to clone.
  * @param {function} keyFunc An optional boolean-valued function that will be called for each key.  If the function returns false, the key will not be copied over
@@ -15559,8 +15818,10 @@ JsonUtils.clone = function (obj, keyFunc, noClone) {
     ret = {};
 
     // Loop through all properties of the object
-    for (var key in obj) {
-      if (!keyFunc || keyFunc(key)) {
+    var keys = Object.keys(obj);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      if (!JsonUtils._isBlockedKey(key) && (!keyFunc || keyFunc(key))) {
         var value = obj[key];
         if (
           !(noClone && noClone[key] == true) &&
@@ -15611,25 +15872,32 @@ JsonUtils.merge = function (a, b, noClone) {
  * @private
  */
 JsonUtils._copy = function (a, b) {
-  for (var key in a) {
-    var value = a[key];
-    // Treat an 'undefined' value as if the key were not set and ignore
-    if (value === undefined) continue;
+  var keys = Object.keys(a);
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    if (!JsonUtils._isBlockedKey(key)) {
+      var value = a[key];
+      var hasOwnKey = Object.hasOwn(b, key);
+      var targetValue = hasOwnKey ? b[key] : undefined;
+      // Treat an 'undefined' value as if the key were not set and ignore
+      if (value === undefined) continue;
 
-    if ((value && value instanceof Array) || key == '_widgetConstructor') {
-      // Copy the array over, since we don't want arrays to be merged
-      // We also don't want the widget constructor to be copied/cloned
-      b[key] = value;
-    } else if (b[key] && b[key] instanceof CSSStyle) {
-      // If an object is defined as CSS in the base object, merge the CSS
-      if (value instanceof CSSStyle) b[key].merge(value);
-      // value is String
-      else b[key].merge(new CSSStyle(value));
-    } else if (JsonUtils._isDeepClonable(value)) {
-      // Deep clone if object exists in b, copy otherwise
-      if (b[key]) JsonUtils._copy(value, b[key]);
-      else b[key] = value;
-    } else b[key] = value;
+      if ((value && value instanceof Array) || key == '_widgetConstructor') {
+        // Copy the array over, since we don't want arrays to be merged
+        // We also don't want the widget constructor to be copied/cloned
+        b[key] = value;
+      } else if (hasOwnKey && targetValue && targetValue instanceof CSSStyle) {
+        // If an object is defined as CSS in the base object, merge the CSS
+        if (value instanceof CSSStyle) targetValue.merge(value);
+        // value is String
+        else targetValue.merge(new CSSStyle(value));
+      } else if (JsonUtils._isDeepClonable(value)) {
+        // Deep clone if object exists in b, copy otherwise
+        if (hasOwnKey && JsonUtils._isDeepClonable(targetValue))
+          JsonUtils._copy(value, targetValue);
+        else b[key] = value;
+      } else b[key] = value;
+    }
   }
 };
 

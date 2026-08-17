@@ -58,6 +58,8 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
      *  <h5>role attribute</h5>
      *  <p>The <code class="prettyprint">role</code> attribute custom value is no longer supported and the drawer will always have the ‘dialog’ role.
      *  </p>
+     *  <h5>CSS Variables</h5>
+     *  <p><code class="prettyprint">oj-c-drawer-popup</code> exposes drawer-owned styling hooks. Popup tail variables, popup-like border, radius, shadow, and padding variables are not supported. If a legacy Drawer Popup CSS variable has no <code class="prettyprint">oj-c-drawer-popup</code> equivalent, use the relevant global or theme CSS variables where possible.</p>
      *
      * <h3 id="keyboard-section">
      *   Keyboard End User Information
@@ -142,7 +144,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'jquery',
      *     "module": "ojs/ojdrawerpopup"
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojDrawerPopup.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojDrawerPopup.html"
      * @ojmetadata since "11.0.0"
      */
     exports.DrawerPopup = DrawerPopup_1 = class DrawerPopup extends preact.Component {

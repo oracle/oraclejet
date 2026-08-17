@@ -38,7 +38,11 @@ define(['jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function ($, oj, DomUtil
    * @param {!Element} element Element to focus.
    */
   FocusUtils.focusElement = function (element) {
-    element.focus();
+    if (element.jquery) {
+      element.trigger('focus');
+    } else {
+      element.focus();
+    }
   };
 
   /**

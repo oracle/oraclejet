@@ -1203,7 +1203,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
 
       // animate on min-width
       window.setTimeout(function () {
-        drawer.css('min-width', size);
+        drawer.css('min-width', typeof size === 'number' ? size + 'px' : size);
 
         OffcanvasUtils._toggleOuterWrapper(offcanvas, drawer, false);
       }, 10);
@@ -2088,7 +2088,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
         }
 
         delta = Math.abs(delta);
-        drawer.css('width', delta);
+        drawer.css('width', delta + 'px');
 
         // don't do css transition animation while panning
         wrapper.removeClass(OffcanvasUtils.TRANSITION_SELECTOR);

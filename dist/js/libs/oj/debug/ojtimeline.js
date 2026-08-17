@@ -3685,7 +3685,11 @@ var __oj_timeline_series_metadata =
 
     _GetComponentRendererOptions: function () {
       return [
-        { path: 'itemBubbleContentRenderer', slot: 'itemBubbleContentTemplate' },
+        {
+          path: 'itemBubbleContentRenderer',
+          slot: 'itemBubbleContentTemplate',
+          processTemplate: true
+        },
         { path: 'tooltip/renderer', slot: 'tooltipTemplate' }
       ];
     },

@@ -33,7 +33,16 @@ define(['exports', 'ojs/ojthemeutils', 'ojs/ojcore-base', 'jquery'], function (e
       SMALL: 1,
       PRE: 1
     },
-    _LEGAL_ATTRIBUTES: { class: 1, style: 1 }
+    _LEGAL_ATTRIBUTES: { class: 1, style: 1 },
+    _LEGAL_CSS_PROPERTIES: {
+      color: 1,
+      'font-style': 1,
+      'font-weight': 1,
+      'text-decoration': 1,
+      'text-decoration-line': 1
+    },
+    _ILLEGAL_CSS_VALUE_PATTERN:
+      /(?:url\s*\(|expression\s*\(|behavior\s*:|-moz-binding|@import|!important|var\s*\()/i
   };
 
   /**
@@ -54,11 +63,13 @@ define(['exports', 'ojs/ojthemeutils', 'ojs/ojcore-base', 'jquery'], function (e
   };
 
   DomUtils.cleanHtml = function (value) {
-    var offSpan = $(document.createElement('span')).get(0);
-    offSpan.innerHTML = value; // @HTMLUpdateOK safe manipulation
+    var offSpan = document.createElement('span');
+    var template = document.createElement('template');
+    template.innerHTML = value; // @HTMLUpdateOK template content is sanitized before use
     if (value && value.indexOf('\x3c') >= 0) {
-      DomUtils._cleanElementHtml(offSpan);
+      DomUtils._cleanElementHtml(template.content);
     }
+    offSpan.appendChild(template.content); // @HTMLUpdateOK appending sanitized template content
     return offSpan;
   };
 
@@ -68,24 +79,75 @@ define(['exports', 'ojs/ojthemeutils', 'ojs/ojcore-base', 'jquery'], function (e
     for (var count = children.length - 1; count >= 0; count--) {
       var child = children.item(count);
       if (child && child.nodeType === 1) {
-        if (DomUtils._LEGAL_ELEMENTS[child.nodeName]) {
+        if (Object.hasOwn(DomUtils._LEGAL_ELEMENTS, child.nodeName)) {
           var attrs = child.attributes;
           for (var i = attrs.length - 1; i >= 0; i--) {
             var attr = attrs[i];
+            var attrName = attr.name.toLowerCase();
             // jquery - the .attr() method returns undefined for attributes that have not been set.
             var childHasAttr = $(child).attr(attr.name) !== undefined;
             if (childHasAttr) {
-              if (!DomUtils._LEGAL_ATTRIBUTES[attr.name]) {
+              if (!Object.hasOwn(DomUtils._LEGAL_ATTRIBUTES, attrName)) {
                 child.removeAttribute(attr.nodeName);
+              } else if (attrName === 'style') {
+                DomUtils._sanitizeStyleAttribute(child);
               }
             }
           }
           DomUtils._cleanElementHtml(child);
-        } else if (child) {
+        } else {
           node.removeChild(child);
         }
+      } else if (child && child.nodeType === 8) {
+        node.removeChild(child);
       }
     }
+  };
+
+  DomUtils._sanitizeStyleAttribute = function (node) {
+    var cleanDeclarations = [];
+    var style = node.style;
+    var properties = Array.from(style);
+
+    for (var i = 0; i < properties.length; i++) {
+      var property = properties[i];
+      var value = style.getPropertyValue(property);
+      var cleanValue = DomUtils._getCleanHtmlCssValue(
+        property,
+        value,
+        style.getPropertyPriority(property)
+      );
+
+      if (cleanValue) {
+        cleanDeclarations.push({ property: property, value: cleanValue });
+      }
+    }
+
+    node.removeAttribute('style');
+
+    if (cleanDeclarations.length > 0) {
+      for (var j = 0; j < cleanDeclarations.length; j++) {
+        var cleanDeclaration = cleanDeclarations[j];
+        node.style.setProperty(cleanDeclaration.property, cleanDeclaration.value);
+      }
+    }
+  };
+
+  DomUtils._getCleanHtmlCssValue = function (property, value, priority) {
+    if (
+      !Object.hasOwn(DomUtils._LEGAL_CSS_PROPERTIES, property) ||
+      !value ||
+      priority ||
+      DomUtils._ILLEGAL_CSS_VALUE_PATTERN.test(value)
+    ) {
+      return null;
+    }
+
+    if (window.CSS && CSS.supports && !CSS.supports(property, value)) {
+      return null;
+    }
+
+    return value;
   };
 
   /**
@@ -1012,10 +1074,10 @@ define(['exports', 'ojs/ojthemeutils', 'ojs/ojcore-base', 'jquery'], function (e
   };
 
   /**
-   * Checks whether the href represents a safe URL
+   * Checks whether the href uses an allowed URL protocol.
    * @param {!string} href - HREF to test
    * @param {Array=} whitelist - optional list of the allowed protocols. Protocol name has to use lowercase letters and
-   * be followed by a ':'. If the parameter is ommitted, ['http:', 'https:'] will be used
+   * be followed by a ':'. If the parameter is omitted, ['http:', 'https:'] will be used
    * @throws {Exception} an error if the HREF represents an invalid URL
    * @ignore
    */
@@ -1029,10 +1091,12 @@ define(['exports', 'ojs/ojthemeutils', 'ojs/ojcore-base', 'jquery'], function (e
     if (protocol != null) {
       protocol = protocol.toLowerCase();
     }
-    // if it isn't on the allowed list and it isn't '', throw an error.
-    // IE11 returns '' for hrefs like 'abc', other browsers return 'https'
-    // and we want to allow hrefs like 'abc' since those are relative urls.
-    if (allowed.indexOf(protocol) < 0 && protocol !== '') {
+    // Security issues JET-79830, JET-79570, and JET-79644 flagged the legacy
+    // empty-protocol allowance. IE11 returned '' for some relative URLs, but IE11
+    // is no longer supported. Modern browsers resolve relative URLs against the
+    // document URL before exposing the protocol, so an empty protocol is not
+    // treated as valid.
+    if (allowed.indexOf(protocol) < 0) {
       throw new Error(protocol + ' is not a valid URL protocol');
     }
   };

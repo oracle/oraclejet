@@ -5,6 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { validateURL } from 'ojs/ojdomutils';
+
+const ALLOWED_AUDIO_URL_PROTOCOLS = ['http:', 'https:', 'data:', 'blob:'];
 /**
  * @classdesc
  * A utility class with helpers to play audio
@@ -37,12 +40,20 @@ class SoundUtils {
      * @returns {Promise<void, Error>} A promise that resolves when the audio is play or rejects if there are any issues
      */
     static playAudioFromURL(url) {
-        let resolve;
-        let reject;
+        let resolve = () => { };
+        let reject = () => { };
         const returnPromise = new Promise((_resolve, _reject) => {
             resolve = _resolve;
             reject = _reject;
         });
+        try {
+            validateURL(url, ALLOWED_AUDIO_URL_PROTOCOLS);
+        }
+        catch (error) {
+            // Defer so callers can attach a rejection handler to the returned promise first.
+            void Promise.resolve().then(() => reject(error));
+            return returnPromise;
+        }
         // Using an <audio> element is simple for our use case.
         const audioElement = document.createElement('audio');
         audioElement.src = url;

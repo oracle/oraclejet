@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 'ojs/ojlistview', 'ojs/ojhighlighttext', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojfocusutils', 'ojs/ojdataprovider', 'ojs/ojcontext', 'ojs/ojkeyset', 'ojs/ojcustomelement-utils', 'ojs/ojdataproviderfactory', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojtimerutils', 'ojs/ojdebouncingdataproviderview'], function (exports, ojeditablevalue, ojpopupcore, ojinputtext, ojlistview, ojhighlighttext, oj, $, DomUtils, Logger, Config, ThemeUtils, FocusUtils, ojdataprovider, Context, ojkeyset, ojcustomelementUtils, ojdataproviderfactory, ListDataProviderView, TreeDataProviderView, TimerUtils, ojdebouncingdataproviderview) { 'use strict';
+define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 'ojs/ojlistview', 'ojs/ojhighlighttext', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojfocusutils', 'ojs/ojdataprovider', 'ojs/ojcontext', 'ojs/ojtranslation', 'ojs/ojkeyset', 'ojs/ojcustomelement-utils', 'ojs/ojdataproviderfactory', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojtimerutils', 'ojs/ojdebouncingdataproviderview'], function (exports, ojeditablevalue, ojpopupcore, ojinputtext, ojlistview, ojhighlighttext, oj, $, DomUtils, Logger, Config, ThemeUtils, FocusUtils, ojdataprovider, Context, Translations, ojkeyset, ojcustomelementUtils, ojdataproviderfactory, ListDataProviderView, TreeDataProviderView, TimerUtils, ojdebouncingdataproviderview) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -49,6 +49,9 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     this._matchBy = options.matchBy;
 
     this._lastDataProviderPromise = null;
+    this._dropdownPreferredPosition = 'below';
+    this._dropdownMainFieldIntersectingViewport = true;
+    this._dropdownMainFieldIntersectionObserver = null;
 
     // support ko options-binding
     // init dataProvider fetchType
@@ -120,20 +123,51 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       dropdownElemStyle.maxWidth = availableSpace.width + 'px';
       dropdownElemStyle.maxHeight = availableSpace.height - this._dropdownVerticalOffset + 'px';
 
-      // apply same position, because the popup service should put it in the same place after
-      // running collision logic (exclude using callback, because we're already in it and we don't
-      // need to loop again)
+      // Reposition the real dropdown after PopupService has applied collision logic and after
+      // we have constrained the dropdown size. Use a local using callback for this second
+      // positioning pass so applying the final offset does not re-enter this handler.
       var dropdownPosition = this.getDropdownPosition(true);
+      // JET-75597 - Help instruction text hidden under select-single dropdown
+      // The local using callback reports the final real-dropdown placement. Remember that side
+      // as the next preferred starting side while this dropdown is open. At some scroll positions,
+      // the dropdown can fit below the launcher only after the drop-above class hides the dropdown
+      // user assistance. Without a remembered preference, PopupService can place the dropdown
+      // below, detect a collision with the help content, flip it above, hide the help content,
+      // then recalculate a shorter height and try below again. Starting the next calculation from
+      // the last side that fit avoids that loop until PopupService reports another collision.
+      dropdownPosition.using = function (finalPos, finalProps) {
+        // JET-80067 - Select2 RTL QUnit Chrome 148 alignment failure.
+        // The jQuery UI position 'using' callback receives CSS top/left props from the
+        // underlying offset setter, not document offset coordinates. When no 'using'
+        // callback is supplied, jQuery applies those computed props directly:
+        //
+        //   if ("using" in options) {
+        //     options.using.call(elem, props);
+        //   } else {
+        //     curElem.css(props);
+        //   }
+        //
+        // Apply the props the same way here to preserve the old second-pass behavior.
+        // Calling offset(finalPos) would convert these CSS props a second time, which can
+        // shift RTL dropdowns by the Windows scrollbar gutter when the launcher is flush
+        // with the viewport edge.
+        $dropdownElem.css(finalPos);
+        if (finalProps.vertical === 'bottom') {
+          // Always keep the visual class in sync with the actual final placement. Only the
+          // remembered preference is gated by viewport intersection.
+          this._dropdownPreferredPosition = this._dropdownMainFieldIntersectingViewport
+            ? 'above'
+            : 'below';
+          $containerElem.addClass('oj-listbox-drop-above');
+          $dropdownElem.addClass('oj-listbox-drop-above');
+        } else {
+          this._dropdownPreferredPosition = 'below';
+          $containerElem.removeClass('oj-listbox-drop-above');
+          $dropdownElem.removeClass('oj-listbox-drop-above');
+        }
+      }.bind(this);
       // reposition the dropdown
       $dropdownElem.position(dropdownPosition);
-
-      if (props.vertical === 'bottom') {
-        $containerElem.addClass('oj-listbox-drop-above');
-        $dropdownElem.addClass('oj-listbox-drop-above');
-      } else {
-        $containerElem.removeClass('oj-listbox-drop-above');
-        $dropdownElem.removeClass('oj-listbox-drop-above');
-      }
     }
   };
 
@@ -156,12 +190,21 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       // and if we line up to the container when it has inline messages, the dropdown
       // appears after the inline messages.  We want it to always appear next to the input,
       // which is the first child of the container.
+      // JET-75597 - Help instruction text hidden under select-single dropdown
+      // Apply the remembered above-field preference only while the launcher is in the viewport.
+      // When the launcher scrolls out of view, keeping an above preference can leave the dropdown
+      // flashing in the visible page instead of following the launcher out of view.
+      var preferAbove =
+        this._dropdownPreferredPosition === 'above' && this._dropdownMainFieldIntersectingViewport;
       var defPosition = {
-        my: 'start top',
-        at: 'start bottom',
+        my: preferAbove ? 'start bottom' : 'start top',
+        at: preferAbove ? 'start top' : 'start bottom',
         of: this._lovMainField.getElement(),
         collision: 'flip',
-        offset: { x: 0, y: this._dropdownVerticalOffset }
+        offset: {
+          x: 0,
+          y: preferAbove ? -this._dropdownVerticalOffset : this._dropdownVerticalOffset
+        }
       };
       if (!excludeUsingHandler) {
         defPosition.using = this._usingHandler.bind(this);
@@ -176,6 +219,52 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       position.of = defPosition.of;
     }
     return position;
+  };
+
+  AbstractLovBase.prototype._startDropdownMainFieldIntersectionObserver = function () {
+    this._stopDropdownMainFieldIntersectionObserver();
+    this._dropdownMainFieldIntersectingViewport = true;
+
+    if (this._fullScreenPopup || !window.IntersectionObserver) {
+      return;
+    }
+
+    var mainFieldElem = this._lovMainField ? this._lovMainField.getElement() : null;
+    if (!mainFieldElem) {
+      return;
+    }
+
+    // JET-75597 - Help instruction text hidden under select-single dropdown
+    // Track viewport intersection asynchronously so scroll refreshes can reset the remembered
+    // placement without forcing layout from a scroll callback. We only need this for the
+    // placement memory; the drop-above class still follows the actual PopupService feedback.
+    this._dropdownMainFieldIntersectionObserver = new IntersectionObserver(
+      function (entries) {
+        var entry = entries && entries[entries.length - 1];
+        if (!entry) {
+          return;
+        }
+
+        var isIntersecting = entry.isIntersecting === true || entry.intersectionRatio > 0;
+        this._dropdownMainFieldIntersectingViewport = isIntersecting;
+        if (!isIntersecting) {
+          // JET-75597 - Help instruction text hidden under select-single dropdown
+          // Once the launcher leaves the viewport, forget any drop-above preference. The next
+          // PopupService refresh should start from the original below-field preference so the
+          // dropdown can move out of view with the launcher instead of flashing on screen.
+          this._dropdownPreferredPosition = 'below';
+        }
+      }.bind(this)
+    );
+    this._dropdownMainFieldIntersectionObserver.observe(mainFieldElem);
+  };
+
+  AbstractLovBase.prototype._stopDropdownMainFieldIntersectionObserver = function () {
+    if (this._dropdownMainFieldIntersectionObserver) {
+      this._dropdownMainFieldIntersectionObserver.disconnect();
+      this._dropdownMainFieldIntersectionObserver = null;
+    }
+    this._dropdownMainFieldIntersectingViewport = true;
   };
 
   AbstractLovBase.prototype.sizeDropdown = function () {
@@ -221,6 +310,12 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       return false;
     }
 
+    // JET-75597 - Help instruction text hidden under select-single dropdown
+    // Each open starts with the original below-field preference. The preference can then change
+    // as popup collision logic resolves the actual placement during this open session.
+    this._dropdownPreferredPosition = 'below';
+    this._startDropdownMainFieldIntersectionObserver();
+
     if (this._fullScreenPopup) {
       var mainInputElem = this._lovMainField.getInputElem();
       var filterFieldText = this._isShowValueInFilterFieldFunc() ? mainInputElem.value : '';
@@ -237,13 +332,19 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
   };
 
   AbstractLovBase.prototype.closeDropdown = function () {
+    this._stopDropdownMainFieldIntersectionObserver();
+
     if (!this.isDropdownOpen()) {
+      // Reset the per-open placement preference before the next dropdown session.
+      this._dropdownPreferredPosition = 'below';
       return;
     }
 
     var $containerElem = $(this._containerElem);
 
     $containerElem.removeClass('oj-listbox-dropdown-open');
+    // Reset the per-open placement preference before the next dropdown session.
+    this._dropdownPreferredPosition = 'below';
 
     if (!this._ariaExpanded) {
       return;
@@ -974,7 +1075,8 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     //  bodyElem, itemTemplate, collectionTemplate,
     //  getTemplateEngineFunc, templateContextComponentElement,
     //  addBusyStateFunc, itemTextRendererFunc, filterInputText, afterDropdownInitFunc,
-    //  getThrottlePromiseFunc, isValueItemForPlaceholderFunc, styleClassComponentName}
+    //  getOptionsFunc, getThrottlePromiseFunc, isValueItemForPlaceholderFunc,
+    //  styleClassComponentName}
     this._dataProvider = options.dataProvider;
     this._fullScreenPopup = options.fullScreenPopup;
     this._bodyElem = $(options.bodyElem);
@@ -985,6 +1087,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     this._addBusyStateFunc = options.addBusyStateFunc;
     this._itemTextRendererFunc = options.itemTextRendererFunc;
     this._filterInputText = options.filterInputText;
+    this._getOptionsFunc = options.getOptionsFunc;
     this._getThrottlePromiseFunc = options.getThrottlePromiseFunc;
     this._isValueForPlaceholderFunc = options.isValueForPlaceholderFunc;
     this._isValueItemForPlaceholderFunc = options.isValueItemForPlaceholderFunc;
@@ -1142,15 +1245,143 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     outerDiv.style.display = 'none';
     outerDiv.setAttribute('role', 'presentation');
 
+    var userAssistanceElem = this._createDropdownUserAssistanceElem();
+
     if (this._fullScreenPopup) {
       outerDiv.appendChild(this._filterInputText);
+      outerDiv.appendChild(userAssistanceElem); // @HTMLUpdateOK
     }
 
     var resultsPlaceholder = document.createElement('div');
     resultsPlaceholder.setAttribute('class', 'oj-searchselect-results-placeholder');
     outerDiv.appendChild(resultsPlaceholder); // @HTMLUpdateOK
 
+    if (!this._fullScreenPopup) {
+      outerDiv.appendChild(userAssistanceElem); // @HTMLUpdateOK
+    }
+
     return $(outerDiv);
+  };
+
+  LovDropdown.prototype._createDropdownUserAssistanceElem = function () {
+    var userAssistanceElem = document.createElement('div');
+    userAssistanceElem.setAttribute('class', 'oj-select-dropdown-user-assistance');
+    userAssistanceElem.hidden = true;
+    this._dropdownUserAssistanceElem = userAssistanceElem;
+    return userAssistanceElem;
+  };
+
+  LovDropdown.prototype.updateDropdownUserAssistance = function () {
+    this._updateDropdownUserAssistance();
+  };
+
+  LovDropdown.prototype._updateDropdownUserAssistance = function () {
+    var userAssistanceElem = this._dropdownUserAssistanceElem;
+    var options = this._getOptionsFunc ? this._getOptionsFunc() : null;
+    if (!userAssistanceElem) {
+      return;
+    }
+
+    userAssistanceElem.textContent = '';
+    userAssistanceElem.hidden = true;
+
+    var userAssistanceContent = this._getDropdownUserAssistanceContent(options);
+    if (!this._shouldRenderDropdownUserAssistance(options, userAssistanceContent)) {
+      return;
+    }
+
+    var helpHintsElem = this._createDropdownUserAssistanceContent(userAssistanceContent);
+    if (helpHintsElem) {
+      userAssistanceElem.appendChild(helpHintsElem); // @HTMLUpdateOK
+      userAssistanceElem.hidden = false;
+    }
+  };
+
+  LovDropdown.prototype._shouldRenderDropdownUserAssistance = function (
+    options,
+    userAssistanceContent
+  ) {
+    if (!options || options.disabled || options.readOnly) {
+      return false;
+    }
+
+    return (
+      (userAssistanceContent.assistiveText || userAssistanceContent.helpSourceLink) &&
+      (options.userAssistanceDensity === 'efficient' || options.userAssistanceDensity === 'reflow')
+    );
+  };
+
+  LovDropdown.prototype._getDropdownUserAssistanceContent = function (options) {
+    var helpOptions = options ? options.help : null;
+    var helpHints = options ? options.helpHints : null;
+    var helpInstruction = helpOptions ? helpOptions.instruction : null;
+    var definition = helpHints ? helpHints.definition : null;
+
+    return {
+      assistiveText: helpInstruction || definition,
+      assistiveTextHtmlAllowed: !!helpInstruction,
+      helpSourceLink: helpHints ? helpHints.source : null
+    };
+  };
+
+  LovDropdown.prototype._createDropdownUserAssistanceContent = function (userAssistanceContent) {
+    var assistiveText = userAssistanceContent.assistiveText;
+    var source = userAssistanceContent.helpSourceLink;
+    var helpHintsElem = document.createElement('div');
+    var hasContent = false;
+
+    helpHintsElem.classList.add('oj-helphints-inline-container');
+
+    if (assistiveText) {
+      var assistiveTextElem = this._createDropdownHelpTextDom(
+        assistiveText,
+        userAssistanceContent.assistiveTextHtmlAllowed
+      );
+      if (assistiveTextElem) {
+        helpHintsElem.appendChild(assistiveTextElem); // @HTMLUpdateOK
+        hasContent = true;
+      }
+    }
+
+    if (source) {
+      var sourceElem = this._createDropdownHelpSourceDom(source);
+      helpHintsElem.appendChild(sourceElem); // @HTMLUpdateOK
+      hasContent = true;
+    }
+
+    return hasContent ? helpHintsElem : null;
+  };
+
+  LovDropdown.prototype._createDropdownHelpTextDom = function (text, htmlAllowed) {
+    var textElem = document.createElement('div');
+    var textDom = ojeditablevalue.PopupMessagingStrategyUtils.GetTextDom(document, text, htmlAllowed);
+    if (!textDom) {
+      return null;
+    }
+
+    // JET-75597 - Help instruction text hidden under select-single dropdown
+    // Match InlineHelpHintsStrategy by using PopupMessagingStrategyUtils.GetTextDom for
+    // help.instruction HTML handling and helpHints.definition text handling.
+    textElem.appendChild(textDom); // @HTMLUpdateOK
+
+    return textElem;
+  };
+
+  LovDropdown.prototype._createDropdownHelpSourceDom = function (source) {
+    var helpAnchorDiv = document.createElement('div');
+    var helpSourceAnchor = document.createElement('a');
+
+    helpSourceAnchor.classList.add('oj-helphints-anchor');
+    helpSourceAnchor.setAttribute('target', '_blank');
+    helpSourceAnchor.setAttribute('rel', 'noopener noreferrer');
+    DomUtils.validateURL(source);
+    helpSourceAnchor.setAttribute('href', source);
+    helpSourceAnchor.textContent = Translations.getTranslatedString(
+      'oj-ojEditableValue.helpSourceText'
+    );
+
+    helpAnchorDiv.appendChild(helpSourceAnchor); // @HTMLUpdateOK
+    return helpAnchorDiv;
   };
 
   LovDropdown.prototype._createDropdownPositioningProxyElem = function (options) {
@@ -1179,6 +1410,14 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     var resultsProxyElem = document.createElement('div');
     resultsProxyElem.setAttribute('class', 'oj-select-results');
     outerDiv.appendChild(resultsProxyElem); // @HTMLUpdateOK
+
+    // JET-75597 - Help instruction text hidden under select-single dropdown
+    // Keep a blank UA slot in the positioning proxy so collision checks can reserve the same
+    // footprint as the real dropdown when user assistance is shown below the results.
+    var userAssistanceProxyElem = document.createElement('div');
+    userAssistanceProxyElem.setAttribute('class', 'oj-select-dropdown-user-assistance');
+    userAssistanceProxyElem.hidden = true;
+    outerDiv.appendChild(userAssistanceProxyElem); // @HTMLUpdateOK
 
     return $(containerDiv);
   };
@@ -1238,7 +1477,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       var nodes = templateEngine.execute(
         renderContext.componentElement,
         this._itemTemplate,
-        renderContext
+        renderContext,
+        undefined,
+        undefined,
+        undefined,
+        { processTemplate: true }
       );
       for (var i = 0; i < nodes.length; i++) {
         // label.appendChild(nodes[i]);
@@ -1940,6 +2183,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
     // Remove data-oj-suspend so that dropdown collections come back from suspended mode when dropdown is opened
     this._containerElem.removeAttr('data-oj-suspend');
+    this.updateDropdownUserAssistance();
 
     // if (this._searchElem) {
     //   this._searchElem.val('');
@@ -2541,7 +2785,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         // trigger the dropdown.
         input.setAttribute('inputmode', 'none');
       } else {
-        input.setAttribute('readonly', 'true');
+        input.setAttribute('readonly', 'readonly');
       }
     }
     if (!readonly) {
@@ -4100,7 +4344,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
             // if opening dropdown just after selecting an item, when main field selection elem is
             // focused, then focus main input field so that filter field gets shown
             // if (!this._fullScreenPopup) {
-            //   $(this._lovMainField.getInputElem()).focus();
+            //   this._lovMainField.getInputElem().focus();
             // }
           }
           //  - select and combobox stop keyboard event propegation
@@ -4318,12 +4562,32 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
             // user from scrolling down.
             var proxyElem = detail.positioningProxyElem;
             var proxyResultsElem = $(proxyElem).find('.oj-select-results')[0];
+            var proxyUserAssistanceElem = $(proxyElem).find('.oj-select-dropdown-user-assistance')[0];
             var $popupElem = $(detail.popupElem);
             var $resultsElem = $popupElem.find('.oj-select-results');
+            var $userAssistanceElem = $popupElem.find('.oj-select-dropdown-user-assistance');
             // size the proxy elem width the same as the dropdown width
             proxyElem.style.width = '' + $popupElem.outerWidth() + 'px';
             // size the proxy results elem height the same as the dropdown results max-height
             proxyResultsElem.style.height = $resultsElem.css('max-height');
+            if (proxyUserAssistanceElem) {
+              // JET-75597 - Help instruction text hidden under select-single dropdown
+              // Keep the hidden positioning proxy's UA footprint in sync with the real dropdown.
+              // PopupService measures the proxy first, and _usingHandler uses that feedback to
+              // size and position the real dropdown. If the proxy measures results-only while the
+              // real dropdown is taller because UA is visible, the proxy can decide below-field
+              // placement fits when the real dropdown will not. Only reserve the UA footprint when
+              // it will actually render; when drop-above hides UA, the proxy footprint should be 0.
+              var userAssistanceElem = $userAssistanceElem[0];
+              var showUserAssistance =
+                userAssistanceElem &&
+                !userAssistanceElem.hidden &&
+                $userAssistanceElem.css('display') !== 'none';
+              proxyUserAssistanceElem.hidden = !showUserAssistance;
+              proxyUserAssistanceElem.style.height = showUserAssistance
+                ? $userAssistanceElem.outerHeight() + 'px'
+                : '0px';
+            }
             $(proxyElem).position(position);
           }
           break;
@@ -4629,7 +4893,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         filterInputText.setAttribute('placeholder', options.placeholder);
       }
       // disable the oj-input-text when oj-select-single is disabled
-      filterInputText.setAttribute('disabled', options.disabled);
+      if (options.disabled) {
+        filterInputText.setAttribute('disabled', 'disabled');
+      } else {
+        filterInputText.removeAttribute('disabled');
+      }
       // if (options.labelEdge) {
       //   filterInputText.setAttribute('label-edge', options.labelEdge);
       // }
@@ -4786,6 +5054,9 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         addBusyStateFunc: addBusyStateFunc,
         itemTextRendererFunc: this._ItemTextRenderer.bind(this),
         filterInputText: this._filterInputText,
+        getOptionsFunc: function () {
+          return this.options;
+        }.bind(this),
         afterDropdownInitFunc: afterDropdownInitFunc,
         getThrottlePromiseFunc: this._GetThrottlePromise.bind(this),
         isValueForPlaceholderFunc: this._IsValueForPlaceholder.bind(this),
@@ -4814,11 +5085,13 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
             // to make sure that the component itself has not been released.
             if (this._abstractLovBase) {
               this._abstractLovBase.openDropdown();
+              this._updateDropdownUserAssistance();
             }
           }.bind(this)
         );
       } else {
         this._abstractLovBase.openDropdown();
+        this._updateDropdownUserAssistance();
       }
     },
 
@@ -5546,6 +5819,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     _AfterSetOption: function (name, flags) {
       this._superApply(arguments);
       switch (name) {
+        case 'help':
+        case 'helpHints':
+        case 'userAssistanceDensity':
+          this._updateDropdownUserAssistance();
+          break;
         case 'required':
           this._AfterSetOptionRequired(name);
           break;
@@ -5562,6 +5840,19 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
           break;
         default:
           break;
+      }
+    },
+
+    /**
+     * Refreshes the dropdown user assistance footer if the dropdown has been initialized.
+     *
+     * @memberof! oj.ojSelectBase
+     * @instance
+     * @private
+     */
+    _updateDropdownUserAssistance: function () {
+      if (this._lovDropdown && this._lovDropdown.getElement()) {
+        this._lovDropdown.updateDropdownUserAssistance();
       }
     },
 

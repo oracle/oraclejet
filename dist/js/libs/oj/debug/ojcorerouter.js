@@ -178,10 +178,19 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * activity that must be completed before the transition is finalized.
    * <pre class="prettyprint">
    * <code>
+   * var routeModuleMap = {
+   *   dashboard: 'dashboard',
+   *   incidents: 'incidents'
+   * };
+   *
    * router.currentState.subscribe(function (args) {
    *   var state = args.state;
-   *   var name = state.path;
    *   var complete = args.complete;
+   *   var name = routeModuleMap[state.path];
+   *   if (!name) {
+   *     complete(Promise.reject(new Error('Unknown module route')));
+   *     return;
+   *   }
    *   // Load the module and return Promise to CoreRouter
    *   complete(
    *     Promise.all([
@@ -250,6 +259,10 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * <p>
    * <h5>With RegExp as path.</h5>
    * Note that all paths matching the regular expression will be using this configuration entry.
+   * String routes with known safe names can be used to load matching modules. If RegExp,
+   * catch-all, URL-derived, or user-controlled path values are used to load modules or
+   * other resources, map the matched value to an explicit allowed resource identifier
+   * instead of using the raw matched value directly.
    * <pre class="prettyprint">
    * <code>
    * var root = new CoreRouter([
@@ -478,7 +491,7 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
       let match = path;
       // If path is string, match it entirely
       if (typeof path === 'string') {
-        match = new RegExp('^' + path + '$');
+        match = new RegExp('^' + RegExp.escape(path) + '$');
       } else if (!(path instanceof RegExp)) {
         throw Error('Router path must be a string or RegExp');
       }
@@ -1046,7 +1059,9 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
 
     this.beforeStateChange = null;
     this.currentState = null;
-    this._parentRouter.childRouter = null;
+    if (this._parentRouter) {
+      this._parentRouter.childRouter = null;
+    }
 
     if (this === rootRouter) {
       window.removeEventListener('popstate', this._popstateHandler, false);
@@ -1081,7 +1096,9 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * can be referenced in the state.
    * @typedef {object} CoreRouter.DetailedRouteConfig
    * @property {string|RegExp} path The path of the route. This may be an exact-
-   * match string, or a regular expression.
+   * match string, or a regular expression. If application code uses a RegExp-matched
+   * path to load a module or other resource, use the route detail to provide an
+   * explicit allowed resource identifier instead of loading the raw matched path value.
    * @property {object=} detail An optional detail object which is passed to
    * the route when it is navigated to.
    * @ojsignature [{target: "Type", value: "D", for: "detail"},
@@ -1095,7 +1112,9 @@ define(['ojs/ojlogger', 'ojs/ojobservable', 'ojs/ojurlpathadapter'], function (L
    * route.
    * @typedef {object} CoreRouter.RedirectedRouteConfig
    * @property {string|RegExp} path The path of the route. This may be an exact-
-   * match string, or a regular expression.
+   * match string, or a regular expression. If application code uses a RegExp-matched
+   * path to load a module or other resource, map it to an explicit allowed resource
+   * identifier instead of loading the raw matched path value.
    * @property {string=} redirect An optional name of a route to which paths matching
    * this route will redirect. The redirected route's path must be of type string.
    */

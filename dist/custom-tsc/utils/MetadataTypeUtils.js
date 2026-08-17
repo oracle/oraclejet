@@ -82,6 +82,9 @@ const Utils_1 = require("../shared/Utils");
 const _REGEX_LINE_AND_BLOCK_COMMENTS = new RegExp(/(\/\*(.|[\r\n])*?\*\/)|(\/\/.*)/g);
 const _REGEX_EXTRA_WHITESPACE = new RegExp(/\s\s*/g);
 const _REGEX_CORE_JET_TYPES = new RegExp(/\/types\/(oj[^\/]*)\/index\.d\.ts/);
+// Runtime source paths are rooted at the checkout directory, which is not
+// necessarily named "jet" (for example, a Git worktree has its own name).
+const _REGEX_CORE_JET_RUNTIME_SOURCE = new RegExp(/(?:^|\/)rt\/src\/main\/javascript\/oracle\/oj\/([^/]+)(?:\/|$)/);
 const _OR_NULL = '|null';
 const _OR_UNDEFINED = '|undefined';
 // Placeholder in a property path or nested array stack for an index signature
@@ -2442,13 +2445,11 @@ function getOjModuleName(sourceFile) {
         const filePath = sourceFile.fileName;
         if (filePath) {
             const normalizedPath = filePath.replace(/\\/g, '/');
-            // Case 1: runtime source file
-            const RUNTIME_MARKER = 'jet/rt/src/main/javascript/oracle/oj/';
-            const runtimeIdx = normalizedPath.indexOf(RUNTIME_MARKER);
-            if (runtimeIdx >= 0) {
-                const rest = normalizedPath.substring(runtimeIdx + RUNTIME_MARKER.length);
-                const [firstSegment] = rest.split('/');
-                return firstSegment || null;
+            // Case 1: runtime source file. Match the stable path within the repo,
+            // rather than the name of the checkout containing it.
+            const runtimeMatch = normalizedPath.match(_REGEX_CORE_JET_RUNTIME_SOURCE);
+            if (runtimeMatch) {
+                return runtimeMatch[1];
             }
             // Case 2: declaration file from types/oj[module]/index.d.ts
             if (sourceFile.isDeclarationFile) {

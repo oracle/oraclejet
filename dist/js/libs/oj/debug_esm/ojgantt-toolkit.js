@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { BaseComponentDefaults, CSSStyle, Agent, Container, ToolkitUtils, Path, Stroke, PathUtils, KeyboardEvent, MouseEvent, Rect, OutputText, IconButton, Displayable, Obj, SelectionEffectUtils, ColorUtils, ResourceUtils, TouchEvent, Rectangle, AriaUtils, EventFactory, Point, EventManager, ClipPath, TextUtils, SolidFill, JsonUtils, Line, AnimFadeIn, Easing, AnimFadeOut, CustomAnimation, ParallelPlayable, Playable, Animator, Automation, SvgShapeUtils, SimpleScrollbar, LayoutUtils, Dimension, MarqueeHandler, Matrix, SelectionHandler } from 'ojs/ojdvt-toolkit';
+import { BaseComponentDefaults, CSSStyle, Agent, Container, ToolkitUtils, Path, Stroke, PathUtils, KeyboardEvent, MouseEvent, Rect, OutputText, IconButton, Displayable, Obj, SelectionEffectUtils, ColorUtils, ResourceUtils, HtmlTooltipManager, TouchEvent, Rectangle, AriaUtils, EventFactory, Point, EventManager, ClipPath, TextUtils, SolidFill, JsonUtils, Line, AnimFadeIn, Easing, AnimFadeOut, CustomAnimation, ParallelPlayable, Playable, Animator, Automation, SvgShapeUtils, SimpleScrollbar, LayoutUtils, Dimension, MarqueeHandler, Matrix, SelectionHandler } from 'ojs/ojdvt-toolkit';
 import { TimeComponent, TimeComponentEventManager, TimeComponentKeyboardHandler } from 'ojs/ojdvt-timecomponent';
 import { TimeAxisUtils as TimeAxisUtils$1, TimeAxis } from 'ojs/ojtimeaxis-toolkit';
 
@@ -3640,7 +3640,7 @@ var DvtGanttTooltipUtils = {
       var defaultNavigationLabel =
         gantt.getEventManager().getKeyboardDnDMode() === 'move' ? 'MoveBy' : 'ResizeBy';
       var navigationScaleDesc = DvtGanttTooltipUtils._addDatatipRow(
-        '',
+        isTabular ? [] : '',
         gantt,
         '',
         defaultNavigationLabel,
@@ -3761,7 +3761,7 @@ var DvtGanttTooltipUtils = {
     }
 
     // Default Tooltip Support
-    var datatip = '';
+    var datatip = isTabular ? [] : '';
     datatip = DvtGanttTooltipUtils._addRowDatatip(datatip, taskNode, isTabular);
     datatip = DvtGanttTooltipUtils._addTaskDatatip(datatip, taskNode, isTabular);
 
@@ -3770,39 +3770,32 @@ var DvtGanttTooltipUtils = {
 
   /**
    * Final processing for the datatip.
-   * @param {string} datatip The current datatip.
+   * @param {string|Array<Node>} datatip The current datatip.
    * @param {Gantt} gantt The owning gantt instance.
    * @param {boolean} isTabular Whether the datatip is in a table format.
-   * @return {string} The updated datatip.
+   * @return {string|Node} The updated datatip.
    * @private
    */
   _processDatatip: (datatip, gantt, isTabular) => {
     // Don't render tooltip if empty
-    if (datatip === '') return null;
+    if (isTabular && datatip.length === 0) return null;
+    if (!isTabular && datatip === '') return null;
 
-    // Add outer table tags
-    // Note: Unlike Charts, we're not going to create a table start tag with
-    // dvt.HtmlTooltipManager.createElement(). That method applies parsed styles
-    // to the element, but for gantt we want to directly apply the class to the element:
-    //
-    // Security note: gantt.GetStyleClass('tooltipTable') returns an internally generated class string
-    // defined in ojgantt.js (in this case, returns the string 'oj-gantt-tooltip-table')
-    //
-    // datatip contains externally provided strings, but this entire value is eventually passed to
-    // dvt.HtmlTooltipManager._showTextAtPosition(),
-    // and that method makes sure all parsable HTML tags are disabled/handled
+    // Add outer table element
     if (isTabular)
-      return '<table class="' + gantt.GetStyleClass('tooltipTable') + '">' + datatip + '</table>';
+      return HtmlTooltipManager.createElement('table', null, datatip, [
+        gantt.GetStyleClass('tooltipTable')
+      ]);
 
     return datatip;
   },
 
   /**
-   * Adds the row string to the datatip.
-   * @param {string} datatip The current datatip.
+   * Adds the row to the datatip.
+   * @param {string|Array<Node>} datatip The current datatip.
    * @param {DvtGanttTaskNode} taskNode The task node.
    * @param {boolean} isTabular Whether the datatip is in a table format.
-   * @return {string} The updated datatip.
+   * @return {string|Array<Node>} The updated datatip.
    * @private
    */
   _addRowDatatip: (datatip, taskNode, isTabular) => {
@@ -3820,11 +3813,11 @@ var DvtGanttTooltipUtils = {
   },
 
   /**
-   * Adds the task strings to the datatip.
-   * @param {string} datatip The current datatip.
+   * Adds the task rows to the datatip.
+   * @param {string|Array<Node>} datatip The current datatip.
    * @param {DvtGanttTaskNode} taskNode The task node.
    * @param {boolean} isTabular Whether the datatip is in a table format.
-   * @return {string} The updated datatip.
+   * @return {string|Array<Node>} The updated datatip.
    * @private
    */
   _addTaskDatatip: (datatip, taskNode, isTabular) => {
@@ -4061,15 +4054,15 @@ var DvtGanttTooltipUtils = {
   },
 
   /**
-   * Adds a row of item to the datatip string.
-   * @param {string} datatip The current datatip.
+   * Adds a row of item to the datatip.
+   * @param {string|Array<Node>} datatip The current datatip.
    * @param {Gantt} gantt The gantt instance.
    * @param {string} type The item type, e.g. row, start, end, label
    * @param {string} defaultLabel The bundle resource string for the default label.
    * @param {string|number} value The item value.
    * @param {boolean} isTabular Whether the datatip is in a table format.
    * @param {number} index (optional) The index of the tooltipLabel string to be used
-   * @return {string} The updated datatip.
+   * @return {string|Array<Node>} The updated datatip.
    * @private
    */
   _addDatatipRow: (datatip, gantt, type, defaultLabel, value, isTabular, index) => {
@@ -4093,35 +4086,16 @@ var DvtGanttTooltipUtils = {
     value = DvtGanttTooltipUtils.formatValue(gantt, type, valueFormat, value);
 
     if (isTabular) {
-      // Note: Unlike Charts, we're not going to create a td start tag with
-      // dvt.HtmlTooltipManager.createElement(). That method applies parsed styles
-      // to the element, but for gantt we want to directly apply the class to the element:
-      //
-      // Security note: gantt.GetStyleClass returns an internally generated class string
-      // defined in ojgantt.js (in this case, returns the strings 'oj-gantt-tooltip-label'
-      // and 'oj-gantt-tooltip-value' respectively in the two calls below).
-      //
-      // tooltipLabel and value contains externally provided strings, but these values are eventually passed to
-      // DvtGanttTooltipUtils._processDatatip(), which concatenates more strings to it, and the entire value is passed to
-      // dvt.HtmlTooltipManager._showTextAtPosition(),
-      // and that last method makes sure all parsable HTML tags are disabled/handled
-      var tooltipLabelClass = gantt.GetStyleClass('tooltipLabel');
-      var tooltipValueClass = gantt.GetStyleClass('tooltipValue');
-      return (
-        datatip +
-        '<tr>' +
-        '<td class="' +
-        tooltipLabelClass +
-        '">' +
-        tooltipLabel +
-        '</td>' +
-        '<td class="' +
-        tooltipValueClass +
-        '">' +
-        value +
-        '</td>' +
-        '</tr>'
-      );
+      var tds = [
+        HtmlTooltipManager.createElement('td', null, tooltipLabel, [
+          gantt.GetStyleClass('tooltipLabel')
+        ]),
+        HtmlTooltipManager.createElement('td', null, value, [
+          gantt.GetStyleClass('tooltipValue')
+        ])
+      ];
+      datatip.push(HtmlTooltipManager.createElement('tr', null, tds));
+      return datatip;
     } else {
       if (datatip.length > 0) datatip += '<br>';
 

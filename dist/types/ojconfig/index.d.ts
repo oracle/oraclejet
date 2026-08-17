@@ -10,5 +10,10 @@ export function logVersionInfo(): undefined;
 export function setAutomationMode(mode: string): undefined;
 export function setDeploymentMode(mode: 'production' | 'development'): undefined;
 export function setExpressionEvaluator(expressionEvaluator: CspExpressionEvaluator): undefined;
+export function setFallbackExpressionEvaluator(fallbackExpressionEvaluator: {
+    createGenericExpressionEvaluator: Function;
+    createBindingExpressionEvaluator: Function;
+    createReplacementEvaluatorForExtend: Function;
+}): undefined;
 export function setLocale(locale: string, callback?: (() => void)): undefined;
 export function setResourceBaseUrl(baseUrl: string): undefined;

@@ -69,7 +69,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojgestureutils',
      *     ]
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojButton.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojButton.html"
      * @ojmetadata propertyLayout [
      *   {
      *     "propertyGroup": "common",
@@ -347,7 +347,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojgestureutils',
                             // If there is a label property, put an aria-label directly on the <button>
                             ariaLabel = props.label;
                         }
-                        defaultContent = (jsxRuntime.jsx("span", { ref: (elem) => (this._defaultSlotRef = elem), children: defaultContent }));
+                        defaultContent = (jsxRuntime.jsx("span", { ref: (elem) => {
+                                this._defaultSlotRef = elem;
+                            }, children: defaultContent }));
                     }
                     else {
                         if (!hasDefaultAriaAttribute) {
@@ -355,7 +357,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojgestureutils',
                             ariaLabelledById = this.uniquePrefix + '|text';
                             ariaLabelledBy = ariaLabelledById;
                         }
-                        defaultContent = (jsxRuntime.jsx("span", { ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text oj-helper-hidden-accessible", id: ariaLabelledById, children: buttonLabel }));
+                        defaultContent = (jsxRuntime.jsx("span", { ref: (elem) => {
+                                this._defaultSlotRef = elem;
+                            }, class: "oj-button-text oj-helper-hidden-accessible", id: ariaLabelledById, children: buttonLabel }));
                     }
                 }
                 else if (props.display === 'label') {
@@ -369,18 +373,24 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojgestureutils',
                         ariaLabelledById = this.uniquePrefix + '|text';
                         ariaLabelledBy = ariaLabelledById;
                     }
-                    defaultContent = (jsxRuntime.jsx("span", { ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text", id: ariaLabelledById, children: buttonLabel }));
+                    defaultContent = (jsxRuntime.jsx("span", { ref: (elem) => {
+                            this._defaultSlotRef = elem;
+                        }, class: "oj-button-text", id: ariaLabelledById, children: buttonLabel }));
                 }
                 else {
                     if (!hasDefaultAriaAttribute) {
                         ariaLabelledById = this.uniquePrefix + '|text';
                         ariaLabelledBy = ariaLabelledById;
                     }
-                    defaultContent = (jsxRuntime.jsx("span", { ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text", id: ariaLabelledById, children: buttonLabel }));
+                    defaultContent = (jsxRuntime.jsx("span", { ref: (elem) => {
+                            this._defaultSlotRef = elem;
+                        }, class: "oj-button-text", id: ariaLabelledById, children: buttonLabel }));
                 }
             }
             else {
-                defaultContent = (jsxRuntime.jsx("span", { ref: (elem) => (this._defaultSlotRef = elem), children: defaultContent }));
+                defaultContent = (jsxRuntime.jsx("span", { ref: (elem) => {
+                        this._defaultSlotRef = elem;
+                    }, children: defaultContent }));
             }
             const labelContent = (jsxRuntime.jsxs("div", { class: "oj-button-label", children: [startIconContent, defaultContent, endIconContent] }));
             let buttonContent;
@@ -390,7 +400,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojgestureutils',
             }
             else {
                 clickHandler = this._handleClick;
-                buttonContent = (jsxRuntime.jsx("button", { class: "oj-button-button", ref: (elem) => (this._buttonRef = elem), "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-label": ariaLabel, onTouchStart: this._handleTouchstart, onTouchEnd: this._handleTouchend, onTouchCancel: this._handleTouchend, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave, onMouseDown: this._handleMousedown, onMouseUp: this._handleMouseup, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onKeyDown: this._handleKeydown, onKeyUp: this._handleKeyup, children: labelContent }));
+                buttonContent = (jsxRuntime.jsx("button", { class: "oj-button-button", ref: (elem) => {
+                        this._buttonRef = elem;
+                    }, "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-label": ariaLabel, onTouchStart: this._handleTouchstart, onTouchEnd: this._handleTouchend, onTouchCancel: this._handleTouchend, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave, onMouseDown: this._handleMousedown, onMouseUp: this._handleMouseup, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onKeyDown: this._handleKeydown, onKeyUp: this._handleKeyup, children: labelContent }));
             }
             const rootClasses = this._getRootClasses(startIconContent, endIconContent);
             return (jsxRuntime.jsxs(ojvcomponent.Root, { class: rootClasses, id: props.id, title: title, onClick: clickHandler, "aria-describedby": ariaDescribedBy, ref: this._rootRef, children: [buttonContent, this._renderContextMenu()] }));

@@ -39,7 +39,8 @@
 
 const path = require("path");
 const fs = require("fs");
-const vm = require('vm');
+const {mergeDeep} = require('../../shared/bundleUtils');
+const {parseBundle} = require('../../shared/bundleParser');
 
 
 module.exports = function ojL10nLoader(source) {
@@ -68,7 +69,7 @@ module.exports = function ojL10nLoader(source) {
     toLoad.push('root');
   }
   else {
-    root = rootVal;
+    root = mergeDeep({}, rootVal);
   }
 
   root = root||{};
@@ -130,14 +131,7 @@ module.exports = function ojL10nLoader(source) {
  * @param {string} src
  */
 function _execBundle(src) {
-  const sandbox = {
-    define : ret => ret
-  };
-
-  const context = vm.createContext(sandbox);
-
-  const script = new vm.Script(src);
-  return script.runInContext(context);
+  return parseBundle(src);
 }
 
 /**
@@ -156,30 +150,8 @@ function _mergeParts(target, toMerge) {
     return target;
 
 
-   return _mergeDeep.apply(null, [target].concat(toMerge));
+   return mergeDeep.apply(null, [target].concat(toMerge));
 
-}
-
-function _isObject(item) {
-  return (item && typeof item === 'object' && !Array.isArray(item));
-}
-
-function _mergeDeep(target, ...sources) {
-  if (!sources.length) return target;
-  const source = sources.shift();
-
-  if (_isObject(target) && _isObject(source)) {
-    for (const key in source) {
-      if (_isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
-        _mergeDeep(target[key], source[key]);
-      } else {
-        Object.assign(target, { [key]: source[key] });
-      }
-    }
-  }
-
-  return _mergeDeep(target, ...sources);
 }
 
 /**

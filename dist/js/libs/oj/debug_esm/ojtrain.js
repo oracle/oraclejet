@@ -101,6 +101,14 @@ var __oj_train_metadata =
  * @ojoracleicon 'oj-ux-ico-train-control'
  * @ojuxspecs ['train']
  *
+ * @ojdeprecated [
+ *   {
+ *     "type": "maintenance",
+ *     "since": "21.0.0",
+ *     "value": ["oj-c-train"]
+ *   }
+ * ]
+ *
  * @classdesc
  * <h3 id="trainOverview-section">
  *   JET Train
@@ -139,6 +147,42 @@ var __oj_train_metadata =
  * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
  * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
  * required of enabled content, it cannot be used to convey meaningful information.
+ * </p>
+ * <h3 id="migration-section">
+ *   Migration
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+ * </h3>
+ *
+ * <p>
+ * To migrate from oj-train to oj-c-train, revise the import statement and
+ * references to oj-c-train in your app. Please note the changes between the two components below.
+ * </p>
+ *
+ * <h5>Import</h5>
+ * <p>
+ * Replace the <code>ojs/ojtrain</code> module import with the <code>oj-c/train</code> module import.
+ * </p>
+ *
+ * <h5>Step state</h5>
+ * <p>
+ * The <code>visited</code> state is no longer stored on each item in the <code>steps</code> array.
+ * The <code>steps</code> property is no longer written back by the component. Move visited state to
+ * the <code>visited</code> property, which is an array of visited step ids and supports writeback.
+ * The <code>steps</code> array should contain each step's <code>id</code>, <code>label</code>,
+ * <code>disabled</code>, and <code>messageType</code> values.
+ * </p>
+ *
+ * <h5>Methods</h5>
+ * <p>
+ * The <code>getStep</code> method is not supported by oj-c-train. To inspect a step,
+ * find it in the <code>steps</code> array by id. To determine whether a step has been
+ * visited, check whether its id is included in the <code>visited</code> array.
+ * </p>
+ *
+ * <h5>Width</h5>
+ * <p>
+ * Instead of using the <code>oj-train-stretch</code> style class, use the oj-c-train
+ * <code>width</code> property to set the train width.
  * </p>
  */
 
@@ -502,6 +546,7 @@ var __oj_train_metadata =
       /**
        * Triggered immediately before a step is deselected.
        * The ojBeforeDeselect can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
+       * @ojdeprecated {since: "21.0.0", description: "This event is deprecated.  Please use ojBeforeSelect instead."}
        * @ojshortdesc Triggered immediately before a step is deselected.
        * @ojcancelable
        * @expose
@@ -518,6 +563,7 @@ var __oj_train_metadata =
       /**
        * Triggered after a step has been deselected.
        * The ojDeselect can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
+       * @ojdeprecated {since: "21.0.0", description: "This event is deprecated.  Please use the selectedStepChanged event instead."}
        * @ojshortdesc Triggered after a step has been deselected.
        * @expose
        * @event
@@ -550,6 +596,7 @@ var __oj_train_metadata =
 
       /**
        * Triggered after a step has been selected.
+       * @ojdeprecated {since: "21.0.0", description: "This event is deprecated.  Please use the selectedStepChanged event instead."}
        * @ojshortdesc Triggered after a step has been selected.
        * @expose
        * @event
@@ -1084,6 +1131,7 @@ var __oj_train_metadata =
      * @return {string | null} next selectable Id
      * @expose
      * @instance
+     * @ojdeprecated {since: "21.0.0", description: "This method is deprecated. Please check selectedStep and steps instead."}
      * @memberof oj.ojTrain
      */
     getNextSelectableStep: function () {
@@ -1103,6 +1151,7 @@ var __oj_train_metadata =
      * @return {string | null} previous selectable Id
      * @expose
      * @instance
+     * @ojdeprecated {since: "21.0.0", description: "This method is deprecated. Please check selectedStep and steps instead."}
      * @memberof oj.ojTrain
      */
     getPreviousSelectableStep: function () {
@@ -1145,6 +1194,7 @@ var __oj_train_metadata =
      * @param {boolean} [stepProperties.visited] whether step has been visited
      * @param {"info"|"error"|"fatal"|"warning"|"confirmation"| null} [stepProperties.messageType] type of message displayed, null resets to default step without message
      * @instance
+     * @ojdeprecated {since: "21.0.0", description: "This method is deprecated. Please update the bound steps data instead."}
      * @memberof oj.ojTrain
      * @return {void}
      */
@@ -1383,7 +1433,7 @@ var __oj_train_metadata =
      */
     _setFocus: function (id) {
       var index = this._getStepIndex(id);
-      this._stepList.children().eq(index).find('.oj-train-label').focus();
+      this._stepList.children().eq(index).find('.oj-train-label').trigger('focus');
     },
 
     getNodeBySubId: function (locator) {

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojconfig', 'ojs/ojcustomelement-utils'], function (exports, Config, ojcustomelementUtils) { 'use strict';
+define(['exports', 'ojs/ojconfig', 'ojs/ojcustomelement-utils', 'ojs/ojcspexpressionevaluator-internal'], function (exports, Config, ojcustomelementUtils, ojcspexpressionevaluatorInternal) { 'use strict';
 
   /**
    * @namespace
@@ -49,15 +49,17 @@ define(['exports', 'ojs/ojconfig', 'ojs/ojcustomelement-utils'], function (expor
       };
     }
 
-    var evaluator;
-    try {
-      /* jslint evil:true */
-      // eslint-disable-next-line no-new-func
-      evaluator = new Function('context', 'with(context){return ' + expressionText + ';}'); // @HTMLUpdateOK binding expression evaluation
-    } catch (e) {
-      throw new Error(e.message + ' in expression "' + expressionText + '"');
+    var fallbackEvaluator = Config.getFallbackExpressionEvaluator();
+    if (fallbackEvaluator) {
+      return fallbackEvaluator.createGenericExpressionEvaluator(expressionText);
     }
-    return evaluator;
+
+    var defaultEvaluate = new ojcspexpressionevaluatorInternal.CspExpressionEvaluatorInternal().createEvaluator(
+      expressionText
+    ).evaluate;
+    return function (context) {
+      return defaultEvaluate([context]);
+    };
   };
 
   const getExpressionInfo = ExpressionUtils.getExpressionInfo;

@@ -23,22 +23,29 @@ define(['ojs/ojcspexpressionevaluator-internal', 'ojs/ojkoshared'], function (oj
   /**
    * @class oj.CspExpressionEvaluator
    * @since 7.1.0
-   * @ojshortdesc Object representing CSP-compliant evaluator.
+   * @ojshortdesc Object representing a Content Security Policy (CSP)-compliant evaluator.
    * @ojtsmodule
    *
-   * @classdesc A class for creating CSP-compliant evaluators of JavaScript expressions
-   * <p> The default JET expression evaluator cannot be used when Content Security Policy
-   * prohibits unsafe evaluations. In order to replace the default evaluator with the JET CSP-compliant evaluator,
-   * create and pass an instance of CspExpressionEvaluator class to the
-   * <a href="oj.Config.html#.setExpressionEvaluator">Config.setExpressionEvaluator()</a> method.
-   * This method must be called before applying knockout bindings in the application for the first time.
+   * @classdesc A class for creating Content Security Policy (CSP)-compliant evaluators of JavaScript expressions.
+   * Content Security Policy is a browser security mechanism that can disallow dynamically compiled code, including
+   * code generated with JavaScript Function constructors.
+   * <p> Starting with JET 20.0.6, the default JET expression evaluator is CSP-compliant and uses
+   * CspExpressionEvaluator. To provide an additional global scope for evaluating expressions, create and pass a
+   * CspExpressionEvaluator instance to the <a href="oj.Config.html#.setExpressionEvaluator">Config.setExpressionEvaluator()</a>
+   * method before applying knockout bindings in the application for the first time.
    * </p>
    *
-   * <p>Any extra context required for evaluating expressions can be passed to the object constructor using <code>globalScope</code> property.</p>
+   * <p>Any extra context required for evaluating expressions can be passed to the object constructor using the <code>globalScope</code> property.
+   * Expression text must be trusted application code. This evaluator is CSP-compliant because it does not use dynamic code compilation; it is
+   * not a security sandbox. Restricting <code>globalScope</code> does not make untrusted expression text safe because expressions can access
+   * capabilities from binding contexts, including inherited members and, where supplied, <code>$element</code> and related DOM APIs. This
+   * evaluator restricts known prototype-chain access routes in its default capabilities, but applications remain responsible for the
+   * capabilities they expose.</p>
    *
    * <pre class="prettyprint">
    * <code>
-   * Config.setExpressionEvaluator(new CspExpressionEvaluator());
+   * const extraScope = { Date: Date };
+   * Config.setExpressionEvaluator(new CspExpressionEvaluator({ globalScope: extraScope }));
    * </code>
    * </pre>
    *
@@ -77,9 +84,16 @@ define(['ojs/ojcspexpressionevaluator-internal', 'ojs/ojkoshared'], function (oj
    * <h2 id="invalidExpressions">Expression limitations:
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#invalidExpressions"></a>
    * </h2>
-   * <p> The following code is not supported in expressions:
+   * <p> The following syntax and behaviors are unsupported or restricted in expressions:
    * <ul>
-   *  <li>Assignment operators of any types such as <code>'='</code> or <code>'+='</code> or <code>'|='</code></li>
+   *  <li>Expression text must be trusted application code. This evaluator avoids dynamic code compilation for CSP compliance, but it is not a security sandbox. Expressions can invoke functions and access non-restricted values from binding contexts, including inherited members and, where supplied, <code>$element</code> and related DOM APIs, as well as <code>globalScope</code>.</li>
+   *  <li>To prevent prototype-chain access, access to properties named <code>'constructor'</code>, <code>'__proto__'</code>, and <code>'prototype'</code> is read-only and supported only as own, non-accessor, non-function data properties, including when accessed with bracket notation or as an identifier. A <code>'prototype'</code> property cannot be accessed on a function. For these names, a Proxy's data descriptor value is used instead of its <code>get</code> trap result.</li>
+   *  <li>Inherited <code>'__lookupGetter__'</code>, <code>'__lookupSetter__'</code>, <code>'__defineGetter__'</code>, and <code>'__defineSetter__'</code> prototype helpers are not supported. Own data properties with these names are supported.</li>
+   *  <li>An object-literal <code>'__proto__'</code> property is created as an own data property and does not change the object's prototype.</li>
+   *  <li>The default <code>Object</code> global does not support <code>assign</code> or the reflection methods <code>create</code>, <code>defineProperty</code>, <code>defineProperties</code>, <code>getOwnPropertyDescriptor</code>, <code>getOwnPropertyDescriptors</code>, <code>getPrototypeOf</code>, or <code>setPrototypeOf</code>.</li>
+   *  <li>Assignment operators of any type, such as <code>'='</code>, <code>'+='</code>, or <code>'|='</code>, are generally unsupported.
+   *    JET and Knockout may use internal assignment expressions to implement two-way binding writeback; applications should not rely on
+   *    assignment being accepted in expression text.</li>
    *  <li>Blocks of code such as <code>'if (...){}'</code></li>
    *  <li>Comma operator (,) such as <code>'(expr1, expr2)'</code></li>
    *  <li>in operator such as <code>'prop in testObject'</code></li>
@@ -94,6 +108,7 @@ define(['ojs/ojcspexpressionevaluator-internal', 'ojs/ojkoshared'], function (oj
    * @param {Object} options
    * @param {any=} options.globalScope optional additional scope required for evaluating expressions.
    * The additional scope will be used to resolve the variables if they are not defined in the $data or $context.
+   * It is not a security boundary for untrusted expression text.
    * <pre class="prettyprint"><code>Config.setExpressionEvaluator(new CspExpressionEvaluator({globalScope:extraScope}));</code></pre>
    * @constructor
    * @final

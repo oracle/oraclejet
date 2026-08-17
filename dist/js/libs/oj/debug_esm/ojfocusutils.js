@@ -37,7 +37,11 @@ FocusUtils.containsFocus = function (element) {
  * @param {!Element} element Element to focus.
  */
 FocusUtils.focusElement = function (element) {
-  element.focus();
+  if (element.jquery) {
+    element.trigger('focus');
+  } else {
+    element.focus();
+  }
 };
 
 /**

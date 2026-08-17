@@ -7,7 +7,6 @@
  */
 import { Collection, Events, Model } from 'ojs/ojmodel';
 import 'ojs/ojdatasource-common';
-import $ from 'jquery';
 
 /**
  * @export
@@ -416,7 +415,7 @@ CollectionTableDataSource.prototype._addCollectionEventListeners = function () {
     if (eventOpts == null || !eventOpts.add) {
       var sortCriteria = {};
 
-      if (event != null && !event.comparator != null && !$.isFunction(event.comparator)) {
+      if (event != null && !event.comparator != null && typeof event.comparator !== 'function') {
         sortCriteria.header = event.comparator;
         sortCriteria.direction = event.sortDirection === 1 ? 'ascending' : 'descending';
       }

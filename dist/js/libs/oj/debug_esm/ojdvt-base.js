@@ -13,6 +13,7 @@ import { __getTemplateEngine, getLocale } from 'ojs/ojconfig';
 import ojMap from 'ojs/ojmap';
 import * as LocaleData from 'ojs/ojlocaledata';
 import { subtreeAttached, __GetWidgetConstructor } from 'ojs/ojcomponentcore';
+import { getContextMenuAltClickthrough } from 'ojs/ojgestureutils';
 import $ from 'jquery';
 import KeySetImpl from 'ojs/ojkeysetimpl';
 import { getCSSTimeUnitAsMillis, isTouchSupported, addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
@@ -1554,9 +1555,7 @@ TemplateHandler.prototype.processTemplates = function (
                 }
               });
             } else {
-              processedDatum = Object.create(nodeData);
-              processedDatum._noTemplate = true;
-              processedDatum._dvtNoClone = true;
+              processedDatum = { ...nodeData, _noTemplate: true, _dvtNoClone: true };
             }
             nodeDataMap.set(nodeKey, { data: processedDatum, context: context });
           }
@@ -2430,7 +2429,11 @@ oj.__registerWidget(
       if (options.selection !== undefined) {
         this._component.select(options.selection);
       }
-      if (options.dataCursorPosition !== undefined && this._component.positionDataCursor && !this._isSubtreeDetached) {
+      if (
+        options.dataCursorPosition !== undefined &&
+        this._component.positionDataCursor &&
+        !this._isSubtreeDetached
+      ) {
         this._component.positionDataCursor(options.dataCursorPosition);
       }
       if (options.scrollPosition !== undefined) {
@@ -2472,7 +2475,11 @@ oj.__registerWidget(
         this._UserOptionChange('highlightedCategories', event.categories);
       } else if (type === 'optionChange') {
         this._UserOptionChange(event.key, event.value, event.optionMetadata);
-      } else if (type === 'touchHoldRelease' && this._GetContextMenu()) {
+      } else if (
+        type === 'touchHoldRelease' &&
+        this._GetContextMenu() &&
+        getContextMenuAltClickthrough(event.nativeEvent.target, this.element[0]) !== 'disabled'
+      ) {
         this._OpenContextMenu($.Event(event.nativeEvent), 'touch');
       } else if (type === 'dvtRender') {
         this._Render();
@@ -3561,11 +3568,12 @@ oj.__registerWidget(
       if (this._IsCustomElement()) {
         var renderers = this._GetComponentRendererOptions();
         for (var i = 0; i < renderers.length; i++) {
-          var optionPath = renderers[i].path;
-          var slot = renderers[i].slot;
+          var rendererOptions = renderers[i];
+          var optionPath = rendererOptions.path;
+          var slot = rendererOptions.slot;
           var templates = this._TemplateHandler.getTemplates();
           if (slot && templates[slot] && templates[slot][0]) {
-            this._ProcessInlineTemplateRenderer(options, optionPath, templates[slot][0], slot);
+            this._ProcessInlineTemplateRenderer(options, rendererOptions, templates[slot][0]);
           } else {
             var path = new DvtJsonPath(options, optionPath);
             var value = path.getValue();
@@ -3690,21 +3698,28 @@ oj.__registerWidget(
     /**
      * Creates a callback function that will be used as a custom renderer for an inline template slot.
      * @param {Object} options Options for rendering the component
-     * @param {string} optionPath The path to set the generated renderer function
+     * @param {Object} rendererOptions The renderer path, slot, and optional template processing metadata
      * @param {Element} templateElement The <template> element
-     * @param {string} templateName The name of the template
      * @return {Function} A function that will be used as a custom renderer
      * @protected
      * @memberof oj.dvtBaseComponent
      */
-    _ProcessInlineTemplateRenderer: function (options, optionPath, templateElement, templateName) {
+    _ProcessInlineTemplateRenderer: function (options, rendererOptions, templateElement) {
+      var optionPath = rendererOptions.path;
+      var templateName = rendererOptions.slot;
       var renderCount = this._renderCount;
       this._numDeferredObjs += 1;
       var templateEnginePromise = this._TemplateHandler.getTemplateEngine();
       templateEnginePromise.then(
         function (templateEngine) {
           var templateRenderer = function (context) {
-            return this._TemplateRenderer(context, templateEngine, templateElement, templateName);
+            return this._TemplateRenderer(
+              context,
+              templateEngine,
+              templateElement,
+              templateName,
+              rendererOptions
+            );
           }.bind(this);
           templateRenderer = this._WrapInlineTemplateRenderer(
             templateRenderer,
@@ -3727,12 +3742,29 @@ oj.__registerWidget(
      * @param {Object} templateEngine The template engine to be used to process templates
      * @param {Element} templateElement The <template> element
      * @param {string} templateName The name of the template
+     * @param {Object} rendererOptions The renderer path, slot, and optional template processing metadata
      * @return {Object}
      * @protected
      * @memberof oj.dvtBaseComponent
      */
-    _TemplateRenderer: function (context, templateEngine, templateElement, templateName) {
-      var nodes = templateEngine.execute(this.element[0], templateElement, context);
+    _TemplateRenderer: function (
+      context,
+      templateEngine,
+      templateElement,
+      templateName,
+      rendererOptions
+    ) {
+      var executionOptions =
+        rendererOptions && rendererOptions.processTemplate ? { processTemplate: true } : undefined;
+      var nodes = templateEngine.execute(
+        this.element[0],
+        templateElement,
+        context,
+        undefined,
+        undefined,
+        undefined,
+        executionOptions
+      );
       if (nodes && nodes.length > 0) {
         Object.defineProperty(context, '_templateCleanup', {
           value: () => {

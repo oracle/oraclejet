@@ -427,6 +427,56 @@ if (oj.ButtonLegacy) {
    *   <p>The <code>oj-button-lg</code> style class should no longer be used with oj-c-button. Instead, set <code>size</code> property to <code>lg</code></p>
    *  <h5>oj-button-width-full class</h5>
    *   <p>The <code>oj-button-width-full</code> style class should no longer be used with oj-c-button. Instead, set <code>width</code> property to <code>100%</code></p>
+   *  <h5>CSS Variables</h5>
+   *   <p>The following legacy button CSS variables are not migrated one-for-one to
+   *   <code class="prettyprint">oj-c-button</code>. Applications can use global sizing, color, and
+   *   typography CSS variables to update related styling:</p>
+   *   <ul>
+   *     <li>Legacy height variables map to size-scoped Core Pack BaseButton variables:
+   *       <ul>
+   *         <li><code class="prettyprint">--oj-button-height</code> maps to <code class="prettyprint">--oj-c-base-button-sizes-md-height</code></li>
+   *         <li><code class="prettyprint">--oj-button-sm-height</code> maps to <code class="prettyprint">--oj-c-base-button-sizes-sm-height</code></li>
+   *         <li><code class="prettyprint">--oj-button-lg-height</code> maps to <code class="prettyprint">--oj-c-base-button-sizes-lg-height</code></li>
+   *       </ul>
+   *     </li>
+   *     <li><code class="prettyprint">--oj-button-border-radius</code> maps to <code class="prettyprint">--oj-c-base-button-border-radius</code>.</li>
+   *     <li><code class="prettyprint">--oj-button-font-size</code> maps to <code class="prettyprint">--oj-c-base-button-font-size</code>. The legacy size-specific font variables <code class="prettyprint">--oj-button-sm-font-size</code> and <code class="prettyprint">--oj-button-lg-font-size</code> do not have size-specific Core Pack equivalents.</li>
+   *     <li><code class="prettyprint">--oj-button-*-chrome-bg-color-hover</code> and <code class="prettyprint">--oj-button-*-chrome-bg-color-active</code> use Core Pack variant-specific background overlay variables instead of direct background color variables.</li>
+   *     <li>Legacy text-to-edge padding variables map to size-scoped Core Pack BaseButton variables:
+   *       <ul>
+   *         <li><code class="prettyprint">--oj-button-text-to-edge-padding</code> maps to <code class="prettyprint">--oj-c-base-button-sizes-md-text-to-edge-padding</code></li>
+   *         <li><code class="prettyprint">--oj-button-sm-text-to-edge-padding</code> maps to <code class="prettyprint">--oj-c-base-button-sizes-sm-text-to-edge-padding</code></li>
+   *         <li><code class="prettyprint">--oj-button-lg-text-to-edge-padding</code> maps to <code class="prettyprint">--oj-c-base-button-sizes-lg-text-to-edge-padding</code></li>
+   *       </ul>
+   *     </li>
+   *     <li>Legacy icon size variables map to size-scoped Core Pack ButtonLabelLayout variables:
+   *       <ul>
+   *         <li><code class="prettyprint">--oj-button-icon-size</code> maps to <code class="prettyprint">--oj-c-button-label-layout-sizes-md-icon-size</code></li>
+   *         <li><code class="prettyprint">--oj-button-sm-icon-size</code> maps to <code class="prettyprint">--oj-c-button-label-layout-sizes-sm-icon-size</code></li>
+   *         <li><code class="prettyprint">--oj-button-lg-icon-size</code> maps to <code class="prettyprint">--oj-c-button-label-layout-sizes-lg-icon-size</code></li>
+   *       </ul>
+   *     </li>
+   *     <li>Legacy icon spacing variables are not one-for-one renames. The unsuffixed legacy variables map to the Core Pack <code class="prettyprint">md</code> size, and Core Pack does not expose a single non-sized <code class="prettyprint">--oj-c-button-label-layout-icon-to-edge-padding</code> or <code class="prettyprint">--oj-c-button-label-layout-icon-to-text-padding</code> variable:
+   *       <ul>
+   *         <li><code class="prettyprint">--oj-button-icon-to-edge-padding</code> maps to <code class="prettyprint">--oj-c-button-label-layout-sizes-md-icon-to-edge-padding</code></li>
+   *         <li><code class="prettyprint">--oj-button-icon-to-text-padding</code> maps to <code class="prettyprint">--oj-c-button-label-layout-sizes-md-icon-to-text-padding</code></li>
+   *         <li><code class="prettyprint">--oj-button-sm-icon-to-edge-padding</code> maps to <code class="prettyprint">--oj-c-button-label-layout-sizes-sm-icon-to-edge-padding</code></li>
+   *         <li><code class="prettyprint">--oj-button-sm-icon-to-text-padding</code> maps to <code class="prettyprint">--oj-c-button-label-layout-sizes-sm-icon-to-text-padding</code></li>
+   *         <li><code class="prettyprint">--oj-button-lg-icon-to-edge-padding</code> maps to <code class="prettyprint">--oj-c-button-label-layout-sizes-lg-icon-to-edge-padding</code></li>
+   *         <li><code class="prettyprint">--oj-button-lg-icon-to-text-padding</code> maps to <code class="prettyprint">--oj-c-button-label-layout-sizes-lg-icon-to-text-padding</code></li>
+   *       </ul>
+   *     </li>
+   *     <li>Legacy selected-state button CSS variables for selected, selected-hover, and selected-disabled background, border, and text values are not carried over because there is no public selected-state BaseButton variable matrix.</li>
+   *   </ul>
+   *   <p>The following legacy button CSS variables are not carried over:</p>
+   *   <ul>
+   *     <li><code class="prettyprint">--oj-button-cursor</code></li>
+   *     <li><code class="prettyprint">--oj-button-font-weight</code></li>
+   *     <li><code class="prettyprint">--oj-button-*-icon-only-padding</code></li>
+   *     <li><code class="prettyprint">--oj-button-xs-icon-size</code></li>
+   *     <li><code class="prettyprint">--oj-button-*-chrome-icon-color*</code>; use the matching text color variables where available</li>
+   *     <li><code class="prettyprint">--oj-button-*-chrome-bg-image*</code>, <code class="prettyprint">--oj-button-*-chrome-box-shadow*</code>, and <code class="prettyprint">--oj-button-*-chrome-opacity-*</code></li>
+   *   </ul>
    *
    *
    * <h3 id="perf-section">
@@ -1120,14 +1170,14 @@ if (oj.ButtonLegacy) {
         this.buttonElement[0].addEventListener('touchstart', this._touchStartHandler, {
           passive: true
         });
-        this.buttonElement.bind(
+        this.buttonElement.on(
           'touchend' + this.eventNamespace + ' touchcancel' + this.eventNamespace,
           endHandler
         );
       }
 
       this.buttonElement
-        .bind('mouseenter' + this.eventNamespace, function () {
+        .on('mouseenter' + this.eventNamespace, function () {
           if (self._IsEffectivelyDisabled()) {
             return;
           }
@@ -1143,7 +1193,7 @@ if (oj.ButtonLegacy) {
             self.rootElement.classList.remove('oj-focus-only');
           }
         })
-        .bind('mouseleave' + this.eventNamespace, function () {
+        .on('mouseleave' + this.eventNamespace, function () {
           self.rootElement.classList.remove('oj-hover');
 
           if (self._IsEffectivelyDisabled()) {
@@ -1183,7 +1233,7 @@ if (oj.ButtonLegacy) {
       });
 
       if (toggleButton) {
-        this.element.bind('change' + this.eventNamespace, function (event) {
+        this.element.on('change' + this.eventNamespace, function (event) {
           self._applyCheckedStateFromDom(true); // we just get one change event for entire radio group, even though up to 2 changed, so must refresh entire radio group, not just this button
 
           // if in a buttonset that tracks checked state (i.e. checkbox set or single
@@ -1202,7 +1252,7 @@ if (oj.ButtonLegacy) {
         // To fix, If mouse moves between mouseDown/mouseUp (drag) with in the boundaries of button then focus should be set
         // on the button which will ensure proper arrow key navigation(see  for more details).
         this.buttonElement
-          .bind('mousedown' + this.eventNamespace, function () {
+          .on('mousedown' + this.eventNamespace, function () {
             if (self._IsEffectivelyDisabled()) {
               return;
             }
@@ -1215,19 +1265,19 @@ if (oj.ButtonLegacy) {
               self.rootElement.classList.remove('oj-active');
             });
           })
-          .bind('mouseup' + this.eventNamespace, function () {
+          .on('mouseup' + this.eventNamespace, function () {
             if (self._IsEffectivelyDisabled()) {
               return;
             }
             self.rootElement.classList.remove('oj-active');
             if (this === _lastToggleActive) {
-              self.element.focus();
+              self.element.trigger('focus');
             }
           });
       }
 
       if (this.type === 'checkbox') {
-        this.buttonElement.bind('click' + this.eventNamespace, function () {
+        this.buttonElement.on('click' + this.eventNamespace, function () {
           if (self._IsEffectivelyDisabled()) {
             return false;
           }
@@ -1240,16 +1290,16 @@ if (oj.ButtonLegacy) {
         // In Chrome28 and IE9, for Space and Enter on Checkboxes, first the "checked" value updates, then change event, then click event.
         // In FF22, for Space and Enter on Checkboxes, first the "checked" value updates, then click event, then change event.
         // Unlike the radio Enter handler, we get this good behavior by only firing "click".
-        this.element.bind('keyup' + this.eventNamespace, function (event) {
+        this.element.on('keyup' + this.eventNamespace, function (event) {
           if (event.keyCode === $.ui.keyCode.ENTER) {
             if (!self._IsEffectivelyDisabled()) {
               // console.log("checkbox Enter handler firing click event");
-              self.element.click();
+              self.element.trigger('click');
             }
           }
         });
       } else if (this.type === 'radio') {
-        this.buttonElement.bind('click' + this.eventNamespace, function () {
+        this.buttonElement.on('click' + this.eventNamespace, function () {
           if (self._IsEffectivelyDisabled()) {
             return false;
           }
@@ -1271,7 +1321,7 @@ if (oj.ButtonLegacy) {
         //   - Enter on unchecked radios is same as Chrome.  (Different event ordering than FF.)
         //   - Space on checked radios is like IE9: first the "Checked" value updates, then click event.  (No change event since nothing changed.)
         //   - Enter on checked radios is same as Chrome.  (Do-nothing.)
-        this.element.bind('keyup' + this.eventNamespace, function (event) {
+        this.element.on('keyup' + this.eventNamespace, function (event) {
           if (event.keyCode === $.ui.keyCode.ENTER) {
             if (!self.element[0].checked && !self._IsEffectivelyDisabled()) {
               // console.log("radio Enter handler found radio unchecked, so checking it and firing click event");
@@ -1282,15 +1332,15 @@ if (oj.ButtonLegacy) {
               // If we set checked, then change no longer fires automatically, in at least some browsers, so we have to fire it
               // manually, both for apps that rely on it, and because our code relies on our change listener to update the "checked" styling.
               self.element[0].checked = true;
-              self.element.change();
-              self.element.click();
+              self.element.trigger('change');
+              self.element.trigger('click');
             }
           }
         });
       } else {
         // neither checkbox nor radio, so not a toggle button, so element, buttonElement (and rootElement in JQUI) are all the same node
         this.buttonElement
-          .bind('mousedown' + this.eventNamespace, function (event) {
+          .on('mousedown' + this.eventNamespace, function (event) {
             if (self._IsEffectivelyDisabled()) {
               return false;
             }
@@ -1312,7 +1362,7 @@ if (oj.ButtonLegacy) {
 
             return undefined;
           })
-          .bind('mouseup' + this.eventNamespace, function () {
+          .on('mouseup' + this.eventNamespace, function () {
             if (self._IsEffectivelyDisabled()) {
               return false;
             }
@@ -1320,7 +1370,7 @@ if (oj.ButtonLegacy) {
             self._toggleDefaultClasses();
             return undefined;
           })
-          .bind('keydown' + this.eventNamespace, function (event) {
+          .on('keydown' + this.eventNamespace, function (event) {
             if (self._IsEffectivelyDisabled()) {
               // ...then bail out always, also eating event unless key is Tab or left/right arrow, since:
               // - Must allow Tab so KB user can't get stuck here.
@@ -1356,7 +1406,7 @@ if (oj.ButtonLegacy) {
           })
           // see #8559, we bind to blur here in case the button element loses
           // focus between keydown and keyup, it would be left in an "active" state
-          .bind('keyup' + this.eventNamespace + ' blur' + this.eventNamespace, function () {
+          .on('keyup' + this.eventNamespace + ' blur' + this.eventNamespace, function () {
             self.rootElement.classList.remove('oj-active');
             self._toggleDefaultClasses();
           });
@@ -2168,7 +2218,7 @@ if (oj.ButtonLegacy) {
 
         if (!this.hasTitle) {
           var buttonText = textSpan[0] ? textSpan[0].textContent : '';
-          this.rootElement.setAttribute('title', $.trim(buttonText)); // use buttonText, which is escaped, not options.label, which isn't!
+          this.rootElement.setAttribute('title', buttonText.trim()); // use buttonText, which is escaped, not options.label, which isn't!
         }
 
         this._addMutationObserver();
@@ -2724,6 +2774,25 @@ if (oj.ButtonLegacy) {
    * </ul>
    * </li>
    * </ul>
+   * <h5>CSS Variables</h5>
+   * <p>The following legacy menu CSS variables either change names, change shape,
+   * or split in Core Pack:</p>
+   * <ul>
+   *   <li><code class="prettyprint">--oj-menu-icon-size</code> maps to <code class="prettyprint">--oj-c-menu-item-icon-size</code></li>
+   *   <li><code class="prettyprint">--oj-menu-icon-color</code> maps to <code class="prettyprint">--oj-c-menu-item-icon-color</code></li>
+   *   <li><code class="prettyprint">--oj-menu-icon-to-edge-padding</code> is split into <code class="prettyprint">--oj-c-menu-item-start-edge-to-start-icon-padding</code> and <code class="prettyprint">--oj-c-menu-item-end-icon-to-end-edge-padding</code></li>
+   *   <li><code class="prettyprint">--oj-menu-text-to-start-icon-padding</code> maps to <code class="prettyprint">--oj-c-menu-item-start-icon-to-label-padding</code></li>
+   *   <li><code class="prettyprint">--oj-menu-text-to-end-icon-padding</code> maps to <code class="prettyprint">--oj-c-menu-item-label-to-end-icon-padding</code></li>
+   *   <li><code class="prettyprint">--oj-menu-divider-margin</code> uses <code class="prettyprint">--oj-c-menu-separator-vertical-padding</code> instead of a margin shorthand.</li>
+   * </ul>
+   * <p>The following legacy menu CSS variables and variable families are not carried over:</p>
+   * <ul>
+   *   <li>Popup container styling such as <code class="prettyprint">--oj-menu-bg-color</code>, <code class="prettyprint">--oj-menu-border-color</code>, <code class="prettyprint">--oj-menu-padding</code>, <code class="prettyprint">--oj-menu-border-width</code>, <code class="prettyprint">--oj-menu-border-radius</code>, and <code class="prettyprint">--oj-menu-box-shadow</code></li>
+   *   <li>Menu typography sizing such as <code class="prettyprint">--oj-menu-font-size</code>, <code class="prettyprint">--oj-menu-line-height</code>, and <code class="prettyprint">--oj-menu-item-line-height</code></li>
+   *   <li><code class="prettyprint">--oj-menu-text-to-edge-padding</code> and <code class="prettyprint">--oj-menu-sheet-margin-horizontal</code> are not carried over; Core Pack does not expose dedicated menu text-to-edge or sheet margin variables.</li>
+   *   <li>Item border and focus styling such as <code class="prettyprint">--oj-menu-item-border-color</code>, <code class="prettyprint">--oj-menu-item-border-width</code>, <code class="prettyprint">--oj-menu-item-bg-color-focus</code>, and <code class="prettyprint">--oj-menu-item-border-color-focus</code></li>
+   *   <li>Submenu and sheet-specific variables such as <code class="prettyprint">--oj-menu-submenu-*</code> and <code class="prettyprint">--oj-menu-sheet-*</code></li>
+   * </ul>
    *
    * <h3 id="state-section">
    *   Setting Component State
@@ -3114,6 +3183,18 @@ if (oj.ButtonLegacy) {
    * <h5>Toolbar</h5>
    *    <p>Please note that oj-c-buttonset-multiple is intended for use in oj-c-toolbar,
    * and not supported in oj-toolbar.</p>
+   * <h5>CSS Variables</h5>
+   *   <p>The following legacy buttonset CSS variables are not migrated to
+   *   <code class="prettyprint">oj-c-buttonset-multiple</code>. Applications can use global
+   *   sizing, color, and typography CSS variables to update related styling:</p>
+   *   <ul>
+   *     <li><code class="prettyprint">--oj-buttonset-font-weight</code></li>
+   *     <li><code class="prettyprint">--oj-buttonset-border-radius</code></li>
+   *     <li><code class="prettyprint">--oj-buttonset-equal-width-overall-width</code></li>
+   *     <li><code class="prettyprint">--oj-buttonset-internal-border-color</code>, <code class="prettyprint">--oj-buttonset-internal-border-color-active</code>, <code class="prettyprint">--oj-buttonset-internal-border-color-selected</code>, and <code class="prettyprint">--oj-buttonset-internal-border-color-selected-disabled</code></li>
+   *     <li><code class="prettyprint">--oj-buttonset-outlined-chrome-bg-color</code>, <code class="prettyprint">--oj-buttonset-outlined-chrome-text-color</code>, and <code class="prettyprint">--oj-buttonset-outlined-chrome-bg-color-disabled</code></li>
+   *     <li>Legacy button selected-state CSS variables for buttonset items are not carried over because there is no public selected-state BaseButton variable matrix.</li>
+   *   </ul>
    *
    * @ojfragment buttonsetManyMigration
    * @memberof oj.ojButtonsetMany
@@ -3137,6 +3218,18 @@ if (oj.ButtonLegacy) {
    * <h5>Toolbar</h5>
    *    <p>Please note that oj-c-buttonset-single is intended for use in oj-c-toolbar,
    * and not supported in oj-toolbar.</p>
+   * <h5>CSS Variables</h5>
+   *   <p>The following legacy buttonset CSS variables are not migrated to
+   *   <code class="prettyprint">oj-c-buttonset-single</code>. Applications can use global sizing,
+   *   color, and typography CSS variables to update related styling:</p>
+   *   <ul>
+   *     <li><code class="prettyprint">--oj-buttonset-font-weight</code></li>
+   *     <li><code class="prettyprint">--oj-buttonset-border-radius</code></li>
+   *     <li><code class="prettyprint">--oj-buttonset-equal-width-overall-width</code></li>
+   *     <li><code class="prettyprint">--oj-buttonset-internal-border-color</code>, <code class="prettyprint">--oj-buttonset-internal-border-color-active</code>, <code class="prettyprint">--oj-buttonset-internal-border-color-selected</code>, and <code class="prettyprint">--oj-buttonset-internal-border-color-selected-disabled</code></li>
+   *     <li><code class="prettyprint">--oj-buttonset-outlined-chrome-bg-color</code>, <code class="prettyprint">--oj-buttonset-outlined-chrome-text-color</code>, and <code class="prettyprint">--oj-buttonset-outlined-chrome-bg-color-disabled</code></li>
+   *     <li>Legacy button selected-state CSS variables for buttonset items are not carried over because there is no public selected-state BaseButton variable matrix.</li>
+   *   </ul>
    *
    * @ojfragment buttonsetOneMigration
    * @memberof oj.ojButtonsetOne
@@ -3235,6 +3328,7 @@ if (oj.ButtonLegacy) {
    * @ojdisplayname Focus Styling
    * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
    * @memberof oj.ojButton
+   * @ojdeprecated {since: '21.0.0', description: "The Redwood design system does not allow this to be customized."}
    * @ojtsexample
    * &lt;oj-button class="oj-focus-highlight">
    *    &lt;!--  content -->
@@ -3916,7 +4010,7 @@ if (oj.ButtonLegacy) {
     // Does NOT require the buttons to already be JET Buttons (useful for _setup caller).
     _setCheckedOnDom: function (checked, $buttons) {
       // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
-      var type = $.type(checked);
+      var type = Array.isArray(checked) ? 'array' : typeof checked;
       var valid;
       var allCheckboxes;
       var elem = this.element[0];
@@ -4010,7 +4104,10 @@ if (oj.ButtonLegacy) {
     // performs deep comparison using public method if available otherwise internal compareValues
     _deepCompareValues: function (value, checked) {
       // ojCompareValues is a custom comparator that returns 0 if the values are equal
-      return $.type(value) === 'object' && value.ojCompareValues
+      return value !== null &&
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        value.ojCompareValues
         ? value.ojCompareValues(value, checked) === 0
         : oj.Object.compareValues(value, checked);
     },
@@ -4114,8 +4211,8 @@ if (oj.ButtonLegacy) {
           return true;
         }
         return (
-          $.type(value1) === 'array' &&
-          $.type(value2) === 'array' &&
+          Array.isArray(value1) &&
+          Array.isArray(value2) &&
           this._compareArraysAsSets(value1, value2)
         );
       }
@@ -4308,7 +4405,7 @@ if (oj.ButtonLegacy) {
         //
         // Writeback is not relevant here, since this code block handles the case where no option value was supplied, in
         // which case there must not be an observable to write to.
-        if ($.type(checked) === 'array' || this.element[0].tagName === 'OJ-BUTTONSET-MANY') {
+        if (Array.isArray(checked) || this.element[0].tagName === 'OJ-BUTTONSET-MANY') {
           this.options.checked = [];
         }
 
@@ -4517,13 +4614,13 @@ if (oj.ButtonLegacy) {
         // - Both of these problems still happen when using the delegation / selector overload of .on(); there is no special JQ bubbling magic.
 
         this.$buttons
-          .unbind('keydown' + this.eventNamespace)
-          .bind('keydown' + this.eventNamespace, function (event) {
+          .off('keydown' + this.eventNamespace)
+          .on('keydown' + this.eventNamespace, function (event) {
             self._handleKeyDown(event, $(this));
           })
 
-          .unbind('click' + this.eventNamespace)
-          .bind('click' + this.eventNamespace, function () {
+          .off('click' + this.eventNamespace)
+          .on('click' + this.eventNamespace, function () {
             if (!$(this).data('oj-ojButton')._IsEffectivelyDisabled()) {
               // Normally the button will be tabbable after the click, since (a) if we reach here, the clicked button is enabled, and
               // (b) an unchecked radio before the click will normally be checked after the click.  But just in case it's unchecked
@@ -4531,8 +4628,8 @@ if (oj.ButtonLegacy) {
               self._setTabStop($(this));
             }
           })
-          .unbind('focus' + this.eventNamespace)
-          .bind('focus' + this.eventNamespace, function () {
+          .off('focus' + this.eventNamespace)
+          .on('focus' + this.eventNamespace, function () {
             self._setTabStop($(this));
           });
 
@@ -4759,7 +4856,7 @@ if (oj.ButtonLegacy) {
           // compliant radios support up/down arrows, and since JAWS automatically instructs the user to use up/down arrows even
           // when the radio group is inside a role=toolbar, we now support up/down arrows for radios via the fall-thru above
           // (but still focus only, not select).
-          $enabledButtons.eq(newIndex).focus();
+          $enabledButtons.eq(newIndex).trigger('focus');
           break;
 
         // Don't need Space/Enter handlers.  For all buttons except already-checked radios in some browsers, Space/Enter fire a click event

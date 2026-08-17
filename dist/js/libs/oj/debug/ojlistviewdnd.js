@@ -576,8 +576,8 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
         clone = $__default(items[i].cloneNode(true));
         clone.removeClass('oj-selected oj-focus oj-hover').css({
           position: 'absolute',
-          top: offsetTop,
-          width: offsetWidth
+          top: offsetTop + 'px',
+          width: offsetWidth + 'px'
         });
         if (!isCardLayout) {
           clone.addClass('oj-listview-item-drag-image');
@@ -609,7 +609,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       dragImage
         .css({
           width: this.GetDragImageWidth(items[0]),
-          height: items[0].offsetHeight * 2
+          height: items[0].offsetHeight * 2 + 'px'
         })
         .append(clone); // @HTMLUpdateOK
     }
@@ -832,11 +832,14 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       var dropTarget;
       if (type === 'space') {
         dropTarget = $__default(item.get(0).cloneNode(false));
-        dropTarget.addClass('oj-drop').removeClass('oj-drag oj-draggable oj-hover oj-focus').css({
-          display: 'block',
-          height: item.outerHeight(),
-          width: item.outerWidth()
-        });
+        dropTarget
+          .addClass('oj-drop')
+          .removeClass('oj-drag oj-draggable oj-hover oj-focus')
+          .css({
+            display: 'block',
+            height: item.outerHeight() + 'px',
+            width: item.outerWidth() + 'px'
+          });
       } else if (type === 'line') {
         dropTarget = document.createElement('li');
         dropTarget.classList.add('oj-listview-drop-target');
@@ -997,7 +1000,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
     if (this.m_maxHeightAdjusted == null && this.listview._isTouchSupport()) {
       this.listview.element.find('ul.' + this.listview.getGroupStyleClass()).each(function () {
         $__default(this).attr('oldMaxHeight', $__default(this).css('maxHeight').toString());
-        $__default(this).css('maxHeight', 10000);
+        $__default(this).css('maxHeight', '10000px');
       });
 
       this.m_maxHeightAdjusted = 'adjusted';
@@ -1011,7 +1014,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   ListViewDndContext.prototype._restoreGroupItemStyle = function () {
     if (this.listview._isTouchSupport()) {
       this.listview.element.find('ul.' + this.listview.getGroupStyleClass()).each(function () {
-        $__default(this).css('maxHeight', parseInt($__default(this).attr('oldMaxHeight'), 10));
+        $__default(this).css('maxHeight', $__default(this).attr('oldMaxHeight'));
         $__default(this).removeAttr('oldMaxHeight');
       });
     }
@@ -1678,7 +1681,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
 
     var items = this.GetCutItems(event);
     // focus should be moved back to listview after context menu is closed
-    this.listview.ojContext.element.focus();
+    this.listview.ojContext.element.trigger('focus');
     $__default(items).addClass(this.GetCutStyleClass());
     this.m_clipboard = items;
 

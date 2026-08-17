@@ -1,6 +1,0 @@
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-define(["./keyValuePersistenceStore","./logger"],(function(e,r){"use strict";var t=function(r){e.call(this,r)};return(t.prototype=new e).Init=function(e){return this._version=e&&e.version||"0",this._arrayStore={},Promise.resolve()},t.prototype._insert=function(e,r,t){var o={metadata:r,value:t};return this._arrayStore[e]=o,Promise.resolve()},t.prototype.removeByKey=function(e){r.log("Offline Persistence Toolkit arrayPersistenceStore: removeByKey() with key: "+e);var t=this;return this.findByKey(e).then((function(r){return r?(delete t._arrayStore[e],Promise.resolve(!0)):Promise.resolve(!1)}))},t.prototype.keys=function(){r.log("Offline Persistence Toolkit arrayPersistenceStore: keys()");var e=Object.keys(this._arrayStore);return Promise.resolve(e)},t.prototype.getItem=function(e){r.log("Offline Persistence Toolkit arrayPersistenceStore: getItem() with key: "+e);var t=this._arrayStore[e];return t?Promise.resolve(t):Promise.resolve()},t}));

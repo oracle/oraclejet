@@ -25,11 +25,12 @@ define(['exports', '@oracle/oraclejet-preact/utils/UNSAFE_logger'], function (ex
    *
    * <p>If the logging options are changed at a later point, the Logger will use the modified options for the subsequent log operations.
    *
-   * <p>The logging level can be overridden via sessionStorage.setItem() call for the current browser session.
+   * <p>In debug builds, the logging level can be overridden via sessionStorage.setItem() call for the current browser session.
    * Use 'ojet.logLevel' as the key with one of the following values: 'none' (least verbose), 'error', 'warning', 'info', 'log' (most verbose).
    * Set the value in the browser console and refresh the browser in order for the value to take effect.
+   * Production builds ignore this key.
    * </p>
-   * <h3> Session storage usage : </h3>
+   * <h3> Session storage usage in debug builds : </h3>
    * <pre class="prettyprint">
    * <code>
    * // override logging level for the current session

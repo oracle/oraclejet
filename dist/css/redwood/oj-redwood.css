@@ -374,7 +374,7 @@
 }
 
 .oj-theme-json {
-  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v20.1.0"}' !important;
+  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v21.0.0"}' !important;
 }
 
 .oj-helper-hidden-accessible {
@@ -6451,7 +6451,7 @@ body {
   content: "\f131";
 }
 
-.oj-fwk-icon-checkmark:before, .oj-menucheckbox-icon.oj-selected:before {
+.oj-fwk-icon-checkmark:before, .oj-agent-browser-safari .oj-train-icon.oj-confirmation:before, .oj-menucheckbox-icon.oj-selected:before {
   content: "\f132";
 }
 
@@ -24338,6 +24338,11 @@ html:not([dir=rtl]) .oj-searchselect.oj-form-control-text-align-right .oj-search
 /*
    * Applied to results collection element
    */
+.oj-select-results {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 /*
    * Applied to results collection element when the dropdown is initially opened while the
    * data is being fetched
@@ -24348,6 +24353,29 @@ html:not([dir=rtl]) .oj-searchselect.oj-form-control-text-align-right .oj-search
 
 .oj-listbox-fullscreen .oj-select-results {
   max-height: none;
+}
+
+/*
+ * Applied to help instruction and help-hints rendered in the select-single dropdown.
+ */
+.oj-select-dropdown-user-assistance {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  min-width: 100%;
+  width: 0;
+  padding: 0.5rem;
+  border-top: 1px solid var(--oj-core-divider-color);
+  background: var(--oj-popup-bg-color);
+  overflow-wrap: anywhere;
+}
+
+.oj-listbox-fullscreen .oj-select-dropdown-user-assistance {
+  border-bottom: 1px solid var(--oj-core-divider-color);
+}
+
+.oj-select-dropdown-user-assistance[hidden],
+.oj-listbox-drop-above .oj-select-dropdown-user-assistance {
+  display: none;
 }
 
 /* icon */
@@ -25654,22 +25682,6 @@ html[dir=rtl] .oj-switch.oj-selected .oj-switch-thumb {
   transition: background-color 0.2s linear 0.1s, opacity 0.2s linear 0.1s, border-color 0.2s linear 0.1s;
 }
 
-.oj-switch.oj-read-only .oj-switch-container {
-  min-height: var(--oj-switch-track-height);
-}
-
-.oj-switch.oj-read-only .oj-switch-track {
-  position: absolute;
-  top: 50%;
-  border-style: solid;
-  border-width: 0;
-  height: var(--oj-switch-track-height);
-  width: var(--oj-switch-track-width);
-  box-sizing: border-box;
-  transform: translate3d(0, -50%, 0);
-  border-radius: var(--oj-switch-track-border-radius);
-}
-
 .oj-switch .oj-switch-track,
 .oj-switch.oj-default .oj-switch-track {
   background-color: var(--oj-switch-track-bg-color);
@@ -25762,37 +25774,33 @@ html[dir=rtl] .oj-switch.oj-selected .oj-switch-thumb {
   transition: height var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out), width var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out);
 }
 
-.oj-switch.oj-read-only .oj-switch-track {
-  background-color: transparent;
-  border-color: transparent;
-}
-
 .oj-switch.oj-read-only {
   font-weight: var(--oj-form-control-font-weight-read-only);
 }
 
+.oj-switch.oj-read-only .oj-switch-container {
+  min-height: var(--oj-switch-track-height);
+}
+
+.oj-switch.oj-read-only .oj-switch-track {
+  background-color: transparent;
+  border: 0;
+  border-color: transparent;
+  position: static;
+  transform: none;
+  height: auto;
+  width: fit-content;
+}
+
 .oj-switch.oj-read-only .oj-switch-thumb {
-  border-width: 0;
+  border: 0;
   box-shadow: none;
   background-color: transparent;
   color: var(--oj-core-text-color-primary);
-}
-html:not([dir=rtl]) .oj-switch.oj-read-only .oj-switch-thumb {
-  left: 0;
-  right: auto;
-}
-html[dir=rtl] .oj-switch.oj-read-only .oj-switch-thumb {
-  left: auto;
-  right: 0;
-}
-
-html:not([dir=rtl]) .oj-switch.oj-selected.oj-read-only .oj-switch-thumb {
-  left: 0;
-  right: auto;
-}
-html[dir=rtl] .oj-switch.oj-selected.oj-read-only .oj-switch-thumb {
-  left: auto;
-  right: 0;
+  position: static;
+  transform: none;
+  height: auto;
+  width: 100%;
 }
 
 .oj-switch.oj-disabled .oj-switch-track {
@@ -27309,6 +27317,9 @@ table.oj-table-element.oj-table-column-header-resizing {
 .oj-table-data-cell.oj-table-frozen-start,
 .oj-table-data-cell.oj-table-frozen-end,
 .oj-table-data-cell.oj-table-frozen-all,
+.oj-table-insert-row-placeholder td.oj-table-frozen-start,
+.oj-table-insert-row-placeholder td.oj-table-frozen-end,
+.oj-table-insert-row-placeholder td.oj-table-frozen-all,
 .oj-table-selector-cell {
   position: sticky;
 }
@@ -27386,56 +27397,40 @@ html[dir=rtl] .oj-table-frozen-end-edge {
   z-index: 100020;
 }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start,
-.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-start {
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start {
   z-index: 100001;
 }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-start.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start.oj-table-frozen-edge {
   z-index: 100002;
 }
 
 .oj-table-sticky .oj-table-add-row-placeholder td,
 .oj-table-sticky .oj-table-add-row-placeholder .oj-table-selector-cell,
 .oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell,
-.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell,
-.oj-table-sticky .oj-table-insert-row-placeholder td,
-.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-selector-cell,
-.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-gutter-start-body-cell,
-.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-gutter-end-body-cell {
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell {
   z-index: 100000;
 }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end,
-.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-end {
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end {
   z-index: 100003;
 }
 
-.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-end.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end.oj-table-frozen-edge {
   z-index: 100004;
 }
 
 .oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-all,
 .oj-table-sticky .oj-table-add-row-placeholder .oj-table-selector-cell.oj-table-frozen-all,
 .oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-all,
-.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-all,
-.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-all,
-.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-selector-cell.oj-table-frozen-all,
-.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-all,
-.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-all {
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-all {
   z-index: 100005;
 }
 
 .oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-all.oj-table-frozen-edge,
 .oj-table-sticky .oj-table-add-row-placeholder .oj-table-selector-cell.oj-table-frozen-all.oj-table-frozen-edge,
 .oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-all.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-all.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-selector-cell.oj-table-frozen-all.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-all.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-add-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge {
   z-index: 100006;
 }
 
@@ -27475,33 +27470,45 @@ html[dir=rtl] .oj-table-frozen-end-edge {
   z-index: 13;
 }
 
-.oj-table-sticky .oj-table-data-cell.oj-table-frozen-start {
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-start,
+.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-start {
   z-index: 1;
 }
 
-.oj-table-sticky .oj-table-data-cell.oj-table-frozen-start.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-start.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-start.oj-table-frozen-edge {
   z-index: 2;
 }
 
-.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end {
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end,
+.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-end {
   z-index: 3;
 }
 
-.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-data-cell.oj-table-frozen-end.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-end.oj-table-frozen-edge {
   z-index: 4;
 }
 
 .oj-table-sticky .oj-table-data-cell.oj-table-frozen-all,
 .oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all,
 .oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all,
-.oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all {
+.oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-all,
+.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-selector-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-all,
+.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-all {
   z-index: 5;
 }
 
 .oj-table-sticky .oj-table-data-cell.oj-table-frozen-all.oj-table-frozen-edge,
 .oj-table-sticky .oj-table-selector-cell.oj-table-frozen-all.oj-table-frozen-edge,
 .oj-table-sticky .oj-table-gutter-start-body-cell.oj-table-frozen-all.oj-table-frozen-edge,
-.oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge {
+.oj-table-sticky .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-insert-row-placeholder td.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-selector-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-gutter-start-body-cell.oj-table-frozen-all.oj-table-frozen-edge,
+.oj-table-sticky .oj-table-insert-row-placeholder .oj-table-gutter-end-body-cell.oj-table-frozen-all.oj-table-frozen-edge {
   z-index: 6;
 }
 
@@ -28489,6 +28496,7 @@ html[dir=rtl] .oj-table-sort .oj-table-column-header-show-required-icon {
   position: sticky;
 }
 
+.oj-table-gutter-start,
 .oj-table-gutter-start-header-cell,
 .oj-table-gutter-start-body-cell,
 .oj-table-gutter-start-footer-cell {
@@ -28497,6 +28505,7 @@ html[dir=rtl] .oj-table-sort .oj-table-column-header-show-required-icon {
   max-width: calc(var(--oj-core-gutter-start, var(--oj-table-cell-padding-horizontal)) - var(--oj-table-cell-padding-horizontal));
 }
 
+.oj-table-multiple-row-selection .oj-table-gutter-start,
 .oj-table-multiple-row-selection .oj-table-gutter-start-header-cell,
 .oj-table-multiple-row-selection .oj-table-gutter-start-body-cell,
 .oj-table-multiple-row-selection .oj-table-gutter-start-footer-cell {
@@ -28505,6 +28514,7 @@ html[dir=rtl] .oj-table-sort .oj-table-column-header-show-required-icon {
   max-width: calc(var(--oj-core-gutter-start, 0.625rem) - 0.625rem);
 }
 
+.oj-table-gutter-end,
 .oj-table-gutter-end-header-cell,
 .oj-table-gutter-end-body-cell,
 .oj-table-gutter-end-footer-cell {
@@ -29550,6 +29560,16 @@ html[dir=rtl] .oj-train-step-individual-connector.oj-train-connector-before-sele
 .oj-train-icon.oj-confirmation {
   color: var(--oj-core-success-1);
   font-size: var(--oj-train-button-diameter);
+}
+
+.oj-agent-browser-safari .oj-train-icon.oj-confirmation {
+  background-color: var(--oj-core-success-1);
+  color: var(--oj-core-neutral-contrast);
+  font-size: calc(var(--oj-train-button-diameter) * 0.625);
+}
+
+.oj-agent-browser-safari .oj-train-icon.oj-confirmation:before {
+  -webkit-text-stroke: 0.03125rem currentColor;
 }
 
 .oj-train-icon.oj-error {

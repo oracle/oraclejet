@@ -795,7 +795,7 @@ var WaterfallLayout_1;
  *     ]
  *   }
  * }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojWaterfallLayout.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojWaterfallLayout.html"
  * @ojmetadata since "9.0.0"
  * @ojlegacymetadata requirements [
  *    {
@@ -807,8 +807,8 @@ var WaterfallLayout_1;
  * ]
  */
 let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.actionableMode = false;
         this.renderCompleted = false;
         this.ticking = false;

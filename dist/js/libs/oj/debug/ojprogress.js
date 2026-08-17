@@ -563,8 +563,8 @@ var __oj_progress_metadata =
                 this.element
               );
               var diameter = Math.min(this.element.outerWidth(), this.element.outerHeight());
-              this.overlayDiv.css('width', diameter);
-              this.overlayDiv.css('height', diameter);
+              this.overlayDiv.css('width', diameter + 'px');
+              this.overlayDiv.css('height', diameter + 'px');
             } else {
               // prettier-ignore
               this.overlayDiv = $("<div class='oj-progress-bar-overlay'></div>").appendTo( // @HTMLUpdateOK

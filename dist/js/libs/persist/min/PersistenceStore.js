@@ -1,6 +1,0 @@
-/**
- * Copyright (c) 2017, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-define([],(function(){"use strict";var t=function(t){this._name=t};return(t.prototype={}).getName=function(){return this._name},t.prototype.getVersion=function(){return this._version},t.prototype.Init=function(t){return t&&t.version?this._version=t.version:this._version="0",Promise.resolve()},t.prototype.upsert=function(t,r,o,n){throw TypeError("failed in abstract function")},t.prototype.upsertAll=function(t){throw TypeError("failed in abstract function")},t.prototype.find=function(t){throw TypeError("failed in abstract function")},t.prototype.findByKey=function(t){throw TypeError("failed in abstract function")},t.prototype.removeByKey=function(t){throw TypeError("failed in abstract function")},t.prototype.delete=function(t){throw TypeError("failed in abstract function")},t.prototype.keys=function(){throw TypeError("failed in abstract function")},t.prototype.updateKey=function(t,r){throw TypeError("failed in abstract function")},t}));

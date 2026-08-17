@@ -589,6 +589,9 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
           this._earlySets = [];
           this._eventQueue = [];
           this._isRenderQueued = false;
+          // Template renderers may be called by a portaled Preact descendant while KO is disposing
+          // the component's DOM. Keep their lifecycle explicit so they cannot evaluate after disposal.
+          this._slotRendererDisposers = new Set();
           this._state = ojcustomelementUtils.CustomElementUtils.getElementState(element);
           this._element = element;
           this._metadata = metadata;
@@ -1030,7 +1033,7 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
                       this._render();
                   };
                   this._state.setCreateCallback(createComponentCallback);
-                  this._state.setBindingsDisposedCallback(() => this._handleBindingsDisposed());
+                  this._state.setBindingsDisposedCallback((isFinal) => this._handleBindingsDisposed(isFinal));
               }
           }
           this._state.executeLifecycleCallbacks(true);
@@ -1284,14 +1287,28 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
       }
       _getSlotRenderer(templateNode, slotProp, containerProp) {
           const bindingProvider = this._state.getBindingProvider();
+          let isDisposed = false;
+          const disposeRenderer = () => {
+              if (!isDisposed) {
+                  isDisposed = true;
+                  this._slotRendererDisposers.delete(disposeRenderer);
+              }
+          };
           const mutationCallback = bindingProvider
               ? () => {
                   const propContainer = containerProp ? this._props[containerProp] : this._props;
                   propContainer[slotProp] = this._getSlotRenderer(templateNode, slotProp, containerProp);
+                  // Publish the replacement before retiring this renderer. This leaves no
+                  // interval in which a consumer can observe only a disposed renderer.
+                  disposeRenderer();
                   this._queueRender();
               }
               : null;
+          this._slotRendererDisposers.add(disposeRenderer);
           return (context) => {
+              if (isDisposed) {
+                  return [];
+              }
               const cachedTemplateEngine = this._state.getTemplateEngine();
               if (!cachedTemplateEngine) {
                   throw new ojcustomelementUtils.JetElementError(this._element, 'Unexpected call to render a template slot');
@@ -1299,9 +1316,16 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
               return cachedTemplateEngine.execute(this._element, templateNode, context, bindingProvider, mutationCallback);
           };
       }
-      _handleBindingsDisposed() {
-          ParkingLot.disposeNodes(this._state.getSlotMap(), this._state.getBindingProviderCleanNode());
-          this._state.disposeTemplateCache();
+      _handleBindingsDisposed(isFinal) {
+          if (isFinal) {
+              Array.from(this._slotRendererDisposers).forEach((dispose) => dispose());
+              this._slotRendererDisposers.clear();
+          }
+          const slotMap = this._state.getSlotMap();
+          if (slotMap) {
+              ParkingLot.disposeNodes(slotMap, this._state.getBindingProviderCleanNode());
+              this._state.disposeTemplateCache();
+          }
       }
       _disconnectSlots() {
           ParkingLot.disconnectNodes(this._state.getSlotMap());
@@ -1424,9 +1448,9 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
       // The props.children is guaranteed to be a single IntrinsicElement.
       // See how EnvironmentWrapper is used in preactOptions.
       let child = props.children;
+      const type = child.type;
       // This list will never change, so we're not using any hooks on a conditional basis
-      const contexts = ojcustomelementRegistry.getElementRegistration(child.type).cache
-          .contexts;
+      const contexts = ojcustomelementRegistry.getElementRegistration(type).cache.contexts;
       const allContexts = [UNSAFE_Environment.EnvironmentContext, ...(contexts ?? [])];
       const allValues = allContexts.map((context) => {
           // Get the provided value from __oj_provided_contexts property.
@@ -1471,7 +1495,24 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
               child.ref = ref;
           }
       }
-      return jsxRuntime.jsx(preact.Fragment, { children: child });
+      // JET-72300: Handle form context propagation in VDOM for form layout in table.
+      // We need a way to propagate static context from form-layout that doesn't rely on binding propagation
+      // (MVVM only) or template engine propagation (form layout uses default slot). Ideally we would piggy
+      // back __oj_private_contexts above and allow ComponentWithContexts to inject these providers for us,
+      // however since every individual VComponent is injected this way, if you don't do it here by the
+      // time ComponentWithContexts renders, it uses the wrong context. The code that figures out what
+      // value to provide (see allValues above) only works if we inject the static contexts here.
+      // Note: The metadata contexts injected here will end up outermost (LayerContext, EnvironmentContext,
+      // and any consumedContexts from custom element registration get injected by ComponentWithContexts).
+      // However, providing static context here should not interfere with those other contexts in practice.
+      const staticProvideMeta = ojcustomelementRegistry.getMetadata(type)?.extension?.['_BINDING']?.provide;
+      const wrappedChild = staticProvideMeta
+          ? Array.from(staticProvideMeta).reduce((acc, [context, value]) => {
+              const provider = jsxRuntime.jsx(context.Provider, { value: value, children: acc });
+              return provider;
+          }, child)
+          : child;
+      return jsxRuntime.jsx(preact.Fragment, { children: wrappedChild });
   });
   EnvironmentWrapper['__ojIsEnvironmentWrapper'] = true;
 
@@ -3703,8 +3744,8 @@ define(['require', 'exports', 'preact/compat', 'preact/jsx-runtime', 'preact', '
    */
   function registerCustomElement(tagName, fcomp, options) {
       class VCompWrapper extends preact.Component {
-          constructor() {
-              super();
+          constructor(props) {
+              super(props);
               this.__refCallback = (instance) => {
                   if (this.__vcompRef) {
                       this.__vcompRef.current = instance;

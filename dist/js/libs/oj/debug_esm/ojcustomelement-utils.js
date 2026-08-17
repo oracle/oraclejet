@@ -553,7 +553,9 @@ class KoBindingUtils {
         if (attrValue != null) {
             let exp = AttributeUtils.getExpressionInfo(attrValue).expr;
             if (exp == null) {
-                exp = stringify ? `'${attrValue}'` : attrValue;
+                // Binding strings are evaluated as expressions. Serialize literal attribute
+                // values so quotes and other JavaScript syntax characters remain data.
+                exp = stringify ? JSON.stringify(attrValue) : attrValue;
             }
             return exp;
         }
@@ -1201,16 +1203,17 @@ class ElementState {
     /**
      * Disposes a binding provider
      */
-    disposeBindingProvider() {
-        if (!this.isComplete()) {
+    disposeBindingProvider(isFinal = false) {
+        const wasComplete = this.isComplete();
+        if (!wasComplete) {
             // The reject callback will check to see if the binding provider promise has previously been
             // rejected or resolved before rejecting since disposal can occur after the binding
             // provider has been resolved
             this.rejectBindingProvider();
             this._updateComponentState(ComponentState.BindingsDisposed);
         }
-        else {
-            this._disposedCallback?.();
+        if (wasComplete || isFinal) {
+            this._disposedCallback?.(isFinal);
         }
     }
     /**

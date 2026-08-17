@@ -3566,8 +3566,18 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
             this._shape.addDrawEffect(DvtTreeNode.__NODE_SELECTED_SHADOW);
           }
 
-          // Move to the front of the z-order
-          this.getView().__moveToSelectedLayer(this._shape);
+          var hasCustomNodeContent = Boolean(this.getView().getNodeContent()[this.getId()]);
+          var shouldMoveToSelectedLayer = !isRedwood || !hasCustomNodeContent;
+
+          // JET-79933: Unexpected flicker during first click. Redwood leaf selection is drawn
+          // inside the node, so custom content nodes can stay in place and avoid an unnecessary
+          // SVG/HTML repaint.
+          if (shouldMoveToSelectedLayer) {
+            this.getView().__moveToSelectedLayer(this._shape);
+            this._isInSelectedLayer = true;
+          } else {
+            this._isInSelectedLayer = false;
+          }
         }
       } else {
         // !selected
@@ -3606,12 +3616,15 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
             this._selectionOuter = null;
           }
 
-          // Restore the element back to its original location under its parent node
-          var parentNode = this.GetParent();
-          if (parentNode && parentNode._childNodeGroup) {
-            // The exact z-order doesn't matter, since only the selected nodes have effects
-            // that overflow into surrounding nodes.
-            parentNode._childNodeGroup.addChild(this._shape);
+          if (this._isInSelectedLayer) {
+            // Restore the element back to its original location under its parent node
+            var parentNode = this.GetParent();
+            if (parentNode && parentNode._childNodeGroup) {
+              // The exact z-order doesn't matter, since only the selected nodes have effects
+              // that overflow into surrounding nodes.
+              parentNode._childNodeGroup.addChild(this._shape);
+            }
+            this._isInSelectedLayer = false;
           }
         }
       }
@@ -4864,6 +4877,14 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         var customContent = nodeRenderer(dataContext);
         if (!customContent) return false;
         var newOverlay = context.createOverlayDiv();
+        // JET-79933: Unexpected flicker during first click. Give the custom content overlay a
+        // stable node-sized box instead of createOverlayDiv()'s zero-height relative wrapper.
+        newOverlay.style.top = '0';
+        newOverlay.style.left = '0';
+        newOverlay.style.width = '100%';
+        newOverlay.style.height = '100%';
+        newOverlay.style.position = 'absolute';
+        newOverlay.style.pointerEvents = 'none';
         if (Array.isArray(customContent)) {
           customContent.forEach((node) => {
             newOverlay.appendChild(node); // @HTMLUpdateOK

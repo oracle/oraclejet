@@ -223,15 +223,16 @@ define(['ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojcustomelement-registry'], func
    * @ojtsexportastype Context
    * @since 2.1.0
    * @classdesc Framework service for querying the busy state of components on the page.
-   * <h3> Session storage usage : </h3>
+   * <h3> Session storage usage in debug builds : </h3>
    * <pre class="prettyprint">
    * <code>
    * // enable BusyContext tracing of BusyState creation
    * sessionStorage.setItem('ojet.busyContextTracing', 'on');
    * </code></pre>
    *
-   * <p>Setting this key in sessionStorage will cause BusyStates to be created with an
-   * additional `stack` property containing the call stack at the time of creation.
+   * <p>In debug builds, setting this key in sessionStorage will cause BusyStates to be
+   * created with an additional `stack` property containing the call stack at the time of creation.
+   * Production builds ignore this key.
    * </p>
    */
   const BusyContext = function (hostNode, context) {
@@ -584,7 +585,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojcustomelement-registry'], func
 
     const storageKey = 'ojet.busyContextTracing';
     let stack;
-    if (window?.sessionStorage?.getItem(storageKey) === 'on') {
+    if (true && window?.sessionStorage?.getItem(storageKey) === 'on') {
       try {
         throw new BusyStateTrace('');
       } catch (ex) {

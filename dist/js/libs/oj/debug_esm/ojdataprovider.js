@@ -2175,6 +2175,9 @@ class FilterImpl {
         if (filter) {
             let op = filter.op;
             let filterValue;
+            const textFilterValue = filter['text'] == null
+                ? null
+                : String(filter['text']).substring(0, FilterImpl._MAX_TEXT_FILTER_LENGTH);
             const collationOptions = filter.collationOptions;
             if (op === '$exists' && filter['attribute'] && filter['criterion']) {
                 // NestedFilter
@@ -2183,7 +2186,7 @@ class FilterImpl {
                 transformedExpr['criterion'] = FilterImpl._transformFilter(FilterFactory.getFilter({ filterDef: filter['criterion'] }));
                 return transformedExpr;
             }
-            if (filter['text']) {
+            if (textFilterValue !== null) {
                 op = '$regex';
             }
             else {
@@ -2199,24 +2202,26 @@ class FilterImpl {
                 }
             }
             if (op !== '$and' && op !== '$or') {
-                if (filter['text']) {
+                if (textFilterValue !== null) {
                     if (filter['matchBy'] === 'phrase') {
                         // 1. Escape special characters
                         // 2. Remove single and double quotes
                         // 3. Add word boundary and wild cards for phrase matching
                         filterValue = new RegExp(`${'\\b' +
-                            filter['text']
-                                .replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&')
+                            FilterImpl._escapeRegExp(textFilterValue)
                                 .replace(/('|")/g, '')
-                                .replace(/(\s|\t)/g, '(.*)((\\s|\\t|\\r|\\n)*)')}`, 'i');
+                                // Avoid nested quantifiers that can trigger ReDoS.
+                                // Equivalent to original "(.*)((\\s|\\t|\\r|\\n)*)" with JS-dot behavior:
+                                // non-newline chars followed by optional whitespace/newlines.
+                                .replace(/(\s|\t)/g, '[^\\r\\n]*[\\s\\t\\r\\n]*')}`, 'i');
                     }
                     else if (filter['matchBy'] === 'startsWith') {
-                        filterValue = new RegExp(`^${filter['text'].replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&')}`, 'i');
+                        filterValue = new RegExp(`^${FilterImpl._escapeRegExp(textFilterValue)}`, 'i');
                     }
                     else {
                         // 'contains' | 'fuzzy' | 'unknown'
                         // Escape special characters without change filter['text'] which is the original filter string by default
-                        filterValue = new RegExp(filter['text'].replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'), 'i');
+                        filterValue = new RegExp(FilterImpl._escapeRegExp(textFilterValue), 'i');
                     }
                 }
                 else {
@@ -2235,7 +2240,7 @@ class FilterImpl {
                     operatorExpr[op] = filterValue;
                     transformedExpr[attributeExpr] = operatorExpr;
                 }
-                else if (filter['text']) {
+                else if (textFilterValue !== null) {
                     // handle TextFilterDef
                     const operatorExpr = {};
                     operatorExpr[op] = filterValue;
@@ -2287,12 +2292,27 @@ class FilterImpl {
                 const fieldAttributePath = path ? path + '.' + fieldAttribute : fieldAttribute;
                 if (!(fieldValue instanceof Object)) {
                     const operatorExpr = {};
-                    // need express co, sw and ew as regex
-                    if (op === '$sw' || op === '$ew' || op === '$co') {
-                        fieldValue = FilterImpl._fixStringExpr(op, fieldValue);
-                        op = '$regex';
+                    // JET-79758: Regex Injection in $sw/$ew/$co Attribute Filter Operators.
+                    // JET-79598: Regex Injection in FilterFactory Attribute Filter.
+                    //
+                    // AttributeFilterDef object values are expanded into one criterion per field. For example,
+                    // { op: '$ew', value: { name: 'admin', value: 'foo' } } becomes an $and expression with
+                    // separate criteria for "name" and "value". The $co/$sw/$ew operators are implemented by
+                    // converting each field criterion to $regex, because FilterUtils only has a regex evaluator
+                    // for contains/starts-with/ends-with matching in this transformed expression.
+                    //
+                    // Keep the converted operator in a local variable. Mutating the shared op parameter while
+                    // processing the first field would cause later sibling fields to see "$regex" instead of the
+                    // original "$co", "$sw", or "$ew". That would skip _fixStringExpr for later fields, losing
+                    // either the $sw/$ew anchoring semantics or the regex escaping added for the ReDoS fix.
+                    // This behavior is intentionally changed/fixed as part of the security fix so every field
+                    // in an object filter preserves the original string operator semantics before regex conversion.
+                    let fieldOp = op;
+                    if (fieldOp === '$sw' || fieldOp === '$ew' || fieldOp === '$co') {
+                        fieldValue = FilterImpl._fixStringExpr(fieldOp, fieldValue);
+                        fieldOp = '$regex';
                     }
-                    operatorExpr[op] = fieldValue;
+                    operatorExpr[fieldOp] = fieldValue;
                     const fieldExpr = {};
                     fieldExpr[fieldAttributePath] = operatorExpr;
                     criteriaArray.push(fieldExpr);
@@ -2312,6 +2332,14 @@ class FilterImpl {
     }
     static _fixStringExpr(op, value) {
         if (typeof value === 'string' || value instanceof String) {
+            // JET-79758: Regex Injection in $sw/$ew/$co Attribute Filter Operators.
+            // JET-79598: Regex Injection in FilterFactory Attribute Filter.
+            //
+            // $co, $sw, and $ew are public literal string matching operators, but internally they are
+            // converted to $regex and later evaluated with new RegExp(...) in FilterUtils. Without escaping,
+            // input such as ".*", "admin|", or "(a+)+$" is interpreted as regex syntax. That can change
+            // filter meaning and can also trigger excessive backtracking in the browser.
+            value = FilterImpl._escapeRegExp(value);
             if (op === '$sw') {
                 value = '^' + value;
             }
@@ -2321,7 +2349,25 @@ class FilterImpl {
         }
         return value;
     }
+    /**
+     * Escapes JavaScript regular expression metacharacters in a string so the
+     * value can be embedded in a RegExp and matched literally.
+     *
+     * This is used before building RegExp instances from literal filter text. It
+     * prefixes every JavaScript RegExp metacharacter with a backslash:
+     *   . * + - ? ^ $ { } ( ) | [ ] \
+     * The replacement string "\\$&" means "insert a backslash, then the entire
+     * matched character".
+     *
+     * @param value The string value to escape.
+     * @returns A string with every RegExp metacharacter prefixed by a backslash.
+     */
+    static _escapeRegExp(value) {
+        return value.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
+    }
 }
+// Bound text-filter input size to reduce regex amplification risks
+FilterImpl._MAX_TEXT_FILTER_LENGTH = 512;
 class FilterFactory {
     static getFilter(options) {
         return new FilterImpl(options);

@@ -2100,14 +2100,14 @@ var __oj_paging_control_metadata =
               .find('a[data-oj-pagenum=' + nextPageNum + ']');
 
             if (nextNavPage != null && nextNavPage.length > 0) {
-              nextNavPage.focus();
+              nextNavPage.trigger('focus');
             } else {
               var prevNavPage = self
                 ._getPagingControlContent()
                 .find('a[data-oj-pagenum=' + prevPageNum + ']');
 
               if (prevNavPage != null && prevNavPage.length > 0) {
-                prevNavPage.focus();
+                prevNavPage.trigger('focus');
               }
             }
           }
@@ -2120,7 +2120,7 @@ var __oj_paging_control_metadata =
           var nextArrow = self
             ._getPagingControlContent()
             .find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_NEXT_CLASS);
-          nextArrow.focus();
+          nextArrow.trigger('focus');
           self = null;
         }, 100);
       } else if (activeElement.hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS)) {
@@ -2129,12 +2129,12 @@ var __oj_paging_control_metadata =
             ._getPagingControlContent()
             .find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS);
           if (!previousArrow.hasClass(self._MARKER_STYLE_CLASSES._DISABLED)) {
-            previousArrow.focus();
+            previousArrow.trigger('focus');
           } else {
             var nextArrow = self
               ._getPagingControlContent()
               .find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_NEXT_CLASS);
-            nextArrow.focus();
+            nextArrow.trigger('focus');
           }
           self = null;
         }, 100);
@@ -2144,12 +2144,12 @@ var __oj_paging_control_metadata =
             ._getPagingControlContent()
             .find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_NEXT_CLASS);
           if (!nextArrow.hasClass(self._MARKER_STYLE_CLASSES._DISABLED)) {
-            nextArrow.focus();
+            nextArrow.trigger('focus');
           } else {
             var previousArrow = self
               ._getPagingControlContent()
               .find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS);
-            previousArrow.focus();
+            previousArrow.trigger('focus');
           }
           self = null;
         }, 100);
@@ -2158,7 +2158,7 @@ var __oj_paging_control_metadata =
           var previousArrow = self
             ._getPagingControlContent()
             .find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS);
-          previousArrow.focus();
+          previousArrow.trigger('focus');
           self = null;
         }, 100);
       } else if (activeElement.hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS)) {
@@ -2166,7 +2166,7 @@ var __oj_paging_control_metadata =
           var navInput = self
             ._getPagingControlContent()
             .find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS);
-          navInput.focus();
+          navInput.trigger('focus');
           self = null;
         }, 100);
       } else if (activeElement.hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_DOT_CLASS)) {

@@ -159,7 +159,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils'], function (ex
     if (subProp) {
       const namePath = propPath.split('.');
       for (let i = 0; i < namePath.length; i++) {
-        subProp = subProp[namePath[i]];
+        const propName = namePath[i];
+        if (
+          oj.CollectionUtils._isBlockedKey(propName) ||
+          !Object.prototype.hasOwnProperty.call(subProp, propName)
+        ) {
+          subProp = undefined;
+        } else {
+          subProp = subProp[propName];
+        }
         if (i === 0) {
           prop = subProp;
         }

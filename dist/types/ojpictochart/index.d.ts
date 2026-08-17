@@ -17,6 +17,7 @@ export interface ojPictoChart<K, D extends ojPictoChart.Item<K> | any> extends d
     highlightMatch?: 'any' | 'all';
     highlightedCategories?: string[];
     hoverBehavior?: 'dim' | 'none';
+    /** @deprecated since 21.0.0 - This is not recommended in the Redwood design system. */
     hoverBehaviorDelay?: number;
     layout?: 'vertical' | 'horizontal';
     layoutOrigin?: 'topEnd' | 'bottomStart' | 'bottomEnd' | 'topStart';
@@ -225,6 +226,7 @@ export interface ojPictoChartSettableProperties<K, D extends ojPictoChart.Item<K
     highlightMatch?: 'any' | 'all';
     highlightedCategories?: string[];
     hoverBehavior?: 'dim' | 'none';
+    /** @deprecated since 21.0.0 - This is not recommended in the Redwood design system. */
     hoverBehaviorDelay?: number;
     layout?: 'vertical' | 'horizontal';
     layoutOrigin?: 'topEnd' | 'bottomStart' | 'bottomEnd' | 'topStart';
@@ -548,7 +550,7 @@ export interface PictoChartIntrinsicProps extends Partial<Readonly<ojPictoChartS
     onhighlightMatchChanged?: (value: ojPictoChartEventMap<any, any>['highlightMatchChanged']) => void;
     onhighlightedCategoriesChanged?: (value: ojPictoChartEventMap<any, any>['highlightedCategoriesChanged']) => void;
     onhoverBehaviorChanged?: (value: ojPictoChartEventMap<any, any>['hoverBehaviorChanged']) => void;
-    onhoverBehaviorDelayChanged?: (value: ojPictoChartEventMap<any, any>['hoverBehaviorDelayChanged']) => void;
+    /** @deprecated since 21.0.0 */ onhoverBehaviorDelayChanged?: (value: ojPictoChartEventMap<any, any>['hoverBehaviorDelayChanged']) => void;
     onlayoutChanged?: (value: ojPictoChartEventMap<any, any>['layoutChanged']) => void;
     onlayoutOriginChanged?: (value: ojPictoChartEventMap<any, any>['layoutOriginChanged']) => void;
     onrowCountChanged?: (value: ojPictoChartEventMap<any, any>['rowCountChanged']) => void;

@@ -33,9 +33,11 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojc
    * Note that the default names of the {@link ModuleBinding.ConventionMethods optional lifecycle methods}
    * on the ViewModel are different from their counterparts on the {@link ojModule.LifecycleListener LifecycleListener}
    * interface
-   * @property {string} viewPath default View path. Defaults to 'text!views/'
+   * @property {string} viewPath default View path. Defaults to 'text!views/'. The final View
+   * module path must be a safe relative path using the <code>text!</code> plugin prefix.
    * @property {string} viewSuffix default View suffix. Defaults to '.html'
-   * @property {string} modelPath default Model suffix. Defaults to 'viewModels/'
+   * @property {string} modelPath default Model suffix. Defaults to 'viewModels/'. The final
+   * ViewModel module path must be a safe relative path.
    * @property {string} initializeMethod name of the initialialization method
    * (see {@link ModuleBinding.ConventionMethods#initialize definition})
    * @property {string} disposeMethod name of the dispose method
@@ -73,6 +75,39 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojc
    * @ignore
    */
   ModuleBinding._EMPTY_MODULE = 'oj:blank';
+
+  function isSafeSegment(segment) {
+    return segment !== '' && segment !== '.' && segment !== '..' && /^[A-Za-z0-9_.-]+$/.test(segment);
+  }
+
+  function isSafeResourcePath(path) {
+    if (
+      typeof path !== 'string' ||
+      path === '' ||
+      path.indexOf('\\') !== -1 ||
+      path.indexOf('!') !== -1 ||
+      path.indexOf(':') !== -1 ||
+      path.charAt(0) === '/'
+    ) {
+      return false;
+    }
+    var normalizedPath = path;
+    if (normalizedPath.indexOf('./') === 0) {
+      normalizedPath = normalizedPath.substring(2);
+    }
+    return normalizedPath.split('/').every(isSafeSegment);
+  }
+
+  function isSafeModuleId(type, module) {
+    var modulePath = module;
+    if (type === 'view') {
+      if (modulePath.indexOf('text!') !== 0) {
+        return false;
+      }
+      modulePath = modulePath.substring(5);
+    }
+    return isSafeResourcePath(modulePath);
+  }
 
   (function () {
     ko.bindingHandlers.ojModule = {
@@ -984,6 +1019,9 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojc
     function _getOjModuleRequirePromise(_requireFunc, type, module) {
       // Note that the 'type' parameter is not used by the implementation below.
       // It is, however, used by the Webpack-specific implementation of this function.
+      if (!isSafeModuleId(type, module)) {
+        return Promise.reject(new Error('Invalid module path'));
+      }
       var requireFunc = _requireFunc || require;
       var p = new Promise(function (resolve, reject) {
         requireFunc([module], resolve, reject);

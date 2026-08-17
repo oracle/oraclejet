@@ -5,10 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/ojdatasource-common'], function (oj, $, Logger, Translations, ojdatasourceCommon) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/ojdatasource-common'], function (oj, Logger, Translations, ojdatasourceCommon) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
-  $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
    * @export
@@ -576,7 +575,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
 
       if (row !== undefined) {
         var key = this._getId(row);
-        if ($.isArray(key) && $.isArray(id)) {
+        if (Array.isArray(key) && Array.isArray(id)) {
           if (key.length === id.length) {
             var equal = true;
             for (var j = 0; j < id.length; j++) {
@@ -618,7 +617,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
 
       if (direction === 'ascending') {
         comparator = function (row) {
-          if ($.isFunction(row[key])) {
+          if (typeof row[key] === 'function') {
             return row[key]();
           }
           return row[key];
@@ -627,7 +626,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
         comparator = function (rowA, rowB) {
           var a;
           var b;
-          if ($.isFunction(rowA[key])) {
+          if (typeof rowA[key] === 'function') {
             a = rowA[key]();
             b = rowB[key]();
           } else {
@@ -826,7 +825,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
       return null;
     }
 
-    if ($.isArray(idAttribute)) {
+    if (Array.isArray(idAttribute)) {
       var i;
       id = [];
       for (i = 0; i < idAttribute.length; i++) {
@@ -881,7 +880,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
     var retVal;
     var direction = self.sortCriteria.direction;
 
-    if ($.isFunction(comparator)) {
+    if (typeof comparator === 'function') {
       // How many args?
       if (comparator.length === 1) {
         // "sortBy" comparator option

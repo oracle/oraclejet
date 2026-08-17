@@ -260,7 +260,7 @@ DataCollectionUtils.isEventClickthroughDisabled = function (event, rootElement) 
  * @returns {boolean} true if clickthrough is disabled for the given element. false otherwise
  */
 DataCollectionUtils.isClickthroughDisabled = function (element) {
-  return element.dataset.ojClickthrough === 'disabled';
+  return element.nodeType === 1 && element.dataset.ojClickthrough === 'disabled';
 };
 
 /** ******************* general collection utility methods *****************/

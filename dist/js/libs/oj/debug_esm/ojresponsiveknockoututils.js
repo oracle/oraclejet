@@ -70,7 +70,7 @@ const _createMediaQueryObservableInternal = function (queryString, componentElem
     navigator.userAgent.indexOf('WebKit') !== -1 &&
     navigator.userAgent.indexOf('Chrome') === -1
   ) {
-    $(window).resize(function () {
+    $(window).on('resize', function () {
       // Somehow if I change some text in the dom on resize
       // the query listener is called
       var selector = 'oj-webkit-bug-123293';

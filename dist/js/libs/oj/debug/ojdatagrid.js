@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['touchr', 'ojs/ojdatasource-common', 'ojs/ojdatacollection-utils', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojmenuselectmany', 'ojs/ojdialog', 'ojs/ojbutton', 'ojdnd', 'ojs/ojcore-base', '@oracle/oraclejet-preact/hooks/UNSAFE_useFormVariantContext', 'ojs/ojcomponentcore', 'ojs/ojcontext', 'ojs/ojdatacollection-common', 'ojs/ojdomutils', 'ojs/ojconfig', 'ojs/ojcustomelement-utils', 'ojs/ojkeyboardfocus-utils', 'jquery', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojtranslationbundleutils'], function (touchr, ojdatasourceCommon, ojdatacollectionUtils, ojinputnumber, ojmenu, ojmenuselectmany, ojdialog, ojbutton, ojdnd, oj, UNSAFE_useFormVariantContext, Components, Context, DataCollectionUtils, DomUtils, ojconfig, ojcustomelementUtils, ojkeyboardfocusUtils, $, ojlogger, ThemeUtils, ojtranslationbundleutils) { 'use strict';
+define(['touchr', 'ojs/ojdatasource-common', 'ojs/ojdatacollection-utils', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojmenuselectmany', 'ojs/ojdialog', 'ojs/ojbutton', 'ojdnd', 'ojs/ojcore-base', '@oracle/oraclejet-preact/hooks/UNSAFE_useFormVariantContext', 'ojs/ojcomponentcore', 'ojs/ojcontext', 'ojs/ojdatacollection-common', 'ojs/ojdomutils', 'ojs/ojconfig', 'ojs/ojcustomelement-utils', 'ojs/ojgestureutils', 'ojs/ojkeyboardfocus-utils', 'jquery', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojtranslationbundleutils'], function (touchr, ojdatasourceCommon, ojdatacollectionUtils, ojinputnumber, ojmenu, ojmenuselectmany, ojdialog, ojbutton, ojdnd, oj, UNSAFE_useFormVariantContext, Components, Context, DataCollectionUtils, DomUtils, ojconfig, ojcustomelementUtils, ojgestureutils, ojkeyboardfocusUtils, $, ojlogger, ThemeUtils, ojtranslationbundleutils) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -1489,6 +1489,7 @@ var __oj_data_grid_metadata =
     this.attributes.start = 'data-oj-start';
     this.attributes.depth = 'data-oj-depth';
     this.attributes.level = 'data-oj-level';
+    this.attributes.index = 'data-oj-index';
     this.attributes.metadata = 'data-oj-metaData';
     this.attributes.hiddenIndicatorIndex = 'data-oj-hiddenIndicatorIndex';
     this.attributes.filterable = 'data-oj-filterable';
@@ -5108,6 +5109,7 @@ var __oj_data_grid_metadata =
       this.m_processingEventQueue = true;
       if (this.m_modelEvents.length === 0) {
         this.m_processingEventQueue = false;
+        this.m_processingModelEvent = false;
         if (fillIfDone) {
           this.fillViewport();
         }
@@ -5125,6 +5127,7 @@ var __oj_data_grid_metadata =
       }
     } else {
       this.m_processingEventQueue = false;
+      this.m_processingModelEvent = false;
       if (fillIfDone) {
         this.fillViewport();
       }
@@ -6278,61 +6281,6 @@ var __oj_data_grid_metadata =
     }
 
     this._setScrollerDimension(scroller, endRowPixel, endColPixel);
-  };
-
-  /**
-   * Helper function that sets databodyScroller and syncs other scrollable regions
-   * @private
-   */
-  DvtDataGrid.prototype._setAllScrollableRegions = function (dimension, newValue) {
-    const databodyScroller = this.m_databody.firstElementChild;
-    if (dimension === 'height') {
-      this.setElementHeight(databodyScroller, newValue);
-      if (this.m_hasRowHeader) {
-        const rowScroller = this.m_rowHeader.firstElementChild;
-        this.setElementHeight(rowScroller, newValue);
-      }
-      if (this.m_hasRowEndHeader) {
-        const rowEndScroller = this.m_rowEndHeader.firstElementChild;
-        this.setElementHeight(rowEndScroller, newValue);
-      }
-      if (this._hasFrozenColumns()) {
-        const frozenColScroller = this.m_databodyFrozenCol.firstElementChild;
-        this.setElementHeight(frozenColScroller, newValue);
-      }
-      if (this.m_initialized) {
-        this.m_scrollHeight =
-          this.getElementHeight(databodyScroller) -
-          Math.min(
-            this.getElementHeight(databodyScroller),
-            this.getElementHeight(this.m_databody) -
-              (this.m_hasHorizontalScroller ? this.m_utils.getScrollbarSize() : 0)
-          );
-      }
-    } else if (dimension === 'width') {
-      this.setElementWidth(databodyScroller, newValue);
-      if (this.m_hasColHeader) {
-        const colScroller = this.m_colHeader.firstElementChild;
-        this.setElementWidth(colScroller, newValue);
-      }
-      if (this.m_hasColEndHeader) {
-        const colEndScroller = this.m_colEndHeader.firstElementChild;
-        this.setElementWidth(colEndScroller, newValue);
-      }
-      if (this._hasFrozenRows()) {
-        const frozenRowScroller = this.m_databodyFrozenRow.firstElementChild;
-        this.setElementWidth(frozenRowScroller, newValue);
-      }
-      if (this.m_initialized) {
-        this.m_scrollWidth =
-          this.getElementWidth(databodyScroller) -
-          Math.min(
-            this.getElementWidth(databodyScroller),
-            this.getElementWidth(this.m_databody) -
-              (this.m_hasVerticalScroller ? this.m_utils.getScrollbarSize() : 0)
-          );
-      }
-    }
   };
 
   /**
@@ -8199,6 +8147,9 @@ var __oj_data_grid_metadata =
     };
 
     let frozenHeaderRange;
+    const frozenCount = axis === 'row' ? this.m_frozenRowIndex + 1 : this.m_frozenColIndex + 1;
+    const insertExpandsFrozenAxis =
+      this.m_fetchingForInsert && this.m_fetchingInsertAxis === axis && start <= frozenCount;
     if (
       !this._isHighWatermarkScrolling() &&
       ((axis === 'column' &&
@@ -8209,11 +8160,13 @@ var __oj_data_grid_metadata =
           (this.m_startRowHeader > 0 || this.m_startRowEndHeader > 0 || start > 0)))
     ) {
       if (
-        (axis === 'row' && start < this.m_frozenRowIndex + 1) ||
-        (axis === 'column' && start < this.m_frozenColIndex + 1)
+        (axis === 'row' && (start < this.m_frozenRowIndex + 1 || insertExpandsFrozenAxis)) ||
+        (axis === 'column' && (start < this.m_frozenColIndex + 1 || insertExpandsFrozenAxis))
       ) {
-        let frozenCount = axis === 'row' ? this.m_frozenRowIndex + 1 : this.m_frozenColIndex + 1;
-        let headerFetchSize = start + fetchSize > frozenCount ? frozenCount - start + 1 : fetchSize;
+        let headerFetchSize = fetchSize;
+        if (!insertExpandsFrozenAxis && start + fetchSize > frozenCount) {
+          headerFetchSize = frozenCount - start;
+        }
 
         frozenHeaderRange = {
           axis: axis,
@@ -8225,7 +8178,8 @@ var __oj_data_grid_metadata =
         if (headerFetchSize === fetchSize) {
           headerRange = {};
         } else {
-          headerRange.count = fetchSize - frozenCount;
+          headerRange.start = start + headerFetchSize;
+          headerRange.count = fetchSize - headerFetchSize;
         }
       } else if (!(this.m_fetchingForInsert || this.m_fetchingForUpdate)) {
         frozenHeaderRange = {
@@ -9907,7 +9861,15 @@ var __oj_data_grid_metadata =
       );
       this._removeFocusFromChildElements(context, cell);
     } else if (renderer != null && typeof renderer === 'object' && this.m_engine) {
-      var nodes = this.m_engine.execute(this.m_root, renderer, templateContext, null);
+      var nodes = this.m_engine.execute(
+        this.m_root,
+        renderer,
+        templateContext,
+        null,
+        undefined,
+        undefined,
+        renderer.slot === 'cellTemplate' ? { processTemplate: true } : undefined
+      );
       shouldAppendContentElement =
         renderer.slot === 'columnHeaderContentTemplate' ||
         renderer.slot === 'rowHeaderContentTemplate' ||
@@ -10837,16 +10799,23 @@ var __oj_data_grid_metadata =
     }
 
     if (hasFrozen) {
-      if (
-        this._isHighWatermarkScrolling() ||
-        (!this._isHighWatermarkScrolling() &&
-          (axis === 'column' || axis === 'columnEnd') &&
-          this.m_startCol === 0) ||
+      if (this._isHighWatermarkScrolling()) {
+        if (index <= frozenIndex) {
+          root = frozenRoot;
+          startIndex = 0;
+        } else {
+          startIndex += frozenIndex + 1;
+        }
+      } else if (
+        ((axis === 'column' || axis === 'columnEnd') && this.m_startCol === 0) ||
         ((axis === 'row' || axis === 'rowEnd') && this.m_startRow === 0)
       ) {
         if (index <= frozenIndex) {
           root = frozenRoot;
-        } else {
+          startIndex = 0;
+        } else if (startIndex <= frozenIndex) {
+          // An initialized physical-scroll header fetch already starts after the frozen region.
+          // Only apply the frozen offset to the initial zero-based header range.
           startIndex += frozenIndex + 1;
         }
       } else if (index <= frozenIndex) {
@@ -11233,16 +11202,9 @@ var __oj_data_grid_metadata =
     let frozenColRange = {};
     let frozenCornerRange = {};
 
-    if (this.m_fetchingForInsert) {
+    if (this.m_fetchingForInsert || this.m_fetchingForUpdate) {
       [rowRange, columnRange, frozenRowRange, frozenColRange, frozenCornerRange] =
-        this._fetchCellsForFrozenVirtualScrollInsert(
-          databody,
-          rowStart,
-          colStart,
-          rowCount,
-          colCount,
-          callbacks
-        );
+        this._fetchCellsForFrozenVirtualScrollInsert(rowStart, colStart, rowCount, colCount);
     } else {
       if (
         (scrollPosition.rowIndex !== undefined && scrollPosition.rowIndex !== 0) ||
@@ -11307,34 +11269,45 @@ var __oj_data_grid_metadata =
               };
             }
           } else {
+            let calculatedFrozenRowStart = 0;
+            let virtualFrozenRowCount = frozenRowCount;
+            let calculatedRowStart = rowStart;
+            let calculatedRowCount = rowCount;
+            if (rowStart < frozenRowCount) {
+              const rowEnd = rowStart + rowCount;
+              calculatedFrozenRowStart = rowStart;
+              virtualFrozenRowCount = Math.max(0, Math.min(rowEnd, frozenRowCount) - rowStart);
+              calculatedRowStart = frozenRowCount;
+              calculatedRowCount = Math.max(0, rowEnd - frozenRowCount);
+            }
             let calculatedColStart = colStart;
             let calculatedColCount = colCount;
             if (this._hasFrozenColumns() && colStart + colCount > this.m_frozenColIndex + 1) {
               let frozenColCount = this.m_frozenColIndex + 1;
               calculatedColStart = colStart < frozenColCount ? frozenColCount : colStart;
               calculatedColCount =
-                colStart < frozenColCount ? colCount - (frozenColCount - colStart) : colCount;
+                colStart < frozenColCount
+                  ? Math.max(0, colCount - (frozenColCount - colStart))
+                  : colCount;
             }
             // when we switch between hws and virtual scroll through option update, need this check.
-            if (colStart < this.m_startCol || colStart + colCount - 1 > this.m_endCol) {
+            if (
+              colStart < this.m_startCol ||
+              colStart + colCount - 1 > this.m_endCol ||
+              this.isLongScroll()
+            ) {
               frozenRowRange = {
                 axis: 'row',
-                rowStart: 0,
-                rowCount: frozenRowCount,
+                rowStart: calculatedFrozenRowStart,
+                rowCount: virtualFrozenRowCount,
                 colStart: calculatedColStart,
                 colCount: calculatedColCount
               };
             }
-            if (rowStart < frozenRowCount) {
-              // eslint-disable-next-line no-param-reassign
-              rowStart = frozenRowCount;
-              // eslint-disable-next-line no-param-reassign
-              rowCount -= frozenRowCount;
-            }
             rowRange = {
               axis: 'row',
-              start: rowStart,
-              count: rowCount
+              start: calculatedRowStart,
+              count: calculatedRowCount
             };
           }
           if (this.m_initialized && this._hasFrozenColumns() && !Object.keys(frozenColRange).length) {
@@ -11427,29 +11400,40 @@ var __oj_data_grid_metadata =
               let frozenRowCount = this.m_frozenRowIndex + 1;
               calculatedRowStart = rowStart < frozenRowCount ? frozenRowCount : rowStart;
               calculatedRowCount =
-                rowStart < frozenRowCount ? rowCount - (frozenRowCount - rowStart) : rowCount;
+                rowStart < frozenRowCount
+                  ? Math.max(0, rowCount - (frozenRowCount - rowStart))
+                  : rowCount;
+            }
+            let calculatedFrozenColStart = 0;
+            let virtualFrozenColCount = frozenColCount;
+            let calculatedColStart = colStart;
+            let calculatedColCount = colCount;
+            if (colStart < frozenColCount) {
+              const colEnd = colStart + colCount;
+              calculatedFrozenColStart = colStart;
+              virtualFrozenColCount = Math.max(0, Math.min(colEnd, frozenColCount) - colStart);
+              calculatedColStart = frozenColCount;
+              calculatedColCount = Math.max(0, colEnd - frozenColCount);
             }
             // when we switch between hws and virtual scroll through option update, need this check.
-            if (rowStart < this.m_startRow || rowStart + rowCount - 1 > this.m_endRow) {
+            if (
+              rowStart < this.m_startRow ||
+              rowStart + rowCount - 1 > this.m_endRow ||
+              this.isLongScroll()
+            ) {
               frozenColRange = {
                 axis: 'column',
                 rowStart: calculatedRowStart,
                 rowCount: calculatedRowCount,
-                colStart: 0,
-                colCount: frozenColCount,
+                colStart: calculatedFrozenColStart,
+                colCount: virtualFrozenColCount,
                 databody: this.m_databodyFrozenCol
               };
             }
-            if (colStart < frozenColCount) {
-              // eslint-disable-next-line no-param-reassign
-              colStart = frozenColCount;
-              // eslint-disable-next-line no-param-reassign
-              colCount -= frozenColCount;
-            }
             columnRange = {
               axis: 'column',
-              start: colStart,
-              count: colCount,
+              start: calculatedColStart,
+              count: calculatedColCount,
               databody: databody
             };
           }
@@ -11536,13 +11520,10 @@ var __oj_data_grid_metadata =
   };
 
   DvtDataGrid.prototype._fetchCellsForFrozenVirtualScrollInsert = function (
-    databody,
     rowStart,
     colStart,
     rowCount,
-    colCount,
-    // eslint-disable-next-line no-unused-vars
-    callbacks
+    colCount
   ) {
     let rowRange = {
       axis: 'row',
@@ -11552,92 +11533,198 @@ var __oj_data_grid_metadata =
     let columnRange = {
       axis: 'column',
       start: colStart,
-      count: colCount,
-      databody: databody
+      count: colCount
     };
-    let scrollPosition = this.m_options.getScrollPosition();
+    const scrollPosition = this.m_options.getScrollPosition();
     let frozenRowRange = {};
     let frozenColRange = {};
     let frozenCornerRange = {};
+    const frozenColCount = this.m_frozenColIndex + 1;
+    const frozenRowCount = this.m_frozenRowIndex + 1;
+    const insertAxis = this.m_fetchingForInsert ? this.m_fetchingInsertAxis : null;
+
+    if (this.m_fetchingForUpdate) {
+      const rowEnd = rowStart + rowCount;
+      const colEnd = colStart + colCount;
+      const frozenRowOverlapCount =
+        this._hasFrozenRows() && rowStart < frozenRowCount
+          ? Math.max(0, Math.min(rowEnd, frozenRowCount) - rowStart)
+          : 0;
+      const frozenColOverlapCount =
+        this._hasFrozenColumns() && colStart < frozenColCount
+          ? Math.max(0, Math.min(colEnd, frozenColCount) - colStart)
+          : 0;
+
+      if (frozenRowOverlapCount > 0 || frozenColOverlapCount > 0) {
+        const scrollableRowStart =
+          frozenRowOverlapCount > 0 ? Math.max(frozenRowCount, this.m_startRow) : rowStart;
+        const scrollableRowEnd =
+          frozenRowOverlapCount > 0 ? Math.min(rowEnd, this.m_endRow + 1) : rowEnd;
+        const scrollableRowCount = Math.max(0, scrollableRowEnd - scrollableRowStart);
+        const scrollableColStart =
+          frozenColOverlapCount > 0 ? Math.max(frozenColCount, this.m_startCol) : colStart;
+        const scrollableColEnd =
+          frozenColOverlapCount > 0 ? Math.min(colEnd, this.m_endCol + 1) : colEnd;
+        const scrollableColCount = Math.max(0, scrollableColEnd - scrollableColStart);
+
+        rowRange = {
+          axis: 'row',
+          start: scrollableRowStart,
+          count: scrollableRowCount
+        };
+        columnRange = {
+          axis: 'column',
+          start: scrollableColStart,
+          count: scrollableColCount
+        };
+
+        if (frozenRowOverlapCount > 0 && scrollableColCount > 0) {
+          frozenRowRange = {
+            axis: 'row',
+            rowStart: rowStart,
+            rowCount: frozenRowOverlapCount,
+            colStart: scrollableColStart,
+            colCount: scrollableColCount
+          };
+        }
+
+        if (frozenColOverlapCount > 0 && scrollableRowCount > 0) {
+          frozenColRange = {
+            axis: 'column',
+            rowStart: scrollableRowStart,
+            rowCount: scrollableRowCount,
+            colStart: colStart,
+            colCount: frozenColOverlapCount
+          };
+        }
+
+        if (frozenRowOverlapCount > 0 && frozenColOverlapCount > 0) {
+          frozenCornerRange = {
+            axis: 'corner',
+            rowStart: rowStart,
+            rowCount: frozenRowOverlapCount,
+            colStart: colStart,
+            colCount: frozenColOverlapCount
+          };
+        }
+
+        return [rowRange, columnRange, frozenRowRange, frozenColRange, frozenCornerRange];
+      }
+    }
+
+    if (insertAxis === 'row' && this._hasFrozenRows() && rowStart <= frozenRowCount) {
+      rowRange = {
+        axis: 'row',
+        start: rowStart,
+        count: 0
+      };
+      const scrollableColStart =
+        this._hasFrozenColumns() && colStart < frozenColCount ? frozenColCount : colStart;
+      const scrollableColCount =
+        this._hasFrozenColumns() && colStart < frozenColCount
+          ? Math.max(0, colCount - (frozenColCount - colStart))
+          : colCount;
+
+      if (!this._hasFrozenColumns() || scrollableColCount > 0) {
+        frozenRowRange = {
+          axis: 'row',
+          rowStart: rowStart,
+          rowCount: rowCount,
+          colStart: scrollableColStart,
+          colCount: scrollableColCount
+        };
+      }
+      if (this._hasFrozenColumns()) {
+        frozenCornerRange = {
+          axis: 'corner',
+          rowStart: rowStart,
+          rowCount: rowCount,
+          colStart: 0,
+          colCount: frozenColCount
+        };
+      }
+      return [rowRange, columnRange, frozenRowRange, frozenColRange, frozenCornerRange];
+    }
+
+    if (insertAxis === 'column' && this._hasFrozenColumns() && colStart <= frozenColCount) {
+      columnRange = {
+        axis: 'column',
+        start: colStart,
+        count: 0
+      };
+      const scrollableRowStart =
+        this._hasFrozenRows() && rowStart < frozenRowCount ? frozenRowCount : rowStart;
+      const scrollableRowCount =
+        this._hasFrozenRows() && rowStart < frozenRowCount
+          ? Math.max(0, rowCount - (frozenRowCount - rowStart))
+          : rowCount;
+
+      if (!this._hasFrozenRows() || scrollableRowCount > 0) {
+        frozenColRange = {
+          axis: 'column',
+          rowStart: scrollableRowStart,
+          rowCount: scrollableRowCount,
+          colStart: colStart,
+          colCount: colCount
+        };
+      }
+      if (this._hasFrozenRows()) {
+        frozenCornerRange = {
+          axis: 'corner',
+          rowStart: 0,
+          rowCount: frozenRowCount,
+          colStart: colStart,
+          colCount: colCount
+        };
+      }
+      return [rowRange, columnRange, frozenRowRange, frozenColRange, frozenCornerRange];
+    }
 
     if (scrollPosition.rowIndex !== undefined && scrollPosition.rowIndex !== 0) {
       if (this._hasFrozenRows()) {
-        let frozenRowCount = this.m_frozenRowIndex + 1;
         // when partial fetch of certain rows for CRUD is done.
         if (rowStart < frozenRowCount) {
-          let calculatedColStart = colStart;
-          let calculatedColCount = colCount;
+          const frozenRowOverlapCount = Math.min(rowStart + rowCount, frozenRowCount) - rowStart;
+          let scrollableColStart = colStart;
+          let scrollableColCount = colCount;
           if (this._hasFrozenColumns()) {
-            if (colCount > 1) {
-              calculatedColStart = this.m_frozenColIndex + 1;
-              calculatedColCount = colCount - calculatedColStart;
-              if (colStart === calculatedColStart) {
-                calculatedColCount = colCount;
-              }
-              frozenRowRange = {
-                axis: 'row',
-                rowStart: rowStart,
-                rowCount: rowCount,
-                colStart: calculatedColStart,
-                colCount: calculatedColCount
-              };
-              rowRange.count = 0;
-            } else if (rowCount > 1) {
-              if (colStart < this.m_frozenColIndex + 1) {
-                frozenColRange = {
-                  axis: 'column',
-                  rowStart: frozenRowCount,
-                  rowCount: rowCount - frozenRowCount,
-                  colStart: colStart,
-                  colCount: colCount,
-                  databody: this.m_databodyFrozenCol
-                };
-                rowRange.count = 0;
-              } else {
-                frozenRowRange = {
-                  axis: 'row',
-                  rowStart: rowStart,
-                  rowCount: frozenRowCount,
-                  colStart: colStart,
-                  colCount: colCount
-                };
-                rowRange.start = frozenRowCount;
-                rowRange.count = rowCount - frozenRowCount;
-              }
-            }
-          } else {
+            scrollableColStart = Math.max(colStart, frozenColCount);
+            scrollableColCount = Math.max(0, colStart + colCount - scrollableColStart);
+          }
+          if (scrollableColCount > 0) {
             frozenRowRange = {
               axis: 'row',
               rowStart: rowStart,
-              rowCount: frozenRowCount,
-              colStart: colStart,
-              colCount: colCount
+              rowCount: frozenRowOverlapCount,
+              colStart: scrollableColStart,
+              colCount: scrollableColCount
             };
-            if (rowCount > 1) {
-              rowRange = {
-                axis: 'row',
-                start: frozenRowCount,
-                count: rowCount - frozenRowCount
-              };
-            } else if (colCount > 1) {
-              frozenRowRange.rowCount = rowCount;
-            }
           }
+
+          rowRange = {
+            axis: 'row',
+            start: frozenRowCount,
+            count: Math.max(0, rowStart + rowCount - frozenRowCount),
+            colStart: colStart,
+            colCount: colCount
+          };
         } else {
-          if (this._hasFrozenColumns() && colCount > 1) {
-            let frozenColCount = this.m_frozenColIndex + 1;
-            frozenColRange = {
-              axis: 'column',
-              rowStart: rowStart,
-              rowCount: rowCount,
-              colStart: 0,
-              colCount: frozenColCount
-            };
+          frozenRowRange = {
+            axis: 'row',
+            rowStart: 0,
+            rowCount: frozenRowCount,
+            colStart: colStart,
+            colCount: colCount
+          };
+          if (this._hasFrozenColumns()) {
+            frozenRowRange.colCount = frozenColCount;
           }
           rowRange = {
             axis: 'row',
             start: rowStart,
-            count: rowCount
+            count: rowCount,
+            colStart: colStart,
+            colCount: colCount
           };
         }
       }
@@ -11645,101 +11732,57 @@ var __oj_data_grid_metadata =
 
     if (scrollPosition.columnIndex !== undefined && scrollPosition.columnIndex !== 0) {
       if (this._hasFrozenColumns()) {
-        let frozenColCount = this.m_frozenColIndex + 1;
-        // when partial fetch of certain columns for CRUD is done.
+        // when partial fetch of certain columns for CRUD is done
         if (colStart < frozenColCount) {
-          let calculatedRowStart = rowStart;
-          let calculatedRowCount = rowCount;
+          const frozenColOverlapCount = Math.min(colStart + colCount, frozenColCount) - colStart;
+          let scrollableRowStart = rowStart;
+          let scrollableRowCount = rowCount;
           if (this._hasFrozenRows()) {
-            if (rowCount > 1) {
-              calculatedRowStart = this.m_frozenRowIndex + 1;
-              calculatedRowCount = rowCount - calculatedRowStart;
-              if (rowStart === calculatedRowStart) {
-                calculatedRowCount = rowCount;
-              }
-              frozenColRange = {
-                axis: 'column',
-                rowStart: calculatedRowStart,
-                rowCount: calculatedRowCount,
-                colStart: colStart,
-                colCount: colCount,
-                databody: this.m_databodyFrozenCol
-              };
-              columnRange.count = 0;
-            } else if (colCount > 1) {
-              if (rowStart < this.m_frozenRowIndex + 1) {
-                frozenRowRange = {
-                  axis: 'row',
-                  rowStart: rowStart,
-                  rowCount: rowCount,
-                  colStart: frozenColCount,
-                  colCount: colCount - frozenColCount
-                };
-                columnRange.count = 0;
-              } else {
-                frozenColRange = {
-                  axis: 'column',
-                  rowStart: rowStart,
-                  rowCount: rowCount,
-                  colStart: colStart,
-                  colCount: frozenColCount,
-                  databody: this.m_databodyFrozenCol
-                };
-                columnRange.start = frozenColCount;
-                columnRange.count = colCount - frozenColCount;
-              }
-            }
-          } else {
+            scrollableRowStart = Math.max(rowStart, frozenRowCount);
+            scrollableRowCount = Math.max(0, rowStart + rowCount - scrollableRowStart);
+          }
+          if (scrollableRowCount > 0) {
             frozenColRange = {
               axis: 'column',
-              rowStart: rowStart,
-              rowCount: rowCount,
+              rowStart: scrollableRowStart,
+              rowCount: scrollableRowCount,
               colStart: colStart,
-              colCount: frozenColCount,
-              databody: this.m_databodyFrozenCol
-            };
-            if (rowCount > 1) {
-              frozenColRange.colCount = colCount;
-            } else if (colCount > 1) {
-              columnRange = {
-                axis: 'column',
-                start: frozenColCount,
-                count: colCount - frozenColCount,
-                databody: databody
-              };
-            }
-          }
-        } else {
-          if (this._hasFrozenRows() && rowCount > 1) {
-            let frozenRowCount = this.m_frozenRowIndex + 1;
-            frozenRowRange = {
-              axis: 'row',
-              rowStart: 0,
-              rowCount: frozenRowCount,
-              colStart: colStart,
-              colCount: colCount
+              colCount: frozenColOverlapCount
             };
           }
           columnRange = {
             axis: 'column',
+            start: frozenColCount,
+            count: Math.max(0, colStart + colCount - frozenColCount),
+            rowStart: rowStart,
+            rowCount: rowCount
+          };
+        } else {
+          frozenColRange = {
+            axis: 'column',
+            rowStart: rowStart,
+            rowCount: rowCount,
+            colStart: 0,
+            colCount: frozenColCount
+          };
+          columnRange = {
+            axis: 'column',
             start: colStart,
             count: colCount,
-            databody: databody
+            rowStart: rowStart,
+            rowCount: rowCount
           };
         }
       }
     }
 
     if (this._hasFrozenRows() && this._hasFrozenColumns()) {
-      let frozenRowCount = this.m_frozenRowIndex + 1;
-      let frozenColCount = this.m_frozenColIndex + 1;
       frozenCornerRange = {
         axis: 'corner',
-        rowStart: rowStart,
-        colStart: colStart,
+        rowStart: 0,
+        colStart: 0,
         rowCount: frozenRowCount,
-        colCount: frozenColCount,
-        databody: this.m_databodyFrozenCorner
+        colCount: frozenColCount
       };
 
       if (colStart < frozenColCount && rowStart < frozenRowCount) {
@@ -12611,6 +12654,7 @@ var __oj_data_grid_metadata =
         this._cleanupViewport(cleanDirection);
 
         this.fillViewport();
+        this._refreshDatabodyMap();
         if (this.isFetchComplete()) {
           this.fireEvent('ready', {});
         }
@@ -12974,8 +13018,26 @@ var __oj_data_grid_metadata =
     }
     if (
       !this._isHighWatermarkScrolling() &&
+      this._hasFrozenRows() &&
+      this.m_fetchingForInsert &&
+      this.m_fetchingInsertAxis === 'row' &&
+      rowStart <= freezeRowIndex + 1
+    ) {
+      rowAppend = true;
+    }
+    if (
+      !this._isHighWatermarkScrolling() &&
       this._hasFrozenColumns() &&
       columnStart <= freezeColIndex
+    ) {
+      columnAppend = true;
+    }
+    if (
+      !this._isHighWatermarkScrolling() &&
+      this._hasFrozenColumns() &&
+      this.m_fetchingForInsert &&
+      this.m_fetchingInsertAxis === 'column' &&
+      columnStart <= freezeColIndex + 1
     ) {
       columnAppend = true;
     }
@@ -13550,7 +13612,8 @@ var __oj_data_grid_metadata =
     headerRoot,
     endHeaderRoot,
     isAdd,
-    frozenIndexChange
+    frozenIndexChange,
+    frozenIndexChangeStart
   ) {
     let ltr = this.getResources().isRTLMode() ? 'right' : 'left';
     let dir = axis === 'row' ? 'top' : ltr;
@@ -13572,7 +13635,11 @@ var __oj_data_grid_metadata =
             }
           }
         }
-        if (indexes.length === 0 && frozenIndexChange > 0) {
+        if (
+          indexes.length === 0 &&
+          frozenIndexChange > 0 &&
+          (frozenIndexChangeStart == null || index >= frozenIndexChangeStart)
+        ) {
           indexChange += frozenIndexChange;
         }
         if (indexChange > 0) {
@@ -14170,6 +14237,9 @@ var __oj_data_grid_metadata =
     } else {
       this.fillViewport();
     }
+    if (!this._isHighWatermarkScrolling() && (this._hasFrozenRows() || this._hasFrozenColumns())) {
+      this._refreshDatabodyMap();
+    }
     this._checkScroll = true;
 
     // update header and databody scroll position
@@ -14259,6 +14329,9 @@ var __oj_data_grid_metadata =
       this.handleLongScroll(this.m_currentScrollLeft, this.m_currentScrollTop);
     } else {
       this.fillViewport();
+    }
+    if (!this._isHighWatermarkScrolling() && (this._hasFrozenRows() || this._hasFrozenColumns())) {
+      this._refreshDatabodyMap();
     }
 
     this._checkScroll = true;
@@ -14486,16 +14559,26 @@ var __oj_data_grid_metadata =
    * excessive fetching.
    * @param {number} scrollLeft - the position the scroller left should be
    * @param {number} scrollTop - the position the scroller top should be
+   * @param {boolean=} forceStartFromScroll - whether to recalculate the fetch start from the
+   * current scroll offset even when the scroll offset did not change
    */
-  DvtDataGrid.prototype.handleLongScroll = function (scrollLeft, scrollTop) {
+  DvtDataGrid.prototype.handleLongScroll = function (scrollLeft, scrollTop, forceStartFromScroll) {
     this.m_isLongScroll = true;
 
     // _getLongScrollStart should be involked when fetch is in progress to cache scroll indexes
-    const rowReturnVal = this._getLongScrollStart(scrollTop, this.m_prevScrollTop, 'row');
+    const rowReturnVal = this._getLongScrollStart(
+      scrollTop,
+      forceStartFromScroll ? undefined : this.m_prevScrollTop,
+      'row'
+    );
     this.m_longScrollRow = rowReturnVal.start;
     this.m_longScrollRowPixel = rowReturnVal.startPixel;
 
-    const columnReturnVal = this._getLongScrollStart(scrollLeft, this.m_prevScrollLeft, 'column');
+    const columnReturnVal = this._getLongScrollStart(
+      scrollLeft,
+      forceStartFromScroll ? undefined : this.m_prevScrollLeft,
+      'column'
+    );
     this.m_longScrollColumn = columnReturnVal.start;
     this.m_longScrollColumnPixel = columnReturnVal.startPixel;
 
@@ -14711,22 +14794,31 @@ var __oj_data_grid_metadata =
       if (databodyContent != null && !this._getEmptyElement()) {
         const cells = this._getAllNonSkeletonContainerNodes(databodyContent);
         cells.forEach((cell) => {
+          this._removeCellFromDatabodyMap(cell);
           this._remove(cell);
         });
       }
-      if (this._hasFrozenColumns() && this.m_currentScrollTop !== this.m_prevScrollTop) {
+      if (
+        this._hasFrozenColumns() &&
+        (this.m_currentScrollTop !== this.m_prevScrollTop || frozenColumnCellSet !== undefined)
+      ) {
         const frozenColCells = this._getAllNonSkeletonContainerNodes(
           this.m_databodyFrozenCol.firstChild
         );
         frozenColCells.forEach((cell) => {
+          this._removeCellFromDatabodyMap(cell);
           this._remove(cell);
         });
       }
-      if (this._hasFrozenRows() && this.m_currentScrollLeft !== this.m_prevScrollLeft) {
+      if (
+        this._hasFrozenRows() &&
+        (this.m_currentScrollLeft !== this.m_prevScrollLeft || frozenRowCellSet !== undefined)
+      ) {
         const frozenRowCells = this._getAllNonSkeletonContainerNodes(
           this.m_databodyFrozenRow.firstChild
         );
         frozenRowCells.forEach((cell) => {
+          this._removeCellFromDatabodyMap(cell);
           this._remove(cell);
         });
       }
@@ -14745,7 +14837,7 @@ var __oj_data_grid_metadata =
   /**
    * Method to clean up the viewport in one direction, left cleans the first columns, top the first rows etc.
    * This is seperate from fill viewport so that in both the synchronus and asynchronus
-   * fetch case the cleanuo happens after we get the data fpor the next area.
+   * fetch case the cleanup happens after we get the data for the next area.
    * @param {string|null|undefined} direction left/right/top/bottom
    */
   DvtDataGrid.prototype._cleanupViewport = function (direction) {
@@ -14776,18 +14868,27 @@ var __oj_data_grid_metadata =
     var viewportTop = this._getViewportTop();
     var viewportBottom = this._getViewportBottom();
 
+    let cleaned = false;
     if (direction === 'top' && viewportTop > this._getMaxTopPixel()) {
       this.removeRowsFromTop(this.m_databody);
       this.removeRowHeadersFromTop();
+      cleaned = true;
     } else if (direction === 'bottom' && viewportBottom < this._getMaxBottomPixel()) {
       this.removeRowsFromBottom(this.m_databody);
       this.removeRowHeadersFromBottom();
+      cleaned = true;
     } else if (direction === 'left' && viewportLeft > this._getMaxLeftPixel()) {
       this.removeColumnsFromLeft(this.m_databody);
       this.removeColumnHeadersFromLeft();
+      cleaned = true;
     } else if (direction === 'right' && viewportRight < this._getMaxRightPixel()) {
       this.removeColumnsFromRight(this.m_databody);
       this.removeColumnHeadersFromRight();
+      cleaned = true;
+    }
+
+    if (cleaned) {
+      this._refreshDatabodyMap();
     }
   };
 
@@ -15016,7 +15117,7 @@ var __oj_data_grid_metadata =
    * @param {boolean} isFromEnd
    * @private
    */
-  DvtDataGrid.prototype._removeCellsAlongAxis = function (axis, threshold, isFromEnd) {
+  DvtDataGrid.prototype._removeCellsAlongAxis = function (axis, threshold, isFromEnd, databody) {
     var j;
     var axisStart;
     var axisEnd;
@@ -15032,6 +15133,7 @@ var __oj_data_grid_metadata =
     var totalDimensionChange = 0;
     var totalCountChange = 0;
     let frozenAxisEnd;
+    let frozenDatabody;
 
     if (axis === 'row') {
       axisStart = this.m_startRow;
@@ -15047,6 +15149,7 @@ var __oj_data_grid_metadata =
       dir = 'top';
       j = isFromEnd ? axisEnd : axisStart;
       frozenAxisEnd = this.m_frozenColIndex;
+      frozenDatabody = this.m_databodyFrozenCol;
     } else {
       axisStart = this.m_startCol;
       axisEnd = this.m_endCol;
@@ -15061,6 +15164,7 @@ var __oj_data_grid_metadata =
       dir = this.getResources().isRTLMode() ? 'right' : 'left';
       j = isFromEnd ? axisEnd : axisStart;
       frozenAxisEnd = this.m_frozenRowIndex;
+      frozenDatabody = this.m_databodyFrozenRow;
     }
     let deleteArray = [];
 
@@ -15090,9 +15194,9 @@ var __oj_data_grid_metadata =
           ? axisEndPixel - dimensionValue - totalDimensionChange > threshold
           : axisStartPixel + dimensionValue + totalDimensionChange < currentScroll - threshold
       ) {
-        var otherExtent;
-        for (var i = otherAxisStart; i <= otherAxisEnd; i += otherExtent) {
-          otherExtent = this._removeCells(
+        let i = otherAxisStart;
+        while (i <= otherAxisEnd) {
+          const extent = this._removeCells(
             i,
             j,
             axis,
@@ -15100,8 +15204,10 @@ var __oj_data_grid_metadata =
             dimension,
             dimensionValue,
             dir,
-            isFromEnd
+            isFromEnd,
+            databody
           );
+          i += extent;
         }
         if (
           !this._isHighWatermarkScrolling() &&
@@ -15109,8 +15215,9 @@ var __oj_data_grid_metadata =
           ((axis === 'row' && this._hasFrozenColumns()) ||
             (axis === 'column' && this._hasFrozenRows()))
         ) {
-          for (let l = 0; l <= frozenAxisEnd; l += otherExtent) {
-            otherExtent = this._removeCells(
+          let l = 0;
+          while (l <= frozenAxisEnd) {
+            const extent = this._removeCells(
               l,
               j,
               axis,
@@ -15118,8 +15225,10 @@ var __oj_data_grid_metadata =
               dimension,
               dimensionValue,
               dir,
-              isFromEnd
+              isFromEnd,
+              frozenDatabody
             );
+            l += extent;
           }
         }
         totalDimensionChange += dimensionValue;
@@ -15141,15 +15250,22 @@ var __oj_data_grid_metadata =
     dimension,
     dimensionValue,
     dir,
-    isFromEnd
+    isFromEnd,
+    databody
   ) {
     let otherExtent;
-    let cell = this._getCellByIndex(
-      axis === 'column' ? this.createIndex(i, j) : this.createIndex(j, i)
-    );
+    let index = axis === 'column' ? this.createIndex(i, j) : this.createIndex(j, i);
+    let cell = this._getCellByIndexInDatabody(index, databody);
+
+    if (!cell) {
+      // chance this grid is in a weird state where the cell is not found, just return the extent of 1 to keep things moving and avoid infinite loops
+      return 1;
+    }
+
     let cellContext = cell[this.getResources().getMappedAttribute('context')];
     let axisExtent = cellContext.extents[axis];
     otherExtent = cellContext.extents[otherAxis];
+    const cellId = cell.id;
 
     if (axisExtent === 1) {
       this._remove(cell);
@@ -15163,8 +15279,10 @@ var __oj_data_grid_metadata =
     }
 
     for (let k = 0; k < otherExtent; k++) {
-      let index = axis === 'column' ? this.createIndex(i + k, j) : this.createIndex(j, i + k);
-      this._removeIndexFromDatabodyMap(index);
+      index = axis === 'column' ? this.createIndex(i + k, j) : this.createIndex(j, i + k);
+      if (this._getFromDatabodyMap(index) === cellId) {
+        this._removeIndexFromDatabodyMap(index);
+      }
     }
     return otherExtent;
   };
@@ -15440,7 +15558,7 @@ var __oj_data_grid_metadata =
         return;
       }
 
-      var returnVal = this._removeCellsAlongAxis('column', colThreshold, false);
+      var returnVal = this._removeCellsAlongAxis('column', colThreshold, false, databody);
       this.m_startColPixel += returnVal.dimensionChange;
       this.m_startCol += returnVal.extentChange;
     }
@@ -15519,7 +15637,7 @@ var __oj_data_grid_metadata =
         this.m_stopColumnFetch = false;
       }
 
-      var returnVal = this._removeCellsAlongAxis('column', threshold, true);
+      var returnVal = this._removeCellsAlongAxis('column', threshold, true, databody);
       this.m_endColPixel -= returnVal.dimensionChange;
       this.m_endCol -= returnVal.extentChange;
     }
@@ -15586,7 +15704,7 @@ var __oj_data_grid_metadata =
       }
 
       // remove all rows from top until the threshold is reached
-      var returnVal = this._removeCellsAlongAxis('row', rowThreshold, false);
+      var returnVal = this._removeCellsAlongAxis('row', rowThreshold, false, databody);
       this.m_startRowPixel += returnVal.dimensionChange;
       this.m_startRow += returnVal.extentChange;
     }
@@ -15662,7 +15780,7 @@ var __oj_data_grid_metadata =
         this.m_stopRowFetch = false;
       }
 
-      var returnVal = this._removeCellsAlongAxis('row', threshold, true);
+      var returnVal = this._removeCellsAlongAxis('row', threshold, true, databody);
       this.m_endRowPixel -= returnVal.dimensionChange;
       this.m_endRow -= returnVal.extentChange;
     }
@@ -15744,7 +15862,10 @@ var __oj_data_grid_metadata =
     }
 
     // first check if we are invoking on an editable or clickable element, if so bail
-    if (this.m_utils._isNodeEditableOrClickable(target, this.m_root)) {
+    if (
+      ojgestureutils.getContextMenuAltClickthrough(target, this.m_root) !== 'enabled' &&
+      this.m_utils._isNodeEditableOrClickable(target, this.m_root)
+    ) {
       return;
     }
 
@@ -18893,7 +19014,20 @@ var __oj_data_grid_metadata =
     if (ranges.length === 0) {
       this.m_processingModelEvent = false;
       this.m_fetchingForInsert = false;
+      this.m_fetchingInsertAxis = null;
       this._runModelEventQueue(true);
+      return;
+    }
+
+    if (!this.isFetchComplete()) {
+      if (this.m_modelEvents == null) {
+        this.m_modelEvents = [];
+      }
+      this.m_modelEvents.unshift({
+        source: this.getDataSource(),
+        operation: 'insert',
+        detail: eventDetail
+      });
       return;
     }
 
@@ -18907,6 +19041,13 @@ var __oj_data_grid_metadata =
     let start = range.offset;
     let count = range.count;
     let flag = this._isAxisIndexInViewport(start, axis);
+    if (
+      !this._isHighWatermarkScrolling() &&
+      ((axis === 'row' && this._hasFrozenRows() && start <= this.m_frozenRowIndex + 1) ||
+        (axis === 'column' && this._hasFrozenColumns() && start <= this.m_frozenColIndex + 1))
+    ) {
+      flag = DvtDataGrid.INSIDE;
+    }
     if (flag === DvtDataGrid.INSIDE) {
       let startRow = start;
       let rowCount = count;
@@ -18931,10 +19072,13 @@ var __oj_data_grid_metadata =
         endHeaderFragment: endHeaderFragment,
         totalDimension: 0,
         promiseResolve: promiseResolve,
-        update: false
+        update: false,
+        frozenRowIndex: this.m_frozenRowIndex,
+        frozenColIndex: this.m_frozenColIndex
       };
 
       this.m_fetchingForInsert = true;
+      this.m_fetchingInsertAxis = axis;
       let computedHeaderStart = start;
       let computedHeaderCount = count;
       if (
@@ -19068,10 +19212,24 @@ var __oj_data_grid_metadata =
       this._resetHeaderHighLight();
       this.m_activeEdit = null;
       this.m_processingModelEvent = false;
+      this.m_fetchingForUpdate = false;
       this._runModelEventQueue(true);
       return;
     }
 
+    if (!this.isFetchComplete()) {
+      if (this.m_modelEvents == null) {
+        this.m_modelEvents = [];
+      }
+      this.m_modelEvents.unshift({
+        source: this.getDataSource(),
+        operation: 'update',
+        detail: eventDetail
+      });
+      return;
+    }
+
+    this.m_fetchingForUpdate = true;
     // sort ranges forwards to ensure we add in correct order as order is relative to final
     ranges.sort(function (a, b) {
       return a.offset - b.offset;
@@ -19085,6 +19243,7 @@ var __oj_data_grid_metadata =
     let columnCount = range.columnCount === -1 ? this._getMaxRight() + 1 : range.columnCount;
     let rowEnd = rowStart + rowCount - 1;
     let columnEnd = columnStart + columnCount - 1;
+    const rerenderHeaders = range.rowCount === -1 || range.columnCount === -1;
 
     let rowStartFlag = this._isAxisIndexInViewport(rowStart, 'row');
     let rowEndFlag = this._isAxisIndexInViewport(rowEnd, 'row');
@@ -19114,10 +19273,28 @@ var __oj_data_grid_metadata =
       rowCount = rowEnd - rowStart + 1;
       columnCount = columnEnd - columnStart + 1;
 
+      if (
+        this._hasFrozenColumns() &&
+        !this._isHighWatermarkScrolling() &&
+        !rerenderHeaders &&
+        columnStart <= this.m_frozenColIndex
+      ) {
+        columnStart = this.m_startCol;
+        columnCount = this.m_endCol - this.m_startCol + 1;
+      }
+
+      if (
+        this._hasFrozenRows() &&
+        !this._isHighWatermarkScrolling() &&
+        !rerenderHeaders &&
+        rowStart <= this.m_frozenRowIndex
+      ) {
+        rowStart = this.m_startRow;
+        rowCount = this.m_endRow - this.m_startRow + 1;
+      }
+
       let axis;
-      let rerenderHeaders = false;
       if (range.rowCount === -1 || range.columnCount === -1) {
-        rerenderHeaders = true;
         axis = range.rowCount === -1 ? 'column' : 'row';
       }
 
@@ -19144,7 +19321,9 @@ var __oj_data_grid_metadata =
         endHeaderFragment,
         totalDimension: 0,
         promiseResolve: promiseResolve,
-        update: true
+        update: true,
+        frozenRowIndex: this.m_frozenRowIndex,
+        frozenColIndex: this.m_frozenColIndex
       };
 
       this.m_fetchingForUpdate = true;
@@ -19170,7 +19349,16 @@ var __oj_data_grid_metadata =
     }
   };
 
-  DvtDataGrid.prototype._handleUpdateEditableHeader = function (props, cellSet, cellRange) {
+  DvtDataGrid.prototype._handleUpdateEditableHeader = function (
+    props,
+    cellSet,
+    cellRange,
+    _focusCallback,
+    frozenCellRanges,
+    frozenRowCellSet,
+    frozenColumnCellSet,
+    frozenCornerCellSet
+  ) {
     this.m_fetchingForUpdate = false;
     let commonProps = props;
     let range = commonProps.range;
@@ -19193,7 +19381,7 @@ var __oj_data_grid_metadata =
     ];
     let eventDetail = { axis, ranges, editHeader };
     let hasBrowserFocus = this.m_root.contains(document.activeElement);
-    const focusCallback = () => {
+    const updatedFocusCallback = () => {
       if (this._isActiveWithinUpdateRange({ detail: { ranges: [range] } })) {
         if (!hasBrowserFocus) {
           this.m_shouldFocus = false;
@@ -19208,7 +19396,36 @@ var __oj_data_grid_metadata =
     commonProps.range = { offset, count };
     commonProps.update = true;
     // this ends the task
-    this._handleInsertRangeCellFetchSuccess(commonProps, cellSet, cellRange, focusCallback);
+    this._handleInsertRangeCellFetchSuccess(
+      commonProps,
+      cellSet,
+      cellRange,
+      updatedFocusCallback,
+      frozenCellRanges,
+      frozenRowCellSet,
+      frozenColumnCellSet,
+      frozenCornerCellSet
+    );
+  };
+
+  DvtDataGrid.prototype._getFrozenBoundaryDimension = function (axis) {
+    const elements =
+      axis === 'row'
+        ? [this.m_rowHeaderFrozen, this.m_rowEndHeaderFrozen, this.m_databodyFrozenRow]
+        : [this.m_colHeaderFrozen, this.m_colEndHeaderFrozen, this.m_databodyFrozenCol];
+
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i];
+      if (element) {
+        const dimension =
+          axis === 'row' ? this.getElementHeight(element) : this.getElementWidth(element);
+        if (dimension > 0) {
+          return dimension;
+        }
+      }
+    }
+
+    return 0;
   };
 
   DvtDataGrid.prototype._handleInsertRangeHeaderFetchSuccess = function (
@@ -19237,12 +19454,32 @@ var __oj_data_grid_metadata =
     // while freezeIndex would retain intact.
     let rowFreezeIndex = null;
     if (this._hasFrozenRows()) {
-      rowFreezeIndex = isUpdate ? this.m_options._getFreezeIndex('row') : this.m_frozenRowIndex;
+      rowFreezeIndex = isUpdate
+        ? this.m_options._getFreezeIndex('row')
+        : commonProps.frozenRowIndex ?? this.m_frozenRowIndex;
     }
     let columnFreezeIndex = null;
     if (this._hasFrozenColumns()) {
-      columnFreezeIndex = isUpdate ? this.m_options._getFreezeIndex('column') : this.m_frozenColIndex;
+      columnFreezeIndex = isUpdate
+        ? this.m_options._getFreezeIndex('column')
+        : commonProps.frozenColIndex ?? this.m_frozenColIndex;
     }
+    const insertAtFrozenColumnBoundary =
+      !isUpdate &&
+      axis === 'column' &&
+      this._hasFrozenColumns() &&
+      commonProps.range?.offset <= columnFreezeIndex + 1 &&
+      start === columnFreezeIndex + 1;
+    const updateAtFrozenColumnBoundary =
+      isUpdate && axis === 'column' && this._hasFrozenColumns() && start === columnFreezeIndex + 1;
+    const insertAtFrozenRowBoundary =
+      !isUpdate &&
+      axis === 'row' &&
+      this._hasFrozenRows() &&
+      commonProps.range?.offset <= rowFreezeIndex + 1 &&
+      start === rowFreezeIndex + 1;
+    const updateAtFrozenRowBoundary =
+      isUpdate && axis === 'row' && this._hasFrozenRows() && start === rowFreezeIndex + 1;
 
     this.updateHiddenAxisForInsertion(start, count, axis);
 
@@ -19269,39 +19506,25 @@ var __oj_data_grid_metadata =
       }
 
       insertReference = this._getHeaderByIndex(start, axis, levelCount - 1);
-      insertPixel = this.getElementDir(insertReference, insertDimension);
+      insertPixel = insertReference ? this.getElementDir(insertReference, insertDimension) : 0;
 
       // insert reference for the last frozen header will return regular headers.
       // Since the dir value would start from zero for the reference header,
       // we have to handle this special case by checking the dimension on the frozen section.
 
       if (
-        axis === 'column' &&
-        this._hasFrozenColumns() &&
-        !this.m_fetchingForUpdate &&
-        start === columnFreezeIndex + 1 &&
-        isUpdate
+        insertAtFrozenColumnBoundary ||
+        (!this.m_fetchingForUpdate && updateAtFrozenColumnBoundary)
       ) {
-        if (this.m_colHeaderFrozen) {
-          insertPixel = this.getElementWidth(this.m_colHeaderFrozen);
-        } else if (this.m_colEndHeaderFrozen) {
-          insertPixel = this.getElementWidth(this.m_colEndHeaderFrozen);
-        }
+        insertPixel = this._getFrozenBoundaryDimension('column');
       } else if (
-        axis === 'row' &&
-        this._hasFrozenRows() &&
-        !this.m_fetchingForUpdate &&
-        start === rowFreezeIndex + 1 &&
-        isUpdate
+        insertAtFrozenRowBoundary ||
+        (!this.m_fetchingForUpdate && updateAtFrozenRowBoundary)
       ) {
-        if (this.m_rowHeaderFrozen) {
-          insertPixel = this.getElementHeight(this.m_rowHeaderFrozen);
-        } else if (this.m_rowEndHeaderFrozen) {
-          insertPixel = this.getElementHeight(this.m_rowEndHeaderFrozen);
-        }
+        insertPixel = this._getFrozenBoundaryDimension('row');
       }
 
-      headerCount = headerSet.getCount();
+      headerCount = headerRange?.count != null ? headerRange.count : headerSet.getCount();
       renderer = this.getRendererOrTemplate(axis);
 
       while (headerCount - c > 0) {
@@ -19315,8 +19538,14 @@ var __oj_data_grid_metadata =
 
         index = start + c;
         if (
-          (axis === 'column' && this._hasFrozenColumns() && index <= columnFreezeIndex) ||
-          (axis === 'row' && this._hasFrozenRows() && index <= rowFreezeIndex)
+          (axis === 'column' &&
+            this._hasFrozenColumns() &&
+            (index <= columnFreezeIndex ||
+              (!isUpdate && commonProps.range?.offset <= columnFreezeIndex + 1))) ||
+          (axis === 'row' &&
+            this._hasFrozenRows() &&
+            (index <= rowFreezeIndex ||
+              (!isUpdate && commonProps.range?.offset <= rowFreezeIndex + 1)))
         ) {
           className = `${className} ${this.getMappedStyle('frozenHeader')}`;
         }
@@ -19359,9 +19588,21 @@ var __oj_data_grid_metadata =
       const endAxis = `${axis}End`;
 
       insertReference = this._getHeaderByIndex(start, endAxis, levelCount - 1);
-      insertPixel = this.getElementDir(insertReference, insertDimension);
+      insertPixel = insertReference ? this.getElementDir(insertReference, insertDimension) : 0;
 
-      headerCount = endHeaderSet.getCount();
+      if (
+        insertAtFrozenColumnBoundary ||
+        (!this.m_fetchingForUpdate && updateAtFrozenColumnBoundary)
+      ) {
+        insertPixel = this._getFrozenBoundaryDimension('column');
+      } else if (
+        insertAtFrozenRowBoundary ||
+        (!this.m_fetchingForUpdate && updateAtFrozenRowBoundary)
+      ) {
+        insertPixel = this._getFrozenBoundaryDimension('row');
+      }
+
+      headerCount = headerRange?.count != null ? headerRange.count : endHeaderSet.getCount();
       renderer = this.getRendererOrTemplate(endAxis);
       while (headerCount - c > 0) {
         if (axis === 'row') {
@@ -19417,6 +19658,8 @@ var __oj_data_grid_metadata =
     const headerFragment = commonProps.headerFragment;
     const endHeaderFragment = commonProps.endHeaderFragment;
     const insertDimension = axis === 'row' ? 'top' : dir;
+    const frozenRowIndex = commonProps.frozenRowIndex ?? this.m_frozenRowIndex;
+    const frozenColIndex = commonProps.frozenColIndex ?? this.m_frozenColIndex;
     let insertReference;
     let insertPixel;
     let headerCount;
@@ -19444,27 +19687,20 @@ var __oj_data_grid_metadata =
       }
 
       insertReference = this._getHeaderByIndex(start, axis, levelCount - 1);
-      insertPixel = this.getElementDir(insertReference, insertDimension);
+      insertPixel = insertReference ? this.getElementDir(insertReference, insertDimension) : 0;
 
       // insert reference for the last frozen header will return regular headers.
       // Since the dir value would start from zero for the reference header,
       // we have to handle this special case by checking the dimension on the frozen section.
 
-      if (axis === 'column' && this._hasFrozenColumns() && start === this.m_frozenColIndex + 1) {
-        if (this.m_colHeaderFrozen) {
-          insertPixel = this.getElementWidth(this.m_colHeaderFrozen);
-        } else if (this.m_colEndHeaderFrozen) {
-          insertPixel = this.getElementWidth(this.m_colEndHeaderFrozen);
-        }
-      } else if (axis === 'row' && this._hasFrozenRows() && start === this.m_frozenRowIndex + 1) {
-        if (this.m_rowHeaderFrozen) {
-          insertPixel = this.getElementHeight(this.m_rowHeaderFrozen);
-        } else if (this.m_rowEndHeaderFrozen) {
-          insertPixel = this.getElementHeight(this.m_rowEndHeaderFrozen);
-        }
+      if (axis === 'column' && this._hasFrozenColumns() && start === frozenColIndex + 1) {
+        insertPixel = this._getFrozenBoundaryDimension('column');
+      } else if (axis === 'row' && this._hasFrozenRows() && start === frozenRowIndex + 1) {
+        insertPixel = this._getFrozenBoundaryDimension('row');
       }
 
-      headerCount = frozenHeaderSet.getCount();
+      headerCount =
+        frozenHeaderRange?.count != null ? frozenHeaderRange.count : frozenHeaderSet.getCount();
       renderer = this.getRendererOrTemplate(axis);
 
       while (headerCount - c > 0) {
@@ -19478,8 +19714,14 @@ var __oj_data_grid_metadata =
 
         index = start + c;
         if (
-          (axis === 'column' && this._hasFrozenColumns() && index <= this.m_frozenColIndex + 1) ||
-          (axis === 'row' && this._hasFrozenRows() && index <= this.m_frozenRowIndex + 1)
+          (axis === 'column' &&
+            this._hasFrozenColumns() &&
+            (index <= frozenColIndex + 1 ||
+              (!commonProps.update && commonProps.range?.offset <= frozenColIndex + 1))) ||
+          (axis === 'row' &&
+            this._hasFrozenRows() &&
+            (index <= frozenRowIndex + 1 ||
+              (!commonProps.update && commonProps.range?.offset <= frozenRowIndex + 1)))
         ) {
           className = `${className} ${this.getMappedStyle('frozenHeader')}`;
         }
@@ -19526,9 +19768,16 @@ var __oj_data_grid_metadata =
 
       let tmpAxis = axis === 'column' ? 'columnEnd' : 'rowEnd';
       insertReference = this._getHeaderByIndex(start, tmpAxis, levelCount - 1);
-      insertPixel = this.getElementDir(insertReference, insertDimension);
+      insertPixel = insertReference ? this.getElementDir(insertReference, insertDimension) : 0;
 
-      headerCount = frozenEndHeaderSet.getCount();
+      if (axis === 'column' && this._hasFrozenColumns() && start === frozenColIndex + 1) {
+        insertPixel = this._getFrozenBoundaryDimension('column');
+      } else if (axis === 'row' && this._hasFrozenRows() && start === frozenRowIndex + 1) {
+        insertPixel = this._getFrozenBoundaryDimension('row');
+      }
+
+      headerCount =
+        frozenHeaderRange?.count != null ? frozenHeaderRange.count : frozenEndHeaderSet.getCount();
       renderer = this.getRendererOrTemplate(tmpAxis);
       while (headerCount - c > 0) {
         if (axis === 'row') {
@@ -19595,12 +19844,18 @@ var __oj_data_grid_metadata =
     // while freezeIndex would retain intact.
     let frozenRowIndex = null;
     if (this._hasFrozenRows()) {
-      frozenRowIndex = isUpdate ? this.m_options._getFreezeIndex('row') : this.m_frozenRowIndex;
+      frozenRowIndex = isUpdate
+        ? this.m_options._getFreezeIndex('row')
+        : commonProps.frozenRowIndex ?? this.m_frozenRowIndex;
     }
     let frozenColIndex = null;
     if (this._hasFrozenColumns()) {
-      frozenColIndex = isUpdate ? this.m_options._getFreezeIndex('column') : this.m_frozenColIndex;
+      frozenColIndex = isUpdate
+        ? this.m_options._getFreezeIndex('column')
+        : commonProps.frozenColIndex ?? this.m_frozenColIndex;
     }
+    const frozenRowBoundary = frozenRowIndex + (isUpdate ? 0 : 1);
+    const frozenColBoundary = frozenColIndex + (isUpdate ? 0 : 1);
 
     if (axis === 'column') {
       headerRoot = this.m_colHeader;
@@ -19646,6 +19901,13 @@ var __oj_data_grid_metadata =
       let columnStart = columnRange.start;
       let rowCount = cellSet.getCount('row');
       let columnCount = cellSet.getCount('column');
+      if (isUpdate) {
+        if (axis === 'row') {
+          rowCount = Math.min(rowCount, range.count);
+        } else if (axis === 'column') {
+          columnCount = Math.min(columnCount, range.count);
+        }
+      }
 
       const insertReference = this._getCellByIndex(this.createIndex(rowStart, columnStart));
       let topPixel;
@@ -19664,6 +19926,17 @@ var __oj_data_grid_metadata =
         if (axis === 'row' && this._hasFrozenRows() && rowStart === frozenRowIndex && isUpdate) {
           topPixel = this.getElementHeight(this.m_databodyFrozenRow);
         }
+        if (axis === 'row' && this._hasFrozenRows() && rowStart === frozenRowBoundary && !isUpdate) {
+          topPixel = this.getElementHeight(this.m_databodyFrozenRow);
+        }
+        if (
+          axis === 'column' &&
+          this._hasFrozenColumns() &&
+          columnStart === frozenColBoundary &&
+          !isUpdate
+        ) {
+          leftPixel = this.getElementWidth(this.m_databodyFrozenCol);
+        }
       } else {
         topPixel = axis === 'row' ? this._getMaxBottomPixel() : this.m_startRowPixel;
         leftPixel = axis === 'row' ? this.m_startColPixel : this._getMaxRightPixel();
@@ -19671,7 +19944,7 @@ var __oj_data_grid_metadata =
 
       if (axis === 'column') {
         // if insert is within frozen section.
-        if (this._hasFrozenColumns() && columnStart < frozenColIndex + 1) {
+        if (this._hasFrozenColumns() && columnStart <= frozenColBoundary) {
           if (this.m_databodyFrozenCorner) {
             this._addCellsToFragment(
               newFrozenCornerCellElements,
@@ -19681,7 +19954,7 @@ var __oj_data_grid_metadata =
               columnStart,
               leftPixel,
               frozenRowIndex + 1,
-              null
+              isUpdate ? columnCount : null
             );
             rowStart = frozenRowIndex + 1;
             rowCount -= frozenRowIndex + 1;
@@ -19702,8 +19975,8 @@ var __oj_data_grid_metadata =
           if (this._hasFrozenRows()) {
             this._addCellsToFragment(
               newFrozenRowCellElements,
-              cellSet,
-              rowStart,
+              frozenRowCellSet == null ? cellSet : frozenRowCellSet,
+              frozenRowCellSet == null ? rowStart : 0,
               topPixel,
               columnStart,
               leftPixel,
@@ -19721,7 +19994,7 @@ var __oj_data_grid_metadata =
             columnStart,
             leftPixel,
             rowCount,
-            null
+            isUpdate ? columnCount : null
           );
           totalDimension = Math.max(
             totalDimension,
@@ -19730,7 +20003,7 @@ var __oj_data_grid_metadata =
         }
       } else if (axis === 'row') {
         // if insert is within frozen section.
-        if (this._hasFrozenRows() && rowStart < frozenRowIndex + 1) {
+        if (this._hasFrozenRows() && rowStart <= frozenRowBoundary) {
           if (this.m_databodyFrozenCorner) {
             this._addCellsToFragment(
               newFrozenCornerCellElements,
@@ -19761,12 +20034,12 @@ var __oj_data_grid_metadata =
           if (this._hasFrozenColumns()) {
             this._addCellsToFragment(
               newFrozenColCellElements,
-              cellSet,
+              frozenColumnCellSet == null ? cellSet : frozenColumnCellSet,
               rowStart,
               topPixel,
-              columnStart,
+              frozenColumnCellSet == null ? 0 : columnStart,
               leftPixel,
-              null,
+              isUpdate ? rowCount : null,
               frozenColIndex + 1
             );
             columnStart = frozenColIndex + 1;
@@ -19779,7 +20052,7 @@ var __oj_data_grid_metadata =
             topPixel,
             columnStart,
             leftPixel,
-            null,
+            isUpdate ? rowCount : null,
             columnCount
           );
           totalDimension = Math.max(totalDimension, returnVal.totalRowHeight);
@@ -19789,19 +20062,19 @@ var __oj_data_grid_metadata =
 
     let frozenCellStyle = this.getMappedStyle('frozenCell');
     if (newFrozenCornerCellElements.childNodes && newFrozenCornerCellElements.childNodes.length) {
-      for (let i = 0; i <= newFrozenCornerCellElements.childNodes.length; i++) {
+      for (let i = 0; i < newFrozenCornerCellElements.childNodes.length; i++) {
         let cell = newFrozenCornerCellElements.childNodes[i];
         this.m_utils.addCSSClassName(cell, frozenCellStyle);
       }
     }
     if (newFrozenColCellElements.childNodes && newFrozenColCellElements.childNodes.length) {
-      for (let i = 0; i <= newFrozenColCellElements.childNodes.length; i++) {
+      for (let i = 0; i < newFrozenColCellElements.childNodes.length; i++) {
         let cell = newFrozenColCellElements.childNodes[i];
         this.m_utils.addCSSClassName(cell, frozenCellStyle);
       }
     }
     if (newFrozenRowCellElements.childNodes && newFrozenRowCellElements.childNodes.length) {
-      for (let i = 0; i <= newFrozenRowCellElements.childNodes.length; i++) {
+      for (let i = 0; i < newFrozenRowCellElements.childNodes.length; i++) {
         let cell = newFrozenRowCellElements.childNodes[i];
         this.m_utils.addCSSClassName(cell, frozenCellStyle);
       }
@@ -19809,14 +20082,26 @@ var __oj_data_grid_metadata =
 
     const offset = range.offset;
     const rangeCount = range.count;
-    const axisCount = axis === 'row' ? cellSet.rowCount : cellSet.columnCount;
-    const axisEnd = axis === 'row' ? cellSet.rowEnd : cellSet.columnEnd;
+    let indexCellSet = cellSet;
+    if (axis === 'row' && this._hasFrozenRows() && offset <= frozenRowBoundary && frozenRowCellSet) {
+      indexCellSet = frozenRowCellSet;
+    } else if (
+      axis === 'column' &&
+      this._hasFrozenColumns() &&
+      offset <= frozenColBoundary &&
+      frozenColumnCellSet
+    ) {
+      indexCellSet = frozenColumnCellSet;
+    }
+    const axisCount = axis === 'row' ? indexCellSet.rowCount : indexCellSet.columnCount;
+    const axisEnd = axis === 'row' ? indexCellSet.rowEnd : indexCellSet.columnEnd;
     const requestedEnd = offset + rangeCount;
     const availableEnd = axisEnd + axisCount;
 
     const count = requestedEnd >= availableEnd ? axisCount : rangeCount;
 
     let indexes = new Array(count).fill(offset).map((x, y) => x + y);
+    const selectionIndexes = indexes.slice();
     let dimensions = 0;
     let frozenDimensions = 0;
     // dimensions are populated based on the section that the insert happens within.
@@ -19824,8 +20109,8 @@ var __oj_data_grid_metadata =
     // are available and insert is done at the end of the frozen section.
     if (this._hasFrozenColumns() || this._hasFrozenRows()) {
       if (
-        (axis === 'column' && this._hasFrozenColumns() && offset < frozenColIndex + 1) ||
-        (axis === 'row' && this._hasFrozenRows() && offset < frozenRowIndex + 1)
+        (axis === 'column' && this._hasFrozenColumns() && offset <= frozenColBoundary) ||
+        (axis === 'row' && this._hasFrozenRows() && offset <= frozenRowBoundary)
       ) {
         frozenDimensions = new Array(count).fill(totalDimension / count);
       } else {
@@ -19850,14 +20135,21 @@ var __oj_data_grid_metadata =
     for (let i = indexes.length - 1; i >= 0; i--) {
       let index = indexes[i];
       if (
-        (axis === 'column' && this._hasFrozenColumns() && index < frozenColIndex + 1) ||
-        (axis === 'row' && this._hasFrozenRows() && index < frozenRowIndex + 1)
+        (axis === 'column' &&
+          this._hasFrozenColumns() &&
+          (index < frozenColIndex + 1 || offset <= frozenColBoundary)) ||
+        (axis === 'row' &&
+          this._hasFrozenRows() &&
+          (index < frozenRowIndex + 1 || offset <= frozenRowBoundary))
       ) {
         frozenIndexes.push(index);
         indexes.splice(i, 1);
       }
     }
+    frozenIndexes.reverse();
 
+    // Regular regions are positioned after frozen regions by resizeGrid. When an insert only affects
+    // frozen rows/columns, update regular contexts but do not shift their pixels by the frozen size.
     this._modifyAndPushCells(
       indexes,
       dimensions,
@@ -19866,7 +20158,8 @@ var __oj_data_grid_metadata =
       headerRoot,
       endHeaderRoot,
       true,
-      frozenIndexes.length
+      frozenIndexes.length,
+      offset
     );
     if (axis === 'column' && this.m_databodyFrozenRow) {
       this._modifyAndPushCells(
@@ -19877,7 +20170,8 @@ var __oj_data_grid_metadata =
         null,
         null,
         true,
-        frozenIndexes.length
+        frozenIndexes.length,
+        offset
       );
     } else if (axis === 'row' && this.m_databodyFrozenCol) {
       this._modifyAndPushCells(
@@ -19888,7 +20182,8 @@ var __oj_data_grid_metadata =
         null,
         null,
         true,
-        frozenIndexes.length
+        frozenIndexes.length,
+        offset
       );
     }
     if (frozenIndexes.length) {
@@ -19936,26 +20231,33 @@ var __oj_data_grid_metadata =
     }
 
     if (!dontModifySelection) {
-      this._simpleAdjustSelectionOnChange('insert', indexes, axis);
+      this._simpleAdjustSelectionOnChange('insert', selectionIndexes, axis);
     }
 
     let shouldRefreshDatabodyMap = false;
     if (newCellElements.childNodes.length) {
+      this._removeOverlappingCellsFromDatabody(databodyContent, newCellElements);
       databodyContent.appendChild(newCellElements); // @HTMLUpdateOK
       shouldRefreshDatabodyMap = true;
     }
 
     if (newFrozenColCellElements.childNodes.length) {
       databodyFrozenColContent = this.m_databodyFrozenCol.firstChild;
+      this._removeOverlappingCellsFromDatabody(databodyFrozenColContent, newFrozenColCellElements);
       databodyFrozenColContent.appendChild(newFrozenColCellElements); // @HTMLUpdateOK
       shouldRefreshDatabodyMap = true;
     }
     if (newFrozenRowCellElements.childNodes.length) {
       databodyFrozenRowContent = this.m_databodyFrozenRow.firstChild;
+      this._removeOverlappingCellsFromDatabody(databodyFrozenRowContent, newFrozenRowCellElements);
       databodyFrozenRowContent.appendChild(newFrozenRowCellElements); // @HTMLUpdateOK
       shouldRefreshDatabodyMap = true;
     }
     if (newFrozenCornerCellElements.childNodes.length) {
+      this._removeOverlappingCellsFromDatabody(
+        this.m_databodyFrozenCorner.firstChild,
+        newFrozenCornerCellElements
+      );
       this.m_databodyFrozenCorner.firstChild.appendChild(newFrozenCornerCellElements); // @HTMLUpdateOK
       shouldRefreshDatabodyMap = true;
     }
@@ -20002,7 +20304,11 @@ var __oj_data_grid_metadata =
           offset <= this.m_frozenRowIndex &&
           this.m_startRow > 0
         ) {
+          // Frozen inserts before a virtual window shift logical indexes while their pixels stay in
+          // the same scrollable body coordinate space.
           this.m_startRow += count;
+          this.m_endRow += count;
+          updateMaxCount = true;
         }
         this.m_stopRowFetch = false;
       }
@@ -20040,6 +20346,8 @@ var __oj_data_grid_metadata =
           this.m_startRowHeader > 0
         ) {
           this.m_startRowHeader += count;
+          this.m_endRowHeader += count;
+          updateMaxCount = true;
         }
         this.m_stopRowHeaderFetch = false;
       }
@@ -20079,6 +20387,8 @@ var __oj_data_grid_metadata =
           this.m_startRowEndHeader > 0
         ) {
           this.m_startRowEndHeader += count;
+          this.m_endRowEndHeader += count;
+          updateMaxCount = true;
         }
         this.m_stopRowEndHeaderFetch = false;
       }
@@ -20088,7 +20398,7 @@ var __oj_data_grid_metadata =
         }
       }
 
-      if (this._hasFrozenRows() && offset < this.m_frozenRowIndex + 1) {
+      if (this._hasFrozenRows() && frozenIndexes.length) {
         let frozenDatabodyContentHeight =
           this.getElementHeight(this.m_databodyFrozenRow) + totalDimension;
         this.setElementHeight(this.m_databodyFrozenRow, frozenDatabodyContentHeight);
@@ -20139,7 +20449,11 @@ var __oj_data_grid_metadata =
           offset <= this.m_frozenColIndex &&
           this.m_startCol > 0
         ) {
+          // Frozen inserts before a virtual window shift logical indexes while their pixels stay in
+          // the same scrollable body coordinate space.
           this.m_startCol += count;
+          this.m_endCol += count;
+          updateMaxCount = true;
         }
         this.m_stopColumnFetch = false;
       }
@@ -20179,6 +20493,8 @@ var __oj_data_grid_metadata =
           this.m_startColHeader > 0
         ) {
           this.m_startColHeader += count;
+          this.m_endColHeader += count;
+          updateMaxCount = true;
         }
         this.m_stopColumnHeaderFetch = false;
       }
@@ -20218,6 +20534,8 @@ var __oj_data_grid_metadata =
           this.m_startColEndHeader > 0
         ) {
           this.m_startColEndHeader += count;
+          this.m_endColEndHeader += count;
+          updateMaxCount = true;
         }
         this.m_stopColumnEndHeaderFetch = false;
       }
@@ -20226,7 +20544,7 @@ var __oj_data_grid_metadata =
           this.m_maxColYet += count;
         }
       }
-      if (this._hasFrozenColumns() && offset < this.m_frozenColIndex + 1) {
+      if (this._hasFrozenColumns() && frozenIndexes.length) {
         let frozenDatabodyContentWidth =
           this.getElementWidth(this.m_databodyFrozenCol) + totalDimension;
         this.setElementWidth(this.m_databodyFrozenCol, frozenDatabodyContentWidth);
@@ -20422,8 +20740,8 @@ var __oj_data_grid_metadata =
           } else if (previousGroupingContainer.nextSibling) {
             // prettier-ignore
             previousGroupingContainer.parentNode.insertBefore( // @HTMLUpdateOK
-                groupingContainer,
-                previousGroupingContainer.nextSibling
+              groupingContainer,
+              previousGroupingContainer.nextSibling
             );
           } else {
             previousGroupingContainer.parentNode.appendChild(groupingContainer); // @HTMLUpdateOK
@@ -20507,24 +20825,98 @@ var __oj_data_grid_metadata =
     let frozenColumnRange = frozenCellRanges[1];
     let frozenColumnStart = frozenColumnRange?.colStart;
     let frozenColRowStart = frozenColumnCellSet?.rowStart;
+    const isUpdate = commonProps.update || false;
+    const frozenRowIndex = commonProps.frozenRowIndex ?? this.m_frozenRowIndex;
+    const frozenColIndex = commonProps.frozenColIndex ?? this.m_frozenColIndex;
+    const frozenRowBoundary = isUpdate ? this.m_options._getFreezeIndex('row') : frozenRowIndex + 1;
+    const frozenColBoundary = isUpdate
+      ? this.m_options._getFreezeIndex('column')
+      : frozenColIndex + 1;
+    const getRowCount = (rowCount) =>
+      isUpdate && axis === 'row' ? Math.min(rowCount, range.count) : rowCount;
+    const getColumnCount = (columnCount) =>
+      isUpdate && axis === 'column' ? Math.min(columnCount, range.count) : columnCount;
+    const contextString = this.getResources().getMappedAttribute('context');
+    const hasFrozenRegions = this._hasFrozenRows() || this._hasFrozenColumns();
+    const getFiniteMaxPixel = (...pixels) => {
+      const finitePixels = pixels.filter(Number.isFinite);
+      return finitePixels.length ? Math.max(...finitePixels) : 0;
+    };
+    const getCellPosition = (rowIndex, columnIndex, databody) => {
+      const index = this.createIndex(rowIndex, columnIndex);
+      const cell = databody
+        ? this._getCellByIndexInDatabody(index, databody)
+        : this._getCellByIndex(index);
+      if (!cell) {
+        return null;
+      }
+      const top = this.getElementDir(cell, 'top');
+      const left = this.getElementDir(cell, dir);
+      // Frozen mutation recovery treats non-finite coordinates as missing anchors so
+      // the scrollable region can refill from a neighboring frozen-safe position.
+      if (hasFrozenRegions && (!Number.isFinite(top) || !Number.isFinite(left))) {
+        return null;
+      }
+      return {
+        cell,
+        top,
+        left
+      };
+    };
+    const getRowInsertPosition = (rowIndex, columnIndex, databody) => {
+      let position = getCellPosition(rowIndex, columnIndex, databody);
+      if (position) {
+        return position;
+      }
+      if (rowIndex > 0) {
+        position = getCellPosition(rowIndex - 1, columnIndex, databody);
+        if (position) {
+          const referenceContext = position.cell[contextString];
+          if (referenceContext?.indexes?.row < rowIndex) {
+            position.top += this.getElementHeight(position.cell);
+          }
+          return position;
+        }
+      }
+      return null;
+    };
+    const getColumnInsertPosition = (rowIndex, columnIndex, databody) => {
+      let position = getCellPosition(rowIndex, columnIndex, databody);
+      if (position) {
+        return position;
+      }
+      if (columnIndex > 0) {
+        position = getCellPosition(rowIndex, columnIndex - 1, databody);
+        if (position) {
+          const referenceContext = position.cell[contextString];
+          if (referenceContext?.indexes?.column < columnIndex) {
+            position.left += this.getElementWidth(position.cell);
+          }
+          return position;
+        }
+      }
+      return null;
+    };
 
     if (axis === 'row') {
       if (
         frozenRowCellSet &&
         frozenRowCellSet.rowEnd >= frozenRowCellSet.rowStart &&
-        range.offset <= this.m_frozenRowIndex + 1
+        range.offset <= frozenRowBoundary
       ) {
-        const insertReference = this._getCellByIndex(
-          this.createIndex(frozenRowStart, frozenRowColStart)
+        const insertPosition = getRowInsertPosition(
+          frozenRowStart,
+          frozenRowColStart,
+          this.m_databodyFrozenRow
         );
         let topPixel;
         let leftPixel;
-        if (insertReference) {
-          topPixel = this.getElementDir(insertReference, 'top');
-          leftPixel = this.getElementDir(insertReference, dir);
-          if (frozenRowStart === this.m_frozenRowIndex + 1) {
-            topPixel = this.getElementHeight(this.m_databodyFrozenRow);
-          }
+        if (insertPosition) {
+          topPixel = insertPosition.top;
+          leftPixel = insertPosition.left;
+        }
+        if (frozenRowStart === frozenRowIndex + 1) {
+          topPixel = this.getElementHeight(this.m_databodyFrozenRow);
         }
         if (frozenCornerCellSet && frozenCornerCellSet.rowEnd >= frozenCornerCellSet.rowStart) {
           this._addCellsToFragment(
@@ -20534,7 +20926,7 @@ var __oj_data_grid_metadata =
             topPixel,
             frozenCornerCellSet.columnStart,
             0,
-            frozenCornerCellSet.rowCount,
+            getRowCount(frozenCornerCellSet.rowCount),
             frozenCornerCellSet.columnCount
           );
         }
@@ -20545,7 +20937,7 @@ var __oj_data_grid_metadata =
           topPixel,
           frozenRowCellSet.columnStart,
           leftPixel,
-          frozenRowCellSet.rowCount,
+          getRowCount(frozenRowCellSet.rowCount),
           frozenRowCellSet.columnCount
         );
         totalDimension = Math.max(totalDimension, returnVal.totalRowHeight);
@@ -20553,13 +20945,15 @@ var __oj_data_grid_metadata =
         let topPixel;
         let leftPixel;
         if (frozenColumnCellSet && frozenColumnCellSet.columnEnd >= frozenColumnCellSet.columnStart) {
-          const insertReference = this._getCellByIndex(
-            this.createIndex(frozenColRowStart, frozenColumnStart)
+          const insertPosition = getRowInsertPosition(
+            frozenColRowStart,
+            frozenColumnStart,
+            this.m_databodyFrozenCol
           );
 
-          if (insertReference) {
-            topPixel = this.getElementDir(insertReference, 'top');
-            leftPixel = this.getElementDir(insertReference, dir);
+          if (insertPosition) {
+            topPixel = insertPosition.top;
+            leftPixel = insertPosition.left;
           }
           this._addCellsToFragment(
             newFrozenColCellElements,
@@ -20568,15 +20962,32 @@ var __oj_data_grid_metadata =
             topPixel,
             frozenColumnCellSet.columnStart,
             leftPixel,
-            frozenColumnCellSet.rowCount,
+            getRowCount(frozenColumnCellSet.rowCount),
             frozenColumnCellSet.columnCount
           );
         }
 
-        const insertReference = this._getCellByIndex(this.createIndex(rowStart, columnStart));
-        if (insertReference) {
-          topPixel = this.getElementDir(insertReference, 'top');
-          leftPixel = this.getElementDir(insertReference, dir);
+        if (hasFrozenRegions) {
+          // Frozen row/column updates can remove the exact anchor before the scrollable
+          // databody is refilled, so fall back to adjacent cells or finite frozen bounds.
+          const insertPosition = getRowInsertPosition(rowStart, columnStart);
+          if (insertPosition) {
+            topPixel = insertPosition.top;
+            leftPixel = insertPosition.left;
+          } else {
+            topPixel = getFiniteMaxPixel(
+              this.m_endRowPixel,
+              this.m_endRowHeaderPixel,
+              this.m_endRowEndHeaderPixel
+            );
+            leftPixel = Number.isFinite(this.m_startColPixel) ? this.m_startColPixel : 0;
+          }
+        } else {
+          const insertReference = this._getCellByIndex(this.createIndex(rowStart, columnStart));
+          if (insertReference) {
+            topPixel = this.getElementDir(insertReference, 'top');
+            leftPixel = this.getElementDir(insertReference, dir);
+          }
         }
         const returnVal = this._addCellsToFragment(
           newCellElements,
@@ -20585,7 +20996,7 @@ var __oj_data_grid_metadata =
           topPixel,
           cellSet.columnStart,
           leftPixel,
-          cellSet.rowCount,
+          getRowCount(cellSet.rowCount),
           cellSet.columnCount
         );
         totalDimension = Math.max(totalDimension, returnVal.totalRowHeight);
@@ -20594,21 +21005,21 @@ var __oj_data_grid_metadata =
       if (
         frozenColumnCellSet &&
         frozenColumnCellSet.columnEnd >= frozenColumnCellSet.columnStart &&
-        range.offset <= this.m_frozenColIndex + 1
+        range.offset <= frozenColBoundary
       ) {
-        const insertReference = this._getCellByIndex(
-          this.createIndex(frozenColRowStart, frozenColumnStart)
+        const insertPosition = getColumnInsertPosition(
+          frozenColRowStart,
+          frozenColumnStart,
+          this.m_databodyFrozenCol
         );
         let topPixel;
         let leftPixel;
-        if (insertReference) {
-          topPixel = this.getElementDir(insertReference, 'top');
-          // check this ??
-          if (frozenColumnStart === this.m_frozenColIndex + 1) {
-            leftPixel = this.getElementWidth(this.m_databodyFrozenCol);
-          } else {
-            leftPixel = this.getElementDir(insertReference, dir);
-          }
+        if (insertPosition) {
+          topPixel = insertPosition.top;
+          leftPixel = insertPosition.left;
+        }
+        if (frozenColumnStart === frozenColIndex + 1) {
+          leftPixel = this.getElementWidth(this.m_databodyFrozenCol);
         }
         if (frozenCornerCellSet && frozenCornerCellSet.columnEnd >= frozenCornerCellSet.columnStart) {
           this._addCellsToFragment(
@@ -20619,7 +21030,7 @@ var __oj_data_grid_metadata =
             frozenCornerCellSet.columnStart,
             leftPixel,
             frozenCornerCellSet.rowCount,
-            frozenCornerCellSet.columnCount
+            getColumnCount(frozenCornerCellSet.columnCount)
           );
         }
         const returnVal = this._addCellsToFragment(
@@ -20630,7 +21041,7 @@ var __oj_data_grid_metadata =
           frozenColumnCellSet.columnStart,
           leftPixel,
           frozenColumnCellSet.rowCount,
-          frozenColumnCellSet.columnCount
+          getColumnCount(frozenColumnCellSet.columnCount)
         );
         totalDimension = Math.max(totalDimension, returnVal.totalColumnWidth);
       } else {
@@ -20638,13 +21049,14 @@ var __oj_data_grid_metadata =
         let leftPixel;
 
         if (frozenRowCellSet && frozenRowCellSet.rowEnd >= frozenRowCellSet.rowStart) {
-          const insertReference = this._getCellByIndex(
-            this.createIndex(frozenRowStart, frozenRowColStart)
+          const insertPosition = getColumnInsertPosition(
+            frozenRowStart,
+            frozenRowColStart,
+            this.m_databodyFrozenRow
           );
-          if (insertReference) {
+          if (insertPosition) {
             topPixel = 0;
-            // check this ??
-            leftPixel = this.getElementDir(insertReference, dir);
+            leftPixel = insertPosition.left;
           }
           this._addCellsToFragment(
             newFrozenRowCellElements,
@@ -20654,14 +21066,22 @@ var __oj_data_grid_metadata =
             frozenRowCellSet.columnStart,
             leftPixel,
             frozenRowCellSet.rowCount,
-            frozenRowCellSet.columnCount
+            getColumnCount(frozenRowCellSet.columnCount)
           );
         }
-        const insertReference = this._getCellByIndex(this.createIndex(rowStart, columnStart));
-        if (insertReference) {
+        const insertPosition = getColumnInsertPosition(rowStart, columnStart);
+        if (insertPosition) {
           topPixel = 0;
-          // check this ??
-          leftPixel = this.getElementDir(insertReference, dir);
+          leftPixel = insertPosition.left;
+        } else if (hasFrozenRegions) {
+          // Frozen row/column updates can remove the exact anchor before the scrollable
+          // databody is refilled, so fall back to finite frozen bounds for the insert.
+          topPixel = Number.isFinite(this.m_startRowPixel) ? this.m_startRowPixel : 0;
+          leftPixel = getFiniteMaxPixel(
+            this.m_endColPixel,
+            this.m_endColHeaderPixel,
+            this.m_endColEndHeaderPixel
+          );
         }
         const returnVal = this._addCellsToFragment(
           newCellElements,
@@ -20671,7 +21091,7 @@ var __oj_data_grid_metadata =
           cellSet.columnStart,
           leftPixel,
           cellSet.rowCount,
-          cellSet.columnCount
+          getColumnCount(cellSet.columnCount)
         );
         totalDimension = Math.max(totalDimension, returnVal.totalColumnWidth);
       }
@@ -21510,7 +21930,10 @@ var __oj_data_grid_metadata =
     columnStart,
     columnEnd
   ) {
-    let cells = this._getCellsInRange(rowStart, columnStart, rowEnd, columnEnd);
+    let cells = this._getCellsInRangeInDatabody(rowStart, columnStart, rowEnd, columnEnd, container);
+    if (cells.length === 0) {
+      return;
+    }
     const top = this.getElementDir(cells[0], 'top');
     const ltr = this.getResources().isRTLMode() ? 'right' : 'left';
     const left = this.getElementDir(cells[0], ltr);
@@ -21614,13 +22037,13 @@ var __oj_data_grid_metadata =
     indexes.sort(function (a, b) {
       return b - a;
     });
+    const minDeletedIndex = indexes.length ? Math.min.apply(null, indexes) : null;
 
     // values to track through removal process
     let beforeDeletedDimension = 0;
     let insideDeletedDimension = 0;
     let beforeDeletedCount = 0;
     let insideDeletedCount = 0;
-    let frozenSectionDimension = 0;
     let databodyDimension = 0;
 
     // row/column conditional vars
@@ -21686,6 +22109,12 @@ var __oj_data_grid_metadata =
       let index = indexes[i];
       let dimension = 0;
       let flag = this._isAxisIndexInViewport(index, axis);
+      if (
+        (axis === 'column' && this._hasFrozenColumns() && index <= this.m_frozenColIndex) ||
+        (axis === 'row' && this._hasFrozenRows() && index <= this.m_frozenRowIndex)
+      ) {
+        flag = DvtDataGrid.INSIDE;
+      }
 
       if (flag === DvtDataGrid.BEFORE || flag === DvtDataGrid.INSIDE) {
         if (flag === DvtDataGrid.BEFORE) {
@@ -21733,11 +22162,11 @@ var __oj_data_grid_metadata =
             this._removeAndModifyHeaders(endHeaders, dimension, dimensionToRetrieve, dirToSet, index);
           }
           if (
-            (axis === 'column' && this._hasFrozenColumns() && index <= this.m_frozenColIndex) ||
-            (axis === 'row' && this._hasFrozenRows() && index <= this.m_frozenRowIndex)
+            !(
+              (axis === 'column' && this._hasFrozenColumns() && index <= this.m_frozenColIndex) ||
+              (axis === 'row' && this._hasFrozenRows() && index <= this.m_frozenRowIndex)
+            )
           ) {
-            frozenSectionDimension += dimension;
-          } else {
             databodyDimension += dimension;
           }
         }
@@ -21747,11 +22176,13 @@ var __oj_data_grid_metadata =
         ) {
           frozenSectionDimensions.unshift(dimension);
           if (!this._isHighWatermarkScrolling()) {
-            insideDeletedCount -= 1;
             if (
               (axis === 'row' && this.m_startRow > 0) ||
               (axis === 'column' && this.m_startCol > 0)
             ) {
+              // Physical-scroll ranges starting after the frozen region treat frozen deletions as
+              // before-viewport shifts. A range starting at zero still includes those indexes.
+              insideDeletedCount -= 1;
               beforeDeletedCount += 1;
             }
           }
@@ -21782,6 +22213,25 @@ var __oj_data_grid_metadata =
       }
     }
     frozenIndexes.reverse();
+
+    const deletedBeforeScrollableViewport =
+      minDeletedIndex != null &&
+      ((axis === 'row' && minDeletedIndex < this.m_startRow) ||
+        (axis === 'column' && minDeletedIndex < this.m_startCol));
+    const frozenOnlyDelete = indexes.length === 0 && frozenIndexes.length > 0;
+    const scrollableViewportDelete = indexes.length > 0;
+    const resetScrollableViewportAfterPhysicalDelete =
+      !this._isHighWatermarkScrolling() &&
+      ((axis === 'row' &&
+        this._hasFrozenRows() &&
+        (this.m_currentScrollTop > 0 || this.m_startRow > this.m_frozenRowIndex + 1) &&
+        (frozenOnlyDelete || deletedBeforeScrollableViewport || scrollableViewportDelete)) ||
+        (axis === 'column' &&
+          this._hasFrozenColumns() &&
+          (this.m_currentScrollLeft > 0 || this.m_startCol > this.m_frozenColIndex + 1) &&
+          (frozenOnlyDelete || deletedBeforeScrollableViewport || scrollableViewportDelete)));
+    // Regular regions are positioned after frozen regions by resizeGrid. When a delete only affects
+    // frozen rows/columns, update regular contexts but do not shift their pixels by the frozen size.
     this._modifyAndPushCells(
       indexes,
       dimensions,
@@ -21921,8 +22371,9 @@ var __oj_data_grid_metadata =
         this.setElementHeight(this.m_databodyFrozenCol, databodyContentHeight);
       }
       if (this.m_databodyFrozenRow) {
-        var frozenDatabodyContentHeight =
-          this.getElementHeight(this.m_databodyFrozenRow) - frozenSectionDimension;
+        // A frozen region can be capped to the viewport. Rebuild its logical extent after a
+        // frozen-row delete so resizeGrid can cap it again without clipping surviving rows.
+        var frozenDatabodyContentHeight = this._getRequiredFrozenDimension('row');
         this.setElementHeight(this.m_databodyFrozenRow, frozenDatabodyContentHeight);
         if (this.m_databodyFrozenCorner) {
           this.setElementHeight(this.m_databodyFrozenCorner, frozenDatabodyContentHeight);
@@ -21963,8 +22414,9 @@ var __oj_data_grid_metadata =
         this.setElementWidth(this.m_databodyFrozenRow, databodyContentWidth);
       }
       if (this.m_databodyFrozenCol) {
-        var frozenDatabodyContentWidth =
-          this.getElementWidth(this.m_databodyFrozenCol) - frozenSectionDimension;
+        // A frozen region can be capped to the viewport. Rebuild its logical extent after a
+        // frozen-column delete so resizeGrid can cap it again without clipping surviving columns.
+        var frozenDatabodyContentWidth = this._getRequiredFrozenDimension('column');
         this.setElementWidth(this.m_databodyFrozenCol, frozenDatabodyContentWidth);
         if (this.m_databodyFrozenCorner) {
           this.setElementWidth(this.m_databodyFrozenCorner, frozenDatabodyContentWidth);
@@ -21988,7 +22440,9 @@ var __oj_data_grid_metadata =
       this.m_resizeRequired = true;
       let self = this;
       Promise.resolve().then(() => {
-        if (self.m_modelEvents != null && self.m_modelEvents.length === 0) {
+        if (resetScrollableViewportAfterPhysicalDelete) {
+          self.handleLongScroll(self.m_currentScrollLeft, self.m_currentScrollTop, true);
+        } else if (self.m_modelEvents != null && self.m_modelEvents.length === 0) {
           self.fillViewport();
         }
       });
@@ -22018,11 +22472,12 @@ var __oj_data_grid_metadata =
     var i;
     var j;
     var row;
-    var rowHeadersToRemove;
-    var rowEndHeadersToRemove;
+    var rowHeadersToRemove = [];
+    var rowEndHeadersToRemove = [];
     var rowHeader;
     var rowEndHeader;
     let indexes = event.indexes;
+    const contextString = this.getResources().getMappedAttribute('context');
 
     if (keys.length === 0) {
       return;
@@ -22037,9 +22492,85 @@ var __oj_data_grid_metadata =
     var totalRowHeight = 0;
     var rowHeaderSupport = this.m_endRowHeader !== -1;
     var rowEndHeaderSupport = this.m_endRowEndHeader !== -1;
+    var deletedRowDimensions = [];
+    var rowHeadersToShift = [];
+    var rowEndHeadersToShift = [];
+    var shiftedRowHeaders = new Set();
+    var shiftedRowEndHeaders = new Set();
 
     var referenceCellsIndex =
       this._getIndex(this._getAxisCellsByKey(keys[0].row, 'row')[0], 'row') - 1;
+    var firstShiftIndex = referenceCellsIndex + keys.length + 1;
+
+    function getCollapsedRowHeight(rowCellsToMeasure, startHeader, endHeader) {
+      if (rowCellsToMeasure.length) {
+        return self.getElementHeight(rowCellsToMeasure[0]);
+      }
+      if (startHeader != null) {
+        return self.getElementHeight(startHeader);
+      }
+      if (endHeader != null) {
+        return self.getElementHeight(endHeader);
+      }
+      return self.m_avgRowHeight || self.getDefaultRowHeight();
+    }
+
+    function getRowDeleteStats(startIndex, endIndex) {
+      var beforeDeletedCount = 0;
+      var beforeDeletedDimension = 0;
+      var insideDeletedCount = 0;
+      var insideDeletedDimension = 0;
+      for (var statsIndex = 0; statsIndex < deletedRowDimensions.length; statsIndex++) {
+        var deletedIndex = referenceCellsIndex + 1 + statsIndex;
+        var deletedDimension = deletedRowDimensions[statsIndex];
+        if (deletedIndex < startIndex) {
+          beforeDeletedCount += 1;
+          beforeDeletedDimension += deletedDimension;
+        } else if (deletedIndex <= endIndex) {
+          insideDeletedCount += 1;
+          insideDeletedDimension += deletedDimension;
+        }
+      }
+      return {
+        beforeDeletedCount: beforeDeletedCount,
+        beforeDeletedDimension: beforeDeletedDimension,
+        insideDeletedCount: insideDeletedCount,
+        insideDeletedDimension: insideDeletedDimension
+      };
+    }
+
+    function getMinDeletedRowIndex() {
+      var minDeletedRowIndex = null;
+      for (var deletedIndexOffset = 0; deletedIndexOffset < indexes.length; deletedIndexOffset++) {
+        var deletedIndex = indexes[deletedIndexOffset];
+        var deletedRowIndex = deletedIndex.row != null ? deletedIndex.row : deletedIndex;
+        if (
+          deletedRowIndex != null &&
+          (minDeletedRowIndex == null || deletedRowIndex < minDeletedRowIndex)
+        ) {
+          minDeletedRowIndex = deletedRowIndex;
+        }
+      }
+      return minDeletedRowIndex;
+    }
+
+    function shiftHeadersAtIndex(index, axis, shiftedHeaders, headersToShift) {
+      var headers = self._getHeadersByIndex(index, axis);
+      for (var headerIndex = 0; headerIndex < headers.length; headerIndex++) {
+        var header = headers[headerIndex];
+        var headerContext = header[contextString];
+        if (
+          headerContext != null &&
+          headerContext.index >= firstShiftIndex &&
+          !shiftedHeaders.has(header)
+        ) {
+          self.setElementDir(header, self.getElementDir(header, 'top') - totalRowHeight, 'top');
+          self.addTransformMoveStyle(header, 0, 0, 'linear', 0, totalRowHeight, 0);
+          shiftedHeaders.add(header);
+          headersToShift.push(header);
+        }
+      }
+    }
 
     // all inherited animated rows should be hidden under previous rows in view
     for (i = referenceCellsIndex; i >= this.m_startRow; i--) {
@@ -22057,7 +22588,6 @@ var __oj_data_grid_metadata =
     }
 
     if (rowHeaderSupport) {
-      rowHeadersToRemove = [];
       var referenceRowHeader = this._findHeaderByKey(
         keys[0].row,
         this.m_rowHeader,
@@ -22074,7 +22604,6 @@ var __oj_data_grid_metadata =
     }
 
     if (rowEndHeaderSupport) {
-      rowEndHeadersToRemove = [];
       var referenceRowEndHeader = this._findHeaderByKey(
         keys[0].row,
         this.m_rowEndHeader,
@@ -22095,9 +22624,27 @@ var __oj_data_grid_metadata =
     for (i = 0; i < keys.length; i++) {
       var rowKey = keys[i].row;
       rowCells = this._getAxisCellsByKey(rowKey, 'row');
+      rowHeader = null;
+      rowEndHeader = null;
+      if (rowHeaderSupport) {
+        rowHeader = this._findHeaderByKey(
+          rowKey,
+          this.m_rowHeader,
+          this.getMappedStyle('rowheadercell')
+        );
+      }
+      if (rowEndHeaderSupport) {
+        rowEndHeader = this._findHeaderByKey(
+          rowKey,
+          this.m_rowEndHeader,
+          this.getMappedStyle('rowendheadercell')
+        );
+      }
+      var rowHeight = getCollapsedRowHeight(rowCells, rowHeader, rowEndHeader);
+      deletedRowDimensions.push(rowHeight);
+      totalRowHeight += rowHeight;
       if (rowCells.length) {
         rowsToRemove.push(rowCells);
-        totalRowHeight += this.getElementHeight(rowCells[0]);
         for (j = 0; j < rowCells.length; j++) {
           this.setElementDir(
             rowCells[j],
@@ -22107,38 +22654,24 @@ var __oj_data_grid_metadata =
           this.addTransformMoveStyle(rowCells[j], 0, 0, 'linear', 0, totalRowHeight, 0);
         }
       }
-      if (rowHeaderSupport) {
-        rowHeader = this._findHeaderByKey(
-          rowKey,
-          this.m_rowHeader,
-          this.getMappedStyle('rowheadercell')
-        );
-        if (rowHeader != null) {
-          rowHeadersToRemove.push(rowHeader);
-          this.setElementDir(rowHeader, this.getElementDir(rowHeader, 'top') - totalRowHeight, 'top');
-          this.addTransformMoveStyle(rowHeader, 0, 0, 'linear', 0, totalRowHeight, 0);
-        }
+      if (rowHeader != null) {
+        rowHeadersToRemove.push(rowHeader);
+        this.setElementDir(rowHeader, this.getElementDir(rowHeader, 'top') - totalRowHeight, 'top');
+        this.addTransformMoveStyle(rowHeader, 0, 0, 'linear', 0, totalRowHeight, 0);
       }
-      if (rowEndHeaderSupport) {
-        rowEndHeader = this._findHeaderByKey(
-          rowKey,
-          this.m_rowEndHeader,
-          this.getMappedStyle('rowendheadercell')
+      if (rowEndHeader != null) {
+        rowEndHeadersToRemove.push(rowEndHeader);
+        this.setElementDir(
+          rowEndHeader,
+          this.getElementDir(rowEndHeader, 'top') - totalRowHeight,
+          'top'
         );
-        if (rowEndHeader != null) {
-          rowEndHeadersToRemove.push(rowEndHeader);
-          this.setElementDir(
-            rowEndHeader,
-            this.getElementDir(rowEndHeader, 'top') - totalRowHeight,
-            'top'
-          );
-          this.addTransformMoveStyle(rowEndHeader, 0, 0, 'linear', 0, totalRowHeight, 0);
-        }
+        this.addTransformMoveStyle(rowEndHeader, 0, 0, 'linear', 0, totalRowHeight, 0);
       }
     }
 
     // for all the rows after the collapse change the top values appropriately
-    for (i = referenceCellsIndex + keys.length + 1; i <= this.m_endRow; i++) {
+    for (i = firstShiftIndex; i <= this.m_endRow; i++) {
       // change the row top but keep it where it is
       rowCells = this._getAxisCellsByIndex(i, 'row');
       for (j = 0; j < rowCells.length; j++) {
@@ -22150,25 +22683,38 @@ var __oj_data_grid_metadata =
         this.addTransformMoveStyle(rowCells[j], 0, 0, 'linear', 0, totalRowHeight, 0);
       }
       if (rowHeaderSupport) {
-        rowHeader = rowHeader.nextSibling;
-        this.setElementDir(rowHeader, this.getElementDir(rowHeader, 'top') - totalRowHeight, 'top');
-        this.addTransformMoveStyle(rowHeader, 0, 0, 'linear', 0, totalRowHeight, 0);
+        shiftHeadersAtIndex(i, 'row', shiftedRowHeaders, rowHeadersToShift);
       }
       if (rowEndHeaderSupport) {
-        rowEndHeader = rowEndHeader.nextSibling;
-        this.setElementDir(
-          rowEndHeader,
-          this.getElementDir(rowEndHeader, 'top') - totalRowHeight,
-          'top'
-        );
-        this.addTransformMoveStyle(rowEndHeader, 0, 0, 'linear', 0, totalRowHeight, 0);
+        shiftHeadersAtIndex(i, 'rowEnd', shiftedRowEndHeaders, rowEndHeadersToShift);
       }
     }
 
     // listen to the last rows transition end
     var lastAnimationElement = this._getCellByIndex(this.createIndex(this.m_endRow, this.m_endCol));
     function transitionListener() {
-      if (rowsToRemove.length) {
+      var rowDeleteStats = getRowDeleteStats(self.m_startRow, self.m_endRow);
+      var rowHeaderDeleteStats = rowHeaderSupport
+        ? getRowDeleteStats(self.m_startRowHeader, self.m_endRowHeader)
+        : null;
+      var rowEndHeaderDeleteStats = rowEndHeaderSupport
+        ? getRowDeleteStats(self.m_startRowEndHeader, self.m_endRowEndHeader)
+        : null;
+      var frozenRowDeleteStats = self._hasFrozenRows()
+        ? getRowDeleteStats(0, self.m_frozenRowIndex)
+        : null;
+      var minDeletedRowIndex = getMinDeletedRowIndex();
+      var deletedBeforeScrollableRows =
+        minDeletedRowIndex != null && minDeletedRowIndex < self.m_startRow;
+      var scrolledPastFrozenRows =
+        self.m_currentScrollTop > 0 && self.m_startRow > self.m_frozenRowIndex;
+      var resetScrollableRowsAfterFrozenCollapse =
+        !self._isHighWatermarkScrolling() &&
+        self._hasFrozenRows() &&
+        (frozenRowDeleteStats.insideDeletedCount > 0 ||
+          deletedBeforeScrollableRows ||
+          scrolledPastFrozenRows);
+      if (keys.length) {
         self._modifyAxisCellContextIndex(
           'row',
           referenceCellsIndex + keys.length + 1,
@@ -22177,7 +22723,7 @@ var __oj_data_grid_metadata =
         );
       }
 
-      if (rowHeaderSupport && rowHeadersToRemove.length) {
+      if (rowHeaderSupport) {
         self._modifyAxisHeaderContextIndex(
           'row',
           referenceCellsIndex + keys.length + 1,
@@ -22186,7 +22732,7 @@ var __oj_data_grid_metadata =
         );
       }
 
-      if (rowEndHeaderSupport && rowEndHeadersToRemove.length) {
+      if (rowEndHeaderSupport) {
         self._modifyAxisHeaderContextIndex(
           'rowEnd',
           referenceCellsIndex + keys.length + 1,
@@ -22199,12 +22745,16 @@ var __oj_data_grid_metadata =
         for (var jj = 0; jj < rowsToRemove[ii].length; jj++) {
           self._remove(rowsToRemove[ii][jj]);
         }
-        if (rowHeaderSupport) {
-          self._remove(rowHeadersToRemove[ii]);
-        }
-        if (rowEndHeaderSupport) {
-          self._remove(rowEndHeadersToRemove[ii]);
-        }
+      }
+      for (var rowHeaderIndex = 0; rowHeaderIndex < rowHeadersToRemove.length; rowHeaderIndex++) {
+        self._remove(rowHeadersToRemove[rowHeaderIndex]);
+      }
+      for (
+        var rowEndHeaderIndex = 0;
+        rowEndHeaderIndex < rowEndHeadersToRemove.length;
+        rowEndHeaderIndex++
+      ) {
+        self._remove(rowEndHeadersToRemove[rowEndHeaderIndex]);
       }
 
       self._adjustActive('delete', indexes);
@@ -22215,27 +22765,76 @@ var __oj_data_grid_metadata =
       }
 
       // clean up the variables no longer need because event animation handling
-      self.m_endRow -= rowsToRemove.length;
-      self.m_maxRowYet -= rowsToRemove.length;
-      self.m_endRowPixel -= totalRowHeight;
+      self.m_startRow -= rowDeleteStats.beforeDeletedCount;
+      self.m_endRow =
+        self.m_endRow - rowDeleteStats.beforeDeletedCount - rowDeleteStats.insideDeletedCount;
+      self.m_startRowPixel -= rowDeleteStats.beforeDeletedDimension;
+      self.m_endRowPixel =
+        self.m_endRowPixel -
+        rowDeleteStats.beforeDeletedDimension -
+        rowDeleteStats.insideDeletedDimension;
+      self.m_maxRowYet -= rowDeleteStats.beforeDeletedCount + rowDeleteStats.insideDeletedCount;
       self.m_stopRowFetch = false;
-      if (rowHeaderSupport) {
-        self.m_endRowHeader -= rowHeadersToRemove.length;
-        self.m_endRowHeaderPixel -= totalRowHeight;
+      if (rowHeaderDeleteStats != null) {
+        self.m_startRowHeader -= rowHeaderDeleteStats.beforeDeletedCount;
+        self.m_endRowHeader =
+          self.m_endRowHeader -
+          rowHeaderDeleteStats.beforeDeletedCount -
+          rowHeaderDeleteStats.insideDeletedCount;
+        self.m_startRowHeaderPixel -= rowHeaderDeleteStats.beforeDeletedDimension;
+        self.m_endRowHeaderPixel =
+          self.m_endRowHeaderPixel -
+          rowHeaderDeleteStats.beforeDeletedDimension -
+          rowHeaderDeleteStats.insideDeletedDimension;
         self.m_stopRowHeaderFetch = false;
       }
-      if (rowEndHeaderSupport) {
-        self.m_endRowEndHeader -= rowHeadersToRemove.length;
-        self.m_endRowEndHeaderPixel -= totalRowHeight;
+      if (rowEndHeaderDeleteStats != null) {
+        self.m_startRowEndHeader -= rowEndHeaderDeleteStats.beforeDeletedCount;
+        self.m_endRowEndHeader =
+          self.m_endRowEndHeader -
+          rowEndHeaderDeleteStats.beforeDeletedCount -
+          rowEndHeaderDeleteStats.insideDeletedCount;
+        self.m_startRowEndHeaderPixel -= rowEndHeaderDeleteStats.beforeDeletedDimension;
+        self.m_endRowEndHeaderPixel =
+          self.m_endRowEndHeaderPixel -
+          rowEndHeaderDeleteStats.beforeDeletedDimension -
+          rowEndHeaderDeleteStats.insideDeletedDimension;
         self.m_stopRowEndHeaderFetch = false;
       }
+      if (frozenRowDeleteStats != null && frozenRowDeleteStats.insideDeletedCount > 0) {
+        self.m_frozenRowIndex -= frozenRowDeleteStats.insideDeletedCount;
+        // The visible frozen height may already be viewport-capped. Restore the logical height
+        // after an animated collapse before resizeGrid applies the new viewport cap.
+        var frozenDatabodyHeight = self._getRequiredFrozenDimension('row');
+        self.setElementHeight(self.m_databodyFrozenRow, frozenDatabodyHeight);
+        if (self.m_databodyFrozenCorner) {
+          self.setElementHeight(self.m_databodyFrozenCorner, frozenDatabodyHeight);
+        }
+        var details = {
+          event: null,
+          ui: {
+            frozenCount: self.m_frozenRowIndex + 1
+          }
+        };
+        self.fireEvent('rowFreeze', details);
+      }
 
-      self._setAllScrollableRegions('height', self.m_endRowPixel - self.m_startRowPixel);
+      self._setAllScrollableRegions(
+        'height',
+        self.getElementHeight(self.m_databody.firstChild) - totalRowHeight
+      );
       self.resizeGrid();
       self.updateRowBanding();
-      if (self.m_modelEvents != null && self.m_modelEvents.length === 0 && !self.m_moveActive) {
+      if (resetScrollableRowsAfterFrozenCollapse && !self.m_moveActive) {
+        self.handleLongScroll(self.m_currentScrollLeft, self.m_currentScrollTop, true);
+      } else if (
+        self.m_modelEvents != null &&
+        self.m_modelEvents.length === 0 &&
+        !self.m_moveActive
+      ) {
         self.fillViewport();
       }
+      self.m_processingModelEvent = false;
       self._handleAnimationEnd();
     }
     // if (lastAnimationElement) {
@@ -22251,13 +22850,25 @@ var __oj_data_grid_metadata =
         for (j = 0; j < rowCells.length; j++) {
           self.addTransformMoveStyle(rowCells[j], duration + 'ms', 0, 'ease-out', 0, 0, 0);
         }
-        if (rowHeaderSupport) {
-          rowHeader = self._getHeaderByIndex(i, 'row', 0);
-          self.addTransformMoveStyle(rowHeader, duration + 'ms', 0, 'ease-out', 0, 0, 0);
+      }
+      if (rowHeaderSupport) {
+        var rowHeadersToAnimate = rowHeadersToRemove.concat(rowHeadersToShift);
+        for (i = 0; i < rowHeadersToAnimate.length; i++) {
+          self.addTransformMoveStyle(rowHeadersToAnimate[i], duration + 'ms', 0, 'ease-out', 0, 0, 0);
         }
-        if (rowEndHeaderSupport) {
-          rowEndHeader = self._getHeaderByIndex(i, 'rowEnd', 0);
-          self.addTransformMoveStyle(rowEndHeader, duration + 'ms', 0, 'ease-out', 0, 0, 0);
+      }
+      if (rowEndHeaderSupport) {
+        var rowEndHeadersToAnimate = rowEndHeadersToRemove.concat(rowEndHeadersToShift);
+        for (i = 0; i < rowEndHeadersToAnimate.length; i++) {
+          self.addTransformMoveStyle(
+            rowEndHeadersToAnimate[i],
+            duration + 'ms',
+            0,
+            'ease-out',
+            0,
+            0,
+            0
+          );
         }
       }
     }, 0);
@@ -27684,187 +28295,6 @@ var __oj_data_grid_metadata =
   };
 
   /**
-   * Ensures row banding is set on the proper rows
-   * @private
-   */
-  DvtDataGrid.prototype.updateRowBanding = function () {
-    var rowBandingInterval = this.m_options.getRowBandingInterval();
-    if (rowBandingInterval > 0) {
-      var cells = this.m_databody.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
-      var bandingClass = this.getMappedStyle('banded');
-      for (var i = 0; i < cells.length; i++) {
-        var cell = cells[i];
-        var index = this._getIndex(cell, 'row');
-        if (Math.floor(index / rowBandingInterval) % 2 === 1) {
-          if (!this.m_utils.containsCSSClassName(cell, bandingClass)) {
-            this.m_utils.addCSSClassName(cell, bandingClass);
-          }
-        } else if (this.m_utils.containsCSSClassName(cell, bandingClass)) {
-          this.m_utils.removeCSSClassName(cell, bandingClass);
-        }
-      }
-    }
-  };
-
-  /**
-   * Ensures column banding is set on the proper rows
-   * @private
-   */
-  DvtDataGrid.prototype.updateColumnBanding = function () {
-    var columnBandingInterval = this.m_options.getColumnBandingInterval();
-    if (columnBandingInterval > 0) {
-      var cells = this.m_databody.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
-      var bandingClass = this.getMappedStyle('banded');
-      for (var i = 0; i < cells.length; i += 1) {
-        var cell = cells[i];
-        var index = this._getIndex(cell, 'column');
-        if (Math.floor(index / columnBandingInterval) % 2 === 1) {
-          if (!this.m_utils.containsCSSClassName(cell, bandingClass)) {
-            this.m_utils.addCSSClassName(cell, bandingClass);
-          }
-        } else if (this.m_utils.containsCSSClassName(cell, bandingClass)) {
-          this.m_utils.removeCSSClassName(cell, bandingClass);
-        }
-      }
-    }
-  };
-
-  /**
-   * Remove banding (both row and column)
-   * @private
-   */
-  DvtDataGrid.prototype._removeBanding = function () {
-    var cells = this.m_databody.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
-    var bandingClass = this.getMappedStyle('banded');
-
-    for (var i = 0; i < cells.length; i++) {
-      if (this.m_utils.containsCSSClassName(cells[i], bandingClass)) {
-        this.m_utils.removeCSSClassName(cells[i], bandingClass);
-      }
-    }
-  };
-
-  /**
-   * Sets the accessibility status text
-   * @param {string} key the message key
-   * @param {Object|Array|null=} args to pass into the translator
-   * @private
-   */
-  DvtDataGrid.prototype._setAccInfoText = function (key, args) {
-    var text = this.getResources().getTranslatedText(key, args);
-    if (text != null) {
-      this.m_accInfo.textContent = text;
-    }
-  };
-
-  /**
-   * Handles expand event from the flattened datasource.
-   * @param {Object} event the expand event
-   * @param {boolean} fromQueue whether this is invoked from processing the model event queue, optional.
-   * @private
-   */
-  DvtDataGrid.prototype.handleExpandEvent = function (event, fromQueue) {
-    if (fromQueue === undefined && this.queueModelEvent(event)) {
-      // tag the event for discovery later
-      // eslint-disable-next-line no-param-reassign
-      event.operation = 'expand';
-      return;
-    }
-
-    // rowKey = event['rowKey'];
-    // rowCells = this._getAxisCellsByKey(rowKey, 'row');
-    // for (i = 0; i < rowCells.length; i++)
-    // {
-    //    rowCells[i].setAttribute("aria-expanded", true);
-    // }
-
-    // update screen reader alert
-    this._setAccInfoText('accessibleRowExpanded');
-    this.populateAccInfo();
-    if (fromQueue) {
-      this._runModelEventQueue();
-    }
-  };
-
-  /**
-   * Handles collapse event from the flattened datasource.
-   * @param {Object} event the collapse event
-   * @param {boolean} fromQueue whether this is invoked from processing the model event queue, optional.
-   * @private
-   */
-  DvtDataGrid.prototype.handleCollapseEvent = function (event, fromQueue) {
-    if (fromQueue === undefined && this.queueModelEvent(event)) {
-      // tag the event for discovery later
-      // eslint-disable-next-line no-param-reassign
-      event.operation = 'collapse';
-      return;
-    }
-
-    // rowKey = event['rowKey'];
-    // rowCells = this._getAxisCellsByKey(rowKey, 'row');
-    // for (i = 0; i < rowCells.length; i++)
-    // {
-    //    rowCells[i].setAttribute("aria-expanded", false);
-    // }
-
-    // update screen reader alert
-    this._setAccInfoText('accessibleRowCollapsed');
-    this.populateAccInfo();
-    if (fromQueue) {
-      this._runModelEventQueue();
-    }
-  };
-
-  /**
-   * Retrieve the key from an element.
-   * @param {Element|Node|undefined} element the element to retrieve the key from.
-   * @param {string=} axis
-   * @return {string|null} the key of the element
-   * @private
-   */
-  DvtDataGrid.prototype._getKey = function (element, axis) {
-    // make sure the element has a context
-    if (element != null && element[this.getResources().getMappedAttribute('context')]) {
-      if (axis != null && this.m_utils.containsCSSClassName(element, this.getMappedStyle('cell'))) {
-        return element[this.getResources().getMappedAttribute('context')].keys[axis];
-      }
-      return element[this.getResources().getMappedAttribute('context')].key;
-    }
-    return null;
-  };
-
-  /**
-   * Retrieve the active axis key.
-   * @param {string} axis
-   * @param {boolean=} prev if we want the previous row key instead
-   * @return {string|null} the key of the active row
-   * @private
-   */
-  DvtDataGrid.prototype._getActiveKey = function (axis, prev) {
-    if (prev && this.m_prevActive != null) {
-      if (
-        this.m_prevActive.type === 'header' &&
-        (this.m_prevActive.axis === axis || this.m_prevActive.axis === axis + 'End')
-      ) {
-        return this.m_prevActive.key;
-      } else if (this.m_prevActive.type === 'cell') {
-        return this.m_prevActive.keys[axis];
-      }
-    } else if (this.m_active != null) {
-      if (
-        this.m_active.type === 'header' &&
-        (this.m_active.axis === axis || this.m_active.axis === axis + 'End')
-      ) {
-        return this.m_active.key;
-      } else if (this.m_active.type === 'cell') {
-        return this.m_active.keys[axis];
-      }
-    }
-    return null;
-  };
-
-  // /////////////////// move methods////////////////////////
-  /**
    * Handles cut event from the flattened datasource.
    * @param {Event} event the cut event
    * @param {Element=} target the target element
@@ -28655,6 +29085,186 @@ var __oj_data_grid_metadata =
   };
 
   /**
+   * Ensures row banding is set on the proper rows
+   * @private
+   */
+  DvtDataGrid.prototype.updateRowBanding = function () {
+    var rowBandingInterval = this.m_options.getRowBandingInterval();
+    if (rowBandingInterval > 0) {
+      var cells = this.m_databody.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
+      var bandingClass = this.getMappedStyle('banded');
+      for (var i = 0; i < cells.length; i++) {
+        var cell = cells[i];
+        var index = this._getIndex(cell, 'row');
+        if (Math.floor(index / rowBandingInterval) % 2 === 1) {
+          if (!this.m_utils.containsCSSClassName(cell, bandingClass)) {
+            this.m_utils.addCSSClassName(cell, bandingClass);
+          }
+        } else if (this.m_utils.containsCSSClassName(cell, bandingClass)) {
+          this.m_utils.removeCSSClassName(cell, bandingClass);
+        }
+      }
+    }
+  };
+
+  /**
+   * Ensures column banding is set on the proper rows
+   * @private
+   */
+  DvtDataGrid.prototype.updateColumnBanding = function () {
+    var columnBandingInterval = this.m_options.getColumnBandingInterval();
+    if (columnBandingInterval > 0) {
+      var cells = this.m_databody.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
+      var bandingClass = this.getMappedStyle('banded');
+      for (var i = 0; i < cells.length; i += 1) {
+        var cell = cells[i];
+        var index = this._getIndex(cell, 'column');
+        if (Math.floor(index / columnBandingInterval) % 2 === 1) {
+          if (!this.m_utils.containsCSSClassName(cell, bandingClass)) {
+            this.m_utils.addCSSClassName(cell, bandingClass);
+          }
+        } else if (this.m_utils.containsCSSClassName(cell, bandingClass)) {
+          this.m_utils.removeCSSClassName(cell, bandingClass);
+        }
+      }
+    }
+  };
+
+  /**
+   * Remove banding (both row and column)
+   * @private
+   */
+  DvtDataGrid.prototype._removeBanding = function () {
+    var cells = this.m_databody.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
+    var bandingClass = this.getMappedStyle('banded');
+
+    for (var i = 0; i < cells.length; i++) {
+      if (this.m_utils.containsCSSClassName(cells[i], bandingClass)) {
+        this.m_utils.removeCSSClassName(cells[i], bandingClass);
+      }
+    }
+  };
+
+  /**
+   * Sets the accessibility status text
+   * @param {string} key the message key
+   * @param {Object|Array|null=} args to pass into the translator
+   * @private
+   */
+  DvtDataGrid.prototype._setAccInfoText = function (key, args) {
+    var text = this.getResources().getTranslatedText(key, args);
+    if (text != null) {
+      this.m_accInfo.textContent = text;
+    }
+  };
+
+  /**
+   * Handles expand event from the flattened datasource.
+   * @param {Object} event the expand event
+   * @param {boolean} fromQueue whether this is invoked from processing the model event queue, optional.
+   * @private
+   */
+  DvtDataGrid.prototype.handleExpandEvent = function (event, fromQueue) {
+    if (fromQueue === undefined && this.queueModelEvent(event)) {
+      // tag the event for discovery later
+      // eslint-disable-next-line no-param-reassign
+      event.operation = 'expand';
+      return;
+    }
+
+    // rowKey = event['rowKey'];
+    // rowCells = this._getAxisCellsByKey(rowKey, 'row');
+    // for (i = 0; i < rowCells.length; i++)
+    // {
+    //    rowCells[i].setAttribute("aria-expanded", true);
+    // }
+
+    // update screen reader alert
+    this._setAccInfoText('accessibleRowExpanded');
+    this.populateAccInfo();
+    if (fromQueue) {
+      this._runModelEventQueue();
+    }
+  };
+
+  /**
+   * Handles collapse event from the flattened datasource.
+   * @param {Object} event the collapse event
+   * @param {boolean} fromQueue whether this is invoked from processing the model event queue, optional.
+   * @private
+   */
+  DvtDataGrid.prototype.handleCollapseEvent = function (event, fromQueue) {
+    if (fromQueue === undefined && this.queueModelEvent(event)) {
+      // tag the event for discovery later
+      // eslint-disable-next-line no-param-reassign
+      event.operation = 'collapse';
+      return;
+    }
+
+    // rowKey = event['rowKey'];
+    // rowCells = this._getAxisCellsByKey(rowKey, 'row');
+    // for (i = 0; i < rowCells.length; i++)
+    // {
+    //    rowCells[i].setAttribute("aria-expanded", false);
+    // }
+
+    // update screen reader alert
+    this._setAccInfoText('accessibleRowCollapsed');
+    this.populateAccInfo();
+    if (fromQueue) {
+      this._runModelEventQueue();
+    }
+  };
+
+  /**
+   * Retrieve the key from an element.
+   * @param {Element|Node|undefined} element the element to retrieve the key from.
+   * @param {string=} axis
+   * @return {string|null} the key of the element
+   * @private
+   */
+  DvtDataGrid.prototype._getKey = function (element, axis) {
+    // make sure the element has a context
+    if (element != null && element[this.getResources().getMappedAttribute('context')]) {
+      if (axis != null && this.m_utils.containsCSSClassName(element, this.getMappedStyle('cell'))) {
+        return element[this.getResources().getMappedAttribute('context')].keys[axis];
+      }
+      return element[this.getResources().getMappedAttribute('context')].key;
+    }
+    return null;
+  };
+
+  /**
+   * Retrieve the active axis key.
+   * @param {string} axis
+   * @param {boolean=} prev if we want the previous row key instead
+   * @return {string|null} the key of the active row
+   * @private
+   */
+  DvtDataGrid.prototype._getActiveKey = function (axis, prev) {
+    if (prev && this.m_prevActive != null) {
+      if (
+        this.m_prevActive.type === 'header' &&
+        (this.m_prevActive.axis === axis || this.m_prevActive.axis === axis + 'End')
+      ) {
+        return this.m_prevActive.key;
+      } else if (this.m_prevActive.type === 'cell') {
+        return this.m_prevActive.keys[axis];
+      }
+    } else if (this.m_active != null) {
+      if (
+        this.m_active.type === 'header' &&
+        (this.m_active.axis === axis || this.m_active.axis === axis + 'End')
+      ) {
+        return this.m_active.key;
+      } else if (this.m_active.type === 'cell') {
+        return this.m_active.keys[axis];
+      }
+    }
+    return null;
+  };
+
+  /**
    * Handles focus on the root and its children by setting focus class on the root
    * @param {Event} event
    */
@@ -28978,6 +29588,16 @@ var __oj_data_grid_metadata =
    * @private
    */
   DvtDataGrid.prototype._refreshDatabodyMap = function () {
+    this._cleanDatabodyRegionForMap(this.m_databody.firstChild);
+    if (this.m_databodyFrozenCol) {
+      this._cleanDatabodyRegionForMap(this.m_databodyFrozenCol.firstChild);
+    }
+    if (this.m_databodyFrozenCorner) {
+      this._cleanDatabodyRegionForMap(this.m_databodyFrozenCorner.firstChild);
+    }
+    if (this.m_databodyFrozenRow) {
+      this._cleanDatabodyRegionForMap(this.m_databodyFrozenRow.firstChild);
+    }
     this._clearDatabodyMap();
     this._addNodesToDatabodyMap(this.m_databody.firstChild.childNodes);
     if (this.m_databodyFrozenCol) {
@@ -28992,14 +29612,138 @@ var __oj_data_grid_metadata =
   };
 
   /**
+   * @return {boolean} true when frozen regions need mutation cleanup.
+   * @private
+   */
+  DvtDataGrid.prototype._shouldCleanFrozenDatabodyMutationArtifacts = function () {
+    // Frozen mutations can fetch the same logical row/column in more than one databody region while
+    // regions are being reset. Keep this cleanup frozen-only so normal grids keep their existing
+    // append/map behavior.
+    return this._hasFrozenRows() || this._hasFrozenColumns();
+  };
+
+  /**
+   * Removes duplicate physical-scroll cells within one rendered databody region.
+   * Frozen regions can intentionally contain the same logical row/column indexes as another
+   * region, so region cleanup must not de-dupe against the full grid root.
+   * @param {Element} databodyContent
+   * @private
+   */
+  DvtDataGrid.prototype._cleanDatabodyRegionForMap = function (databodyContent) {
+    this._removeDuplicateCellsFromDatabody(databodyContent);
+  };
+
+  /**
+   * Removes duplicate databody cells inside one rendered region, preserving the newest cell.
+   * @param {Element} databodyContent
+   * @private
+   */
+  DvtDataGrid.prototype._removeDuplicateCellsFromDatabody = function (databodyContent) {
+    if (databodyContent == null || !this._shouldCleanFrozenDatabodyMutationArtifacts()) {
+      return;
+    }
+
+    const cellsByIndex = new Map();
+    const cellsToRemove = new Set();
+    const cells = Array.from(
+      databodyContent.querySelectorAll('.' + this.getMappedStyle('cell'))
+    ).filter((cell) => cell !== this.m_activeEdit);
+
+    cells.forEach((cell) => {
+      const context = cell[this.getResources().getMappedAttribute('context')];
+      if (context?.indexes != null) {
+        const indexes = this.getCellIndexes(cell);
+        const extents = this.getCellExtents(cell);
+        const rowStart = indexes.row;
+        const rowEnd = rowStart + extents.row;
+        const columnStart = indexes.column;
+        const columnEnd = columnStart + extents.column;
+        for (let row = rowStart; row < rowEnd; row++) {
+          for (let column = columnStart; column < columnEnd; column++) {
+            const key = 'r' + row + 'c' + column;
+            const existingCell = cellsByIndex.get(key);
+            if (existingCell != null && existingCell !== cell) {
+              cellsToRemove.add(existingCell);
+            }
+            cellsByIndex.set(key, cell);
+          }
+        }
+      }
+    });
+
+    cellsToRemove.forEach((cell) => {
+      this._removeCellFromDatabodyMap(cell);
+      this._remove(cell);
+    });
+  };
+
+  /**
+   * Removes existing databody cells whose rendered index range overlaps the incoming fragment.
+   * Virtual scroll can legitimately refetch an edge row after frozen mutations shift indexes.
+   * Keeping the older physical cell leaves the same logical row in two places.
+   * @param {Element} databodyContent
+   * @param {Element|DocumentFragment} fragment
+   * @private
+   */
+  DvtDataGrid.prototype._removeOverlappingCellsFromDatabody = function (databodyContent, fragment) {
+    if (
+      databodyContent == null ||
+      fragment == null ||
+      !fragment.childNodes.length ||
+      !this._shouldCleanFrozenDatabodyMutationArtifacts()
+    ) {
+      return;
+    }
+
+    const existingCells = Array.from(
+      databodyContent.querySelectorAll('.' + this.getMappedStyle('cell'))
+    ).filter((cell) => cell !== this.m_activeEdit);
+    const newCells = Array.from(fragment.childNodes).filter((cell) => cell !== this.m_activeEdit);
+    const rangesOverlap = (start1, end1, start2, end2) => start1 < end2 && start2 < end1;
+
+    newCells.forEach((newCell) => {
+      const newContext = newCell[this.getResources().getMappedAttribute('context')];
+      if (newContext?.indexes != null) {
+        const newIndexes = this.getCellIndexes(newCell);
+        const newExtents = this.getCellExtents(newCell);
+        const newRowStart = newIndexes.row;
+        const newRowEnd = newRowStart + newExtents.row;
+        const newColumnStart = newIndexes.column;
+        const newColumnEnd = newColumnStart + newExtents.column;
+
+        existingCells.forEach((existingCell) => {
+          const existingContext = existingCell[this.getResources().getMappedAttribute('context')];
+          if (existingCell.parentNode != null && existingContext?.indexes != null) {
+            const existingIndexes = this.getCellIndexes(existingCell);
+            const existingExtents = this.getCellExtents(existingCell);
+            const existingRowStart = existingIndexes.row;
+            const existingRowEnd = existingRowStart + existingExtents.row;
+            const existingColumnStart = existingIndexes.column;
+            const existingColumnEnd = existingColumnStart + existingExtents.column;
+            if (
+              rangesOverlap(newRowStart, newRowEnd, existingRowStart, existingRowEnd) &&
+              rangesOverlap(newColumnStart, newColumnEnd, existingColumnStart, existingColumnEnd)
+            ) {
+              this._removeCellFromDatabodyMap(existingCell);
+              this._remove(existingCell);
+            }
+          }
+        });
+      }
+    });
+  };
+
+  /**
    * Adds a fragment to the databody content and fills the data body mapKey
    * @param {Element} databodyContent
    * @param {Element|DocumentFragment} fragment
    * @private
    */
   DvtDataGrid.prototype._populateDatabody = function (databodyContent, fragment) {
+    this._removeOverlappingCellsFromDatabody(databodyContent, fragment);
     this._addNodesToDatabodyMap(fragment.childNodes);
     databodyContent.appendChild(fragment); // @HTMLUpdateOK
+    this._removeDuplicateCellsFromDatabody(databodyContent);
     this.m_subtreeAttachedCallback(databodyContent);
   };
 
@@ -29068,6 +29812,34 @@ var __oj_data_grid_metadata =
   DvtDataGrid.prototype._removeIndexFromDatabodyMap = function (indexes) {
     var mapKey = 'r' + indexes.row + 'c' + indexes.column;
     return this.m_databodyMap.delete(mapKey); // quoted to make the closure compiler happy
+  };
+
+  /**
+   * Removes all index mappings for a databody cell.
+   * @param {Element} cell
+   * @private
+   */
+  DvtDataGrid.prototype._removeCellFromDatabodyMap = function (cell) {
+    const cellId = cell.id;
+    const contextString = this.getResources().getMappedAttribute('context');
+    const context = cell[contextString];
+    if (!context) {
+      return;
+    }
+
+    const rowIndex = context.indexes.row;
+    const columnIndex = context.indexes.column;
+    const rowExtent = context.extents.row;
+    const columnExtent = context.extents.column;
+
+    for (let i = 0; i < rowExtent; i++) {
+      for (let j = 0; j < columnExtent; j++) {
+        const index = this.createIndex(rowIndex + i, columnIndex + j);
+        if (this._getFromDatabodyMap(index) === cellId) {
+          this._removeIndexFromDatabodyMap(index);
+        }
+      }
+    }
   };
 
   /**
@@ -29189,6 +29961,49 @@ var __oj_data_grid_metadata =
     return cell;
   };
 
+  /**
+   * Get a cell by index from a specific databody section
+   * @param {Object} indexes
+   * @param {Element|null} databody
+   * @returns {Element|null}
+   */
+  DvtDataGrid.prototype._getCellByIndexInDatabody = function (indexes, databody) {
+    if (!databody) {
+      return this._getCellByIndex(indexes);
+    }
+
+    const mappedCell = this._getCellByIndex(indexes);
+    if (mappedCell && databody.contains(mappedCell)) {
+      return mappedCell;
+    }
+
+    if (!databody.firstChild) {
+      return null;
+    }
+
+    const contextString = this.getResources().getMappedAttribute('context');
+    const cells = databody.firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
+    for (let i = 0; i < cells.length; i++) {
+      const cell = cells[i];
+      const cellContext = cell[contextString];
+      if (cellContext) {
+        const rowIndex = cellContext.indexes.row;
+        const columnIndex = cellContext.indexes.column;
+        const rowExtent = cellContext.extents.row;
+        const columnExtent = cellContext.extents.column;
+        if (
+          indexes.row >= rowIndex &&
+          indexes.row < rowIndex + rowExtent &&
+          indexes.column >= columnIndex &&
+          indexes.column < columnIndex + columnExtent
+        ) {
+          return cell;
+        }
+      }
+    }
+    return null;
+  };
+
   DvtDataGrid.prototype._getCellContainer = function (cell) {
     let container = this.m_databody;
     let sections = [this.m_databodyFrozenCorner, this.m_databodyFrozenCol, this.m_databodyFrozenRow];
@@ -29232,6 +30047,34 @@ var __oj_data_grid_metadata =
     return cells;
   };
 
+  /**
+   * Get cells by range from a specific databody section
+   * @param {number} startRow
+   * @param {number} startColumn
+   * @param {number} endRow
+   * @param {number} endColumn
+   * @param {Element|null} databody
+   * @returns {Array<Element>}
+   */
+  DvtDataGrid.prototype._getCellsInRangeInDatabody = function (
+    startRow,
+    startColumn,
+    endRow,
+    endColumn,
+    databody
+  ) {
+    let cells = [];
+    for (let i = startRow; i <= endRow; i++) {
+      for (let j = startColumn; j <= endColumn; j++) {
+        let cell = this._getCellByIndexInDatabody(this.createIndex(i, j), databody);
+        if (cell) {
+          cells.push(cell);
+        }
+      }
+    }
+    return cells;
+  };
+
   DvtDataGrid.prototype._getFirstCellWithMatchingStartIndex = function (index, axis) {
     // find the first cell that has the given axis index as its startIndex
     let startAxisIndex = axis === 'row' ? this.m_startCol : this.m_startRow;
@@ -29251,6 +30094,60 @@ var __oj_data_grid_metadata =
   };
 
   /**
+   * Get all rendered cells along an axis by index.
+   * @param {number} index
+   * @param {string} axis row/column
+   * @param {boolean=} breakOnFirstFind
+   * @returns {Array|null}
+   * @private
+   */
+  DvtDataGrid.prototype._getRenderedAxisCellsByIndex = function (index, axis, breakOnFirstFind) {
+    if (this.m_databody == null || this.m_databody.firstChild == null) {
+      return null;
+    }
+
+    const contextString = this.getResources().getMappedAttribute('context');
+    const otherAxis = axis === 'row' ? 'column' : 'row';
+    let sections = [
+      this.m_databody,
+      this.m_databodyFrozenCorner,
+      this.m_databodyFrozenCol,
+      this.m_databodyFrozenRow
+    ];
+    sections = sections.filter((section) => section && section.firstChild);
+
+    const matchingCells = [];
+    const seenCells = new Set();
+    for (let i = 0; i < sections.length; i++) {
+      const cells = sections[i].firstChild.querySelectorAll('.' + this.getMappedStyle('cell'));
+      for (let j = 0; j < cells.length; j++) {
+        const cell = cells[j];
+        const cellContext = cell[contextString];
+        if (cellContext?.indexes != null && cellContext.extents != null && !seenCells.has(cell)) {
+          const axisStart = cellContext.indexes[axis];
+          const axisEnd = axisStart + cellContext.extents[axis];
+          if (index >= axisStart && index < axisEnd) {
+            matchingCells.push(cell);
+            seenCells.add(cell);
+          }
+        }
+      }
+    }
+
+    matchingCells.sort((first, second) => {
+      const firstIndex = first[contextString].indexes[otherAxis];
+      const secondIndex = second[contextString].indexes[otherAxis];
+      return firstIndex - secondIndex;
+    });
+
+    if (breakOnFirstFind && matchingCells.length > 1) {
+      return [matchingCells[0]];
+    }
+
+    return matchingCells;
+  };
+
+  /**
    * Get all the cells along an axis by index
    * @param {number} index
    * @param {string} axis row/column
@@ -29259,12 +30156,18 @@ var __oj_data_grid_metadata =
    * @private
    */
   DvtDataGrid.prototype._getAxisCellsByIndex = function (index, axis, breakOnFirstFind) {
+    const shouldScanRenderedCells =
+      !this._isHighWatermarkScrolling() && (this._hasFrozenRows() || this._hasFrozenColumns());
+    if (shouldScanRenderedCells) {
+      const renderedAxisCells = this._getRenderedAxisCellsByIndex(index, axis, breakOnFirstFind);
+      if (renderedAxisCells != null) {
+        return renderedAxisCells;
+      }
+    }
+
     var start = axis === 'row' ? this.m_startCol : this.m_startRow;
     var end = axis === 'row' ? this.m_endCol : this.m_endRow;
-    if (
-      !this._isHighWatermarkScrolling() &&
-      ((axis === 'row' && this._hasFrozenRows()) || (axis === 'column' && this._hasFrozenColumns()))
-    ) {
+    if (shouldScanRenderedCells) {
       start = 0;
     }
     var axisExtent;
@@ -29367,7 +30270,7 @@ var __oj_data_grid_metadata =
   };
 
   /**
-   * Get horizontal alignment styles
+   * Get vertical alignment styles
    * @param {string} verticalAlignment
    * @private
    */
@@ -29924,19 +30827,23 @@ var __oj_data_grid_metadata =
 
         if (!isExtend) {
           if (keyCodeCopy === this.keyCodes.LEFT_KEY) {
-            if (this.isFirstOrFirstNonHiddenIndex(this.m_active.indexes.column, 'column')) {
+            if (this.isFirstOrFirstNonHiddenIndex(this.m_active.indexes.column, 'column') &&
+                this.m_endRowHeader !== -1) {
               changeRegions = true;
             }
           } else if (keyCodeCopy === this.keyCodes.UP_KEY) {
-            if (this.isFirstOrFirstNonHiddenIndex(this.m_active.indexes.row, 'row')) {
+            if (this.isFirstOrFirstNonHiddenIndex(this.m_active.indexes.row, 'row') &&
+                this.m_endColHeader !== -1) {
               changeRegions = true;
             }
           } else if (keyCodeCopy === this.keyCodes.RIGHT_KEY) {
-            if (this.isLastOrLastNonHiddenIndex(this.m_active.indexes.column, 'column')) {
+            if (this.isLastOrLastNonHiddenIndex(this.m_active.indexes.column, 'column') &&
+                this.m_endRowEndHeader !== -1) {
               changeRegions = true;
             }
           } else if (keyCodeCopy === this.keyCodes.DOWN_KEY) {
-            if (this.isLastOrLastNonHiddenIndex(this.m_active.indexes.row, 'row')) {
+            if (this.isLastOrLastNonHiddenIndex(this.m_active.indexes.row, 'row') &&
+                this.m_endColEndHeader !== -1) {
               changeRegions = true;
             }
           }
@@ -31203,12 +32110,26 @@ var __oj_data_grid_metadata =
       if (this.m_databody.firstChild != null && !isFrozenSectionResize) {
         let oldScrollerWidth = this.getElementWidth(this.m_databody.firstChild);
         newScrollerWidth = oldScrollerWidth + widthChange;
-        this._setAllScrollableRegions('width', newScrollerWidth);
         if (this.m_databodyFrozenRow) {
           this.setElementWidth(this.m_databodyFrozenRow.firstChild, newScrollerWidth);
         }
       } else if (isFrozenSectionResize && this.m_databodyFrozenCol) {
-        let oldScrollerWidth = this.getElementWidth(this.m_databodyFrozenCol);
+        const frozenHeaderScroller = this.m_resizingElement.parentElement;
+        const frozenHeaderCells = [
+          ...frozenHeaderScroller.querySelectorAll('.' + this.getMappedStyle('colheadercell'))
+        ];
+        const resizingElementContext =
+          this.m_resizingElement[this.getResources().getMappedAttribute('context')];
+        let oldScrollerWidth = 0;
+        frozenHeaderCells.forEach((header) => {
+          const currentHeaderContext = header[this.getResources().getMappedAttribute('context')];
+          if (
+            currentHeaderContext.level === resizingElementContext.level &&
+            currentHeaderContext.index !== resizingElementContext.index
+          ) {
+            oldScrollerWidth += header.offsetWidth;
+          }
+        });
         let scrollerDir = this.getElementDir(this.m_databodyFrozenCol, dir);
         if (this.m_endRowEndHeader !== -1) {
           let endHeaderDir = this.getElementDir(this.m_rowEndHeader, dir);
@@ -31216,15 +32137,16 @@ var __oj_data_grid_metadata =
           widthChange =
             newWidth > endHeaderDir ? endHeaderDir - (scrollerDir + oldScrollerWidth) : widthChange;
         }
-        newScrollerWidth = oldScrollerWidth + widthChange;
+        newScrollerWidth = oldScrollerWidth + newElementWidth;
         this.setElementWidth(this.m_databodyFrozenCol, newScrollerWidth);
         if (this.m_databodyFrozenCorner) {
           this.setElementWidth(this.m_databodyFrozenCorner, newScrollerWidth);
         }
       }
-
+      this._setAllScrollableRegions('width', newScrollerWidth);
       // helper to update all elements this effects
       this.resizeColumnWidthAndShift(widthChange);
+
       this.deleteAndApplyHiddenIndicators();
       if (!isFrozenSectionResize) {
         // check for availability of sections to ensure getMaxRightPixel isnt polluted.
@@ -31241,7 +32163,6 @@ var __oj_data_grid_metadata =
           this.m_avgColWidth = newScrollerWidth / this.getDataSource().getCount('column');
         }
       }
-
       this.manageResizeScrollbars();
     }
   };
@@ -31265,9 +32186,23 @@ var __oj_data_grid_metadata =
       if (this.m_databody.firstChild != null && !isFrozenSectionResize) {
         let oldScrollerHeight = this.getElementHeight(this.m_databody.firstChild);
         newScrollerHeight = oldScrollerHeight + heightChange;
-        this._setAllScrollableRegions('height', newScrollerHeight);
       } else if (isFrozenSectionResize && this.m_databodyFrozenRow) {
-        let oldScrollerHeight = this.getElementHeight(this.m_databodyFrozenRow);
+        const frozenHeaderScroller = this.m_resizingElement.parentElement;
+        const frozenHeaderCells = [
+          ...frozenHeaderScroller.querySelectorAll('.' + this.getMappedStyle('rowheadercell'))
+        ];
+        const resizingElementContext =
+          this.m_resizingElement[this.getResources().getMappedAttribute('context')];
+        let oldScrollerHeight = 0;
+        frozenHeaderCells.forEach((header) => {
+          const currentHeaderContext = header[this.getResources().getMappedAttribute('context')];
+          if (
+            currentHeaderContext.level === resizingElementContext.level &&
+            currentHeaderContext.index !== resizingElementContext.index
+          ) {
+            oldScrollerHeight += header.offsetHeight;
+          }
+        });
         let scrollerDir = this.getElementDir(this.m_databodyFrozenRow, dir);
         if (this.m_endColEndHeader !== -1) {
           let endHeaderDir = this.getElementDir(this.m_colEndHeader, dir);
@@ -31277,13 +32212,13 @@ var __oj_data_grid_metadata =
               ? endHeaderDir - (scrollerDir + oldScrollerHeight)
               : heightChange;
         }
-        newScrollerHeight = oldScrollerHeight + heightChange;
+        newScrollerHeight = oldScrollerHeight + newElementHeight;
         this.setElementHeight(this.m_databodyFrozenRow, newScrollerHeight);
         if (this.m_databodyFrozenCorner) {
           this.setElementHeight(this.m_databodyFrozenCorner, newScrollerHeight);
         }
       }
-
+      this._setAllScrollableRegions('height', newScrollerHeight);
       // set row height on the appropriate databody row, set the new value in the sizingManager
       this.resizeRowHeightAndShift(heightChange);
       this.deleteAndApplyHiddenIndicators();
@@ -32156,27 +33091,34 @@ var __oj_data_grid_metadata =
 
     this.setElementDir(rowHeader, 0, dir);
     this.setElementDir(rowHeader, colHeaderHeight, 'top');
-    this.setElementHeight(rowHeader, rowHeaderHeight);
 
     this.setElementDir(rowEndHeader, rowEndHeaderDir, dir);
     this.setElementDir(rowEndHeader, colHeaderHeight, 'top');
-    this.setElementHeight(rowEndHeader, rowHeaderHeight);
 
     this.setElementDir(colHeader, rowHeaderWidth, dir);
-    this.setElementWidth(colHeader, columnHeaderWidth);
 
     this.setElementDir(colEndHeader, rowHeaderWidth, dir);
     this.setElementDir(colEndHeader, columnEndHeaderDir, 'top');
-    this.setElementWidth(colEndHeader, columnHeaderWidth);
 
-    [rowHeaderWidth, colHeaderHeight] = this._setFrozenContainerDimension(
-      databodyWidth,
-      databodyHeight,
-      rowHeaderWidth,
-      rowEndHeaderWidth,
-      colHeaderHeight,
-      colEndHeaderHeight
-    );
+    if (this._hasFrozenColumns() || this._hasFrozenRows()) {
+      [rowHeaderWidth, colHeaderHeight] = this._setFrozenContainerDimension(
+        databodyWidth,
+        databodyHeight,
+        rowHeaderWidth,
+        rowEndHeaderWidth,
+        colHeaderHeight,
+        colEndHeaderHeight
+      );
+      this.setElementHeight(rowHeader, databodyHeight);
+      this.setElementHeight(rowEndHeader, databodyHeight);
+      this.setElementWidth(colHeader, databodyWidth);
+      this.setElementWidth(colEndHeader, databodyWidth);
+    } else {
+      this.setElementHeight(rowHeader, rowHeaderHeight);
+      this.setElementHeight(rowEndHeader, rowHeaderHeight);
+      this.setElementWidth(colHeader, columnHeaderWidth);
+      this.setElementWidth(colEndHeader, columnHeaderWidth);
+    }
 
     this.setElementDir(databody, colHeaderHeight, 'top');
     this.setElementDir(databody, rowHeaderWidth, dir);
@@ -33545,7 +34487,7 @@ var __oj_data_grid_metadata =
     let isResizable = false;
 
     if (resizeDimension === 'width') {
-      newElementWidth = this._calculateResizeFitToContentValue(cells, resizeDimension);
+      newElementWidth = this._calculateResizeFitToContentValue(cells, resizeDimension, header);
       size = newElementWidth;
       if (isColumn && this.m_options.isResizable('column', 'width') === 'enable') {
         isResizable = true;
@@ -33555,7 +34497,7 @@ var __oj_data_grid_metadata =
         this.resizeRowWidth(newElementWidth, newElementWidth - oldElementWidth, isEndHeader, false);
       }
     } else {
-      newElementHeight = this._calculateResizeFitToContentValue(cells, resizeDimension);
+      newElementHeight = this._calculateResizeFitToContentValue(cells, resizeDimension, header);
       size = newElementHeight;
       if (isColumn && this.m_options.isResizable('column', 'height') === 'enable') {
         isResizable = true;
@@ -33604,7 +34546,7 @@ var __oj_data_grid_metadata =
    * @private
    */
 
-  DvtDataGrid.prototype._calculateResizeFitToContentValue = function (cells, dimension) {
+  DvtDataGrid.prototype._calculateResizeFitToContentValue = function (cells, dimension, header) {
     const minValue = this._getMinValue(dimension, dimension === 'width' ? 'row' : 'column', false);
     const container = document.createElement('div');
     container.style.visibility = 'hidden';
@@ -33625,8 +34567,22 @@ var __oj_data_grid_metadata =
         greatestSize = tempGreatestSize;
       }
     });
-    const maxValue =
-      dimension === 'width' ? this.m_databody.offsetWidth : this.m_databody.offsetHeight;
+
+    const isFrozen = this.m_utils.containsCSSClassName(header, this.getMappedStyle('frozenHeader'));
+    let frozenModifer = 0;
+
+    if (isFrozen && this._hasFrozenColumns() && dimension === 'width') {
+      frozenModifer = this.m_databodyFrozenCol.offsetWidth;
+    }
+
+    if (isFrozen && this._hasFrozenRows() && dimension === 'height') {
+      frozenModifer = this.m_databodyFrozenRow.offsetHeight;
+    }
+
+    let headerContainer = this.m_databody;
+    let maxValue = dimension === 'width' ? headerContainer.offsetWidth : headerContainer.offsetHeight;
+
+    maxValue += frozenModifer;
 
     greatestSize = greatestSize < minValue ? minValue : greatestSize;
     greatestSize = greatestSize > maxValue ? maxValue : greatestSize;
@@ -38149,6 +39105,835 @@ var __oj_data_grid_metadata =
     return target.getElementsByClassName(this.getMappedStyle('icon'))[0];
   };
 
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td rowspan="2">Cell</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Focus on the cell.  If <code class="prettyprint">selectionMode</code> for cells is enabled, selects the cell as well.
+   *       If multiple selection is enabled the selection handles will appear. Tapping a different cell will deselect the previous selection.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Press & Hold</kbd></td>
+   *       <td>Display context menu</td>
+   *     </tr>
+   *
+   *     <tr>
+   *       <td rowspan="3">Row</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>If <code class="prettyprint">selectionMode</code> for rows is enabled, selects the row as well.
+   *       If multiple selection is enabled the selection handles will appear. Tapping a different row will deselect the previous selection.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Drag</kbd></td>
+   *       <td>If the row that is dragged contains the active cell and <code class="prettyprint">dnd reorder row</code> is enabled the row will be moved within the DataGrid.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Press & Hold</kbd></td>
+   *       <td>Display context menu</td>
+   *     </tr>
+   *
+   *     <tr>
+   *       <td rowspan="2">Header</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>If Multiple Selection is enabled or in row <code>selectionMode</code>, the row or column will be selected. Selection handles will appear for multiple selection. Otherwise, header cell will be focused.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Press & Hold</kbd></td>
+   *       <td>Display context menu</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Header Gridline</td>
+   *       <td><kbd>Drag</kbd></td>
+   *       <td>Resizes the header if <code class="prettyprint">resizable</code> enabled along the axis.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Corner</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Tapping on the corner will perform a select all operation on the datagrid if multiple selection is enabled.</td>
+   *     </tr>
+   *
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch section of classdesc, and standalone gesture doc
+   * @memberof oj.ojDataGrid
+   */
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td rowspan="26">Cell</td>
+   *       <td><kbd>Tab</kbd></td>
+   *       <td>The first Tab into the DataGrid moves focus to the first cell of the first row.  The second Tab moves focus to the next focusable element outside of the DataGrid.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + Tab</kbd></td>
+   *       <td>The first Shift + Tab into the DataGrid moves focus to the first cell of the first row.  The second Shift + Tab moves focus to the previous focusable element outside of the DataGrid.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>LeftArrow</kbd></td>
+   *       <td>Moves focus to the cell of the previous column within the current row.  There is no wrapping at the beginning or end of the columns.  If a row header is present, then the row header next to the first column of the current row will gain focus.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>RightArrow</kbd></td>
+   *       <td>Moves focus to the cell of the next column within the current row.  There is no wrapping at the beginning or end of the columns.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>UpArrow</kbd></td>
+   *       <td>Moves focus to the cell of the previous row within the current column.  There is no wrapping at the beginning or end of the rows.  If a column header is present, then the column header above the first row of the current column will gain focus.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>DownArrow</kbd></td>
+   *       <td>Moves focus to the cell of the next row within the current column.  There is no wrapping at the beginning or end of the rows.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Home</kbd></td>
+   *       <td>Moves focus to the first (available) cell of the current row.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>End</kbd></td>
+   *       <td>Moves focus to the last (available) cell of the current row.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>PageUp</kbd></td>
+   *       <td>Moves focus to the first (available) cell in the current column.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>PageDown</kbd></td>
+   *       <td>Moves focus to the last (available) cell in the current column.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + Space</kbd></td>
+   *       <td>Selects all the cells of the current column.  This is only available if multiple cell selection mode is enabled.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + Space</kbd></td>
+   *       <td>Selects all the cells of the current row.  This is only available if multiple cell selection mode is enabled.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + Arrow</kbd></td>
+   *       <td>Extends the current selection.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + Arrow</kbd></td>
+   *       <td>Move focus to the start or end cell in a contiguous data range in the direction of the arrow, i.e. if there is an empty cell, focus moves to the cell adjacent to empty cell. An empty cell is defined as a cell with no children or text content inside the cell.
+   *       <br />If the end of the rendered data range is reached, that will be where the focus moves to, new data will be fetched, and another keyboard gesture will be required to keep searching</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + Home</kbd></td>
+   *       <td>Move focus to the first (available) cell of grid</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + End</kbd></td>
+   *       <td>Move focus to the last (available) cell of grid</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + F8</kbd></td>
+   *       <td>Freezes the current selection, therefore allowing user to move focus to another location to add or remove additional cells to the current selection.
+   *           To deselect begin the discontiguous selection within an existing selection.
+   *           This is used to accomplish non-contiguous selection.  Use the Esc key or press Shift+F8 again to exit this mode.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + F10</kbd></td>
+   *       <td>Brings up the context menu.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + C</kbd></td>
+   *       <td>It triggers ojCopyRequest with the selected range of cells. Only a single range may be copied.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + X</kbd></td>
+   *       <td>Marks the current row to move if dnd is enabled and the datasource supports move operation. If datasource is datagridProvider,
+   *            It triggers ojCutRequest with the selected range of cells. Only a single range may be cut.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + V</kbd></td>
+   *       <td>Move the row that is marked to directly under the current row.  If the row with the focused cell is the last row, then it will be move to the row above the current row.
+   *            If datasource is datagridProvider, it triggers ojPasteRequest with the selected range of cells.
+   *            Investigate the source selection/action to determine how to handle the paste operation.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + A</kbd></td>
+   *       <td>If multiple selection is enabled, performs a select all on the datagrid.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + Alt + 5</kbd></td>
+   *       <td>Read the context and content of the current cell to the screen reader.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>F2</kbd></td>
+   *       <td>Makes the content of the cell actionable, such as a link.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Enter</kbd></td>
+   *       <td>Makes the content of the cell actionable and acts on the content, such as going to a link.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Alt + Enter</kbd></td>
+   *       <td>Makes the content of the cell actionable, such as a link.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Esc</kbd></td>
+   *       <td>If the cell is actionable it exits actionable mode.</td>
+   *     </tr>
+   *     <tr>
+   *       <td rowspan="16">Column Header Cell</td>
+   *       <td><kbd>LeftArrow</kbd></td>
+   *       <td>Moves focus to the previous column header.  There is no wrapping at the beginning or end of the column headers.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>RightArrow</kbd></td>
+   *       <td>Moves focus to the next column header.  There is no wrapping at the beginning or end of the column headers.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>DownArrow</kbd></td>
+   *       <td>Moves focus to the cell of the first row directly below the column header. If using nested headers will move focus up a level.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>UpArrow</kbd></td>
+   *       <td>If using nested headers will move focus down a level.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + UpArrow</kbd></td>
+   *       <td>If in the column end header, move focus to upside in a contiguous data range including the level 0 of the active index in the column header if it exists.
+   *       <br />If there is an empty cell in between, focus moves to the cell adjacent to empty cell. An empty cell is defined as a cell with no children or text content inside the cell.
+   *       <br />If the end of the rendered data range is reached, that will be where the focus moves to, new data will be fetched, and another keyboard gesture will be required to keep searching</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + LeftArrow</kbd></td>
+   *       <td>On an expanded parent column header, collapses the header.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + RightArrow</kbd></td>
+   *       <td>On a collapsed parent column header, expands the header.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + DownArrow</kbd></td>
+   *       <td>If in the column header, move focus to down side in a contiguous data range including level 0 of the active index in the column end header if it exists.
+   *       <br />If there is an empty cell in between, focus moves to the cell adjacent to empty cell. An empty cell is defined as a cell with no children or text content inside the cell.
+   *       <br />If the end of the rendered data range is reached, that will be where the focus moves to, new data will be fetched, and another keyboard gesture will be required to keep searching</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + Alt + R</kbd></td>
+   *       <td>Triggers ojFilterRequest event if the column is filterable.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Enter</kbd></td>
+   *       <td>Toggle the sort order of the column if the column is sortable.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + F10</kbd></td>
+   *       <td>Brings up the context menu.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Space</kbd></td>
+   *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row, the column(s) underneath the header will be selected.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + Right Arrow</kbd></td>
+   *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row, the column selection will extend to the right by the number of columns covered by the header to the right of the current selection frontier header.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + Left Arrow</kbd></td>
+   *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row, the column selection will extend to the right left the number of columns covered by the header to the left of the current selection frontier header.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + Up Arrow</kbd></td>
+   *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row and the current selection frontier header has a parent nested header, the column selection will extend to cover the columns beneath the parent header.
+   *           <br/> Extending the selection with arrow keys will use the parent level. If the parent header is directly above the anchor header, the anchor will shift to the parent header and future selections will be based on the parent header.
+   *           <br/> If we are already at the highest level, nothing will happen.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + Down Arrow</kbd></td>
+   *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row and the current selection frontier header has a child nested header, the column selection will extend to cover the columns beneath the child header.
+   *           <br/> Extending the selection with arrow keys will use the child level. If the child header is directly below the anchor header, the anchor will shift to the child header and future selections will be based on the child header.
+   *           <br/> If we are already at the lowest level, it will simply move into the databody and select the first cell underneath the header.</td>
+   *     </tr>
+   *     <tr>
+   *       <td rowspan="13">Row Header Cell</td>
+   *       <td><kbd>UpArrow</kbd></td>
+   *       <td>Moves focus to the previous row header.  There is no wrapping at the beginning or end of the row headers.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>DownArrow</kbd></td>
+   *       <td>Moves focus to the next row header.  There is no wrapping at the beginning or end of the row headers.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>RightArrow</kbd></td>
+   *       <td>Moves focus to the cell of the first column directly next to the row header. If using nested headers will move focus up a level.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>LeftArrow</kbd></td>
+   *       <td>Moves focus to the cell of the first column directly next to the row header in RTL direction. If using nested headers will move focus down a level.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + LeftArrow</kbd></td>
+   *       <td>If inside header and hierarchical header will expand, if expanded or not hierarchical,
+   *       <br/>move focus to left side in a contiguous data range (including the row header).
+   *       <br />if there is an empty cell in between, focus moves to the cell adjacent to empty cell. An empty cell is defined as a cell with no children or text content inside the cell.
+   *       <br />If the end of the rendered data range is reached, that will be where the focus moves to, new data will be fetched, and another keyboard gesture will be required to keep searching</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + RightArrow</kbd></td>
+   *       <td>If inside header and hierarchical header will expand, if expanded or not hierarchical,
+   *       <br/>move focus to right side in a contiguous data range (including the row End header).
+   *       <br />if there is an empty cell in between, focus moves to the cell adjacent to empty cell. An empty cell is defined as a cell with no children or text content inside the cell.
+   *       <br />If the end of the rendered data range is reached, that will be where the focus moves to, new data will be fetched, and another keyboard gesture will be required to keep searching</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Enter</kbd></td>
+   *       <td>Toggle the sort order of the row if the row is sortable.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + F10</kbd></td>
+   *       <td>Brings up the context menu.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Space</kbd></td>
+   *       <td>If multiple selection is enabled, the row(s) underneath the header will be selected.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + Up Arrow</kbd></td>
+   *       <td>If multiple selection is enabled, the row selection will extend up by the number of rows covered by the header above the current selection frontier header.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + Down Arrow</kbd></td>
+   *       <td>If multiple selection is enabled, the row selection will extend down by the number of rows covered by the header below the current selection frontier header.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + Left Arrow</kbd></td>
+   *       <td>If multiple selection is enabled and the current selection frontier header has a parent nested header, the row selection will extend to cover the rows beneath the parent header.
+   *           <br/> Extending the selection with arrow keys will use the parent level. If the parent header is directly above the anchor header, the anchor will shift to the parent header and future selections will be based on the parent header.
+   *           <br/> If we are already at the highest level, nothing will happen.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Shift + Right Arrow</kbd></td>
+   *       <td>If multiple selection is enabled  and the current selection frontier header has a child nested header, the row selection will extend to cover the rows beneath the child header.
+   *           <br/> Extending the selection with arrow keys will use the child level. If the child header is directly below the anchor header, the anchor will shift to the child header and future selections will be based on the child header.
+   *           <br/> If we are already at the lowest level, it will simply move into the databody and select the first cell underneath the header.</td>
+   *     </tr>
+
+
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojDataGrid
+   */
+
+  //----------------------------------------------
+  //             SUB-IDS
+  //----------------------------------------------
+
+  /**
+   * <p>Sub-ID for the DataGrid element's cells.</p>
+   *
+   * To lookup a cell the locator object should have the following:
+   * <ul>
+   * <li><b>subId</b>: 'oj-datagrid-cell'</li>
+   * <li><b>rowIndex</b>: the zero based absolute row index</li>
+   * <li><b>columnIndex</b>: the zero based absolute column index</li>
+   * </ul>
+   *
+   * @ojsubid oj-datagrid-cell
+   * @memberof oj.ojDataGrid
+   * @example <caption>Get the cell at the specified location:</caption>
+   * var node = myDataGrid.getNodeBySubId({subId: 'oj-datagrid-cell', rowIndex: rowIndexValue, columnIndex: columnIndexValue});
+   */
+
+  /**
+   * <p>Sub-ID for the DataGrid element's headers.</p>
+   *
+   * To lookup a header the locator object should have the following:
+   * <ul>
+   * <li><b>subId</b>: 'oj-datagrid-header'</li>
+   * <li><b>axis</b>: 'column'/'row'/'columnEnd'/'rowEnd'</li>
+   * <li><b>index</b>: the zero based absolute row/column index.</li>
+   * <li><b>level</b>: the zero based header level, 0 is the outer edge, if not specified will default to 0</li>
+   * </ul>
+   *
+   * @ojsubid oj-datagrid-header
+   * @memberof oj.ojDataGrid
+   *
+   * @example <caption>Get the header at the specified location:</caption>
+   * var node = myDataGrid.getNodeBySubId({subId: 'oj-datagrid-header', axis: 'axisValue', index: indexValue, level: levelValue});
+   */
+
+  /**
+   * <p>Sub-ID for the DataGrid element's sort ascending icon in column headers.</p>
+   *
+   * To lookup a sort icon the locator object should have the following:
+   * <ul>
+   * <li><b>subId</b>: 'oj-datagrid-sort-ascending'</li>
+   * <li><b>axis</b>: 'column'</li>
+   * <li><b>index</b>: the zero based absolute column index</li>
+   * <li><b>level</b>: the zero based header level, 0 is the outer edge, if not specified will default to 0</li>
+   * </ul>
+   *
+   * @ojsubid oj-datagrid-sort-ascending
+   * @memberof oj.ojDataGrid
+   *
+   * @example <caption>Get the sort icon from the header at the specified location:</caption>
+   * var node = myDataGrid.getNodeBySubId({subId: 'oj-datagrid-sort-ascending', axis: 'axisValue', index: indexValue, level: levelValue});
+   */
+
+  /**
+   * <p>Sub-ID for the DataGrid element's sort descending icon in column headers.</p>
+   *
+   * To lookup a sort icon the locator object should have the following:
+   * <ul>
+   * <li><b>subId</b>: 'oj-datagrid-sort-descending'</li>
+   * <li><b>axis</b>: 'column'</li>
+   * <li><b>index</b>: the zero based absolute column index</li>
+   * <li><b>level</b>: the zero based header level, 0 is the outer edge, if not specified will default to 0</li>
+   * </ul>
+   *
+   * @ojsubid oj-datagrid-sort-descending
+   * @memberof oj.ojDataGrid
+   *
+   * @example <caption>Get the descending sort icon from the header at the specified location:</caption>
+   * var node = myDataGrid.getNodeBySubId({subId: 'oj-datagrid-sort-descending', axis: 'axisValue', index: indexValue, level: levelValue});
+   */
+  //-----------------------------------------------------
+  //                   Contexts
+  //-----------------------------------------------------
+
+  /**
+   * <p>Context for the ojDataGrid element's cells.</p>
+   *
+   * @property {function} component a reference to the DataGrid widgetConstructor
+   * @property {Object} cell the container data object for the header
+   * @property {Object} data the data object for the header
+   * @property {Object} datasource a reference to the data source object
+   * @property {Object} indexes the object that contains both the zero based row index and column index in which the cell is bound to
+   * @property {number} indexes.row the zero based absolute row index
+   * @property {number} indexes.column the zero based absolute column index
+   * @property {Object} keys the object that contains both the row key and column key which identifies the cell
+   * @property {number|string} keys.row the row key
+   * @property {number|string} keys.column the column key
+   * @property {Object} extents the object that contains both the row extent and column extent of the cell
+   * @property {number} extents.row the row extent
+   * @property {number} extents.column the column extent
+   * @property {string} mode the mode the cell is rendered in
+   * @property {string} subId the subId of the cell
+   *
+   * @ojnodecontext oj-datagrid-cell
+   * @memberof oj.ojDataGrid
+   */
+  /**
+   * <p>Context for the ojDataGrid element's headers.</p>
+   *
+   * @property {number} axis the axis of the header, possible values are 'row'/'column'/'columnEnd'/'rowEnd'
+   * @property {function} component a reference to the DataGrid widgetConstructor
+   * @property {Object} data the data object for the header
+   * @property {Object} datasource a reference to the data source object
+   * @property {number} depth the the number of levels the header spans
+   * @property {number} extent the number of indexes the header spans
+   * @property {number} index the index of the header, where 0 is the index of the first header
+   * @property {number|string} key the key of the header
+   * @property {number} level the level of the header. The outermost header is level zero
+   * @property {string} subId the subId of the header
+   *
+   * @ojnodecontext oj-datagrid-header
+   * @memberof oj.ojDataGrid
+   */
+
+  /**
+   * <p>Context for the ojDataGrid element's header labels.</p>
+   *
+   * @property {number} axis the axis of the header label, possible values are 'row'/'column'/'columnEnd'/'rowEnd'
+   * @property {function} component a reference to the DataGrid widgetConstructor
+   * @property {Object} data the data object for the header label
+   * @property {Object} datasource a reference to the data source object
+   * @property {number} level the level of the header label. The outermost header label is level zero
+   * @property {string} subId the subId of the header label
+   *
+   * @ojnodecontext oj-datagrid-header-label
+   * @memberof oj.ojDataGrid
+   */
+  /**
+   * @typedef {Object} oj.ojDataGrid.CellTemplateContext
+   * @property {GridBodyItem<D>} item GridBodyItem associated with the cell.
+   * @property {DataGridProvider<D>} datasource A reference to the grid data provider object.
+   * @property {string} mode The mode of the row containing the cell. It can be "edit" or "navigation".
+   * @ojsignature {target:"Type", value:"<D>", for:"genericTypeParameters"}
+   */
+  /**
+   * @typedef {Object} oj.ojDataGrid.HeaderTemplateContext
+   * @property {GridHeaderItem<D>} item GridHeaderItem associated with the header.
+   * @property {DataGridProvider<D>} datasource A reference to the grid data provider object.
+   * @ojsignature {target:"Type", value:"<D>", for:"genericTypeParameters"}
+   */
+  /**
+   * @typedef {Object} oj.ojDataGrid.LabelTemplateContext
+   * @property {GridItem<D>} item GridItem associated with the label.
+   * @property {DataGridProvider<D>} datasource A reference to the grid data provider object.
+   * @ojsignature {target:"Type", value:"<D>", for:"genericTypeParameters"}
+   */
+  //-----------------------------------------------------
+  //                   Slots
+  //-----------------------------------------------------
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">rowHeaderTemplate</code> slot is used to specify the template for the content of the row header. If both rowHeaderTemplate
+   * and rowHeaderContentTemplate are specified then rowHeaderTemplate takes precedence.</p>
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot rowHeaderTemplate
+   * @ojshortdesc The rowHeaderTemplate slot is used to specify the template for rendering the content of the row header. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline row header template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='rowHeaderTemplate' data-oj-as='cell'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">rowHeaderContentTemplate</code> slot is used to specify the template for the content of the row header. If both rowHeaderTemplate
+   * and rowHeaderContentTemplate are specified then rowHeaderTemplate takes precedence.</p>
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot rowHeaderContentTemplate
+   * @ojshortdesc The rowHeaderContentTemplate slot is used to specify the template for rendering the content of the row header. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline row header template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='rowHeaderContentTemplate' data-oj-as='header'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">rowEndHeaderTemplate</code> slot is used to specify the template for the content of the row end header.
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot rowEndHeaderTemplate
+   * @ojshortdesc The rowEndHeaderTemplate slot is used to specify the template for rendering the content of the row end header. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline row end header template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='rowEndHeaderTemplate' data-oj-as='cell'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">columnHeaderTemplate</code> slot is used to specify the template for the content of the column header. If both columnHeaderTemplate
+   * and columnHeaderContentTemplate are specified then columnHeaderTemplate takes precedence.</p>
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot columnHeaderTemplate
+   * @ojshortdesc The columnHeaderTemplate slot is used to specify the template for rendering the content of the column header. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline column header template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='columnHeaderTemplate' data-oj-as='cell'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">columnHeaderContentTemplate</code> slot is used to specify the template for the content of the column header. If both columnHeaderTemplate
+   * and columnHeaderContentTemplate are specified then columnHeaderTemplate takes precedence.</p>
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot columnHeaderContentTemplate
+   * @ojshortdesc The columnHeaderContentTemplate slot is used to specify the template for rendering the content of the column header. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline column header template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='columnHeaderContentTemplate' data-oj-as='cell'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">columnEndHeaderTemplate</code> slot is used to specify the template for the content of the column end header.
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot columnEndHeaderTemplate
+   * @ojshortdesc The columnEndHeaderTemplate slot is used to specify the template for rendering the content of the column end header. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline column end header template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='columnEndHeaderTemplate' data-oj-as='cell'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">cellTemplate</code> slot is used to specify the template for the content of the cell.
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.CellTemplateContext]{@link oj.ojDataGrid.CellTemplateContext} </li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot cellTemplate
+   * @ojshortdesc The cellTemplate slot is used to specify the template for rendering the content of the cell. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.CellTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline cell template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='cellTemplate' data-oj-as='cell'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">rowHeaderLabelTemplate</code> slot is used to specify the template for the content of the row header label.
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} </li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot rowHeaderLabelTemplate
+   * @ojshortdesc The rowHeaderLabelTemplate slot is used to specify the template for rendering the content of the row header label. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline row header label template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='rowHeaderLabelTemplate' data-oj-as='cell'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">rowHeaderLabelContentTemplate</code> slot is used to specify the template for the content of the row header label. If both rowHeaderLabelTemplate
+   * and rowHeaderLabelContentTemplate are specified then rowHeaderLabelTemplate takes precedence.</p>
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} or the table below for a list of properties available on $current)</li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot rowHeaderLabelContentTemplate
+   * @ojshortdesc The rowHeaderLabelContentTemplate slot is used to specify the template for rendering the content of the row header label. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline row header template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='rowHeaderLabelContentTemplate' data-oj-as='header'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">rowEndHeaderLabelTemplate</code> slot is used to specify the template for the content of the row end header label.
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} or the table below for a list of properties available on $current)</li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot rowEndHeaderLabelTemplate
+   * @ojshortdesc The rowEndHeaderLabelTemplate slot is used to specify the template for rendering the content of the row end header label. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline row end header label template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='rowEndHeaderLabelTemplate' data-oj-as='cell'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">columnHeaderLabelTemplate</code> slot is used to specify the template for the content of the column header label.
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} or the table below for a list of properties available on $current)</li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot columnHeaderLabelTemplate
+   * @ojshortdesc The columnHeaderLabelTemplate slot is used to specify the template for rendering the content of the column header label. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline column header label template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='columnHeaderLabelTemplate' data-oj-as='cell'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">columnHeaderLabelContentTemplate</code> slot is used to specify the template for the content of the column header label. If both columnHeaderLabelTemplate
+   * and columnHeaderLabelContentTemplate are specified then columnHeaderLabelTemplate takes precedence.</p>
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} or the table below for a list of properties available on $current)</li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot columnHeaderLabelContentTemplate
+   * @ojshortdesc The columnHeaderLabelContentTemplate slot is used to specify the template for rendering the content of the column header label. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline row header template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='columnHeaderLabelContentTemplate' data-oj-as='header'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+  /**
+   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
+   * <p>The <code class="prettyprint">columnEndHeaderLabelTemplate</code> slot is used to specify the template for the content of the column end header label.
+   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} or the table below for a list of properties available on $current)</li>
+   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+   * </ul>
+   *
+   * @ojslot columnEndHeaderLabelTemplate
+   * @ojshortdesc The columnEndHeaderLabelTemplate slot is used to specify the template for rendering the content of the column end header label. See the Help documentation for more information.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
+   * @example <caption>Initialize the DataGrid with an inline column end header label template specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='columnEndHeaderLabelTemplate' data-oj-as='cell'>
+   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
+   *   &lt;template>
+   * &lt;/oj-data-grid>
+   */
+
+  /**
+   * <p>The <code class="prettyprint">noData</code> slot is used to specify the content to display when the datagrid is empty.
+   * The slot content must be a &lt;template> element.  If not specified then a default no data message will be displayed.
+   *
+   * @ojslot noData
+   * @ojshortdesc The noData slot is used to specify the content to render when the datagrid is empty.
+   * @ojmaxitems 1
+   * @memberof oj.ojDataGrid
+   * @ojtemplateslotprops {}
+   * @ojlegacymetadata templateSlotAlias "noDataTemplate"
+   *
+   * @example <caption>Initialize the DataGrid with a <code class="prettyprint">noData</code> slot specified:</caption>
+   * &lt;oj-data-grid>
+   *   &lt;template slot='noData'>
+   *     &lt;span>&lt;oj-button>Add item&lt;/span>
+   *   &lt;/template>
+   * &lt;/oj-data-grid>
+   */
+
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+  // ----------------oj-datagrid-cell-no-padding or padding --------------
+  /**
+   * Used to style a datagrid cell so that it has no padding or default padding.
+   * @ojstyleset padding
+   * @ojdisplayname padding
+   * @ojstylesetitems ["padding.oj-datagrid-cell-no-padding", "padding.oj-datagrid-cell-padding"]
+   * @ojstylerelation exclusive
+   * @memberof oj.ojDataGrid
+   */
+  /**
+   * @ojstyleclass padding.oj-datagrid-cell-no-padding
+   * @ojshortdesc No Padding
+   * @ojdisplayname oj-datagrid-cell-no-padding
+   * @memberof! oj.ojDataGrid
+   */
+  /**
+   * @ojstyleclass padding.oj-datagrid-cell-padding
+   * @ojshortdesc Default Padding
+   * @ojdisplayname oj-datagrid-cell-padding
+   * @memberof! oj.ojDataGrid
+   */
+  // ---------------- oj-datagrid-depth-[1-7] ------------------
+  /**
+   * Used to style the default header widths and heights. By default the datagrid supports up to depth 7. <br/>
+   * If you have headers width depth greater than 7 specify the defaults using the class name description or use apply custom style rules to the headers.<br/>
+   * @ojstyletemplate oj-datagrid-depth-[1-7]
+   * @ojdisplayname depth
+   * @memberof oj.ojDataGrid
+   * @ojstyletemplatetokens ["StylingTemplateTokens.[1-7]"]
+   */
+  //
+  /**
+   * @ojstylevariableset oj-data-grid-css-set1
+   * @ojstylevariable  oj-data-grid-column-width {description: "Data grid column width", formats: ["length"], help: "#css-variables"}
+   * @memberof oj.ojDataGrid
+   */
+
+  // -------------------------------- oj.ojDataGrid Styling end ----------------
+
   /**
    * @constructor
    * @private
@@ -39034,10 +40819,10 @@ var __oj_data_grid_metadata =
               result.columnHeaderLabel != null &&
               result.columnEndHeaderLabel != null))) ||
         !next ||
-        (frozenColResult.columnHeader != null &&
-          frozenColResult.columnEndHeader != null &&
-          frozenColResult.columnHeaderLabel != null &&
-          frozenColResult.columnEndHeaderLabel != null)
+        (frozenColResult?.columnHeader != null &&
+          frozenColResult?.columnEndHeader != null &&
+          frozenColResult?.columnHeaderLabel != null &&
+          frozenColResult?.columnEndHeaderLabel != null)
       ) {
         headerCallbacks = fetchColumnCallback?.callbacks;
         let startColumnHeaderSet;
@@ -39069,10 +40854,27 @@ var __oj_data_grid_metadata =
               this.columnKeyMap,
               true
             );
+          } else if (fetchColumnCallback?.frozenHeaderRange != null && result.columnHeader != null) {
+            startFrozenColumnHeaderSet = new DataGridProviderHeaderSet$1(
+              results,
+              'column',
+              this.columnKeyMap,
+              true
+            );
           }
           if (frozenColResult?.columnEndHeader != null) {
             endFrozenColumnHeaderSet = new DataGridProviderHeaderSet$1(
               frozenColResults,
+              'columnEnd',
+              this.columnKeyMap,
+              true
+            );
+          } else if (
+            fetchColumnCallback?.frozenHeaderRange != null &&
+            result.columnEndHeader != null
+          ) {
+            endFrozenColumnHeaderSet = new DataGridProviderHeaderSet$1(
+              results,
               'columnEnd',
               this.columnKeyMap,
               true
@@ -39102,10 +40904,10 @@ var __oj_data_grid_metadata =
               result.rowHeaderLabel != null &&
               result.rowEndHeaderLabel != null))) ||
         !next ||
-        (frozenRowResult.rowHeader != null &&
-          frozenRowResult.rowEndHeader != null &&
-          frozenRowResult.rowHeaderLabel != null &&
-          frozenRowResult.rowEndHeaderLabel != null)
+        (frozenRowResult?.rowHeader != null &&
+          frozenRowResult?.rowEndHeader != null &&
+          frozenRowResult?.rowHeaderLabel != null &&
+          frozenRowResult?.rowEndHeaderLabel != null)
       ) {
         headerCallbacks = fetchRowCallback?.callbacks;
         let startRowHeaderSet;
@@ -39130,10 +40932,24 @@ var __oj_data_grid_metadata =
               this.rowKeyMap,
               true
             );
+          } else if (fetchRowCallback?.frozenHeaderRange != null && result.rowHeader != null) {
+            startFrozenRowHeaderSet = new DataGridProviderHeaderSet$1(
+              results,
+              'row',
+              this.rowKeyMap,
+              true
+            );
           }
           if (frozenRowResult?.rowEndHeader != null) {
             endFrozenRowHeaderSet = new DataGridProviderHeaderSet$1(
               frozenRowResults,
+              'rowEnd',
+              this.rowKeyMap,
+              true
+            );
+          } else if (fetchRowCallback?.frozenHeaderRange != null && result.rowEndHeader != null) {
+            endFrozenRowHeaderSet = new DataGridProviderHeaderSet$1(
+              results,
               'rowEnd',
               this.rowKeyMap,
               true
@@ -40140,835 +41956,6 @@ var __oj_data_grid_metadata =
    *     </tr>
    * </tbody></table>
    */
-  //-----------------------------------------------------
-  //                   Fragments
-  //-----------------------------------------------------
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Gesture</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td rowspan="2">Cell</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>Focus on the cell.  If <code class="prettyprint">selectionMode</code> for cells is enabled, selects the cell as well.
-   *       If multiple selection is enabled the selection handles will appear. Tapping a different cell will deselect the previous selection.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Press & Hold</kbd></td>
-   *       <td>Display context menu</td>
-   *     </tr>
-   *
-   *     <tr>
-   *       <td rowspan="3">Row</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>If <code class="prettyprint">selectionMode</code> for rows is enabled, selects the row as well.
-   *       If multiple selection is enabled the selection handles will appear. Tapping a different row will deselect the previous selection.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Drag</kbd></td>
-   *       <td>If the row that is dragged contains the active cell and <code class="prettyprint">dnd reorder row</code> is enabled the row will be moved within the DataGrid.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Press & Hold</kbd></td>
-   *       <td>Display context menu</td>
-   *     </tr>
-   *
-   *     <tr>
-   *       <td rowspan="2">Header</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>If Multiple Selection is enabled or in row <code>selectionMode</code>, the row or column will be selected. Selection handles will appear for multiple selection. Otherwise, header cell will be focused.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Press & Hold</kbd></td>
-   *       <td>Display context menu</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Header Gridline</td>
-   *       <td><kbd>Drag</kbd></td>
-   *       <td>Resizes the header if <code class="prettyprint">resizable</code> enabled along the axis.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Corner</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>Tapping on the corner will perform a select all operation on the datagrid if multiple selection is enabled.</td>
-   *     </tr>
-   *
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment touchDoc - Used in touch section of classdesc, and standalone gesture doc
-   * @memberof oj.ojDataGrid
-   */
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Key</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td rowspan="26">Cell</td>
-   *       <td><kbd>Tab</kbd></td>
-   *       <td>The first Tab into the DataGrid moves focus to the first cell of the first row.  The second Tab moves focus to the next focusable element outside of the DataGrid.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Tab</kbd></td>
-   *       <td>The first Shift + Tab into the DataGrid moves focus to the first cell of the first row.  The second Shift + Tab moves focus to the previous focusable element outside of the DataGrid.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>LeftArrow</kbd></td>
-   *       <td>Moves focus to the cell of the previous column within the current row.  There is no wrapping at the beginning or end of the columns.  If a row header is present, then the row header next to the first column of the current row will gain focus.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>RightArrow</kbd></td>
-   *       <td>Moves focus to the cell of the next column within the current row.  There is no wrapping at the beginning or end of the columns.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>UpArrow</kbd></td>
-   *       <td>Moves focus to the cell of the previous row within the current column.  There is no wrapping at the beginning or end of the rows.  If a column header is present, then the column header above the first row of the current column will gain focus.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>DownArrow</kbd></td>
-   *       <td>Moves focus to the cell of the next row within the current column.  There is no wrapping at the beginning or end of the rows.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Home</kbd></td>
-   *       <td>Moves focus to the first (available) cell of the current row.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>End</kbd></td>
-   *       <td>Moves focus to the last (available) cell of the current row.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>PageUp</kbd></td>
-   *       <td>Moves focus to the first (available) cell in the current column.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>PageDown</kbd></td>
-   *       <td>Moves focus to the last (available) cell in the current column.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + Space</kbd></td>
-   *       <td>Selects all the cells of the current column.  This is only available if multiple cell selection mode is enabled.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Space</kbd></td>
-   *       <td>Selects all the cells of the current row.  This is only available if multiple cell selection mode is enabled.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Arrow</kbd></td>
-   *       <td>Extends the current selection.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + Arrow</kbd></td>
-   *       <td>Move focus to the start or end cell in a contiguous data range in the direction of the arrow, i.e. if there is an empty cell, focus moves to the cell adjacent to empty cell. An empty cell is defined as a cell with no children or text content inside the cell.
-   *       <br />If the end of the rendered data range is reached, that will be where the focus moves to, new data will be fetched, and another keyboard gesture will be required to keep searching</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + Home</kbd></td>
-   *       <td>Move focus to the first (available) cell of grid</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + End</kbd></td>
-   *       <td>Move focus to the last (available) cell of grid</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + F8</kbd></td>
-   *       <td>Freezes the current selection, therefore allowing user to move focus to another location to add or remove additional cells to the current selection.
-   *           To deselect begin the discontiguous selection within an existing selection.
-   *           This is used to accomplish non-contiguous selection.  Use the Esc key or press Shift+F8 again to exit this mode.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + F10</kbd></td>
-   *       <td>Brings up the context menu.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + C</kbd></td>
-   *       <td>It triggers ojCopyRequest with the selected range of cells. Only a single range may be copied.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + X</kbd></td>
-   *       <td>Marks the current row to move if dnd is enabled and the datasource supports move operation. If datasource is datagridProvider,
-   *            It triggers ojCutRequest with the selected range of cells. Only a single range may be cut.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + V</kbd></td>
-   *       <td>Move the row that is marked to directly under the current row.  If the row with the focused cell is the last row, then it will be move to the row above the current row.
-   *            If datasource is datagridProvider, it triggers ojPasteRequest with the selected range of cells.
-   *            Investigate the source selection/action to determine how to handle the paste operation.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + A</kbd></td>
-   *       <td>If multiple selection is enabled, performs a select all on the datagrid.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + Alt + 5</kbd></td>
-   *       <td>Read the context and content of the current cell to the screen reader.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>F2</kbd></td>
-   *       <td>Makes the content of the cell actionable, such as a link.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Enter</kbd></td>
-   *       <td>Makes the content of the cell actionable and acts on the content, such as going to a link.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Alt + Enter</kbd></td>
-   *       <td>Makes the content of the cell actionable, such as a link.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Esc</kbd></td>
-   *       <td>If the cell is actionable it exits actionable mode.</td>
-   *     </tr>
-   *     <tr>
-   *       <td rowspan="16">Column Header Cell</td>
-   *       <td><kbd>LeftArrow</kbd></td>
-   *       <td>Moves focus to the previous column header.  There is no wrapping at the beginning or end of the column headers.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>RightArrow</kbd></td>
-   *       <td>Moves focus to the next column header.  There is no wrapping at the beginning or end of the column headers.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>DownArrow</kbd></td>
-   *       <td>Moves focus to the cell of the first row directly below the column header. If using nested headers will move focus up a level.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>UpArrow</kbd></td>
-   *       <td>If using nested headers will move focus down a level.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + UpArrow</kbd></td>
-   *       <td>If in the column end header, move focus to upside in a contiguous data range including the level 0 of the active index in the column header if it exists.
-   *       <br />If there is an empty cell in between, focus moves to the cell adjacent to empty cell. An empty cell is defined as a cell with no children or text content inside the cell.
-   *       <br />If the end of the rendered data range is reached, that will be where the focus moves to, new data will be fetched, and another keyboard gesture will be required to keep searching</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + LeftArrow</kbd></td>
-   *       <td>On an expanded parent column header, collapses the header.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + RightArrow</kbd></td>
-   *       <td>On a collapsed parent column header, expands the header.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + DownArrow</kbd></td>
-   *       <td>If in the column header, move focus to down side in a contiguous data range including level 0 of the active index in the column end header if it exists.
-   *       <br />If there is an empty cell in between, focus moves to the cell adjacent to empty cell. An empty cell is defined as a cell with no children or text content inside the cell.
-   *       <br />If the end of the rendered data range is reached, that will be where the focus moves to, new data will be fetched, and another keyboard gesture will be required to keep searching</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + Alt + R</kbd></td>
-   *       <td>Triggers ojFilterRequest event if the column is filterable.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Enter</kbd></td>
-   *       <td>Toggle the sort order of the column if the column is sortable.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + F10</kbd></td>
-   *       <td>Brings up the context menu.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Space</kbd></td>
-   *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row, the column(s) underneath the header will be selected.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Right Arrow</kbd></td>
-   *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row, the column selection will extend to the right by the number of columns covered by the header to the right of the current selection frontier header.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Left Arrow</kbd></td>
-   *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row, the column selection will extend to the right left the number of columns covered by the header to the left of the current selection frontier header.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Up Arrow</kbd></td>
-   *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row and the current selection frontier header has a parent nested header, the column selection will extend to cover the columns beneath the parent header.
-   *           <br/> Extending the selection with arrow keys will use the parent level. If the parent header is directly above the anchor header, the anchor will shift to the parent header and future selections will be based on the parent header.
-   *           <br/> If we are already at the highest level, nothing will happen.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Down Arrow</kbd></td>
-   *       <td>If multiple selection is enabled and not in <code>selectionMode</code> row and the current selection frontier header has a child nested header, the column selection will extend to cover the columns beneath the child header.
-   *           <br/> Extending the selection with arrow keys will use the child level. If the child header is directly below the anchor header, the anchor will shift to the child header and future selections will be based on the child header.
-   *           <br/> If we are already at the lowest level, it will simply move into the databody and select the first cell underneath the header.</td>
-   *     </tr>
-   *     <tr>
-   *       <td rowspan="13">Row Header Cell</td>
-   *       <td><kbd>UpArrow</kbd></td>
-   *       <td>Moves focus to the previous row header.  There is no wrapping at the beginning or end of the row headers.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>DownArrow</kbd></td>
-   *       <td>Moves focus to the next row header.  There is no wrapping at the beginning or end of the row headers.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>RightArrow</kbd></td>
-   *       <td>Moves focus to the cell of the first column directly next to the row header. If using nested headers will move focus up a level.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>LeftArrow</kbd></td>
-   *       <td>Moves focus to the cell of the first column directly next to the row header in RTL direction. If using nested headers will move focus down a level.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + LeftArrow</kbd></td>
-   *       <td>If inside header and hierarchical header will expand, if expanded or not hierarchical,
-   *       <br/>move focus to left side in a contiguous data range (including the row header).
-   *       <br />if there is an empty cell in between, focus moves to the cell adjacent to empty cell. An empty cell is defined as a cell with no children or text content inside the cell.
-   *       <br />If the end of the rendered data range is reached, that will be where the focus moves to, new data will be fetched, and another keyboard gesture will be required to keep searching</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Ctrl + RightArrow</kbd></td>
-   *       <td>If inside header and hierarchical header will expand, if expanded or not hierarchical,
-   *       <br/>move focus to right side in a contiguous data range (including the row End header).
-   *       <br />if there is an empty cell in between, focus moves to the cell adjacent to empty cell. An empty cell is defined as a cell with no children or text content inside the cell.
-   *       <br />If the end of the rendered data range is reached, that will be where the focus moves to, new data will be fetched, and another keyboard gesture will be required to keep searching</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Enter</kbd></td>
-   *       <td>Toggle the sort order of the row if the row is sortable.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + F10</kbd></td>
-   *       <td>Brings up the context menu.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Space</kbd></td>
-   *       <td>If multiple selection is enabled, the row(s) underneath the header will be selected.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Up Arrow</kbd></td>
-   *       <td>If multiple selection is enabled, the row selection will extend up by the number of rows covered by the header above the current selection frontier header.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Down Arrow</kbd></td>
-   *       <td>If multiple selection is enabled, the row selection will extend down by the number of rows covered by the header below the current selection frontier header.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Left Arrow</kbd></td>
-   *       <td>If multiple selection is enabled and the current selection frontier header has a parent nested header, the row selection will extend to cover the rows beneath the parent header.
-   *           <br/> Extending the selection with arrow keys will use the parent level. If the parent header is directly above the anchor header, the anchor will shift to the parent header and future selections will be based on the parent header.
-   *           <br/> If we are already at the highest level, nothing will happen.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Right Arrow</kbd></td>
-   *       <td>If multiple selection is enabled  and the current selection frontier header has a child nested header, the row selection will extend to cover the rows beneath the child header.
-   *           <br/> Extending the selection with arrow keys will use the child level. If the child header is directly below the anchor header, the anchor will shift to the child header and future selections will be based on the child header.
-   *           <br/> If we are already at the lowest level, it will simply move into the databody and select the first cell underneath the header.</td>
-   *     </tr>
-
-
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojDataGrid
-   */
-
-  //----------------------------------------------
-  //             SUB-IDS
-  //----------------------------------------------
-
-  /**
-   * <p>Sub-ID for the DataGrid element's cells.</p>
-   *
-   * To lookup a cell the locator object should have the following:
-   * <ul>
-   * <li><b>subId</b>: 'oj-datagrid-cell'</li>
-   * <li><b>rowIndex</b>: the zero based absolute row index</li>
-   * <li><b>columnIndex</b>: the zero based absolute column index</li>
-   * </ul>
-   *
-   * @ojsubid oj-datagrid-cell
-   * @memberof oj.ojDataGrid
-   * @example <caption>Get the cell at the specified location:</caption>
-   * var node = myDataGrid.getNodeBySubId({subId: 'oj-datagrid-cell', rowIndex: rowIndexValue, columnIndex: columnIndexValue});
-   */
-
-  /**
-   * <p>Sub-ID for the DataGrid element's headers.</p>
-   *
-   * To lookup a header the locator object should have the following:
-   * <ul>
-   * <li><b>subId</b>: 'oj-datagrid-header'</li>
-   * <li><b>axis</b>: 'column'/'row'/'columnEnd'/'rowEnd'</li>
-   * <li><b>index</b>: the zero based absolute row/column index.</li>
-   * <li><b>level</b>: the zero based header level, 0 is the outer edge, if not specified will default to 0</li>
-   * </ul>
-   *
-   * @ojsubid oj-datagrid-header
-   * @memberof oj.ojDataGrid
-   *
-   * @example <caption>Get the header at the specified location:</caption>
-   * var node = myDataGrid.getNodeBySubId({subId: 'oj-datagrid-header', axis: 'axisValue', index: indexValue, level: levelValue});
-   */
-
-  /**
-   * <p>Sub-ID for the DataGrid element's sort ascending icon in column headers.</p>
-   *
-   * To lookup a sort icon the locator object should have the following:
-   * <ul>
-   * <li><b>subId</b>: 'oj-datagrid-sort-ascending'</li>
-   * <li><b>axis</b>: 'column'</li>
-   * <li><b>index</b>: the zero based absolute column index</li>
-   * <li><b>level</b>: the zero based header level, 0 is the outer edge, if not specified will default to 0</li>
-   * </ul>
-   *
-   * @ojsubid oj-datagrid-sort-ascending
-   * @memberof oj.ojDataGrid
-   *
-   * @example <caption>Get the sort icon from the header at the specified location:</caption>
-   * var node = myDataGrid.getNodeBySubId({subId: 'oj-datagrid-sort-ascending', axis: 'axisValue', index: indexValue, level: levelValue});
-   */
-
-  /**
-   * <p>Sub-ID for the DataGrid element's sort descending icon in column headers.</p>
-   *
-   * To lookup a sort icon the locator object should have the following:
-   * <ul>
-   * <li><b>subId</b>: 'oj-datagrid-sort-descending'</li>
-   * <li><b>axis</b>: 'column'</li>
-   * <li><b>index</b>: the zero based absolute column index</li>
-   * <li><b>level</b>: the zero based header level, 0 is the outer edge, if not specified will default to 0</li>
-   * </ul>
-   *
-   * @ojsubid oj-datagrid-sort-descending
-   * @memberof oj.ojDataGrid
-   *
-   * @example <caption>Get the descending sort icon from the header at the specified location:</caption>
-   * var node = myDataGrid.getNodeBySubId({subId: 'oj-datagrid-sort-descending', axis: 'axisValue', index: indexValue, level: levelValue});
-   */
-  //-----------------------------------------------------
-  //                   Contexts
-  //-----------------------------------------------------
-
-  /**
-   * <p>Context for the ojDataGrid element's cells.</p>
-   *
-   * @property {function} component a reference to the DataGrid widgetConstructor
-   * @property {Object} cell the container data object for the header
-   * @property {Object} data the data object for the header
-   * @property {Object} datasource a reference to the data source object
-   * @property {Object} indexes the object that contains both the zero based row index and column index in which the cell is bound to
-   * @property {number} indexes.row the zero based absolute row index
-   * @property {number} indexes.column the zero based absolute column index
-   * @property {Object} keys the object that contains both the row key and column key which identifies the cell
-   * @property {number|string} keys.row the row key
-   * @property {number|string} keys.column the column key
-   * @property {Object} extents the object that contains both the row extent and column extent of the cell
-   * @property {number} extents.row the row extent
-   * @property {number} extents.column the column extent
-   * @property {string} mode the mode the cell is rendered in
-   * @property {string} subId the subId of the cell
-   *
-   * @ojnodecontext oj-datagrid-cell
-   * @memberof oj.ojDataGrid
-   */
-  /**
-   * <p>Context for the ojDataGrid element's headers.</p>
-   *
-   * @property {number} axis the axis of the header, possible values are 'row'/'column'/'columnEnd'/'rowEnd'
-   * @property {function} component a reference to the DataGrid widgetConstructor
-   * @property {Object} data the data object for the header
-   * @property {Object} datasource a reference to the data source object
-   * @property {number} depth the the number of levels the header spans
-   * @property {number} extent the number of indexes the header spans
-   * @property {number} index the index of the header, where 0 is the index of the first header
-   * @property {number|string} key the key of the header
-   * @property {number} level the level of the header. The outermost header is level zero
-   * @property {string} subId the subId of the header
-   *
-   * @ojnodecontext oj-datagrid-header
-   * @memberof oj.ojDataGrid
-   */
-
-  /**
-   * <p>Context for the ojDataGrid element's header labels.</p>
-   *
-   * @property {number} axis the axis of the header label, possible values are 'row'/'column'/'columnEnd'/'rowEnd'
-   * @property {function} component a reference to the DataGrid widgetConstructor
-   * @property {Object} data the data object for the header label
-   * @property {Object} datasource a reference to the data source object
-   * @property {number} level the level of the header label. The outermost header label is level zero
-   * @property {string} subId the subId of the header label
-   *
-   * @ojnodecontext oj-datagrid-header-label
-   * @memberof oj.ojDataGrid
-   */
-  /**
-   * @typedef {Object} oj.ojDataGrid.CellTemplateContext
-   * @property {GridBodyItem<D>} item GridBodyItem associated with the cell.
-   * @property {DataGridProvider<D>} datasource A reference to the grid data provider object.
-   * @property {string} mode The mode of the row containing the cell. It can be "edit" or "navigation".
-   * @ojsignature {target:"Type", value:"<D>", for:"genericTypeParameters"}
-   */
-  /**
-   * @typedef {Object} oj.ojDataGrid.HeaderTemplateContext
-   * @property {GridHeaderItem<D>} item GridHeaderItem associated with the header.
-   * @property {DataGridProvider<D>} datasource A reference to the grid data provider object.
-   * @ojsignature {target:"Type", value:"<D>", for:"genericTypeParameters"}
-   */
-  /**
-   * @typedef {Object} oj.ojDataGrid.LabelTemplateContext
-   * @property {GridItem<D>} item GridItem associated with the label.
-   * @property {DataGridProvider<D>} datasource A reference to the grid data provider object.
-   * @ojsignature {target:"Type", value:"<D>", for:"genericTypeParameters"}
-   */
-  //-----------------------------------------------------
-  //                   Slots
-  //-----------------------------------------------------
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">rowHeaderTemplate</code> slot is used to specify the template for the content of the row header. If both rowHeaderTemplate
-   * and rowHeaderContentTemplate are specified then rowHeaderTemplate takes precedence.</p>
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot rowHeaderTemplate
-   * @ojshortdesc The rowHeaderTemplate slot is used to specify the template for rendering the content of the row header. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline row header template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='rowHeaderTemplate' data-oj-as='cell'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">rowHeaderContentTemplate</code> slot is used to specify the template for the content of the row header. If both rowHeaderTemplate
-   * and rowHeaderContentTemplate are specified then rowHeaderTemplate takes precedence.</p>
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot rowHeaderContentTemplate
-   * @ojshortdesc The rowHeaderContentTemplate slot is used to specify the template for rendering the content of the row header. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline row header template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='rowHeaderContentTemplate' data-oj-as='header'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">rowEndHeaderTemplate</code> slot is used to specify the template for the content of the row end header.
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot rowEndHeaderTemplate
-   * @ojshortdesc The rowEndHeaderTemplate slot is used to specify the template for rendering the content of the row end header. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline row end header template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='rowEndHeaderTemplate' data-oj-as='cell'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">columnHeaderTemplate</code> slot is used to specify the template for the content of the column header. If both columnHeaderTemplate
-   * and columnHeaderContentTemplate are specified then columnHeaderTemplate takes precedence.</p>
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot columnHeaderTemplate
-   * @ojshortdesc The columnHeaderTemplate slot is used to specify the template for rendering the content of the column header. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline column header template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='columnHeaderTemplate' data-oj-as='cell'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">columnHeaderContentTemplate</code> slot is used to specify the template for the content of the column header. If both columnHeaderTemplate
-   * and columnHeaderContentTemplate are specified then columnHeaderTemplate takes precedence.</p>
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot columnHeaderContentTemplate
-   * @ojshortdesc The columnHeaderContentTemplate slot is used to specify the template for rendering the content of the column header. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline column header template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='columnHeaderContentTemplate' data-oj-as='cell'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">columnEndHeaderTemplate</code> slot is used to specify the template for the content of the column end header.
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.HeaderTemplateContext]{@link oj.ojDataGrid.HeaderTemplateContext} </li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot columnEndHeaderTemplate
-   * @ojshortdesc The columnEndHeaderTemplate slot is used to specify the template for rendering the content of the column end header. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.HeaderTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline column end header template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='columnEndHeaderTemplate' data-oj-as='cell'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">cellTemplate</code> slot is used to specify the template for the content of the cell.
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.CellTemplateContext]{@link oj.ojDataGrid.CellTemplateContext} </li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot cellTemplate
-   * @ojshortdesc The cellTemplate slot is used to specify the template for rendering the content of the cell. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.CellTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline cell template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='cellTemplate' data-oj-as='cell'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">rowHeaderLabelTemplate</code> slot is used to specify the template for the content of the row header label.
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} </li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot rowHeaderLabelTemplate
-   * @ojshortdesc The rowHeaderLabelTemplate slot is used to specify the template for rendering the content of the row header label. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline row header label template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='rowHeaderLabelTemplate' data-oj-as='cell'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">rowHeaderLabelContentTemplate</code> slot is used to specify the template for the content of the row header label. If both rowHeaderLabelTemplate
-   * and rowHeaderLabelContentTemplate are specified then rowHeaderLabelTemplate takes precedence.</p>
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} or the table below for a list of properties available on $current)</li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot rowHeaderLabelContentTemplate
-   * @ojshortdesc The rowHeaderLabelContentTemplate slot is used to specify the template for rendering the content of the row header label. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline row header template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='rowHeaderLabelContentTemplate' data-oj-as='header'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">rowEndHeaderLabelTemplate</code> slot is used to specify the template for the content of the row end header label.
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} or the table below for a list of properties available on $current)</li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot rowEndHeaderLabelTemplate
-   * @ojshortdesc The rowEndHeaderLabelTemplate slot is used to specify the template for rendering the content of the row end header label. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline row end header label template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='rowEndHeaderLabelTemplate' data-oj-as='cell'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">columnHeaderLabelTemplate</code> slot is used to specify the template for the content of the column header label.
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} or the table below for a list of properties available on $current)</li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot columnHeaderLabelTemplate
-   * @ojshortdesc The columnHeaderLabelTemplate slot is used to specify the template for rendering the content of the column header label. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline column header label template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='columnHeaderLabelTemplate' data-oj-as='cell'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">columnHeaderLabelContentTemplate</code> slot is used to specify the template for the content of the column header label. If both columnHeaderLabelTemplate
-   * and columnHeaderLabelContentTemplate are specified then columnHeaderLabelTemplate takes precedence.</p>
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} or the table below for a list of properties available on $current)</li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot columnHeaderLabelContentTemplate
-   * @ojshortdesc The columnHeaderLabelContentTemplate slot is used to specify the template for rendering the content of the column header label. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline row header template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='columnHeaderLabelContentTemplate' data-oj-as='header'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-  /**
-   * <b>Note: Inline Template Slots are only available when using a DataGridProvider.</b>
-   * <p>The <code class="prettyprint">columnEndHeaderLabelTemplate</code> slot is used to specify the template for the content of the column end header label.
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojDataGrid.LabelTemplateContext]{@link oj.ojDataGrid.LabelTemplateContext} or the table below for a list of properties available on $current)</li>
-   *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-   * </ul>
-   *
-   * @ojslot columnEndHeaderLabelTemplate
-   * @ojshortdesc The columnEndHeaderLabelTemplate slot is used to specify the template for rendering the content of the column end header label. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops oj.ojDataGrid.LabelTemplateContext
-   * @example <caption>Initialize the DataGrid with an inline column end header label template specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='columnEndHeaderLabelTemplate' data-oj-as='cell'>
-   *     &lt;span>&lt;oj-bind-text value='[[cell.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-data-grid>
-   */
-
-  /**
-   * <p>The <code class="prettyprint">noData</code> slot is used to specify the content to display when the datagrid is empty.
-   * The slot content must be a &lt;template> element.  If not specified then a default no data message will be displayed.
-   *
-   * @ojslot noData
-   * @ojshortdesc The noData slot is used to specify the content to render when the datagrid is empty.
-   * @ojmaxitems 1
-   * @memberof oj.ojDataGrid
-   * @ojtemplateslotprops {}
-   * @ojlegacymetadata templateSlotAlias "noDataTemplate"
-   *
-   * @example <caption>Initialize the DataGrid with a <code class="prettyprint">noData</code> slot specified:</caption>
-   * &lt;oj-data-grid>
-   *   &lt;template slot='noData'>
-   *     &lt;span>&lt;oj-button>Add item&lt;/span>
-   *   &lt;/template>
-   * &lt;/oj-data-grid>
-   */
-
-  //-----------------------------------------------------
-  //                   Styling
-  //-----------------------------------------------------
-  // ----------------oj-datagrid-cell-no-padding or padding --------------
-  /**
-   * Used to style a datagrid cell so that it has no padding or default padding.
-   * @ojstyleset padding
-   * @ojdisplayname padding
-   * @ojstylesetitems ["padding.oj-datagrid-cell-no-padding", "padding.oj-datagrid-cell-padding"]
-   * @ojstylerelation exclusive
-   * @memberof oj.ojDataGrid
-   */
-  /**
-   * @ojstyleclass padding.oj-datagrid-cell-no-padding
-   * @ojshortdesc No Padding
-   * @ojdisplayname oj-datagrid-cell-no-padding
-   * @memberof! oj.ojDataGrid
-   */
-  /**
-   * @ojstyleclass padding.oj-datagrid-cell-padding
-   * @ojshortdesc Default Padding
-   * @ojdisplayname oj-datagrid-cell-padding
-   * @memberof! oj.ojDataGrid
-   */
-  // ---------------- oj-datagrid-depth-[1-7] ------------------
-  /**
-   * Used to style the default header widths and heights. By default the datagrid supports up to depth 7. <br/>
-   * If you have headers width depth greater than 7 specify the defaults using the class name description or use apply custom style rules to the headers.<br/>
-   * @ojstyletemplate oj-datagrid-depth-[1-7]
-   * @ojdisplayname depth
-   * @memberof oj.ojDataGrid
-   * @ojstyletemplatetokens ["StylingTemplateTokens.[1-7]"]
-   */
-  //
-  /**
-   * @ojstylevariableset oj-data-grid-css-set1
-   * @ojstylevariable  oj-data-grid-column-width {description: "Data grid column width", formats: ["length"], help: "#css-variables"}
-   * @memberof oj.ojDataGrid
-   */
-
-  // -------------------------------- oj.ojDataGrid Styling end ----------------
-
   oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     widgetEventPrefix: 'oj',
     options: {
@@ -47222,7 +48209,7 @@ var __oj_data_grid_metadata =
         );
         inputNumber.setAttribute('label-edge', 'inside');
         inputNumber.setAttribute('user-assistance-density', 'efficient');
-        inputNumber.setAttribute('required', true);
+        inputNumber.setAttribute('required', 'required');
         if (dimension === 'width') {
           inputNumber.setAttribute('label-hint', this._getTranslation('columnWidth'));
           modal.setAttribute('dimension', 'resizeWidth');
@@ -47262,7 +48249,7 @@ var __oj_data_grid_metadata =
           inputNumber = document.createElement('input');
           inputNumber.id = this.rootId + 'inputNumber';
           inputNumber.setAttribute('label-edge', 'inside');
-          inputNumber.setAttribute('required', true);
+          inputNumber.setAttribute('required', 'required');
 
           modalCancelButton = document.createElement('oj-button');
           modalCancelButton.id = this.rootId + 'modalcancel';
@@ -47321,7 +48308,7 @@ var __oj_data_grid_metadata =
         } else {
           inputNumber.ojInputNumber('option', 'value', initialSize);
           inputNumber.setAttribute('label-edge', 'inside');
-          inputNumber.setAttribute('required', true);
+          inputNumber.setAttribute('required', 'required');
           modal.find('.' + this._getMappedStyle('dialogTitle'))[0].firstChild.textContent = title;
           modal.ojDialog('open');
         }
@@ -47473,8 +48460,8 @@ var __oj_data_grid_metadata =
     _addContextMenuCapability: function (command) {
       var contextMenu = $(this._getDataGridContextMenu());
       if (this._IsCustomElement()) {
-        if (!contextMenu.find('[data-oj-command=' + command + ']').attr('disabled')) {
-          contextMenu.find('[data-oj-command=' + command + ']').attr('disabled', true);
+        if (!contextMenu.find('[data-oj-command=' + command + ']').prop('disabled')) {
+          contextMenu.find('[data-oj-command=' + command + ']').attr('disabled', 'disabled');
         }
       } else if (!contextMenu.find('[data-oj-command=' + command + ']').hasClass('oj-disabled')) {
         contextMenu.find('[data-oj-command=' + command + ']').addClass('oj-disabled');
@@ -47490,7 +48477,7 @@ var __oj_data_grid_metadata =
       $(this._getDataGridContextMenu())
         .find('[data-oj-command=' + command + ']')
         .removeClass('oj-disabled')
-        .attr('disabled', false);
+        .removeAttr('disabled');
     },
 
     /**
@@ -50583,6 +51570,66 @@ var __oj_data_grid_metadata =
         removeChild(this.m_rowEndHeaderFrozenTarget);
       }
     }
+  };
+
+  /**
+   * Returns the minimum dimension (width/height) needed for the frozen section
+   * so that all visible frozen indices (not hidden) up to the frozen index
+   * can be shown before non-frozen indices appear.
+   * Uses a rendered single-span cell when available, then falls back to sizingManager or the
+   * average/default size.
+   * @param {String} axis 'column' or 'row'
+   * @return {Number}
+   * @private
+   */
+  DvtDataGrid.prototype._getRequiredFrozenDimension = function (axis) {
+    let required = 0;
+    let fallback;
+    let frozenIndex;
+    let dimension;
+
+    if (axis === 'column') {
+      if (!this._hasFrozenColumns() || this.m_frozenColIndex == null || this.m_frozenColIndex < 0) {
+        return 0;
+      }
+      fallback = this.m_avgColWidth || this.m_defaultColumnWidth || 0;
+      frozenIndex = this.m_frozenColIndex;
+      dimension = 'width';
+    } else if (axis === 'row') {
+      if (!this._hasFrozenRows() || this.m_frozenRowIndex == null || this.m_frozenRowIndex < 0) {
+        return 0;
+      }
+      fallback = this.m_avgRowHeight || this.m_defaultRowHeight || 0;
+      frozenIndex = this.m_frozenRowIndex;
+      dimension = 'height';
+    }
+
+    for (let i = 0; i <= frozenIndex; i++) {
+      if (!this.isHidden(axis, i)) {
+        // get a key from an existing cell/header in DOM for this index.
+        let size = null;
+
+        const cell = this._getFirstCellWithMatchingStartIndex(i, axis);
+        if (cell && this._getExtent(cell, axis) === 1) {
+          // Frozen expand/collapse can run after themed dimensions are rendered but before cached
+          // sizing values are refreshed. The live single-span cell is authoritative in that case.
+          const renderedSize = this.getElementDir(cell, dimension);
+          if (renderedSize > 0) {
+            size = renderedSize;
+          }
+        }
+        if (size == null && cell && this.m_sizingManager) {
+          const key = this._getKey(cell, axis);
+          if (key != null) {
+            size = this.m_sizingManager.getSize(axis, key);
+          }
+        }
+
+        required += size != null ? size : fallback;
+      }
+    }
+
+    return required;
   };
 
   /**
@@ -56736,6 +57783,21 @@ var __oj_data_grid_metadata =
                 : dimensionChange;
           }
           newScrollerDimension = oldScrollerDimension + dimensionChange;
+
+          let requiredFrozenDimension;
+
+          if (dimension === 'width' && axis === 'column') {
+            requiredFrozenDimension = this._getRequiredFrozenDimension('column');
+          } else if (dimension === 'height' && axis === 'row') {
+            requiredFrozenDimension = this._getRequiredFrozenDimension('row');
+          } else {
+            requiredFrozenDimension = 0;
+          }
+
+          if (requiredFrozenDimension && newScrollerDimension < requiredFrozenDimension) {
+            newScrollerDimension = requiredFrozenDimension;
+          }
+
           this.setElementDir(databodyFrozenSection, newScrollerDimension, dimension);
           if (this.m_databodyFrozenCorner) {
             this.setElementDir(this.m_databodyFrozenCorner, newScrollerDimension, dimension);

@@ -346,12 +346,16 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
     nodeData: DataProvider<K1, D1> | null;
     nodeHighlightMode?: 'nodeAndIncomingLinks' | 'nodeAndOutgoingLinks' | 'nodeAndLinks' | 'node';
     overview?: {
+        /** @deprecated since 21.0.0 - This property is deprecated. The component will choose a sensible fit area based on the diagram content. */
         fitArea?: 'content' | 'canvas';
         halign?: 'start' | 'end' | 'center';
+        /** @deprecated since 21.0.0 - This property is deprecated. The component will choose a sensible overview height based on the diagram content. */
         height?: number;
+        /** @deprecated since 21.0.0 - This property is deprecated. The component will choose a sensible aspect ratio behavior based on the diagram content. */
         preserveAspectRatio?: 'none' | 'meet';
         rendered?: 'on' | 'off';
         valign?: 'top' | 'bottom' | 'middle';
+        /** @deprecated since 21.0.0 - This property is deprecated. The component will choose a sensible overview width based on the diagram content. */
         width?: number;
     };
     panDirection?: 'x' | 'y' | 'auto';
@@ -1094,12 +1098,16 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
     nodeData: DataProvider<K1, D1> | null;
     nodeHighlightMode?: 'nodeAndIncomingLinks' | 'nodeAndOutgoingLinks' | 'nodeAndLinks' | 'node';
     overview?: {
+        /** @deprecated since 21.0.0 - This property is deprecated. The component will choose a sensible fit area based on the diagram content. */
         fitArea?: 'content' | 'canvas';
         halign?: 'start' | 'end' | 'center';
+        /** @deprecated since 21.0.0 - This property is deprecated. The component will choose a sensible overview height based on the diagram content. */
         height?: number;
+        /** @deprecated since 21.0.0 - This property is deprecated. The component will choose a sensible aspect ratio behavior based on the diagram content. */
         preserveAspectRatio?: 'none' | 'meet';
         rendered?: 'on' | 'off';
         valign?: 'top' | 'bottom' | 'middle';
+        /** @deprecated since 21.0.0 - This property is deprecated. The component will choose a sensible overview width based on the diagram content. */
         width?: number;
     };
     panDirection?: 'x' | 'y' | 'auto';

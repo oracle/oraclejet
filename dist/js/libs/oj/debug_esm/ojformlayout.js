@@ -47,6 +47,11 @@ import { FormVariantContext } from '@oracle/oraclejet-preact/hooks/UNSAFE_useFor
  * - An oj-label-value child component allows the developer to place elements in the label and/or value area as 'label' and 'value' slot chilren.<br>
  * - All other elements will span the entire width of a single label/value pair.
  *
+ * <h6>Static content only</h6>
+ * <p><b>Note:</b> The oj-form-layout element is intended to manage the layout of a static set of child elements. The use of structural binding elements such as
+ * <code class="prettyprint">&lt;oj-bind-for-each></code> or <code class="prettyprint">&lt;oj-bind-if></code> inside oj-form-layout is not supported.
+ * Rendering or removing groups of fields via these bindings can lead to console errors and a broken layout.</p>
+ *
  * To have a form element span multiple columns, add an oj-label-value component as a child of the oj-form-layout
  * add the component that you want to span multiple columns as a child of the oj-label-value. The colspan attribute
  * on the oj-label-value is used to specify the number of columns to span, and the direction attribute on the
@@ -513,6 +518,9 @@ import { FormVariantContext } from '@oracle/oraclejet-preact/hooks/UNSAFE_useFor
  * <p>The <code class="prettyprint">&lt;oj-form-layout></code> element only accepts element children
  * in the Default slot.  Content in <code class="prettyprint">&lt;oj-form-layout></code>'s Default
  * slot will be laid out in a row/column style form layout.
+ * </p>
+ * <p><b>Note:</b> oj-form-layout expects static element children. Structural bindings
+ * (<code class="prettyprint">&lt;oj-bind-for-each></code>, <code class="prettyprint">&lt;oj-bind-if></code>) are not supported.</p>
  *
  * @ojchild Default
  * @memberof oj.ojFormLayout

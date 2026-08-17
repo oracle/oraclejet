@@ -1412,8 +1412,7 @@ var __oj_checkboxset_metadata =
         // !! ensures it is a boolean
         // update the private ojradiocheckbox component's disabled option to keep it in sync with the dom
         this.$checkboxes.filter('.oj-checkbox').each(function () {
-          var disabledValue =
-            $(this).attr('disabled') !== undefined ? !!$(this).prop('disabled') : false;
+          var disabledValue = !!$(this).prop('disabled');
 
           $(this)._ojRadioCheckbox('option', 'disabled', disabledValue);
         });
@@ -1760,7 +1759,7 @@ var __oj_checkboxset_metadata =
           checkbox.removeAttribute('aria-labelledby');
         }
         if (ojoption.disabled) {
-          checkbox.setAttribute('disabled', true);
+          checkbox.setAttribute('disabled', 'disabled');
         } else {
           checkbox.removeAttribute('disabled');
         }
@@ -1964,7 +1963,7 @@ var __oj_checkboxset_metadata =
             !this.widget()[0].classList.contains('oj-choice-direction-row') &&
             event.target.tagName !== 'INPUT'
           ) {
-            $(event.target).find('input').click();
+            $(event.target).find('input').trigger('click');
           }
         }
       },

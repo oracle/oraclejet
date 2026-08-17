@@ -3690,7 +3690,11 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent, {
 
   _GetComponentRendererOptions: function () {
     return [
-      { path: 'itemBubbleContentRenderer', slot: 'itemBubbleContentTemplate' },
+      {
+        path: 'itemBubbleContentRenderer',
+        slot: 'itemBubbleContentTemplate',
+        processTemplate: true
+      },
       { path: 'tooltip/renderer', slot: 'tooltipTemplate' }
     ];
   },

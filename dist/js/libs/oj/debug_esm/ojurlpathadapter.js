@@ -31,7 +31,7 @@ function buildParamsString(params) {
     .forEach(function (key) {
       var value = params[key];
       if (value !== undefined && value !== null) {
-        paramArray.push(';' + key + '=' + encode(value));
+        paramArray.push(';' + encode(key) + '=' + encode(value));
       }
     });
   return paramArray.join('');
@@ -54,7 +54,7 @@ function parseUrlSegment(segment) {
   parts.forEach(function (part) {
     if (part) {
       var pair = part.split('=');
-      parsed.params[pair[0]] = decode(pair[1]);
+      parsed.params[decode(pair[0])] = decode(pair[1]);
     }
   });
   return parsed;

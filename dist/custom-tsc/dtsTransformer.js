@@ -44,6 +44,7 @@ const MetaTypes = __importStar(require("./utils/MetadataTypes"));
 const MetaUtils = __importStar(require("./utils/MetadataUtils"));
 const TransformerError_1 = require("./utils/TransformerError");
 const Utils_1 = require("./shared/Utils");
+const SafeFileUtils_1 = require("./shared/SafeFileUtils");
 let _BUILD_OPTIONS;
 let view;
 const _REGEX_BLANK_LINES = new RegExp(/^(?:[\t ]*(?:\r?\n|\r))+/gm);
@@ -285,7 +286,7 @@ function generateCustomElementTypeContent(fileName) {
                     module = arrDirs.slice(arrRootDir.length).join('/');
                 }
             }
-            let exportsFile = path.join(path.resolve(outDir), module, `exports_${customElementName}.d.ts`);
+            let exportsFile = path.join(path.resolve(outDir), module, `${(0, SafeFileUtils_1.validateFileNameSegment)(`exports_${customElementName}`, 'custom element type export file name')}.d.ts`);
             if (_BUILD_OPTIONS.debug) {
                 console.log(`rootDir = ${rootDir}`);
                 console.log(`outDir = ${outDir}`);

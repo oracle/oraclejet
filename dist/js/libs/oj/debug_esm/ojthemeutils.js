@@ -332,7 +332,7 @@ ThemeUtils.verifyThemeVersion = (() => {
       verified = true;
       if (ThemeUtils.getThemeName() === 'alta') {
         const message =
-          'The Alta theme has been deprecated since JET 10.0 (January 2021), please move to either the Redwood or Stable theme ASAP. All Alta CSS and SCSS files will be removed in JET 21.0 (August 2026)';
+          'The Alta theme has been deprecated since JET 10.0 (January 2021) and removed in JET 21.0. Please move to either the Redwood or Stable theme.';
         warn(message);
       }
       // Compare JET version with theme version

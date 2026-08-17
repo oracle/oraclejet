@@ -97,7 +97,7 @@ NavigationListDndContext.prototype.shouldDragCurrentItem = function () {
 NavigationListDndContext.prototype.GetDragImageWidth = function (item) {
   var edge = this.listview.GetOption('edge');
   return edge === 'top' || edge === 'bottom'
-    ? item.offsetWidth
+    ? item.offsetWidth + 'px'
     : oj.NavigationListDndContext.superclass.GetDragImageWidth.call(this, item);
 };
 
@@ -165,7 +165,7 @@ NavigationListDndContext.prototype.SetDragItemImage = function (nativeEvent, ite
   dragImage.get(0).className = this.listview.ojContext.element.get(0).className;
   dragImage
     .addClass(this.GetDragImageClass())
-    .css({ width: this.GetDragImageWidth(items[0]), height: items[0].offsetHeight })
+    .css({ width: this.GetDragImageWidth(items[0]), height: items[0].offsetHeight + 'px' })
     .append(clone); // @HTMLUpdateOK
   $('body').append(dragImage); // @HTMLUpdateOK
   this.m_dragImage = dragImage;

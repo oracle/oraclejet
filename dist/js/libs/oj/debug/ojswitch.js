@@ -187,7 +187,6 @@ var __oj_switch_metadata =
      * @ojcomponent oj.ojSwitch
      * @ojdisplayname Switch
      * @augments oj.editableValue
-     * @ojimportmembers oj.ojDisplayOptions
      * @ojsignature [{
      *                target: "Type",
      *                value: "class ojSwitch extends editableValue<boolean, ojSwitchSettableProperties>"
@@ -208,6 +207,14 @@ var __oj_switch_metadata =
      *
      * @ojoracleicon 'oj-ux-ico-switch-on'
      * @ojuxspecs ['switch']
+     *
+     * @ojdeprecated [
+     *   {
+     *     "type": "maintenance",
+     *     "since": "21.0.0",
+     *     "value": ["oj-c-switch"]
+     *   }
+     * ]
      *
      * @classdesc
      * <p>
@@ -243,6 +250,70 @@ var __oj_switch_metadata =
      * <p>
      * {@ojinclude "name":"accessibilityLabelEditableValue"}
      * {@ojinclude "name":"accessibilityDisabledEditableValue"}
+     * </p>
+     *
+     * <h3 id="migration-section">
+     *   Migration
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+     * </h3>
+     *
+     * <p>
+     * To migrate from oj-switch to oj-c-switch, you need to revise the import statement
+     * and references to oj-c-switch in your app. Please note the changes between the two components below.
+     * </p>
+     *
+     * <h5>Global attributes</h5>
+     * <p>
+     * The following global attributes are no longer supported:
+     * <ul>
+     * <li>accesskey - not considered accessible</li>
+     * <li>tabindex - not considered accessible</li>
+     * <li>aria-label - use label-hint instead.</li>
+     * </ul>
+     * </p>
+     *
+     * <h5>LabelEdge attribute</h5>
+     * <p>
+     * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
+     * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+     * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+     * attribute to the corresponding value.
+     * </p>
+     *
+     * <h5>MessagesCustom attribute</h5>
+     * <p>
+     * The type of the <code class="prettyprint">severity</code> property of the messages in the
+     * array has changed from
+     * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+     * essentially <code class="prettyprint">string | number</code>, to simply
+     * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+     * values are the same as the previously supported string values.
+     * The application can no longer specify severity as a number, including hardcoded numbers,
+     * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+     * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+     * </p>
+     *
+     * <h5>Refresh method</h5>
+     * <p>
+     * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+     * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+     * </p>
+     *
+     * <h5>Custom Label</h5>
+     * <p>
+     * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+     * label-hint attribute to add a label for the form component.
+     * </p>
+     *
+     * <h5>DescribedBy attribute</h5>
+     * <p>
+     * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+     * This attribute is not carried forward to the core pack component.
+     * </p>
+     *
+     * <h5>Formatted messages</h5>
+     * <p>
+     * Formatting messages using html tags is not supported in the core pack component.
      * </p>
      *
      * <h3 id="state-section">
@@ -361,6 +432,7 @@ var __oj_switch_metadata =
      * @ojdisplayname Focus Styling
      * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
      * @memberof oj.ojSwitch
+     * @ojdeprecated {since: '21.0.0', description: "The Redwood design system does not allow this to be customized."}
      * @ojtsexample
      * &lt;oj-switch class="oj-focus-highlight">
      *   &lt;!-- Content -->
@@ -505,6 +577,136 @@ var __oj_switch_metadata =
          */
         disabled: false,
         /**
+         * Display options for auxiliary content that determines whether or not it should be displayed.
+         *
+         * <p>
+         * In the Redwood theme, the sub-properties of the display-options configure whether or not the
+         * types of information is shown. The values of these sub-properties are either
+         * 'display' or 'none'.
+         * </p>
+         * <p>
+         * When display-options changes due to programmatic intervention, the component updates its
+         * display to reflect the updated choices. For example, if you don't want to show the converter
+         * hint, set the display-options.converter-hint to 'none'.
+         * </p>
+         * <p>
+         * A side note: help.instruction and message detail text can include formatted HTML text, whereas
+         * hints and message summary text cannot. If you use formatted text, it should be accessible
+         * and make sense to the user if formatting wasn't there.
+         * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+         * Inline style attributes are sanitized; the retained styling is limited to color, font
+         * style, font weight, and text decoration. Use CSS classes for other styling.
+         * To format the help.instruction, you could do this:
+         * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
+         * </p>
+         * @ojshortdesc Display options for auxiliary content that determines whether or not it should be displayed.
+         * @expose
+         * @member
+         * @name displayOptions
+         * @ojsharedmembers
+         * @access public
+         * @instance
+         * @type {Object=}
+         * @memberof oj.ojSwitch
+         * @since 0.7
+         */
+        /**
+         * Display options for auxiliary converter hint text. The supported attribute values are theme dependent.
+         * <p>
+         * In the Redwood theme, this attribute determines whether or not the converter hint should be displayed.
+         * The supported values are 'display' and 'none'.
+         * If you don't want to show the converter hint, set display-options.converter-hint to 'none'.
+         * It defaults to 'display'.
+         * To control where the hints display, e.g., inline or in a notewindow,
+         * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+         * attribute.
+         * </p>
+         *
+         * @access public
+         * @ojsharedmembers
+         * @expose
+         * @name displayOptions.converterHint
+         * @ojshortdesc Display options for auxiliary converter hint text that determines whether it should be displayed.
+         * @instance
+         * @type {(Array<string> | string)=}
+         * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+         *               {target: "Type", value: "Array<'placeholder'|'notewindow'|'none'>|'placeholder'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
+         * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'placeholder'|'notewindow'|'none'>", "'placeholder'", "'notewindow'"],
+         *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+         * @ojdeprecated {since: '21.0.0', value: [''], description: "This property is not used by oj-switch."}
+         * @memberof! oj.ojSwitch
+         * @since 0.7
+         */
+        /**
+         * Display options for auxiliary help instruction text that determines where it should be displayed
+         * in relation to the component.
+         * @ojshortdesc Display options for auxiliary help instruction text that determines whether it should be displayed.
+         * @access public
+         * @ojsharedmembers
+         * @expose
+         * @name displayOptions.helpInstruction
+         * @instance
+         * @type {(Array<string> | string)=}
+         * @ojsignature {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'none'", jsdocOverride: true}
+         * @memberof! oj.ojSwitch
+         * @ojdeprecated [{since: '9.0.0', description: 'If you want none, remove help-instruction attribute.'}]
+         * @default ['notewindow']
+         * @since 0.7
+         */
+        /**
+         * Display options for auxiliary message text. The supported attribute values are theme dependent.
+         * <p>
+         * In the Redwood theme, this attribute determines whether or not the messages should be displayed.
+         * The supported values are 'display' and 'none'.
+         * If you don't want to show messages, set display-options.messages to 'none'.
+         * It defaults to 'display'.
+         * To control where the messages display, e.g., inline or in a notewindow,
+         * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+         * attribute.
+         * </p>
+         *
+         * @ojshortdesc Display options for auxiliary message text that determines whether it should be displayed.
+         * @access public
+         * @ojsharedmembers
+         * @expose
+         * @name displayOptions.messages
+         * @instance
+         * @type {(Array<string> | string)=}
+         * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+         *               {target: "Type", value: "Array<'inline'|'notewindow'|'none'>|'inline'|'notewindow'|'display'|'none'", consumedBy: 'tsdep'}]
+         * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'inline'|'notewindow'|'none'>", "'inline'", "'notewindow'"],
+         *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+         * @memberof! oj.ojSwitch
+         * @since 0.7
+         */
+        /**
+         * Display options for auxiliary validator hint text. The supported attribute values are theme dependent.
+         * <p>
+         * In the Redwood theme, this attribute determines whether or not the validator hint should be displayed.
+         * The supported values are 'display' and 'none'.
+         * If you don't want to show the validator hint, set display-options.validator-hint to 'none'.
+         * It defaults to 'display'.
+         * To control where the hints display, e.g., inline or in a notewindow,
+         * then use the <a href="#userAssistanceDensity">user-assistance-density</a>
+         * attribute.
+         * </p>
+         *
+         * @ojshortdesc Display options for auxiliary validator hint text that determines whether it should be displayed.
+         * @access public
+         * @ojsharedmembers
+         * @expose
+         * @name displayOptions.validatorHint
+         * @instance
+         * @type {(Array<string> | string)=}
+         * @ojsignature [{target: "Type", value: "'display'|'none'", jsdocOverride: true},
+         *               {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'display'|'none'",  consumedBy: 'tsdep'}]
+         * @ojdeprecated {since: "9.1.0", target: "memberType", value: ["Array<'notewindow'|'none'>", "'notewindow'"],
+         *                description: "These types are no longer supported. They are used for the Alta theme only. The Redwood theme uses 'display'|'none' and the user-assistance-density attribute."}
+         * @ojdeprecated {since: '21.0.0', value: [''], description: "This property is not used by oj-switch."}
+         * @memberof! oj.ojSwitch
+         * @since 0.7
+         */
+        /**
          * <p>
          * The oj-label sets the labelledBy property programmatically on the form component
          * to make it easy for the form component to find its oj-label component (a
@@ -627,6 +829,33 @@ var __oj_switch_metadata =
       },
 
       // P U B L I C    M E T H O D S
+
+      /**
+       * Takes all deferred messages and shows them.
+       * It then updates the valid property; e.g.,
+       * if the valid state was "invalidHidden"
+       * before showMessages(), the valid state will become "invalidShown" after showMessages().
+       * <p>
+       * If there were no deferred messages this method simply returns.
+       * </p>
+       *
+       * @example <caption>Display all messages including deferred ones.</caption>
+       * myComp.showMessages();
+       *
+       * @name showMessages
+       * @method
+       * @access public
+       * @instance
+       * @memberof oj.ojSwitch
+       * @expose
+       * @return {void}
+       * @ojshortdesc Takes all deferred messages and shows them.
+       * @since 0.7.0
+       * @ojdeprecated {since: '21.0.0', description: 'Not applicable for oj-switch because oj-switch does not have required validation or deferred messages.'}
+       */
+      showMessages: function () {
+        return this._super();
+      },
 
       /**
        * Returns a jQuery object containing the element visually representing the switch.
@@ -805,10 +1034,10 @@ var __oj_switch_metadata =
         this.element
           .css('display', 'none')
           .attr('type', 'checkbox')
-          .attr('checked', this.option('value'))
+          .prop('checked', this.option('value'))
           .attr('tabindex', '-1')
-          .attr('disabled', this.option('disabled'))
-          .attr('readonly', this.option('readOnly'));
+          .prop('disabled', this.option('disabled'))
+          .prop('readOnly', this.option('readOnly'));
 
         if (this.OuterWrapper) {
           this._element2 = $(this.OuterWrapper);
@@ -920,7 +1149,7 @@ var __oj_switch_metadata =
         this._setupEvents();
 
         if (rootElement === undefined) return;
-        this.element.attr('checked', this.option('value')); // Switch vs Input synchonization
+        this.element.prop('checked', this.option('value')); // Switch vs Input synchonization
 
         rootElement.removeClass('oj-disabled oj-read-only oj-selected oj-hover oj-active');
         $(this.switchThumb).attr('tabindex', this._inputElementTabIndex);

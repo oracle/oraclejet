@@ -1368,8 +1368,7 @@ var __oj_radioset_metadata =
         // !! ensures it is a boolean
         // update the private ojradiocheckbox component's disabled option to keep it in sync with the dom
         this.$radios.filter('.oj-radio').each(function () {
-          var disabledValue =
-            $(this).attr('disabled') !== undefined ? !!$(this).prop('disabled') : false;
+          var disabledValue = !!$(this).prop('disabled');
           $(this)._ojRadioCheckbox('option', 'disabled', disabledValue);
         });
 
@@ -1655,7 +1654,7 @@ var __oj_radioset_metadata =
         }
 
         if (ojoption.disabled) {
-          radio.setAttribute('disabled', true);
+          radio.setAttribute('disabled', 'disabled');
         } else {
           radio.removeAttribute('disabled');
         }
@@ -1816,7 +1815,7 @@ var __oj_radioset_metadata =
             !this.widget()[0].classList.contains('oj-choice-direction-row') &&
             event.target.tagName !== 'INPUT'
           ) {
-            $(event.target).find('input').click();
+            $(event.target).find('input').trigger('click');
           }
         }
       },

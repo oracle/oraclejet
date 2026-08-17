@@ -38,6 +38,7 @@ exports.generateApiDoc = generateApiDoc;
 const fs = __importStar(require("fs"));
 const TransformerError_1 = require("./TransformerError");
 const ApiDocUtils_1 = require("./ApiDocUtils");
+const SafeFileUtils_1 = require("../shared/SafeFileUtils");
 const INCLUDE_TOKEN = '@include';
 function generateApiDocMetadata(metaUtilObj, options) {
     if (options.apiDocDir && options.apiDocBuildEnabled) {
@@ -108,7 +109,7 @@ function writeApiDocFiles(apidocResult, componentName, apiDocDir) {
     if (!fs.existsSync(apiDocDir)) {
         fs.mkdirSync(apiDocDir, { recursive: true });
     }
-    const apiDocForComponent = `${apiDocDir}/${componentName}.json`;
+    const apiDocForComponent = (0, SafeFileUtils_1.getSafeJsonFilePath)(apiDocDir, componentName, 'API doc file name');
     fs.writeFileSync(apiDocForComponent, JSON.stringify(apidocResult, null, 2));
 }
 //# sourceMappingURL=ApiDocFileUtils.js.map

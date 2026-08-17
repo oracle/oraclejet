@@ -9,7 +9,7 @@ import { forwardRef } from 'preact/compat';
 import { jsx } from 'preact/jsx-runtime';
 import { h, options, Component, createRef, render, cloneElement, Fragment, createContext } from 'preact';
 import { JetElementError, CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, publicToPrivateName, toSymbolizedValue, LifecycleElementState, ElementState, addPrivatePropGetterSetters } from 'ojs/ojcustomelement-utils';
-import { getElementRegistration, isElementRegistered, isVComponent, getElementDescriptor, registerElement as registerElement$1 } from 'ojs/ojcustomelement-registry';
+import { getElementRegistration, getMetadata, isElementRegistered, isVComponent, getElementDescriptor, registerElement as registerElement$1 } from 'ojs/ojcustomelement-registry';
 import { useLayoutEffect, useContext, useMemo, useCallback } from 'preact/hooks';
 import { EnvironmentContext, RootEnvironmentProvider } from '@oracle/oraclejet-preact/UNSAFE_Environment';
 import oj from 'ojs/ojcore-base';
@@ -583,6 +583,9 @@ class IntrinsicElement {
         this._earlySets = [];
         this._eventQueue = [];
         this._isRenderQueued = false;
+        // Template renderers may be called by a portaled Preact descendant while KO is disposing
+        // the component's DOM. Keep their lifecycle explicit so they cannot evaluate after disposal.
+        this._slotRendererDisposers = new Set();
         this._state = CustomElementUtils.getElementState(element);
         this._element = element;
         this._metadata = metadata;
@@ -1024,7 +1027,7 @@ class IntrinsicElement {
                     this._render();
                 };
                 this._state.setCreateCallback(createComponentCallback);
-                this._state.setBindingsDisposedCallback(() => this._handleBindingsDisposed());
+                this._state.setBindingsDisposedCallback((isFinal) => this._handleBindingsDisposed(isFinal));
             }
         }
         this._state.executeLifecycleCallbacks(true);
@@ -1278,14 +1281,28 @@ class IntrinsicElement {
     }
     _getSlotRenderer(templateNode, slotProp, containerProp) {
         const bindingProvider = this._state.getBindingProvider();
+        let isDisposed = false;
+        const disposeRenderer = () => {
+            if (!isDisposed) {
+                isDisposed = true;
+                this._slotRendererDisposers.delete(disposeRenderer);
+            }
+        };
         const mutationCallback = bindingProvider
             ? () => {
                 const propContainer = containerProp ? this._props[containerProp] : this._props;
                 propContainer[slotProp] = this._getSlotRenderer(templateNode, slotProp, containerProp);
+                // Publish the replacement before retiring this renderer. This leaves no
+                // interval in which a consumer can observe only a disposed renderer.
+                disposeRenderer();
                 this._queueRender();
             }
             : null;
+        this._slotRendererDisposers.add(disposeRenderer);
         return (context) => {
+            if (isDisposed) {
+                return [];
+            }
             const cachedTemplateEngine = this._state.getTemplateEngine();
             if (!cachedTemplateEngine) {
                 throw new JetElementError(this._element, 'Unexpected call to render a template slot');
@@ -1293,9 +1310,16 @@ class IntrinsicElement {
             return cachedTemplateEngine.execute(this._element, templateNode, context, bindingProvider, mutationCallback);
         };
     }
-    _handleBindingsDisposed() {
-        ParkingLot.disposeNodes(this._state.getSlotMap(), this._state.getBindingProviderCleanNode());
-        this._state.disposeTemplateCache();
+    _handleBindingsDisposed(isFinal) {
+        if (isFinal) {
+            Array.from(this._slotRendererDisposers).forEach((dispose) => dispose());
+            this._slotRendererDisposers.clear();
+        }
+        const slotMap = this._state.getSlotMap();
+        if (slotMap) {
+            ParkingLot.disposeNodes(slotMap, this._state.getBindingProviderCleanNode());
+            this._state.disposeTemplateCache();
+        }
     }
     _disconnectSlots() {
         ParkingLot.disconnectNodes(this._state.getSlotMap());
@@ -1418,9 +1442,9 @@ const EnvironmentWrapper = forwardRef((props, ref) => {
     // The props.children is guaranteed to be a single IntrinsicElement.
     // See how EnvironmentWrapper is used in preactOptions.
     let child = props.children;
+    const type = child.type;
     // This list will never change, so we're not using any hooks on a conditional basis
-    const contexts = getElementRegistration(child.type).cache
-        .contexts;
+    const contexts = getElementRegistration(type).cache.contexts;
     const allContexts = [EnvironmentContext, ...(contexts ?? [])];
     const allValues = allContexts.map((context) => {
         // Get the provided value from __oj_provided_contexts property.
@@ -1465,7 +1489,24 @@ const EnvironmentWrapper = forwardRef((props, ref) => {
             child.ref = ref;
         }
     }
-    return jsx(Fragment, { children: child });
+    // JET-72300: Handle form context propagation in VDOM for form layout in table.
+    // We need a way to propagate static context from form-layout that doesn't rely on binding propagation
+    // (MVVM only) or template engine propagation (form layout uses default slot). Ideally we would piggy
+    // back __oj_private_contexts above and allow ComponentWithContexts to inject these providers for us,
+    // however since every individual VComponent is injected this way, if you don't do it here by the
+    // time ComponentWithContexts renders, it uses the wrong context. The code that figures out what
+    // value to provide (see allValues above) only works if we inject the static contexts here.
+    // Note: The metadata contexts injected here will end up outermost (LayerContext, EnvironmentContext,
+    // and any consumedContexts from custom element registration get injected by ComponentWithContexts).
+    // However, providing static context here should not interfere with those other contexts in practice.
+    const staticProvideMeta = getMetadata(type)?.extension?.['_BINDING']?.provide;
+    const wrappedChild = staticProvideMeta
+        ? Array.from(staticProvideMeta).reduce((acc, [context, value]) => {
+            const provider = jsx(context.Provider, { value: value, children: acc });
+            return provider;
+        }, child)
+        : child;
+    return jsx(Fragment, { children: wrappedChild });
 });
 EnvironmentWrapper['__ojIsEnvironmentWrapper'] = true;
 
@@ -3697,8 +3738,8 @@ function customElement(tagName) {
  */
 function registerCustomElement(tagName, fcomp, options) {
     class VCompWrapper extends Component {
-        constructor() {
-            super();
+        constructor(props) {
+            super(props);
             this.__refCallback = (instance) => {
                 if (this.__vcompRef) {
                     this.__vcompRef.current = instance;

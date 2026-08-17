@@ -195,6 +195,7 @@ var __oj_slider_metadata =
 };
     __oj_slider_metadata.extension._WIDGET_NAME = 'ojSlider';
     __oj_slider_metadata.extension._INNER_ELEM = 'input';
+    __oj_slider_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-label', 'aria-labelledby'];
     oj.CustomElementBridge.register('oj-slider', {
       metadata: oj.CollectionUtils.mergeDeep(__oj_slider_metadata, bindingMeta)
     });
@@ -371,6 +372,7 @@ var __oj_range_slider_metadata =
     /* global __oj_range_slider_metadata */
     __oj_range_slider_metadata.extension._WIDGET_NAME = 'ojSlider';
     __oj_range_slider_metadata.extension._INNER_ELEM = 'input';
+    __oj_range_slider_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-label', 'aria-labelledby'];
     oj.CustomElementBridge.register('oj-range-slider', {
       metadata: oj.CollectionUtils.mergeDeep(__oj_range_slider_metadata, bindingMeta)
     });
@@ -946,6 +948,7 @@ var __oj_range_slider_metadata =
      * @ojdisplayname Focus Styling
      * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
      * @memberof oj.ojSlider
+     * @ojdeprecated {since: '21.0.0', description: "The Redwood design system does not allow this to be customized."}
      * @ojtsexample
      * &lt;oj-slider class="oj-focus-highlight">
      *   &lt;!-- Content -->
@@ -1874,6 +1877,54 @@ var __oj_range_slider_metadata =
         }
       },
 
+      // For custom elements, the bridge helps remove direct aria-* from the host during initial
+      // render, but the final accessible name still belongs on the focusable thumb(s), not the
+      // hidden input. Clear any stale thumb aria before reapplying the current labelledBy /
+      // direct aria-* source to the thumb DOM.
+      _clearThumbAriaInfo: function () {
+        var thumbs = this._elementWrapped.find(OJ_SLIDER_THUMB);
+        thumbs.removeAttr(ARIA_LABEL);
+        thumbs.removeAttr(ARIA_LABELLEDBY);
+      },
+
+      _clearDirectAriaLabelledBy: function () {
+        this.element.removeAttr(ARIA_LABELLEDBY);
+        this._elementWrapped.find('input').removeAttr(ARIA_LABELLEDBY);
+        if (this.OuterWrapper && this.OuterWrapper.hasAttribute(ARIA_LABELLEDBY)) {
+          this.OuterWrapper.removeAttribute(ARIA_LABELLEDBY);
+        }
+      },
+
+      _clearDirectAriaLabel: function () {
+        this.element.removeAttr(ARIA_LABEL);
+        this._elementWrapped.find('input').removeAttr(ARIA_LABEL);
+        if (this.OuterWrapper && this.OuterWrapper.hasAttribute(ARIA_LABEL)) {
+          this.OuterWrapper.removeAttribute(ARIA_LABEL);
+        }
+      },
+
+      _getDirectAriaLabelledBy: function () {
+        var innerInput = this._elementWrapped.find('input').attr(ARIA_LABELLEDBY);
+        return (
+          this.element.attr(ARIA_LABELLEDBY) ||
+          innerInput ||
+          (this.OuterWrapper && this.OuterWrapper.getAttribute(ARIA_LABELLEDBY))
+        );
+      },
+
+      _getDirectAriaLabel: function () {
+        var innerInput = this._elementWrapped.find('input').attr(ARIA_LABEL);
+        return (
+          (this.OuterWrapper && this.OuterWrapper.getAttribute(ARIA_LABEL)) ||
+          this.element.attr(ARIA_LABEL) ||
+          innerInput
+        );
+      },
+
+      _GetAriaLabelElement: function () {
+        return this._IsCustomElement() ? this.element[0] : this._getRootElement();
+      },
+
       _AfterCreate: function () {
         this._super();
 
@@ -1884,12 +1935,15 @@ var __oj_range_slider_metadata =
         var ariaLabelString;
         var label;
         var ariaLabelledBy;
+        var directAriaLabelledBy;
+        var hasDirectAriaLabelledBy = false;
         var thumb;
 
         // for oj-slider, if labelled-by attribute is set, use that to
         // construct the aria-labelledby and put on the thumb
         // else use aria-label if it is there.
         if (this.OuterWrapper) {
+          this._clearThumbAriaInfo();
           if (this.options.labelledBy) {
             var defaultLabelId = this.uuid + '_Label';
             ariaLabelledBy = ojeditablevalue.EditableValueUtils._getOjLabelAriaLabelledBy(
@@ -1897,13 +1951,25 @@ var __oj_range_slider_metadata =
               defaultLabelId
             );
             this._copyLabelledbyToThumb(ariaLabelledBy);
+          } else {
+            directAriaLabelledBy = this._getDirectAriaLabelledBy();
+            if (directAriaLabelledBy) {
+              this._copyLabelledbyToThumb(directAriaLabelledBy);
+              this._clearDirectAriaLabelledBy();
+              hasDirectAriaLabelledBy = true;
+            }
           }
           // there is a use-case where aria-label is set on the component, and we write that to the
           // thumb.
-          if (!this.options.labelledBy || document.getElementById(this.options.labelledBy)) {
-            ariaLabelString = this.OuterWrapper.getAttribute(ARIA_LABEL);
+          if (
+            (!this.options.labelledBy || document.getElementById(this.options.labelledBy)) &&
+            !hasDirectAriaLabelledBy
+          ) {
+            ariaLabelString = this._getDirectAriaLabel();
             if (ariaLabelString) {
               this._setAriaLabelToThumb(ariaLabelString);
+              // The custom element wrapper is not focusable, so the thumb should own the label.
+              this._clearDirectAriaLabel();
             }
           }
         } else {
@@ -1935,6 +2001,7 @@ var __oj_range_slider_metadata =
 
               // Set the aria-labelledby attribute of the thumb to the returned id
               thumb.attr(ARIA_LABEL, ariaLabelString); // @HTMLUpdateOK
+              this.element.removeAttr(ARIA_LABEL);
             }
           }
         }
@@ -2220,7 +2287,7 @@ var __oj_range_slider_metadata =
         this._mouseStop(event);
 
         var thumb = this._getActiveThumb();
-        thumb.focus();
+        thumb.trigger('focus');
       },
 
       //
@@ -2498,7 +2565,7 @@ var __oj_range_slider_metadata =
         }
 
         var thumb = this._getActiveThumb();
-        thumb.addClass('oj-active').focus();
+        thumb.addClass('oj-active').trigger('focus');
         // For mobile theming, we need to change the color of the value bar when active.
         this._range.addClass('oj-active');
 
@@ -2518,7 +2585,7 @@ var __oj_range_slider_metadata =
         // tabbing could have added oj-focus-highlight to the thumb,
         // if so, remove the class since we are moving the thumb via mouse interaction.
         thumb.removeClass('oj-focus-highlight');
-        thumb.addClass('oj-active').focus();
+        thumb.addClass('oj-active').trigger('focus');
         // For mobile theming, we need to change the color of the value bar when active.
         this._range.addClass('oj-active');
 
@@ -3018,6 +3085,8 @@ var __oj_range_slider_metadata =
             this._reCreate();
             break;
           case 'labelledBy':
+          case 'labelHint':
+          case 'labelEdge':
             this._setAriaInfo();
             break;
           default:
@@ -3052,7 +3121,7 @@ var __oj_range_slider_metadata =
 
       _isCustomRangeSlider: function () {
         if (this._IsCustomElement()) {
-          var rootElem = this.element[0].parentNode;
+          var rootElem = this.OuterWrapper || this.element[0].parentNode;
           if (rootElem.tagName === 'OJ-RANGE-SLIDER') {
             return true;
           }
@@ -3204,7 +3273,7 @@ var __oj_range_slider_metadata =
               startThumb = thumb;
               // if the min thumb is at the max, set its zindex to 1
               if (valPercent === 100) {
-                thumb.css({ zIndex: 1 });
+                thumb.css({ zIndex: '1' });
               } else {
                 thumb.css({ zIndex: '' });
               }
@@ -3220,13 +3289,13 @@ var __oj_range_slider_metadata =
             this._setRangeMultiThumb(valPercent, i);
           }, this);
           if (startThumb.hasClass('oj-focus')) {
-            startThumb.css({ zIndex: 1 });
+            startThumb.css({ zIndex: '1' });
             endThumb.css({ zIndex: '' });
           }
 
           if (endThumb.hasClass('oj-focus')) {
             startThumb.css({ zIndex: '' });
-            endThumb.css({ zIndex: 1 });
+            endThumb.css({ zIndex: '1' });
           }
         } else {
           //

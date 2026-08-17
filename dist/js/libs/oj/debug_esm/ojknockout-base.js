@@ -433,6 +433,8 @@ oj$1._registerLegacyNamespaceProp('__ExpressionUtils', __ExpressionUtils);
   };
 })();
 
+const _ORIGINAL_PROPERTIES = Symbol.for('_ojOriginalProps');
+
 /**
  * @ignore
  * @constructor
@@ -615,9 +617,9 @@ const ExpressionPropertyUpdater = function (element, bindingContext, skipThrottl
 
   function _getCurrent(_bindingContext) {
     let current = _bindingContext.$current;
-    if (current?._ojNodesMap) {
+    if (current && _ORIGINAL_PROPERTIES in Object(current)) {
       // original props should be used for proxied _nodesMap cases
-      current = current[Symbol.for('_ojOriginalProps')];
+      current = current[_ORIGINAL_PROPERTIES];
     }
     return current || _bindingContext.$data;
   }
@@ -927,8 +929,8 @@ const _KnockoutBindingProvider = function () {
   /**
    * @ignore
    */
-  this.__NotifyBindingsDisposed = function (elem) {
-    CustomElementUtils.getElementState(elem).disposeBindingProvider(elem);
+  this.__NotifyBindingsDisposed = function (elem, isFinal) {
+    CustomElementUtils.getElementState(elem).disposeBindingProvider(isFinal);
   };
 
   /**
@@ -1051,7 +1053,7 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
       } = _setupProvideAndConsumeMaps(element, compMetadata);
 
       // Called both when KO's cleanNode() is invoked and when the observable view model is mutated
-      function cleanup() {
+      function cleanup(isFinal) {
         if (_expressionHandler) {
           _expressionHandler.teardown();
           _expressionHandler = null;
@@ -1062,12 +1064,12 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
           attributeListener = null;
         }
 
-        _KnockoutBindingProvider.getInstance().__NotifyBindingsDisposed(element);
+        _KnockoutBindingProvider.getInstance().__NotifyBindingsDisposed(element, isFinal);
       }
 
       // Called only when KO's cleanNode() is invoked
       function finalCleanup() {
-        cleanup();
+        cleanup(true);
         disposeProviderListeners();
       }
 
@@ -1499,8 +1501,7 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
       return undefined;
     }
 
-    const handler = bindableAttr === 'if' ? '_ojBindIf_V2_' : bindableAttr;
-    const binding = 'ko ' + handler + ':' + expr;
+    const binding = 'ko ' + bindableAttr + ':' + expr;
     return _getReplacementNodes(node, bindableAttr, binding);
   }
 
@@ -2455,7 +2456,10 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
           this.element,
           this.element._templateNode,
           currentChildContext,
-          this.as
+          this.as,
+          undefined,
+          undefined,
+          { processTemplate: true }
         );
       }
 
@@ -2705,14 +2709,21 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
       let wrappedReturn = _wrappedReturn;
       if (node.nodeType === 1 && node.localName === 'oj-if') {
         const testEvaluator = _getEvaluator(node, 'test', bindingContext);
-        const nodesEvaluator = _getEvaluator(node, 'oj-private-do-not-use', bindingContext);
         wrappedReturn = wrappedReturn || {};
-        wrappedReturn._ojBindIf_V2_ = () => {
-          const nodes = nodesEvaluator ? unwrap(nodesEvaluator(bindingContext)) : null;
-          return nodes
-            ? { test: unwrap(testEvaluator(bindingContext)), nodes, ojDoNotUseProcessed: true }
-            : unwrap(testEvaluator(bindingContext));
-        };
+        if (node.hasAttribute('oj-private-do-not-use')) {
+          // The private nodes attribute is written only by TemplateEngineUtils.processTemplate().
+          // Use V2 in that opt-in path so the nodes can be shared between repeated executions.
+          const nodesEvaluator = _getEvaluator(node, 'oj-private-do-not-use', bindingContext);
+          wrappedReturn._ojBindIf_V2_ = () => {
+            const nodes = nodesEvaluator ? unwrap(nodesEvaluator(bindingContext)) : null;
+            return nodes
+              ? { test: unwrap(testEvaluator(bindingContext)), nodes, ojDoNotUseProcessed: true }
+              : unwrap(testEvaluator(bindingContext));
+          };
+        } else {
+          // Preserve the original ko behavior for ordinary oj-if elements.
+          wrappedReturn.if = () => unwrap(testEvaluator(bindingContext));
+        }
         wrappedReturn.style = () => {
           return { display: 'contents' };
         };

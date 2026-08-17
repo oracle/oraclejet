@@ -77,7 +77,19 @@
   }
 
   function _isObject(val) {
-    return typeof val === 'object';
+    return val !== null && typeof val === 'object';
+  }
+
+  function _isPlainObject(val) {
+    return Object.prototype.toString.call(val) === '[object Object]';
+  }
+
+  /**
+   * Returns true if the key provided should be blocked from recursive bundle merges.
+   * Specifically keys that could cause prototype pollution issues are included.
+   */
+  function _isBlockedKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
   }
 
   /**
@@ -159,11 +171,16 @@
     var props = Object.keys(source);
     for (var i = 0; i < props.length; i++) {
       var prop = props[i];
-      if (target[prop] == null) {
-        // eslint-disable-next-line no-param-reassign
-        target[prop] = source[prop];
-      } else if (_isObject(source[prop]) && _isObject(target[prop])) {
-        _mixin(target[prop], source[prop]);
+      if (!_isBlockedKey(prop)) {
+        if (target[prop] == null) {
+          // eslint-disable-next-line no-param-reassign
+          target[prop] = _isPlainObject(source[prop]) ? {} : source[prop];
+          if (target[prop] !== source[prop]) {
+            _mixin(target[prop], source[prop]);
+          }
+        } else if (_isObject(source[prop]) && _isObject(target[prop])) {
+          _mixin(target[prop], source[prop]);
+        }
       }
     }
   }

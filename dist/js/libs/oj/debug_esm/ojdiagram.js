@@ -1939,7 +1939,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
      * @instance
      * @type {string=}
      * @ojvalue {string} "fixed" {"description": "Panning is restricted to the visible region when the diagram is rendered at minZoom."}
-     * @ojvalue {string} "centerContent" {"description": "Panning is restricted based on the current zoom level to allow any area of the content to be centered. If an overview is being rendered, the overview.fitArea property should also be set to 'content' in most situations."}
+     * @ojvalue {string} "centerContent" {"description": "Panning is restricted based on the current zoom level to allow any area of the content to be centered."}
      * @ojvalue {string} "none" {"description": "Panning is not allowed."}
      * @ojvalue {string} "auto" {"description": "One of the other described behaviors will be chosen at runtime based on the theme, form factor etc."}
      * @default "none"
@@ -2955,21 +2955,21 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
      * <code class="prettyprint">overview</code> attribute specified:</caption>
      *
      * <!-- Using dot notation -->
-     * &lt;oj-diagram overview.rendered = 'on' overview.width = '150'>&lt;/oj-diagram>
+     * &lt;oj-diagram overview.rendered = 'on'>&lt;/oj-diagram>
      *
      * &lt;oj-diagram overview='[[overviewObject]]'>&lt;/oj-diagram>
      *
      * @example <caption>Get or set the <code class="prettyprint">overview</code>
      * property after initialization:</caption>
      * // Get one
-     * var value = myDiagram.overview.width;
+     * var value = myDiagram.overview.rendered;
      *
      * // Get all
      * var values = myDiagram.overview;
      *
      * // Set one, leaving the others intact. Always use the setProperty API for
      * // subproperties rather than setting a subproperty directly.
-     * myDiagram.setProperty('overview.width', '150');
+     * myDiagram.setProperty('overview.rendered', 'on');
      *
      * // Set all. Must list every resource key, as those not listed are lost.
      * myDiagram.overview=overviewObject;
@@ -2998,6 +2998,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
        * @type {string=}
        * @ojvalue {string} "content" {"description": "The bounding box of the Diagram nodes will be scaled to fit within the overview."}
        * @ojvalue {string} "canvas" {"description": "The canvas (the <a href='oj.ojDiagram.html#panning'>pannable</a> area when the diagram is at minZoom) will be scaled to fit within the overview. The diagram panning property should also be set to 'fixed' in most situations."}
+       * @ojdeprecated {since: '21.0.0', description: 'This property is deprecated. The component will choose a sensible fit area based on the diagram content.'}
        * @default "content"
        */
       fitArea: 'content',
@@ -3010,6 +3011,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
        * @type {string=}
        * @ojvalue {string} "none" {"description": "The aspect ratio of the fit area may not be preserved as it is scaled to fit the overview."}
        * @ojvalue {string} "meet" {"description": "The aspect ratio of the fit area will be preserved as it is scaled to fit the overview."}
+       * @ojdeprecated {since: '21.0.0', description: 'This property is deprecated. The component will choose a sensible aspect ratio behavior based on the diagram content.'}
        * @default "meet"
        */
       preserveAspectRatio: 'meet',
@@ -3022,6 +3024,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
        * @memberof! oj.ojDiagram
        * @instance
        * @type {number=}
+       * @ojdeprecated {since: '21.0.0', description: 'This property is deprecated. The component will choose a sensible overview width based on the diagram content.'}
        * @default 200
        */
       width: 200,
@@ -3034,6 +3037,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
        * @memberof! oj.ojDiagram
        * @instance
        * @type {number=}
+       * @ojdeprecated {since: '21.0.0', description: 'This property is deprecated. The component will choose a sensible overview height based on the diagram content.'}
        * @default 100
        */
       height: 100,
@@ -3728,15 +3732,15 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
   _GetComponentRendererOptions: function () {
     return [
       { path: 'tooltip/renderer', slot: 'tooltipTemplate' },
-      { path: 'nodeContent/renderer', slot: 'nodeContentTemplate' },
-      { path: 'nodeContent/focusRenderer', slot: 'nodeContentTemplate' },
-      { path: 'nodeContent/hoverRenderer', slot: 'nodeContentTemplate' },
-      { path: 'nodeContent/selectionRenderer', slot: 'nodeContentTemplate' },
-      { path: 'nodeContent/zoomRenderer', slot: 'nodeContentTemplate' },
-      { path: 'linkContent/renderer', slot: 'linkContentTemplate' },
-      { path: 'linkContent/focusRenderer', slot: 'linkContentTemplate' },
-      { path: 'linkContent/hoverRenderer', slot: 'linkContentTemplate' },
-      { path: 'linkContent/selectionRenderer', slot: 'linkContentTemplate' }
+      { path: 'nodeContent/renderer', slot: 'nodeContentTemplate', processTemplate: true },
+      { path: 'nodeContent/focusRenderer', slot: 'nodeContentTemplate', processTemplate: true },
+      { path: 'nodeContent/hoverRenderer', slot: 'nodeContentTemplate', processTemplate: true },
+      { path: 'nodeContent/selectionRenderer', slot: 'nodeContentTemplate', processTemplate: true },
+      { path: 'nodeContent/zoomRenderer', slot: 'nodeContentTemplate', processTemplate: true },
+      { path: 'linkContent/renderer', slot: 'linkContentTemplate', processTemplate: true },
+      { path: 'linkContent/focusRenderer', slot: 'linkContentTemplate', processTemplate: true },
+      { path: 'linkContent/hoverRenderer', slot: 'linkContentTemplate', processTemplate: true },
+      { path: 'linkContent/selectionRenderer', slot: 'linkContentTemplate', processTemplate: true }
     ];
   },
 
@@ -4175,21 +4179,27 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent, {
   },
 
   // Executes the inline template and returns the nodes from the template
-  _TemplateRenderer: function (context, templateEngine, templateElement, templateName) {
+  _TemplateRenderer: function (
+    context,
+    templateEngine,
+    templateElement,
+    templateName,
+    rendererOptions
+  ) {
     var states = context.state;
     var prevStates = context.previousState;
     var id = context.id;
     this._nodeLinkContext[id] = context;
     templateEngine.defineTrackableProperty(context, 'state', states);
     templateEngine.defineTrackableProperty(context, 'prevState', prevStates);
-    return this._super(context, templateEngine, templateElement, templateName);
+    return this._super(context, templateEngine, templateElement, templateName, rendererOptions);
   },
 
-  _ProcessInlineTemplateRenderer: function (options, optionPath, templateElement, templateName) {
+  _ProcessInlineTemplateRenderer: function (options, rendererOptions, templateElement) {
     if (!this._nodeLinkContext) {
       this._nodeLinkContext = {};
     }
-    this._super(options, optionPath, templateElement, templateName);
+    this._super(options, rendererOptions, templateElement);
   },
 
   _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {

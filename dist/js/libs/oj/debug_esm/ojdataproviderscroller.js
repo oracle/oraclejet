@@ -414,7 +414,15 @@ DataProviderContentHandler.prototype._addOrReplaceItem = function (
     var componentElement = this.m_widget.GetRootElement()[0];
     var bindingContext = this.GetBindingContext(context);
     var as = this.m_widget.getAs ? this.m_widget.getAs() : null;
-    var nodes = templateEngine.execute(componentElement, templateElement, bindingContext, as);
+    var nodes = templateEngine.execute(
+      componentElement,
+      templateElement,
+      bindingContext,
+      as,
+      undefined,
+      undefined,
+      { processTemplate: true }
+    );
     if (replaceChildCallback) {
       isCustomizeItem = replaceChildCallback(nodes);
     } else {
@@ -2814,12 +2822,9 @@ IteratingDataProviderContentHandler.prototype._renderItemsWhenIdle = function (
       addFragmentOnRequestAnimationFrame(fragment);
     });
   } else {
-    // Chromium has an issue with requestIdleCallback when mouse wheel is used, see Chrome :
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=822269
-    var options;
-    if (isMouseWheel && oj.AgentUtils.getAgentInfo().engine === oj.AgentUtils.ENGINE.BLINK) {
-      options = { timeout: 100 };
-    }
+    // Use a timeout so fetch rendering is not blocked indefinitely when the browser
+    // does not get an idle period, including scrollbar and mouse wheel scrolling.
+    var options = { timeout: 100 };
     this.m_idleCallback = window.requestIdleCallback(function (idleDeadline) {
       // no need to check for whether listview has been destroyed yet since we cancel the callback on destroy
       var timeRemaining = idleDeadline.timeRemaining();

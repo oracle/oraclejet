@@ -232,6 +232,64 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var InputSearch_1;
+    // --------------------------------------------------- oj.ojInputSearch Styling Start ------------------------------------------------------------
+    /**
+     * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+     * The form control style classes can be applied to the component, or an ancestor element. <br/>
+     * When applied to an ancestor element, all form components that support the style classes will be affected.
+     */
+    // ---------------- oj-form-control max-width --------------
+    /**
+     * In the Redwood theme the default max width of a text field is 100%.
+     * These max width convenience classes are available to create a medium or small field.<br>
+     * The class is applied to the root element.
+     * @ojstyleset form-control-max-width
+     * @ojdisplayname Max Width
+     * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+     * @ojstylerelation exclusive
+     * @memberof oj.ojInputSearch
+     * @ojunsupportedthemes ['Alta']
+     * @ojtsexample
+     * &lt;oj-input-search class="oj-form-control-max-width-md">&lt;/oj-input-search>
+     */
+    /**
+     * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+     * @ojshortdesc Sets the max width for a small field
+     * @ojdisplayname Small
+     * @memberof! oj.ojInputSearch
+     */
+    /**
+     * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+     * @ojshortdesc Sets the max width for a medium field
+     * @ojdisplayname Medium
+     * @memberof! oj.ojInputSearch
+     */
+    // ---------------- oj-form-control width --------------
+    /**
+     * In the Redwood theme the default width of a text field is 100%.
+     * These width convenience classes are available to create a medium or small field.<br>
+     * The class is applied to the root element.
+     * @ojstyleset form-control-width
+     * @ojdisplayname Width
+     * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+     * @ojstylerelation exclusive
+     * @memberof oj.ojInputSearch
+     * @ojunsupportedthemes ['Alta']
+     * @ojtsexample
+     * &lt;oj-input-search class="oj-form-control-width-md">&lt;/oj-input-search>
+     */
+    /**
+     * @ojstyleclass form-control-width.oj-form-control-width-sm
+     * @ojshortdesc Sets the width for a small field
+     * @ojdisplayname Small
+     * @memberof! oj.ojInputSearch
+     */
+    /**
+     * @ojstyleclass form-control-width.oj-form-control-width-md
+     * @ojshortdesc Sets the width for a medium field
+     * @ojdisplayname Medium
+     * @memberof! oj.ojInputSearch
+     */
     /**
      * @classdesc
      * <h3 id="inputSearchOverview-section">
@@ -293,6 +351,70 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
      * the common features of form controls.  For example, it is not expected to be used in an
      * <code class="prettyprint">oj-form-layout</code>, it does not support a label, and it does not
      * support assistive text.</p>
+     *
+     * <h3 id="migration-section">
+     *   Migration
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+     * </h3>
+     *
+     * <p>
+     * To migrate from oj-input-search to oj-c-input-search, revise the import statement and replace
+     * usages of <code class="prettyprint">oj-input-search</code> with
+     * <code class="prettyprint">oj-c-input-search</code>. The Core Pack component is intended for
+     * freeform search text entry with optional suggestions, not as a general form control.
+     * </p>
+     *
+     * <h5>Hero search</h5>
+     * <p>
+     * The legacy <code class="prettyprint">oj-input-search-hero</code> style class does not apply to
+     * <code class="prettyprint">oj-c-input-search</code>. Use the
+     * <code class="prettyprint">variant="hero"</code> property on
+     * <code class="prettyprint">oj-c-input-search</code> instead.
+     * </p>
+     *
+     * <h5>MaxWidth attribute</h5>
+     * <p>
+     * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
+     * replaced with the <code class="prettyprint">max-width</code> attribute. The value of this attribute maps to these style classes as shown below:
+     * <ul>
+     * <li>
+     * .oj-form-control-max-width-sm maps to 'sm'
+     * </li>
+     * <li>
+     * .oj-form-control-max-width-md maps to 'md'
+     * </li>
+     * </ul>
+     * </p>
+     *
+     * <h5>Width attribute</h5>
+     * <p>
+     * The usage of the style classes: oj-form-control-width-sm and oj-form-control-width-md is now
+     * replaced with the <code class="prettyprint">width</code> attribute. The value of this attribute maps to these style classes as shown below:
+     * <ul>
+     * <li>
+     * .oj-form-control-width-sm maps to 'sm'
+     * </li>
+     * <li>
+     * .oj-form-control-width-md maps to 'md'
+     * </li>
+     * </ul>
+     * </p>
+     *
+     * <h5>Form layout integration</h5>
+     * <p>
+     * The <code class="prettyprint">oj-c-input-search</code> component is not a full form control. It
+     * does not support <code class="prettyprint">label-hint</code>, form layout integration,
+     * <code class="prettyprint">help</code>, or <code class="prettyprint">help-hints</code>.
+     * </p>
+     *
+     * <h5>Accessible name</h5>
+     * <p>
+     * The <code class="prettyprint">oj-c-input-search</code> component provides a localized default
+     * accessible name, so applications should not migrate legacy
+     * <code class="prettyprint">aria-label</code> or
+     * <code class="prettyprint">aria-labelledby</code> usage to
+     * <code class="prettyprint">oj-c-input-search</code>.
+     * </p>
      *
      * <h3 id="touch-section">
      *   Touch End User Information
@@ -365,6 +487,13 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
      * @ojmetadata description "An Input Search is an input field that the user can type search text into."
      * @ojmetadata displayName "Input Search"
      * @ojmetadata main "ojs/ojinputsearch"
+     * @ojmetadata status [
+     *   {
+     *     "type": "maintenance",
+     *     "since": "21.0.0",
+     *     "value": ["oj-c-input-search"]
+     *   }
+     * ]
      * @ojmetadata extension {
      *   "oracle": {
      *     "icon": "oj-ux-ico-input-search",
@@ -379,7 +508,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojlistdataprovid
      *     "minColumns": "2"
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojInputSearch.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojInputSearch.html"
      * @ojmetadata propertyLayout [
      *   {
      *     "propertyGroup": "common",

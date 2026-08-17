@@ -18,7 +18,7 @@ import { KeySetImpl, KeySetUtils, AllKeySetImpl } from 'ojs/ojkeyset';
 import 'ojs/ojselector';
 import 'ojdnd';
 import { CustomElementUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
-import { areKeySetsEqual, applyRendererContent, disableAllFocusableElements, isArrowUpKeyEvent, isArrowDownKeyEvent, isSpaceBarKeyEvent, isFromDefaultSelector, isArrowLeftKeyEvent, isArrowRightKeyEvent, isLetterAKeyEvent, isSafari, getAddEventKeysResult, getEventDetail } from 'ojs/ojdatacollection-common';
+import { areKeySetsEqual, applyRendererContent, disableAllFocusableElements, isIos, isAndroid, isArrowUpKeyEvent, isArrowDownKeyEvent, isSpaceBarKeyEvent, isFromDefaultSelector, isArrowLeftKeyEvent, isArrowRightKeyEvent, isLetterAKeyEvent, isSafari, getAddEventKeysResult, getEventDetail } from 'ojs/ojdatacollection-common';
 import { getTranslatedString } from 'ojs/ojtranslation';
 import OjSet from 'ojs/ojset';
 
@@ -2078,7 +2078,15 @@ class TreeviewSelectionManager {
         applyRendererContent(liElem, renderer.call(self, context), true);
       } else if (templateElement != null && templateEngine != null) {
         var componentElement = self.element[0];
-        var nodes = templateEngine.execute(componentElement, templateElement, context, null);
+        var nodes = templateEngine.execute(
+          componentElement,
+          templateElement,
+          context,
+          null,
+          undefined,
+          undefined,
+          { processTemplate: true }
+        );
         for (i = 0; i < nodes.length; i++) {
           if (nodes[i].tagName === 'LI') {
             liElem.parentNode.replaceChild(nodes[i], liElem);
@@ -2407,7 +2415,7 @@ class TreeviewSelectionManager {
           this.constants.PERIOD + this.constants.OJ_TREEVIEW_ITEM_ICON
         );
         for (let i = 0; i < treeViewItems.length; i++) {
-          treeViewItems[i].classList.add(this.constants.OJ_TREEVIEW_ICON);
+          this._addTreeViewIconClass(treeViewItems[i]);
           treeViewItems[i].classList.add(this.constants.OJ_COMPONENT_ICON);
         }
       }
@@ -2415,7 +2423,7 @@ class TreeviewSelectionManager {
       this._select(item);
 
       // DnD. Draggable attribute is added dynamically on desktop devices
-      if (isTouchSupported()) {
+      if (isIos() || isAndroid()) {
         itemContent.setAttribute('draggable', this._isDnD() ? 'true' : 'false');
       }
 
@@ -2485,6 +2493,9 @@ class TreeviewSelectionManager {
     },
     _addTreeViewIconClass: function (item) {
       item.classList.add(this.constants.OJ_TREEVIEW_ICON);
+      if (!(isIos() || isAndroid())) {
+        item.setAttribute('aria-hidden', 'true');
+      }
     },
     _addTreeviewLeafClass: function (item) {
       item.classList.add(this.constants.OJ_TREEVIEW_LEAF);
@@ -3798,7 +3809,7 @@ class TreeviewSelectionManager {
           this._mouseDownOutsideAnyGroupOrItem = null;
         }, 100);
       }
-      if (!isTouchSupported()) {
+      if (!(isIos() || isAndroid())) {
         const itemContent = this._getClosestItemContent(event.target);
         if (itemContent) {
           itemContent.setAttribute('draggable', this._isDnD() ? 'true' : 'false');

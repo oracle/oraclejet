@@ -182,7 +182,7 @@ SwipeToRevealUtils.setupSwipeActions = function (elem, options) {
     })
     .on('ojpanmove', function (event, ui) {
       if (!drawerShown) {
-        drawer.children().css('min-width', 0);
+        drawer.children().css('min-width', '0');
       }
 
       drawerShown = true;

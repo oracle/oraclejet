@@ -1442,6 +1442,33 @@ function _getMetaData(dayMetaData, position, params) {
 }
 
 /**
+ * JET-79822 - JET - ARM5_UNCONSTRAINED- F37 - OJ-INPUT-DATE DAYFORMATTER CLASSNAME UNESCAPED IN HTML CLASS ATTRIBUTE
+ * Encodes application-supplied text before it is inserted into a generated HTML attribute string.
+ *
+ * @param {string} value value to encode
+ * @returns {string} value encoded for an HTML attribute
+ * @ignore
+ */
+function _escapeHtmlAttribute(value) {
+  return String(value).replace(/[&'"<>]/g, function (match) {
+    switch (match) {
+      case '&':
+        return '&amp;';
+      case "'":
+        return '&#39;';
+      case '"':
+        return '&quot;';
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      default:
+        return match;
+    }
+  });
+}
+
+/**
  * For default converter
  * @static
  * @ignore
@@ -1517,16 +1544,16 @@ function bindHover(dpDiv) {
     ' .oj-datepicker-next-icon .oj-clickable-icon-nocontext.oj-component-icon,' +
     ' .oj-datepicker-calendar td a';
   return dpDiv
-    .delegate(selector, 'mouseout', function () {
+    .on('mouseout', selector, function () {
       this.classList.remove('oj-hover');
     })
-    .delegate(selector, 'mouseover', function () {
+    .on('mouseover', selector, function () {
       this.classList.add('oj-hover');
     })
-    .delegate(selector, 'focus', function () {
+    .on('focus', selector, function () {
       this.classList.add('oj-focus');
     })
-    .delegate(selector, 'blur', function () {
+    .on('blur', selector, function () {
       this.classList.remove('oj-focus');
     });
 }
@@ -2829,9 +2856,13 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * it shows all the time.
      * </p>
      * <p>
-     * For security reasons we only support urls with protocol 'http:' or 'https:'.
-     * If the url doesn't comply we ignore it and throw an error.
-     * Pass in an encoded URL since we do not encode the URL.</p>
+     * <p><b>Note:</b> For security, JET validates the URL protocol before navigation and
+     * currently supports <code class="prettyprint">http:</code> and
+     * <code class="prettyprint">https:</code> protocols. If the url doesn't
+     * comply we ignore it and throw an error. JET does not validate whether
+     * the URL is trusted for the application. Applications are responsible
+     * for providing sanitized URLs and enforcing any required origin or host
+     * allowlist. Pass in an encoded URL since we do not encode the URL.</p>
      *
      * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
      *
@@ -2877,6 +2908,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * <p>
      * To include formatted text in the help.instruction, format the string using html tags.
      * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * Inline style attributes are sanitized; the retained styling is limited to color, font
+     * style, font weight, and text decoration. Use CSS classes for other styling.
      * For example the
      * help.instruction might look like:
      * <pre class="prettyprint"><code>&lt;oj-some-element help.instruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
@@ -3007,6 +3040,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * hints and message summary text cannot. If you use formatted text, it should be accessible
      * and make sense to the user if formatting wasn't there.
      * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * Inline style attributes are sanitized; the retained styling is limited to color, font
+     * style, font weight, and text decoration. Use CSS classes for other styling.
      * To format the message detail, you could do this:
      * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
      * </p>
@@ -3497,6 +3532,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * hints and message summary text cannot. If you use formatted text, it should be accessible
      * and make sense to the user if formatting wasn't there.
      * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * Inline style attributes are sanitized; the retained styling is limited to color, font
+     * style, font weight, and text decoration. Use CSS classes for other styling.
      * To format the help.instruction, you could do this:
      * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
      * </p>
@@ -4388,7 +4425,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         modality: _isLargeScreen() ? 'modeless' : 'modal',
         open: function () {
           if (self.options.datePicker.showOn === 'image') {
-            self._dpDiv.find('.oj-datepicker-calendar').focus();
+            self._dpDiv.find('.oj-datepicker-calendar').trigger('focus');
           }
         },
         close: function () {
@@ -5117,7 +5154,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   _onElementFocus: function () {
     if (this._redirectFocusToInputContainer) {
       this._redirectFocusToInputContainer = false;
-      this._inputContainer.focus();
+      this._inputContainer.trigger('focus');
     } else if (this._showOnIsFocusOrUserFocus()) {
       this.show();
     } else if (this._datepickerShowing()) {
@@ -5258,9 +5295,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
     triggerContainer.appendChild(triggerCalendar); // @HTMLUpdateOK
 
-    this.element.on('focus', $.proxy(this._onElementFocus, this));
+    this.element.on('focus', this._onElementFocus.bind(this));
 
-    this._datepickerTouchStartListener = $.proxy(this._OnElementTouchStart, this);
+    this._datepickerTouchStartListener = this._OnElementTouchStart.bind(this);
     this.element[0].addEventListener('touchstart', this._datepickerTouchStartListener, {
       passive: false
     });
@@ -5283,11 +5320,11 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       //  we need to remove the border radius. iOS is the only case we use border radius, so this
       //  setting for all cases is fine.
       if (this._IsRTL()) {
-        this.element.css('border-top-left-radius', 0);
-        this.element.css('border-bottom-left-radius', 0);
+        this.element.css('border-top-left-radius', '0px');
+        this.element.css('border-bottom-left-radius', '0px');
       } else {
-        this.element.css('border-top-right-radius', 0);
-        this.element.css('border-bottom-right-radius', 0);
+        this.element.css('border-top-right-radius', '0px');
+        this.element.css('border-bottom-right-radius', '0px');
       }
     }
 
@@ -5296,7 +5333,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         self._hide(self._ON_CLOSE_REASON_CLOSE);
       } else {
         self.show();
-        self._dpDiv.find('.oj-datepicker-calendar').focus();
+        self._dpDiv.find('.oj-datepicker-calendar').trigger('focus');
         _scrollIntoViewFor400PercentZoom(self._dpDiv[0]);
       }
       event.preventDefault();
@@ -5326,7 +5363,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       switch (event.keyCode) {
         case 84: // t character
           if (event.altKey && event.ctrlKey) {
-            this._dpDiv.find('.oj-datepicker-current').focus();
+            this._dpDiv.find('.oj-datepicker-current').trigger('focus');
             handled = true;
           }
           break;
@@ -5481,7 +5518,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       switch (event.keyCode) {
         case 84: // t character
           if (event.altKey && event.ctrlKey) {
-            this._dpDiv.find('.oj-datepicker-current').focus();
+            this._dpDiv.find('.oj-datepicker-current').trigger('focus');
             handled = true;
           }
           break;
@@ -5572,7 +5609,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       switch (event.keyCode) {
         case 84: // t character
           if (event.altKey && event.ctrlKey) {
-            this._dpDiv.find('.oj-datepicker-current').focus();
+            this._dpDiv.find('.oj-datepicker-current').trigger('focus');
             handled = true;
           }
           break;
@@ -5695,7 +5732,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
     if (navigation) {
       var oldChild = dpContentDiv.children().first();
-      oldChild.css({ position: 'absolute', left: 0, top: 0 });
+      oldChild.css({ position: 'absolute', left: '0', top: '0' });
 
       dpContentDiv.prepend(generatedHtmlContent.html); // @HTMLUpdateOK
       var newChild = dpContentDiv.children().first();
@@ -5795,7 +5832,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     if (this._datepickerShowing() && this.element.is(':visible') && !this.element.is(':disabled')) {
       if (!focusOnCalendar) {
         if (!this._isInLine && this.element[0] !== document.activeElement) {
-          this.element.focus();
+          this.element.trigger('focus');
         }
       } else {
         this._placeFocusOnCalendar();
@@ -6069,7 +6106,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
   _getStepMonths: function () {
     var stepMonths = this.options.datePicker.stepMonths;
-    return $.isNumeric(stepMonths) ? stepMonths : this.options.datePicker.numberOfMonths;
+    return !Number.isNaN(parseFloat(stepMonths)) && Number.isFinite(Number(stepMonths))
+      ? stepMonths
+      : this.options.datePicker.numberOfMonths;
   },
 
   // Check if an event is a button activation event
@@ -6238,7 +6277,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
           return keyDownReturnValue(evt);
         }
       };
-      $(this).bind(this.getAttribute('data-event'), handler[this.getAttribute('data-handler')]);
+      $(this).on(this.getAttribute('data-event'), handler[this.getAttribute('data-handler')]);
       return undefined;
     });
 
@@ -6851,7 +6890,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
               (otherMonth && daysOutsideMonth === 'hidden'
                 ? ''
                 : ' ' +
-                  daySettings[1] + // highlight custom dates
+                  _escapeHtmlAttribute(daySettings[1]) + // highlight custom dates
                   (selected ? ' ' + this._CURRENT_CLASS : '') + // highlight selected day
                   (printDate.getTime() === today.getTime() ? ' oj-datepicker-today' : '')) +
               "'" + // highlight today (if different)
@@ -8063,14 +8102,14 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     try {
       const showOnIsFocusOrUserFocus = this._showOnIsFocusOrUserFocus();
       if (this._hasTouch && showOnIsFocusOrUserFocus) {
-        this._inputContainer.focus();
+        this._inputContainer.trigger('focus');
       } else {
         if (showOnIsFocusOrUserFocus) {
           this._ignoreDatePickerShow = true;
         }
         // this._ignoreDatePickerShow flag is checked in show() and reset there as well.
         // We don't want the focus show the picker in this case.
-        this.element.focus();
+        this.element.trigger('focus');
       }
     } finally {
       this._ignoreDatePickerShow = false; // in case show() isn't called when this.element.focus() is called.
@@ -8211,7 +8250,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     if (isPickerNative(this)) {
       // our html picker is inside popup, which will take care of removing focus from input element,
       //  for native case we do it explicitly
-      this.element.blur();
+      this.element.trigger('blur');
 
       // picker expects the fields like 'date' and 'mode' to retain its names. Use bracket notation
       //  to avoid closure compiler from renaming them
@@ -8326,7 +8365,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
     self._nativePickerShowing = true;
 
-    window.datePicker.show(pickerOptions, $.proxy(this._OnDatePicked, this), onError);
+    window.datePicker.show(pickerOptions, this._OnDatePicked.bind(this), onError);
   },
 
   /**
@@ -8440,7 +8479,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
       // if we don't have a large screen, the popup will be modal so
       // we need to give it the focus
-      this._dpDiv.find('.oj-datepicker-calendar').focus();
+      this._dpDiv.find('.oj-datepicker-calendar').trigger('focus');
     } else {
       const defPosition = {
         my: 'start top',
@@ -10318,10 +10357,10 @@ function createWheelGroup(timePickerModel) {
 
     switch (keyCode) {
       case KEYCODE_LEFT:
-        $(wheel).prev().focus();
+        $(wheel).prev().trigger('focus');
         break;
       case KEYCODE_RIGHT:
-        $(wheel).next().focus();
+        $(wheel).next().trigger('focus');
         break;
 
       default:
@@ -11072,6 +11111,8 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      * hints and message summary text cannot. If you use formatted text, it should be accessible
      * and make sense to the user if formatting wasn't there.
      * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * Inline style attributes are sanitized; the retained styling is limited to color, font
+     * style, font weight, and text decoration. Use CSS classes for other styling.
      * To format the help.instruction, you could do this:
      * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
      * </p>
@@ -12330,7 +12371,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
             break;
           case kc.UP:
           case kc.DOWN:
-            this._wheelGroup.children().first().focus();
+            this._wheelGroup.children().first().trigger('focus');
             handled = true;
             break;
           default:
@@ -12420,9 +12461,9 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
     if (this._redirectFocusToInputContainer) {
       this._redirectFocusToInputContainer = false;
       if (!isPickerNative(this)) {
-        this._wheelGroup.children().first().focus();
+        this._wheelGroup.children().first().trigger('focus');
       } else {
-        this._inputContainer.focus();
+        this._inputContainer.trigger('focus');
       }
     } else if (this._showOnIsFocusOrUserFocus()) {
       // pop-up time picker when focus placed on the input box, if supported
@@ -12467,7 +12508,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
         // Don't change focus on wheel picker since it should have acquired focus
         if (isPickerNative(this)) {
           if (inputActive) {
-            this._inputContainer.focus();
+            this._inputContainer.trigger('focus');
           }
         }
       }
@@ -12565,9 +12606,9 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
 
     var self = this;
 
-    this.element.on('focus', $.proxy(this._onElementFocus, this));
+    this.element.on('focus', this._onElementFocus.bind(this));
 
-    this._timepickerTouchStartListener = $.proxy(this._OnElementTouchStart, this);
+    this._timepickerTouchStartListener = this._OnElementTouchStart.bind(this);
     this.element[0].addEventListener('touchstart', this._timepickerTouchStartListener, {
       passive: false
     });
@@ -12589,11 +12630,11 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
       //  we need to remove the border radius. iOS is the only case we use border radius, so this
       //  setting for all cases is fine.
       if (this._IsRTL()) {
-        this.element.css('border-top-left-radius', 0);
-        this.element.css('border-bottom-left-radius', 0);
+        this.element.css('border-top-left-radius', '0px');
+        this.element.css('border-bottom-left-radius', '0px');
       } else {
-        this.element.css('border-top-right-radius', 0);
-        this.element.css('border-bottom-right-radius', 0);
+        this.element.css('border-top-right-radius', '0px');
+        this.element.css('border-bottom-right-radius', '0px');
       }
     }
 
@@ -12608,7 +12649,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
           self._hide(self._ON_CLOSE_REASON_CLOSE);
         } else if (self._isTimePickerSupported()) {
           self.show();
-          self._wheelGroup.children().first().focus();
+          self._wheelGroup.children().first().trigger('focus');
         }
       });
 
@@ -12719,7 +12760,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
     if (isPickerNative(this)) {
       // our html picker is inside popup, which will take care of removing focus from input element,
       //  for native case we do it explicitly
-      this.element.blur();
+      this.element.trigger('blur');
       this._showNativeTimePicker();
     } else {
       this._showWheelPicker();
@@ -12876,7 +12917,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
         var inputContainer = this._isIndependentInput()
           ? this._inputContainer
           : this._datePickerComp.widget._inputContainer;
-        inputContainer.focus();
+        inputContainer.trigger('focus');
       } else {
         if (showOnIsFocusOrUserFocus) {
           if (!this._isIndependentInput()) {
@@ -12887,7 +12928,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
         }
         // this._ignoreTimePickerShow flag is checked in show() and reset there as well.
         // We don't want the focus show the picker in this case.
-        this.element.focus();
+        this.element.trigger('focus');
       }
     } finally {
       this._ignoreTimePickerShow = false; // in case show() isn't called when this.element.focus() is called.
@@ -13580,7 +13621,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
       // need to hide the datePickerComp prior to showing timepicker
       this._datePickerComp.widget._togglePicker();
       // set focus on the 1st child
-      this._wheelGroup.children().first().focus();
+      this._wheelGroup.children().first().trigger('focus');
       return;
     }
 
@@ -13626,7 +13667,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
 
       // if we don't have a large screen, the popup will be modal so
       // we need to give it the focus
-      this._wheelGroup.children().first().focus();
+      this._wheelGroup.children().first().trigger('focus');
     } else {
       var position = PositionUtils.normalizeHorizontalAlignment(
         {
@@ -14402,9 +14443,13 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * it shows all the time.
      * </p>
      * <p>
-     * For security reasons we only support urls with protocol 'http:' or 'https:'.
-     * If the url doesn't comply we ignore it and throw an error.
-     * Pass in an encoded URL since we do not encode the URL.</p>
+     * <p><b>Note:</b> For security, JET validates the URL protocol before navigation and
+     * currently supports <code class="prettyprint">http:</code> and
+     * <code class="prettyprint">https:</code> protocols. If the url doesn't
+     * comply we ignore it and throw an error. JET does not validate whether
+     * the URL is trusted for the application. Applications are responsible
+     * for providing sanitized URLs and enforcing any required origin or host
+     * allowlist. Pass in an encoded URL since we do not encode the URL.</p>
      *
      * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
      *
@@ -14450,6 +14495,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * <p>
      * To include formatted text in the help.instruction, format the string using html tags.
      * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * Inline style attributes are sanitized; the retained styling is limited to color, font
+     * style, font weight, and text decoration. Use CSS classes for other styling.
      * For example the
      * help.instruction might look like:
      * <pre class="prettyprint"><code>&lt;oj-some-element help.instruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
@@ -14580,6 +14627,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * hints and message summary text cannot. If you use formatted text, it should be accessible
      * and make sense to the user if formatting wasn't there.
      * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+     * Inline style attributes are sanitized; the retained styling is limited to color, font
+     * style, font weight, and text decoration. Use CSS classes for other styling.
      * To format the message detail, you could do this:
      * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
      * </p>
@@ -15587,7 +15636,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
         }
       };
 
-      $(this).bind(this.getAttribute('data-event'), handler[this.getAttribute('data-handler')]);
+      $(this).on(this.getAttribute('data-event'), handler[this.getAttribute('data-handler')]);
       return undefined;
     });
   },
