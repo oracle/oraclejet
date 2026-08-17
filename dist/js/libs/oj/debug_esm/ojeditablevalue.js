@@ -2148,7 +2148,14 @@ oj.__registerWidget(
        * myInputComp.help.definition = "Enter your name";
        */
       /**
-       * <p>help source url.  See the top-level <code class="prettyprint">help</code> option for details.
+       * <p>help source url. See the top-level
+       * <code class="prettyprint">help</code> option for details.</p>
+       * <p><b>Note:</b> For security, JET validates the URL protocol before
+       * navigation and currently supports <code class="prettyprint">http:</code>
+       * and <code class="prettyprint">https:</code> protocols. JET does not
+       * validate whether the URL is trusted for the application. Applications
+       * are responsible for providing sanitized URLs and enforcing any required
+       * origin or host allowlist.</p>
        *
        * @expose
        * @name help.source
@@ -2252,9 +2259,13 @@ oj.__registerWidget(
          * it shows all the time.
          * </p>
          * <p>
-         * For security reasons we only support urls with protocol 'http:' or 'https:'.
-         * If the url doesn't comply we ignore it and throw an error.
-         * Pass in an encoded URL since we do not encode the URL.</p>
+         * <p><b>Note:</b> For security, JET validates the URL protocol before navigation and
+         * currently supports <code class="prettyprint">http:</code> and
+         * <code class="prettyprint">https:</code> protocols. If the url doesn't
+         * comply we ignore it and throw an error. JET does not validate whether
+         * the URL is trusted for the application. Applications are responsible
+         * for providing sanitized URLs and enforcing any required origin or host
+         * allowlist. Pass in an encoded URL since we do not encode the URL.</p>
          *
          * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
          *
@@ -2357,6 +2368,8 @@ oj.__registerWidget(
        * hints and message summary text cannot. If you use formatted text, it should be accessible
        * and make sense to the user if formatting wasn't there.
        * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+       * Inline style attributes are sanitized; the retained styling is limited to color, font
+       * style, font weight, and text decoration. Use CSS classes for other styling.
        * To format the message detail, you could do this:
        * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
        * </p>
@@ -2513,6 +2526,8 @@ oj.__registerWidget(
        * <p>
        * To include formatted text in the help.instruction, format the string using html tags.
        * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+       * Inline style attributes are sanitized; the retained styling is limited to color, font
+       * style, font weight, and text decoration. Use CSS classes for other styling.
        * For example the
        * help.instruction might look like:
        * <pre class="prettyprint"><code>&lt;oj-some-element help.instruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
@@ -8993,6 +9008,31 @@ const InlineHelpHintsStrategy = function (displayOptions, parentElement) {
 const OJ_HAS_HELPHINTS_STYLECLASS = 'oj-has-helphints';
 
 /**
+ * Builds HTML for unformatted hints by escaping each hint and inserting <br> nodes
+ * between hint lines.
+ *
+ * @param {Array<string>} hints
+ * @return {string} escaped hint HTML
+ * @private
+ */
+function _getUnformattedHintsHtml(hints) {
+  if (!hints || hints.length < 1) {
+    return '';
+  }
+  let hintsDom = document.createElement('div');
+  hints.forEach(function (hint, index) {
+    let hintDom = PopupMessagingStrategyUtils.GetTextDom(document, hint, false);
+    if (hintDom) {
+      if (index > 0) {
+        hintsDom.appendChild(document.createElement('br'));
+      }
+      hintsDom.appendChild(hintDom);
+    }
+  });
+  return hintsDom.innerHTML;
+}
+
+/**
  * Registers the InlineHelpHintsStrategy constructor function with ComponentMessaging.
  * No need to register since we are not creating this strategy on from ComponentMessaging.
  * InlineUserAssistanceStrategy creates it.
@@ -9263,7 +9303,7 @@ InlineHelpHintsStrategy.prototype._addHelpHintsContent = function (component) {
     // we do the same thing that we do in PopupComponentMessages
     let hints = this.GetValidatorHints();
     if (hints.length > 0) {
-      hintsHtml = hints.join('<br/>');
+      hintsHtml = _getUnformattedHintsHtml(hints);
     }
   }
   if (!hintsHtml) {
@@ -9272,14 +9312,16 @@ InlineHelpHintsStrategy.prototype._addHelpHintsContent = function (component) {
     // InlineHelpHintsStrategy.prototype._createHelpHintsAttributeEventHandlers
     let definition = helpHints ? helpHints.definition : null;
     if (definition) {
-      hintsHtml = definition;
+      // helpHints.definition does not allow formatted text, unlike help.instruction above which does.
+      let definitionDom = PopupMessagingStrategyUtils.GetTextDom(document, definition, false);
+      hintsHtml = definitionDom ? definitionDom.outerHTML : '';
     }
   }
   // try to get the converterHint
   if (!hintsHtml && this.ShowConverterHint()) {
     let hints = this.GetConverterHint();
     if (hints.length > 0) {
-      hintsHtml = hints.join('<br/>');
+      hintsHtml = _getUnformattedHintsHtml(hints);
     }
   }
 
@@ -9351,6 +9393,7 @@ InlineHelpHintsStrategy.prototype._getHelpSourceDom = function (source) {
 
   helpSourceAnchor.setAttribute('tabindex', '0');
   helpSourceAnchor.setAttribute('target', '_blank');
+  helpSourceAnchor.setAttribute('rel', 'noopener noreferrer');
   try {
     validateURL(source);
     helpSourceAnchor.setAttribute('href', source);
@@ -11602,4 +11645,4 @@ InsideLabelStrategy.prototype._InsertOjLabel = function (ojlabel, container) {
  */
 InsideLabelStrategy._BASE_STYLE_CLASS = 'oj-text-field';
 
-export { EditableValueUtils };
+export { EditableValueUtils, PopupMessagingStrategyUtils };

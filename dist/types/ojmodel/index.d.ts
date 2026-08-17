@@ -288,18 +288,6 @@ export namespace Model {
         recordID?: string;
     };
 }
-export class OAuth {
-    constructor(attributes: object, header: string);
-    cleanAccessTokenRequest(): undefined;
-    cleanAccessTokenResponse(): undefined;
-    clientCredentialGrant(): undefined;
-    getAccessTokenRequest(): object;
-    getAccessTokenResponse(): object;
-    getHeader(): object;
-    isInitialized(): boolean;
-    setAccessTokenRequest(data: object): undefined;
-    setAccessTokenResponse(data: object): undefined;
-}
 // tslint:disable-next-line no-unnecessary-class
 export class URLError {
     constructor();

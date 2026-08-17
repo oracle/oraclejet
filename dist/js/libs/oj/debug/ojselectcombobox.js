@@ -1240,13 +1240,13 @@ var __oj_select_many_metadata =
      * it overrides jQuery context of element on each iteration
      */
     each2: function (list, c) {
-      var j = $.isFunction(list[0]) ? $(list[0]()) : $(list[0]);
+      var j = typeof list[0] === 'function' ? $(list[0]()) : $(list[0]);
       var i = -1;
       var l = list.length;
       while (
         // eslint-disable-line
         ++i < l && // eslint-disable-line
-        (j.context = j[0] = $.isFunction(list[0]) ? list[i]() : list[i]) && // eslint-disable-line
+        (j.context = j[0] = typeof list[0] === 'function' ? list[i]() : list[i]) && // eslint-disable-line
         c.call(j[0], i, j) !== false // i=index, j=jQuery object
       ) {} // eslint-disable-line
       return list;
@@ -1278,7 +1278,7 @@ var __oj_select_many_metadata =
       }
       val = string.split(separator);
       for (i = 0, l = val.length; i < l; i++) {
-        val[i] = $.trim(val[i]);
+        val[i] = val[i].trim();
       }
       return val;
     },
@@ -1439,7 +1439,7 @@ var __oj_select_many_metadata =
         var el = $el[0];
         var pos = $el.val().length;
         var range;
-        $el.focus();
+        $el.trigger('focus');
 
         /* make sure el received focus so we do not error out when trying to manipulate the caret.
                sometimes modals or others listeners may steal it after its set */
@@ -1512,13 +1512,13 @@ var __oj_select_many_metadata =
         return '' + item.label;
       };
 
-      if ($.isArray(data)) {
+      if (Array.isArray(data)) {
         tmp = data;
         data = {
           results: tmp
         };
       }
-      if ($.isFunction(data) === false) {
+      if (typeof data !== 'function') {
         tmp = data;
         data = function () {
           return tmp;
@@ -1529,7 +1529,7 @@ var __oj_select_many_metadata =
       if (dataItem && dataItem.text) {
         text = dataItem.text;
         // if text is not a function we assume it to be a key name
-        if (!$.isFunction(text)) {
+        if (typeof text !== 'function') {
           // we need to store this in a separate variable because in the next step data gets reset
           // and data.text is no longer available
           dataText = dataItem.text;
@@ -3850,7 +3850,7 @@ var __oj_select_many_metadata =
       this.dropdown.on('click mouseup mousedown', function (e) {
         e.stopPropagation();
       });
-      if ($.isFunction(this.opts.initSelection)) {
+      if (typeof this.opts.initSelection === 'function') {
         // /support ko options-binding
         // init dataProvider fetchType
         this.opts.fetchType = 'init';
@@ -4118,7 +4118,7 @@ var __oj_select_many_metadata =
               }
             }
           } else {
-            $content.attr('readonly', true);
+            $content.attr('readonly', 'readonly');
             // create readonly div if it doesn't exist.
             this.ojContext._createOrUpdateReadonlyDiv($content[0]);
           }
@@ -5059,7 +5059,7 @@ var __oj_select_many_metadata =
               _ComboUtils.fetchFromDataProvider(self, opts, query);
             }
           };
-        } else if ($.isFunction(dataOptions)) {
+        } else if (typeof dataOptions === 'function') {
           opts.query = _ComboUtils.remote(dataOptions, opts.optionsKeys ? opts.optionsKeys : null);
         } else {
           opts.query = _ComboUtils.local(dataOptions, opts.optionsKeys ? opts.optionsKeys : null);
@@ -5331,7 +5331,7 @@ var __oj_select_many_metadata =
       // Make sure the max-width and max-height attributes are cleared properly from
       // the correct elements in the _clearDropdownAlignmentPreference method. This
       // method will be called when the dropdown is closed.
-      $results.css('max-height', newHeight);
+      $results.css('max-height', newHeight + 'px');
 
       // Call position without using since we are calling it from the
       // using handler. The dropdown should be placed in the same position
@@ -5378,7 +5378,7 @@ var __oj_select_many_metadata =
       var position = this._getDropdownPosition();
       var $container = this.container;
 
-      $dropdown.css('width', $container.outerWidth());
+      $dropdown.css('width', $container.outerWidth() + 'px');
 
       // Here we will be using the proxy element with the maximum height set for
       // the initial positioning
@@ -5389,7 +5389,7 @@ var __oj_select_many_metadata =
       $proxyContainer.appendTo(this.body()); // @HTMLUpdateOK
 
       $proxyOuterDiv.css({
-        width: $dropdown.outerWidth()
+        width: $dropdown.outerWidth() + 'px'
       });
       $proxyResultElem.css({
         height: $proxyResultElem.css('max-height')
@@ -5493,10 +5493,10 @@ var __oj_select_many_metadata =
         }
 
         var psEvents = {};
-        psEvents[ojpopupcore.PopupService.EVENT.POPUP_CLOSE] = $.proxy(this.close, this);
-        psEvents[ojpopupcore.PopupService.EVENT.POPUP_REMOVE] = $.proxy(this._surrogateRemoveHandler, this);
-        psEvents[ojpopupcore.PopupService.EVENT.POPUP_AUTODISMISS] = $.proxy(this._clickAwayHandler, this);
-        psEvents[ojpopupcore.PopupService.EVENT.POPUP_REFRESH] = $.proxy(this._positionDropdown, this);
+        psEvents[ojpopupcore.PopupService.EVENT.POPUP_CLOSE] = this.close.bind(this);
+        psEvents[ojpopupcore.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
+        psEvents[ojpopupcore.PopupService.EVENT.POPUP_AUTODISMISS] = this._clickAwayHandler.bind(this);
+        psEvents[ojpopupcore.PopupService.EVENT.POPUP_REFRESH] = this._positionDropdown.bind(this);
 
         /** @type {!Object.<PopupService.OPTION, ?>} */
         var psOptions = {};
@@ -6543,7 +6543,7 @@ var __oj_select_many_metadata =
       if (focusOnSearchBox) {
         var self = this;
         searchBox.find('.oj-listbox-spyglass-box').on('mouseup click', function (e) {
-          self.search.focus();
+          self.search.trigger('focus');
           //  - select and combobox stop keyboard event propegation
           e.preventDefault();
         });
@@ -7103,7 +7103,7 @@ var __oj_select_many_metadata =
           callback(data);
         };
       } else if ('options' in opts) {
-        if (_ComboUtils.isDataProvider(opts.options) || $.isFunction(opts.options)) {
+        if (_ComboUtils.isDataProvider(opts.options) || typeof opts.options === 'function') {
           // install default initSelection when applied to hidden input and data is remote
           opts.initSelection = function (element, callback) {
             var findOptions = function (results, optionValues) {
@@ -7283,39 +7283,40 @@ var __oj_select_many_metadata =
                 }
                 return isMatch;
               },
-              callback: !$.isFunction(callback)
-                ? $.noop
-                : function () {
-                    // if the instance is destroyed at this point, do nothing
-                    if (!self.isInitialized) {
-                      return;
-                    }
-                    // reorder matches based on the order they appear in the ids array because right now
-                    // they are in the order in which they appear in data array
-                    var ordered = [];
-                    for (var i = 0; i < ids.length; i++) {
-                      var id = ids[i];
-                      var found = false;
-                      for (var j = 0; j < matches.length; j++) {
-                        var match = matches[j];
-                        if (oj.Object.compareValues(id, opts.id(match))) {
-                          ordered.push(match);
-                          // the data is from options, so add it to the set
-                          self._idsFromDropdown.add(opts.id(match));
-                          matches.splice(j, 1);
-                          found = true;
-                          break;
+              callback:
+                typeof callback !== 'function'
+                  ? $.noop
+                  : function () {
+                      // if the instance is destroyed at this point, do nothing
+                      if (!self.isInitialized) {
+                        return;
+                      }
+                      // reorder matches based on the order they appear in the ids array because right now
+                      // they are in the order in which they appear in data array
+                      var ordered = [];
+                      for (var i = 0; i < ids.length; i++) {
+                        var id = ids[i];
+                        var found = false;
+                        for (var j = 0; j < matches.length; j++) {
+                          var match = matches[j];
+                          if (oj.Object.compareValues(id, opts.id(match))) {
+                            ordered.push(match);
+                            // the data is from options, so add it to the set
+                            self._idsFromDropdown.add(opts.id(match));
+                            matches.splice(j, 1);
+                            found = true;
+                            break;
+                          }
+                        }
+                        if (!found && self._elemNm === 'ojcombobox') {
+                          // If user entered value which is not listed in predefiend options
+                          // we need to format the label based on the value. We are not setting the
+                          // shouldApplyConverter flag here so, the value will not be parsed.
+                          ordered.push(opts.parseData({ value: id, label: id }));
                         }
                       }
-                      if (!found && self._elemNm === 'ojcombobox') {
-                        // If user entered value which is not listed in predefiend options
-                        // we need to format the label based on the value. We are not setting the
-                        // shouldApplyConverter flag here so, the value will not be parsed.
-                        ordered.push(opts.parseData({ value: id, label: id }));
-                      }
-                    }
-                    callback(ordered);
-                  },
+                      callback(ordered);
+                    },
               cleanup: $.noop
             });
           };
@@ -7813,7 +7814,7 @@ var __oj_select_many_metadata =
 
     _focus: function () {
       this.close();
-      this.search.focus();
+      this.search.trigger('focus');
     },
 
     _updateSelection: function (data) {
@@ -8252,7 +8253,7 @@ var __oj_select_many_metadata =
                     if (this._elemNm === 'ojcombobox') {
                       this._focusSearch();
                     } else if (this._elemNm === 'ojselect') {
-                      this._getActiveContainer().focus();
+                      this._getActiveContainer().trigger('focus');
                     }
                     resolveBusyState();
                   })
@@ -8758,6 +8759,25 @@ var __oj_select_many_metadata =
       );
     },
 
+    close: function (event) {
+      var originalEvent = event ? event.originalEvent : null;
+      var isMouseOrFocusEvent =
+        originalEvent instanceof MouseEvent || originalEvent instanceof FocusEvent;
+      var shouldKeepFocusClass =
+        event &&
+        (!isMouseOrFocusEvent ||
+          this.selection.is(event.target) ||
+          this.search.is(event.target) ||
+          this.dropdown.has(event.target).length > 0);
+
+      _OjMultiCombobox.superclass.close.apply(this, arguments);
+
+      if (this.ojContext.hasAfterToggleHandlerAddedFocusClass && !shouldKeepFocusClass) {
+        this.ojContext._getRootElement().classList.remove('oj-focus');
+        this.ojContext.hasAfterToggleHandlerAddedFocusClass = false;
+      }
+    },
+
     _opening: function (event, dontUpdateResults) {
       // if beforeExpand is not cancelled
       // beforeExpand event will be triggered in base class _shouldOpen method
@@ -8769,7 +8789,7 @@ var __oj_select_many_metadata =
         this._updateResults(true);
       }
 
-      this.search.focus();
+      this.search.trigger('focus');
     },
 
     /**
@@ -9172,9 +9192,9 @@ var __oj_select_many_metadata =
           //  - keyboard flashes briefly on ios.
           var hidden = this.search.parent().attr('aria-hidden');
           if (hidden && hidden === 'true') {
-            this.selection.focus();
+            this.selection.trigger('focus');
           } else {
-            this.search.focus();
+            this.search.trigger('focus');
           }
 
           // prevent focus move back
@@ -9463,7 +9483,7 @@ var __oj_select_many_metadata =
           return !!selected;
         };
       } else if ('options' in opts || (this.getVal() && this.getVal().length > 0)) {
-        if (_ComboUtils.isDataProvider(opts.options) || $.isFunction(opts.options)) {
+        if (_ComboUtils.isDataProvider(opts.options) || typeof opts.options === 'function') {
           // install default initSelection when applied to hidden input
           // and getting data from remote
           opts.initSelection = function (element, callback) {
@@ -9629,31 +9649,32 @@ var __oj_select_many_metadata =
                 }
                 return isMatch;
               },
-              callback: !$.isFunction(callback)
-                ? $.noop
-                : function () {
-                    // if the instance is destroyed at this point, do nothing
-                    if (!self.isInitialized) {
-                      return;
-                    }
-                    if (match != null) {
-                      self._idsFromDropdown.add(opts.id(match));
-                    }
-                    // ojselect if no match, pick the 1st option
-                    // If the option data is pending, don't send the placeholder to the callback
-                    // so the value won't be nulled out
-                    if (!match && tagName === 'select' && !self.ojContext._isOptionDataPending()) {
-                      match = first;
-                      Logger.info(
-                        'Select identified by ' +
-                          self.container.attr('id') +
-                          ' defaults to ' +
-                          (usePlaceholder ? 'placeholder' : 'first option') +
-                          ' due to invalid value.'
-                      );
-                    }
-                    callback(match);
-                  },
+              callback:
+                typeof callback !== 'function'
+                  ? $.noop
+                  : function () {
+                      // if the instance is destroyed at this point, do nothing
+                      if (!self.isInitialized) {
+                        return;
+                      }
+                      if (match != null) {
+                        self._idsFromDropdown.add(opts.id(match));
+                      }
+                      // ojselect if no match, pick the 1st option
+                      // If the option data is pending, don't send the placeholder to the callback
+                      // so the value won't be nulled out
+                      if (!match && tagName === 'select' && !self.ojContext._isOptionDataPending()) {
+                        match = first;
+                        Logger.info(
+                          'Select identified by ' +
+                            self.container.attr('id') +
+                            ' defaults to ' +
+                            (usePlaceholder ? 'placeholder' : 'first option') +
+                            ' due to invalid value.'
+                        );
+                      }
+                      callback(match);
+                    },
               cleanup: $.noop
             });
           };
@@ -10098,6 +10119,25 @@ var __oj_select_many_metadata =
       // solution here would be to prevent the focus transfer when one clicks in the results area.
       // This way the table would stay in edit mode.
       this.dropdown.on('mousedown', _ComboUtils.killEvent);
+    },
+
+    close: function (event) {
+      var originalEvent = event ? event.originalEvent : null;
+      var isMouseOrFocusEvent =
+        originalEvent instanceof MouseEvent || originalEvent instanceof FocusEvent;
+      var shouldKeepFocusClass =
+        event &&
+        (!isMouseOrFocusEvent ||
+          this.selection.is(event.target) ||
+          this.search.is(event.target) ||
+          this.dropdown.has(event.target).length > 0);
+
+      _OjSingleCombobox.superclass.close.apply(this, arguments);
+
+      if (this.ojContext.hasAfterToggleHandlerAddedFocusClass && !shouldKeepFocusClass) {
+        this.ojContext._getRootElement().classList.remove('oj-focus');
+        this.ojContext.hasAfterToggleHandlerAddedFocusClass = false;
+      }
     },
 
     _triggerValueUpdatedEvent: function (data, previousValue) {
@@ -10828,6 +10868,255 @@ var __oj_select_many_metadata =
    * @memberof oj.ojComboboxMany
    * @instance
    */
+  /**
+   *
+   * <p>
+   * To migrate from oj-combobox-many to oj-c-select-multiple, you need to revise the import statement
+   * and references to oj-c-select-multiple in your app. Please note the changes between the two
+   * components below.
+   * </p>
+   *
+   * <h5>Global attributes</h5>
+   * <p>
+   * The following global attributes are no longer supported:
+   * <ul>
+   * <li>tabindex - not considered accessible</li>
+   * <li>
+   * aria-label - use label-hint instead. If you do not want a visible label set label-edge="none".
+   * </li>
+   * <li>
+   * aria-controls - this attribute is not supported.
+   * </li>
+   * </ul>
+   * </p>
+   *
+   * <h5>ItemText attribute</h5>
+   * <p>
+   * This attribute is required to specify how to get the text string to render for a data item.
+   * </p>
+   *
+   * <h5>Converter attribute</h5>
+   * <p>
+   * This attribute is not supported. The oj-c-select-multiple values are DataProvider keys and must be strings or numbers.
+   * Use item-text to specify display text and perform any parsing or formatting before adding values to the DataProvider.
+   * </p>
+   *
+   * <h5>LabelEdge attribute</h5>
+   * <p>
+   * The enum values for the label-edge attribute have been changed from 'inside', 'provided' and 'none' to 'start', 'inside', 'top' and 'none'.
+   * If you are using this component in a form layout and would like the form layout to drive the label edge of this component, leave this attribute
+   * unset. The application no longer has to specify 'provided' for this attribute. If you want to override how the label is positioned, set this
+   * attribute to the corresponding value.
+   * </p>
+   *
+   * <h5>MaximumResultCount attribute</h5>
+   * <p>
+   * This attribute is not supported. The dropdown list supports fetching more data in blocks
+   * as the user scrolls.
+   * </p>
+   *
+   * <h5>MessagesCustom attribute</h5>
+   * <p>
+   * The type of the <code class="prettyprint">severity</code> property of the messages in the
+   * array has changed from
+   * <code class="prettyprint">Message.SEVERITY_TYPE | Message.SEVERITY_LEVEL</code>,
+   * essentially <code class="prettyprint">string | number</code>, to simply
+   * <code class="prettyprint">'error' | 'confirmation' | 'info' | 'warning'</code>.  These
+   * values are the same as the previously supported string values.
+   * The application can no longer specify severity as a number, including hardcoded numbers,
+   * one of the <code class="prettyprint">Message.SEVERITY_LEVEL</code> constants, or the value
+   * returned from a call to the <code class="prettyprint">Message.getSeverityLevel</code> method.
+   * </p>
+   *
+   * <h5>MinLength attribute</h5>
+   * <p>
+   * This attribute is not supported. Filtering begins as the user types into the text field.
+   * </p>
+   *
+   * <h5>Validators attributes</h5>
+   * <p>
+   * The validators and async-validators attributes are not supported. Required validation is still supported using the
+   * required attribute.
+   * </p>
+   *
+   * <h5>OptionRenderer attribute</h5>
+   * <p>
+   * This attribute is replaced with the itemTemplate slot. You can provide a &lt;template> element that will be used to
+   * render each row in the dropdown.
+   * </p>
+   *
+   * <h5>Options attribute</h5>
+   * <p>
+   * oj-combobox-many supports inline child &lt;oj-option> and &lt;oj-optgroup> elements as well as the options property.
+   * oj-c-select-multiple requires all data to be supplied via the data property as a DataProvider.
+   * For small static sets, create a MutableArrayDataProvider from an array.
+   * </p>
+   *
+   * <h5>OptionsKeys attribute</h5>
+   * <p>
+   * This attribute is not supported. The text rendered for an item can be customized via the
+   * <a href="#itemText">item-text</a> attribute. If your data uses different fields for the key, expose those values as
+   * DataProvider keys.
+   * </p>
+   *
+   * <h5>PickerAttributes attribute</h5>
+   * <p>
+   * This attribute is not supported. There is no replacement.
+   * </p>
+   *
+   * <h5>TextAlign attribute</h5>
+   * <p>
+   * The usage of the style classes: oj-form-control-text-align-right, oj-form-control-text-align-start and oj-form-control-text-align-end is now
+   * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+   * <ul>
+   *   <li>
+   *   .oj-form-control-text-align-right maps to 'right'
+   *   </li>
+   *   <li>
+   *   .oj-form-control-text-align-start maps to 'start'
+   *   </li>
+   *   <li>
+   *   .oj-form-control-text-align-end maps to 'end'
+   *   </li>
+   * </ul>
+   * </p>
+   *
+   * <h5>MaxWidth attribute</h5>
+   * <p>
+   * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
+   * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+   * <ul>
+   * <li>
+   * .oj-form-control-max-width-sm maps to 'sm'
+   * </li>
+   * <li>
+   * .oj-form-control-max-width-md maps to 'md'
+   * </li>
+   * </ul>
+   * </p>
+   *
+   * <h5>Width attribute</h5>
+   * <p>
+   * The usage of the style classes: oj-form-control-width-sm and oj-form-control-width-md is now
+   * replaced with this attribute. The value of this attribute maps to these style classes as shown below:
+   * <ul>
+   * <li>
+   * .oj-form-control-width-sm maps to 'sm'
+   * </li>
+   * <li>
+   * .oj-form-control-width-md maps to 'md'
+   * </li>
+   * </ul>
+   * </p>
+   *
+   * <h5>Translations</h5>
+   * <p>
+   * The instance level translations are not supported anymore for the following translation properties. These need to be configured
+   * in the translation bundle.
+   * <ul>
+   *  <li>filter-further</li>
+   *  <li>more-matches-found</li>
+   *  <li>no-matches-found</li>
+   *  <li>one-matches-found</li>
+   * </ul>
+   * </p>
+   * <p>
+   * The 'required' translation property can still be configured at the instance level, but this API is simplified to take a single
+   * string instead of an object. To show a different required message detail, the application can now set the required-message-detail
+   * attribute to the desired translated string.
+   * </p>
+   *
+   * <h5>Value attribute</h5>
+   * <p>
+   * The value attribute accepts a Set of data provider keys instead of an array of values.
+   * </p>
+   *
+   * <h5>ValueOptions attribute</h5>
+   * <p>
+   * The value-options attribute is replaced with the value-items attribute. This attribute accepts a map of objects that contain both
+   * a key and data, and optional metadata.
+   * </p>
+   *
+   * <h5>Refresh method</h5>
+   * <p>
+   * The refresh method is no longer supported. The application should no longer need to use this method. If the application
+   * wants to reset the component (remove messages and reset the value of the component), please use the reset method.
+   * </p>
+   *
+   * <h5>RawValue attribute</h5>
+   * <p>
+   * This read-only attribute is not supported. Use the value and value-items attributes for the selected keys and item data.
+   * </p>
+   *
+   * <h5>Custom Label</h5>
+   * <p>
+   * Adding a custom &lt;oj-label> for the form component is no longer supported. The application should use the
+   * label-hint attribute to add a label for the form component.
+   * </p>
+   * <p>
+   * The application should no longer need to use the &lt;oj-label-value> component to layout the form component. The application
+   * can use the label-edge attribute and label-start-width attribute to customize the label position and label width (only when using start label).
+   * </p>
+   *
+   * <h5>LabelledBy attribute</h5>
+   * <p>
+   * The labelled-by attribute was programmatically set on the component by &lt;oj-label> in order to make it easy for the form
+   * component to find its matching label. However, adding a custom &lt;oj-label> for the form component is no longer supported and
+   * this attribute is not carried forward to the core pack component. The application should use the label-hint attribute
+   * to add a label for the form component.
+   * </p>
+   *
+   * <h5>DescribedBy attribute</h5>
+   * <p>
+   * The described-by attribute is not meant to be set by an application developer directly as stated in the attribute documentation.
+   * This attribute is not carried forward to the core pack component. If the application needs to link additional context for
+   * accessibility reasons, use the aria-describedby global attribute instead.
+   * </p>
+   *
+   * <h5>Formatted messages</h5>
+   * <p>
+   * Formatting messages using html tags is not supported in the core pack component.
+   * </p>
+   *
+   * <h5>Add to List (Custom Values)</h5>
+   * oj-combobox-many allows users to add custom values (not present in the dropdown) by default.
+   * In oj-c-select-multiple, you must enable the Add to List feature by setting the add-to-list property to 'on'
+   * and handling the ojAddToListAction.
+   *
+   * <h5>Custom initial values</h5>
+   * oj-combobox-many allows applications to initialize the component with custom initial values (values that are not
+   * present in the data). In oj-c-select-multiple, the values of the component, including the initial values, must be present
+   * in the current data. If you want to have custom initial values, you must add them to the data when initializing the component.
+   * If these values are not added to the data, oj-c-select-multiple will throw an error saying that it cannot fetch the data for the
+   * keys and the component will not work as expected.
+   *
+   * <h5>Data Provider key type</h5>
+   * <p>
+   * In oj-c-select-multiple, the type of the data attribute is <code>DataProvider&lt;K, D&gt;</code> where
+   * K can only be of type string or number. This also affects the type of the component value, which is
+   * <code>Set&lt;K&gt;</code>, and the value-items, which is <code>Map&lt;K, ItemContext&lt;K, D&gt;&gt;</code>.
+   * </p>
+   *
+   * <h5>Using MutableArrayDataProvider with multiple keys</h5>
+   * <p>
+   * If you want to use a MutableArrayDataProvider with multiple key attributes, you can do so by setting
+   * the <code class="prettyprint">enforceKeyStringify</code> option on MutableArrayDataProvider to
+   * <code class="prettyprint">'on'</code> to use multiple key attributes but have string keys.
+   * See the MutableArrayDataProvider doc for more information.
+   * </p>
+   *
+   * <h5>Limitations</h5>
+   * <p>
+   * Note that oj-c-select-multiple supports a limited feature set in JET 21.0.0.
+   * </p>
+   * <ul>
+   * <li>It does not support hierarchical data.</li>
+   * <li>When using the collectionTemplate slot to customize dropdown content, only oj-c-table is supported. Other collection components (including legacy oj-table) are not supported.</li>
+   * </ul>
+   * @ojfragment migrationDoc
+   * @memberof oj.ojComboboxMany
+   * @instance
+   */
 
   //-----------------------------------------------------
   //                   Styles
@@ -10976,6 +11265,13 @@ var __oj_select_many_metadata =
    *
    * @ojoracleicon 'oj-ux-ico-text-input-combo-many'
    *
+   * @ojdeprecated [
+   *   {
+   *     type: "maintenance",
+   *     since: "21.0.0",
+   *     value: ["oj-c-select-multiple"]
+   *   }
+   * ]
    * @classdesc
    * <h3 id="comboboxManyOverview-section">
    *   JET Combobox Many
@@ -11029,6 +11325,13 @@ var __oj_select_many_metadata =
    * </h3>
    *
    * {@ojinclude "name":"keyboardDoc"}
+   *
+   *  <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"migrationDoc"}
    *
    * <h3 id="perf-section">
    *   Performance
@@ -11248,6 +11551,11 @@ var __oj_select_many_metadata =
    * <p>oj-c-select-single is the component that supersedes both oj-select-single and oj-combobox-one.
    * oj-c-select-single has an "Add to List" feature which can be used to allow a user to enter values
    * that are not available in the data, like oj-combobox-one.
+   * </p>
+   *
+   * <p>oj-c-select-multiple is the component that supersedes both oj-select-many and oj-combobox-many.
+   * oj-c-select-multiple has an "Add to List" feature which can be used to allow a user to enter values
+   * that are not available in the data, like oj-combobox-many.
    * </p>
    *
    * @ojfragment selectComboDifferences
@@ -13115,10 +13423,12 @@ var __oj_select_many_metadata =
      * @memberof! oj.ojCombobox
      */
     _handleAfterFocusToggle: function (element, eventType) {
+      this.hasAfterToggleHandlerAddedFocusClass = false;
       if (eventType === 'focusout') {
         var dropdown = this._getDropdown();
         if (dropdown) {
           element.classList.add('oj-focus');
+          this.hasAfterToggleHandlerAddedFocusClass = true;
         }
       }
     },
@@ -14843,6 +15153,27 @@ var __oj_select_many_metadata =
    * The component will decorate its associated label with required and help
    * information, if the <code>required</code> and <code>help</code> options are set.
    * </p>
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * <p>To migrate from oj-input-search to oj-c-input-search, you need to revise the import statement
+   * and references to oj-c-input-search in your app. Please note the changes between the two
+   * components below.</p>
+   *
+   * <h5>Style classes</h5>
+   * <p>Legacy <code class="prettyprint">oj-input-search</code> style classes are not supported.
+   * Migrate class-based styling to the corresponding attributes instead: use
+   * <code class="prettyprint">variant="hero"</code> for the prominent search-field presentation,
+   * <code class="prettyprint">width</code> for fixed small or medium widths, and
+   * <code class="prettyprint">max-width</code> for bounded small or medium widths.</p>
+   *
+   * <h5>Accessible label</h5>
+   * <p>Legacy applications that set <code class="prettyprint">aria-label</code> on
+   * <code class="prettyprint">oj-input-search</code> should remove that attribute when migrating.
+   * Core Pack Input Search provides its own localized accessible label and does not support custom
+   * <code class="prettyprint">aria-label</code> or <code class="prettyprint">aria-labelledby</code>
+   * values.</p>
    * <h3 id="jqui2jet-section">
    *   JET for jQuery UI developers
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
@@ -16199,7 +16530,7 @@ var __oj_select_many_metadata =
         // If the event is not from the search box, we need to
         // focus the search and dispatch the event to search
         if (!DomUtils.isAncestorOrSelf(this.search.get(0), e.currentTarget)) {
-          this.search.focus();
+          this.search.trigger('focus');
           this.search.trigger(e);
           return;
         }
@@ -16756,7 +17087,7 @@ var __oj_select_many_metadata =
         // If the event is not from the search box, we need to
         // focus the search and dispatch the event to search
         if (!DomUtils.isAncestorOrSelf(this.search.get(0), e.currentTarget)) {
-          this.search.focus();
+          this.search.trigger('focus');
           this.search.trigger(e);
           return;
         }
@@ -16776,7 +17107,7 @@ var __oj_select_many_metadata =
         case _ComboUtils.KEY.TAB:
           this.close(e);
           // James: tab out of an expanded poplist, focus is going all the way to the top of the page.
-          this.selection.focus();
+          this.selection.trigger('focus');
 
           //  - required validation err is not displayed when user tabs out
           this._testClear(e);
@@ -19013,7 +19344,7 @@ var __oj_select_many_metadata =
        *    </ul>
        * </ul>
        *
-       * The default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the default is "native" and it's "jet" for all other themes.
+       * The default value is "jet".
        *
        * @expose
        * @memberof oj.ojSelect
@@ -19366,7 +19697,7 @@ var __oj_select_many_metadata =
     // native renderMode
     _nativeSetDisabled: function (disabled) {
       if (disabled) {
-        this.element.attr('disabled', '');
+        this.element.attr('disabled', 'disabled');
         this.element.parent().parent().addClass('oj-disabled').removeClass('oj-enabled');
       } else {
         this.element.removeAttr('disabled');
@@ -19577,7 +19908,7 @@ var __oj_select_many_metadata =
       }
 
       // add a change listener
-      element.change(this._nativeChangeHandler.bind(this));
+      element.on('change', this._nativeChangeHandler.bind(this));
 
       _ComboUtils.addDataProviderEventListeners(this);
 
@@ -20951,8 +21282,8 @@ var __oj_select_many_metadata =
 
     _hidePlaceholder: function (placeholder, hide) {
       if (hide) {
-        placeholder.attr('disabled', '');
-        placeholder.attr('hidden', '');
+        placeholder.attr('disabled', 'disabled');
+        placeholder.attr('hidden', 'hidden');
       } else {
         placeholder.removeAttr('disabled');
         placeholder.removeAttr('hidden');

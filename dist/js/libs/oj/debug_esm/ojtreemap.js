@@ -1619,7 +1619,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent, {
   _GetComponentRendererOptions: function () {
     return [
       { path: 'tooltip/renderer', slot: 'tooltipTemplate' },
-      { path: 'nodeContent/renderer', slot: 'nodeContentTemplate' }
+      { path: 'nodeContent/renderer', slot: 'nodeContentTemplate', processTemplate: true }
     ];
   },
 

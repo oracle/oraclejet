@@ -27,6 +27,12 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdo
      * a default action based on these click events, the application must ensure the appropriate updates
      * are made (ie. setting the data-oj-clickthrough='disabled' attribute on a selector within an
      * <oj-list-view> that does not include an <oj-list-item-layout>).</p>
+     * <p>To control a context-menu gesture that originates from the selector, set
+     * <code class="prettyprint">data-oj-alt-clickthrough</code> to <code class="prettyprint">disabled</code>
+     * to prevent containing JET components from opening their context menus, or to
+     * <code class="prettyprint">enabled</code> to allow a menu when the interactive selector would otherwise veto it.</p>
+     * <p>When both values occur between the gesture target and the owning component root, <code class="prettyprint">disabled</code> takes precedence over <code class="prettyprint">enabled</code>.</p>
+     * <p>The <code class="prettyprint">enabled</code> value does not override a context menu owned by a nested JET component.</p>
      * <pre class="prettyprint">
      * <code>
      * &lt;oj-list-view id="listview"
@@ -96,7 +102,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdo
      *     "icon": "oj-ux-ico-check-square"
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojSelector.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojSelector.html"
      * @ojmetadata since "9.0.0"
      * @ojlegacymetadata requirements [
      *    {

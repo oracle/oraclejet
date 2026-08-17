@@ -46,6 +46,7 @@ const DefaultProps_1 = require("../shared/DefaultProps");
 const ImportMaps_1 = require("../shared/ImportMaps");
 const JETComp_1 = require("../shared/JETComp");
 const Utils_1 = require("../shared/Utils");
+const SafeFileUtils_1 = require("../shared/SafeFileUtils");
 const TransformerError_1 = require("./TransformerError");
 /**
  * Returns information necessary to process a class that
@@ -89,6 +90,7 @@ function getVCompClassInfo(elementName, classNode, progImportMaps, checker, buil
         }
     }
     if (rtnInfo) {
+        validateFileNameSegmentForTransformer(elementName, 'custom element name', className, classNode);
         // If there is a containing JET Pack for this VComponent, return its info
         packInfo = getPackInfo(elementName, classNode, buildOptions);
         if (packInfo) {
@@ -377,6 +379,8 @@ function getVCompFunctionInfo(functionalCompNode, progImportMaps, checker, build
     }
     // Custom element registration and functional component node detected?
     if (compRegisterCall && componentNode) {
+        validateFileNameSegmentForTransformer(elementName, 'custom element name', componentName ?? functionName ?? elementName, compRegisterCall);
+        validateFileNameSegmentForTransformer(componentName ?? functionName ?? elementName, 'API doc file name', componentName ?? functionName ?? elementName, compRegisterCall);
         rtnInfo = {
             compRegisterCall,
             elementName,
@@ -933,6 +937,15 @@ function getPackInfo(elementName, vcompNode, buildOptions) {
         }
     }
     return rtnPackInfo;
+}
+function validateFileNameSegmentForTransformer(value, description, vcompName, errNode) {
+    try {
+        (0, SafeFileUtils_1.validateFileNameSegment)(value, description);
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        TransformerError_1.TransformerError.reportException(TransformerError_1.ExceptionKey.INVALID_CUSTOM_ELEMENT_NAME, TransformerError_1.ExceptionType.THROW_ERROR, vcompName, message, errNode);
+    }
 }
 /**
  * Analyzes the type of a possible registerCustomElement call that has been cast

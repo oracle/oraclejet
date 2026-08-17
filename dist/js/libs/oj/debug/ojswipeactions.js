@@ -83,6 +83,8 @@ var __oj_swipe_actions_metadata =
      *    user swipes in a particular direction.  The <code class="prettyprint">oj-option</code> element is used to represent each item in the action bar.
      * </p>
      *
+     * <p>Note: SwipeActions should be used only for touch swipe-to-reveal gestures.</p>
+     *
      * <pre class="prettyprint">
      * <code>
      * &lt;oj-list-view>
@@ -121,6 +123,14 @@ var __oj_swipe_actions_metadata =
      *    when SwipeActions is a child of ListView, the skip links will become accessible when user hits the F2 key.</p>
      * <p>Although the swipe actions are accessible with the keyboard using skip links, it is recommended that applications provide an alternative
      *    way for the users to perform all the swipe actions.
+     * </p>
+     *
+     * <h3 id="migration-section">
+     *   Migration
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+     * </h3>
+     * <p>Going forward, SwipeActions will not support desktop interaction. Applications should use
+     * SwipeActions for touch swipe-to-reveal interactions.</p>
      *
      * <h3 id="touch-section">
      *   Touch End User Information

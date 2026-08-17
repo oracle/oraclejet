@@ -26,7 +26,7 @@ const AsyncDependenciesBlock = require('webpack/lib/AsyncDependenciesBlock');
 const ImportDependency = require('webpack/lib/dependencies/ImportDependency');
 const NullDependency = require('webpack/lib/dependencies/NullDependency');
 const {getBundleMap} = require('../shared/mediator');
-const {stringifyWithFunctions} = require('../shared/bundleUtils');
+const {mergeDeep, stringifyWithFunctions} = require('../shared/bundleUtils');
 
 
 
@@ -53,6 +53,38 @@ ReplaceV1BundlesDependency.Template = class ReplaceV1BundlesDependencyTemplate
 
 
 const _OJ_OPTION_COMMENT_REGEXP = new RegExp(/(^|\W)oj[A-Z]{1,}[A-Za-z]{1,}:/);
+const _MODULE_PATH_VALIDATION_HELPERS = `
+      function isSafeSegment(segment) {
+        return segment !== '' && segment !== '.' && segment !== '..' && /^[A-Za-z0-9_.-]+$/.test(segment);
+      }
+      function isSafeResourcePath(path) {
+        if (
+          typeof path !== 'string' ||
+          path === '' ||
+          path.indexOf('\\\\') !== -1 ||
+          path.indexOf('!') !== -1 ||
+          path.indexOf(':') !== -1 ||
+          path.charAt(0) === '/'
+        ) {
+          return false;
+        }
+        var normalizedPath = path;
+        if (normalizedPath.indexOf('./') === 0) {
+          normalizedPath = normalizedPath.substring(2);
+        }
+        return normalizedPath.split('/').every(isSafeSegment);
+      }`;
+const _MODULE_ID_VALIDATION_HELPERS = `${_MODULE_PATH_VALIDATION_HELPERS}
+      function isSafeModuleId(type, module) {
+        var modulePath = module;
+        if (type === 'view') {
+          if (modulePath.indexOf('text!') !== 0) {
+            return false;
+          }
+          modulePath = modulePath.substring(5);
+        }
+        return isSafeResourcePath(modulePath);
+      }`;
 
 class WebpackRequireFixupPlugin
 {
@@ -175,7 +207,7 @@ class WebpackRequireFixupPlugin
                     }
                     // require instance is being passed for loading a View and a ViewModel by ojModule
                     else if (ojModuleBindingOpts) {
-                      return _replaceOjModuleRequirePromise(range, mergeDeep({}, [rootOpts, root, ojModuleBindingOpts]), parser, true);
+                      return _replaceOjModuleRequirePromise(range, mergeDeep({}, rootOpts, root, ojModuleBindingOpts), parser, true);
                     }
                     // require instance is being passed for use by ModuleRouterAdapter
                     else if (moduleRouterAdapterOpts) {
@@ -319,8 +351,16 @@ function _replaceOjModuleRequirePromise(range, options, parser, isDelegate) {
 
   const content1 = isDelegate ? `function (type, module)
   {
+    ${_MODULE_ID_VALIDATION_HELPERS}
+    if (!isSafeModuleId(type, module)) {
+      return Promise.reject(new Error('Invalid module path'));
+    }
   `: `function _getOjModuleRequirePromise(delegate, type, module)
   {
+    ${_MODULE_ID_VALIDATION_HELPERS}
+    if (!isSafeModuleId(type, module)) {
+      return Promise.reject(new Error('Invalid module path'));
+    }
     if (delegate)
       return delegate(type, module);
   `;
@@ -389,9 +429,13 @@ function _replaceOjModuleViewPromise(range, options, parser) {
     if (!(options && options.viewPath)) {
       return Promise.resolve([]);
     }
+    ${_MODULE_PATH_VALIDATION_HELPERS}
 
     var delegate = options.require;
     var module = options.viewPath;
+    if (!isSafeResourcePath(module)) {
+      return Promise.reject(new Error('Invalid module path'));
+    }
 
     var ret;
 
@@ -439,9 +483,13 @@ function _replaceOjModuleViewModelPromise(range, options, parser) {
       if (!(options && options.viewModelPath)) {
         return Promise.resolve(null);
       }
+      ${_MODULE_PATH_VALIDATION_HELPERS}
       var vmP;
       var delegate = options.require;
       var module = options.viewModelPath;
+      if (!isSafeResourcePath(module)) {
+        return Promise.reject(new Error('Invalid module path'));
+      }
       if (delegate) {
         var vmd = delegate.viewModel;
         delegate = vmd || delegate;
@@ -498,6 +546,10 @@ function _replaceOjModuleRequireDelegate(range, options, parser) {
 
   const content1 =
     `function(module) {
+      ${_MODULE_PATH_VALIDATION_HELPERS}
+      if (!isSafeResourcePath(module)) {
+        return Promise.reject(new Error('Invalid module path'));
+      }
       return `;
 
   const content3 = `

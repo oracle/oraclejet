@@ -158,7 +158,7 @@ PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options)
         }
 
         // hide it
-        content.css('height', 0);
+        content.css('height', '0');
         content.removeClass('oj-pulltorefresh-transition');
         if (isTouch) {
           $.data(content[0], 'data-pullstart', event.originalEvent.touches[0].clientY);
@@ -200,7 +200,7 @@ PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options)
 
       // checks if we are still in the loading stage
       if ($.data(content[0], 'data-loading') != null) {
-        content.css('height', Math.max(height, threshold));
+        content.css('height', Math.max(height, threshold) + 'px');
         return;
       }
 
@@ -219,7 +219,7 @@ PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options)
         checkTolerance = false;
       }
 
-      content.css('height', height);
+      content.css('height', height + 'px');
 
       // apply pull-to-refresh-action class to block children events in the panel element
       panel[0].classList.add('oj-pulltorefresh-action');
@@ -290,13 +290,13 @@ PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options)
       // checks if we are still in the loading stage
       if ($.data(content[0], 'data-loading') != null) {
         height = $.data(content[0], 'data-panelheight');
-        content.css('height', height);
+        content.css('height', height + 'px');
         return;
       }
 
       // less than threshold, hide panel and do nothing
       if (content.outerHeight() < threshold) {
-        content.addClass('oj-pulltorefresh-transition').css('height', 0);
+        content.addClass('oj-pulltorefresh-transition').css('height', '0');
 
         PullToRefreshUtils._cleanup(content);
       } else {
@@ -343,7 +343,7 @@ PullToRefreshUtils._handleRelease = function (event, element, content, refreshFu
     .loadingIcon;
 
   height = $.data(content[0], 'data-panelheight');
-  content.addClass('oj-pulltorefresh-transition').css('height', height);
+  content.addClass('oj-pulltorefresh-transition').css('height', height + 'px');
 
   PullToRefreshUtils._fireEvent(event, 'release', content, height);
 
@@ -403,7 +403,7 @@ PullToRefreshUtils._handleRelease = function (event, element, content, refreshFu
       $.data(content[0], 'data-closing', true);
 
       content.on('transitionend', listener);
-      content.css('height', 0);
+      content.css('height', '0');
     },
     function () {
       listener = function () {
@@ -426,7 +426,7 @@ PullToRefreshUtils._handleRelease = function (event, element, content, refreshFu
       $.data(content[0], 'data-closing', true);
 
       content.on('transitionend', listener);
-      content.css('height', 0);
+      content.css('height', '0');
     }
   );
 };
@@ -579,19 +579,19 @@ PullToRefreshUtils._renderAccessibleLink = function (element, panel, refreshFunc
   link
     .addClass('oj-helper-hidden-accessible')
     .attr('href', '#')
-    .focus(function () {
+    .on('focus', function () {
       // the link should be visible when tab to
       // note if removeClass("oj-helper-hidden-accessible") is used here then it would cause
       // weird behavior in Voiceover where the link will be skip immediately after focus
       link.css('position', 'static');
     })
-    .blur(function (event) {
+    .on('blur', function (event) {
       // Voiceover focus would immediately cause a blur when making the link visible
       if (event.relatedTarget != null) {
         link.css('position', '');
       }
     })
-    .click(function (event) {
+    .on('click', function (event) {
       content = panel.children().last();
       PullToRefreshUtils._handlePull(event, content, options);
       PullToRefreshUtils._handleRelease(event, element, content, refreshFunc);

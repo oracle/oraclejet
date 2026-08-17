@@ -5,9 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojmodel', 'ojs/ojdatasource-common', 'jquery'], function (exports, ojmodel, ojdatasourceCommon, $) { 'use strict';
-
-  $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
+define(['exports', 'ojs/ojmodel', 'ojs/ojdatasource-common'], function (exports, ojmodel, ojdatasourceCommon) { 'use strict';
 
   /**
    * @export
@@ -416,7 +414,7 @@ define(['exports', 'ojs/ojmodel', 'ojs/ojdatasource-common', 'jquery'], function
       if (eventOpts == null || !eventOpts.add) {
         var sortCriteria = {};
 
-        if (event != null && !event.comparator != null && !$.isFunction(event.comparator)) {
+        if (event != null && !event.comparator != null && typeof event.comparator !== 'function') {
           sortCriteria.header = event.comparator;
           sortCriteria.direction = event.sortDirection === 1 ? 'ascending' : 'descending';
         }

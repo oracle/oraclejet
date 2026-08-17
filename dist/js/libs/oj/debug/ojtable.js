@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['touchr', 'ojdnd', 'ojs/ojeditablevalue', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'ojs/ojdialog', 'ojs/ojbutton', 'ojs/ojdatasource-common', 'ojs/ojdataprovideradapter', 'ojs/ojlistdataproviderview', 'ojs/ojselector', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojs/ojcomponentcore', 'ojs/ojthemeutils', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojdomscroller', 'ojs/ojcustomelement-utils', '@oracle/oraclejet-preact/hooks/UNSAFE_useFormVariantContext', 'ojs/ojabortreason', 'ojs/ojkeyset', 'ojs/ojvalidator-regexp', 'ojs/ojkeyboardfocus-utils'], function (touchr, ojdnd, ojeditablevalue, ojinputnumber, ojmenu, ojpopup, ojdialog, ojbutton, ojdatasourceCommon, ojdataprovideradapter, ListDataProviderView, ojselector, oj$1, $, DomUtils, Logger, Context, Config, ojtranslation, Components, ThemeUtils, DataCollectionUtils, ojanimation, DomScroller, ojcustomelementUtils, UNSAFE_useFormVariantContext, ojabortreason, ojkeyset, RegExpValidator, ojkeyboardfocusUtils) { 'use strict';
+define(['touchr', 'ojdnd', 'ojs/ojeditablevalue', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'ojs/ojdialog', 'ojs/ojbutton', 'ojs/ojdatasource-common', 'ojs/ojdataprovideradapter', 'ojs/ojlistdataproviderview', 'ojs/ojselector', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojs/ojcomponentcore', 'ojs/ojthemeutils', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojdomscroller', 'ojs/ojcustomelement-utils', '@oracle/oraclejet-preact/hooks/UNSAFE_useFormVariantContext', 'ojs/ojabortreason', 'ojs/ojkeyset', 'ojs/ojvalidator-regexp', 'ojs/ojkeyboardfocus-utils', 'ojs/ojgestureutils'], function (touchr, ojdnd, ojeditablevalue, ojinputnumber, ojmenu, ojpopup, ojdialog, ojbutton, ojdatasourceCommon, ojdataprovideradapter, ListDataProviderView, ojselector, oj$1, $, DomUtils, Logger, Context, Config, ojtranslation, Components, ThemeUtils, DataCollectionUtils, ojanimation, DomScroller, ojcustomelementUtils, UNSAFE_useFormVariantContext, ojabortreason, ojkeyset, RegExpValidator, ojkeyboardfocusUtils, ojgestureutils) { 'use strict';
 
   ListDataProviderView = ListDataProviderView && Object.prototype.hasOwnProperty.call(ListDataProviderView, 'default') ? ListDataProviderView['default'] : ListDataProviderView;
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
@@ -1084,6 +1084,21 @@ var __oj_table_metadata =
    *         <pre class="prettyprint"><code>&lt;oj-table id="table">
    *   &lt;template slot="cellTemplate">
    *     &lt;oj-button data-oj-clickthrough="disabled">&lt;/oj-button
+   *   &lt;/template>
+   * &lt;/oj-table></code></pre>
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>data-oj-alt-clickthrough</kbd></td>
+   *       <td><p>Specify on an element inside the Table to control context menu handling for a gesture that originates from the element or one of its descendants.</p>
+   *           <p>Set this attribute to <code class="prettyprint">enabled</code> to allow the Table context menu when an interactive child would otherwise prevent it. Set it to <code class="prettyprint">disabled</code> to prevent the Table and its ancestor JET components from opening their context menus for that gesture.</p>
+   *           <p>When both values occur between the gesture target and the owning component root, <code class="prettyprint">disabled</code> takes precedence over <code class="prettyprint">enabled</code>.</p>
+   *           <p>The <code class="prettyprint">enabled</code> value does not override a context menu owned by a nested JET component.</p>
+   *       </td>
+   *       <td>
+   *         <pre class="prettyprint"><code>&lt;oj-table id="table">
+   *   &lt;template slot="cellTemplate">
+   *     &lt;a data-oj-alt-clickthrough="enabled" href="#">Details&lt;/a>
    *   &lt;/template>
    * &lt;/oj-table></code></pre>
    *       </td>
@@ -3229,7 +3244,8 @@ var __oj_table_metadata =
               slotContext,
               this.options.as,
               tableBody,
-              new Map([[UNSAFE_useFormVariantContext.FormVariantContext, 'legacyEmbedded']])
+              new Map([[UNSAFE_useFormVariantContext.FormVariantContext, 'legacyEmbedded']]),
+              { processTemplate: true }
             );
             for (let i = 0; i < nodes.length; i++) {
               var node = nodes[i];
@@ -4437,6 +4453,37 @@ var __oj_table_metadata =
       DomUtils.addResizeListener(element, this._resizeListener, 50, true);
       this._isResizeListenerAdded = true;
     }
+    if (this._isStickyLayoutEnabled()) {
+      if (!this._gutterStartResizeListener) {
+        this._gutterStartResizeListener = function () {
+          if (this._isGutterStartColumnEnabled() && this._pendingGutterResizes == null) {
+            this._pendingGutterResizes = true;
+            setTimeout(this.handlePendingGutterResizes.bind(this), 0); // @HTMLUpdateOK
+          }
+        }.bind(this);
+      }
+      if (!this._isGutterStartResizeListenerAdded) {
+        DomUtils.addResizeListener(
+          this._gutterStartContainer,
+          this._gutterStartResizeListener,
+          50,
+          true
+        );
+        this._isGutterStartResizeListenerAdded = true;
+      }
+      if (!this._gutterEndResizeListener) {
+        this._gutterEndResizeListener = function () {
+          if (this._isGutterEndColumnEnabled() && this._pendingGutterResizes == null) {
+            this._pendingGutterResizes = true;
+            setTimeout(this.handlePendingGutterResizes.bind(this), 0); // @HTMLUpdateOK
+          }
+        }.bind(this);
+      }
+      if (!this._isGutterEndResizeListenerAdded) {
+        DomUtils.addResizeListener(this._gutterEndContainer, this._gutterEndResizeListener, 50, true);
+        this._isGutterEndResizeListenerAdded = true;
+      }
+    }
   };
 
   /**
@@ -4444,9 +4491,25 @@ var __oj_table_metadata =
    * @private
    */
   Table.prototype._unregisterResizeListener = function () {
-    var element = this._getTableContainer();
-    DomUtils.removeResizeListener(element, this._resizeListener);
+    DomUtils.removeResizeListener(this._getTableContainer(), this._resizeListener);
     this._isResizeListenerAdded = false;
+    if (this._isStickyLayoutEnabled()) {
+      DomUtils.removeResizeListener(this._gutterStartContainer, this._gutterStartResizeListener);
+      this._isGutterStartResizeListenerAdded = false;
+      DomUtils.removeResizeListener(this._gutterEndContainer, this._gutterEndResizeListener);
+      this._isGutterEndResizeListenerAdded = false;
+    }
+  };
+
+  Table.prototype.handlePendingGutterResizes = function () {
+    if (this._pendingGutterResizes != null) {
+      this._queueTask(
+        function () {
+          this._pendingGutterResizes = null;
+          this._getLayoutManager().notifyTableUpdate(Table._UPDATE._RESIZE);
+        }.bind(this)
+      );
+    }
   };
 
   /**
@@ -5315,12 +5378,9 @@ var __oj_table_metadata =
       idleTimeout = null;
     }, 250);
 
-    // Chromium has an issue with requestIdleCallback when mouse wheel is used, see Chrome :
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=822269
-    var options;
-    if (isMouseWheel && DataCollectionUtils.isBlink()) {
-      options = { timeout: 100 };
-    }
+    // Use a timeout so fetch rendering is not blocked indefinitely when the browser
+    // does not get an idle period, including scrollbar and mouse wheel scrolling.
+    var options = { timeout: 100 };
     this._idleCallback = window.requestIdleCallback(function (idleDeadline) {
       if (idleTimeout == null) {
         return;
@@ -6055,146 +6115,168 @@ var __oj_table_metadata =
     if (dataprovider != null) {
       return new Promise(
         function (resolve) {
-          var controller = this._controller;
-          this._animateOnFetch = false;
-          this._noMoreData = false;
-          this._pendingFetchOptions = options;
-          this._setDataWaitingState(true);
-          this._hasRefreshInQueue = false;
-          this._dataProviderAsyncIterator = dataprovider
-            .fetchFirst(updatedOptions)
-            [Symbol.asyncIterator]();
+          try {
+            var controller = this._controller;
+            this._animateOnFetch = false;
+            this._noMoreData = false;
+            this._pendingFetchOptions = options;
+            this._setDataWaitingState(true);
+            this._hasRefreshInQueue = false;
+            this._dataProviderAsyncIterator = dataprovider
+              .fetchFirst(updatedOptions)
+              [Symbol.asyncIterator]();
 
-          var helperFunction = function (result, currentMetadata, scrollToKey) {
-            var updatedScrollToKey = scrollToKey;
-            // checks whether the key is fetched, otherwise we'll continue to fetch
-            if (scrollToKey == null || this._containsKey(scrollToKey, currentMetadata)) {
-              updatedScrollToKey = null;
-            }
-            // skip additional fetching if done, or are no longer searching for a row with loadMoreOnScroll
-            // if it has getPageCount method, it is a pagingTableDataSource so skip this fetch process.
-            if (
-              result.done ||
-              (updatedScrollToKey == null &&
-                (this._isLoadMoreOnScroll() || typeof dataprovider.getPageCount === 'function'))
-            ) {
-              return result;
-            }
-
-            var nextPromise = this._dataProviderAsyncIterator.next();
-            return nextPromise.then(
-              function (value) {
-                // return early if the fetch was aborted
-                if (DataCollectionUtils.isFetchAborted(value)) {
-                  return Promise.reject(true);
-                }
-
-                // eslint-disable-next-line no-param-reassign
-                result.done = value.done;
-                // eslint-disable-next-line no-param-reassign
-                result.value.data = result.value.data.concat(value.value.data);
-                // eslint-disable-next-line no-param-reassign
-                result.value.metadata = result.value.metadata.concat(value.value.metadata);
-                return helperFunction(result, value.value.metadata, updatedScrollToKey);
-              },
-              function (reason) {
-                return Promise.reject(reason);
+            var helperFunction = function (result, currentMetadata, scrollToKey) {
+              var updatedScrollToKey = scrollToKey;
+              // checks whether the key is fetched, otherwise we'll continue to fetch
+              if (scrollToKey == null || this._containsKey(scrollToKey, currentMetadata)) {
+                updatedScrollToKey = null;
               }
-            );
-          }.bind(this);
-
-          var promiseArray = [];
-          promiseArray.push(this._dataProviderAsyncIterator.next());
-          promiseArray.push(this._getScrollToKey());
-          if (!this._isTableHeaderColumnsRendered()) {
-            promiseArray.push(this._refreshTableHeader());
-          }
-
-          Promise.all(promiseArray)
-            .then(
-              function (values) {
-                var result = values[0];
-                // return early if the fetch was aborted
-                if (DataCollectionUtils.isFetchAborted(result)) {
-                  return Promise.reject(true);
-                }
-                var scrollToKey = values[1];
-                return helperFunction(result, result[Table._CONST_VALUE].metadata, scrollToKey);
-              },
-              function (reason) {
-                return Promise.reject(reason);
+              // skip additional fetching if done, or are no longer searching for a row with loadMoreOnScroll
+              // if it has getPageCount method, it is a pagingTableDataSource so skip this fetch process.
+              if (
+                result.done ||
+                (updatedScrollToKey == null &&
+                  (this._isLoadMoreOnScroll() || typeof dataprovider.getPageCount === 'function'))
+              ) {
+                return result;
               }
-            )
-            .then(
-              function (result) {
-                var i;
-                var value = result[Table._CONST_VALUE];
-                var data = value[Table._CONST_DATA];
-                var metadataArray = value[Table._CONST_METADATA];
-                var keys = value.metadata.map(function (_value) {
-                  return _value[Table._CONST_KEY];
-                });
-                var foundDuplicate = false;
-                // remove any duplicate rows from the fetch results
-                for (i = keys.length - 1; i >= 0; i--) {
-                  for (var j = 0; j < i; j++) {
-                    if (oj$1.KeyUtils.equals(keys[i], keys[j])) {
-                      data.splice(i, 1);
-                      keys.splice(i, 1);
-                      metadataArray.splice(i, 1);
-                      foundDuplicate = true;
+
+              var nextPromise = this._dataProviderAsyncIterator.next();
+              return nextPromise.then(
+                function (value) {
+                  // return early if the fetch was aborted
+                  if (DataCollectionUtils.isFetchAborted(value)) {
+                    return Promise.reject(true);
+                  }
+
+                  // eslint-disable-next-line no-param-reassign
+                  result.done = value.done;
+                  // eslint-disable-next-line no-param-reassign
+                  result.value.data = result.value.data.concat(value.value.data);
+                  // eslint-disable-next-line no-param-reassign
+                  result.value.metadata = result.value.metadata.concat(value.value.metadata);
+                  return helperFunction(result, value.value.metadata, updatedScrollToKey);
+                },
+                function (reason) {
+                  return Promise.reject(reason);
+                }
+              );
+            }.bind(this);
+
+            var promiseArray = [];
+            promiseArray.push(this._dataProviderAsyncIterator.next());
+            promiseArray.push(this._getScrollToKey());
+            if (!this._isTableHeaderColumnsRendered()) {
+              promiseArray.push(this._refreshTableHeader());
+            }
+
+            Promise.all(promiseArray)
+              .then(
+                function (values) {
+                  var result = values[0];
+                  // return early if the fetch was aborted
+                  if (DataCollectionUtils.isFetchAborted(result)) {
+                    return Promise.reject(true);
+                  }
+                  var scrollToKey = values[1];
+                  return helperFunction(result, result[Table._CONST_VALUE].metadata, scrollToKey);
+                },
+                function (reason) {
+                  return Promise.reject(reason);
+                }
+              )
+              .then(
+                function (result) {
+                  var i;
+                  var value = result[Table._CONST_VALUE];
+                  var data = value[Table._CONST_DATA];
+                  var metadataArray = value[Table._CONST_METADATA];
+                  var keys = value.metadata.map(function (_value) {
+                    return _value[Table._CONST_KEY];
+                  });
+                  var foundDuplicate = false;
+                  // remove any duplicate rows from the fetch results
+                  for (i = keys.length - 1; i >= 0; i--) {
+                    for (var j = 0; j < i; j++) {
+                      if (oj$1.KeyUtils.equals(keys[i], keys[j])) {
+                        data.splice(i, 1);
+                        keys.splice(i, 1);
+                        metadataArray.splice(i, 1);
+                        foundDuplicate = true;
+                      }
                     }
                   }
-                }
-                if (foundDuplicate) {
-                  Logger.warn(DataCollectionUtils.WARN_DUPLICATE_KEYS_DETAIL);
-                }
-                var offset = 0;
-                if (dataprovider instanceof oj$1.TableDataSourceAdapter) {
-                  offset = dataprovider[Table._CONST_OFFSET];
-                }
-                var startIndex = 0;
-                if (this._isPagingModelDataProvider()) {
-                  startIndex = dataprovider.getStartItemIndex();
-                }
-                var indexArray = [];
-                var resultDataCount = data.length;
+                  if (foundDuplicate) {
+                    Logger.warn(DataCollectionUtils.WARN_DUPLICATE_KEYS_DETAIL);
+                  }
+                  var offset = 0;
+                  if (dataprovider instanceof oj$1.TableDataSourceAdapter) {
+                    offset = dataprovider[Table._CONST_OFFSET];
+                  }
+                  var startIndex = 0;
+                  if (this._isPagingModelDataProvider()) {
+                    startIndex = dataprovider.getStartItemIndex();
+                  }
+                  var indexArray = [];
+                  var resultDataCount = data.length;
 
-                for (i = 0; i < resultDataCount; i++) {
-                  indexArray[i] = offset + startIndex + i;
-                }
+                  for (i = 0; i < resultDataCount; i++) {
+                    indexArray[i] = offset + startIndex + i;
+                  }
 
-                // Need to clear DOM scroller before refreshAll potentially triggers
-                // additional data fetches when syncing scroll position
-                this._unregisterDomScroller();
+                  // Need to clear DOM scroller before refreshAll potentially triggers
+                  // additional data fetches when syncing scroll position
+                  this._unregisterDomScroller();
 
-                if (result.maxCountLimit) {
-                  this._noMoreData = true;
-                  this._handleScrollerMaxRowCount();
-                } else if (result.done) {
-                  this._noMoreData = true;
-                }
+                  if (result.maxCountLimit) {
+                    this._noMoreData = true;
+                    this._handleScrollerMaxRowCount();
+                  } else if (result.done) {
+                    this._noMoreData = true;
+                  }
 
-                this._refreshAll(
-                  {
-                    data: data,
-                    metadata: metadataArray,
-                    keys: keys,
-                    indexes: indexArray
-                  },
-                  offset
-                ).then(
-                  function () {
-                    this._clearDataWaitingState();
-                    this._processFetchSort(value).then(() => {
-                      if (this._isLoadMoreOnScroll()) {
-                        this._registerDomScroller();
+                  this._refreshAll(
+                    {
+                      data: data,
+                      metadata: metadataArray,
+                      keys: keys,
+                      indexes: indexArray
+                    },
+                    offset
+                  ).then(
+                    function () {
+                      this._clearDataWaitingState();
+                      this._processFetchSort(value).then(() => {
+                        if (this._isLoadMoreOnScroll()) {
+                          this._registerDomScroller();
+                        }
+                        resolve(result);
+                      });
+                    }.bind(this),
+                    // eslint-disable-next-line no-unused-vars
+                    function (reason) {
+                      // eventually fire error event here along with reason for rejection
+                      this._clearDataWaitingState();
+                      var tableBody = this._getTableBody();
+                      var tableBodyRows = this._getTableBodyRows();
+                      if (tableBodyRows.length === 0) {
+                        this._showNoDataMessage();
+                        this._finalizeNonBodyRowRendering([tableBody]).then(function () {
+                          resolve(null);
+                        });
+                      } else {
+                        resolve(null);
                       }
-                      resolve(result);
-                    });
-                  }.bind(this),
-                  // eslint-disable-next-line no-unused-vars
-                  function (reason) {
+                    }.bind(this)
+                  );
+                }.bind(this),
+                // eslint-disable-next-line no-unused-vars
+                function (reason) {
+                  if (controller && controller.signal.aborted) {
+                    this._clearDataWaitingState(true);
+                    resolve(null);
+                  } else {
                     // eventually fire error event here along with reason for rejection
                     this._clearDataWaitingState();
                     var tableBody = this._getTableBody();
@@ -6207,30 +6289,14 @@ var __oj_table_metadata =
                     } else {
                       resolve(null);
                     }
-                  }.bind(this)
-                );
-              }.bind(this),
-              // eslint-disable-next-line no-unused-vars
-              function (reason) {
-                if (controller && controller.signal.aborted) {
-                  this._clearDataWaitingState(true);
-                  resolve(null);
-                } else {
-                  // eventually fire error event here along with reason for rejection
-                  this._clearDataWaitingState();
-                  var tableBody = this._getTableBody();
-                  var tableBodyRows = this._getTableBodyRows();
-                  if (tableBodyRows.length === 0) {
-                    this._showNoDataMessage();
-                    this._finalizeNonBodyRowRendering([tableBody]).then(function () {
-                      resolve(null);
-                    });
-                  } else {
-                    resolve(null);
                   }
-                }
-              }.bind(this)
-            );
+                }.bind(this)
+              );
+          } catch (error) {
+            // make sure to clear any potential busy state if error is thrown synchronously
+            this._clearDataWaitingState();
+            throw error;
+          }
         }.bind(this)
       );
     }
@@ -11004,6 +11070,7 @@ var __oj_table_metadata =
       styleProperty = Table.CSS_PROP._RIGHT;
     }
     var styleValue = offset + Table.CSS_VAL._PX;
+    const columnsCount = this._table.options.columns.length;
 
     // check if only a single row is being refreshed
     if (targetRow != null) {
@@ -11017,12 +11084,23 @@ var __oj_table_metadata =
           if (targetRow.classList.contains(Table.CSS_CLASSES._TABLE_ADD_ROW_PLACEHOLDER_CLASS)) {
             let index = this._table._isGutterStartColumnEnabled() ? 1 : 0;
             targetCell = this._table._getPlaceHolderRowCells(targetRow)[index];
+          } else if (
+            targetRow.classList.contains(Table.CSS_CLASSES._TABLE_INSERT_ROW_PLACEHOLDER_CLASS)
+          ) {
+            let index = this._table._isGutterStartColumnEnabled() ? 1 : 0;
+            targetCell = this._table._getInsertPlaceHolderRowCells(targetRow)[index];
           } else {
             targetCell = this._table._getTableBodySelectorCell(targetRow);
           }
         }
+      } else if (columnIndex === columnsCount) {
+        targetCell = this._table._getTableGutterCell('body', 'end', targetRow);
       } else if (targetRow.classList.contains(Table.CSS_CLASSES._TABLE_ADD_ROW_PLACEHOLDER_CLASS)) {
         targetCell = this._table._getPlaceHolderRowCell(columnIndex);
+      } else if (
+        targetRow.classList.contains(Table.CSS_CLASSES._TABLE_INSERT_ROW_PLACEHOLDER_CLASS)
+      ) {
+        targetCell = this._table._getInsertPlaceHolderRowCell(columnIndex);
       } else {
         if (
           isStart &&
@@ -11041,7 +11119,7 @@ var __oj_table_metadata =
     }
     const tableBodyRows = this._table._getTableBodyRows();
     const addRow = this._table._getPlaceHolderRow();
-    const columnsCount = this._table.options.columns.length;
+    const insertRow = this._table._getInsertPlaceHolderRow();
     if (columnIndex === -2 || columnIndex === columnsCount) {
       const gutterEdge = columnIndex === -2 ? 'start' : 'end';
       // update header cell
@@ -11054,6 +11132,13 @@ var __oj_table_metadata =
         const addRowGutter = this._table._getTableGutterCell('body', gutterEdge, addRow);
         if (addRowGutter != null) {
           addRowGutter.style[styleProperty] = styleValue;
+        }
+      }
+      // update insert row cell
+      if (insertRow != null) {
+        const insertRowGutter = this._table._getTableGutterCell('body', gutterEdge, insertRow);
+        if (insertRowGutter != null) {
+          insertRowGutter.style[styleProperty] = styleValue;
         }
       }
       // update table body cells
@@ -11082,6 +11167,14 @@ var __oj_table_metadata =
           addRowSelectorCell.style[styleProperty] = styleValue;
         }
       }
+      // update insert row cell
+      if (insertRow != null) {
+        const index = this._table._isGutterStartColumnEnabled() ? 1 : 0;
+        const insertRowSelectorCell = this._table._getInsertPlaceHolderRowCells(insertRow)[index];
+        if (insertRowSelectorCell != null) {
+          insertRowSelectorCell.style[styleProperty] = styleValue;
+        }
+      }
       // update table body cells
       for (i = 0; i < tableBodyRows.length; i++) {
         var tableBodyRow = this._table._getTableBodyRow(i);
@@ -11106,6 +11199,13 @@ var __oj_table_metadata =
         var addRowCell = this._table._getPlaceHolderRowCell(columnIndex);
         if (addRowCell != null) {
           addRowCell.style[styleProperty] = styleValue;
+        }
+      }
+      // update insert row cell
+      if (insertRow != null) {
+        var insertRowCell = this._table._getInsertPlaceHolderRowCell(columnIndex);
+        if (insertRowCell != null) {
+          insertRowCell.style[styleProperty] = styleValue;
         }
       }
       // update table body cells
@@ -11261,6 +11361,11 @@ var __oj_table_metadata =
           if (targetRow.classList.contains(Table.CSS_CLASSES._TABLE_ADD_ROW_PLACEHOLDER_CLASS)) {
             let index = this._table._isGutterStartColumnEnabled() ? 1 : 0;
             targetCell = this._table._getPlaceHolderRowCells(targetRow)[index];
+          } else if (
+            targetRow.classList.contains(Table.CSS_CLASSES._TABLE_INSERT_ROW_PLACEHOLDER_CLASS)
+          ) {
+            let index = this._table._isGutterStartColumnEnabled() ? 1 : 0;
+            targetCell = this._table._getInsertPlaceHolderRowCells(targetRow)[index];
           } else {
             targetCell = this._table._getTableBodySelectorCell(targetRow);
           }
@@ -11269,6 +11374,10 @@ var __oj_table_metadata =
         targetCell = this._table._getTableGutterCell('body', 'end', targetRow);
       } else if (targetRow.classList.contains(Table.CSS_CLASSES._TABLE_ADD_ROW_PLACEHOLDER_CLASS)) {
         targetCell = this._table._getPlaceHolderRowCell(columnIndex);
+      } else if (
+        targetRow.classList.contains(Table.CSS_CLASSES._TABLE_INSERT_ROW_PLACEHOLDER_CLASS)
+      ) {
+        targetCell = this._table._getInsertPlaceHolderRowCell(columnIndex);
       } else {
         targetCell = this._table._getTableBodyCell(null, columnIndex, targetRow);
       }
@@ -11278,6 +11387,7 @@ var __oj_table_metadata =
 
     const tableBodyRows = this._table._getTableBodyRows();
     const addRow = this._table._getPlaceHolderRow();
+    const insertRow = this._table._getInsertPlaceHolderRow();
 
     if (columnIndex === -2 || columnIndex === columnsCount) {
       const gutterEdge = columnIndex === -2 ? 'start' : 'end';
@@ -11289,6 +11399,11 @@ var __oj_table_metadata =
       if (addRow != null) {
         const addRowGutter = this._table._getTableGutterCell('body', gutterEdge, addRow);
         this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, addRowGutter);
+      }
+      // update insert row cell
+      if (insertRow != null) {
+        const insertRowGutter = this._table._getTableGutterCell('body', gutterEdge, insertRow);
+        this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, insertRowGutter);
       }
       // update table body cells
       for (i = 0; i < tableBodyRows.length; i++) {
@@ -11309,6 +11424,12 @@ var __oj_table_metadata =
         var addRowSelectorCell = this._table._getPlaceHolderRowCells(addRow)[index];
         this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, addRowSelectorCell);
       }
+      // update insert row cell
+      if (insertRow != null) {
+        let index = this._table._isGutterStartColumnEnabled() ? 1 : 0;
+        var insertRowSelectorCell = this._table._getInsertPlaceHolderRowCells(insertRow)[index];
+        this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, insertRowSelectorCell);
+      }
       // update table body cells
       for (i = 0; i < tableBodyRows.length; i++) {
         var tableBodyRow = this._table._getTableBodyRow(i);
@@ -11327,6 +11448,11 @@ var __oj_table_metadata =
       if (addRow != null) {
         var addRowCell = this._table._getPlaceHolderRowCell(columnIndex);
         this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, addRowCell);
+      }
+      // update insert row cell
+      if (insertRow != null) {
+        var insertRowCell = this._table._getInsertPlaceHolderRowCell(columnIndex);
+        this._updateFrozenEdgeStyling(isAdd, isStart, isAllEdge, insertRowCell);
       }
       // update table body cells
       for (i = 0; i < tableBodyRows.length; i++) {
@@ -14832,6 +14958,9 @@ var __oj_table_metadata =
     this._createStateInfo();
     this._createRowStateInfo();
     this._createTableWidthContainer();
+    if (this._isStickyLayoutEnabled()) {
+      this._createStartGutterWidthDivs();
+    }
 
     return table;
   };
@@ -15475,6 +15604,23 @@ var __oj_table_metadata =
     this._cacheDomElement(Table.CSS_CLASSES._TABLE_STATUS_MESSAGE_CLASS, statusMessage);
 
     return statusMessage;
+  };
+
+  /**
+   * @private
+   */
+  Table.prototype._createStartGutterWidthDivs = function () {
+    var tableContainer = this._getTableContainer();
+    var gutterStartContainer = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+    gutterStartContainer.classList.add(Table.CSS_CLASSES._TABLE_WIDTH_CONTAINER_CLASS);
+    gutterStartContainer.classList.add(Table.CSS_CLASSES._TABLE_GUTTER_START);
+    var gutterEndContainer = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+    gutterEndContainer.classList.add(Table.CSS_CLASSES._TABLE_WIDTH_CONTAINER_CLASS);
+    gutterEndContainer.classList.add(Table.CSS_CLASSES._TABLE_GUTTER_END);
+    tableContainer.appendChild(gutterStartContainer); // @HTMLUpdateOK
+    tableContainer.appendChild(gutterEndContainer); // @HTMLUpdateOK
+    this._gutterStartContainer = gutterStartContainer;
+    this._gutterEndContainer = gutterEndContainer;
   };
 
   /**
@@ -16394,7 +16540,7 @@ var __oj_table_metadata =
     // null should never be passed in, but adding this check for a fallback
     if (str == null) {
       return 0;
-    } else if ($.type(str) !== 'string') {
+    } else if (typeof str !== 'string') {
       // eslint-disable-next-line no-param-reassign
       str = str.toString();
     }
@@ -18155,6 +18301,8 @@ var __oj_table_metadata =
     _TABLE_FROZEN_ALL: 'oj-table-frozen-all',
     _TABLE_FROZEN_START_EDGE: 'oj-table-frozen-start-edge',
     _TABLE_FROZEN_END_EDGE: 'oj-table-frozen-end-edge',
+    _TABLE_GUTTER_START: 'oj-table-gutter-start',
+    _TABLE_GUTTER_END: 'oj-table-gutter-end',
     _TABLE_GUTTER_START_HEADER_CELL: 'oj-table-gutter-start-header-cell',
     _TABLE_GUTTER_END_HEADER_CELL: 'oj-table-gutter-end-header-cell',
     _TABLE_GUTTER_START_BODY_CELL: 'oj-table-gutter-start-body-cell',
@@ -18565,6 +18713,11 @@ var __oj_table_metadata =
           (DataCollectionUtils.isChrome() || DataCollectionUtils.isEdgeChromium()) &&
           event.originalEvent != null &&
           event.originalEvent.sourceCapabilities == null);
+
+      var table = this._getTable();
+      var tableContainer = this._getTableContainer();
+      this._focusInHandler($(table));
+      this._focusInHandler($(tableContainer));
 
       // ensure active element is setup
       this._syncActiveElement(event, true, isSkipScroll, true);
@@ -23151,7 +23304,7 @@ var __oj_table_metadata =
             tabbableElementsInFocusedElement[tabbableElementsInFocusedElement.length - 1];
 
           if (currentFocusElement === lastTabbableElementFocusedElement) {
-            $(tabbableElementsInFocusedElement[0]).focus();
+            $(tabbableElementsInFocusedElement[0]).trigger('focus');
             event.preventDefault();
             event.stopPropagation();
           } else {
@@ -23170,7 +23323,9 @@ var __oj_table_metadata =
           var firstTabbableElementFocusedElement = tabbableElementsInFocusedElement[0];
 
           if (currentFocusElement === firstTabbableElementFocusedElement) {
-            $(tabbableElementsInFocusedElement[tabbableElementsInFocusedElement.length - 1]).focus();
+            $(tabbableElementsInFocusedElement[tabbableElementsInFocusedElement.length - 1]).trigger(
+              'focus'
+            );
             event.preventDefault();
             event.stopPropagation();
           } else {
@@ -23254,7 +23409,11 @@ var __oj_table_metadata =
         if (currentRowIdx >= 0 && currentRow.rowKey != null) {
           if (this._isTableEditMode()) {
             if (!this._hasEditableRow()) {
-              this._deferredEditInfo = { editRow: { rowKey: currentRow.rowKey }, isNext: true, event };
+              this._deferredEditInfo = {
+                editRow: { rowKey: currentRow.rowKey },
+                isNext: true,
+                event
+              };
               this._queueTask(() => {
                 return this._setEditRow();
               });
@@ -23350,8 +23509,7 @@ var __oj_table_metadata =
       this._handleInsertRowEnd(true, event);
       event.preventDefault();
       event.stopPropagation();
-    }
-    else if (this._hasEditableRow()) {
+    } else if (this._hasEditableRow()) {
       this._deferredEditInfo = { editRow: { rowKey: null, rowIndex: -1 }, isCancel: true, event };
       this._queueTask(() => {
         return this._setEditRow();
@@ -23620,7 +23778,8 @@ var __oj_table_metadata =
             slotContext,
             this.options.as,
             tableBody,
-            new Map([[UNSAFE_useFormVariantContext.FormVariantContext, 'legacyEmbedded']])
+            new Map([[UNSAFE_useFormVariantContext.FormVariantContext, 'legacyEmbedded']]),
+            { processTemplate: true }
           );
           if (!(cellContent instanceof Array)) {
             cellContent = [cellContent];
@@ -25757,17 +25916,13 @@ var __oj_table_metadata =
    *
    * <p>These features are not yet available in oj-c-table, they will be available in a forthcoming version.</p>
    * <ul>
-   *    <li>Sorting</li>
-   *    <li>Column Resizing</li>
    *    <li>Drag and Drop</li>
    *    <li>Editing</li>
    *    <li>Add Row</li>
    *    <li>Page Scrolling</li>
    *    <li>First Selected Row</li>
-   *    <li>Sticky Columns</li>
    *    <li>Edge To Edge Padding</li>
    *    <li>Tree Data</li>
-   *    <li>Context menu</li>
    *    <li>Per Row Selectable</li>
    *    <li>Group By Table</li>
    * </ul>
@@ -25796,7 +25951,7 @@ var __oj_table_metadata =
    * </p>
    *
    * <h5>Styling Class Changes</h5>
-   * <p><code>oj-table-data-cell-no-padding</code> and <code>oj-table-data-cell-padding</code> are no longer relevant, padding is controlled via the columns.padding property.</p>
+   * <p><code class="prettyprint">oj-table-data-cell-no-padding</code> and <code class="prettyprint">oj-table-data-cell-padding</code> are no longer relevant, padding is controlled via the column <code class="prettyprint">padding</code>, <code class="prettyprint">headerPadding</code>, and <code class="prettyprint">footerPadding</code> properties.</p>
    * <p><code>oj-table-hide-vertical-scrollbar</code> is not supported.</p>
    * <p><code>oj-table-stretch</code> is not supported, use styles on the oj-c-table to control dimensions.</p>
    *
@@ -25836,14 +25991,25 @@ var __oj_table_metadata =
    *
    * <h5>columns attribute</h5>
    * <p>The columns attribute is no longer an array, it is a record of column keys to columns.</p>
-   * <p>The order of columns is dictated by the oj-c-table columns-order property.</p>
+   * <p>The order of columns is dictated by the oj-c-table <code class="prettyprint">column-order</code> property.</p>
    *
    * <h5>Column Type Definition Changes</h5>
    * <p>className, headerClassName, and footerClassName are no longer supported.</p>
    * <p>renderer,headerRenderer, and footerRenderer are no longer supported, use the template properties instead.</p>
    * <p>style, headerStyle, and footerStyle are no longer supported, see the redwood spec for guidance on cell customization and use supported column properties such as padding.</p>
    * <p>id is no longer supported, the columns record column key is used in its place.</p>
-   * <p>width is no longer supported, use the top level column-widths property.</p>
+   * <p><code class="prettyprint">width</code> is no longer supported, use the top level <code class="prettyprint">column-widths</code> property.</p>
+   * <p><code class="prettyprint">frozenEdge</code> is no longer supported, use the column <code class="prettyprint">sticky</code> property.</p>
+   * <p><code class="prettyprint">sortProperty</code> is no longer supported, use the column <code class="prettyprint">field</code> with <code class="prettyprint">sort-criteria</code>.</p>
+   *
+   * <h5>Sorting</h5>
+   * <p>Sorting is controlled by the top level <code class="prettyprint">sort-criteria</code> property and <code class="prettyprint">on-sort-criteria-changed</code> event. Enable sorting on a column using the column <code class="prettyprint">sortable</code> property.</p>
+   *
+   * <h5>Column Resizing</h5>
+   * <p>Column resizing is enabled per column using the column <code class="prettyprint">resizable</code> property. The top level <code class="prettyprint">column-resize-behavior</code> property controls resize behavior and <code class="prettyprint">column-widths</code>/<code class="prettyprint">on-column-widths-changed</code> control and write back resized widths.</p>
+   *
+   * <h5>Context menu</h5>
+   * <p>The legacy <code class="prettyprint">oj-menu</code> context menu slot and <code class="prettyprint">data-oj-command</code> values are no longer supported, use the <code class="prettyprint">context-menu-config</code> property. Include <code class="prettyprint">'defaultMenuItems'</code> in the returned items array to include the built-in table menu items.</p>
    *
    * <h5>Gridlines attribute</h5>
    * <p>horizontal-grid-visible and vertical-grid-visible do not support auto. Do not set the property to get the default redwood behavior.</p>
@@ -25851,12 +26017,11 @@ var __oj_table_metadata =
    * <h5>accessibility.row-header attribute</h5>
    * <p>This property is now row.accessible-row-header property.</p>
    *
-   * <h5>scroll-policy-options.maxCount attribute</h5>
-   * <p>This is no longer supported.</p>
+   * <h5>scroll-policy and scroll-policy-options attributes</h5>
+   * <p><code class="prettyprint">scroll-policy</code> is no longer supported. The only supported <code class="prettyprint">scroll-policy-options</code> subproperty is <code class="prettyprint">fetch-size</code>. <code class="prettyprint">max-count</code>, <code class="prettyprint">scroller</code>, and <code class="prettyprint">scroller-offset-*</code> are no longer supported.</p>
    *
    * <h5>ojBeforeCurrentRow event</h5>
-   * <p>This cancellable event is deprecated and is being replaced with <code>onCurrentItemChanged</code> read-only property change event.
-   * </p>
+   * <p>This cancellable event is no longer supported and is replaced by the <code class="prettyprint">current-cell-changed</code> read-only property change event. Use the <code class="prettyprint">current-cell-override</code> property to request current cell changes.</p>
    *
    * <h5>refresh method</h5>
    * <p>This is no longer supported.</p>
@@ -28393,11 +28558,16 @@ var __oj_table_metadata =
   Table.prototype._NotifyContextMenuGesture = function (contextMenu, event, eventType) {
     var openOptions = {};
     this._contextMenuEvent = event.originalEvent ? event.originalEvent : event;
+    var altClickthrough = ojgestureutils.getContextMenuAltClickthrough(
+      this._contextMenuEvent.target,
+      this._getTable()
+    );
 
     // first check if we are invoking on an editable or clickable element, or draggable element on touch event. If so bail
     if (
-      this._isNodeEditable(this._contextMenuEvent.target) ||
-      this._isNodeClickable(this._contextMenuEvent.target) ||
+      (altClickthrough !== 'enabled' &&
+        (this._isNodeEditable(this._contextMenuEvent.target) ||
+          this._isNodeClickable(this._contextMenuEvent.target))) ||
       (eventType === 'touch' && this._isNodeDraggable(this._contextMenuEvent.target))
     ) {
       return;
@@ -28484,7 +28654,7 @@ var __oj_table_metadata =
           contextMenuItemAsc.classList.remove(Table.MARKER_STYLE_CLASSES._DISABLED);
         }
       } else if (contextMenuItemAsc.nodeName === 'OJ-OPTION') {
-        contextMenuItemAsc.setAttribute('disabled', 'true');
+        contextMenuItemAsc.setAttribute('disabled', 'disabled');
       } else {
         contextMenuItemAsc.classList.add(Table.MARKER_STYLE_CLASSES._DISABLED);
       }
@@ -28499,7 +28669,7 @@ var __oj_table_metadata =
           contextMenuItemDsc.classList.remove(Table.MARKER_STYLE_CLASSES._DISABLED);
         }
       } else if (contextMenuItemDsc.nodeName === 'OJ-OPTION') {
-        contextMenuItemDsc.setAttribute('disabled', 'true');
+        contextMenuItemDsc.setAttribute('disabled', 'disabled');
       } else {
         contextMenuItemDsc.classList.add(Table.MARKER_STYLE_CLASSES._DISABLED);
       }
@@ -28514,7 +28684,7 @@ var __oj_table_metadata =
           contextMenuItemResize.classList.remove(Table.MARKER_STYLE_CLASSES._DISABLED);
         }
       } else if (contextMenuItemResize.nodeName === 'OJ-OPTION') {
-        contextMenuItemResize.setAttribute('disabled', 'true');
+        contextMenuItemResize.setAttribute('disabled', 'disabled');
       } else {
         contextMenuItemResize.classList.add(Table.MARKER_STYLE_CLASSES._DISABLED);
       }

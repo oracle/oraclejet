@@ -27,9 +27,9 @@ _TouchProxy.prototype._init = function (elem) {
   this._touchMoved = false;
 
   // add touchListeners
-  this._touchStartHandler = $.proxy(this._touchStart, this);
-  this._touchEndHandler = $.proxy(this._touchEnd, this);
-  this._touchMoveHandler = $.proxy(this._touchMove, this);
+  this._touchStartHandler = this._touchStart.bind(this);
+  this._touchEndHandler = this._touchEnd.bind(this);
+  this._touchMoveHandler = this._touchMove.bind(this);
 
   this._elem.on({
     touchend: this._touchEndHandler,

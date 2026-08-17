@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger', 'ojs/ojhtmlutils'], function (oj, ko, Config, Logger, HtmlUtils) { 'use strict';
+define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevaluator-internal'], function (oj, ko, Config, Logger, HtmlUtils, ojcspexpressionevaluatorInternal) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
@@ -196,19 +196,16 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger', 'ojs/ojht
           return evaluate([$context.$data || {}, $context]);
         };
       }
-
-      var evaluator;
-      try {
-        /* jslint evil:true */
-        // eslint-disable-next-line no-new-func
-        evaluator = new Function( // @HTMLUpdateOK
-          '$context',
-          'with($context){with($data||{}){return ' + expressionText + ';}}'
-        ); // binding expression evaluation
-      } catch (e) {
-        throw new Error(e.message + ' in expression "' + expressionText + '"');
+      var fallbackEvaluator = Config.getFallbackExpressionEvaluator();
+      if (fallbackEvaluator) {
+        return fallbackEvaluator.createBindingExpressionEvaluator(expressionText);
       }
-      return evaluator;
+      var defaultEvaluate = new ojcspexpressionevaluatorInternal.CspExpressionEvaluatorInternal().createEvaluator(
+        expressionText
+      ).evaluate;
+      return function ($context) {
+        return defaultEvaluate([$context.$data || {}, $context]);
+      };
     };
 
     this.createEvaluator = function (expression, bindingContext) {
@@ -431,20 +428,16 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger', 'ojs/ojht
           return evaluate([$context, $context.$data || {}, { $element: $element }]);
         };
       }
-
-      var evaluator;
-      try {
-        /* jslint evil:true */
-        // eslint-disable-next-line no-new-func
-        evaluator = new Function( // @HTMLUpdateOK
-          '$context',
-          '$element',
-          'with($context.$data||{}){with($context){return ' + expressionText + '}}'
-        ); // binding expression evaluation
-      } catch (e) {
-        throw new Error(e.message + ' in expression "' + expressionText + '"');
+      var fallbackEvaluator = Config.getFallbackExpressionEvaluator();
+      if (fallbackEvaluator) {
+        return fallbackEvaluator.createReplacementEvaluatorForExtend(expressionText);
       }
-      return evaluator;
+      var defaultEvaluate = new ojcspexpressionevaluatorInternal.CspExpressionEvaluatorInternal().createEvaluator(
+        expressionText
+      ).evaluate;
+      return function ($context, $element) {
+        return defaultEvaluate([$context, $context.$data || {}, { $element: $element }]);
+      };
     }
 
     function _createEvaluatorViaCache(factory, expr, bindingContext) {
@@ -516,7 +509,10 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger', 'ojs/ojht
     return function (bindingsString, bindingContext, node, options) {
       var factory = Config.getExpressionEvaluator();
       if (!factory) {
-        return original(bindingsString, bindingContext, node, options);
+        if (Config.getFallbackExpressionEvaluator()) {
+          return original(bindingsString, bindingContext, node, options);
+        }
+        factory = new ojcspexpressionevaluatorInternal.CspExpressionEvaluatorInternal();
       }
       var evaluate = _createKoEvaluatorViaCache(bindingsString, options, factory, cache);
       return evaluate([bindingContext.$data || {}, bindingContext, { $element: node }]);

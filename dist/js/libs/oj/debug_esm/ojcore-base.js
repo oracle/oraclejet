@@ -38,12 +38,12 @@ const oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '20.1.0',
+  version: '21.0.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2026-05-13_10-54-19',
+  revision: '2026-08-11_09-49-16',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -405,6 +405,17 @@ oj._registerLegacyNamespaceProp('Assert', Assert);
  * @private
  */
 var _DEBUG = 'DEBUG';
+var _debug = false;
+
+Object.defineProperty(Assert, _DEBUG, {
+  get: function () {
+    return _debug;
+  },
+  set: function (value) {
+    _debug = true && value === true;
+  },
+  enumerable: true
+});
 
 /**
  * @private
@@ -412,12 +423,14 @@ var _DEBUG = 'DEBUG';
 const _NO_PROTO = "' doesn't match prototype ";
 
 /**
- * Forces DEBUG to be set to true
+ * Forces DEBUG to be set to true in debug builds
  * @export
  * @memberof oj.Assert
  */
 Assert.forceDebug = function () {
-  Assert[_DEBUG] = true;
+  if (true) {
+    Assert[_DEBUG] = true;
+  }
 };
 
 /**
@@ -932,6 +945,17 @@ const CollectionUtils = {};
 oj._registerLegacyNamespaceProp('CollectionUtils', CollectionUtils);
 
 /**
+ * Returns true if the key provided should be blocked from merge utilities.
+ * Specifically keys that could cause prototype pollution issues are included.
+ * @param {string} key
+ * @return {boolean}
+ * @private
+ */
+CollectionUtils._isBlockedKey = function (key) {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+};
+
+/**
  * Copies all of the properties of source into the target and returns the target
  *
  * @param {Object} target - target collection
@@ -960,11 +984,13 @@ CollectionUtils.mergeDeep = function (target, ...sources) {
   const source = sources.shift();
   if (isPlain(target) && isPlain(source)) {
     Object.keys(source).forEach((key) => {
-      if (isPlain(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
-        merge(target[key], source[key]);
-      } else {
-        Object.assign(target, { [key]: source[key] });
+      if (!CollectionUtils._isBlockedKey(key)) {
+        if (isPlain(source[key])) {
+          if (!target[key]) Object.assign(target, { [key]: {} });
+          merge(target[key], source[key]);
+        } else {
+          Object.assign(target, { [key]: source[key] });
+        }
       }
     });
   }
@@ -1023,33 +1049,34 @@ CollectionUtils._copyIntoImpl = function (
       } else {
         targetKey = k;
       }
+      if (!CollectionUtils._isBlockedKey(k) && !CollectionUtils._isBlockedKey(targetKey)) {
+        var sourceVal = source[k];
 
-      var sourceVal = source[k];
+        var recursed = false;
 
-      var recursed = false;
-
-      if (recurse && currentLevel < maxRecursionDepth) {
-        var targetVal = target[targetKey];
-        if (
-          CollectionUtils.isPlainObject(sourceVal) &&
-          (targetVal == null || CollectionUtils.isPlainObject(targetVal))
-        ) {
-          recursed = true;
-          // eslint-disable-next-line no-param-reassign
-          target[targetKey] = targetVal || {};
-          CollectionUtils._copyIntoImpl(
-            target[targetKey],
-            sourceVal,
-            keyConverter,
-            true,
-            maxRecursionDepth,
-            currentLevel + 1
-          );
+        if (recurse && currentLevel < maxRecursionDepth) {
+          var targetVal = target[targetKey];
+          if (
+            CollectionUtils.isPlainObject(sourceVal) &&
+            (targetVal == null || CollectionUtils.isPlainObject(targetVal))
+          ) {
+            recursed = true;
+            // eslint-disable-next-line no-param-reassign
+            target[targetKey] = targetVal || {};
+            CollectionUtils._copyIntoImpl(
+              target[targetKey],
+              sourceVal,
+              keyConverter,
+              true,
+              maxRecursionDepth,
+              currentLevel + 1
+            );
+          }
         }
-      }
-      if (!recursed) {
-        // eslint-disable-next-line no-param-reassign
-        target[targetKey] = sourceVal;
+        if (!recursed) {
+          // eslint-disable-next-line no-param-reassign
+          target[targetKey] = sourceVal;
+        }
       }
     }
   }
@@ -1297,6 +1324,11 @@ CollectionUtils._copyIntoImpl = function (
 
   // postMessage "message" event listener for the setImmediate impl
   function _nextTickHandler(event) {
+    // Only process messages posted by this window from the same origin.
+    if (event.source !== window || event.origin !== window.location.origin) {
+      return;
+    }
+
     var data = event.data;
     if (!data || data.message !== 'oj-setImmediate') {
       return;
@@ -1332,7 +1364,7 @@ CollectionUtils._copyIntoImpl = function (
       window.addEventListener('message', _nextTickHandler);
     }
 
-    window.postMessage({ id: id, message: 'oj-setImmediate' }, '*');
+    window.postMessage({ id: id, message: 'oj-setImmediate' }, '/');
     return id;
   }
 

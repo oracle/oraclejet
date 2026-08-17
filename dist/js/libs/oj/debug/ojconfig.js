@@ -368,6 +368,20 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
   };
 
   /**
+   * Returns fallback expression evaluator used by legacy expression evaluation paths
+   * when no expression evaluator has been configured.
+   * @return {undefined | Object}
+   * @ignore
+   * @export
+   * @memberof oj.Config
+   * @since 20.1.2
+   * @ojdeprecated {since: '20.1.2', description: 'This API is deprecated. Applications should use CSP-compliant expressions and evaluators.'}
+   */
+  Config.getFallbackExpressionEvaluator = function () {
+    return Config._fallbackExpressionEvaluator;
+  };
+
+  /**
    * Sets an optional CSP-compliant expression evaluator for the JET binding provider and JET ExpressionUtils.
    * This method can only be called once and must be called before applying
    * knockout bindings in the application for the first time.
@@ -387,6 +401,42 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
     }
 
     Config._expressionEvaluator = expressionEvaluator;
+  };
+
+  /**
+   * Sets an optional fallback expression evaluator used only by legacy expression
+   * evaluation paths when no expression evaluator has been configured.
+   * The fallback evaluator must implement the following methods:
+   * <code>createGenericExpressionEvaluator(expressionText)</code>,
+   * <code>createBindingExpressionEvaluator(expressionText)</code>,
+   * and <code>createReplacementEvaluatorForExtend(expressionText)</code>.
+   * @method setFallbackExpressionEvaluator
+   * @param {Object} fallbackExpressionEvaluator A legacy expression evaluator instance
+   * @return {undefined}
+   * @memberof oj.Config
+   * @ojshortdesc Sets a fallback expression evaluator.
+   * @export
+   * @ojsignature {target:"Type", value: "{createGenericExpressionEvaluator: Function, createBindingExpressionEvaluator: Function, createReplacementEvaluatorForExtend: Function}", for: "fallbackExpressionEvaluator"}
+   * @since 20.1.2
+   * @ojdeprecated {since: '20.1.2', description: 'This API is deprecated. Applications should use CSP-compliant expressions and evaluators.'}
+   */
+  Config.setFallbackExpressionEvaluator = function (fallbackExpressionEvaluator) {
+    if (Config._fallbackExpressionEvaluator) {
+      throw new Error("JET fallback expression evaluator can't be set more than once.");
+    }
+    var isValidLegacyEvaluator =
+      fallbackExpressionEvaluator &&
+      typeof fallbackExpressionEvaluator.createGenericExpressionEvaluator === 'function' &&
+      typeof fallbackExpressionEvaluator.createBindingExpressionEvaluator === 'function' &&
+      typeof fallbackExpressionEvaluator.createReplacementEvaluatorForExtend === 'function';
+    if (!isValidLegacyEvaluator) {
+      throw new Error(
+        'JET fallback expression evaluator must implement createGenericExpressionEvaluator(), ' +
+          'createBindingExpressionEvaluator(), and createReplacementEvaluatorForExtend().'
+      );
+    }
+
+    Config._fallbackExpressionEvaluator = fallbackExpressionEvaluator;
   };
 
   /**
@@ -434,6 +484,8 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
   const logVersionInfo = Config.logVersionInfo;
   const setExpressionEvaluator = Config.setExpressionEvaluator;
   const getExpressionEvaluator = Config.getExpressionEvaluator;
+  const setFallbackExpressionEvaluator = Config.setFallbackExpressionEvaluator;
+  const getFallbackExpressionEvaluator = Config.getFallbackExpressionEvaluator;
   const getConfigBundle = Config.getConfigBundle;
   const __getTemplateEngine = Config.__getTemplateEngine;
   const setDeploymentMode = Config.setDeploymentMode;
@@ -446,6 +498,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
   exports.getDeviceRenderMode = getDeviceRenderMode;
   exports.getDeviceType = getDeviceType;
   exports.getExpressionEvaluator = getExpressionEvaluator;
+  exports.getFallbackExpressionEvaluator = getFallbackExpressionEvaluator;
   exports.getLocale = getLocale;
   exports.getResourceUrl = getResourceUrl;
   exports.getVersionInfo = getVersionInfo;
@@ -453,6 +506,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
   exports.setAutomationMode = setAutomationMode;
   exports.setDeploymentMode = setDeploymentMode;
   exports.setExpressionEvaluator = setExpressionEvaluator;
+  exports.setFallbackExpressionEvaluator = setFallbackExpressionEvaluator;
   exports.setLocale = setLocale;
   exports.setResourceBaseUrl = setResourceBaseUrl;
 

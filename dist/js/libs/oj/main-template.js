@@ -15,13 +15,13 @@
   requirejs.config({
     // Path mappings for the logical module names
     paths: {
-      'ojs': 'libs/oj/20.1.0/min@insertESLevelPath@',
-      'ojL10n': 'libs/oj/20.1.0/ojL10n',
-      'ojtranslations': 'libs/oj/20.1.0/resources',
+      'ojs': 'libs/oj/21.0.0/min@insertESLevelPath@',
+      'ojL10n': 'libs/oj/21.0.0/ojL10n',
+      'ojtranslations': 'libs/oj/21.0.0/resources',
       
-  'knockout': 'libs/knockout/knockout-3.5.1',
-  'jquery': 'libs/jquery/jquery-3.7.1.min',
-  'jqueryui-amd': 'libs/jquery/jqueryui-amd-1.14.1.min',
+  'knockout': 'libs/knockout/knockout-3.5.3',
+  'jquery': 'libs/jquery/jquery-4.0.0.min',
+  'jqueryui-amd': 'libs/jquery/jqueryui-amd-1.14.2.min',
   'text': 'libs/require/text',
   'hammerjs': 'libs/hammer/hammer-2.0.8.min',
   'signals': 'libs/js-signals/signals.min',

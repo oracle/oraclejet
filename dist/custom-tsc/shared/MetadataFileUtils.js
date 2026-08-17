@@ -45,6 +45,7 @@ const fse = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
 const JETComp_1 = require("./JETComp");
 const JETContent_1 = require("./JETContent");
+const SafeFileUtils_1 = require("./SafeFileUtils");
 const COMPONENT_JSON = 'component.json';
 const OJETCONFIG_JSON = 'oraclejetconfig.json';
 const SHARED_CONTENT_DIRNAME = '__apidoc__';
@@ -202,7 +203,7 @@ function writeJETContentMetadata(outDir, packPath, content) {
         // Build the path to where we want to write out this content metadata
         // and ensure the directory exists
         // NOTE:  For fs-extra, ensure we're using the native platform path format!
-        const contentMDDir = _POSIX_TO_NATIVE(`${outDir}/${packPath}/metadata/${content.main}/${content.export ?? content.name}`);
+        const contentMDDir = (0, SafeFileUtils_1.getContainedPath)(_POSIX_TO_NATIVE(`${outDir}/${packPath}/metadata`), content.main, (0, SafeFileUtils_1.validateFileNameSegment)(content.export ?? content.name, 'content metadata directory name'));
         fse.ensureDirSync(contentMDDir);
         fse.writeFileSync(path.join(contentMDDir, COMPONENT_JSON), JSON.stringify(content, null, 2));
     }

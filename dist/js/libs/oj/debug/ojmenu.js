@@ -1567,7 +1567,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
         });
 
         // callback that overrides the position['using'] for auto dismissal when aligning element is cropped.
-        this._usingCallback = $.proxy(this._usingHandler, this);
+        this._usingCallback = this._usingHandler.bind(this);
         this._setup();
       },
 
@@ -2463,7 +2463,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
           function () {
             delete this._clearTimer;
             if (item[0].parentElement && item[0].parentElement.disabled) {
-              submenu.find('oj-option').attr('disabled', true);
+              submenu.find('oj-option').attr('disabled', 'disabled');
             }
           },
           this._getSubmenuBusyStateDescription('enable or disable submenu'),
@@ -2725,7 +2725,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
         // which per the architects is the right thing (i.e. don't introduce any fancy handling for this case).
         if (this._launcher) {
           // restore focus
-          this._launcher.focus();
+          this._launcher[0].focus();
         }
 
         this.__dismiss(event, selectUi);
@@ -3166,10 +3166,10 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
 
           var launcher = menuOpenOptions.launcher;
           if (!this._IsCustomElement()) {
-            launcher = $.type(launcher) === 'string' ? $(launcher) : launcher;
+            launcher = typeof launcher === 'string' ? $(launcher) : launcher;
           } else {
             launcher =
-              $.type(launcher) === 'string' ? $(document.getElementById(launcher)) : $(launcher);
+              typeof launcher === 'string' ? $(document.getElementById(launcher)) : $(launcher);
           }
 
           if (!launcher || !launcher.length) {
@@ -3258,7 +3258,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
 
           // if they provided a using function that is not our callback, stash it
           // away so that we can delegate to it in our proxy.
-          if ($.isFunction(position.using)) {
+          if (typeof position.using === 'function') {
             position.origUsing = position.using;
           }
 
@@ -3512,11 +3512,11 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
             window.setImmediate(function () {
               // Since there are situations where menu element can be absent from the dom in this next tick (you close menu before finishing closing)
               // we check for element to be focusuble
-              if (focusElement.is(':focusable')) focusElement.focus();
+              if (focusElement.is(':focusable')) focusElement.trigger('focus');
             });
           } else {
             // For jquery ui components, move immediate focus.  The synchronous button qunit tests expect this behavior.
-            focusElement.focus();
+            focusElement.trigger('focus');
           }
         }
 

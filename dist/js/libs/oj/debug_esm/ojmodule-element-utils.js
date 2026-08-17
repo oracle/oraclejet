@@ -59,6 +59,32 @@ const ModuleElementUtils = {};
 
 oj._registerLegacyNamespaceProp('ModuleElementUtils', ModuleElementUtils);
 
+function isSafeSegment(segment) {
+  return segment !== '' && segment !== '.' && segment !== '..' && /^[A-Za-z0-9_.-]+$/.test(segment);
+}
+
+function isSafeResourcePath(path) {
+  if (
+    typeof path !== 'string' ||
+    path === '' ||
+    path.indexOf('\\') !== -1 ||
+    path.indexOf('!') !== -1 ||
+    path.indexOf(':') !== -1 ||
+    path.charAt(0) === '/'
+  ) {
+    return false;
+  }
+  var normalizedPath = path;
+  if (normalizedPath.indexOf('./') === 0) {
+    normalizedPath = normalizedPath.substring(2);
+  }
+  return normalizedPath.split('/').every(isSafeSegment);
+}
+
+function rejectInvalidPath() {
+  return Promise.reject(new Error('Invalid module path'));
+}
+
 /**
  * Utility function for creating a view to be used in configuration object for oj-module.
  * @since 5.0.0
@@ -66,6 +92,11 @@ oj._registerLegacyNamespaceProp('ModuleElementUtils', ModuleElementUtils);
  * @param {Object} options Options object used to create a view
  * @param {string} options.viewPath The path to the view, relative to the RequireJS baseURL.
  *                                  The text plugin will be used for loading the view.
+ *                                  The path must be a safe relative resource identifier. Except for one leading
+ *                                  <code>./</code>, it must contain nonempty slash-separated segments made only of
+ *                                  ASCII letters, digits, <code>_</code>, <code>.</code>, and <code>-</code>.
+ *                                  The <code>.</code> and <code>..</code> segments, traversal, absolute paths, URL
+ *                                  schemes, backslashes, and RequireJS plugin syntax are not supported.
  * @param {Function=} options.require An optional instance of the require() function to be used for loading the view.
  *                    By default the path is relative to the baseUrl specified for the application require calls.
  *
@@ -82,6 +113,9 @@ oj._registerLegacyNamespaceProp('ModuleElementUtils', ModuleElementUtils);
 ModuleElementUtils.createView = function (options) {
   if (!(options && options.viewPath)) {
     return Promise.resolve([]);
+  }
+  if (!isSafeResourcePath(options.viewPath)) {
+    return rejectInvalidPath();
   }
 
   return (
@@ -113,6 +147,11 @@ ModuleElementUtils._processViewText = function (viewText) {
  *
  * @param {Object} options Options object used to create a view model
  * @param {string} options.viewModelPath The path to the model, relative to the RequireJS baseURL.
+ *                  The path must be a safe relative resource identifier. Except for one leading
+ *                  <code>./</code>, it must contain nonempty slash-separated segments made only of ASCII letters,
+ *                  digits, <code>_</code>, <code>.</code>, and <code>-</code>. The <code>.</code> and
+ *                  <code>..</code> segments, traversal, absolute paths, URL schemes, backslashes, and RequireJS
+ *                  plugin syntax are not supported.
  * @param {Function=} options.require An optional instance of the require() function to be used for loading the view model.
  *                  By default the path is relative to the baseUrl specified for the application require calls.
  * @param {any=} options.params Parameters object that will be passed either to the model constructor or
@@ -140,6 +179,9 @@ ModuleElementUtils._processViewText = function (viewText) {
 ModuleElementUtils.createViewModel = function (options) {
   if (!(options && options.viewModelPath)) {
     return Promise.resolve(null);
+  }
+  if (!isSafeResourcePath(options.viewModelPath)) {
+    return rejectInvalidPath();
   }
 
   return new Promise(function (resolve, reject) {
@@ -181,11 +223,26 @@ ModuleElementUtils.createViewModel = function (options) {
  *                  The view and view model will be loaded using default paths - 'views/' and 'viewModels/'.
  *                  The path is relative to the RequireJS baseURL.
  *                  The text plugin will be used for loading the view.
+ *                  The name must be a safe relative module identifier such as <code>dashboard</code>
+ *                  or <code>orders/detail</code>. It must contain nonempty slash-separated segments made only of
+ *                  ASCII letters, digits, <code>_</code>, <code>.</code>, and <code>-</code>; a leading
+ *                  <code>./</code> is not supported. The <code>.</code> and <code>..</code> segments, traversal,
+ *                  absolute paths, URL schemes, backslashes, and RequireJS plugin syntax are not supported.
+ *                  Values derived from URLs or user input should be mapped to explicit allowed
+ *                  module names before calling this method.
  *                  Use <code>viewPath</code> and <code>viewModelPath</code>
  *                  when you want to load view and view model from different locations.
  * @param {string=} options.viewPath The path to the view, relative to the RequireJS baseURL.
  *                  The text plugin will be used for loading the view.
+ *                  The path must be a safe relative resource identifier. Except for one leading <code>./</code>,
+ *                  it must contain nonempty slash-separated segments made only of ASCII letters, digits,
+ *                  <code>_</code>, <code>.</code>, and <code>-</code>; <code>.</code> and <code>..</code>
+ *                  segments are not supported.
  * @param {string=} options.viewModelPath The path to the model, relative to the RequireJS baseURL.
+ *                  The path must be a safe relative resource identifier. Except for one leading <code>./</code>,
+ *                  it must contain nonempty slash-separated segments made only of ASCII letters, digits,
+ *                  <code>_</code>, <code>.</code>, and <code>-</code>; <code>.</code> and <code>..</code>
+ *                  segments are not supported.
  * @param {Function=} options.require An optional instance of the require() function to be used
  *                  for loading the view and view model. By default the path is relative to the baseUrl
  *                  specified for the application require calls.
@@ -209,6 +266,12 @@ ModuleElementUtils.createConfig = function (options) {
   }
   var viewPath = options.viewPath || 'views/' + options.name + '.html';
   var modelPath = options.viewModelPath || (options.name ? 'viewModels/' + options.name : null);
+  if (
+    (viewPath && !isSafeResourcePath(viewPath)) ||
+    (modelPath && !isSafeResourcePath(modelPath))
+  ) {
+    return rejectInvalidPath();
+  }
   return Promise.all([
     ModuleElementUtils.createView({ viewPath: viewPath, require: options.require }),
     ModuleElementUtils.createViewModel({

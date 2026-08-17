@@ -2350,10 +2350,10 @@ var __oj_thematic_map_marker_metadata =
       return [
         { path: 'tooltip/renderer', slot: 'tooltipTemplate' },
         { path: '_tooltip/renderer' },
-        { path: 'renderer', slot: 'markerContentTemplate' },
-        { path: 'focusRenderer', slot: 'markerContentTemplate' },
-        { path: 'hoverRenderer', slot: 'markerContentTemplate' },
-        { path: 'selectionRenderer', slot: 'markerContentTemplate' }
+        { path: 'renderer', slot: 'markerContentTemplate', processTemplate: true },
+        { path: 'focusRenderer', slot: 'markerContentTemplate', processTemplate: true },
+        { path: 'hoverRenderer', slot: 'markerContentTemplate', processTemplate: true },
+        { path: 'selectionRenderer', slot: 'markerContentTemplate', processTemplate: true }
       ];
     },
 

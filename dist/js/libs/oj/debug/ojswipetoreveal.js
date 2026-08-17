@@ -182,7 +182,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojoffcanva
       })
       .on('ojpanmove', function (event, ui) {
         if (!drawerShown) {
-          drawer.children().css('min-width', 0);
+          drawer.children().css('min-width', '0');
         }
 
         drawerShown = true;

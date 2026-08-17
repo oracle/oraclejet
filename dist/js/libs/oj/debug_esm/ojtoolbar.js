@@ -174,6 +174,18 @@ import { warn } from 'ojs/ojlogger';
    * The oj-c-toolbar will no longer support the <code class="prettyprint">solid</code> chroming option, and will have no default value.
    *</p>
    *
+   *<h5>CSS Variables</h5>
+   *<p>
+   * The following legacy toolbar CSS variables are not migrated to
+   * <code class="prettyprint">oj-c-toolbar</code>. Applications can use global sizing, color, and
+   * typography CSS variables to update related styling:
+   *</p>
+   *<ul>
+   *  <li><code class="prettyprint">--oj-toolbar-button-margin</code></li>
+   *  <li><code class="prettyprint">--oj-toolbar-borderless-button-margin</code></li>
+   *  <li><code class="prettyprint">--oj-toolbar-separator-margin</code></li>
+   *</ul>
+   *
    */
 
   // API doc for inherited methods with no JS in this file:

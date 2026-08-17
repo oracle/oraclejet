@@ -9,7 +9,7 @@ import oj from 'ojs/ojcore-base';
 import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
 import { getCachedCSSVarValues, parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import $ from 'jquery';
-import { isTouchSupported, getReadingDirection } from 'ojs/ojdomutils';
+import { isTouchSupported, validateURL, getReadingDirection } from 'ojs/ojdomutils';
 import { isMobileTouchDevice, disableElement } from 'ojs/ojdatacollection-common';
 import { NavigationListDndContext } from 'ojs/ojnavigationlistdnd';
 import 'ojs/ojlistview';
@@ -346,6 +346,7 @@ const _ARIA_HIDDEN = 'aria-hidden';
 const _ARIA_LABEL = 'aria-label';
 const _ARIA_DESCRBIEDBY = 'aria-describedby';
 const _ARIA_HASPOPUP = 'aria-haspopup';
+const _NOOPENER_WINDOW_FEATURES = 'noopener,noreferrer';
 const _OJ_DEFAULT = 'oj-default';
 const _OJ_DISABLED = 'oj-disabled';
 
@@ -563,10 +564,13 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
         var itemLabelClass = this.getItemLabelStyleClass();
         var itemLabelElement = itemContent[0].querySelector('.' + itemLabelClass);
         // Only the label's textContent is required.
-        return $.trim(itemLabelElement.textContent).replace('CORE PACK', '');
+        return itemLabelElement.textContent.trim().replace('CORE PACK', '');
       }
       // When using arbitrary content, extract item title from element having marker class .oj-navigationlist-item-title.
-      return $.trim(itemContent.find('.' + this.getItemTitleStyleClass()).text());
+      return itemContent
+        .find('.' + this.getItemTitleStyleClass())
+        .text()
+        .trim();
     },
 
     /**
@@ -2075,12 +2079,12 @@ const _ojNavigationListView = _NavigationListUtils.clazz(
       var url = itemContent.attr('href');
       var target = itemContent.attr('target');
       if (url && url !== '#') {
-        // In case of javascript uri, javascript will get executed on assigning it to href.
-        // Ideally user can use beforeSelect/optionChange events to do this,Will there be any issue in supporting this?
+        validateURL(url);
+
         if (!target || target === '_self') {
           window.location.href = url;
         } else {
-          window.open(url, target);
+          window.open(url, target, _NOOPENER_WINDOW_FEATURES);
         }
 
         return true;
@@ -2946,6 +2950,18 @@ _ojNavigationListView._CSS_Vars = {
    *
    * <p>It is not recommended to use <code class="prettyprint">oj-navigation-list</code> only for the purpose of rendering links that navigate to a different page. Instead, each item that has a link should be interactive and activating it should display or switch a content panel within the same page or context.</p>
    *
+   * <h3 id="security-section">
+   *   Security
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#security-section"></a>
+   * </h3>
+   *
+   * <p><b>Note:</b> When item content includes an <code class="prettyprint">&lt;a></code> element with an
+   * <code class="prettyprint">href</code> attribute, JET validates the URL protocol before
+   * automatic navigation and currently supports <code class="prettyprint">http:</code> and
+   * <code class="prettyprint">https:</code> protocols. JET does not validate whether the URL
+   * is trusted for the application. Applications are responsible for providing sanitized URLs
+   * and enforcing any required origin or host allowlist.</p>
+   *
    * <h3 id="rtl-section">
    *   Reading direction
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
@@ -3502,6 +3518,7 @@ _ojNavigationListView._CSS_Vars = {
    * @ojdisplayname Focus Styling
    * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
    * @memberof oj.ojNavigationList
+   * @ojdeprecated {since: '21.0.0', description: "The Redwood design system does not allow this to be customized."}
    * @ojtsexample
    * &lt;oj-navigation-list class="oj-focus-highlight">
    *   &lt;!-- Content -->
@@ -4727,6 +4744,18 @@ _ojNavigationListView._CSS_Vars = {
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  * <p>It is not recommended to use <code class="prettyprint">oj-tab-bar</code> only for the purpose of rendering links that navigate to a different page. Instead, each item that has a link should be interactive and activating it should display or switch a content panel within the same page or context.</p>
+ * <p>Do not add arbitrary content or interactive control such as a button or a select single component to a tab. The supported content types are text, icon, badge or link. It is an accessibility violation to add content to a tab that is not supported, as a parent with role="tablist" should only contain children with role="tab" and interactive control should not be nested.</p>
+ *
+ * <h3 id="security-section">
+ * Security
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#security-section"></a>
+ * </h3>
+ * <p><b>Note:</b> When item content includes an <code class="prettyprint">&lt;a></code> element with an
+ * <code class="prettyprint">href</code> attribute, JET validates the URL protocol before
+ * automatic navigation and currently supports <code class="prettyprint">http:</code> and
+ * <code class="prettyprint">https:</code> protocols. JET does not validate whether the URL
+ * is trusted for the application. Applications are responsible for providing sanitized URLs
+ * and enforcing any required origin or host allowlist.</p>
  *
  * <h3 id="migration-section">
  *   Migration
@@ -4749,6 +4778,28 @@ _ojNavigationListView._CSS_Vars = {
  * <p>
  *
  * <p>Finally review the list below for specific API changes.</p>
+ *
+ * <h5>CSS Variables</h5>
+ *
+ * <p>The following legacy Tab Bar CSS variables are not migrated to
+ * <code class="prettyprint">oj-c-tab-bar</code>. Applications can use the
+ * global sizing, color, and font CSS variables to update related styling:</p>
+ * <ul>
+ * <li><code class="prettyprint">--oj-tab-bar-icon-margin</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-icon-to-text-padding</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-bg-color-hover</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-bg-color-active</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-bg-color-selected</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-border-color-active</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-border-color-selected</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-font-size</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-font-weight</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-font-weight-selected</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-line-height</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-margin</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-min-height</code></li>
+ * <li><code class="prettyprint">--oj-tab-bar-item-padding</code></li>
+ * </ul>
  *
  * <h5 id="dataprovider-key-type-migration"></h5>
  *
@@ -6774,7 +6825,7 @@ HorizontalNavListHandler.prototype._fixContainerWidth = function () {
   if (width !== 0) {
     // it will be 0 when there are no elements in the list.
     this.m_freezedContainerWidth = width;
-    root.css('maxWidth', width);
+    root.css('maxWidth', width + 'px');
   }
 };
 
@@ -7098,7 +7149,7 @@ HorizontalNavListHandler.prototype.__handleOverflowMenuClose = function (event) 
   this._toggleOverflowBtnSelection(selectedItem);
   this._getOverflowMenuButton()
     .find('.' + this.m_widget.getItemContentStyleClass())
-    .focus();
+    .trigger('focus');
 };
 
 HorizontalNavListHandler.prototype.__handleOverflowMenuSelection = function (event, ui) {
@@ -7495,13 +7546,13 @@ SlidingNavListHandler.prototype._slideAnimationComplete = function (
     this.m_widget.AnimateCollapseComplete(item.children('.' + this.m_widget.getGroupStyleClass()));
   } else {
     this.m_widget.AnimateExpandComplete(item.children('.' + this.m_widget.getGroupStyleClass()));
-  // For ios, it is needed to set aria-hidden.
-  // aria-hidden should be set for first level of items and should be removed from second level only after animation is complete,
+    // For ios, it is needed to set aria-hidden.
+    // aria-hidden should be set for first level of items and should be removed from second level only after animation is complete,
     item.siblings().attr(_ARIA_HIDDEN$1, 'true'); // @HTMLUpdateOK
     item
-    .children('.' + this.m_widget.getGroupItemStyleClass())
-    .children('.' + this.m_widget.getItemContentStyleClass())
-    .attr(_ARIA_HIDDEN$1, 'true'); // @HTMLUpdateOK
+      .children('.' + this.m_widget.getGroupItemStyleClass())
+      .children('.' + this.m_widget.getItemContentStyleClass())
+      .attr(_ARIA_HIDDEN$1, 'true'); // @HTMLUpdateOK
     item.children('.' + this.m_widget.getGroupStyleClass()).removeAttr(_ARIA_HIDDEN$1);
   }
 };
@@ -7962,7 +8013,7 @@ SlidingNavListHandler.prototype._showOrHideHierarchyMenu = function (
     if (this._hviewBtn[0] === document.activeElement) {
       // is(:focus) failing during test cases so using document.activeElement.
       // tried by moving focus to <ul> using  this.m_widget.focus() but listview listen for focusin event.
-      this.m_root.focusin();
+      this.m_root.trigger('focusin');
     }
     this._hviewBtn.css('visibility', 'hidden');
   } else if (itemsinTree >= hierarchyMenuDisplayThresholdLevel) {

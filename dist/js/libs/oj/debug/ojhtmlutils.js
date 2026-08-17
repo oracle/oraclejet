@@ -20,6 +20,20 @@ define(['exports'], function (exports) { 'use strict';
    * the input to prevent unsafe content from being added to the page.</p>
    */
   const HtmlUtils = {};
+  const _ESCAPED_TAGS = [
+    'table',
+    'caption',
+    'colgroup',
+    'col',
+    'thead',
+    'tfoot',
+    'th',
+    'tbody',
+    'tr',
+    'td',
+    'template',
+    'p'
+  ];
 
   /**
    * Utility that will parse an HTML string into an array of DOM Nodes.
@@ -30,20 +44,7 @@ define(['exports'], function (exports) { 'use strict';
    */
   HtmlUtils.stringToNodeArray = function (html) {
     // escape html for the predefined tags
-    var tags = [
-      'table',
-      'caption',
-      'colgroup',
-      'col',
-      'thead',
-      'tfoot',
-      'th',
-      'tbody',
-      'tr',
-      'td',
-      'template',
-      'p'
-    ];
+    var tags = _ESCAPED_TAGS;
     var i;
 
     for (i = 0; i < tags.length; i++) {
@@ -122,25 +123,21 @@ define(['exports'], function (exports) { 'use strict';
       const BIND_REPLACE = 'oj-bind-replace-';
       if (nodeName.substr(0, 16) === BIND_REPLACE) {
         var replName = nodeName.substr(16);
-        replNode = document.createElement(replName); // @HTMLUpdateOK
-        for (j = 0; j < child.attributes.length; j++) {
-          attr = child.attributes[j];
-          replNode.setAttribute(attr.name, attr.value); // @HTMLUpdateOK
+        if (_ESCAPED_TAGS.indexOf(replName) !== -1) {
+          replNode = document.createElement(replName); // @HTMLUpdateOK
+          for (j = 0; j < child.attributes.length; j++) {
+            attr = child.attributes[j];
+            replNode.setAttribute(attr.name, attr.value); // @HTMLUpdateOK
+          }
+          var childHolder = replNode.content ? replNode.content : replNode;
+          for (j = 0; child.childNodes.length > 0; ) {
+            childHolder.appendChild(child.childNodes[0]);
+          }
+          parent.replaceChild(replNode, child);
         }
-        var childHolder = replNode.content ? replNode.content : replNode;
-        for (j = 0; child.childNodes.length > 0; ) {
-          childHolder.appendChild(child.childNodes[0]);
-        }
-        parent.replaceChild(replNode, child);
       } else if (nodeName === 'script' || nodeName === 'style') {
-        replNode = document.createElement(nodeName); // @HTMLUpdateOK
-        for (j = 0; j < child.attributes.length; j++) {
-          attr = child.attributes[j];
-          replNode.setAttribute(attr.name, attr.value); // @HTMLUpdateOK
-        }
-        var origHTML = child.innerHTML; // @HTMLUpdateOK
-        replNode.innerHTML = origHTML.replace(new RegExp(BIND_REPLACE, 'g'), ''); // @HTMLUpdateOK
-        parent.replaceChild(replNode, child);
+        var origText = child.textContent || '';
+        child.textContent = origText.replace(new RegExp(BIND_REPLACE, 'g'), '');
       } else if (child.nodeType === 8) {
         // comment node
         var origValue = child.nodeValue;

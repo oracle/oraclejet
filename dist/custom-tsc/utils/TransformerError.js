@@ -75,6 +75,7 @@ var ExceptionKey;
     ExceptionKey["IGNORED_OJMETADATA_VALUE"] = "ignored_ojmetadata_value";
     ExceptionKey["INVALID_STYLEVARIABLESET"] = "invalid_stylevariableset";
     ExceptionKey["MALFORMED_METADATA_VALUE"] = "malformed_metadata_value";
+    ExceptionKey["INVALID_CUSTOM_ELEMENT_NAME"] = "invalid_custom_element_name";
     ExceptionKey["TRIMMED_METADATA_STRING"] = "trimmed_metadata_string";
     ExceptionKey["UNRECOGNIZED_OJMETADATA_KEY"] = "unrecognized_ojmetadata_key";
     ExceptionKey["INCORRECT_METADATA_VALUE_TYPE"] = "incorrect_metadata_value_type";

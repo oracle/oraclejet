@@ -6,7 +6,6 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-import $ from 'jquery';
 import { info } from 'ojs/ojlogger';
 import { applyParameters } from 'ojs/ojtranslation';
 import { TableDataSource } from 'ojs/ojdatasource-common';
@@ -577,7 +576,7 @@ ArrayTableDataSource.prototype._getInternal = function (id, wrap) {
 
     if (row !== undefined) {
       var key = this._getId(row);
-      if ($.isArray(key) && $.isArray(id)) {
+      if (Array.isArray(key) && Array.isArray(id)) {
         if (key.length === id.length) {
           var equal = true;
           for (var j = 0; j < id.length; j++) {
@@ -619,7 +618,7 @@ ArrayTableDataSource.prototype._getComparator = function () {
 
     if (direction === 'ascending') {
       comparator = function (row) {
-        if ($.isFunction(row[key])) {
+        if (typeof row[key] === 'function') {
           return row[key]();
         }
         return row[key];
@@ -628,7 +627,7 @@ ArrayTableDataSource.prototype._getComparator = function () {
       comparator = function (rowA, rowB) {
         var a;
         var b;
-        if ($.isFunction(rowA[key])) {
+        if (typeof rowA[key] === 'function') {
           a = rowA[key]();
           b = rowB[key]();
         } else {
@@ -827,7 +826,7 @@ ArrayTableDataSource.prototype._getId = function (row) {
     return null;
   }
 
-  if ($.isArray(idAttribute)) {
+  if (Array.isArray(idAttribute)) {
     var i;
     id = [];
     for (i = 0; i < idAttribute.length; i++) {
@@ -882,7 +881,7 @@ ArrayTableDataSource._sortFunc = function (a, b, comparator, self) {
   var retVal;
   var direction = self.sortCriteria.direction;
 
-  if ($.isFunction(comparator)) {
+  if (typeof comparator === 'function') {
     // How many args?
     if (comparator.length === 1) {
       // "sortBy" comparator option

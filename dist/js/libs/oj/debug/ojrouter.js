@@ -1530,6 +1530,13 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
      * to specify a different module animation when going 'back'. The value of direction is either
      * undefined or 'back'. It is 'back' when the state transition is caused by a back button on the
      * browser and the new state is equal to the previous state.
+     * <p>
+     * The <code class="prettyprint">name</code> value can be derived from the browser URL when
+     * synchronizing router state. When using <code class="prettyprint">moduleConfig</code> with
+     * <code class="prettyprint">ojModule</code>, configure route states from a fixed allowlist or
+     * ensure that {@link oj.RouterState#value|RouterState.value} is a trusted module name. Do not
+     * reflect URL-derived state ids into module names without application validation.
+     * </p>
 
      * To customize the behavior of the moduleduleConfig object, it is possible to create your own
      * moduleConfig and merge other properties or modifies the value of existing properties.
@@ -2358,6 +2365,12 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
   /**
    * Store additional data for this router that will be added in a compressed form to the URL
    * so it can be bookmarked. When calling this method, the URL is immediately modified.
+   * <p>
+   * The data is encoded into the browser URL and can be modified by a user before the
+   * application later retrieves it. Do not store sensitive values, and validate the
+   * retrieved value against the application's expected schema before using it in security
+   * decisions, module selection, URL construction, or DOM/CSS sinks.
+   * </p>
    * @param {!Object} data the data to store with this state.
    * @throws An error if the bookmarkable state is too big.
    * @return {undefined}
@@ -2367,7 +2380,9 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    * try {
    *    var color = '#99CCFF';
    *    router.store(color);
-   *    $('#chapter').css('background', color);
+   *    if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+   *      $('#chapter').css('background', color);
+   *    }
    * }
    * catch (error) {
    *    Logger.error('Error while storing data: ' + error.message);
@@ -2411,6 +2426,11 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
 
   /**
    * Retrieve the additional data stored in the URL.
+   * <p>
+   * The returned value comes from bookmarkable state encoded in the browser URL. Treat it as
+   * user-modifiable input and validate it against the application's expected schema before
+   * using it in security decisions, module selection, URL construction, or DOM/CSS sinks.
+   * </p>
    * @return {any} the content stored in the URL
    * @ojsignature [{ target: "Type", for: "returns", value: "{[key:string]:any}" }]
    * @export
@@ -2418,7 +2438,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    *  oj.Router.sync().then(
    *     function() {
    *        var color = viewModel.router.retrieve();
-   *        if (color) {
+   *        if (typeof color === 'string' && /^#[0-9A-Fa-f]{6}$/.test(color)) {
    *           $('#chapter').css('background', color);
    *        }
    *     },
@@ -2680,7 +2700,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    *  oj.Router.sync().then(
    *     function() {
    *        var color = viewModel.router.retrieve();
-   *        if (color) {
+   *        if (typeof color === 'string' && /^#[0-9A-Fa-f]{6}$/.test(color)) {
    *           $('#chapter').css('background', color);
    *        }
    *     },

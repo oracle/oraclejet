@@ -1800,7 +1800,7 @@ Components.isComponentInitialized = function (jelement, widgetName) {
   /** @type {?} */
   var widgets = jelement.data(_OJ_WIDGET_NAMES_DATA);
   if (
-    $.isArray(widgets) &&
+    Array.isArray(widgets) &&
     widgets.indexOf(widgetName) > -1 &&
     jelement.is('.' + _OJ_COMPONENT_NODE_CLASS)
   ) {
@@ -2503,6 +2503,10 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
     };
     // eslint-disable-next-line no-param-reassign
     proto.getProperty = function (prop) {
+      if (oj.BaseCustomElementBridge.__IsBlockedPropertyPath(prop)) {
+        return undefined;
+      }
+
       var bridge = CustomElementUtils.getElementBridge(this);
       var meta = getPropertyMetadata(prop, getElementProperties(this));
 
@@ -4646,7 +4650,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
 
       return {
         proceed: !(
-          ($.isFunction(callback) &&
+          (typeof callback === 'function' &&
             callback.apply(this.element[0], [jqEvent].concat(eventData)) === false) ||
           jqEvent.isDefaultPrevented()
         ),
@@ -6465,38 +6469,40 @@ function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath, avo
     var keys = Object.keys(source);
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i];
-      var path;
-      if (ignoreSubkeys == null) {
-        path = null;
-      } else if (basePath == null) {
-        path = key;
-      } else {
-        path = basePath + '.' + key;
-      }
-      // Ignore all sources when the current path is registered in ignoreSubkeys
-      if (ignoreSubkeys == null || !ignoreSubkeys[path]) {
-        var value = source[key];
-        if (value !== undefined) {
-          if ($.isPlainObject(value)) {
-            const plainObjectTarget = $.isPlainObject(target[key]);
-            // If merging an object onto a non-object and avoidClones is set, just replace target with value
-            if (!plainObjectTarget && avoidClones) {
+      if (!oj.CollectionUtils._isBlockedKey(key)) {
+        var path;
+        if (ignoreSubkeys == null) {
+          path = null;
+        } else if (basePath == null) {
+          path = key;
+        } else {
+          path = basePath + '.' + key;
+        }
+        // Ignore all sources when the current path is registered in ignoreSubkeys
+        if (ignoreSubkeys == null || !ignoreSubkeys[path]) {
+          var value = source[key];
+          if (value !== undefined) {
+            if ($.isPlainObject(value)) {
+              const plainObjectTarget = $.isPlainObject(target[key]);
+              // If merging an object onto a non-object and avoidClones is set, just replace target with value
+              if (!plainObjectTarget && avoidClones) {
+                // eslint-disable-next-line no-param-reassign
+                target[key] = value;
+              } else {
+                var params = plainObjectTarget ? [target[key], value] : [value];
+                // eslint-disable-next-line no-param-reassign
+                target[key] = _mergeObjectsWithExclusions(
+                  {},
+                  params,
+                  ignoreSubkeys,
+                  path,
+                  avoidClones
+                );
+              }
+            } else {
               // eslint-disable-next-line no-param-reassign
               target[key] = value;
-            } else {
-              var params = plainObjectTarget ? [target[key], value] : [value];
-              // eslint-disable-next-line no-param-reassign
-              target[key] = _mergeObjectsWithExclusions(
-                {},
-                params,
-                ignoreSubkeys,
-                path,
-                avoidClones
-              );
             }
-          } else {
-            // eslint-disable-next-line no-param-reassign
-            target[key] = value;
           }
         }
       }
@@ -6556,6 +6562,8 @@ function _returnTrue() {
  * table cell, chart item, etc., is the target of the context menu. See the JSDoc of the individual components for details.
  * <p>
  * Keep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture.
+ * <p>
+ * Applications can set <code class="prettyprint">data-oj-alt-clickthrough</code> on the gesture target or one of its ancestors within this component to control context menu handling. Set it to <code class="prettyprint">disabled</code> to prevent this component and its ancestor JET components from launching their context menus for that gesture. Set it to <code class="prettyprint">enabled</code> to allow a context menu when an interactive descendant would otherwise veto it. When both values occur between the gesture target and the owning component root, <code class="prettyprint">disabled</code> takes precedence over <code class="prettyprint">enabled</code>. The <code class="prettyprint">enabled</code> value does not override a context menu owned by a nested JET component.
  *
  * @ojslot contextMenu
  * @memberof oj.baseComponent
@@ -6726,7 +6734,7 @@ Test.ready = false;
 /**
  * @export
  * Return the node found given the locator
- * @param {Object|string} locator A locator which is either a JSON string (to be parsed using $.parseJSON), or an Object with the following properties:
+ * @param {Object|string} locator A locator which is either a JSON string (to be parsed using JSON.parse), or an Object with the following properties:
  *                                             element: the component's selector, determined by the test author when laying out the page
  *                                             subId: the string, documented by the component, that the component expects in getNodeBySubId to locate a particular subcomponent
  *  @returns {any} the subcomponent located by the subId string passed in locator, if found.

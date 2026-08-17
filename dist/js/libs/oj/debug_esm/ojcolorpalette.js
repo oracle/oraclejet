@@ -167,6 +167,11 @@ var __oj_color_palette_metadata =
   "extension": {}
 };
   __oj_color_palette_metadata.extension._WIDGET_NAME = 'ojColorPalette';
+  __oj_color_palette_metadata.extension._INNER_ELEM = 'ul';
+  __oj_color_palette_metadata.extension._GLOBAL_TRANSFER_ATTRS = [
+    'aria-label',
+    'aria-labelledby'
+  ];
   oj.CustomElementBridge.register('oj-color-palette', {
     metadata: oj.CollectionUtils.mergeDeep(__oj_color_palette_metadata, {
       properties: {
@@ -180,7 +185,10 @@ var __oj_color_palette_metadata =
           binding: { consume: { name: 'labelEdge' } }
         }
       }
-    })
+    }),
+    innerDomFunction: function () {
+      return 'ul';
+    }
   });
 })();
 
@@ -625,9 +633,13 @@ var __oj_color_palette_metadata =
    * it shows all the time.
    * </p>
    * <p>
-   * For security reasons we only support urls with protocol 'http:' or 'https:'.
-   * If the url doesn't comply we ignore it and throw an error.
-   * Pass in an encoded URL since we do not encode the URL.</p>
+   * <p><b>Note:</b> For security, JET validates the URL protocol before navigation and
+   * currently supports <code class="prettyprint">http:</code> and
+   * <code class="prettyprint">https:</code> protocols. If the url doesn't
+   * comply we ignore it and throw an error. JET does not validate whether
+   * the URL is trusted for the application. Applications are responsible
+   * for providing sanitized URLs and enforcing any required origin or host
+   * allowlist. Pass in an encoded URL since we do not encode the URL.</p>
    *
    * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
    *
@@ -673,6 +685,8 @@ var __oj_color_palette_metadata =
    * <p>
    * To include formatted text in the help.instruction, format the string using html tags.
    * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+   * Inline style attributes are sanitized; the retained styling is limited to color, font
+   * style, font weight, and text decoration. Use CSS classes for other styling.
    * For example the
    * help.instruction might look like:
    * <pre class="prettyprint"><code>&lt;oj-some-element help.instruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
@@ -803,6 +817,8 @@ var __oj_color_palette_metadata =
    * hints and message summary text cannot. If you use formatted text, it should be accessible
    * and make sense to the user if formatting wasn't there.
    * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+   * Inline style attributes are sanitized; the retained styling is limited to color, font
+   * style, font weight, and text decoration. Use CSS classes for other styling.
    * To format the message detail, you could do this:
    * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
    * </p>
@@ -1651,6 +1667,10 @@ var __oj_color_palette_metadata =
      */
     _labelledByUpdatedForSet: LabeledByUtils._labelledByUpdatedForSet,
 
+    _GetAriaLabelElement: function () {
+      return this._$LV ? this._$LV[0] : this._getRootElement();
+    },
+
     /**
      * @param {Event} event the associated Event object.
      * @param {Object} ui the context object.
@@ -1999,13 +2019,14 @@ var __oj_color_palette_metadata =
             $("<div class='oj-colorpalette-swatch'></div>")
               .attr('title', !label ? tooltip : null)
               .attr('aria-label', !label ? tooltip : null)
+              .attr('role', 'img')
               .addClass(selectedClass)
               .css('backgroundColor', color.toString())
           )
         );
 
       if (label) {
-        entry.append($("<span class='oj-colorpalette-swatch-text'>" + label + '</span>')[0]); // @HTMLUpdateOK
+        entry.append($("<span class='oj-colorpalette-swatch-text'></span>").text(label)[0]); // @HTMLUpdateOK
       }
       return entry[0];
     },
@@ -2023,30 +2044,24 @@ var __oj_color_palette_metadata =
      * @private
      */
     _renderNone: function (showLabels, label, tooltip, swatchClass, selectedClass) {
-      var raw;
-
-      raw =
-        "<div class='oj-colorpalette-swatch-entry " +
-        swatchClass +
-        (showLabels ? ' oj-colorpalette-swatch-showlabel' : '') +
-        "'>" +
-        "<div class='oj-colorpalette-swatch-container'>" +
-        "<div class='oj-colorpalette-swatch " +
-        selectedClass +
-        "'" +
-        (!label ? " title='" + tooltip + "'" : '') +
-        (!label ? " aria-label='" + tooltip + "'" : '') +
-        '>' +
-        "<div class='oj-colorpalette-swatch-none-icon'>" +
-        '</div>' +
-        '</div>' +
-        '</div>';
+      // prettier-ignore
+      var entry = $("<div class='oj-colorpalette-swatch-entry'></div>")
+        .addClass(swatchClass + (showLabels ? ' oj-colorpalette-swatch-showlabel' : ''))
+        .append( // @HTMLUpdateOK
+          $("<div class='oj-colorpalette-swatch-container'></div>").append( // @HTMLUpdateOK
+            $("<div class='oj-colorpalette-swatch'></div>")
+              .attr('title', !label ? tooltip : null)
+              .attr('aria-label', !label ? tooltip : null)
+              .attr('role', 'img')
+              .addClass(selectedClass)
+              .append($("<div class='oj-colorpalette-swatch-none-icon'></div>")) // @HTMLUpdateOK
+          )
+        );
 
       if (label) {
-        raw += "<span class='oj-colorpalette-swatch-text'>" + label + '</span>';
+        entry.append($("<span class='oj-colorpalette-swatch-text'></span>").text(label)[0]); // @HTMLUpdateOK
       }
-      raw += '</div>';
-      return $(raw)[0];
+      return entry[0];
     },
 
     /**
@@ -2216,7 +2231,7 @@ var __oj_color_palette_metadata =
      * @private
      */
     _setOptPalette: function (palette) {
-      if ($.isArray(palette)) {
+      if (Array.isArray(palette)) {
         if (!this._isPaletteEqual(palette, this._palette)) {
           // Palettes are different
           // Add a palette busy state for the rerender of the ListView
@@ -2474,7 +2489,7 @@ var __oj_color_palette_metadata =
       this._value = opt;
 
       opt = opts.palette;
-      if (!$.isArray(opt)) {
+      if (!Array.isArray(opt)) {
         opt = [];
       }
       this._palette = opt.slice(0);

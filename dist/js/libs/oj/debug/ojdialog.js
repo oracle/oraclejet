@@ -340,7 +340,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         this.mouse._mouseStop = function (event) {
           if (this.element) {
-            this.element.focus();
+            this.element.trigger('focus');
           }
           return that._mouseStop(event);
         };
@@ -380,7 +380,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           this.handles = {};
 
           for (i = 0; i < n.length; i++) {
-            handle = $.trim(n[i]);
+            handle = n[i].trim();
             hname = 'oj-resizable-' + handle;
             axis = $("<div class='oj-resizable-handle " + hname + "'></div>");
 
@@ -399,7 +399,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         this._handles = $(OJ_RESIZABLE_HANDLE_SELECTOR, this.element);
 
-        this._handles.mouseover(function () {
+        this._handles.on('mouseover', function () {
           if (!that.resizing) {
             if (this.className) {
               axis = this.className.match(/oj-resizable-(se|sw|ne|nw|n|e|s|w)/i);
@@ -444,7 +444,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             .removeClass('oj-resizable oj-resizable-disabled oj-resizable-resizing')
             .removeData('resizable')
             .removeData('oj-resizable')
-            .unbind('.resizable')
+            .off('.resizable')
             .find(OJ_RESIZABLE_HANDLE_SELECTOR)
             .remove();
         };
@@ -480,7 +480,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         if (/absolute/.test(el.css('position'))) {
           el.css({ position: 'absolute', top: el.css('top'), left: el.css('left') });
         } else if (el.is('.oj-draggable')) {
-          el.css({ position: 'absolute', top: iniPos.top, left: iniPos.left });
+          el.css({ position: 'absolute', top: iniPos.top + 'px', left: iniPos.left + 'px' });
         }
 
         this._renderProxy();
@@ -759,8 +759,8 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           }
 
           prel.css({
-            height: element.height() - this.borderDif[0] - this.borderDif[2] || 0,
-            width: element.width() - this.borderDif[1] - this.borderDif[3] || 0
+            height: (element.height() - this.borderDif[0] - this.borderDif[2] || 0) + 'px',
+            width: (element.width() - this.borderDif[1] - this.borderDif[3] || 0) + 'px'
           });
         }
       },
@@ -1100,17 +1100,17 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
         if (that._helper && !o.animate && /relative/.test(ce.css('position'))) {
           $(this).css({
-            left: ho.left - cop.left - co.left,
-            width: w,
-            height: h
+            left: ho.left - cop.left - co.left + 'px',
+            width: w + 'px',
+            height: h + 'px'
           });
         }
 
         if (that._helper && !o.animate && /static/.test(ce.css('position'))) {
           $(this).css({
-            left: ho.left - cop.left - co.left,
-            width: w,
-            height: h
+            left: ho.left - cop.left - co.left + 'px',
+            width: w + 'px',
+            height: h + 'px'
           });
         }
       },
@@ -1304,6 +1304,15 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
      *  Apply styles on the content instead. For sizing, use component's sizing attributes.
      *  See <code class="prettyprint">Dimensions</code> demo for example.
      *  </p>
+     *  <h5>CSS Variables</h5>
+     *  <p>The following legacy Dialog CSS variables are not migrated 1:1 to <code class="prettyprint">oj-c-dialog</code>:</p>
+     *  <ul>
+     *    <li><code class="prettyprint">--oj-dialog-header-padding</code> is replaced by the constituent vars <code class="prettyprint">--oj-c-dialog-header-padding-top</code>, <code class="prettyprint">--oj-c-dialog-header-padding-bottom</code>, <code class="prettyprint">--oj-c-dialog-header-padding-horizontal</code>, and <code class="prettyprint">--oj-c-dialog-header-padding-horizontal-small</code>.</li>
+     *    <li><code class="prettyprint">--oj-dialog-body-padding</code> is replaced by the constituent vars <code class="prettyprint">--oj-c-dialog-body-padding-top</code>, <code class="prettyprint">--oj-c-dialog-body-padding-bottom</code>, <code class="prettyprint">--oj-c-dialog-body-padding-horizontal</code>, and <code class="prettyprint">--oj-c-dialog-body-padding-horizontal-small</code>.</li>
+     *    <li><code class="prettyprint">--oj-dialog-footer-padding</code> is replaced by the constituent vars <code class="prettyprint">--oj-c-dialog-footer-padding-top</code>, <code class="prettyprint">--oj-c-dialog-footer-padding-bottom</code>, <code class="prettyprint">--oj-c-dialog-footer-padding-bottom-small</code>, <code class="prettyprint">--oj-c-dialog-footer-padding-horizontal</code>, and <code class="prettyprint">--oj-c-dialog-footer-padding-horizontal-small</code>.</li>
+     *    <li><code class="prettyprint">--oj-dialog-cancel-icon-margin-top</code> and <code class="prettyprint">--oj-dialog-cancel-icon-margin-end</code> do not migrate in this batch.</li>
+     *  </ul>
+     *  <p>The <code class="prettyprint">oj-c-dialog</code> padding variables are responsive split variables instead of shorthand aliases. If a legacy Dialog CSS variable has no <code class="prettyprint">oj-c-dialog</code> equivalent, use the relevant global or theme CSS variables where possible.</p>
      *
      * <h3 id="focus-section">
      *   Focus
@@ -1832,6 +1841,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
      * @ojdisplayname Focus Styling
      * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
      * @memberof oj.ojDialog
+     * @ojdeprecated {since: '21.0.0', description: "The Redwood design system does not allow this to be customized."}
      */
     /**
      * @ojstylevariableset oj-dialog-css-set1
@@ -2203,7 +2213,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           using: function (pos) {
             var topOffset = $(this).css(pos).offset().top;
             if (topOffset < 0) {
-              $(this).css('top', pos.top - topOffset);
+              $(this).css('top', pos.top - topOffset + 'px');
             }
           }
         },
@@ -2821,7 +2831,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
       _moveFocusToLauncher: function () {
         // If the launcher is not focusable, find the closet focusable ancestor
-        if (!this.opener.filter(':focusable').focus().length) {
+        if (!this.opener.filter(':focusable').trigger('focus').length) {
           var launcher = this.opener.parents().filter(':focusable');
           if (launcher.length > 0) {
             launcher[0].focus();
@@ -2829,7 +2839,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             // Hiding a focused element doesn't trigger blur in WebKit
             // so in case we have nothing to focus on, explicitly blur the active element
             // https://bugs.webkit.org/show_bug.cgi?id=47182
-            $(this.document[0].activeElement).blur();
+            $(this.document[0].activeElement).trigger('blur');
           }
         }
       },
@@ -3730,7 +3740,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
             this._titleBarMousedown = true;
             if (!isCloseButton) {
               // Set focus to the dialog if we are dragging by the header
-              this.element.focus();
+              this.element.trigger('focus');
             }
           },
           mouseup: function () {

@@ -293,20 +293,33 @@ const CspExpressionEvaluatorInternal = function (options) {
   }
 
   function _evaluateMember(node, contexts) {
+    var memberAccess = _getMemberAccess(node, contexts);
+    if (memberAccess.length === 0) {
+      return memberAccess;
+    }
+    var value = _getMemberValue(memberAccess);
+    return [memberAccess[0], value];
+  }
+
+  function _getMemberAccess(node, contexts) {
     var object = _evaluate(node.object, contexts);
     if (!object && node.optional) {
       // handle optional chaining operator: test?.prop
       return [];
-    } else if (node.computed) {
-      return [object, object[_evaluate(node.property, contexts)]];
     }
-    return [object, object[node.property.name]];
+    var key = node.computed ? _evaluate(node.property, contexts) : node.property.name;
+    return _getMemberAccessForKey(object, key);
   }
 
   function _evaluateObjectExpression(node, contexts) {
     return node.properties.reduce(function (acc, curr) {
       const key = getKeyValue(curr.key);
-      acc[key] = _evaluateAndUnwrap(curr.value, contexts);
+      Object.defineProperty(acc, key, {
+        configurable: true,
+        enumerable: true,
+        value: _evaluateAndUnwrap(curr.value, contexts),
+        writable: true
+      });
       return acc;
     }, {});
   }
@@ -315,7 +328,7 @@ const CspExpressionEvaluatorInternal = function (options) {
   function _getValue(contexts, name) {
     var target = _getContextForIdentifier(contexts, name);
     if (target) {
-      return target[name];
+      return _getMemberValue(_getMemberAccessForKey(target, name));
     }
     throw new Error('Variable ' + name + ' is undefined');
   }
@@ -324,7 +337,7 @@ const CspExpressionEvaluatorInternal = function (options) {
   function _getValueWithContext(contexts, name) {
     var target = _getContextForIdentifier(contexts, name);
     if (target) {
-      return [target, target[name]];
+      return [target, _getMemberValue(_getMemberAccessForKey(target, name))];
     }
     throw new Error('Variable ' + name + ' is undefined');
   }
@@ -337,11 +350,18 @@ const CspExpressionEvaluatorInternal = function (options) {
         if (!target) {
           _throwError('Cannot assign value to undefined variable ' + name);
         }
-        target[name] = val;
+        var identifierAccess = _getMemberAccessForKey(target, name);
+        if (_isRestrictedMemberKey(identifierAccess[1])) {
+          _throwError('Assignment to member "' + identifierAccess[1] + '" is not allowed');
+        }
+        identifierAccess[0][identifierAccess[1]] = val;
         break;
       case MEMBER_EXP:
-        var key = node.computed ? _evaluateAndUnwrap(node.property, contexts) : node.property.name;
-        _evaluateMember(node, contexts)[0][key] = val;
+        var memberAccess = _getMemberAccess(node, contexts);
+        if (_isRestrictedMemberKey(memberAccess[1])) {
+          _throwError('Assignment to member "' + memberAccess[1] + '" is not allowed');
+        }
+        memberAccess[0][memberAccess[1]] = val;
         break;
       default:
         _throwError('Expression of type: ' + node.type + ' not supported for assignment');
@@ -398,6 +418,94 @@ const CspExpressionEvaluatorInternal = function (options) {
       return acc;
     }, []);
     return result.join('');
+  }
+
+  // Block prototype-chain escape hatches. Safe data objects can still expose these
+  // names as own, non-accessor properties, but never as inherited capabilities.
+  function _getMemberAccessForKey(object, key) {
+    var propertyKey = typeof key === 'symbol' ? key : String(key);
+    return [object, propertyKey, _validateMemberKey(object, propertyKey)];
+  }
+
+  function _validateMemberKey(object, key) {
+    if (object === Object && _isUnsafeObjectStaticMember(key)) {
+      _throwError('Access to member "' + key + '" is not allowed');
+    } else if (_isInheritedIntrinsicPrototypeHelper(object, key)) {
+      _throwError('Access to member "' + key + '" is not allowed');
+    }
+    if (!_isRestrictedMemberKey(key)) {
+      return null;
+    }
+    var descriptor = Object.getOwnPropertyDescriptor(Object(object), key);
+    if (!descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) {
+      _throwError('Access to member "' + key + '" is not allowed');
+    } else if (typeof descriptor.value === 'function') {
+      _throwError('Access to member "' + key + '" is not allowed');
+    } else if (key === 'prototype' && typeof object === 'function') {
+      _throwError('Access to member "' + key + '" is not allowed');
+    }
+    return descriptor;
+  }
+
+  function _getMemberValue(memberAccess) {
+    // For restricted keys, use the validated data-descriptor value rather than
+    // invoking a Proxy get trap that could return a different capability.
+    return memberAccess[2] ? memberAccess[2].value : memberAccess[0][memberAccess[1]];
+  }
+
+  function _isRestrictedMemberKey(propertyKey) {
+    return (
+      propertyKey === 'constructor' || propertyKey === '__proto__' || propertyKey === 'prototype'
+    );
+  }
+
+  // These legacy accessors can recover or modify an intrinsic prototype without
+  // evaluating a restricted member name. Allow applications to use an own data
+  // property with one of these names, but reject the inherited intrinsic helpers.
+  function _isInheritedIntrinsicPrototypeHelper(object, propertyKey) {
+    if (
+      propertyKey !== '__lookupGetter__' &&
+      propertyKey !== '__lookupSetter__' &&
+      propertyKey !== '__defineGetter__' &&
+      propertyKey !== '__defineSetter__'
+    ) {
+      return false;
+    }
+
+    var target = Object(object);
+    var visitedTargets = new Set();
+    while (target) {
+      // An extensible Proxy can report itself, or an earlier object, as its
+      // prototype. Treat cycles as unsafe rather than looping indefinitely.
+      if (visitedTargets.has(target)) {
+        return true;
+      }
+      visitedTargets.add(target);
+      var descriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
+      if (descriptor) {
+        return (
+          (target === Object.prototype || target === Function.prototype) &&
+          typeof descriptor.value === 'function'
+        );
+      }
+      target = Object.getPrototypeOf(target);
+    }
+    return false;
+  }
+
+  // The evaluator exposes Object by default. These reflection methods can otherwise
+  // retrieve or mutate intrinsic prototypes and recover Function through descriptors.
+  function _isUnsafeObjectStaticMember(propertyKey) {
+    return (
+      propertyKey === 'assign' ||
+      propertyKey === 'create' ||
+      propertyKey === 'defineProperty' ||
+      propertyKey === 'defineProperties' ||
+      propertyKey === 'getOwnPropertyDescriptor' ||
+      propertyKey === 'getOwnPropertyDescriptors' ||
+      propertyKey === 'getPrototypeOf' ||
+      propertyKey === 'setPrototypeOf'
+    );
   }
 
   function _getContextForIdentifier(contexts, name) {

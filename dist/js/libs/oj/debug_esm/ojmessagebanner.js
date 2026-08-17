@@ -1199,7 +1199,9 @@ function MessageBanner({ detailRendererKey, data, onClose, renderers, translatio
     const setMessageRef = useCallback(
     // TODO: use ramda.curry here (currently it is throwing ts error when used with generics)
     (key) => {
-        return (ref) => messagesRef.current.set(key, ref);
+        return (ref) => {
+            messagesRef.current.set(key, ref);
+        };
     }, []);
     // Update the focusHandleRef
     useImperativeHandle(focusHandleRef, () => ({
@@ -1366,9 +1368,12 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
  * <p>The <code class="prettyprint">MessageBannerItem["sound"]</code> property is an accessibility
  * feature for playing a sound when a message is opened. This property defaults to "none", and can
  * be enabled by setting it to "default" or by providing a URL to an audio file of a format that the
- * browser supports. An accessible application must provide a way for users to enable sound on a
- * settings or preferences page. Some browsers will have auto-play disabled by default, enabling
- * it may require adjusting the browser settings.</p>
+ * browser supports. Custom sound URLs are validated before playback. Relative URLs and URLs that
+ * resolve to <code class="prettyprint">http:</code>, <code class="prettyprint">https:</code>,
+ * <code class="prettyprint">data:</code>, or <code class="prettyprint">blob:</code> are
+ * supported. An accessible application must provide a way for users to enable sound on a settings
+ * or preferences page. Some browsers will have auto-play disabled by default, enabling it may
+ * require adjusting the browser settings.</p>
  *
  * <h3 id="keyboard-section">
  *   Keyboard End User Information
@@ -1474,7 +1479,7 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
  *     ]
  *   }
  * ]
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojMessageBanner.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojMessageBanner.html"
  * @ojmetadata since "12.0.0"
  * @ojmetadata status [
  *   {

@@ -1023,6 +1023,13 @@ oj.__registerWidget(
       return this.element;
     },
 
+    _GetComponentNoClonePaths: function () {
+      var noClonePaths = this._super();
+      // Don't clone converter instances because their class methods must be preserved.
+      noClonePaths.metricLabel = { converter: true };
+      return noClonePaths;
+    },
+
     _GetChildStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses['oj-gauge-metric-label'] = { path: 'metricLabel/style', property: 'TEXT' };
@@ -3456,6 +3463,23 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <p>
  * The preserve-aspect-ratio attribute is not supported in oj-c-rating-gauge.
  * </p>
+ * <h5>CSS Variables</h5>
+ * <p>The following legacy Rating Gauge CSS variables changed names in
+ * <code class="prettyprint">oj-c-rating-gauge</code>:</p>
+ * <ul>
+ *   <li><code class="prettyprint">--oj-rating-gauge-sm-size</code> is replaced by <code class="prettyprint">--oj-c-rating-gauge-size-sm</code>.</li>
+ *   <li><code class="prettyprint">--oj-rating-gauge-md-size</code> is replaced by <code class="prettyprint">--oj-c-rating-gauge-size-md</code>.</li>
+ *   <li><code class="prettyprint">--oj-rating-gauge-lg-size</code> is replaced by <code class="prettyprint">--oj-c-rating-gauge-size-lg</code>.</li>
+ * </ul>
+ * <p>The following legacy Rating Gauge CSS variables are not migrated to
+ * <code class="prettyprint">oj-c-rating-gauge</code>:</p>
+ * <ul>
+ *   <li><code class="prettyprint">--oj-rating-gauge-color-hover</code></li>
+ *   <li><code class="prettyprint">--oj-rating-gauge-border-color-hover</code></li>
+ *   <li><code class="prettyprint">--oj-rating-gauge-color-changed</code></li>
+ *   <li><code class="prettyprint">--oj-rating-gauge-border-color-changed</code></li>
+ * </ul>
+ * <p>If a legacy Rating Gauge CSS variable has no <code class="prettyprint">oj-c-rating-gauge</code> equivalent, use the relevant global or theme CSS variables, or the existing public color API, where possible.</p>
  * @ojfragment migrationDoc
  * @memberof oj.ojRatingGauge
  */
@@ -3753,6 +3777,21 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge, {
  * <p>
  * For oj-c-meter-bar and oj-c-meter-circle, animation-duration attribute is not supported. We plan on supporting this use case in a future release.
  * </p>
+ * <h5>CSS Variables</h5>
+ * <p>The following legacy Status Meter Gauge CSS variables changed names or did not migrate:</p>
+ * <ul>
+ *   <li><code class="prettyprint">--oj-statusmeter-gauge-bar-sm-size</code> is replaced by <code class="prettyprint">--oj-c-meter-bar-size-sm</code>.</li>
+ *   <li><code class="prettyprint">--oj-statusmeter-gauge-bar-md-size</code> is replaced by <code class="prettyprint">--oj-c-meter-bar-size-md</code>.</li>
+ *   <li><code class="prettyprint">--oj-statusmeter-gauge-bar-lg-size</code> is replaced by <code class="prettyprint">--oj-c-meter-bar-size-lg</code>.</li>
+ *   <li><code class="prettyprint">--oj-statusmeter-gauge-circular-sm-size</code> is replaced by <code class="prettyprint">--oj-c-meter-circle-size-sm</code>.</li>
+ *   <li><code class="prettyprint">--oj-statusmeter-gauge-circular-md-size</code> is replaced by <code class="prettyprint">--oj-c-meter-circle-size-md</code>.</li>
+ *   <li><code class="prettyprint">--oj-statusmeter-gauge-circular-lg-size</code> is replaced by <code class="prettyprint">--oj-c-meter-circle-size-lg</code>.</li>
+ *   <li><code class="prettyprint">--oj-statusmeter-gauge-bar-plotarea-color</code> is replaced by <code class="prettyprint">--oj-c-meter-bar-plot-area-color</code>.</li>
+ *   <li><code class="prettyprint">--oj-statusmeter-gauge-bar-plotarea-border-color</code> is replaced by <code class="prettyprint">--oj-c-meter-bar-plot-area-border-color</code>.</li>
+ *   <li><code class="prettyprint">--oj-gauge-metric-label-font-weight</code> did not migrate because metric labels are application-provided content.</li>
+ * </ul>
+ * <p>Existing public color properties and threshold or track values continue to take precedence over the migrated plot-area CSS variables.</p>
+ * <p>If a legacy Status Meter Gauge CSS variable has no <code class="prettyprint">oj-c-meter-bar</code> or <code class="prettyprint">oj-c-meter-circle</code> equivalent, use the relevant global or theme CSS variables, or the existing public color properties, where possible.</p>
  * @ojfragment migrationDoc
  * @memberof oj.ojStatusMeterGauge
  */

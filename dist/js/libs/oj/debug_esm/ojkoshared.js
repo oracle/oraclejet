@@ -7,9 +7,10 @@
  */
 import oj from 'ojs/ojcore-base';
 import { bindingProvider, components, ignoreDependencies, virtualElements, nativeTemplateEngine, templateSources, utils, expressionRewriting } from 'knockout';
-import { getExpressionEvaluator } from 'ojs/ojconfig';
+import { getExpressionEvaluator, getFallbackExpressionEvaluator } from 'ojs/ojconfig';
 import { error } from 'ojs/ojlogger';
 import { getTemplateContent } from 'ojs/ojhtmlutils';
+import { CspExpressionEvaluatorInternal } from 'ojs/ojcspexpressionevaluator-internal';
 
 /**
  * @private
@@ -198,19 +199,16 @@ function _KoCustomBindingProvider() {
         return evaluate([$context.$data || {}, $context]);
       };
     }
-
-    var evaluator;
-    try {
-      /* jslint evil:true */
-      // eslint-disable-next-line no-new-func
-      evaluator = new Function( // @HTMLUpdateOK
-        '$context',
-        'with($context){with($data||{}){return ' + expressionText + ';}}'
-      ); // binding expression evaluation
-    } catch (e) {
-      throw new Error(e.message + ' in expression "' + expressionText + '"');
+    var fallbackEvaluator = getFallbackExpressionEvaluator();
+    if (fallbackEvaluator) {
+      return fallbackEvaluator.createBindingExpressionEvaluator(expressionText);
     }
-    return evaluator;
+    var defaultEvaluate = new CspExpressionEvaluatorInternal().createEvaluator(
+      expressionText
+    ).evaluate;
+    return function ($context) {
+      return defaultEvaluate([$context.$data || {}, $context]);
+    };
   };
 
   this.createEvaluator = function (expression, bindingContext) {
@@ -433,20 +431,16 @@ function _KoCustomBindingProvider() {
         return evaluate([$context, $context.$data || {}, { $element: $element }]);
       };
     }
-
-    var evaluator;
-    try {
-      /* jslint evil:true */
-      // eslint-disable-next-line no-new-func
-      evaluator = new Function( // @HTMLUpdateOK
-        '$context',
-        '$element',
-        'with($context.$data||{}){with($context){return ' + expressionText + '}}'
-      ); // binding expression evaluation
-    } catch (e) {
-      throw new Error(e.message + ' in expression "' + expressionText + '"');
+    var fallbackEvaluator = getFallbackExpressionEvaluator();
+    if (fallbackEvaluator) {
+      return fallbackEvaluator.createReplacementEvaluatorForExtend(expressionText);
     }
-    return evaluator;
+    var defaultEvaluate = new CspExpressionEvaluatorInternal().createEvaluator(
+      expressionText
+    ).evaluate;
+    return function ($context, $element) {
+      return defaultEvaluate([$context, $context.$data || {}, { $element: $element }]);
+    };
   }
 
   function _createEvaluatorViaCache(factory, expr, bindingContext) {
@@ -518,7 +512,10 @@ function _getParseBindingsReplacement(original, cache) {
   return function (bindingsString, bindingContext, node, options) {
     var factory = getExpressionEvaluator();
     if (!factory) {
-      return original(bindingsString, bindingContext, node, options);
+      if (getFallbackExpressionEvaluator()) {
+        return original(bindingsString, bindingContext, node, options);
+      }
+      factory = new CspExpressionEvaluatorInternal();
     }
     var evaluate = _createKoEvaluatorViaCache(bindingsString, options, factory, cache);
     return evaluate([bindingContext.$data || {}, bindingContext, { $element: node }]);

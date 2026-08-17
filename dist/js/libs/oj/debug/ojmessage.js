@@ -32,6 +32,34 @@ define(['require', 'exports', 'ojs/ojcore', 'ojs/ojknockout', 'ojs/ojbutton', 'o
 
   const ojMessage = {};
 
+  const ALLOWED_AUDIO_URL_PROTOCOLS = ['http:', 'https:', 'data:', 'blob:'];
+
+  function encodeCssUrlControlCharacter(char) {
+    var hex = char.charCodeAt(0).toString(16).toUpperCase();
+    return '%' + (hex.length < 2 ? '0' + hex : hex);
+  }
+
+  function escapeCssUrlString(url) {
+    var escapedUrl = '';
+    var urlString = String(url);
+    for (var i = 0; i < urlString.length; i++) {
+      var char = urlString.charAt(i);
+      var charCode = char.charCodeAt(0);
+      if (char === '"' || char === '\\') {
+        escapedUrl += '\\' + char;
+      } else if (charCode <= 0x1f || charCode === 0x7f) {
+        escapedUrl += encodeCssUrlControlCharacter(char);
+      } else {
+        escapedUrl += char;
+      }
+    }
+    return escapedUrl;
+  }
+
+  function getCssUrl(url) {
+    return 'url("' + escapeCssUrlString(url) + '")';
+  }
+
   /**
    * @ojcomponent oj.ojMessage
    * @since 5.0.0
@@ -69,10 +97,13 @@ define(['require', 'exports', 'ojs/ojcore', 'ojs/ojknockout', 'ojs/ojbutton', 'o
    *
    * <p>The {@link oj.ojMessage#message.sound} property is an accessibility feature for playing a
    * sound when a message is opened. This property defaults to "none", and can be enabled by setting
-   * it to "defaults" or by providing URL to an audio file of a format that the browser supports. An
-   * accessible application must provide a way for users to enable sound on a settings or preferences
-   * page. Some browsers will have auto-play disabled by default, enabling it may require adjusting
-   * the browser settings.</p>
+   * it to "defaults" or by providing a URL to an audio file of a format that the browser supports.
+   * Custom sound URLs are validated before playback. Relative URLs and URLs that resolve to
+   * <code class="prettyprint">http:</code>, <code class="prettyprint">https:</code>,
+   * <code class="prettyprint">data:</code>, or <code class="prettyprint">blob:</code> are
+   * supported. An accessible application must provide a way for users to enable sound on a settings
+   * or preferences page. Some browsers will have auto-play disabled by default, enabling it may
+   * require adjusting the browser settings.</p>
    *
    * <h3 id="touch-section">
    *   Touch End User Information
@@ -424,9 +455,12 @@ define(['require', 'exports', 'ojs/ojcore', 'ojs/ojknockout', 'ojs/ojbutton', 'o
    * required for low vision users who view a zoomed section of the UI. Because messages may be shown
    * outside of the zoomed section, such users require sound to be played to notify of new messages.</p>
    *
-   * <p>This attribute can take a URL of the audio file for the custom sound to be played. The
-   * supported formats are mp3, wav and ogg. Browser support should also be considered while choosing
-   * the format of the audio file. Literal string values
+   * <p>This attribute can take a URL of the audio file for the custom sound to be played. Custom
+   * sound URLs are validated before playback. Relative URLs and URLs that resolve to
+   * <code class="prettyprint">http:</code>, <code class="prettyprint">https:</code>,
+   * <code class="prettyprint">data:</code>, or <code class="prettyprint">blob:</code> are
+   * supported. The supported formats are mp3, wav and ogg. Browser support should also be considered
+   * while choosing the format of the audio file. Literal string values
    * <code class="prettyprint">"defaults"</code> and <code class="prettyprint">"none"</code> can also
    * be used for this attribute. If the value is set to "none", then the sound will be disabled. If
    * the value is set to "defaults", then a default sound is played.<p>
@@ -1260,7 +1294,7 @@ define(['require', 'exports', 'ojs/ojcore', 'ojs/ojknockout', 'ojs/ojbutton', 'o
       return undefined;
     }
 
-    return ["url('", message.icon, "') no-repeat"].join('');
+    return getCssUrl(message.icon) + ' no-repeat';
   };
 
   MessageViewModel.prototype._computeIconClass = function () {
@@ -1493,6 +1527,13 @@ define(['require', 'exports', 'ojs/ojcore', 'ojs/ojknockout', 'ojs/ojbutton', 'o
   MessageViewModel.prototype._playSound = function (sound) {
     // Custom URL was specified for the sound, using <audio> element is simple and best for this case.
     if (sound !== 'defaults') {
+      try {
+        DomUtils.validateURL(sound, ALLOWED_AUDIO_URL_PROTOCOLS);
+      } catch (error) {
+        Logger.info(`JET oj-message: Invalid URL in message.sound='${sound}'. Error: ${error}`);
+        return;
+      }
+
       var audio = document.createElement('AUDIO');
       audio.src = sound;
 

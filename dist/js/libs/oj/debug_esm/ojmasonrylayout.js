@@ -3468,7 +3468,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
       }
 
       menu = newVal || menu;
-      t = $.type(menu);
+      t = typeof menu;
       if (t === 'function') {
         try {
           // call user's method to get the context menu
@@ -3476,7 +3476,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
         } catch (e) {
           menu = null;
         }
-        t = $.type(menu);
+        t = typeof menu;
       }
 
       if (!menu) {

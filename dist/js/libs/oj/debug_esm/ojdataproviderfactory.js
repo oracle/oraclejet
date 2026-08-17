@@ -67,6 +67,8 @@ import MutateEventFilteringDataProvider from 'ojs/ojmutateeventfilteringdataprov
  * @property {Object=} fetchFirst - If "visitedByCurrentIterator" is specified for the "caching" property and base dataprovider does not support caching, then enhance the base DataProvider
  * to cache the results returned by its iterators. Cached results, if available, can be returned when fetchByKeys, fetchByOffset, or
  * containsKeys is called on the enhanced DataProvider. If fetchFirst caching and fetchByOffset caching both are specified then fetchByOffset caching wins over fetchFirst.
+ * <p>Any enhanced DataProvider returned for caching handles "refresh" and "mutate" events dispatched on it the same way it handles events dispatched by the base DataProvider.
+ * A "refresh" event invalidates the cached results, and a "mutate" event updates any cached results before the event is dispatched to listeners.</p>
  * <p>If "forceLocalCaching" is set to "enabled" then wrapped dataprovider is returned irrespective of base dataprovider's caching capability.<p>
  * <p>If "exact" is specified for the "totalFilteredRowCount" property, enhance the base DataProvider to include totalFilteredRowCount in the iterator
  * results.  Note that this enhancement can be expensive because all rows will be iterated to determine totalFilteredRowCount.</p>

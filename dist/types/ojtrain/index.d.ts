@@ -5,16 +5,27 @@ export interface ojTrain extends baseComponent<ojTrainSettableProperties> {
     selectedStep: string;
     steps: ojTrain.Step[];
     translations: {
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepCurrent?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepDisabled?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepInfo?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepMessageConfirmation?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepMessageError?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepMessageInfo?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepMessageType?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepMessageWarning?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepNotVisited?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepStatus?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepVisited?: string;
     };
     addEventListener<T extends keyof ojTrainEventMap>(type: T, listener: (this: HTMLElement, ev: ojTrainEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -86,16 +97,27 @@ export interface ojTrainSettableProperties extends baseComponentSettableProperti
     selectedStep: string;
     steps: ojTrain.Step[];
     translations: {
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepCurrent?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepDisabled?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepInfo?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepMessageConfirmation?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepMessageError?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepMessageInfo?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepMessageType?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepMessageWarning?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepNotVisited?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepStatus?: string;
+        /** @deprecated since 21.0.0 - This property is deprecated and will be removed in a future release. */
         stepVisited?: string;
     };
 }
@@ -142,9 +164,12 @@ export namespace TrainElement {
     };
 }
 export interface TrainIntrinsicProps extends Partial<Readonly<ojTrainSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    /** @deprecated since 21.0.0 - This event is deprecated. Please use ojBeforeSelect instead. */
     onojBeforeDeselect?: (value: ojTrainEventMap['ojBeforeDeselect']) => void;
     onojBeforeSelect?: (value: ojTrainEventMap['ojBeforeSelect']) => void;
+    /** @deprecated since 21.0.0 - This event is deprecated. Please use the selectedStepChanged event instead. */
     onojDeselect?: (value: ojTrainEventMap['ojDeselect']) => void;
+    /** @deprecated since 21.0.0 - This event is deprecated. Please use the selectedStepChanged event instead. */
     onojSelect?: (value: ojTrainEventMap['ojSelect']) => void;
     onselectedStepChanged?: (value: ojTrainEventMap['selectedStepChanged']) => void;
     onstepsChanged?: (value: ojTrainEventMap['stepsChanged']) => void;

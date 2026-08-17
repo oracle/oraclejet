@@ -787,7 +787,7 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
      *     ]
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojWaterfallLayout.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojWaterfallLayout.html"
      * @ojmetadata since "9.0.0"
      * @ojlegacymetadata requirements [
      *    {
@@ -799,8 +799,8 @@ define(['exports', 'preact/jsx-runtime', 'preact', 'ojs/ojvcomponent', 'ojs/ojco
      * ]
      */
     exports.WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends preact.Component {
-        constructor() {
-            super();
+        constructor(props) {
+            super(props);
             this.actionableMode = false;
             this.renderCompleted = false;
             this.ticking = false;

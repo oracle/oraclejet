@@ -59,7 +59,8 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * The hover visual for items in oj-c-tag-cloud is different from that of oj-tag-cloud.
  * </p>
  * <h5 id="context-menu-migration"></h5>
- * For the initial version of oj-c-tag-cloud, getContextByNode method is not supported. We plan on supporting this use case in a future release.
+ * <p>
+ * The getContextByNode method has been replaced by the <a href="oj-c.TagCloud.html#contextMenuConfig">context-menu-config</a> attribute in oj-c-tag-cloud.
  * </p>
  * <h5>animaton-on-data-change attribute</h5>
  * <p>
@@ -75,11 +76,11 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * </p>
  * <h5>tooltip attribute and tooltipTemplate slot</h5>
  * <p>
- * For initial version of oj-c-tagcloud, use datatip instead. Support of complex datatip usecase will be handled in a future release.
+ * The tooltip renderer has been replaced by datatip customization APIs. Use datatip for custom datatip text, datatip-template for custom datatip content, and datatip-config to control the datatip container.
  * </p>
  * <h5>oj-tag-cloud-item's svg-class-name attribute</h5>
  * <p>
- * For the inital version of oj-c-tag-cloud-item, svg-class-name is not supported. We plan on supporting this use case in a future release.
+ * The svg-class-name attribute has been replaced by the item styling attributes in oj-c-tag-cloud-item. Use color to style tag cloud item text and value to scale font size.
  * </p>
  * @ojfragment migrationDoc
  * @memberof oj.ojTagCloud
@@ -176,6 +177,11 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * @property {Object=} svgStyle The CSS style object defining the style of the item text. Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
  * @property {string=} svgClassName The CSS style class defining the style of the item text.
  * @property {string=} url The url this item references.
+ * <p><b>Note:</b> For security, JET validates the URL protocol before navigation and
+ * currently supports <code class="prettyprint">http:</code>
+ * and <code class="prettyprint">https:</code> protocols. JET does not validate whether the
+ * URL is trusted for the application. Applications are responsible for providing sanitized
+ * URLs and enforcing any required origin or host allowlist.</p>
  * @property {number} value The value of this item which will be used to scale its font-size within the tag cloud.
  * @ojdeprecated {since: '15.0.0', description: 'This is not recommended in the Redwood design system.', target: 'property', for: 'svgStyle'}
  *
@@ -405,7 +411,7 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * To migrate from oj-tag-cloud-item to oj-c-tag-cloud-item, you need to revise the import statement and references to oj-tag-cloud-item in your app. Please note the changes between the two components below.
  * <h5>svg-class-name attribute</h5>
  * <p>
- * For the inital version of oj-c-tag-cloud-item, svg-class-name is not supported. We plan on supporting this use case in a future release.
+ * The svg-class-name attribute has been replaced by the item styling attributes in oj-c-tag-cloud-item. Use color to style tag cloud item text and value to scale font size.
  * </p>
  */
 /**
@@ -518,6 +524,11 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  */
 /**
  * The url this item references.
+ * <p><b>Note:</b> For security, JET validates the URL protocol before navigation and
+ * currently supports <code class="prettyprint">http:</code> and
+ * <code class="prettyprint">https:</code> protocols. JET does not validate whether the
+ * URL is trusted for the application. Applications are responsible for providing
+ * sanitized URLs and enforcing any required origin or host allowlist.</p>
  * @expose
  * @name url
  * @memberof! oj.ojTagCloudItem

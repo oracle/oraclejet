@@ -104,8 +104,16 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
  * </h3>
  *  To migrate from oj-action-card to oj-c-action-card, you need to revise the import statement.
+ *  <p>Change the import from <code class="prettyprint">ojs/ojactioncard</code> to
+ *  <code class="prettyprint">oj-c/action-card</code>.</p>
  *  <h5>Background Color</h5>
- *  CSS background-color is not yet supported in oj-c-action-card.
+ *  The oj-c-action-card component supports per-card background colors with the <code>bg-color</code> attribute.
+ *  To migrate a supported <code>oj-bg-*</code> background helper class on the action card, remove the
+ *  <code>oj-bg-</code> prefix and set the value on <code>bg-color</code>. For example,
+ *  <code>class="oj-bg-warning-30"</code> becomes <code>bg-color="warning-30"</code>.
+ *  See the <code>oj-c-action-card</code> <code>bg-color</code> API for the supported values.
+ *  High neutral values apply a contrasting color scheme to card content, so remove
+ *  <code>oj-color-invert</code> from the migrated action card when it was only used for background contrast.
  *
  *
  *
@@ -130,13 +138,27 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
  *                                "styleVariables": [
  *                                  {
  *                                    "name": "oj-action-card-scale-hover",
- *                                    "description": "Action card hover scale",
- *                                    "help": "#ojactioncard-css-set1"
+ *                                    "description": "Action card hover scale. This variable is deprecated and is not supported by oj-c-action-card.",
+ *                                    "help": "#ojactioncard-css-set1",
+ *                                    "status": [
+ *                                      {
+ *                                        "type": "deprecated",
+ *                                        "since": "21.0.0",
+ *                                        "description": "This variable is not supported by oj-c-action-card."
+ *                                      }
+ *                                    ]
  *                                  }
  *                                ]
  *                              }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojActionCard.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojActionCard.html"
  * @ojmetadata since "9.1.0"
+ * @ojmetadata status [
+ *   {
+ *     "type": "maintenance",
+ *     "since": "21.0.0",
+ *     "value": ["oj-c-action-card"]
+ *   }
+ * ]
  */
 let ActionCard = class ActionCard extends Component {
     constructor(props) {

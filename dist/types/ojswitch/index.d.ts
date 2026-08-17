@@ -5,10 +5,12 @@ import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropert
 export interface ojSwitch extends editableValue<boolean, ojSwitchSettableProperties> {
     disabled: boolean;
     displayOptions?: {
+        /** @deprecated since 21.0.0 - This property is not used by oj-switch. */
         converterHint?: 'display' | 'none';
         /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
+        /** @deprecated since 21.0.0 - This property is not used by oj-switch. */
         validatorHint?: 'display' | 'none';
     };
     /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
@@ -17,7 +19,9 @@ export interface ojSwitch extends editableValue<boolean, ojSwitchSettablePropert
     readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     value: boolean;
     translations: {
+        /** @deprecated since 21.0.0 - The Redwood UX specification does not allow this to be configurable. */
         switchOff?: string;
+        /** @deprecated since 21.0.0 - The Redwood UX specification does not allow this to be configurable. */
         switchOn?: string;
     };
     addEventListener<T extends keyof ojSwitchEventMap>(type: T, listener: (this: HTMLElement, ev: ojSwitchEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -27,6 +31,7 @@ export interface ojSwitch extends editableValue<boolean, ojSwitchSettablePropert
     setProperty<T extends keyof ojSwitchSettableProperties>(property: T, value: ojSwitchSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojSwitchSettableProperties>): void;
     setProperties(properties: ojSwitchSettablePropertiesLenient): void;
+    showMessages(): void;
 }
 export namespace ojSwitch {
     interface ojAnimateEnd extends CustomEvent<{
@@ -98,10 +103,12 @@ export interface ojSwitchEventMap extends editableValueEventMap<boolean, ojSwitc
 export interface ojSwitchSettableProperties extends editableValueSettableProperties<boolean> {
     disabled: boolean;
     displayOptions?: {
+        /** @deprecated since 21.0.0 - This property is not used by oj-switch. */
         converterHint?: 'display' | 'none';
         /** @deprecated since 9.0.0 - If you want none, remove help-instruction attribute. */
         helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages?: 'display' | 'none';
+        /** @deprecated since 21.0.0 - This property is not used by oj-switch. */
         validatorHint?: 'display' | 'none';
     };
     /** @deprecated since 20.0.0 - This is an internal API and is not supported in the Redwood UX specification. */
@@ -110,7 +117,9 @@ export interface ojSwitchSettableProperties extends editableValueSettablePropert
     readonlyUserAssistanceShown: 'none' | 'confirmationAndInfoMessages';
     value: boolean;
     translations: {
+        /** @deprecated since 21.0.0 - The Redwood UX specification does not allow this to be configurable. */
         switchOff?: string;
+        /** @deprecated since 21.0.0 - The Redwood UX specification does not allow this to be configurable. */
         switchOn?: string;
     };
 }

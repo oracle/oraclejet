@@ -845,9 +845,6 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * <h5> tooltip attribute and tooltipTemplate slot </h5>
  * <p> For the initial version of oj-c-line-chart and oj-c-area-chart, tooltip attribute and the tooltipTemplate slot are not supported. We plan on supporting this use case in a future release.
  * </p>
- * <h5> ojSelectInput event </h5>
- * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, ojSelectInput event is not supported. We plan on supporting this use case in a future release.
- * </p>
  * <h5> ojViewportChangeInput event </h5>
  * <p>For the initial version of oj-c-line-chart and oj-c-area-chart, ojViewportChangeInput event is not supported. We plan on supporting this use case in a future release.
  * </p>

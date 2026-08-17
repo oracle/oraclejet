@@ -378,7 +378,7 @@ export declare class WaterfallLayout<K extends string | number, D> extends Compo
     private mouseDownTarget;
     private mutationObserver;
     private _pendingResizes;
-    constructor();
+    constructor(props: ExtendGlobalProps<Props<K, D>>);
     static defaultProps: Partial<Props<any, any>>;
     private gutterWidth;
     private static readonly minResizeWidthThreshold;

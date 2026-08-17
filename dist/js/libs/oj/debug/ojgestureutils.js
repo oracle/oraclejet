@@ -26,6 +26,33 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
   GestureUtils._EVENT_NAMESPACE = '.contextMenu';
 
   /**
+   * Resolves the context-menu-specific clickthrough policy for a target inside
+   * a component. A disabled marker always wins over enabled markers.
+   * @param {Node} target Event target
+   * @param {Element} rootNode Component root that owns the gesture
+   * @return {'disabled'|'enabled'|undefined} The resolved marker value
+   */
+  GestureUtils.getContextMenuAltClickthrough = function (target, rootNode) {
+    var node = target && target.nodeType === 1 ? target : target && target.parentNode;
+    var hasEnabledMarker = false;
+
+    while (node != null) {
+      var value = node.getAttribute && node.getAttribute('data-oj-alt-clickthrough');
+      if (value === 'disabled') {
+        return 'disabled';
+      }
+      if (value === 'enabled') {
+        hasEnabledMarker = true;
+      }
+      if (node === rootNode) {
+        break;
+      }
+      node = node.parentNode;
+    }
+    return hasEnabledMarker ? 'enabled' : undefined;
+  };
+
+  /**
    * Utility method to tear down any artifacts created by GestureUtils.startDetectContextMenuGesture
    * @param {Element} rootNode the root element of the component
    */
@@ -234,6 +261,10 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
         (event.originalEvent && event.originalEvent.defaultPrevented) ||
         event.defaultPrevented
       ) {
+        return;
+      }
+
+      if (GestureUtils.getContextMenuAltClickthrough(event.target, rootNode) === 'disabled') {
         return;
       }
 
@@ -532,7 +563,9 @@ define(['exports', 'jquery', 'ojs/ojdomutils', 'ojs/ojcore-base'], function (exp
 
   const startDetectContextMenuGesture = GestureUtils.startDetectContextMenuGesture;
   const stopDetectContextMenuGesture = GestureUtils.stopDetectContextMenuGesture;
+  const getContextMenuAltClickthrough = GestureUtils.getContextMenuAltClickthrough;
 
+  exports.getContextMenuAltClickthrough = getContextMenuAltClickthrough;
   exports.startDetectContextMenuGesture = startDetectContextMenuGesture;
   exports.stopDetectContextMenuGesture = stopDetectContextMenuGesture;
 

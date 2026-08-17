@@ -183,6 +183,21 @@ var __oj_collapsible_metadata =
    * &lt;/oj-collapsible></code></pre>
    *       </td>
    *     </tr>
+   *     <tr>
+   *       <td><kbd>data-oj-alt-clickthrough</kbd></td>
+   *       <td><p>Specify on an element inside the header to control context menu handling for a gesture that originates from the element or one of its descendants.</p>
+   *           <p>Set this attribute to <code class="prettyprint">enabled</code> to allow a containing JET component context menu when an interactive child would otherwise prevent it. Set it to <code class="prettyprint">disabled</code> to prevent containing JET components from opening their context menus for that gesture.</p>
+   *           <p>When both values occur between the gesture target and the owning component root, <code class="prettyprint">disabled</code> takes precedence over <code class="prettyprint">enabled</code>.</p>
+   *           <p>The <code class="prettyprint">enabled</code> value does not override a context menu owned by a nested JET component.</p>
+   *       </td>
+   *       <td>
+   *         <pre class="prettyprint"><code>&lt;oj-collapsible>
+   *   &lt;div slot="header">
+   *     &lt;a data-oj-alt-clickthrough="enabled" href="#">Details&lt;/a>
+   *   &lt;/div>
+   * &lt;/oj-collapsible></code></pre>
+   *       </td>
+   *     </tr>
    *   </tbody>
    * </table>
    */
@@ -883,7 +898,7 @@ var __oj_collapsible_metadata =
           content.removeAttr(OJ_ARIA_HIDDEN);
         } else {
           this.wrapper.css({
-            'max-height': 0,
+            'max-height': '0',
             'overflow-y': 'hidden',
             display: 'none'
           });
@@ -991,7 +1006,7 @@ var __oj_collapsible_metadata =
         event.stopPropagation();
 
         // set focus on the disclosure icon
-        this._getCollapsibleIcon().focus();
+        this._getCollapsibleIcon().trigger('focus');
       },
 
       /**
@@ -1079,7 +1094,7 @@ var __oj_collapsible_metadata =
             this.element.hasClass('oj-collapsible-skip-animation')
           ) {
             if (!isExpanded) {
-              wrapper.css('max-height', 0);
+              wrapper.css('max-height', '0');
               wrapper.hide();
             }
             self._afterExpandCollapse(isExpanded, event);
@@ -1109,7 +1124,7 @@ var __oj_collapsible_metadata =
                 wrapper.contentHeight += content.outerHeight();
 
                 wrapper.addClass(OJC_TRANSITION).css({
-                  'max-height': wrapper.contentHeight
+                  'max-height': wrapper.contentHeight + 'px'
                 });
                 self._resolveTransition(wrapper);
               }, 0);
@@ -1118,7 +1133,7 @@ var __oj_collapsible_metadata =
               // disable transitions & set max-height to content height
               wrapper.removeClass(OJC_TRANSITION);
               wrapper.css({
-                'max-height': wrapper.contentHeight,
+                'max-height': wrapper.contentHeight + 'px',
                 'overflow-y': 'hidden'
               });
 
@@ -1129,7 +1144,7 @@ var __oj_collapsible_metadata =
                 setTimeout(function () {
                   // enable & start transition
                   wrapper.addClass(OJC_TRANSITION).css({
-                    'max-height': 0 //! important
+                    'max-height': '0px' //! important
                   });
                   self._resolveTransition(wrapper);
                 }, 20);
@@ -1150,7 +1165,7 @@ var __oj_collapsible_metadata =
           event.preventDefault();
           event.stopPropagation();
         } else if (event.type === 'ojfocus') {
-          this._findFirstFocusableInHeader().attr('tabIndex', 0).focus();
+          this._findFirstFocusableInHeader().attr('tabIndex', 0).trigger('focus');
           event.preventDefault();
           event.stopPropagation();
         }
@@ -1281,7 +1296,7 @@ var __oj_collapsible_metadata =
         // just completed a collapse transition
         if (this.options.expanded) {
           this.wrapper.css({
-            'max-height': 9999,
+            'max-height': '9999px',
             'overflow-y': ''
           });
         } else {

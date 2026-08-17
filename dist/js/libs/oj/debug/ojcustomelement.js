@@ -180,6 +180,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
       // as well since we don't reflect property values back to the DOM attribute.
       const prop = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(attr);
       const bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
+      BaseCustomElementBridge.__ValidatePropertyPath(this, prop);
       if (oldValue !== newValue || bridge.State.dirtyProps.has(prop)) {
         bridge.State.dirtyProps.delete(prop.split('.')[0]);
         // Due to  where IE11 disables child inputs for a parent with the disabled attribute,
@@ -323,6 +324,10 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
     },
 
     GetProperty: function (element, prop, props) {
+      if (BaseCustomElementBridge.__IsBlockedPropertyPath(prop)) {
+        return undefined;
+      }
+
       var meta = MetadataUtils.getPropertyMetadata(prop, ojcustomelementRegistry.getElementProperties(element));
 
       // For event listener and non component properties, retrieve the value directly stored on the element.
@@ -377,6 +382,8 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
      * @return {boolean}
      */
     SaveEarlyPropertySet: function (element, prop, value) {
+      BaseCustomElementBridge.__ValidatePropertyPath(element, prop);
+
       // Do not save sets that occur during BaseCustomElementBridge.__InitProperties
       // or expression evaluation. We can process these as normal. Playback occurs before the
       // binding provider promise is resolved leading to component creation.
@@ -410,6 +417,8 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
     },
 
     SetProperty: function (element, prop, value, props, bOuter) {
+      BaseCustomElementBridge.__ValidatePropertyPath(element, prop);
+
       // Check value against any defined enums
       var meta = MetadataUtils.getPropertyMetadata(prop, ojcustomelementRegistry.getElementProperties(element));
       if (ojcustomelementUtils.AttributeUtils.isEventListenerProperty(prop) || !meta) {
@@ -496,6 +505,8 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
     },
 
     ValidatePropertySet: function (element, property, value) {
+      BaseCustomElementBridge.__ValidatePropertyPath(element, property);
+
       var propsMeta = ojcustomelementRegistry.getElementProperties(element);
       var propMeta = MetadataUtils.getPropertyMetadata(property, propsMeta);
       var propAr = property.split('.');
@@ -628,6 +639,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
       var keys = Object.keys(props);
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
+        BaseCustomElementBridge.__ValidatePropertyPath(elem, key);
         if (key.indexOf('.') >= 0) {
           mutationKeys.push(key);
         } else {
@@ -735,6 +747,38 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
   };
 
   /**
+   * Checks whether a property path segment could mutate Object.prototype or other prototypes.
+   * @param {string} property The property path
+   * @return {boolean} true if the path contains a blocked segment
+   * @ignore
+   */
+  BaseCustomElementBridge.__IsBlockedPropertyPath = function (property) {
+    var propPath = property.split('.');
+    for (var i = 0; i < propPath.length; i++) {
+      if (oj.CollectionUtils._isBlockedKey(propPath[i])) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * Validates a property path before walking objects with dot notation.
+   * @param {Element=} element The custom element
+   * @param {string} property The property path
+   * @ignore
+   */
+  BaseCustomElementBridge.__ValidatePropertyPath = function (element, property) {
+    if (BaseCustomElementBridge.__IsBlockedPropertyPath(property)) {
+      var message = `Invalid property path '${property}'.`;
+      if (element) {
+        throw new ojcustomelementUtils.JetElementError(element, message);
+      }
+      throw new Error(message);
+    }
+  };
+
+  /**
    * Checks to see if there are any overlapping attribute for the given element and attribute
    * @ignore
    */
@@ -766,6 +810,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
       for (var i = 0; i < attrs.length; i++) {
         var attr = attrs[i];
         var property = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(attr.nodeName);
+        BaseCustomElementBridge.__ValidatePropertyPath(element, property);
 
         // See if attribute is a component property
         var meta = MetadataUtils.getPropertyMetadata(property, metaProps);
@@ -807,11 +852,14 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
     var propsObj = componentProps;
     var propPath = property.split('.');
     var branchedProps;
+    BaseCustomElementBridge.__ValidatePropertyPath(null, property);
+
     // Set subproperty, initializing parent objects along the way unless the top level
     // property is not defined since setting it to an empty object will trigger a property changed
     // event. Instead, branch and set at the end. We only have listeners on top level properties
     // so setting a subproperty will not trigger a property changed event along the way.
     var topProp = propNameFun(propPath[0]);
+    BaseCustomElementBridge.__ValidatePropertyPath(null, topProp);
     if (propPath.length > 1 && !componentProps[topProp]) {
       branchedProps = {};
       propsObj = branchedProps;
@@ -820,6 +868,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcustom
     // Walk to the correct location
     for (var i = 0; i < propPath.length; i++) {
       var subprop = propNameFun(propPath[i]);
+      BaseCustomElementBridge.__ValidatePropertyPath(null, subprop);
       if (i === propPath.length - 1) {
         propsObj[subprop] = value;
       } else if (!propsObj[subprop]) {

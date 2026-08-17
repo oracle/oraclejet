@@ -531,7 +531,7 @@ PopupServiceImpl.prototype.open = function (options) {
   }
 
   var beforeOpenCallback = events[PopupService.EVENT.POPUP_BEFORE_OPEN];
-  if (!beforeOpenCallback || !$.isFunction(beforeOpenCallback)) {
+  if (!beforeOpenCallback || typeof beforeOpenCallback !== 'function') {
     beforeOpenCallback = PopupServiceImpl._defaultBeforeOpenCallback;
   }
 
@@ -583,7 +583,7 @@ PopupServiceImpl.prototype.open = function (options) {
       // late (applyEvents above) to prevent removing the popup while it's animating open.
       if (
         !ZOrderUtils._getSurrogate(layer) &&
-        $.isFunction(events[PopupService.EVENT.POPUP_REMOVE])
+        typeof events[PopupService.EVENT.POPUP_REMOVE] === 'function'
       ) {
         var surrogateRemoveCallback = events[PopupService.EVENT.POPUP_REMOVE];
         surrogateRemoveCallback();
@@ -675,7 +675,7 @@ PopupServiceImpl.prototype.close = function (options) {
   }
 
   var beforeCloseCallback = events[PopupService.EVENT.POPUP_BEFORE_CLOSE];
-  if (!beforeCloseCallback || !$.isFunction(beforeCloseCallback)) {
+  if (!beforeCloseCallback || typeof beforeCloseCallback !== 'function') {
     beforeCloseCallback = PopupServiceImpl._defaultBeforeCloseCallback;
   }
 
@@ -709,7 +709,7 @@ PopupServiceImpl.prototype.close = function (options) {
       error('Error closing popup:\n%o', e);
     } finally {
       ZOrderUtils.setStatus(popup, ZOrderUtils.STATUS.CLOSE);
-      if (afterCloseCallback && $.isFunction(afterCloseCallback)) {
+      if (afterCloseCallback && typeof afterCloseCallback === 'function') {
         afterCloseCallback(options);
       }
       // set aria-hidden on the popup when completely closed
@@ -834,7 +834,7 @@ PopupServiceImpl.prototype._triggerOnDescendentsVisitCallback = function (layer,
   var argsArray = context.argsArray;
 
   var events = ZOrderUtils.getEvents(layer);
-  if (events && $.isFunction(events[event])) {
+  if (events && typeof events[event] === 'function') {
     events[event].apply(this, argsArray);
   }
 
@@ -977,7 +977,7 @@ PopupServiceImpl.prototype._eventFilterCallback = function (event) {
   for (var i = 0; i < _COPY_SAFE_EVENT_PROPERTIES.length; i++) {
     var key = _COPY_SAFE_EVENT_PROPERTIES[i];
     var value = event[key];
-    if (value !== undefined && !$.isFunction(value)) {
+    if (value !== undefined && typeof value !== 'function') {
       props[key] = value;
     }
   }
@@ -1001,7 +1001,7 @@ PopupServiceImpl._redistributeVisitCallback = function (layer, context) {
   var events = ZOrderUtils.getEvents(layer);
   var event = context.event;
 
-  if (events && $.isFunction(events[PopupService.EVENT.POPUP_AUTODISMISS])) {
+  if (events && typeof events[PopupService.EVENT.POPUP_AUTODISMISS] === 'function') {
     events[PopupService.EVENT.POPUP_AUTODISMISS](event);
   } else if (event.type === 'mousedown' && context.targetIsOverlay) {
     // JET-50124: if no autodismiss handler is registered and the event is 'mousedown'
@@ -1033,7 +1033,7 @@ PopupServiceImpl._refreshCallback = function (event) {
     PopupServiceImpl._refreshTimerId = Number.NaN;
     var defaultLayer = ZOrderUtils.getDefaultLayer();
 
-    if ($.isFunction(window.requestAnimationFrame)) {
+    if (typeof window.requestAnimationFrame === 'function') {
       PopupServiceImpl._afRequestId = window.requestAnimationFrame(function () {
         PopupServiceImpl._afRequestId = null;
         ZOrderUtils.postOrderVisit(defaultLayer, PopupServiceImpl._refreshVisitCallback);
@@ -1063,7 +1063,7 @@ PopupServiceImpl._refreshVisitCallback = function (layer, context) {
   }
 
   var events = ZOrderUtils.getEvents(layer);
-  if (events && $.isFunction(events[PopupService.EVENT.POPUP_REFRESH])) {
+  if (events && typeof events[PopupService.EVENT.POPUP_REFRESH] === 'function') {
     events[PopupService.EVENT.POPUP_REFRESH]();
   }
 
@@ -1398,7 +1398,11 @@ ZOrderUtils.applyEvents = function (layer, events, surrogate) {
 
   layer.data(ZOrderUtils._EVENTS_DATA, events);
 
-  if (surrogate.length > 0 && events && $.isFunction(events[PopupService.EVENT.POPUP_REMOVE])) {
+  if (
+    surrogate.length > 0 &&
+    events &&
+    typeof events[PopupService.EVENT.POPUP_REMOVE] === 'function'
+  ) {
     // if the surrogate script element gets replaced in the dom it will trigger closure of the
     // popup.
     setComponentOption(
@@ -1572,7 +1576,7 @@ ZOrderUtils._closeDescendantPopupsCallback = function (layer, context) {
   }
 
   var events = layer.data(ZOrderUtils._EVENTS_DATA);
-  if (events && $.isFunction(events[PopupService.EVENT.POPUP_CLOSE])) {
+  if (events && typeof events[PopupService.EVENT.POPUP_CLOSE] === 'function') {
     events[PopupService.EVENT.POPUP_CLOSE]();
   }
 
@@ -2347,6 +2351,10 @@ ZOrderUtils._OVERLAY_SELECTOR = 'oj-component-overlay';
 const PositionUtils = {};
 oj._registerLegacyNamespaceProp('PositionUtils', PositionUtils);
 
+function isWindowObject(obj) {
+  return obj != null && obj === obj.window;
+}
+
 /**
  * <p>Of the properties on the position object, "my" and "at" are of interest. The base jQuery
  * horizontal alignment mnemonics are "right", "center" and "left". For better JET RTL
@@ -2606,7 +2614,7 @@ PositionUtils.isWithinViewport = function (element) {
 
   if (!element) {
     return false;
-  } else if ($.isWindow(element[0]) || isPositioned(element)) {
+  } else if (isWindowObject(element[0]) || isPositioned(element)) {
     return true;
   }
 
@@ -2959,7 +2967,7 @@ PositionUtils._coerceOfToJet = function (ofSource, ofDefault) {
 
   if (oj.StringUtils.isString(ofSource)) {
     targetOf = ofSource; // assume a valid selector
-  } else if ($.isWindow(ofSource)) {
+  } else if (isWindowObject(ofSource)) {
     targetOf = 'window';
   } else if (ofSource instanceof Element || ofSource instanceof $) {
     // eslint-disable-next-line no-param-reassign
@@ -3009,7 +3017,7 @@ PositionUtils.coerceToJet = function (source, defaults) {
   }
 
   function _coerceUsingToJet(usingSource, usingDefault) {
-    var targetUsing = $.isFunction(usingSource) ? usingSource : usingDefault;
+    var targetUsing = typeof usingSource === 'function' ? usingSource : usingDefault;
     return { using: targetUsing };
   }
 

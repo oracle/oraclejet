@@ -13,7 +13,9 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojmenu', 'preact'], function (expo
             this._rootRef = null;
         }
         render(props) {
-            return (jsxRuntime.jsx("div", { style: { display: 'none' }, ref: (elem) => (this._rootRef = elem), children: props.children }));
+            return (jsxRuntime.jsx("div", { style: { display: 'none' }, ref: (elem) => {
+                    this._rootRef = elem;
+                }, children: props.children }));
         }
         componentDidMount() {
             if (!this._menuElement) {

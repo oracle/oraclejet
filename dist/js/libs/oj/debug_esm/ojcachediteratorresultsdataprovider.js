@@ -369,6 +369,19 @@ class CachedIteratorResultsDataProvider {
         this._mapClientIdToIteratorInfo = new Map();
         this._lastFetchParams = null;
         this._firstIteratorState = null;
+        // override dispatch event to ensure it acts the same on base DP as on the caching DP layer
+        // required for FA apps - this is now official API specific to the DP returned by calls to
+        // DataProviderFactory.getEnhancedDataProvider with caching
+        const dispatchEvent = this.dispatchEvent.bind(this);
+        this.dispatchEvent = (event) => {
+            if (event.type === CachedIteratorResultsDataProvider._REFRESH) {
+                this._invalidateCache();
+            }
+            else if (event.type === CachedIteratorResultsDataProvider._MUTATE) {
+                this.cache.processMutations(event.detail, this.handleMutationOffsetUpdate);
+            }
+            return dispatchEvent(event);
+        };
         // Add createOptimizedKeyMap method to this DataProvider if the wrapped DataProvider supports it
         if (dataProvider.createOptimizedKeyMap) {
             this.createOptimizedKeyMap = (initialMap) => {
@@ -413,20 +426,18 @@ class CachedIteratorResultsDataProvider {
         }.bind(this);
         // Listen to mutate event on wrapped DataProvider
         dataProvider.addEventListener(CachedIteratorResultsDataProvider._MUTATE, (event) => {
-            // First allow the cache to process the mutations, which may result in different detail
-            this.cache.processMutations(event.detail, this.handleMutationOffsetUpdate);
-            // Then fire mutate with new detail
             this.dispatchEvent(event);
         });
         // Listen to refresh event on wrapped DataProvider
         dataProvider.addEventListener(CachedIteratorResultsDataProvider._REFRESH, (event) => {
-            // Invalidate the cache on refresh event
-            this.cache.reset();
-            this._lastFetchParams = null;
-            this._firstIteratorState = null;
             this.dispatchEvent(event);
         });
         this._baseFetchFirstCapability = dataProvider.getCapability('fetchFirst');
+    }
+    _invalidateCache() {
+        this.cache.reset();
+        this._lastFetchParams = null;
+        this._firstIteratorState = null;
     }
     containsKeys(params) {
         const finalResults = new Set();

@@ -39,10 +39,10 @@
 
 const path = require("path");
 const hash = require('crypto');
-const vm = require('vm');
 
 const {setBundlesForId} = require('../shared/mediator');
-const {stringifyWithFunctions, isObject} = require('../shared/bundleUtils');
+const {stringifyWithFunctions, mergeDeep} = require('../shared/bundleUtils');
+const {parseBundle} = require('../shared/bundleParser');
 
 
 module.exports = function ojL10nLoader(source) {
@@ -61,7 +61,7 @@ module.exports = function ojL10nLoader(source) {
   if (locale === 'multi') {
     // The bundle Id is constructed by concatenating the file name of the translation bundle with the hex hash computed from the bundle's path.
     // This appraoch allows us to preserve the identifiable bundle name while turning the unique path into an opaque hash.
-    const id = `${baseName}_${hash.createHash('md5').update(dir).digest('hex')}`;
+    const id = `${baseName}_${hash.createHash('sha256').update(dir).digest('hex').slice(0, 32)}`;
 
     const mergedBundles = _mergeBundles(this, dir, baseName, source).then((bundleMap) => {
       setBundlesForId(id, bundleMap);
@@ -89,7 +89,7 @@ module.exports = function ojL10nLoader(source) {
     toLoad.push('root');
   }
   else {
-    root = rootVal;
+    root = mergeDeep({}, rootVal);
   }
 
   let localeBlock = "";
@@ -114,7 +114,7 @@ module.exports = function ojL10nLoader(source) {
   toMergePromises = toLoad.map((loc) => _loadLocaleBundle(this, dir, baseName, loc));
 
   Promise.all(toMergePromises).then((toMerge) =>
-      callback(null, _getModuleContent(_mergeDeep(root, toMerge)))).catch((err) => callback(err));
+      callback(null, _getModuleContent(mergeDeep(root, ...toMerge)))).catch((err) => callback(err));
 
 }
 
@@ -199,32 +199,7 @@ function _getModuleContent(obj) {
  * @param {string} src
  */
 function _executeBundle(src) {
-  const exports = {};
-  const sandbox = {
-    define: (arg0, arg1) => arg1? arg1(null, exports)||exports.default: arg0
-  };
-
-  const context = vm.createContext(sandbox);
-  const script = new vm.Script(src);
-  return script.runInContext(context);
-}
-
-
-function _mergeDeep(target, sources) {
-  if (!sources.length) return target;
-  const source = sources.shift();
-
-  if (isObject(target) && isObject(source)) {
-    for (const key in source) {
-      if (isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
-        _mergeDeep(target[key], [source[key]]);
-      } else {
-        Object.assign(target, { [key]: source[key] });
-      }
-    }
-  }
-  return _mergeDeep(target, sources);
+  return parseBundle(src);
 }
 
 
@@ -255,7 +230,7 @@ async function _mergeBundles(loader/* ojL10n-loader instance*/, dir, baseName, s
     rootTranslations = _loadLocaleBundle(loader, dir, baseName, 'root');
   }
 
-  const rootValue = await rootTranslations;
+  const rootValue = mergeDeep({}, await rootTranslations);
   localeBundles.set('root', rootValue);
 
   // BCP-47 locales may have up to 3 parts separated by '-'
@@ -284,7 +259,7 @@ async function _mergeBundles(loader/* ojL10n-loader instance*/, dir, baseName, s
       }
     }
     toMerge.push(bundle);
-    const merged = _mergeDeep({}, toMerge);
+    const merged = mergeDeep({}, ...toMerge);
     localeBundles.set(locale, merged);
   });
 

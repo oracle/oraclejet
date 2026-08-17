@@ -191,6 +191,13 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      *  <p>The <code class="prettyprint">close</code> method is no longer supported. Use <code class="prettyprint">opened="false"</code> to close the popup.</p>
      *  <h5>isOpen method</h5>
      *  <p>The <code class="prettyprint">isOpen</code> method is no longer supported. Use the <code class="prettyprint">opened</code> property to determine the state of the popup.</p>
+     *  <h5>CSS Variables</h5>
+     *  <p>The following legacy Popup CSS variables did not migrate to <code class="prettyprint">oj-c-popup</code>:</p>
+     *  <ul>
+     *    <li><code class="prettyprint">--oj-popup-tail-height</code></li>
+     *    <li><code class="prettyprint">--oj-popup-tail-width</code></li>
+     *  </ul>
+     *  <p>If a legacy Popup CSS variable has no <code class="prettyprint">oj-c-popup</code> equivalent, use the relevant global or theme CSS variables where possible.</p>
      *
      * <h3 id="touch-section">
      *   Touch End User Information
@@ -423,6 +430,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      * @ojdisplayname Focus Styling
      * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
      * @memberof oj.ojPopup
+     * @ojdeprecated {since: '21.0.0', description: "The Redwood design system does not allow this to be customized."}
      * @ojtsexample
      * &lt;oj-popup class="oj-focus-highlight">
      *   &lt;!-- Content -->
@@ -1605,7 +1613,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         var launcher = _launcher;
         if (!launcher) {
           launcher = $(document.activeElement);
-        } else if ($.type(launcher) === 'string') {
+        } else if (typeof launcher === 'string') {
           // id jquery selector
           launcher = $(launcher);
         } else if (launcher.nodeType === 1) {
@@ -1665,7 +1673,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         position = ojpopupcore.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
 
         var origUsing = position.using;
-        origUsing = $.isFunction(origUsing) ? origUsing : null;
+        origUsing = typeof origUsing === 'function' ? origUsing : null;
 
         // override with our proxy to handle positioning of the tail
         // overload the callback arguments forcing the original using as the first argument
@@ -2086,7 +2094,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         // extend the focus check to include popups that are children
         if (this._isFocusInPopup(null, true)) {
           var launcher = this._launcher;
-          launcher.focus();
+          launcher.trigger('focus');
         }
       },
       /**
@@ -2124,7 +2132,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
             if (options.modality === 'modeless') {
               event.preventDefault();
               launcher = this._launcher;
-              launcher.focus();
+              launcher.trigger('focus');
             } else {
               this.close();
             }
@@ -2144,12 +2152,12 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
               // tabbing backwards, cycle focus to last node
               event.preventDefault();
               if (firstNode !== lastNode || firstNode !== target) {
-                $(lastNode).focus(); // tabbing backwards, cycle focus to last node
+                $(lastNode).trigger('focus'); // tabbing backwards, cycle focus to last node
               }
             } else if (lastNode === target && !event.shiftKey) {
               event.preventDefault();
               if (lastNode !== firstNode) {
-                $(firstNode).focus(); // tabbing forwards, cycle to the first node
+                $(firstNode).trigger('focus'); // tabbing forwards, cycle to the first node
               }
             }
           } else {
@@ -2159,7 +2167,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
               // if there is nothing in the popup that is tabbable, handle as a F6
               // toggle to the launcher
               launcher = this._launcher;
-              launcher.focus();
+              launcher.trigger('focus');
             } else {
               // Modal popup can't set focus to something under the overlay,
               // implicitly close.
@@ -2263,7 +2271,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         var describedby = launcher.attr('aria-describedby');
         var tokens = describedby ? describedby.split(/\s+/) : [];
         tokens.push(popupId);
-        describedby = $.trim(tokens.join(' '));
+        describedby = tokens.join(' ').trim();
         launcher.attr('aria-describedby', describedby);
         this._setDescribedByOnLauncher = true;
       },
@@ -2292,7 +2300,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
           tokens.splice(index, 1);
         }
 
-        describedby = $.trim(tokens.join(' '));
+        describedby = tokens.join(' ').trim();
         if (describedby) {
           launcher.attr('aria-describedby', describedby);
         } else {

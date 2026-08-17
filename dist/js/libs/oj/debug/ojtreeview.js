@@ -2087,7 +2087,15 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           DataCollectionUtils.applyRendererContent(liElem, renderer.call(self, context), true);
         } else if (templateElement != null && templateEngine != null) {
           var componentElement = self.element[0];
-          var nodes = templateEngine.execute(componentElement, templateElement, context, null);
+          var nodes = templateEngine.execute(
+            componentElement,
+            templateElement,
+            context,
+            null,
+            undefined,
+            undefined,
+            { processTemplate: true }
+          );
           for (i = 0; i < nodes.length; i++) {
             if (nodes[i].tagName === 'LI') {
               liElem.parentNode.replaceChild(nodes[i], liElem);
@@ -2416,7 +2424,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             this.constants.PERIOD + this.constants.OJ_TREEVIEW_ITEM_ICON
           );
           for (let i = 0; i < treeViewItems.length; i++) {
-            treeViewItems[i].classList.add(this.constants.OJ_TREEVIEW_ICON);
+            this._addTreeViewIconClass(treeViewItems[i]);
             treeViewItems[i].classList.add(this.constants.OJ_COMPONENT_ICON);
           }
         }
@@ -2424,7 +2432,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         this._select(item);
 
         // DnD. Draggable attribute is added dynamically on desktop devices
-        if (DomUtils.isTouchSupported()) {
+        if (DataCollectionUtils.isIos() || DataCollectionUtils.isAndroid()) {
           itemContent.setAttribute('draggable', this._isDnD() ? 'true' : 'false');
         }
 
@@ -2494,6 +2502,9 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
       },
       _addTreeViewIconClass: function (item) {
         item.classList.add(this.constants.OJ_TREEVIEW_ICON);
+        if (!(DataCollectionUtils.isIos() || DataCollectionUtils.isAndroid())) {
+          item.setAttribute('aria-hidden', 'true');
+        }
       },
       _addTreeviewLeafClass: function (item) {
         item.classList.add(this.constants.OJ_TREEVIEW_LEAF);
@@ -3807,7 +3818,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
             this._mouseDownOutsideAnyGroupOrItem = null;
           }, 100);
         }
-        if (!DomUtils.isTouchSupported()) {
+        if (!(DataCollectionUtils.isIos() || DataCollectionUtils.isAndroid())) {
           const itemContent = this._getClosestItemContent(event.target);
           if (itemContent) {
             itemContent.setAttribute('draggable', this._isDnD() ? 'true' : 'false');

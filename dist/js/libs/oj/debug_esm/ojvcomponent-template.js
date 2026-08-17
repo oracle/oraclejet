@@ -155,6 +155,8 @@ const TEMPLATE_ALIAS = Symbol();
 const UNWRAP_EXTRAS = Symbol();
 const BINDING_CONTEXT = Symbol();
 const PREVIOUS_DOT_PROPS_VALUES = Symbol();
+// These Core Pack components provide their own Preact ManageTabStops implementation.
+const _PREACT_MANAGE_TAB_STOPS_COMPONENTS = new Set(['oj-c-table', 'oj-c-list-view']);
 const _DEFAULT_UNWRAP = function (target) {
     return target;
 };
@@ -732,7 +734,7 @@ class VTemplateEngine {
                 if (templateAlias != null) {
                     extension[templateAlias] = proxy;
                 }
-                // We are not going through _getContext() becasue we never want to get the bidning context from
+                // We are not going through _getContext() becasue we never want to get the binding context from
                 // the parent element and call .extend() on it
                 const context = Object.assign({}, $context, extension);
                 return this._cspEvaluator.evaluate(ast, { $context: context, $h: h });
@@ -756,7 +758,8 @@ class VTemplateEngine {
             // children
             this._createAst(engineContext, Array.from(node.childNodes))
         ]);
-        if (node.hasAttribute('data-oj-manage-tabs')) {
+        if (node.hasAttribute('data-oj-manage-tabs') &&
+            !_PREACT_MANAGE_TAB_STOPS_COMPONENTS.has(engineContext[COMPONENT_ELEMENT]?.localName)) {
             // JET-54400 - support legacy tabbable mode in template compilation
             // Wrap the node that has data-oj-manage-tabs into ManageTabStops component.
             return this._createComponentNode(engineContext, null, ManageTabStops, [

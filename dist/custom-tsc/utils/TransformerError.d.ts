@@ -67,6 +67,7 @@ export declare enum ExceptionKey {
     IGNORED_OJMETADATA_VALUE = "ignored_ojmetadata_value",
     INVALID_STYLEVARIABLESET = "invalid_stylevariableset",
     MALFORMED_METADATA_VALUE = "malformed_metadata_value",
+    INVALID_CUSTOM_ELEMENT_NAME = "invalid_custom_element_name",
     TRIMMED_METADATA_STRING = "trimmed_metadata_string",
     UNRECOGNIZED_OJMETADATA_KEY = "unrecognized_ojmetadata_key",
     INCORRECT_METADATA_VALUE_TYPE = "incorrect_metadata_value_type",

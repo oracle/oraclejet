@@ -23,6 +23,7 @@ import { unwrap, removeResizeListener, addResizeListener, getCSSTimeUnitAsMillis
 import 'ojs/ojdataprovideradapter';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 import { getLogicalChildPopup } from 'ojs/ojkeyboardfocus-utils';
+import { getContextMenuAltClickthrough } from 'ojs/ojgestureutils';
 import { ListViewIndexerModel } from 'ojs/ojindexer';
 
 (function () {
@@ -2010,7 +2011,7 @@ const _ojListView = _ListViewUtils.clazz(
                 // if event target is within listview, but not around items, e.g. the padding
                 var active = self.m_active && self.m_active.elem;
                 if (active == null && self.element.attr('tabIndex') === '0') {
-                  self.element.focus();
+                  self._initFocus(event, true);
                 } else if (active != null) {
                   self._makeFocusable(active);
                   self.HighlightActive();
@@ -2238,7 +2239,7 @@ const _ojListView = _ListViewUtils.clazz(
      * Invoked by widget
      */
     setupResources: function () {
-      this.ojContext.document.bind(
+      this.ojContext.document.on(
         'touchend.ojlistview touchcancel.ojlistview',
         this.HandleTouchEndOrCancel.bind(this)
       );
@@ -3818,8 +3819,14 @@ const _ojListView = _ListViewUtils.clazz(
       var container = this.getListContainer();
       this.m_status
         .attr('aria-label', msg)
-        .css('left', Math.max(0, container.outerWidth() / 2 - this.m_status.outerWidth() / 2))
-        .css('top', Math.max(0, container.outerHeight() / 2 - this.m_status.outerHeight() / 2))
+        .css(
+          'left',
+          Math.max(0, container.outerWidth() / 2 - this.m_status.outerWidth() / 2) + 'px'
+        )
+        .css(
+          'top',
+          Math.max(0, container.outerHeight() / 2 - this.m_status.outerHeight() / 2) + 'px'
+        )
         .show();
 
       // make sure the container is tall enough to show the indicator
@@ -3833,7 +3840,7 @@ const _ojListView = _ListViewUtils.clazz(
       if (containerHeight < statusHeight && minHeight < statusHeight) {
         container.css(
           'minHeight',
-          Math.max(containerHeight, statusHeight + this.getListContainerBorderWidth())
+          Math.max(containerHeight, statusHeight + this.getListContainerBorderWidth()) + 'px'
         );
         // save it to restore later
         if (!isNaN(minHeight)) {
@@ -5252,7 +5259,15 @@ const _ojListView = _ListViewUtils.clazz(
     notifyContextMenuGesture: function (menu, event, eventType) {
       // first check if we are invoking on an editable or clickable element If so bail
       var noData = this.element[0].querySelector('.oj-listview-no-data-item');
-      if (noData == null && this.IsNodeEditableOrClickable($(event.target))) {
+      const altClickthrough = getContextMenuAltClickthrough(
+        event.target,
+        this.ojContext.element[0]
+      );
+      if (
+        noData == null &&
+        altClickthrough !== 'enabled' &&
+        this.IsNodeEditableOrClickable($(event.target))
+      ) {
         return false;
       }
 
@@ -5660,7 +5675,7 @@ const _ojListView = _ListViewUtils.clazz(
       if (emptyText.length > 0) {
         emptyText.children().first().attr('tabIndex', 0);
         this._highlightElem(emptyText, 'oj-focus');
-        emptyText.children().first().focus();
+        emptyText.children().first().trigger('focus');
 
         this.RemoveRootElementTabIndex();
       }
@@ -7630,7 +7645,9 @@ const _ojListView = _ListViewUtils.clazz(
      */
     ActiveAndFocus: function (item, event, skipFocus, preventScroll) {
       // make sure that it is visible
-      this._scrollToVisible(item[0]);
+      if (!preventScroll) {
+        this._scrollToVisible(item[0]);
+      }
 
       // unhighlight any previous active item
       this.UnhighlightActive();
@@ -10786,6 +10803,21 @@ oj._registerLegacyNamespaceProp('_ojListView', _ojListView);
  * &lt;/oj-list-view></code></pre>
  *       </td>
  *     </tr>
+ *     <tr>
+ *       <td><kbd>data-oj-alt-clickthrough</kbd></td>
+ *       <td><p>Specify on an element inside an item to control context menu handling for a gesture that originates from the element or one of its descendants.</p>
+ *           <p>Set this attribute to <code class="prettyprint">enabled</code> to allow the ListView context menu when an interactive child would otherwise prevent it. Set it to <code class="prettyprint">disabled</code> to prevent ListView and its ancestor JET components from opening their context menus for that gesture.</p>
+ *           <p>When both values occur between the gesture target and the owning component root, <code class="prettyprint">disabled</code> takes precedence over <code class="prettyprint">enabled</code>.</p>
+ *           <p>The <code class="prettyprint">enabled</code> value does not override a context menu owned by a nested JET component.</p>
+ *       </td>
+ *       <td>
+ *         <pre class="prettyprint"><code>&lt;oj-list-view id="listView">
+ *   &lt;template slot="itemTemplate">
+ *     &lt;a data-oj-alt-clickthrough="enabled" href="#">Details&lt;/a>
+ *   &lt;/template>
+ * &lt;/oj-list-view></code></pre>
+ *       </td>
+ *     </tr>
  *   </tbody>
  * </table>
  *
@@ -10826,6 +10858,7 @@ oj._registerLegacyNamespaceProp('_ojListView', _ojListView);
  * @ojdisplayname Focus Styling
  * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
  * @memberof oj.ojListView
+ * @ojdeprecated {since: '21.0.0', description: "The Redwood design system does not allow this to be customized."}
  * @ojtsexample
  * &lt;oj-list-view class="oj-focus-highlight">
  *   &lt;!-- Content -->

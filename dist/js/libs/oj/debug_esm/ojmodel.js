@@ -948,18 +948,6 @@ RestImpl.addOptions = function (starter, options, customOptions) {
     }
   });
 
-  if (options && options.oauthHeader) {
-    // if there are no any headers then create a new one.
-    if (!initial[RestImpl._HEADER_PROP]) initial[RestImpl._HEADER_PROP] = {};
-    Object.keys(options.oauthHeader || {}).forEach(function (prop) {
-      if (Object.prototype.hasOwnProperty.call(options.oauthHeader, prop)) {
-        if (!Object.prototype.hasOwnProperty.call(initial[RestImpl._HEADER_PROP], prop)) {
-          initial[RestImpl._HEADER_PROP][prop] = options.oauthHeader[prop];
-        }
-      }
-    });
-  }
-
   return initial;
 };
 
@@ -1111,7 +1099,7 @@ RestImpl._emulateJSON = function (options) {
 
 RestImpl.prototype._getURL = function (operation, rootURL, customURL, recordID, context, options) {
   var httpMethod = this._getHTTPMethod(operation, options);
-  if ($.isFunction(customURL)) {
+  if (typeof customURL === 'function') {
     var result = customURL.call(
       this,
       operation,
@@ -1243,13 +1231,13 @@ RestImpl.SetCustomURLOptions = function (recordID, context, opt) {
  */
 RestImpl.GetPropValue = function (obj, property) {
   if (obj) {
-    if ($.isFunction(obj[property])) {
+    if (typeof obj[property] === 'function') {
       return obj[property]();
     }
 
     return obj[property];
   }
-  return $.isFunction(property) ? property() : property;
+  return typeof property === 'function' ? property() : property;
 };
 
 /**
@@ -1443,7 +1431,7 @@ Model._init = function (model, attributes, opt, properties) {
   if (model.defaults && !options.ignoreDefaults) {
     // eslint-disable-next-line no-param-reassign
     model.attributes = Model._cloneAttributes(
-      $.isFunction(model.defaults) ? model.defaults() : model.defaults,
+      typeof model.defaults === 'function' ? model.defaults() : model.defaults,
       null
     );
   }
@@ -1458,7 +1446,7 @@ Model._init = function (model, attributes, opt, properties) {
 
   if (attributes) {
     parse = options.parse;
-    if ($.isFunction(parse)) {
+    if (typeof parse === 'function') {
       model.parse = parse; // eslint-disable-line no-param-reassign
     }
 
@@ -1759,7 +1747,7 @@ Model.prototype.SetupId = function () {
   // Ask for collection's function if available
   if (this.collection && this.collection.modelId) {
     var modFunc = this.collection.modelId;
-    id = $.isFunction(modFunc) ? modFunc.call(this.collection, this.attributes) : modFunc;
+    id = typeof modFunc === 'function' ? modFunc.call(this.collection, this.attributes) : modFunc;
   }
   if (!id) {
     var idAttr = this._getIdAttr();
@@ -1959,16 +1947,16 @@ Model._cloneAttributes = function (oldData, nd) {
     oj.CollectionUtils.copyInto(newData, oldData, undefined, true, 10000);
     return newData;
   }
-  var type;
+  var value;
   // eslint-disable-next-line no-restricted-syntax, guard-for-in
   for (prop in oldData) {
-    type = $.type(oldData[prop]);
+    value = oldData[prop];
     if (
-      type === 'function' ||
-      type === 'undefined' ||
-      type === 'date' ||
-      type === 'array' ||
-      type === 'object'
+      typeof value === 'function' ||
+      value === undefined ||
+      value instanceof Date ||
+      Array.isArray(value) ||
+      (value !== null && typeof value === 'object')
     ) {
       canUseJson = false;
       break;
@@ -2203,7 +2191,7 @@ Model.prototype.fetch = function (options) {
     }
     Model._fireSyncEvent(self, response, opts, false);
 
-    if ($.isFunction(self.parse)) {
+    if (typeof self.parse === 'function') {
       self.set(self.parse(response), opts);
     }
     if (success) {
@@ -2670,7 +2658,7 @@ Model.prototype.save = function (attributes, options) {
       }
 
       if (resp && !oj.Object.isEmpty(resp)) {
-        if ($.isFunction(self.parse)) {
+        if (typeof self.parse === 'function') {
           attrs = self.parse(resp);
         } else {
           attrs = resp;
@@ -2720,7 +2708,7 @@ Model.prototype.save = function (attributes, options) {
       tempOpts.xhr = opts.xhr;
     }
     if (resp && !oj.Object.isEmpty(resp)) {
-      if ($.isFunction(self.parse)) {
+      if (typeof self.parse === 'function') {
         attrs = self.parse(resp);
       } else {
         attrs = resp;
@@ -3163,10 +3151,6 @@ Model.prototype.sync = function (method, model, options) {
  */
 Model._internalSync = function (method, model, opt) {
   var options = opt || {};
-  // If Model/Collection has OAuth object, then create Authorization header (see RestImpl.addOptions)
-  if (model.oauth) {
-    options.oauthHeader = model.oauth.getHeader();
-  }
 
   // Make sure to transfer the data type if it's set on the calling object
   if (!options.dataType && model.dataType) {
@@ -4315,7 +4299,7 @@ Collection.prototype._setLength = function () {
  */
 Collection._createModel = function (collection, attrs, options) {
   if (collection.model) {
-    return $.isFunction(collection.model)
+    return typeof collection.model === 'function'
       ? new collection.model(attrs, options) // eslint-disable-line new-cap
       : new collection.model.constructor(attrs, options); // eslint-disable-line new-cap
   }
@@ -4780,7 +4764,7 @@ Collection.SortFunc = function (a, b, comparator, collection, self) {
   var i;
   var retVal;
 
-  if ($.isFunction(comparator)) {
+  if (typeof comparator === 'function') {
     // How many args?
     if (comparator.length === 1) {
       // "sortBy" comparator option
@@ -4842,7 +4826,7 @@ Collection.prototype.sortedIndex = function (model, comparator) {
     var keyA;
     var keyB;
 
-    if ($.isFunction(comp)) {
+    if (typeof comp === 'function') {
       // How many args?
       if (comp.length === 1) {
         // "sortBy" comparator option
@@ -4960,7 +4944,7 @@ Collection.prototype.unshift = function (m, options) {
  * @private
  */
 Collection.prototype._handlePromise = function (result) {
-  if ($.isFunction(result.then)) {
+  if (typeof result.then === 'function') {
     return this._addPromise(function () {
       return result;
     });
@@ -5853,7 +5837,7 @@ Collection.prototype.get = function (id, options) {
   var internalGet = this._getInternal(id, options, deferred);
   if (internalGet) {
     // Is this a deferred object?
-    if ($.isFunction(internalGet.then)) {
+    if (typeof internalGet.then === 'function') {
       return this._addPromise(function () {
         return new Promise(function (resolve, reject) {
           internalGet.then(
@@ -7339,7 +7323,7 @@ Collection.prototype.sortBy = function (iterator, context) {
     var keyA;
     var keyB;
 
-    if ($.isFunction(iterator)) {
+    if (typeof iterator === 'function') {
       // "sortBy" comparator option
       keyA = iterator.call(context || self, a);
       keyB = iterator.call(context || self, b);
@@ -7374,7 +7358,7 @@ Collection.prototype.groupBy = function (iterator, context) {
   this._throwErrIfVirtual('groupBy');
 
   this._getModels().forEach(function (model) {
-    if ($.isFunction(iterator)) {
+    if (typeof iterator === 'function') {
       groupVal = iterator.call(context || this, model);
     } else {
       groupVal = model.get(iterator);
@@ -7408,7 +7392,7 @@ Collection.prototype.indexBy = function (iterator, context) {
   this._throwErrIfVirtual('indexBy');
 
   this._getModels().forEach(function (model) {
-    if ($.isFunction(iterator)) {
+    if (typeof iterator === 'function') {
       index = iterator.call(context || this, model);
     } else {
       index = model.get(iterator);
@@ -8232,7 +8216,7 @@ Collection._getQueryString = function (q) {
             var value = val[j].value;
             var compare = null;
             var comparator = val[j].comparator;
-            if ($.isFunction(comparator)) {
+            if (typeof comparator === 'function') {
               compare = comparator(null, prop, value);
             } else {
               compare = comparator;
@@ -8298,7 +8282,7 @@ Collection.prototype.ModifyOptionsForCustomURL = function (options) {
  */
 Collection.prototype.IsUrlBased = function (options) {
   var customURL = this.customURL;
-  if ($.isFunction(customURL)) {
+  if (typeof customURL === 'function') {
     return true;
   }
   var url = this.GetCollectionFetchUrl(options);
@@ -8331,27 +8315,27 @@ Collection.prototype.GetCollectionFetchUrl = function (opt) {
     } else {
       url += '?';
     }
-    url += 'limit=' + limit;
+    url += 'limit=' + encodeURIComponent(limit);
 
     if (!all) {
       if (Collection._defined(options.startIndex)) {
-        url += '&offset=' + options.startIndex;
+        url += '&offset=' + encodeURIComponent(options.startIndex);
       }
       if (options.startID) {
-        url += '&fromID=' + options.startID;
+        url += '&fromID=' + encodeURIComponent(options.startID);
       }
       if (options.since) {
-        url += '&since=' + options.since;
+        url += '&since=' + encodeURIComponent(options.since);
       }
       if (options.until) {
-        url += '&until=' + options.until;
+        url += '&until=' + encodeURIComponent(options.until);
       }
     }
     // Query
     if (options.query) {
       var queryString = Collection._getQueryString(options.query);
       if (queryString && queryString.length > 0) {
-        url += '&q=' + queryString;
+        url += '&q=' + encodeURIComponent(queryString);
       }
     }
 
@@ -8360,13 +8344,16 @@ Collection.prototype.GetCollectionFetchUrl = function (opt) {
     if (comparator && oj.StringUtils.isString(comparator)) {
       var attrs = this._getSortAttrs(comparator);
       var sortDirStr = this._getSortDirStr();
+      var orderBy = '';
       var i;
       for (i = 0; i < attrs.length; i++) {
-        if (i === 0) {
-          url += '&orderBy=' + attrs[i] + ':' + sortDirStr;
-        } else {
-          url += ',' + attrs[i] + ':' + sortDirStr;
+        if (i > 0) {
+          orderBy += ',';
         }
+        orderBy += attrs[i] + ':' + sortDirStr;
+      }
+      if (orderBy.length > 0) {
+        url += '&orderBy=' + encodeURIComponent(orderBy);
       }
     }
     // Always ask for totalresults
@@ -8410,268 +8397,4 @@ Collection.prototype.sync = function (method, collection, options) {
  */
 Collection._FETCH_SIZE_PROP = 'fetchSize';
 
-/**
- * @export
- * @class OAuth
- * @classdesc Member of Model objects. Object representing name/value pairs for a data service record
- *
- * @param {Object} attributes Initial set of attribute/value pairs with which to seed this OAuth object
- * @param {string} header Actual name for the Authorization header (default 'Authorization')
- * @example <caption>Initialize OAuth with client credentials</caption>
- * var myOAuth = new OAuth('X-Authorization', {...Client Credentials ...});
- *
- * @example <caption>Initialize OAuth with access_token</caption>
- * var myOAuth = new OAuth('X-Authorization', {...Access Token...});
- *
- * @example <caption>Initialize empty OAuth and set access_token</caption>
- * var myOAuth = new OAuth();
- * myOAuth.setAccessTokenResponse({...Access Token...});
- *
- * @constructor
- * @final
- * @since 1.0.0
- */
-const OAuth = function (header, attributes) {
-  OAuth._init(this, attributes || {}, header || 'Authorization');
-};
-
-oj._registerLegacyNamespaceProp('OAuth', OAuth);
-
-// Subclass from oj.Object
-oj.Object.createSubclass(OAuth, oj.Object, 'oj.OAuth');
-
-OAuth.prototype.Init = function () {
-  OAuth.superclass.Init.call(this);
-};
-
-/**
- * Calculates Authorization header based on client credentials or access_token
- * @return {Object} OAuth 2.0 Authorization header
- * @example <caption>Get Authorization header</caption>
- * myOAuth.getHeader();
- *
- * @memberof OAuth
- * @export
- */
-OAuth.prototype.getHeader = function () {
-  var headers = {};
-  if (!this.accessTokenResponse.access_token) {
-    this.clientCredentialGrant();
-  }
-  headers[this.accessTokenRequest.auth_header] = 'Bearer ' + this.accessTokenResponse.access_token;
-  return headers;
-};
-
-/**
- * Check is OAuth initialized (not null access_token).
- * @return {boolean} true/false
- * @example <caption>Check if OAuth initialized</caption>
- * if(myOAuth.isInitialized()) console.log('Initialized');
- *
- * @memberof OAuth
- * @export
- */
-OAuth.prototype.isInitialized = function () {
-  if (this.accessTokenResponse && this.accessTokenResponse.access_token) {
-    return true;
-  }
-  return false;
-};
-
-/**
- * Request for access_token(bearer token) using Client Credential Authorization Grant.
- * Initialize response part of the OAuth object (access_token, e.t.c.)
- * @return {undefined}
- * @example <caption>Set/Re-set response part of the OAuth object using Client Credentials</caption>
- * myOAuth.clientCredentialGrant();
- *
- * @memberof OAuth
- * @export
- */
-OAuth.prototype.clientCredentialGrant = function () {
-  var headers = {};
-  var self = this;
-  headers[self.accessTokenRequest.auth_header] =
-    'Basic ' +
-    OAuth._base64_encode(
-      self.accessTokenRequest.client_id + ':' + self.accessTokenRequest.client_secret
-    );
-
-  $.ajax({
-    type: 'POST',
-    async: false,
-    url: this.accessTokenRequest.bearer_url,
-    data: 'grant_type=client_credentials',
-    headers: headers,
-    success: function (data) {
-      self.accessTokenResponse = OAuth._initAccessToken(self.accessTokenResponse, data);
-    },
-    error: function (jqXHR) {
-      throw new Error(jqXHR.responseText);
-    }
-  });
-};
-
-/**
- * Set response part of the OAuth object (access_token, e.t.c.)
- * @param {Object} data current response
- * @return {undefined}
- * @example <caption>'Initialize' response part of the OAuth object with access_token</caption>
- * myOAuth.setAccessTokenResponse({...Access Token...});
- *
- * @memberof OAuth
- * @export
- */
-OAuth.prototype.setAccessTokenResponse = function (data) {
-  this.accessTokenResponse = OAuth._initAccessToken(this.accessTokenResponse, data);
-};
-
-/**
- * Get response part of the OAuth object (access_token, e.t.c.)
- * @return {Object} cached response
- * @memberof OAuth
- * @export
- */
-OAuth.prototype.getAccessTokenResponse = function () {
-  return this.accessTokenResponse;
-};
-
-/**
- * Clean response part of the OAuth object (access_token, e.t.c.)
- * Null and remove all data from response part of the OAuth object
- * @return {undefined}
- * @memberof OAuth
- * @export
- */
-OAuth.prototype.cleanAccessTokenResponse = function () {
-  OAuth._cleanAccessToken(this.accessTokenResponse);
-};
-
-/**
- * Set request part of the OAuth object (client credentials, uri endpoint)
- * @param {Object} data current client credentials and uri
- * @return {undefined}
- * @example <caption>'Initialize' request part of the OAuth object with client credentials and calculate
- * access_token</caption>
- * myOAuth.setAccessTokenRequest({...Client Credentials ...});
- * myOAuth.clientCredentialGrant();
- *
- * @memberof OAuth
- * @export
- */
-OAuth.prototype.setAccessTokenRequest = function (data) {
-  this.accessTokenRequest = OAuth._initAccessToken(this.accessTokenRequest, data);
-};
-
-/**
- * Get request part of the OAuth object (client credentials, uri endpoint)
- * @return {Object} cached request
- * @memberof OAuth
- * @export
- */
-OAuth.prototype.getAccessTokenRequest = function () {
-  return this.accessTokenRequest;
-};
-
-/**
- * Clean request part of the OAuth object (client credentials, uri endpoint)
- * Null and remove all data from request part of the OAuth object
- * @return {undefined}
- * @memberof OAuth
- * @export
- */
-OAuth.prototype.cleanAccessTokenRequest = function () {
-  OAuth._cleanAccessToken(this.accessTokenRequest);
-};
-
-/**
- * @private
- * @param {Object} oauth
- * @param {Object} attributes
- * @param {string|null} header
- */
-OAuth._init = function (oauth, attributes, header) {
-  var oa = oauth;
-  oa.Init();
-  oa.accessTokenRequest = {};
-  oa.accessTokenResponse = {};
-
-  if (attributes.access_token) {
-    // access_token has higher preference
-    oa.accessTokenResponse = OAuth._initAccessToken(oa.accessTokenResponse, attributes);
-  } else if (attributes.client_id && attributes.client_secret && attributes.bearer_url) {
-    // Client Credential Grant
-    oa.accessTokenResponse = OAuth._initAccessToken(oa.accessTokenRequest, attributes);
-  }
-  oa.accessTokenRequest.auth_header = header;
-};
-
-/**
- * @private
- * @param {Object} oauthObj - Request/Response object to deal with
- * @param {Object} data - object to populate
- */
-OAuth._initAccessToken = function (oauthObj, data) {
-  var dat = data || {};
-  var obj = oauthObj || {};
-  Object.keys(dat).forEach(function (prop) {
-    if (Object.prototype.hasOwnProperty.call(dat, prop)) {
-      obj[prop] = dat[prop];
-    }
-  });
-  return obj;
-};
-
-/**
- * @private
- * @param {Object} oauthObj - Request/Response object to deal with
- */
-OAuth._cleanAccessToken = function (oauthObj) {
-  var obj = oauthObj || {};
-
-  Object.keys(obj).forEach(function (key) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      if (key !== 'auth_header') {
-        obj[key] = null;
-        delete obj[key];
-      }
-    }
-  });
-};
-
-/**
- * @private
- * @param {string} a The data to calculate the base64 representation from
- * @return {string} The base64 representation
- */
-OAuth._base64_encode = function (a) {
-  var d;
-  var e;
-  var f;
-  var b;
-  var g = 0;
-  var h = 0;
-  var i = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-  var c = [];
-
-  do {
-    d = a.charCodeAt(g);
-    g += 1;
-    e = a.charCodeAt(g);
-    g += 1;
-    f = a.charCodeAt(g);
-    g += 1;
-    b = (d << 16) | (e << 8) | f; // eslint-disable-line no-bitwise
-    d = (b >> 18) & 63; // eslint-disable-line no-bitwise
-    e = (b >> 12) & 63; // eslint-disable-line no-bitwise
-    f = (b >> 6) & 63; // eslint-disable-line no-bitwise
-    b &= 63; // eslint-disable-line no-bitwise
-    c[h] = i.charAt(d) + i.charAt(e) + i.charAt(f) + i.charAt(b);
-    h += 1;
-  } while (g < a.length);
-  c = c.join('');
-  d = a.length % 3;
-  return (d ? c.slice(0, d - 3) : c) + '==='.slice(d || 3);
-};
-
-export { Collection, Events, Model, OAuth, URLError, ajax, sync };
+export { Collection, Events, Model, URLError, ajax, sync };

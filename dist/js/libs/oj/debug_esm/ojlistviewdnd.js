@@ -577,8 +577,8 @@ ListViewDndContext.prototype.SetDragItemImage = function (nativeEvent, items) {
       clone = $(items[i].cloneNode(true));
       clone.removeClass('oj-selected oj-focus oj-hover').css({
         position: 'absolute',
-        top: offsetTop,
-        width: offsetWidth
+        top: offsetTop + 'px',
+        width: offsetWidth + 'px'
       });
       if (!isCardLayout) {
         clone.addClass('oj-listview-item-drag-image');
@@ -610,7 +610,7 @@ ListViewDndContext.prototype.SetDragItemImage = function (nativeEvent, items) {
     dragImage
       .css({
         width: this.GetDragImageWidth(items[0]),
-        height: items[0].offsetHeight * 2
+        height: items[0].offsetHeight * 2 + 'px'
       })
       .append(clone); // @HTMLUpdateOK
   }
@@ -833,11 +833,14 @@ ListViewDndContext.prototype._createDropTarget = function (item) {
     var dropTarget;
     if (type === 'space') {
       dropTarget = $(item.get(0).cloneNode(false));
-      dropTarget.addClass('oj-drop').removeClass('oj-drag oj-draggable oj-hover oj-focus').css({
-        display: 'block',
-        height: item.outerHeight(),
-        width: item.outerWidth()
-      });
+      dropTarget
+        .addClass('oj-drop')
+        .removeClass('oj-drag oj-draggable oj-hover oj-focus')
+        .css({
+          display: 'block',
+          height: item.outerHeight() + 'px',
+          width: item.outerWidth() + 'px'
+        });
     } else if (type === 'line') {
       dropTarget = document.createElement('li');
       dropTarget.classList.add('oj-listview-drop-target');
@@ -998,7 +1001,7 @@ ListViewDndContext.prototype._adjustGroupItemStyle = function () {
   if (this.m_maxHeightAdjusted == null && this.listview._isTouchSupport()) {
     this.listview.element.find('ul.' + this.listview.getGroupStyleClass()).each(function () {
       $(this).attr('oldMaxHeight', $(this).css('maxHeight').toString());
-      $(this).css('maxHeight', 10000);
+      $(this).css('maxHeight', '10000px');
     });
 
     this.m_maxHeightAdjusted = 'adjusted';
@@ -1012,7 +1015,7 @@ ListViewDndContext.prototype._adjustGroupItemStyle = function () {
 ListViewDndContext.prototype._restoreGroupItemStyle = function () {
   if (this.listview._isTouchSupport()) {
     this.listview.element.find('ul.' + this.listview.getGroupStyleClass()).each(function () {
-      $(this).css('maxHeight', parseInt($(this).attr('oldMaxHeight'), 10));
+      $(this).css('maxHeight', $(this).attr('oldMaxHeight'));
       $(this).removeAttr('oldMaxHeight');
     });
   }
@@ -1679,7 +1682,7 @@ ListViewDndContext.prototype._handleCut = function (event) {
 
   var items = this.GetCutItems(event);
   // focus should be moved back to listview after context menu is closed
-  this.listview.ojContext.element.focus();
+  this.listview.ojContext.element.trigger('focus');
   $(items).addClass(this.GetCutStyleClass());
   this.m_clipboard = items;
 

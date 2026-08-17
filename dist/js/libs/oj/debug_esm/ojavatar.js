@@ -16,6 +16,28 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+const encodeCssUrlControlCharacter = (char) => {
+    const hex = char.charCodeAt(0).toString(16).toUpperCase();
+    return `%${hex.length < 2 ? '0' + hex : hex}`;
+};
+const escapeCssUrlString = (url) => {
+    let escapedUrl = '';
+    for (let i = 0; i < url.length; i++) {
+        const char = url.charAt(i);
+        const charCode = char.charCodeAt(0);
+        if (char === '"' || char === '\\') {
+            escapedUrl += `\\${char}`;
+        }
+        else if (charCode <= 0x1f || charCode === 0x7f) {
+            escapedUrl += encodeCssUrlControlCharacter(char);
+        }
+        else {
+            escapedUrl += char;
+        }
+    }
+    return escapedUrl;
+};
+const getCssUrl = (url) => `url("${escapeCssUrlString(url)}")`;
 /**
  * @classdesc
  * <h3 id="avatarOverview-section">
@@ -125,7 +147,7 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
  *     "minColumns": "1"
  *   }
  * }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/20.1/reference-api/oj.ojAvatar.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojAvatar.html"
  * @ojmetadata propertyLayout [
  *   {
  *     "propertyGroup": "common",
@@ -301,7 +323,7 @@ let Avatar = class Avatar extends Component {
     }
     _getInnerContent(props) {
         if (props.src && !props.iconClass) {
-            return (jsx("div", { class: "oj-avatar-background-image", style: { backgroundImage: `url("${props.src}")` } }));
+            return (jsx("div", { class: "oj-avatar-background-image", style: { backgroundImage: getCssUrl(props.src) } }));
         }
         else {
             return jsx("div", { class: "oj-avatar-background oj-avatar-background-image" });

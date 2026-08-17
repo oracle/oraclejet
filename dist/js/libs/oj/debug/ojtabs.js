@@ -847,7 +847,7 @@ function(oj, $, Components, DomUtils)
       clearTimeout(this.activating);
 
       var selTab = $(enabledTabs[selectedIndex]);
-      selTab.focus();
+      selTab.trigger('focus');
 
       // Navigating with control key will prevent automatic activation
       if (!event.ctrlKey) {
@@ -885,7 +885,7 @@ function(oj, $, Components, DomUtils)
       // Ctrl+up moves focus to the current tab
       if (event.ctrlKey && event.keyCode === $.ui.keyCode.UP) {
         event.preventDefault();
-        this.active.focus();
+        this.active.trigger('focus');
       }
     },
 
@@ -925,7 +925,7 @@ function(oj, $, Components, DomUtils)
       }
 
       var selTab = $(enabledTabs[currentIndex]);
-      selTab.focus();
+      selTab.trigger('focus');
       return selTab;
     },
 
@@ -1336,7 +1336,7 @@ function(oj, $, Components, DomUtils)
         afterToggle: function (eventtype) {
           // after mousedown, clear the "oj-focus-highlight" class
           if (eventtype === 'mousedown') {
-            enabledTabs.filter('.oj-focus-highlight').blur();
+            enabledTabs.filter('.oj-focus-highlight').trigger('blur');
           }
         }
       });
@@ -2430,14 +2430,14 @@ function(oj, $, Components, DomUtils)
       var menu = newVal || this.options.contextMenu;
 
       if (menu) {
-        var t = $.type(menu);
+        var t = typeof menu;
         if (t === 'function') {
           try {
             menu = menu(); // call user's method to get the context menu
           } catch (e) {
             menu = null;
           }
-          t = $.type(menu);
+          t = typeof menu;
         }
 
         if (menu) {
@@ -2522,7 +2522,7 @@ function(oj, $, Components, DomUtils)
       $menuContainer.ojMenu('refresh');
 
       // Add our listeners so that we can handle build-in remove, cut/paste
-      $menuContainer.on('ojselect', $.proxy(this._handleContextMenuSelect, this));
+      $menuContainer.on('ojselect', this._handleContextMenuSelect.bind(this));
     },
 
     /**
@@ -2597,8 +2597,8 @@ function(oj, $, Components, DomUtils)
       this.refresh();
 
       // remove the "oj-focus-highlight" class from the old active tab
-      prevTab.blur();
-      mvTab.focus();
+      prevTab.trigger('blur');
+      mvTab.trigger('focus');
 
       // fire reorder event
       this._trigger('reorder', event, eventData);

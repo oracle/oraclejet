@@ -1617,7 +1617,7 @@ var __oj_treemap_node_metadata =
     _GetComponentRendererOptions: function () {
       return [
         { path: 'tooltip/renderer', slot: 'tooltipTemplate' },
-        { path: 'nodeContent/renderer', slot: 'nodeContentTemplate' }
+        { path: 'nodeContent/renderer', slot: 'nodeContentTemplate', processTemplate: true }
       ];
     },
 

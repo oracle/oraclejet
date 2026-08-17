@@ -10,7 +10,12 @@
  */
 
 
+const {BundleFunction} = require('./bundleParser');
+
 function stringifyWithFunctions(obj) {
+  if (obj instanceof BundleFunction) {
+    return obj.source;
+  }
   if (Array.isArray(obj)) {
     const vals = obj.map((val) => {
       return stringifyWithFunctions(val);
@@ -29,9 +34,38 @@ function stringifyWithFunctions(obj) {
 }
 
 function isObject(item) {
-  return item && typeof item === 'object' && !Array.isArray(item);
+  return item && typeof item === 'object' && !Array.isArray(item) && !(item instanceof BundleFunction);
+}
+
+function isBlockedKey(key) {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
+
+function mergeDeep(target, ...sources) {
+  if (!sources.length) return target;
+  const source = sources.shift();
+
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach((key) => {
+      if (!isBlockedKey(key)) {
+        const sourceValue = source[key];
+        if (isObject(sourceValue)) {
+          if (!Object.prototype.hasOwnProperty.call(target, key) || !target[key]) {
+            target[key] = {};
+          }
+          if (isObject(target[key])) {
+            mergeDeep(target[key], sourceValue);
+          }
+        } else {
+          target[key] = sourceValue;
+        }
+      }
+    });
+  }
+
+  return mergeDeep(target, ...sources);
 }
 
 
 
-module.exports = {stringifyWithFunctions, isObject};
+module.exports = {stringifyWithFunctions, isObject, mergeDeep};

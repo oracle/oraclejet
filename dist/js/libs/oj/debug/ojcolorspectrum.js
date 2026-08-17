@@ -643,6 +643,8 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
           if (ariaLabelString) {
             // Set the aria-label of the thumb to the returned string
             this._$spectrumThumb.attr('aria-label', ariaLabelString);
+            // The host is not focusable, so keep the accessible name on the thumb only.
+            this.element.removeAttr('aria-label');
           }
         }
       },
@@ -733,8 +735,12 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
        * @memberof oj.ojColorSpectrum
        * @instance
        * @private
-       */
+      */
       _labelledByUpdatedForSet: LabeledByUtils._labelledByUpdatedForSet,
+
+      _GetAriaLabelElement: function () {
+        return this._$spectrumThumb ? this._$spectrumThumb[0] : this._getRootElement();
+      },
 
       /**
        * @memberof oj.ojColorSpectrum
@@ -1116,7 +1122,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
         this._setSatLum(sat, lum);
 
         this._setThumbPosition(xDisp, yDisp);
-        this._$spectrumThumb.focus();
+        this._$spectrumThumb.trigger('focus');
       },
 
       /**
@@ -1581,15 +1587,15 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
         this._setSpectrumHue(this._hueVal, this._satVal, this._lumVal, this._alphaVal, true);
 
         // Add listeners for the spectrum and the spectrum thumb
-        this._$spectrum.click(this._spectrumClick.bind(this));
+        this._$spectrum.on('click', this._spectrumClick.bind(this));
         this._initThumbDraggable();
         this._setOptDisabled(disabled);
 
         // Add keyboard listeners
-        this._$spectrumThumb.keydown(this._keyDown.bind(this));
-        this._$spectrumThumb.keyup(this._keyUp.bind(this));
+        this._$spectrumThumb.on('keydown', this._keyDown.bind(this));
+        this._$spectrumThumb.on('keyup', this._keyUp.bind(this));
 
-        this._$spectrum.focus(this._nofocus.bind(this));
+        this._$spectrum.on('focus', this._nofocus.bind(this));
 
         // Focus ring
         this._focusable({
@@ -1612,7 +1618,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
        */
       // eslint-disable-next-line no-unused-vars
       _nofocus: function (e) {
-        this._$spectrumThumb.focus();
+        this._$spectrumThumb.trigger('focus');
         return false;
       },
 

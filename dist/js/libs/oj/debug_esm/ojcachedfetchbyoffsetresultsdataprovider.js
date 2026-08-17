@@ -21,6 +21,19 @@ class CachedFetchByOffsetResultsDataProvider {
         this.options = options;
         this.cache = new oj.DataCache();
         this._lastFetchParams = null;
+        // override dispatch event to ensure it acts the same on base DP as on the caching DP layer
+        // required for FA apps - this is now official API specific to the DP returned by calls to
+        // DataProviderFactory.getEnhancedDataProvider with caching
+        const dispatchEvent = this.dispatchEvent.bind(this);
+        this.dispatchEvent = (event) => {
+            if (event.type === CachedFetchByOffsetResultsDataProvider._REFRESH) {
+                this._clearCachedParameters();
+            }
+            else if (event.type === CachedFetchByOffsetResultsDataProvider._MUTATE) {
+                this.cache.processMutations(event.detail);
+            }
+            return dispatchEvent(event);
+        };
         // Add createOptimizedKeyMap method to this DataProvider if the wrapped DataProvider supports it
         if (dataProvider.createOptimizedKeyMap) {
             this.createOptimizedKeyMap = (initialMap) => {
@@ -35,15 +48,10 @@ class CachedFetchByOffsetResultsDataProvider {
         }
         // Listen to mutate event on wrapped DataProvider
         dataProvider.addEventListener(CachedFetchByOffsetResultsDataProvider._MUTATE, (event) => {
-            // First allow the cache to process the mutations, which may result in different detail
-            this.cache.processMutations(event.detail);
-            // Then fire mutate with new detail
             this.dispatchEvent(event);
         });
         // Listen to refresh event on wrapped DataProvider
         dataProvider.addEventListener(CachedFetchByOffsetResultsDataProvider._REFRESH, (event) => {
-            // Invalidate the cache on refresh event
-            this._clearCachedParameters();
             this.dispatchEvent(event);
         });
     }

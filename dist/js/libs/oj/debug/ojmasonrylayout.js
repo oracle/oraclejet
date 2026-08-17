@@ -3463,7 +3463,7 @@ var __oj_masonry_layout_metadata =
         }
 
         menu = newVal || menu;
-        t = $.type(menu);
+        t = typeof menu;
         if (t === 'function') {
           try {
             // call user's method to get the context menu
@@ -3471,7 +3471,7 @@ var __oj_masonry_layout_metadata =
           } catch (e) {
             menu = null;
           }
-          t = $.type(menu);
+          t = typeof menu;
         }
 
         if (!menu) {

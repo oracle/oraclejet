@@ -1411,6 +1411,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
         alta: dvt.JsonUtils.merge(defaultsMap['alta'], SKIN_ALTA)
       });
     }
+
+    getNoCloneObject() {
+      const noClone = super.getNoCloneObject();
+      noClone.metricLabel = { converter: true };
+      return noClone;
+    }
   }
 
   /**
@@ -1809,7 +1815,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
      */
     SetOptions(options) {
       // NOTE: This extra clone should be removed once we stop supporting the deprecated attrs
-      options = dvt.JsonUtils.clone(options);
+      options = dvt.JsonUtils.clone(options, null, this.Defaults.getNoCloneObject());
 
       if (options['title']) {
         options['label'] = options['title'];
@@ -4402,7 +4408,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
      */
     SetOptions(options) {
       // NOTE: This extra clone should be removed once we stop supporting the deprecated attrs
-      options = dvt.JsonUtils.clone(options);
+      options = dvt.JsonUtils.clone(options, null, this.Defaults.getNoCloneObject());
 
       if (options['title']) options['label'] = options['title'];
 

@@ -1208,7 +1208,7 @@ OffcanvasUtils._openReflow = function (offcanvas, resolve, reject, edge) {
 
     // animate on min-width
     window.setTimeout(function () {
-      drawer.css('min-width', size);
+      drawer.css('min-width', typeof size === 'number' ? size + 'px' : size);
 
       OffcanvasUtils._toggleOuterWrapper(offcanvas, drawer, false);
     }, 10);
@@ -2093,7 +2093,7 @@ OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
       }
 
       delta = Math.abs(delta);
-      drawer.css('width', delta);
+      drawer.css('width', delta + 'px');
 
       // don't do css transition animation while panning
       wrapper.removeClass(OffcanvasUtils.TRANSITION_SELECTOR);

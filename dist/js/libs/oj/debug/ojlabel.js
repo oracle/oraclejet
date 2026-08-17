@@ -267,6 +267,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
      * @ojdisplayname Focus Styling
      * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
      * @memberof oj.ojLabel
+     * @ojdeprecated {since: '21.0.0', description: "The Redwood design system does not allow this to be customized."}
      * @ojtsexample
      * &lt;oj-label class="oj-focus-highlight">
      *   &lt;!-- Content -->
@@ -403,11 +404,14 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
          * and holds the help icon on a mobile device. No formatted text is available for
          * help definition attribute.</li>
          * <li><code class="prettyprint">source</code> - this is the help source url.
-         * If present, a help icon will
-         * render next to the label. For security reasons
-         *  we only support urls with protocol http: or https:.
-         * If the url doesn't comply we ignore it and throw an error.
-         * Pass in an encoded URL since we do not encode the URL.
+         * If present, a help icon will render next to the label.
+         * <p><b>Note:</b> For security, JET validates the URL protocol before navigation
+         * and currently supports <code class="prettyprint">http:</code> and
+         * <code class="prettyprint">https:</code> protocols. If the url doesn't
+         * comply we ignore it and throw an error. JET does not validate whether
+         * the URL is trusted for the application. Applications are responsible
+         * for providing sanitized URLs and enforcing any required origin or host
+         * allowlist. Pass in an encoded URL since we do not encode the URL.</p>
          * </ul>
          *
          * @expose
@@ -1399,6 +1403,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
         helpIconAnchor = document.createElement('a');
         helpIconAnchor.setAttribute('tabindex', '0');
         helpIconAnchor.setAttribute('target', '_blank');
+        helpIconAnchor.setAttribute('rel', 'noopener noreferrer');
         helpIconAnchor.className =
           'oj-label-help-icon-anchor oj-label-help-icon oj-component-icon oj-clickable-icon-nocontext';
         if (source) {

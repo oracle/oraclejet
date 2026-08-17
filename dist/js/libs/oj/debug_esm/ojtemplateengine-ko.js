@@ -11,10 +11,13 @@ import { TemplateEngineUtils, PreactTemplate } from 'ojs/ojtemplateengine-utils'
 import oj from 'ojs/ojcore';
 import { getTemplateContent } from 'ojs/ojhtmlutils';
 import { CACHED_BINDING_PROVIDER, AttributeUtils } from 'ojs/ojcustomelement-utils';
-import Context from 'ojs/ojcontext';
 import { warn } from 'ojs/ojlogger';
+import Context from 'ojs/ojcontext';
 
 const _propertyContribsCache = new WeakMap();
+function _getBlockedPropertyToken(tokens) {
+    return tokens.find((token) => oj.CollectionUtils._isBlockedKey(token));
+}
 class TemplateEngineKoInternal {
     constructor() {
         this._bindingProvider = {
@@ -35,8 +38,7 @@ class TemplateEngineKoInternal {
      * @ignore
      */
     executeTemplate(componentElement, templateElement, reportBusy, context, provided) {
-        const processedTemplate = templateElement._replacedNodes.templateCopy;
-        const tmpContainer = this._createAndPopulateContainer(processedTemplate, reportBusy);
+        const tmpContainer = this._createAndPopulateContainer(templateElement, reportBusy);
         let stampedNodes = tmpContainer.childNodes;
         for (let i = 0; i < stampedNodes.length; i++) {
             const stampedNode = stampedNodes[i];
@@ -88,6 +90,9 @@ class TemplateEngineKoInternal {
             // Handle the 'dot' notation for bound subprops
             var propTokens = prop.split('.');
             if (propertySet.has(propTokens[0])) {
+                if (this._shouldSkipPropertyPath(propTokens)) {
+                    continue;
+                }
                 var info = AttributeUtils.getExpressionInfo(attr.value);
                 var expr = info.expr;
                 if (expr) {
@@ -124,6 +129,9 @@ class TemplateEngineKoInternal {
         const computed = pureComputed(() => {
             const boundValues = {};
             contribs.evalMap.forEach((evaluator, tokens) => {
+                if (this._shouldSkipPropertyPath(tokens)) {
+                    return;
+                }
                 var leafValue = utils.unwrapObservable(evaluator(context));
                 if (propertyValidator) {
                     propertyValidator(tokens, leafValue);
@@ -152,6 +160,14 @@ class TemplateEngineKoInternal {
         }
         current[tokens[lastIndex]] = value;
         return complexVal;
+    }
+    _shouldSkipPropertyPath(tokens) {
+        const blockedToken = _getBlockedPropertyToken(tokens);
+        if (blockedToken) {
+            warn(`Skipping template property path "${tokens.join('.')}" because it contains unsupported key "${blockedToken}".`);
+            return true;
+        }
+        return false;
     }
     /**
      *
@@ -294,6 +310,7 @@ class TemplateEnginePreactInternal {
     }
 }
 
+const _ORIGINAL_PROPERTIES = Symbol.for('_ojOriginalProps');
 /**
  * JET Template Engine implementation used by legacy components
  * with 'knockout' or 'none' binding providers.
@@ -320,14 +337,20 @@ class JetTemplateEngine {
      * @param {string} alias an alias for referencing the data within a template
      * @param {Element} reportBusy - optional element for bubblng busy states outside of the template
      * @param {Map} provided - optional provided context to be applied to template
+     * @param {TemplateExecutionOptions=} options - optional template execution options
      * @return {Array.<Node>} HTML nodes representing the result of the execution
      * @ignore
      */
-    execute(componentElement, templateElement, properties, alias, reportBusy, provided) {
+    execute(componentElement, templateElement, properties, alias, reportBusy, provided, options) {
         // Check to see if data-oj-as was defined on the template element as an additional
         // alias to provide to the template children
         const templateAlias = templateElement.getAttribute('data-oj-as');
-        const processedNodes = TemplateEngineUtils.processTemplate(templateElement);
+        // Preprocessing avoids repeated work only for templates that are stamped repeatedly. The
+        // default path intentionally retains original behavior, where KO preprocesses the
+        // cloned template at execution time.
+        const processedNodes = options?.processTemplate
+            ? TemplateEngineUtils.processTemplate(templateElement)
+            : undefined;
         let contextProperties = properties;
         if (processedNodes && processedNodes.replacementMap?.size > 0) {
             // proxy to support multiple templates being executed with the same properties instance
@@ -337,10 +360,15 @@ class JetTemplateEngine {
                     if (p === '_ojNodesMap') {
                         return nodesMap;
                     }
-                    if (p === Symbol.for('_ojOriginalProps')) {
+                    if (p === _ORIGINAL_PROPERTIES) {
                         return properties;
                     }
                     return Reflect.get(target, p, receiver);
+                },
+                has(target, p) {
+                    // Allow consumers to identify this internal proxy without treating a user-supplied
+                    // _ojNodesMap property as a processed-template marker.
+                    return p === _ORIGINAL_PROPERTIES || Reflect.has(target, p);
                 }
             });
         }
@@ -348,7 +376,7 @@ class JetTemplateEngine {
         if (templateElement.render) {
             return this._templateEngineVDOM.executeTemplate(componentElement, templateElement, reportBusy, context, provided);
         }
-        return this._templateEngineKO.executeTemplate(componentElement, templateElement, reportBusy, context, provided);
+        return this._templateEngineKO.executeTemplate(componentElement, processedNodes?.templateCopy ?? templateElement, reportBusy, context, provided);
     }
     /**
      * Cleans specified node

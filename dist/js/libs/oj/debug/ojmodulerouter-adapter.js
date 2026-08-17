@@ -51,6 +51,15 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
    *      animationCallback: animationCallback
    *    }
    * );
+   *
+   * // For RegExp routes that should load a fixed module, use pathKey to load an
+   * // explicit module name from route detail.
+   * var regexRouter = new CoreRouter([
+   *   { path: /order-[0-9]+/, detail: { module: 'orders/detail' } }
+   * ]);
+   * var regexAdapter = new ModuleRouterAdapter(regexRouter, {
+   *   pathKey: 'module'
+   * });
    * </code>
    * </pre>
    * @param {CoreRouter} router The instance of the CoreRouter, that manages application navigation for a page or a section of the page.
@@ -60,10 +69,17 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
    *                  the default path will be used - 'views/'.
    * @param {string=} options.viewModelPath The path to the model, relative to the RequireJS baseURL.
    *                  If the option is not provided the default path wil be used - 'viewModels/'.
-   * @param {string=} options.pathKey An optional key for retrieving module name from 'details' object on the router state.
+   * @param {string=} options.pathKey An optional key for retrieving module name from the 'detail' object on the router state.
    *                  By default the adapter will use the 'path' field of the router state as the name for the module.
-   *                  However when 'path' does not represent the name of the module, the name can be retrieved from 'details' object
-   *                  on the router state using specified pathKey.
+   *                  However when 'path' does not represent the name of the module, the name can be retrieved from the 'detail' object
+   *                  on the router state using specified pathKey. Blank module names produce an empty module configuration.
+   *                  Non-blank module names must be relative module identifiers made from nonempty slash-separated
+   *                  segments containing only ASCII letters, digits, <code>_</code>, <code>.</code>, and <code>-</code>,
+   *                  such as <code>dashboard</code> or <code>orders/detail</code>. A leading <code>./</code>,
+   *                  empty segments, <code>.</code> or <code>..</code> segments, backslashes, absolute paths, URL
+   *                  schemes, and traversal patterns are not supported. When a
+   *                  RegExp, catch-all, URL-derived, or user-controlled route path should not itself be the module
+   *                  name, use this option to map the matched route to an explicit allowed module name instead.
    * @param {Function=} options.require An optional instance of the require() function to be used
    *                  for loading the view and view model. By default the path is relative to the baseUrl
    *                  specified for the application require calls.
@@ -172,6 +188,17 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
       return _options.pathKey ? state.detail[_options.pathKey] : state.path;
     }
 
+    function isValidModulePath(modulePath) {
+      if (typeof modulePath !== 'string') {
+        return false;
+      }
+      return modulePath.split('/').every(function (segment) {
+        return (
+          segment !== '' && segment !== '.' && segment !== '..' && /^[A-Za-z0-9_.-]+$/.test(segment)
+        );
+      });
+    }
+
     // before state change handler
     function onBeforeStateChange(args) {
       // canExit must return a Promise resolution or rejection
@@ -185,32 +212,36 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
       var configPromise;
       var modulePath = getModulePathFromState(args ? args.state : null);
       if (modulePath) {
-        var currentModulePath = getModulePathFromState(_currentState);
-        // check if model path didn't change and we can just re-apply the parameters
-        // using parametersChanged() callback
-        if (
-          modulePath === currentModulePath &&
-          _moduleConfig().viewModel &&
-          _moduleConfig().viewModel.parametersChanged
-        ) {
-          _moduleConfig().viewModel.parametersChanged(args.state.params);
-          _currentState = args.state;
-          return;
-        }
-
-        var viewPath = _options.viewPath || 'views/';
-        var viewModelPath = _options.viewModelPath || 'viewModels/';
-        configPromise = ModuleUtils.createConfig({
-          require: _options.require,
-          viewPath: viewPath + modulePath + '.html',
-          viewModelPath: viewModelPath + modulePath,
-          params: {
-            parentRouter: _router,
-            params: args.state.params,
-            router: _router,
-            routerState: args.state
+        if (!isValidModulePath(modulePath)) {
+          configPromise = Promise.reject(new Error('Invalid module path'));
+        } else {
+          var currentModulePath = getModulePathFromState(_currentState);
+          // check if model path didn't change and we can just re-apply the parameters
+          // using parametersChanged() callback
+          if (
+            modulePath === currentModulePath &&
+            _moduleConfig().viewModel &&
+            _moduleConfig().viewModel.parametersChanged
+          ) {
+            _moduleConfig().viewModel.parametersChanged(args.state.params);
+            _currentState = args.state;
+            return;
           }
-        });
+
+          var viewPath = _options.viewPath || 'views/';
+          var viewModelPath = _options.viewModelPath || 'viewModels/';
+          configPromise = ModuleUtils.createConfig({
+            require: _options.require,
+            viewPath: viewPath + modulePath + '.html',
+            viewModelPath: viewModelPath + modulePath,
+            params: {
+              parentRouter: _router,
+              params: args.state.params,
+              router: _router,
+              routerState: args.state
+            }
+          });
+        }
       } else {
         configPromise = Promise.resolve({ view: [], viewModel: null });
       }

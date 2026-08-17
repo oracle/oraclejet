@@ -129,6 +129,12 @@ declare class ListItemLayoutProps {
      * <p>The <code class="prettyprint">action</code> slot is used for adding either one primary action or one or more secondary actions.
      * Note that navigation slot by default sets data-oj-clickthrough to "disabled", so that any
      * actions performed in the slot will not propagate to its parent component.
+     * To control context-menu gestures that originate in this slot, set <code class="prettyprint">data-oj-alt-clickthrough</code>
+     * to <code class="prettyprint">disabled</code> to prevent containing JET components from opening their context menus,
+     * or to <code class="prettyprint">enabled</code> to allow a menu when an interactive descendant would otherwise veto it.
+     * When both values occur between the gesture target and the owning component root, <code class="prettyprint">disabled</code>
+     * takes precedence over <code class="prettyprint">enabled</code>.
+     * The <code class="prettyprint">enabled</code> value does not override a context menu owned by a nested JET component.
      * @example
      * &lt;oj-list-item-layout>
      *    &lt;div slot="action">
@@ -159,6 +165,12 @@ declare class ListItemLayoutProps {
      * <p>The <code class="prettyprint">navigation</code> slot is used for adding a navigation control, such as a link or button.</p>
      * Note that navigation slot by default sets data-oj-clickthrough to "disabled", so that any
      * actions performed in the slot will not propagate to its parent component.
+     * To control context-menu gestures that originate in this slot, set <code class="prettyprint">data-oj-alt-clickthrough</code>
+     * to <code class="prettyprint">disabled</code> to prevent containing JET components from opening their context menus,
+     * or to <code class="prettyprint">enabled</code> to allow a menu when an interactive descendant would otherwise veto it.
+     * When both values occur between the gesture target and the owning component root, <code class="prettyprint">disabled</code>
+     * takes precedence over <code class="prettyprint">enabled</code>.
+     * The <code class="prettyprint">enabled</code> value does not override a context menu owned by a nested JET component.
      * @example
      * &lt;oj-list-item-layout>
      *    &lt;div slot="navigation">

@@ -2130,14 +2130,14 @@ var __oj_text_area_metadata =
         if (!this.options.readOnly && !this.options.disabled) {
           this._eventHandlers = {};
 
-          var focusHandler = $.proxy(this._onFocusHandler, this);
-          var blurHandler = $.proxy(this._onBlurHandler, this);
-          var keyDownHandler = $.proxy(this._onKeyDownHandler, this);
-          var keyUpHandler = $.proxy(this._onKeyUpHandler, this);
-          var compositionStartHandler = $.proxy(this._onCompositionStartHandler, this);
-          var compositionEndHandler = $.proxy(this._onCompositionEndHandler, this);
-          var inputHandler = $.proxy(this._onInputHandler, this);
-          var clickHandler = $.proxy(this._onClickHandler, this);
+          var focusHandler = this._onFocusHandler.bind(this);
+          var blurHandler = this._onBlurHandler.bind(this);
+          var keyDownHandler = this._onKeyDownHandler.bind(this);
+          var keyUpHandler = this._onKeyUpHandler.bind(this);
+          var compositionStartHandler = this._onCompositionStartHandler.bind(this);
+          var compositionEndHandler = this._onCompositionEndHandler.bind(this);
+          var inputHandler = this._onInputHandler.bind(this);
+          var clickHandler = this._onClickHandler.bind(this);
           var dropHandler = function () {
             this.focus();
           };

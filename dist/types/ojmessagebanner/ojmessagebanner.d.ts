@@ -231,9 +231,12 @@ type State<K, D> = {
  * <p>The <code class="prettyprint">MessageBannerItem["sound"]</code> property is an accessibility
  * feature for playing a sound when a message is opened. This property defaults to "none", and can
  * be enabled by setting it to "default" or by providing a URL to an audio file of a format that the
- * browser supports. An accessible application must provide a way for users to enable sound on a
- * settings or preferences page. Some browsers will have auto-play disabled by default, enabling
- * it may require adjusting the browser settings.</p>
+ * browser supports. Custom sound URLs are validated before playback. Relative URLs and URLs that
+ * resolve to <code class="prettyprint">http:</code>, <code class="prettyprint">https:</code>,
+ * <code class="prettyprint">data:</code>, or <code class="prettyprint">blob:</code> are
+ * supported. An accessible application must provide a way for users to enable sound on a settings
+ * or preferences page. Some browsers will have auto-play disabled by default, enabling it may
+ * require adjusting the browser settings.</p>
  *
  * <h3 id="keyboard-section">
  *   Keyboard End User Information

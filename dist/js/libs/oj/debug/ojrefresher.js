@@ -103,6 +103,8 @@ var __oj_refresher_metadata =
      *
      * <p>Description: A wrapper to provide pull-to-refresh functionality for a target DOM element
      *
+     * <p>Note: Refresher should be used only for touch pull-to-refresh gestures.</p>
+     *
      * <p>Warning: The pull to refresh gesture will not work with drag and drop enabled components. Drag and drop must be disabled in the component if
      * use of pull to refresh is needed.
      *
@@ -111,6 +113,13 @@ var __oj_refresher_metadata =
      * &lt;/oj-refresher>
      *
      * </code></pre>
+     *
+     * <h3 id="migration-section">
+     *   Migration
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+     * </h3>
+     * <p>Going forward, Refresher will not support desktop interaction. Applications should use Refresher
+     * for touch pull-to-refresh interactions.</p>
      *
      */
     //-----------------------------------------------------

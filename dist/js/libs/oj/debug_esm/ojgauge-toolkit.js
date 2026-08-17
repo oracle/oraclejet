@@ -1412,6 +1412,12 @@ class DvtGaugeDefaults extends BaseComponentDefaults {
       alta: JsonUtils.merge(defaultsMap['alta'], SKIN_ALTA)
     });
   }
+
+  getNoCloneObject() {
+    const noClone = super.getNoCloneObject();
+    noClone.metricLabel = { converter: true };
+    return noClone;
+  }
 }
 
 /**
@@ -1810,7 +1816,7 @@ class LedGauge extends DvtGauge {
    */
   SetOptions(options) {
     // NOTE: This extra clone should be removed once we stop supporting the deprecated attrs
-    options = JsonUtils.clone(options);
+    options = JsonUtils.clone(options, null, this.Defaults.getNoCloneObject());
 
     if (options['title']) {
       options['label'] = options['title'];
@@ -4403,7 +4409,7 @@ class StatusMeterGauge extends DvtGauge {
    */
   SetOptions(options) {
     // NOTE: This extra clone should be removed once we stop supporting the deprecated attrs
-    options = JsonUtils.clone(options);
+    options = JsonUtils.clone(options, null, this.Defaults.getNoCloneObject());
 
     if (options['title']) options['label'] = options['title'];
 

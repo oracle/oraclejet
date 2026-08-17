@@ -6044,9 +6044,13 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent, {
   _GetComponentRendererOptions: function () {
     return [
       { path: 'tooltip/renderer', slot: 'tooltipTemplate' },
-      { path: 'rowAxis/label/renderer', slot: 'rowAxisLabelTemplate' },
-      { path: 'taskContent/renderer', slot: 'taskContentTemplate' },
-      { path: 'dependencyContent/renderer', slot: 'dependencyContentTemplate' }
+      { path: 'rowAxis/label/renderer', slot: 'rowAxisLabelTemplate', processTemplate: true },
+      { path: 'taskContent/renderer', slot: 'taskContentTemplate', processTemplate: true },
+      {
+        path: 'dependencyContent/renderer',
+        slot: 'dependencyContentTemplate',
+        processTemplate: true
+      }
     ];
   },
 

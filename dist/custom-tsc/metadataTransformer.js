@@ -49,6 +49,7 @@ const DecoratorUtils_1 = require("./shared/DecoratorUtils");
 const DefaultProps_1 = require("./shared/DefaultProps");
 const ImportMaps_1 = require("./shared/ImportMaps");
 const Utils_1 = require("./shared/Utils");
+const SafeFileUtils_1 = require("./shared/SafeFileUtils");
 const TransformerError_1 = require("./utils/TransformerError");
 const ApiDocFileUtils_1 = require("./utils/ApiDocFileUtils");
 let _BUILD_OPTIONS;
@@ -194,7 +195,7 @@ function generateClassElementMetadata(classNode, progImportMaps) {
     // We use the build options to pass metadata and other info across transformers
     // (including the dtsTransformer)
     storeMetadataInBuildOptions(metaUtilObj);
-    // write out component metadata files for this component only when this transformer process is NOT 
+    // write out component metadata files for this component only when this transformer process is NOT
     // for emiting API Doc metadata only
     if (!_BUILD_OPTIONS.emitMetadataOnly) {
         writeMetaFiles(metaUtilObj);
@@ -260,7 +261,7 @@ function generateFunctionalElementMetadata(functionalCompNode, progImportMaps) {
         // We use the build options to pass metadata and other info across transformers
         // (including the dtsTransformer)
         storeMetadataInBuildOptions(metaUtilObj);
-        // write out component metadata files for this component only when this transformer process is NOT 
+        // write out component metadata files for this component only when this transformer process is NOT
         // for emiting API Doc metadata only
         if (!_BUILD_OPTIONS.emitMetadataOnly) {
             writeMetaFiles(metaUtilObj);
@@ -317,7 +318,7 @@ function writeApiDocFiles(apidocResult, componentName) {
     if (!fs.existsSync(apiDocDir)) {
         fs.mkdirSync(apiDocDir, { recursive: true });
     }
-    const apiDocForComponent = `${apiDocDir}/${componentName}.json`;
+    const apiDocForComponent = (0, SafeFileUtils_1.getSafeJsonFilePath)(apiDocDir, componentName, 'API doc file name');
     fs.writeFileSync(apiDocForComponent, JSON.stringify(apidocResult, null, 2));
 }
 function writeMetaFiles(metaUtilObj) {
@@ -326,7 +327,7 @@ function writeMetaFiles(metaUtilObj) {
     if (!fs.existsSync(dtDir)) {
         fs.mkdirSync(dtDir, { recursive: true });
     }
-    const metaFileName = `${dtDir}/${metaUtilObj.fullMetadata.name}.json`;
+    const metaFileName = (0, SafeFileUtils_1.getSafeJsonFilePath)(dtDir, metaUtilObj.fullMetadata.name, 'component metadata file name');
     // custom-tsc processing depends upon metaUtilObj.fullMetadata.name
     // being set to the custom element tag name.
     //
