@@ -5,6 +5,7 @@ type Separators = Partial<{
     decimal: string;
     group: string;
 }>;
+export type SignDisplay = 'auto' | 'always' | 'exceptZero' | 'negative' | 'never';
 type SharedConverterOptions = Partial<{
     minimumIntegerDigits: number;
     minimumFractionDigits: number;
@@ -12,6 +13,7 @@ type SharedConverterOptions = Partial<{
     useGrouping: boolean;
     roundingMode: RoundingMode;
     roundDuringParse: boolean;
+    signDisplay: SignDisplay;
     separators: Separators;
     lenientParse: 'full' | 'none';
     locale: BCP47Locale;
