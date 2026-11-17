@@ -2954,7 +2954,7 @@ var __oj_n_box_node_metadata =
    * @property {string=} shortDesc The description of this cell. This is used for accessibility.
    * @ojdeprecated {target:"property", for: "svgStyle", since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    * @ojdeprecated {target:"property", for: "svgClassName", since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
-   * @ojdeprecated {target:"property", for: "maximizedSvgStyle", since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
+   * @ojdeprecated {target:"property", for: "maximizedSvgClassName", since: "21.1.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    * @ojdeprecated {target:"property", for: "maximizedSvgStyle", since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    * @ojdeprecated {target:"property", for: "minimizedSvgStyle", since: "20.0.0", description: "The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}
    * @ojdeprecated {target:"property", for: "minimizedSvgClassName", since: "20.0.0", description: "The svgClassName property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate."}

@@ -1479,7 +1479,7 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
  *     ]
  *   }
  * ]
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojMessageBanner.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21.1/reference-api/oj.ojMessageBanner.html"
  * @ojmetadata since "12.0.0"
  * @ojmetadata status [
  *   {

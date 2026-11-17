@@ -37,12 +37,12 @@ define(['ojs/ojlogger', 'ojs/ojwebdrivertest-proxy'], function (Logger, ojwebdri
      * @global
      * @member {string} version JET version numberr
      */
-    version: '21.0.0',
+    version: '21.1.0',
     /**
      * @global
      * @member {string} revision JET source code revision number
      */
-    revision: '2026-08-11_09-49-16',
+    revision: '2026-11-06_13-04-27',
 
     // This function is only meant to be used outside the library, so quoting the name
     // to avoid renaming is appropriate
@@ -1323,8 +1323,12 @@ define(['ojs/ojlogger', 'ojs/ojwebdrivertest-proxy'], function (Logger, ojwebdri
 
     // postMessage "message" event listener for the setImmediate impl
     function _nextTickHandler(event) {
-      // Only process messages posted by this window from the same origin.
-      if (event.source !== window || event.origin !== window.location.origin) {
+      // Only process messages posted by this window from its own security origin.
+      // JET-81495: The HTML Standard recommends self.origin (equivalent to window.origin here) over
+      // location.origin, which reflects the URL's origin. srcdoc and about:blank documents
+      // can inherit a security origin even when their URL origin is "null".
+      // https://html.spec.whatwg.org/multipage/webappapis.html#dom-origin-dev
+      if (event.source !== window || event.origin !== window.origin) {
         return;
       }
 

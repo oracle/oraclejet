@@ -2872,6 +2872,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojvalue {string} "color" Data items will be filled with solid colors.
  * @ojvalue {string} "pattern" Data items will be filled with colored patterns.
  * @ojvalue {string} "gradient" Data items will have a gradient.
+ * @ojdeprecated {target: "propertyValue", for: "gradient", since: "21.1.0", description: "This value is not recommended in the Redwood design system."}
  * @default "color"
  */
 /**

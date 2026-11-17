@@ -795,7 +795,7 @@ var WaterfallLayout_1;
  *     ]
  *   }
  * }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojWaterfallLayout.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21.1/reference-api/oj.ojWaterfallLayout.html"
  * @ojmetadata since "9.0.0"
  * @ojlegacymetadata requirements [
  *    {

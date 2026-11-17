@@ -2235,6 +2235,20 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
       var lastVisitedChild;
       var lastVisitedMidAngle;
+      var childNodes = this.getChildNodes();
+      var onlyChild = childNodes.length === 1 ? childNodes[0] : null;
+      var onlyChildMidAngle;
+      // JET-72263: Full concentric rings have identical bounding-box centers, so free-form navigation
+      // cannot determine whether the only child is above or below the current node.
+      var isConcentricWithOnlyChild =
+        onlyChild &&
+        this._angleExtent === DvtSunburstNode.TWO_PI &&
+        onlyChild._angleExtent === DvtSunburstNode.TWO_PI;
+
+      if (isConcentricWithOnlyChild) {
+        onlyChildMidAngle = onlyChild._startAngle + onlyChild._angleExtent / 2;
+        onlyChildMidAngle = DvtSunburstNode._normalizedRadToDeg(onlyChildMidAngle);
+      }
 
       switch (keyCode) {
         case dvt.KeyboardEvent.UP_ARROW:
@@ -2248,6 +2262,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
               if (lastVisitedMidAngle >= 180) {
                 return lastVisitedChild;
               }
+            }
+            if (isConcentricWithOnlyChild) {
+              if (onlyChildMidAngle >= 180) return onlyChild;
+              if (this === root) return this;
             }
             next = dvt.KeyboardHandler.getNextAdjacentNavigable(
               this,
@@ -2273,6 +2291,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
               if (lastVisitedMidAngle >= 0 && lastVisitedMidAngle < 180) {
                 return lastVisitedChild;
               }
+            }
+            if (isConcentricWithOnlyChild) {
+              if (onlyChildMidAngle >= 0 && onlyChildMidAngle < 180) return onlyChild;
+              if (this === root) return this;
             }
             next = dvt.KeyboardHandler.getNextAdjacentNavigable(
               this,

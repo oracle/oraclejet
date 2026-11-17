@@ -223,6 +223,7 @@ export namespace ojNBox {
         label?: string;
         labelHalign?: string;
         labelStyle?: Partial<CSSStyleDeclaration>;
+        /** @deprecated since 21.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         maximizedSvgClassName?: string;
         /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         maximizedSvgStyle?: Partial<CSSStyleDeclaration>;
@@ -860,6 +861,7 @@ export namespace NBoxElement {
         label?: string;
         labelHalign?: string;
         labelStyle?: Partial<CSSStyleDeclaration>;
+        /** @deprecated since 21.1.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         maximizedSvgClassName?: string;
         /** @deprecated since 20.0.0 - The svgStyle property is deprecated. This API is not recommended in Redwood theme. Use other customization APIs where appropriate. */
         maximizedSvgStyle?: Partial<CSSStyleDeclaration>;

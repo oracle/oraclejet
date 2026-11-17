@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Point, Rectangle, OutputText, GradientParser, LinearGradientFill, ArrayUtils, EventFactory, ResourceUtils, Displayable, KeyboardEvent, Agent, BlackBoxAnimationHandler, CSSStyle, JsonUtils, DataAnimationHandler, Container, TextUtils, Rect, Stroke, ColorUtils, ImageMarker, SimpleMarker, PatternFill, ToolkitUtils, ClipPath, AnimMoveTo, Playable, CustomAnimation, SolidFill, Animator, AnimMoveBy, AnimFadeOut, SelectionEffectUtils, MouseEvent, KeyboardHandler, EventManager, KeyboardFocusEffect, SimpleScrollableContainer, IconButton, AnimFadeIn, Shadow, ARIA_LABEL_STATE_DELIMITER, AriaUtils, AnimScaleTo, PathUtils, Path, Matrix, Automation, BaseComponentDefaults, CategoryRolloverHandler, BaseComponent, BaseComponentCache, SelectionHandler } from 'ojs/ojdvt-toolkit';
+import { Point, Rectangle, OutputText, GradientParser, LinearGradientFill, ArrayUtils, EventFactory, ResourceUtils, Displayable, KeyboardEvent, Agent, BlackBoxAnimationHandler, CSSStyle, JsonUtils, DataAnimationHandler, Container, TextUtils, Rect, Stroke, ColorUtils, ImageMarker, SimpleMarker, PatternFill, ToolkitUtils, ClipPath, AnimMoveTo, Playable, CustomAnimation, SolidFill, Animator, AnimMoveBy, AnimFadeOut, SelectionEffectUtils, MouseEvent, KeyboardHandler, EventManager, KeyboardFocusEffect, SimpleScrollableContainer, IconButton, AnimFadeIn, Shadow, AriaUtils, AnimScaleTo, PathUtils, Path, Matrix, Automation, BaseComponentDefaults, CategoryRolloverHandler, BaseComponent, BaseComponentCache, SelectionHandler } from 'ojs/ojdvt-toolkit';
 import { getTranslatedString } from 'ojs/ojtranslation';
 
 /**
@@ -4307,6 +4307,7 @@ const DvtNBoxCellRenderer = {
                 cellContainer
               )
             ) {
+              DvtNBoxCellRenderer._appendCountTextSeparator(countLabel);
               DvtNBoxUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
               addedHeader = true;
               countLabelWidth = countLabel.getDimensions().w;
@@ -4374,6 +4375,7 @@ const DvtNBoxCellRenderer = {
                 cellContainer
               )
             ) {
+              DvtNBoxCellRenderer._appendCountTextSeparator(countLabel);
               DvtNBoxUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
               addedHeader = true;
               countLabelWidth = countLabel.getDimensions().w;
@@ -4596,6 +4598,7 @@ const DvtNBoxCellRenderer = {
 
       maximizedLabels[u].setFontSize(maximizedFontSize);
       if (TextUtils.fitText(maximizedLabels[u], childArea.w, childArea.h, cellContainer)) {
+        DvtNBoxCellRenderer._appendCountTextSeparator(maximizedLabels[u]);
         if (!removeHeaders)
           DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true, cellIndex);
         DvtNBoxUtils.positionText(
@@ -4614,6 +4617,7 @@ const DvtNBoxCellRenderer = {
 
       minimizedLabels[t].setFontSize(minimizedFontSize);
       if (TextUtils.fitText(minimizedLabels[t], childArea.w, childArea.h, cellContainer)) {
+        DvtNBoxCellRenderer._appendCountTextSeparator(minimizedLabels[t]);
         if (!removeHeaders)
           DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true, cellIndex);
         DvtNBoxUtils.positionText(
@@ -4650,6 +4654,18 @@ const DvtNBoxCellRenderer = {
       );
     }
     return fontSize;
+  },
+
+  /**
+   * Preserves the separator that accessibility tools need between separately
+   * rendered SVG text nodes. OutputText trims its input, so this must happen
+   * after fitting the label.
+   * @param {dvt.OutputText} label The count label
+   * @private
+   */
+  _appendCountTextSeparator: (label) => {
+    var textNode = label.getElem().firstChild;
+    if (textNode) textNode.nodeValue += ' ';
   },
 
   /**
@@ -5450,11 +5466,11 @@ class DvtNBoxCell extends Container {
     var countDesc = [
       translations.labelSize,
       this._nbox.getOptions()['countLabel'] ? this.getCountLabel() : this.getNodeCount()
-    ].join(ARIA_LABEL_STATE_DELIMITER);
+    ].join(AriaUtils.ARIA_LABEL_STATE_DELIMITER);
     var shortDesc = this.getData()['shortDesc'];
     var desc = shortDesc
       ? [countDesc, Displayable.resolveShortDesc(shortDesc)].join(
-          AriaUtils.ARIA_LABEL_DESC_DELIMITE
+          AriaUtils.ARIA_LABEL_STATE_DELIMITER
         )
       : countDesc;
     return Displayable.generateAriaLabel(desc, states);

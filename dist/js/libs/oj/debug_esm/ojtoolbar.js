@@ -169,6 +169,15 @@ import { warn } from 'ojs/ojlogger';
    * Instead, <a href="ResponsiveSpacing.html#oj-[size-only]-padding-[multiplier](-edge)" target="_blank">oj-sm-padding-1x-top and oj-sm-padding-1x-bottom</a> can be used.
    *</p>
    *
+   *<h5>Borderless Button Margins</h5>
+   *<p>
+   * Borderless buttons will lose their legacy toolbar margins when migrating from
+   * <code class="prettyprint">oj-toolbar</code> to <code class="prettyprint">oj-c-toolbar</code>.
+   * Use the <code class="prettyprint">spacing</code> attribute on
+   * <code class="prettyprint">oj-c-toolbar</code> to configure spacing between toolbar items;
+   * <code class="prettyprint">sm</code> is recommended for borderless buttons.
+   *</p>
+   *
    *<h5>Chroming</h5>
    *<p>
    * The oj-c-toolbar will no longer support the <code class="prettyprint">solid</code> chroming option, and will have no default value.

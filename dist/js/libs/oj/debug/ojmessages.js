@@ -128,6 +128,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   /**
    * Inline messages will include a bottom border so that the messages section is demarcated from the contents below it. If this border is not desirable for certain page layouts, it can be removed by setting this marker class on oj-messages.
    * @ojstyleclass oj-messages-inline-remove-bottom-border
+   * @ojdeprecated {since: '21.1.0', description: 'This style class is not part of the Redwood specification.'}
    * @ojdisplayname No Border
    * @memberof oj.ojMessages
    * @ojtsexample
@@ -141,6 +142,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * Inline messages (Banners) can be either Edge-to-Edge or Outlined. By default, the inline messages are rendered as Edge-to-Edge Banner messages.
    * If Outlined Banner messages are preferred instead, add oj-messages-outlined class on the oj-messages element.
    * @ojstyleclass oj-messages-outlined
+   * @ojdeprecated {since: '21.1.0', description: 'This class is not supported in the Redwood theme, and will be removed from the JET API in a future release. Use oj-c-message-banner with type="page" or type="section" instead.'}
    * @since 10.0.0
    * @ojdisplayname Outlined Banner Messages
    * @memberof oj.ojMessages

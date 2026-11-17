@@ -30653,8 +30653,7 @@ KeyboardHandler._isValidDestination = function (
   var objBB = object.getKeyboardBoundingBox();
   var curBB = current.getKeyboardBoundingBox();
 
-  // compare the centers of the navigable and to be valid, the navigable must be in the right direction
-  // without tolerance
+  // Compare centers and require the navigable to be in the requested direction.
   if (compareCenters || compareCentersWithTiebreak) {
     var objCenterX = objBB.x + 0.5 * objBB.w;
     var curCenterX = curBB.x + 0.5 * curBB.w;
@@ -30662,8 +30661,11 @@ KeyboardHandler._isValidDestination = function (
     var curCenterY = curBB.y + 0.5 * curBB.h;
 
     if (compareCentersWithTiebreak) {
-      if (objCenterY === curCenterY) {
-        // Used by Sunnburst: consider obj below current if obj is to the right of current
+      // Sunburst SVG arc bounds can contain float32 rounding noise: a 590px-high arc
+      // measured as 590.000061px shifts its Y center by about 3e-5px. Allow 1e-4px
+      // here so this rounding does not suppress the directional tiebreak.
+      if (KeyboardHandler._areEqualWithinTolerance(objCenterY, curCenterY, 0.0001)) {
+        // Used by Sunburst: consider obj below current if obj is to the right of current
         objCenterY += objCenterX > curCenterX ? 1 : -1;
       }
       // There is no use case to tiebreak X's yet
@@ -30705,11 +30707,12 @@ KeyboardHandler._isValidDestination = function (
  *
  * @param {Number} a
  * @param {Number} b
- * @return {Boolean} true if the numbers are within 0.0000001 of each other
+ * @param {Number=} tolerance Maximum allowed difference, defaults to 0.0000001
+ * @return {Boolean} true if the numbers are within the tolerance of each other
  * @private
  */
-KeyboardHandler._areEqualWithinTolerance = function (a, b) {
-  return Math.abs(a - b) <= 0.0000001;
+KeyboardHandler._areEqualWithinTolerance = function (a, b, tolerance = 0.0000001) {
+  return Math.abs(a - b) <= tolerance;
 };
 
 /**

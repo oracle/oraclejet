@@ -520,7 +520,7 @@ var InputSearch_1;
  *     "minColumns": "2"
  *   }
  * }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojInputSearch.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21.1/reference-api/oj.ojInputSearch.html"
  * @ojmetadata propertyLayout [
  *   {
  *     "propertyGroup": "common",

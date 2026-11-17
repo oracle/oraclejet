@@ -37,16 +37,23 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
         }
         static compareItem(d1, d2, sortCriteria) {
             for (const sortCrt of sortCriteria) {
+                if (sortCrt?.attribute == null) {
+                    continue;
+                }
                 let comparator = ojdataprovider.SortUtils.getNaturalSortComparator();
+                const d1Value = this.getVal(d1, sortCrt.attribute);
+                const d2Value = this.getVal(d2, sortCrt.attribute);
                 const descendingResult = sortCrt.direction === 'descending' ? -1 : 1;
-                const comparatorResult = comparator(this.getVal(d1, sortCrt.attribute), this.getVal(d2, sortCrt.attribute)) *
-                    descendingResult;
+                const comparatorResult = comparator(d1Value, d2Value) * descendingResult;
                 if (comparatorResult !== 0) {
                     return comparatorResult;
                 }
                 // If d1 and d2 is the same on the current sortCriterion, move on to the next sortCriterion
             }
             return 0;
+        }
+        static hasSortCriteria(sortCriteria) {
+            return !!sortCriteria?.some((sortCrt) => sortCrt?.attribute != null);
         }
         static getVal(val, attr) {
             if (val === null || typeof val === 'undefined') {
@@ -115,7 +122,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
                     !mergedAddKeySet.has(key)) {
                     // First check to see if this item satisfies any filter
                     if (!filterObj || filterObj.filter(editItem.item.data)) {
-                        if (sortCriteria && sortCriteria.length) {
+                        if (this.hasSortCriteria(sortCriteria)) {
                             let inserted = false;
                             for (let i = 0; i < itemArray.length; i++) {
                                 if (editItem.operation === 'update' &&
@@ -200,8 +207,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
                     else if (editItem.operation === 'update' &&
                         !editBuffer.isUpdateTransformed(editItem.item.metadata.key)) {
                         if (!filterObj || filterObj.filter(editItem.item.data)) {
-                            if (!sortCriteria || sortCriteria.length === 0) {
+                            if (!this.hasSortCriteria(sortCriteria) ||
+                                this.compareItem(baseItem.data, editItem.item.data, sortCriteria) === 0) {
                                 newItemArray.push(editItem.item);
+                                // An equal-sort-key update remains in its base position and must not be merged again.
+                                if (this.hasSortCriteria(sortCriteria)) {
+                                    mergedAddKeySet.add(baseItem.metadata.key);
+                                }
                             }
                         }
                     }
@@ -249,6 +261,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
                 const submittedItems = editBuffer.getSubmittedAddItems();
                 const numRemoves = unsubmitted.numRemoves + submitting.numRemoves;
                 const numMoveAdds = unsubmitted.numMoveAdds + submitting.numMoveAdds;
+                // A sorted update can move an item outside the requested range. Fetch one additional
+                // base item for each active update so replaying the updates can backfill the range.
+                const numUpdates = unsubmitted.numUpdates + submitting.numUpdates;
                 const numSubmittedOrSubmittingAdds = submitting.numAdds + submitted.numAdds;
                 let skipAddsAtIndexZero = true;
                 let overrideOffset = { offset: offset };
@@ -267,7 +282,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
                     return resolve(fetchByOffsetResults);
                 }
                 // add results from the editBuffer
-                if (offset < numAddsAtIndexZero && numMoveAdds === 0 && params.sortCriteria == null) {
+                if (offset < numAddsAtIndexZero &&
+                    numMoveAdds === 0 &&
+                    !this.hasSortCriteria(params.sortCriteria)) {
                     mergedItems.push(...this.getAllAddsAtTop(editBuffer, ignoreAfterTransaction, filterObj).slice(offset, isFetchToEnd ? undefined : offset + size));
                 }
                 if (!isFetchToEnd && mergedItems.length === size) {
@@ -286,14 +303,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
                     numMoveAdds > 0 ||
                     numSubmittedOrSubmittingAdds > 0 ||
                     numAdds - numAddsAtIndexZero > 0 ||
-                    (params.sortCriteria && params.sortCriteria.length)) {
+                    this.hasSortCriteria(params.sortCriteria)) {
                     overrideOffset = {
                         // if there are removes or 'moveAdds' or adds with addBeforeKey or sortCriteria then offset is set to zero since the BDP needs to know where
                         // those rows are in the underlying data provider for deciding where to start pulling from the
                         // result set.
                         offset: 0
                     };
-                    if (numMoveAdds > 0 || (params.sortCriteria && params.sortCriteria.length)) {
+                    if (numMoveAdds > 0 || this.hasSortCriteria(params.sortCriteria)) {
                         mergedItemsOffset = offset;
                         skipAddsAtIndexZero = false;
                     }
@@ -314,7 +331,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
                                 numRemoves +
                                 numMoveAdds +
                                 numSubmittedOrSubmittingAdds -
-                                Math.max(unsubmitted.numAddsAtTop - offset, 0)
+                                Math.max(unsubmitted.numAddsAtTop - offset, 0) +
+                                (this.hasSortCriteria(params.sortCriteria) ? numUpdates : 0)
                         };
                     }
                     // when we drop the offset to 0 we don't necessarily want to start adding the rows from index 0 of the results
@@ -385,8 +403,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
                     index > ignoreAfterTransaction.index ||
                     filterObj.filter(editItem.item.data)) {
                     if (editItem.operation === 'add') {
-                        if (sortCriteria &&
-                            sortCriteria.length &&
+                        if (this.hasSortCriteria(sortCriteria) &&
                             (ignoreAfterTransaction.index === -1 || index <= ignoreAfterTransaction.index)) {
                             const insertIndex = this.getInsertIndexOfSortedArray(itemsArray, editItem.item, sortCriteria);
                             if (insertIndex < itemsArray.length || done) {
@@ -425,13 +442,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
                     else if (editItem.operation === 'update') {
                         const updateIndex = this.findKeyInItems(editItem.item.metadata.key, itemsArray);
                         if (updateIndex > -1) {
-                            if (sortCriteria &&
-                                sortCriteria.length &&
+                            if (this.hasSortCriteria(sortCriteria) &&
                                 (ignoreAfterTransaction.index === -1 || index <= ignoreAfterTransaction.index)) {
-                                itemsArray.splice(updateIndex, 1);
-                                const insertIndex = this.getInsertIndexOfSortedArray(itemsArray, editItem.item, sortCriteria);
-                                if (insertIndex < itemsArray.length || done) {
-                                    itemsArray.splice(insertIndex, 0, editItem.item);
+                                const oldItem = itemsArray[updateIndex];
+                                if (this.compareItem(oldItem.data, editItem.item.data, sortCriteria) === 0) {
+                                    // Updating data outside the sort criteria should not reorder equal-sort-key items.
+                                    itemsArray.splice(updateIndex, 1, editItem.item);
+                                }
+                                else {
+                                    itemsArray.splice(updateIndex, 1);
+                                    const insertIndex = this.getInsertIndexOfSortedArray(itemsArray, editItem.item, sortCriteria);
+                                    if (insertIndex < itemsArray.length || done) {
+                                        itemsArray.splice(insertIndex, 0, editItem.item);
+                                    }
                                 }
                             }
                             else {
@@ -449,15 +472,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
             let insertIndex = itemsArray.length;
             while (left <= right) {
                 let mid = Math.floor((left + right) / 2);
-                if (this.compareItem(itemsArray[mid].data, item.data, sortCriteria) === 0) {
-                    insertIndex = mid;
-                    break;
-                }
-                else if (this.compareItem(itemsArray[mid].data, item.data, sortCriteria) > 0) {
+                if (this.compareItem(itemsArray[mid].data, item.data, sortCriteria) > 0) {
                     insertIndex = mid;
                     right = mid - 1;
                 }
                 else {
+                    // Insert after equal items to retain the existing order of a tied group.
                     left = mid + 1;
                 }
             }
@@ -488,6 +508,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
             let numAdds = 0;
             let numRemoves = 0;
             let numMoveAdds = 0;
+            let numUpdates = 0;
             let numAddsAtTop = 0;
             editItems.forEach((value, key) => {
                 if (value.operation === 'add') {
@@ -499,11 +520,16 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmap'], functi
                 else if (value.operation === 'remove') {
                     ++numRemoves;
                 }
-                else if (value.operation === 'update' && editBuffer.isUpdateTransformed(key)) {
-                    ++numMoveAdds;
+                else if (value.operation === 'update') {
+                    if (editBuffer.isUpdateTransformed(key)) {
+                        ++numMoveAdds;
+                    }
+                    else {
+                        ++numUpdates;
+                    }
                 }
             });
-            return { numAdds, numAddsAtTop, numRemoves, numMoveAdds };
+            return { numAdds, numAddsAtTop, numRemoves, numMoveAdds, numUpdates };
         }
         static getAllAddsAtTop(editBuffer, ignoreAfterTransaction, filterObj) {
             const addOrder = editBuffer.getAddItemOrder();

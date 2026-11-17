@@ -150,7 +150,7 @@ const targetElement = window;
  *     "module": "ojs/ojdrawerpopup"
  *   }
  * }
- * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojDrawerPopup.html"
+ * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21.1/reference-api/oj.ojDrawerPopup.html"
  * @ojmetadata since "11.0.0"
  */
 let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {

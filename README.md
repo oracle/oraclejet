@@ -1,4 +1,4 @@
-# Oracle JET version 21.0.0
+# Oracle JET version 21.1.0
 
 ## About Oracle JET
 

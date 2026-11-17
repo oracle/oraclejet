@@ -22,6 +22,7 @@ define(['exports', 'ojs/ojexpparser'], function (exports, ojexpparser) { 'use st
 
   // Used by VTemplateEngine
   const PROXY_SYMBOL = Symbol('proxy');
+  const OPTIONAL_CHAIN_SHORT_CIRCUIT = Symbol('optional-chain-short-circuit');
 
   /**
    * @ignore
@@ -197,33 +198,30 @@ define(['exports', 'ojs/ojexpparser'], function (exports, ojexpparser) { 'use st
           return _getValue(contexts, node.name);
 
         case ojexpparser.MEMBER_EXP:
-          return _evaluateMember(node, contexts)[1];
+          var memberValue = _evaluateMember(node, contexts);
+          return memberValue === OPTIONAL_CHAIN_SHORT_CIRCUIT ? memberValue : memberValue[1];
 
         case ojexpparser.LITERAL:
           return node.value;
 
         case ojexpparser.CALL_EXP:
-          var caller;
-          var fn;
-          var assign;
-          switch (node.callee.type) {
-            case ojexpparser.IDENTIFIER:
-              assign = _getValueWithContext(contexts, node.callee.name);
-              break;
-            case ojexpparser.MEMBER_EXP:
-              assign = _evaluateMember(node.callee, contexts);
-              break;
-            default:
-              fn = _evaluateAndUnwrap(node.callee, contexts);
+          var assign = _evaluateCallTarget(node.callee, contexts);
+          if (assign === OPTIONAL_CHAIN_SHORT_CIRCUIT) {
+            return assign;
           }
-          if (!fn && Array.isArray(assign)) {
-            caller = assign[0];
-            fn = assign[1];
+          var caller = assign[0];
+          var fn = assign[1];
+          if (node.optional && fn == null) {
+            return OPTIONAL_CHAIN_SHORT_CIRCUIT;
           }
           if (typeof fn !== 'function') {
             _throwError('Expression is not a function');
           }
           return fn.apply(caller, _evaluateArray(node.arguments, contexts));
+
+        case ojexpparser.CHAIN_EXP:
+          var chainValue = _evaluate(node.expression, contexts);
+          return chainValue === OPTIONAL_CHAIN_SHORT_CIRCUIT ? undefined : chainValue;
 
         case ojexpparser.UNARY_EXP:
           var testValue;
@@ -292,8 +290,28 @@ define(['exports', 'ojs/ojexpparser'], function (exports, ojexpparser) { 'use st
       }, []);
     }
 
+    // Preserve the receiver of a member reference through a parenthesized chain.
+    function _evaluateCallTarget(node, contexts) {
+      switch (node.type) {
+        case ojexpparser.IDENTIFIER:
+          return _getValueWithContext(contexts, node.name);
+        case ojexpparser.MEMBER_EXP:
+          return _evaluateMember(node, contexts);
+        case ojexpparser.CHAIN_EXP:
+          var target = _evaluateCallTarget(node.expression, contexts);
+          // A chain boundary ends short-circuiting, but preserves a resolved reference.
+          return target === OPTIONAL_CHAIN_SHORT_CIRCUIT ? [undefined, undefined] : target;
+        default:
+          var value = _evaluateAndUnwrap(node, contexts);
+          return value === OPTIONAL_CHAIN_SHORT_CIRCUIT ? value : [undefined, value];
+      }
+    }
+
     function _evaluateMember(node, contexts) {
       var memberAccess = _getMemberAccess(node, contexts);
+      if (memberAccess === OPTIONAL_CHAIN_SHORT_CIRCUIT) {
+        return memberAccess;
+      }
       if (memberAccess.length === 0) {
         return memberAccess;
       }
@@ -303,9 +321,12 @@ define(['exports', 'ojs/ojexpparser'], function (exports, ojexpparser) { 'use st
 
     function _getMemberAccess(node, contexts) {
       var object = _evaluate(node.object, contexts);
-      if (!object && node.optional) {
+      if (object === OPTIONAL_CHAIN_SHORT_CIRCUIT) {
+        return object;
+      }
+      if (object == null && node.optional) {
         // handle optional chaining operator: test?.prop
-        return [];
+        return OPTIONAL_CHAIN_SHORT_CIRCUIT;
       }
       var key = node.computed ? _evaluate(node.property, contexts) : node.property.name;
       return _getMemberAccessForKey(object, key);

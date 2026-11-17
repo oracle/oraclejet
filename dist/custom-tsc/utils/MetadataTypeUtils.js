@@ -2689,17 +2689,27 @@ function getPossibleTypeDef(prop, memberSymbol, metaObj, metaUtilObj) {
     // bail the creation of the typedef based the source of the type (declared locally or imported).
     if (metaObj.reftype) {
         try {
-            let symbolType = metaUtilObj.typeChecker
-                .getTypeOfSymbolAtLocation(memberSymbol, memberSymbol.valueDeclaration)
-                .getNonNullableType();
-            const kind = memberSymbol.valueDeclaration.kind;
-            const declaration = memberSymbol.valueDeclaration;
-            if ((kind === ts.SyntaxKind.PropertyDeclaration ||
+            const valueDeclaration = memberSymbol.valueDeclaration;
+            // Properties synthesized by mapped utility types (for example
+            // Partial<Pick<...>>) do not have a source declaration. They still
+            // contribute ordinary component metadata, but cannot yield typedef
+            // metadata that depends on an AST type node.
+            if (!valueDeclaration) {
+                return typedefObj;
+            }
+            const kind = valueDeclaration.kind;
+            const declaration = valueDeclaration;
+            if (kind === ts.SyntaxKind.PropertyDeclaration ||
                 kind === ts.SyntaxKind.PropertySignature ||
-                kind === ts.SyntaxKind.Parameter) &&
-                symbolType &&
-                !!(symbolType['flags'] & ts.SymbolFlags.TypeAlias ||
-                    symbolType['flags'] & ts.SymbolFlags.Alias)) {
+                kind === ts.SyntaxKind.Parameter) {
+                const symbolType = metaUtilObj.typeChecker
+                    .getTypeOfSymbolAtLocation(memberSymbol, valueDeclaration)
+                    .getNonNullableType();
+                if (!symbolType ||
+                    !(symbolType['flags'] & ts.SymbolFlags.TypeAlias ||
+                        symbolType['flags'] & ts.SymbolFlags.Alias)) {
+                    return typedefObj;
+                }
                 // try and get the typeRefNode
                 const typeRefNode = getTypeRefNodeForPropDeclaration(declaration, metaUtilObj);
                 if (typeRefNode) {
@@ -2722,7 +2732,7 @@ function getPossibleTypeDef(prop, memberSymbol, metaObj, metaUtilObj) {
                     }
                     else if (ts.isIndexedAccessTypeNode(typeRefNode)) {
                         // get the "parent" object type's reference
-                        const symbolName = symbolType.getSymbol().getName();
+                        const symbolName = symbolType.getSymbol()?.getName();
                         if (symbolName === 'Array') {
                             typeNode = metaUtilObj.typeChecker.getTypeArguments(symbolType)[0];
                         }

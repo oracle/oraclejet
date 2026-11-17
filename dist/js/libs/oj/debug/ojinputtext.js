@@ -3150,6 +3150,13 @@ var __oj_text_area_metadata =
    * </ul>
    * </p>
    *
+   * <h5>Full Width</h5>
+   * <p>
+   * The usage of the style class: oj-form-control-full-width is no longer needed. <code>oj-c-input-password</code> uses all
+   * available horizontal space by default. To limit its width, set its <code>width</code> or <code>max-width</code> attribute.
+   * See below for further details on these attributes.
+   * </p>
+   *
    * <h5>MaxWidth attribute</h5>
    * <p>
    * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
@@ -3882,6 +3889,13 @@ var __oj_text_area_metadata =
    * .oj-form-control-text-align-end maps to 'end'
    * </li>
    * </ul>
+   * </p>
+   *
+   * <h5>Full Width</h5>
+   * <p>
+   * The usage of the style class: oj-form-control-full-width is no longer needed. <code>oj-c-input-text</code> uses all
+   * available horizontal space by default. To limit its width, set its <code>width</code> or <code>max-width</code> attribute.
+   * See below for further details on these attributes.
    * </p>
    *
    * <h5>MaxWidth attribute</h5>
@@ -4955,6 +4969,13 @@ var __oj_text_area_metadata =
    * .oj-form-control-text-align-end maps to 'end'
    * </li>
    * </ul>
+   * </p>
+   *
+   * <h5>Full Width</h5>
+   * <p>
+   * The usage of the style class: oj-form-control-full-width is no longer needed. <code>oj-c-text-area</code> uses all
+   * available horizontal space by default. To limit its width, set its <code>width</code> or <code>max-width</code> attribute.
+   * See below for further details on these attributes.
    * </p>
    *
    * <h5>MaxWidth attribute</h5>

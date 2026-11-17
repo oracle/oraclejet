@@ -518,9 +518,12 @@ class VTemplateEngine {
         const renderProp = {
             type: PROPERTY,
             key: { type: LITERAL, value: 'render' },
-            value: {
-                type: LITERAL,
-                value: (itemContext, provided) => {
+            // Create the renderer while evaluating the outer template, rather than while
+            // creating its cached AST. A nested legacy template can be stamped from more
+            // than one outer item; in that case each renderer must retain the binding
+            // context of its own outer item.
+            value: this._createCallNodeWithContext((bindingContext) => {
+                return (itemContext, provided) => {
                     // We copy binding context into a new object and add additional entries
                     // for the current item and a template alias.
                     // Then we add the new binding context to a fresh copy of engine context
@@ -530,7 +533,7 @@ class VTemplateEngine {
                     // a collection template alias is used inside of the cell template.
                     // Note that COMPONENT_ELEMENT is a parent that owns an initial template slot and
                     // it is needed by oj-bind-for-each code to register busy state.
-                    const ctx = Object.assign({}, engineContext[BINDING_CONTEXT], {
+                    const ctx = Object.assign({}, bindingContext, {
                         $current: itemContext
                     });
                     if (templateAlias) {
@@ -552,8 +555,8 @@ class VTemplateEngine {
                     };
                     const templateAst = getAstFromCacheFunc(engineContextForRenderProp, node);
                     return evaluator.evaluate(templateAst, { $context: ctx, $h: h });
-                }
-            }
+                };
+            })
         };
         let props = this._getElementProps(engineContext, node);
         props.push(renderProp);

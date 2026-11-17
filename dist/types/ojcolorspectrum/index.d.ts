@@ -11,6 +11,7 @@ export interface ojColorSpectrum extends editableValue<Color, ojColorSpectrumSet
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 21.1.0 - Use label-hint; set label-edge="none" when a visible label is not desired. */
     labelledBy: string | null;
     readonly transientValue: Color;
     value: Color;
@@ -100,6 +101,7 @@ export interface ojColorSpectrumSettableProperties extends editableValueSettable
         messages?: 'display' | 'none';
         validatorHint?: 'display' | 'none';
     };
+    /** @deprecated since 21.1.0 - Use label-hint; set label-edge="none" when a visible label is not desired. */
     labelledBy: string | null;
     readonly transientValue: Color;
     value: Color;
@@ -167,7 +169,7 @@ export interface ColorSpectrumIntrinsicProps extends Partial<Readonly<ojColorSpe
     /** @deprecated since 12.1.0 - This web component no longer supports this event. */
     onojAnimateStart?: (value: ojColorSpectrumEventMap['ojAnimateStart']) => void;
     ondisplayOptionsChanged?: (value: ojColorSpectrumEventMap['displayOptionsChanged']) => void;
-    onlabelledByChanged?: (value: ojColorSpectrumEventMap['labelledByChanged']) => void;
+    /** @deprecated since 21.1.0 */ onlabelledByChanged?: (value: ojColorSpectrumEventMap['labelledByChanged']) => void;
     ontransientValueChanged?: (value: ojColorSpectrumEventMap['transientValueChanged']) => void;
     onvalueChanged?: (value: ojColorSpectrumEventMap['valueChanged']) => void;
     ondescribedByChanged?: (value: ojColorSpectrumEventMap['describedByChanged']) => void;

@@ -4306,6 +4306,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
                   cellContainer
                 )
               ) {
+                DvtNBoxCellRenderer._appendCountTextSeparator(countLabel);
                 DvtNBoxUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
                 addedHeader = true;
                 countLabelWidth = countLabel.getDimensions().w;
@@ -4373,6 +4374,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
                   cellContainer
                 )
               ) {
+                DvtNBoxCellRenderer._appendCountTextSeparator(countLabel);
                 DvtNBoxUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
                 addedHeader = true;
                 countLabelWidth = countLabel.getDimensions().w;
@@ -4595,6 +4597,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
 
         maximizedLabels[u].setFontSize(maximizedFontSize);
         if (dvt.TextUtils.fitText(maximizedLabels[u], childArea.w, childArea.h, cellContainer)) {
+          DvtNBoxCellRenderer._appendCountTextSeparator(maximizedLabels[u]);
           if (!removeHeaders)
             DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true, cellIndex);
           DvtNBoxUtils.positionText(
@@ -4613,6 +4616,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
 
         minimizedLabels[t].setFontSize(minimizedFontSize);
         if (dvt.TextUtils.fitText(minimizedLabels[t], childArea.w, childArea.h, cellContainer)) {
+          DvtNBoxCellRenderer._appendCountTextSeparator(minimizedLabels[t]);
           if (!removeHeaders)
             DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true, cellIndex);
           DvtNBoxUtils.positionText(
@@ -4649,6 +4653,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
         );
       }
       return fontSize;
+    },
+
+    /**
+     * Preserves the separator that accessibility tools need between separately
+     * rendered SVG text nodes. OutputText trims its input, so this must happen
+     * after fitting the label.
+     * @param {dvt.OutputText} label The count label
+     * @private
+     */
+    _appendCountTextSeparator: (label) => {
+      var textNode = label.getElem().firstChild;
+      if (textNode) textNode.nodeValue += ' ';
     },
 
     /**
@@ -5449,11 +5465,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
       var countDesc = [
         translations.labelSize,
         this._nbox.getOptions()['countLabel'] ? this.getCountLabel() : this.getNodeCount()
-      ].join(dvt.ARIA_LABEL_STATE_DELIMITER);
+      ].join(dvt.AriaUtils.ARIA_LABEL_STATE_DELIMITER);
       var shortDesc = this.getData()['shortDesc'];
       var desc = shortDesc
         ? [countDesc, dvt.Displayable.resolveShortDesc(shortDesc)].join(
-            dvt.AriaUtils.ARIA_LABEL_DESC_DELIMITE
+            dvt.AriaUtils.ARIA_LABEL_STATE_DELIMITER
           )
         : countDesc;
       return dvt.Displayable.generateAriaLabel(desc, states);

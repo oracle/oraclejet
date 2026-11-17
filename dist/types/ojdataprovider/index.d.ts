@@ -157,7 +157,7 @@ export class DataProviderRefreshEvent<K> {
     target: EventTarget;
     timeStamp: number;
     type: string;
-    constructor();
+    constructor(detail?: DataProviderRefreshEventDetail<K>);
 }
 export interface DataProviderRefreshEventDetail<K> {
     disregardAfterKey?: K;
