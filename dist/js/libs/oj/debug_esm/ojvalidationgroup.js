@@ -541,9 +541,9 @@ function ojValidationGroup(context) {
    * @private
    */
   function _addChildEventListeners(child) {
-    child.addEventListener('validChanged', _handleValidChanged.bind(this));
-    child.addEventListener('disabledChanged', _handleDisabledReadonlyChanged.bind(this));
-    child.addEventListener('readonlyChanged', _handleDisabledReadonlyChanged.bind(this));
+    child.addEventListener('validChanged', _handleValidChanged);
+    child.addEventListener('disabledChanged', _handleDisabledReadonlyChanged);
+    child.addEventListener('readonlyChanged', _handleDisabledReadonlyChanged);
   }
 
   /**

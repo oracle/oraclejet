@@ -435,6 +435,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
          * @default null
          * @instance
          * @memberof oj.ojColorSpectrum
+         * @ojdeprecated {since: '21.1.0', description: 'Use label-hint; set label-edge="none" when a visible label is not desired.'}
          */
         labelledBy: null,
 
@@ -735,7 +736,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
        * @memberof oj.ojColorSpectrum
        * @instance
        * @private
-      */
+       */
       _labelledByUpdatedForSet: LabeledByUtils._labelledByUpdatedForSet,
 
       _GetAriaLabelElement: function () {

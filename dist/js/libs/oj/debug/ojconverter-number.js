@@ -1037,7 +1037,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var adjustedMode = mode;
       var parts = _expandExponent(value);
       parts = parts.split('.');
-      if (parts[1] === undefined) {
+      // Do not introduce floating point precision loss when no rounding is needed.
+      if (parts[1] === undefined || parts[1].length <= scale) {
         return Math.abs(value);
       }
       if (mode !== 'DEFAULT') {

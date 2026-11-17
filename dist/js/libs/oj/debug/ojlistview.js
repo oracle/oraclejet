@@ -2547,8 +2547,8 @@ var __oj_list_view_metadata =
 
         if (this._isSelectionEnabled() && selection.length > 0 && this._isScrollToKey()) {
           // use selection anchor if available
-          if (this.m_selectionFrontier != null && this.m_selectionFrontier.length > 0) {
-            scrollPosition.key = this.GetKey(this.m_selectionFrontier[0]);
+          if (this.m_selectionFrontier != null) {
+            scrollPosition.key = this.m_selectionFrontier;
           } else {
             // selection is programmatically set
             scrollPosition.key = selection[0];
@@ -3285,11 +3285,13 @@ var __oj_list_view_metadata =
 
             // keep selection frontier if it's part of selection
             var selectionFrontier;
-            if (this.m_selectionFrontier) {
-              var frontierKey = this.GetKey(this.m_selectionFrontier.get(0));
-              selectionFrontier =
-                this.m_pendingSelectionFrontier ||
-                (selected.has(frontierKey) ? this.m_selectionFrontier : undefined);
+            if (this.m_selectionFrontier != null) {
+              var frontierKey = this.m_selectionFrontier;
+              if (this.m_pendingSelectionFrontier != null) {
+                selectionFrontier = this.m_pendingSelectionFrontier;
+              } else if (selected.has(frontierKey)) {
+                selectionFrontier = this.m_selectionFrontier;
+              }
               this.m_pendingSelectionFrontier = undefined;
             }
 
@@ -5972,7 +5974,7 @@ var __oj_list_view_metadata =
       HandleKeyDown: function (event) {
         const key = event.key || event.keyCode;
         if (this.IsArrowKey(key)) {
-          if (event.shiftKey && this.m_pendingSelectionFrontier) {
+          if (event.shiftKey && this.m_pendingSelectionFrontier != null) {
             this._setSelectionFrontier(this.m_pendingSelectionFrontier, true);
           }
         }
@@ -6043,9 +6045,10 @@ var __oj_list_view_metadata =
        */
       _handleMouseUpOrPanMove: function (event) {
         // unhighlight item that got focus in mousedown
-        if (this.m_preActiveItem) {
-          this._unhighlightElem(this.m_preActiveItem, 'oj-focus');
-          this._unhighlightElem(this.m_preActiveItem, 'oj-active');
+        var preActiveItem = this._getItemByKey(this.m_preActiveItem);
+        if (preActiveItem) {
+          this._unhighlightElem(preActiveItem, 'oj-focus');
+          this._unhighlightElem(preActiveItem, 'oj-active');
         }
 
         // dnd
@@ -6120,7 +6123,7 @@ var __oj_list_view_metadata =
         }
 
         // we'll need to remove focus in case the actual focus item is different
-        this.m_preActiveItem = item;
+        this.m_preActiveItem = this.GetKey(item.get(0));
 
         if (!DataCollectionUtils.isIos() && this._isTextSelectionEnabled()) {
           this._allowSelectionOnClick = true;
@@ -6174,7 +6177,7 @@ var __oj_list_view_metadata =
       _preventNativeShiftSelection: function (event) {
         const isTextSelection = this._isTextSelectionEnabled();
         const isMultiSelect = this._isMultipleSelection();
-        if (isTextSelection && event.shiftKey && this.m_selectionFrontier && isMultiSelect) {
+        if (isTextSelection && event.shiftKey && this.m_selectionFrontier != null && isMultiSelect) {
           event.preventDefault();
         }
       },
@@ -6186,26 +6189,27 @@ var __oj_list_view_metadata =
        */
       HandleTouchEndOrCancel: function (event) {
         var action = 'pointerUp';
+        var preActiveItem = this._getItemByKey(this.m_preActiveItem);
 
         // unhighlight item that got focus in touchstart
-        if (this.m_preActiveItem != null) {
-          this._unhighlightElem(this.m_preActiveItem, 'oj-focus');
+        if (preActiveItem != null) {
+          this._unhighlightElem(preActiveItem, 'oj-focus');
 
           // start ripple effect
           if (this.m_touchPos != null) {
-            var offset = this.m_preActiveItem.offset();
+            var offset = preActiveItem.offset();
 
             // find where to start the ripple effect based on touch location
             var effect = this.getAnimationEffect(action);
             effect.offsetX = this.m_touchPos.x - offset.left + 'px';
             effect.offsetY = this.m_touchPos.y - offset.top + 'px';
 
-            var groupItem = this.m_preActiveItem.children('.' + this.getGroupItemStyleClass());
+            var groupItem = preActiveItem.children('.' + this.getGroupItemStyleClass());
             var elem;
             if (groupItem.length > 0) {
               elem = /** @type {Element} */ (groupItem.get(0));
             } else {
-              elem = /** @type {Element} */ (this.getFocusItem(this.m_preActiveItem).get(0));
+              elem = /** @type {Element} */ (this.getFocusItem(preActiveItem).get(0));
             }
 
             // don't apply ripple effect on the item when target is one of these controls
@@ -6282,14 +6286,17 @@ var __oj_list_view_metadata =
         if (event.button === 0) {
           // need to reset selection frontier here because clickingon Selector doesn't set the selection frontier
           const item = this.FindItem(event.target);
-          if (!event.shiftKey) {
-            this._setSelectionFrontier(item, false);
-          } else {
-            if (this.m_pendingSelectionFrontier) {
-              // should pass shiftKey = false here, because in this case we initiate a new range, instead of extending a new range
-              this._setSelectionFrontier(this.m_pendingSelectionFrontier, false);
+          if (item != null && item.length > 0) {
+            const itemKey = this.GetKey(item.get(0));
+            if (!event.shiftKey) {
+              this._setSelectionFrontier(itemKey, false);
+            } else {
+              if (this.m_pendingSelectionFrontier != null) {
+                // should pass shiftKey = false here, because in this case we initiate a new range, instead of extending a new range
+                this._setSelectionFrontier(this.m_pendingSelectionFrontier, false);
+              }
+              this.m_pendingSelectionFrontier = itemKey;
             }
-            this.m_pendingSelectionFrontier = item;
           }
 
           var collapseIconClass = this.getCollapseIconStyleClass();
@@ -6374,7 +6381,7 @@ var __oj_list_view_metadata =
               }
 
               if (this._isMultipleToggleSelection()) {
-                this._setSelectionFrontier(item, event.shiftKey);
+                this._setSelectionFrontier(this.GetKey(item.get(0)), event.shiftKey);
               }
 
               // if user hits the padding part of item, since LI does not have tabindex anymore, item will not get focus
@@ -6759,6 +6766,17 @@ var __oj_list_view_metadata =
       },
 
       /**
+       * Get a jQuery item wrapper for a key.
+       * @param {Object} key the key to retrieve the item element
+       * @return {jQuery|null} the item associated with the key
+       * @private
+       */
+      _getItemByKey: function (key) {
+        var elem = key != null ? this.FindElementByKey(key) : null;
+        return elem != null ? $(elem) : null;
+      },
+
+      /**
        * Special version of array indexOf to take care of object comparison cases
        * @param {Array} arr the array
        * @param {Object} key the key to find the index for in the array
@@ -6982,9 +7000,12 @@ var __oj_list_view_metadata =
         if (!isExtend || this.m_isNavigate) {
           current = this.m_active.elem;
         } else {
-          current = this.m_selectionFrontier;
-          if (this._isMultipleToggleSelection() && !this.m_initialSelectionFrontier) {
-            this.m_initialSelectionFrontier = this.m_selectionFrontier || this.m_active.elem;
+          current = this._getItemByKey(this.m_selectionFrontier) || this.m_active.elem;
+          if (this._isMultipleToggleSelection() && this.m_initialSelectionFrontier == null) {
+            this.m_initialSelectionFrontier =
+              this.m_selectionFrontier != null
+                ? this.m_selectionFrontier
+                : this.GetKey(this.m_active.elem.get(0));
           }
         }
 
@@ -7072,7 +7093,7 @@ var __oj_list_view_metadata =
           // track selection frontier during arrow keys
           // for shift + arrow keys, selection frontier will be updated in _extendSelection()
           if (this._isMultipleToggleSelection() && !event.shiftKey) {
-            this._setSelectionFrontier(next, false);
+            this._setSelectionFrontier(this.GetKey(next.get(0)), false);
           }
 
           if (isExtend) {
@@ -7115,7 +7136,7 @@ var __oj_list_view_metadata =
           // track selection frontier during arrow keys
           // for shift + arrow keys, selection frontier will be updated in _extendSelection()
           if (this._isMultipleToggleSelection() && !event.shiftKey) {
-            this._setSelectionFrontier(prev, false);
+            this._setSelectionFrontier(this.GetKey(prev.get(0)), false);
           }
 
           if (isExtend) {
@@ -7234,7 +7255,7 @@ var __oj_list_view_metadata =
           // track selection frontier during arrow keys
           // for shift + arrow keys, selection frontier will be updated in _extendSelection()
           if (this._isMultipleToggleSelection() && !event.shiftKey) {
-            this._setSelectionFrontier(above, false);
+            this._setSelectionFrontier(this.GetKey(above.get(0)), false);
           }
 
           if (isExtend) {
@@ -7297,7 +7318,7 @@ var __oj_list_view_metadata =
           // track selection frontier during arrow keys
           // for shift + arrow keys, selection frontier will be updated in _extendSelection()
           if (this._isMultipleToggleSelection() && !event.shiftKey) {
-            this._setSelectionFrontier(below, false);
+            this._setSelectionFrontier(this.GetKey(below.get(0)), false);
           }
 
           if (isExtend) {
@@ -7931,7 +7952,7 @@ var __oj_list_view_metadata =
         if (this._isMultipleToggleSelection() && !isOptionUpdate) {
           // only unhighlight the items in the previous range selection
           // if there is no previous range selection, do nothing
-          if (this.m_prevSelectionFrontier) {
+          if (this.m_prevSelectionFrontier != null) {
             const { from, to } = this._getPrevRangeSelection();
             for (let j = from; j <= to; j++) {
               self._unhighlightElem(items[j], 'oj-selected');
@@ -8057,7 +8078,7 @@ var __oj_list_view_metadata =
       /**
        * Clear the current selection.
        * @param {boolean} updateOption true if the underlying selection option should be updated, false otherwise.
-       * @param {jQuery=} newSelectionFrontier new value to set the selection frontier. If none specified, set to null
+       * @param {Object=} newSelectionFrontier new key to set as the selection frontier. If none specified, set to null
        * @param {boolean} isShiftKey optional, true if this function is called due to the event with shiftKey, only need this to set prevSelectionFrontier for 'multipleToggle' selection
        * @param {boolean} isOptionUpdate optional, true if the selected option is going to be updated by the app or the checkbox
        * @private
@@ -8134,7 +8155,7 @@ var __oj_list_view_metadata =
 
         // checks if selection has changed
         var current = this.m_selectionFrontier;
-        if (current === item) {
+        if (current != null && oj.Object.compareValues(current, this.GetKey(item.get(0)))) {
           return false;
         }
 
@@ -8142,9 +8163,9 @@ var __oj_list_view_metadata =
         this._unhighlightElem(item, 'oj-focus');
 
         const from = this._isMultipleToggleSelection()
-          ? this.m_initialSelectionFrontier
+          ? this._getItemByKey(this.m_initialSelectionFrontier)
           : this.m_active.elem;
-        this._extendSelectionRange(from, item, event);
+        this._extendSelectionRange(from || this.m_active.elem, item, event);
 
         return true;
       },
@@ -8162,7 +8183,7 @@ var __oj_list_view_metadata =
           // clear selection as we'll be just re-highlight the entire range
           this._clearSelection(false, this.m_selectionFrontier, event.shiftKey);
         } else {
-          this._clearSelection(false, to, event.shiftKey);
+          this._clearSelection(false, this.GetKey(to.get(0)), event.shiftKey);
         }
 
         // highlights the items between active item and new item
@@ -8306,7 +8327,7 @@ var __oj_list_view_metadata =
           // eslint-disable-next-line no-param-reassign
           selected = selected.delete([key]);
         } else {
-          this._setSelectionFrontier(item, event.shiftKey);
+          this._setSelectionFrontier(key, event.shiftKey);
           this._applySelection(item, key);
           // eslint-disable-next-line no-param-reassign
           selected = selected.add([key]);
@@ -8360,7 +8381,7 @@ var __oj_list_view_metadata =
             selected = selected.clear();
           }
 
-          this._setSelectionFrontier(item, event.shiftKey);
+          this._setSelectionFrontier(key, event.shiftKey);
 
           // select current item
           this._applySelection(item, key);
@@ -8507,7 +8528,12 @@ var __oj_list_view_metadata =
               );
             } else {
               // selects contiguous items from last selected item to current item
-              this._extendSelectionRange(this.m_selectionFrontier, this.m_active.elem, event, true);
+              this._extendSelectionRange(
+                this._getItemByKey(this.m_selectionFrontier),
+                this.m_active.elem,
+                event,
+                true
+              );
             }
           } else {
             this.ToggleSelection(
@@ -8556,19 +8582,19 @@ var __oj_list_view_metadata =
 
       /**
        * Set the selectionFrontier for range selection; if the selectionMode is 'multipleToggle', set the prevSelectionFrontier
-       * @param {Element} item the new selection frontier
+       * @param {Object} key the new selection frontier key
        * @param {boolean} isShiftKey optional boolean to determine whether this function is triggered by an event with shiftKey, only need this for 'multipleToggle' selection
        */
-      _setSelectionFrontier: function (item, isShiftKey) {
+      _setSelectionFrontier: function (key, isShiftKey) {
         if (this._isMultipleToggleSelection()) {
           if (isShiftKey) {
             this.m_prevSelectionFrontier = this.m_selectionFrontier;
           } else {
-            this.m_initialSelectionFrontier = item;
+            this.m_initialSelectionFrontier = key;
             this.m_prevSelectionFrontier = undefined;
           }
         }
-        this.m_selectionFrontier = item;
+        this.m_selectionFrontier = key;
         this.m_pendingSelectionFrontier = undefined;
       },
 
@@ -8580,8 +8606,10 @@ var __oj_list_view_metadata =
         var end = this.m_prevSelectionFrontier;
 
         var items = this._getItemsCache();
-        var startIndex = items.index(start);
-        var endIndex = items.index(end);
+        var startItem = this.FindElementByKey(start);
+        var endItem = this.FindElementByKey(end);
+        var startIndex = items.index(startItem);
+        var endIndex = items.index(endItem);
 
         var from = Math.min(startIndex, endIndex);
         var to = Math.max(startIndex, endIndex);
@@ -8594,7 +8622,7 @@ var __oj_list_view_metadata =
        * i.e. not the 1st range selection among continuous range selections
        */
       _shouldClearPrevRangeSelection: function () {
-        return this._isMultipleToggleSelection() && this.m_prevSelectionFrontier;
+        return this._isMultipleToggleSelection() && this.m_prevSelectionFrontier != null;
       },
 
       /** ******************************** End Selection **********************************************/
@@ -10616,8 +10644,8 @@ var __oj_list_view_metadata =
    * <h5>gridlines attribute</h5>
    * <p>The <code>gridlines</code> property shape has changed. It now takes the keys `item`, `top` and `bottom`,
    * each of which are optional and take a value of "hidden" or "visible". <br/>
-   * `item` toggles the presence of bottom gridlines except the last item,
-   * and `top` and `bottom` toggle the initial and trailing gridlines.
+   * `item` toggles the presence of gridlines between items,
+   * and `top` and `bottom` toggle the initial and trailing gridlines of the ListView.
    * </p>
    *
    * <h5>item.renderer attribute</h5>
@@ -12611,7 +12639,7 @@ var __oj_list_view_metadata =
    *     </tr>
    *     <tr>
    *       <td><kbd>Enter</kbd></td>
-   *       <td>Enters tabbable mode if <a href="#item">enterKeyFocusBehavior</a> is "focusWithin".  This enables keyboard action on elements inside the item, including navigate between focusable elements inside the item.</td>
+   *       <td>Enters tabbable mode if <a href="#item">item.enterKeyFocusBehavior</a> is "focusWithin".  This enables keyboard action on elements inside the item, including navigate between focusable elements inside the item.</td>
    *     </tr>
    *     <tr>
    *       <td><kbd>Esc</kbd></td>

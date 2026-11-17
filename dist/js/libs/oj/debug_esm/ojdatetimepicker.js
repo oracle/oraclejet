@@ -2042,6 +2042,13 @@ function toJSDateFullYear(year, month, day) {
  * </ul>
  * </p>
  *
+ * <h5>Full Width</h5>
+ * <p>
+ * The usage of the style class: oj-form-control-full-width is no longer needed. <code>oj-c-input-date-picker</code> uses all
+ * available horizontal space by default. To limit its width, set its <code>width</code> or <code>max-width</code> attribute.
+ * See below for further details on these attributes.
+ * </p>
+ *
  * <h5>MaxWidth attribute</h5>
  * <p>
  * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
@@ -6785,24 +6792,34 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
           if (weekDisplay !== 'none') {
             try {
               // The week number calculation follows the ISO 8601 definition:
-              // the week starts on Monday, the first week of the year contains
-              // the first Thursday of the year.
-              // This means that some days from one year may be placed into weeks
-              // 'belonging' to another year.
+              // weeks start on Monday, and week 1 contains the year's first Thursday.
+              // In 2021, that Thursday is January 7, so January 4-10 is week 1.
+              // Sunday, January 3 is in the preceding week: week 53 of 2020.
+              // This is why a calendar date's ISO week can belong to a different year.
+              //
+              // Key: January 3, 2021 is Sunday everywhere that uses the Gregorian calendar.
+              // Timezones can change which calendar date a timestamp represents,
+              // but they do not change that date's weekday or ISO week number.
+              // For date/time inputs with an explicit converter timezone, that timezone
+              // determines the displayed date; the browser timezone must not change
+              // the ISO week number for that date.
               if (!mondayDateForWeekDisplay) {
                 mondayDateForWeekDisplay = toJSDateFullYear(
                   printDate.getFullYear(),
                   printDate.getMonth(),
                   printDate.getDate()
                 );
-                const dayNumber = mondayDateForWeekDisplay.getUTCDay();
+                // This Date holds the calendar row's year/month/day using local Date fields.
+                // Use getDay() and setDate() to preserve that calendar day: UTC methods
+                // could see local Monday midnight as Sunday.
+                const dayNumber = mondayDateForWeekDisplay.getDay();
 
                 // For ISO week, we set the start of the week to Monday.
                 // This calculation assumes dayNumber is 0 (Sunday), 1 (Monday), or 6 (Saturday), which
                 // are the first day of week values from the locales we support.
                 if (dayNumber !== 1) {
-                  mondayDateForWeekDisplay.setUTCDate(
-                    mondayDateForWeekDisplay.getUTCDate() + (dayNumber === 0 ? 1 : 2)
+                  mondayDateForWeekDisplay.setDate(
+                    mondayDateForWeekDisplay.getDate() + (dayNumber === 0 ? 1 : 2)
                   );
                 }
               }
@@ -7313,7 +7330,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     // We pass in a Monday as our date, so we can assume this date is a Monday in this function.
     var d = OraI18nUtils._IsoStrParts(date);
     var time;
-    var checkDate = toJSDateFullYear(d[0], d[1] - 1, d[2]);
+    // Recreate Monday's year/month/day at UTC midnight for week-number arithmetic.
+    // This preserves the calendar date; it does not convert the original timestamp.
+    // Use UTC throughout this calculation so browser timezone offsets cannot affect it.
+    // setUTCFullYear also preserves years 0-99 instead of mapping them to 1900-1999.
+    var checkDate = new Date(0);
+    checkDate.setUTCFullYear(d[0], d[1] - 1, d[2]);
 
     // Find Thursday of this week starting on Monday
     // if getUTCDay() returns 0 (Sunday), we use 7 for the calculation, but our code passes in a Monday, so getUTCDay() will be 1.
@@ -10727,6 +10749,13 @@ function _getTimeDefaultConverter() {
  * .oj-form-control-text-align-end maps to 'end'
  * </li>
  * </ul>
+ * </p>
+ *
+ * <h5>Full Width</h5>
+ * <p>
+ * The usage of the style class: oj-form-control-full-width is no longer needed. <code>oj-c-input-time-mask</code> uses all
+ * available horizontal space by default. To limit its width, set its <code>width</code> or <code>max-width</code> attribute.
+ * See below for further details on these attributes.
  * </p>
  *
  * <h5>MaxWidth attribute</h5>

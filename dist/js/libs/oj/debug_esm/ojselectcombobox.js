@@ -10652,6 +10652,13 @@ const _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
  * </p>
  *
  *
+ * <h5>Full Width</h5>
+ * <p>
+ * The usage of the style class: oj-form-control-full-width is no longer needed. <code>oj-c-select-single</code> uses all
+ * available horizontal space by default. To limit its width, set its <code>width</code> or <code>max-width</code> attribute.
+ * See below for further details on these attributes.
+ * </p>
+ *
  * <h5>MaxWidth attribute</h5>
  * <p>
  * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
@@ -10992,6 +10999,13 @@ const _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice, {
  *   .oj-form-control-text-align-end maps to 'end'
  *   </li>
  * </ul>
+ * </p>
+ *
+ * <h5>Full Width</h5>
+ * <p>
+ * The usage of the style class: oj-form-control-full-width is no longer needed. <code>oj-c-select-multiple</code> uses all
+ * available horizontal space by default. To limit its width, set its <code>width</code> or <code>max-width</code> attribute.
+ * See below for further details on these attributes.
  * </p>
  *
  * <h5>MaxWidth attribute</h5>
@@ -17833,6 +17847,13 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
  * </ul>
  * </p>
  *
+ * <h5>Full Width</h5>
+ * <p>
+ * The usage of the style class: oj-form-control-full-width is no longer needed. <code>oj-c-select-multiple</code> uses all
+ * available horizontal space by default. To limit its width, set its <code>width</code> or <code>max-width</code> attribute.
+ * See below for further details on these attributes.
+ * </p>
+ *
  * <h5>MaxWidth attribute</h5>
  * <p>
  * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now
@@ -18175,6 +18196,13 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice, {
  *   .oj-form-control-text-align-end maps to 'end'
  *   </li>
  * </ul>
+ * </p>
+ *
+ * <h5>Full Width</h5>
+ * <p>
+ * The usage of the style class: oj-form-control-full-width is no longer needed. <code>oj-c-select-multiple</code> uses all
+ * available horizontal space by default. To limit its width, set its <code>width</code> or <code>max-width</code> attribute.
+ * See below for further details on these attributes.
  * </p>
  *
  * <h5>MaxWidth attribute</h5>

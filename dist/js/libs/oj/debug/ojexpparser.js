@@ -537,6 +537,7 @@ define(['exports'], function (exports) { 'use strict';
     function _gobbleVariable(context, stopAtType) {
       var expr = context.expr;
       var ch_i, node;
+      var optionalChain = false;
       ch_i = expr.charCodeAt(context.index);
 
       if (ch_i === OPAREN_CODE) {
@@ -574,13 +575,25 @@ define(['exports'], function (exports) { 'use strict';
           // move it to the next char
           context.index++;
           _gobbleSpaces(context);
-          node = {
-            type: MEMBER_EXP,
-            computed: false,
-            optional: true,
-            object: node,
-            property: _gobbleIdentifier(context, true)
-          };
+          if (expr.charCodeAt(context.index) === OPAREN_CODE) {
+            // Optional function call, e.g. fn?.()
+            context.index++;
+            node = {
+              type: CALL_EXP,
+              arguments: _gobbleArguments(context, CPAREN_CODE),
+              callee: node,
+              optional: true
+            };
+          } else {
+            node = {
+              type: MEMBER_EXP,
+              computed: false,
+              optional: true,
+              object: node,
+              property: _gobbleIdentifier(context, true)
+            };
+          }
+          optionalChain = true;
         } else if (ch_i === OBRACK_CODE) {
           node = {
             type: MEMBER_EXP,
@@ -605,13 +618,19 @@ define(['exports'], function (exports) { 'use strict';
         // stop is used for constructor types, e.g. new Date('Jan 1, 2016').toISOString()
         // treat constructor as a group, then execute the rest
         if (stopAtType === node.type) {
+          if (optionalChain) {
+            _throwError(
+              'Optional chaining is not supported in constructor expressions',
+              context.index
+            );
+          }
           return node;
         }
 
         _gobbleSpaces(context);
         ch_i = expr.charCodeAt(context.index);
       }
-      return node;
+      return optionalChain ? { type: CHAIN_EXP, expression: node } : node;
     }
 
     // Responsible for parsing a group of things within parentheses `()`
@@ -1126,6 +1145,7 @@ define(['exports'], function (exports) { 'use strict';
   const MEMBER_EXP = 'MemberExpression';
   const LITERAL = 'Literal';
   const CALL_EXP = 'CallExpression';
+  const CHAIN_EXP = 'ChainExpression';
   const UNARY_EXP = 'UnaryExpression';
   const BINARY_EXP = 'BinaryExpression';
   const LOGICAL_EXP = 'LogicalExpression';
@@ -1147,6 +1167,7 @@ define(['exports'], function (exports) { 'use strict';
   exports.BINARY_EXP = BINARY_EXP;
   exports.BLOCK_STATEMENT = BLOCK_STATEMENT;
   exports.CALL_EXP = CALL_EXP;
+  exports.CHAIN_EXP = CHAIN_EXP;
   exports.COMPOUND = COMPOUND;
   exports.CONDITIONAL_EXP = CONDITIONAL_EXP;
   exports.ExpParser = ExpParser;

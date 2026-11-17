@@ -65,7 +65,8 @@ define(['ojs/ojcspexpressionevaluator-internal', 'ojs/ojkoshared'], function (oj
    *  <li>Logical operators, e.g. <code>[[a && b]]</code> or <code>[[a || b]]</code>.</li>
    *  <li>Nullish coalescing operator (??) such as <code>'value ?? "default value"'</code></li>
    *  <li>Conditional or ternary operators, e.g. <code>[[test ? consequent : alternate]]</code>.</li>
-   *  <li>Optional chaining operators, e.g. <code>[[a?.b]]</code>.</li>
+   *  <li>Optional chaining and invocation operators, e.g. <code>[[a?.b]]</code>, <code>[[fn?.()]]</code>,
+   *    or <code>[[object.method?.(arg)]]</code>.</li>
    *  <li>Array literals, e.g. <code>[a, b, c]</code>.</li>
    *  <li>Object literals, e.g. <code>[[{'selection_state': selected}]]</code>.</li>
    *  <li>'new' operator such as <code>'new Object()'</code></li>

@@ -1051,10 +1051,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojeventtarget'], func
          */
         function getNaturalSortComparator() {
             return (xval, yval) => {
-                if (xval === null || typeof xval === 'undefined') {
+                const xvalIsNullish = xval === null || typeof xval === 'undefined';
+                const yvalIsNullish = yval === null || typeof yval === 'undefined';
+                if (xvalIsNullish && yvalIsNullish) {
+                    return 0;
+                }
+                if (xvalIsNullish) {
                     return 1;
                 }
-                if (yval === null || typeof yval === 'undefined') {
+                if (yvalIsNullish) {
                     return -1;
                 }
                 let compareResult = 0;

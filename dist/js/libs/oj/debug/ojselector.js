@@ -102,7 +102,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojvcomponent', 'preact', 'ojs/ojdo
      *     "icon": "oj-ux-ico-check-square"
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojSelector.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21.1/reference-api/oj.ojSelector.html"
      * @ojmetadata since "9.0.0"
      * @ojlegacymetadata requirements [
      *    {

@@ -535,6 +535,7 @@ const ExpParser = function () {
   function _gobbleVariable(context, stopAtType) {
     var expr = context.expr;
     var ch_i, node;
+    var optionalChain = false;
     ch_i = expr.charCodeAt(context.index);
 
     if (ch_i === OPAREN_CODE) {
@@ -572,13 +573,25 @@ const ExpParser = function () {
         // move it to the next char
         context.index++;
         _gobbleSpaces(context);
-        node = {
-          type: MEMBER_EXP,
-          computed: false,
-          optional: true,
-          object: node,
-          property: _gobbleIdentifier(context, true)
-        };
+        if (expr.charCodeAt(context.index) === OPAREN_CODE) {
+          // Optional function call, e.g. fn?.()
+          context.index++;
+          node = {
+            type: CALL_EXP,
+            arguments: _gobbleArguments(context, CPAREN_CODE),
+            callee: node,
+            optional: true
+          };
+        } else {
+          node = {
+            type: MEMBER_EXP,
+            computed: false,
+            optional: true,
+            object: node,
+            property: _gobbleIdentifier(context, true)
+          };
+        }
+        optionalChain = true;
       } else if (ch_i === OBRACK_CODE) {
         node = {
           type: MEMBER_EXP,
@@ -603,13 +616,19 @@ const ExpParser = function () {
       // stop is used for constructor types, e.g. new Date('Jan 1, 2016').toISOString()
       // treat constructor as a group, then execute the rest
       if (stopAtType === node.type) {
+        if (optionalChain) {
+          _throwError(
+            'Optional chaining is not supported in constructor expressions',
+            context.index
+          );
+        }
         return node;
       }
 
       _gobbleSpaces(context);
       ch_i = expr.charCodeAt(context.index);
     }
-    return node;
+    return optionalChain ? { type: CHAIN_EXP, expression: node } : node;
   }
 
   // Responsible for parsing a group of things within parentheses `()`
@@ -1124,6 +1143,7 @@ const IDENTIFIER = 'Identifier';
 const MEMBER_EXP = 'MemberExpression';
 const LITERAL = 'Literal';
 const CALL_EXP = 'CallExpression';
+const CHAIN_EXP = 'ChainExpression';
 const UNARY_EXP = 'UnaryExpression';
 const BINARY_EXP = 'BinaryExpression';
 const LOGICAL_EXP = 'LogicalExpression';
@@ -1140,4 +1160,4 @@ const ARROW_EXP = 'ArrowFunctionExpression';
 const RETURN_STATEMENT = 'ReturnStatement';
 const BLOCK_STATEMENT = 'BlockStatement';
 
-export { ARRAY_EXP, ARROW_EXP, BINARY_EXP, BLOCK_STATEMENT, CALL_EXP, COMPOUND, CONDITIONAL_EXP, ExpParser, FUNCTION_EXP, IDENTIFIER, LITERAL, LOGICAL_EXP, MEMBER_EXP, NEW_EXP, OBJECT_EXP, PROPERTY, RETURN_STATEMENT, TEMPLATE_ELEMENT, TEMPLATE_LITERAL, UNARY_EXP, getKeyValue };
+export { ARRAY_EXP, ARROW_EXP, BINARY_EXP, BLOCK_STATEMENT, CALL_EXP, CHAIN_EXP, COMPOUND, CONDITIONAL_EXP, ExpParser, FUNCTION_EXP, IDENTIFIER, LITERAL, LOGICAL_EXP, MEMBER_EXP, NEW_EXP, OBJECT_EXP, PROPERTY, RETURN_STATEMENT, TEMPLATE_ELEMENT, TEMPLATE_LITERAL, UNARY_EXP, getKeyValue };

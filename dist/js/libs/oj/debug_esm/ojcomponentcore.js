@@ -3220,6 +3220,26 @@ var _OJ_TRANSLATIONS_OPTION = 'translations';
 var _OJ_TRANSLATIONS_PREFIX = _OJ_TRANSLATIONS_OPTION + '.';
 
 /**
+ * Tracks the nested key currently being written for each dynamic options object.
+ * Dynamic option descriptors used to close over their widget instance and read its
+ * _settingNestedKey property. JET-80400 showed that V8 can retain such an accessor
+ * through shared property-descriptor metadata, which can also retain the widget and
+ * its detached DOM subtree. Store the temporary nested key here instead, keyed by the
+ * descriptor's owning options object. Entries exist only during a nested option update,
+ * and WeakMap keys do not keep options objects alive.
+ * @private
+ */
+var _dynamicPropertySettingNestedKeys = new WeakMap();
+
+/**
+ * Tracks the component that owns each dynamic options object when context-sensitive global
+ * defaults are in use. Dynamic property accessors use a shared callback to retrieve the
+ * component, rather than closing over it. WeakMap keys do not keep options objects alive.
+ * @private
+ */
+var _dynamicPropertyContextComponents = new WeakMap();
+
+/**
  * @private
  */
 const _DISABLED = 'oj-disabled';
@@ -4304,13 +4324,13 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
           try {
             // Inform dynamic getters that the subkey is being set
             if (arguments.length > 1) {
-              this._settingNestedKey = subkey;
+              _dynamicPropertySettingNestedKeys.set(this.options, subkey);
             }
 
             curOption = $.widget.extend({}, this.options[key]);
             options[key] = curOption;
           } finally {
-            this._settingNestedKey = null;
+            _dynamicPropertySettingNestedKeys.delete(this.options);
           }
 
           for (i = 0; i < parts.length - 1; i++) {
@@ -4462,12 +4482,12 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         try {
           var subkey = flags == null ? null : flags.subkey;
           if (subkey != null) {
-            this._settingNestedKey = subkey;
+            _dynamicPropertySettingNestedKeys.set(this.options, subkey);
           }
 
           this._super(key, value);
         } finally {
-          this._settingNestedKey = null;
+          _dynamicPropertySettingNestedKeys.delete(this.options);
         }
 
         // if contextMenu option wasn't set before, we'll need to start detect gesture
@@ -5703,8 +5723,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
      */
     _getTranslationSectionLoader: function () {
       var sectionNames = [];
-
-      var self = this;
+      var componentSectionName = this._GetTranslationsSectionName();
 
       var index = 0;
 
@@ -5714,7 +5733,7 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         // Since _GetTranslationsSectionName() is a protected method, we can only call it on the widget instance.
         // For superclases, we will assume that their section names can only be their full widget name
 
-        var name = index === 0 ? self._GetTranslationsSectionName() : proto.widgetFullName;
+        var name = index === 0 ? componentSectionName : proto.widgetFullName;
         index += 1;
 
         var section = getComponentTranslations(name);
@@ -5778,7 +5797,6 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
 
       if (translationLoader != null && (currVal === undefined || $.isPlainObject(currVal))) {
         _defineDynamicProperty(
-          this,
           undefined,
           constructorOptions[_OJ_TRANSLATIONS_OPTION],
           options,
@@ -5816,12 +5834,6 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         return;
       }
 
-      var self = this;
-
-      var contextCallback = function () {
-        return self._getDynamicPropertyContext();
-      };
-
       var props = Object.keys(defaults);
       for (var i = 0; i < props.length; i++) {
         var prop = props[i];
@@ -5832,14 +5844,14 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
           if (defaultValueList) {
             var callback = _getCompoundDynamicGetter(defaultValueList);
             if (callback) {
+              _dynamicPropertyContextComponents.set(options, this);
               _defineDynamicProperty(
-                this,
                 originalDefaults[prop],
                 val,
                 options,
                 prop,
                 callback,
-                contextCallback
+                _getDynamicPropertyContextForOptions
               );
             } else {
               var list = [originalDefaults[prop]].concat(defaultValueList);
@@ -6281,7 +6293,6 @@ oj.__registerWidget = function (name, base, prototype, isHidden) {
 };
 
 /**
- * @param {Object} self
  * @param {Object|undefined} originalDefaultValue
  * @param {?Object} constructorValue
  * @param {!Object} options
@@ -6291,7 +6302,6 @@ oj.__registerWidget = function (name, base, prototype, isHidden) {
  * @private
  */
 function _defineDynamicProperty(
-  self,
   originalDefaultValue,
   constructorValue,
   options,
@@ -6313,7 +6323,9 @@ function _defineDynamicProperty(
         return override;
       }
 
-      if (self._settingNestedKey != null) {
+      // A dynamic descriptor is invoked with its owning options object as `this`.
+      var settingNestedKey = _dynamicPropertySettingNestedKeys.get(this);
+      if (settingNestedKey != null) {
         // The getter is getting called from the option() method that will be mutating the current
         // object. We need to return only the override portion in this case to avoid the defaults being
         // reapplied as an override
@@ -6321,15 +6333,16 @@ function _defineDynamicProperty(
         return override;
       }
 
-      var defaultVal = getter(contextCallback ? contextCallback() : prop);
+      var defaultVal = getter(contextCallback ? contextCallback(this) : prop);
 
       return _mergeOptionLayers([originalDefaultValue, defaultVal, override], overriddenSubkeys);
     },
     set: function (value) {
       override = value;
 
-      if (self._settingNestedKey != null) {
-        overriddenSubkeys[self._settingNestedKey] = true;
+      var settingNestedKey = _dynamicPropertySettingNestedKeys.get(this);
+      if (settingNestedKey != null) {
+        overriddenSubkeys[settingNestedKey] = true;
       } else {
         // The entire option has been replaced
         replaced = true;
@@ -6337,6 +6350,20 @@ function _defineDynamicProperty(
     },
     enumerable: true
   });
+}
+
+/**
+ * Returns the context for a dynamic options object without capturing its component in the
+ * accessor's closure. This must be called with the options object that owns the dynamic
+ * accessor (its normal property receiver); copying or invoking the accessor with another
+ * receiver is not supported.
+ * @param {!Object} options
+ * @return {Object|undefined}
+ * @private
+ */
+function _getDynamicPropertyContextForOptions(options) {
+  var component = _dynamicPropertyContextComponents.get(options);
+  return component ? component._getDynamicPropertyContext() : undefined;
 }
 
 /**

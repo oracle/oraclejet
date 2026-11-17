@@ -2289,6 +2289,13 @@ oj.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    * </p>
    *
    *
+   * <h5>Full Width</h5>
+   * <p>
+   * The usage of the style class: oj-form-control-full-width is no longer needed. <code>oj-c-select-single</code> uses all
+   * available horizontal space by default. To limit its width, set its <code>width</code> or <code>max-width</code> attribute.
+   * See below for further details on these attributes.
+   * </p>
+   *
    * <h5>MaxWidth attribute</h5>
    * <p>
    * The usage of the style classes: oj-form-control-max-width-sm and oj-form-control-max-width-md is now

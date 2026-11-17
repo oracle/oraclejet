@@ -3163,8 +3163,12 @@ var __oj_buttonset_many_metadata =
      * <h5>Options</h5>
      *  <p><strong>oj-c-buttonset-multiple</strong> no longer supports DOM-centric options specified in the default slot.
      * Instead, the toggles are specified in the items property.</p>
-     * <h5>Chroming</h5>
-     *  <p>Solid chroming is no longer supported.</p>
+     * <h5>LabelledBy attribute</h5>
+     *  <p>Migrate the <code class="prettyprint">labelled-by</code> attribute to
+     *  <code class="prettyprint">aria-labelledby</code>.</p>
+     * <h5>DescribedBy attribute</h5>
+     *  <p>Migrate the <code class="prettyprint">described-by</code> attribute to
+     *  <code class="prettyprint">aria-describedby</code>.</p>
      * <h5>Title attribute</h5>
      *  <p>The title attribute has changed to tooltip</p>
      * <h5>Sizes</h5>
@@ -3203,8 +3207,12 @@ var __oj_buttonset_many_metadata =
      * <h5>Options</h5>
      *  <p><strong>oj-c-buttonset-single</strong> no longer supports DOM-centric options specified in the default slot.
      * Instead, the toggles are specified in the items property.</p>
-     * <h5>Chroming</h5>
-     *  <p>Solid chroming is no longer supported.</p>
+     * <h5>LabelledBy attribute</h5>
+     *  <p>Migrate the <code class="prettyprint">labelled-by</code> attribute to
+     *  <code class="prettyprint">aria-labelledby</code>.</p>
+     * <h5>DescribedBy attribute</h5>
+     *  <p>Migrate the <code class="prettyprint">described-by</code> attribute to
+     *  <code class="prettyprint">aria-describedby</code>.</p>
      * <h5>Title attribute</h5>
      *  <p>The title attribute has changed to tooltip</p>
      * <h5>Sizes</h5>
@@ -3645,13 +3653,14 @@ var __oj_buttonset_many_metadata =
          * @instance
          * @type {string}
          * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI. Note that this option is not supported in the Redwood theme.
-         * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
-         * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
+         * @ojvalue {string} "outlined" Outlined buttons are a more prominent variation.
+         * @ojvalue {string} "borderless" Borderless buttons are a less prominent variation.
          * @ojvalue {string} "full" Please use solid instead. In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
          * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).
          * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value will be removed in the future. Please use borderless instead."},
-         *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value will be removed in the future. Please use solid instead."}]
+         *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value will be removed in the future. Please use solid instead."},
+         *                {target:'propertyValue', for:"solid", since: "21.1.0", description: "This value is deprecated. This API is not recommended in the Redwood design system. Use outlined or borderless chroming as appropriate."}]
          *
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>
@@ -3675,13 +3684,14 @@ var __oj_buttonset_many_metadata =
          * @instance
          * @type {string}
          * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI. Note that this option is not supported in the Redwood theme.
-         * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
-         * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
+         * @ojvalue {string} "outlined" Outlined buttons are a more prominent variation.
+         * @ojvalue {string} "borderless" Borderless buttons are a less prominent variation.
          * @ojvalue {string} "full" Please use solid instead. In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
          * @ojshortdesc Indicates in what states the button has chrome (background and border).
          * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value will be removed in the future. Please use borderless instead."},
-         *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value will be removed in the future. Please use solid instead."}]
+         *                {target:'propertyValue', for:"full", since: "6.0.0", description: "This value will be removed in the future. Please use solid instead."},
+         *                {target:'propertyValue', for:"solid", since: "21.1.0", description: "This value is deprecated. This API is not recommended in the Redwood design system. Use outlined or borderless chroming as appropriate."}]
          * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).
          *
          * @example <caption>Initialize the Buttonset with the <code class="prettyprint">chroming</code> attribute specified:</caption>

@@ -69,7 +69,7 @@ define(['exports', 'preact/jsx-runtime', 'ojs/ojdomutils', 'ojs/ojgestureutils',
      *     ]
      *   }
      * }
-     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21/reference-api/oj.ojButton.html"
+     * @ojmetadata help "https://docs.oracle.com/en/middleware/developer-tools/jet/21.1/reference-api/oj.ojButton.html"
      * @ojmetadata propertyLayout [
      *   {
      *     "propertyGroup": "common",

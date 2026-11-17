@@ -494,8 +494,17 @@ class ComponentWithContexts extends Component {
             return null;
         }
         const compProps = this.state.compProps;
+        // Read-only writeback properties are maintained by the custom-element bridge so that
+        // their values can be exposed on the element and reported in property change events.
+        // They are not component props, however, and must be removed before Preact invokes a
+        // base component lifecycle method such as shouldComponentUpdate.
+        let componentProps = compProps;
+        if (props.readOnlyProps.length > 0) {
+            componentProps = { ...compProps };
+            props.readOnlyProps.forEach((prop) => delete componentProps[prop]);
+        }
         const BaseComponent = props.baseComp;
-        const componentVDom = jsx(BaseComponent, { ...compProps });
+        const componentVDom = jsx(BaseComponent, { ...componentProps });
         const rootEnv = customMemo(this.getEnvironmentContextObj, [
             props.baseElem['__oj_private_contexts']?.get(EnvironmentContext),
             props.baseElem['__oj_private_color_scheme'],
@@ -738,7 +747,7 @@ class IntrinsicElement {
             this._playbackEarlyPropertySets();
         }
         if (!this._vdom) {
-            this._vdom = (jsx(ComponentWithContexts, { ref: this._compWithContextsRef, baseComp: this._component, baseElem: this._element, initialCompProps: this._props, rootPatchCallback: this._rootPatchCallback, translationBundleMap: this._state.getTranslationBundleMap() }));
+            this._vdom = (jsx(ComponentWithContexts, { ref: this._compWithContextsRef, baseComp: this._component, baseElem: this._element, initialCompProps: this._props, readOnlyProps: this._metadata.extension?.['_READ_ONLY_PROPS'] || [], rootPatchCallback: this._rootPatchCallback, translationBundleMap: this._state.getTranslationBundleMap() }));
             render(this._vdom, this._element);
         }
         else {
@@ -1748,6 +1757,36 @@ if (isPreactDebugEnabled) {
  *   the rendered content (the &lt;div&gt; in the above example) by the
  *   VComponent framework.
  * </p>
+ * <h3 id="remounter">
+ *  Remounting Custom Elements
+ *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#remounter"></a>
+ * </h3>
+ * <p>
+ *   When a VComponent renders a custom element without Shadow DOM, changes to the
+ *   custom element's direct slot layout can require the custom element to be remounted
+ *   so that its slots are redistributed correctly.  For example, this can occur when
+ *   a slot is conditionally rendered or the order of slotted children changes.
+ * </p>
+ * <p>
+ *   Wrap the custom element in <a href="ojvcomponent-remounter.Remounter.html">Remounter</a>
+ *   to remount it whenever the layout of its direct slot children changes. Remounter
+ *   accepts exactly one child, which must be a custom element. It does not track slot
+ *   content produced by class-based or functional component children.
+ * </p>
+ * <pre class="prettyprint"><code>import { Remounter } from 'ojs/ojvcomponent-remounter';
+ * import 'ojs/ojbutton';
+ *
+ * function ButtonWithOptionalEndIcon({ showEnd }: { showEnd: boolean }) {
+ *   return (
+ *     &lt;Remounter&gt;
+ *       &lt;oj-button&gt;
+ *         &lt;span slot="startIcon" class="start-icon" /&gt;
+ *         {showEnd &amp;&amp; &lt;span slot="endIcon" class="end-icon" /&gt;}
+ *       &lt;/oj-button&gt;
+ *     &lt;/Remounter&gt;
+ *   );
+ * }
+ * </code></pre>
  * <h3 id="creating">
  *  Creating VComponents
  *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#creating"></a>

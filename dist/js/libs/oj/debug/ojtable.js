@@ -1837,6 +1837,11 @@ var __oj_table_metadata =
   /**
    * @private
    */
+  Table._DATA_OJ_VOICEOVER_ROW_STATE_ID = 'data-oj-voiceover-row-state-id';
+
+  /**
+   * @private
+   */
   Table._DATA_OJ_COLUMNIDX = 'data-oj-columnIdx';
 
   /**
@@ -2345,6 +2350,7 @@ var __oj_table_metadata =
       this._hasFooterTemplate ||
       this._hasRowTemplate ||
       this._hasAddRowTemplate ||
+      this._hasInsertRowTemplate ||
       this._hasNoDataTemplate
     ) {
       this._cleanTemplateNodes(this.element[0]);
@@ -2603,14 +2609,11 @@ var __oj_table_metadata =
         initFetch = true;
       }
     }
-    var contextMenu = this._GetContextMenu();
-    if (contextMenu != null && contextMenu !== this._getContextMenuElement()) {
-      this._createContextMenuContainer();
-    }
+    this._syncContextMenuLifecycle();
     this._isAddRowRendered = false;
     this._clearLayoutManager();
     this._clearCachedDom();
-    this._refreshContextMenu();
+    this._refreshContextMenuLabels();
     // if status message skeletons are already shown, do not reset them
     if (!this._statusMessageShown || !this._isSkeletonSupport()) {
       this._refreshTableStatusMessage();
@@ -3286,9 +3289,14 @@ var __oj_table_metadata =
               for (let i = 0; i < rowChildren.length; i++) {
                 var child = rowChildren[i];
                 if (child.tagName === 'TR') {
-                  tableBodyRow.parentNode.replaceChild(child, tableBodyRow);
+                  var oldTableBodyRow = tableBodyRow;
+                  oldTableBodyRow.parentNode.replaceChild(child, oldTableBodyRow);
                   // eslint-disable-next-line no-param-reassign
                   tableBodyRow = child;
+
+                  // The resolved row has been moved out of the temporary row, so clean the
+                  // detached template nodes without cleaning the row that remains in use.
+                  this._cleanTemplateNodes(oldTableBodyRow);
 
                   // need to ensure we wait for child busy states of deferred contents to clear properly
                   // eslint-disable-next-line no-param-reassign
@@ -3395,6 +3403,10 @@ var __oj_table_metadata =
     tableBodyRow[Table._DATA_OJ_EDITABLE] = editable;
     // eslint-disable-next-line no-param-reassign
     tableBodyRow[Table._DATA_OJ_SELECTABLE] = selectable;
+    this._updateVoiceOverRowStateInfo(
+      tableBodyRow,
+      this._getRowKeySetFromSelected(this.options.selected).has(row[Table._CONST_KEY])
+    );
 
     if (isSubtreeHidden) {
       tableBodyRow.classList.remove(Table.CSS_CLASSES._TABLE_DATA_ROW_REFRESH_CLASS);
@@ -3520,9 +3532,14 @@ var __oj_table_metadata =
                   var child = rowChildren[i];
                   if (child.tagName === 'TR') {
                     child.classList.add(Table.CSS_CLASSES._TABLE_ADD_ROW_PLACEHOLDER_CLASS);
-                    placeHolderRow.parentNode.replaceChild(child, placeHolderRow);
+                    var oldPlaceHolderRow = placeHolderRow;
+                    oldPlaceHolderRow.parentNode.replaceChild(child, oldPlaceHolderRow);
                     // eslint-disable-next-line no-param-reassign
                     placeHolderRow = child;
+
+                    // The resolved row has been moved out of the temporary row, so clean the
+                    // detached template nodes without cleaning the row that remains in use.
+                    this._cleanTemplateNodes(oldPlaceHolderRow);
 
                     // need to ensure we wait for child busy states of deferred contents to clear properly
                     placeHolderRow._ojReportBusy = tableBody;
@@ -3680,9 +3697,14 @@ var __oj_table_metadata =
                 var child = rowChildren[i];
                 if (child.tagName === 'TR') {
                   child.classList.add(Table.CSS_CLASSES._TABLE_INSERT_ROW_PLACEHOLDER_CLASS);
-                  placeHolderRow.parentNode.replaceChild(child, placeHolderRow);
+                  var oldPlaceHolderRow = placeHolderRow;
+                  oldPlaceHolderRow.parentNode.replaceChild(child, oldPlaceHolderRow);
                   // eslint-disable-next-line no-param-reassign
                   placeHolderRow = child;
+
+                  // The resolved row has been moved out of the temporary row, so clean the
+                  // detached template nodes without cleaning the row that remains in use.
+                  this._cleanTemplateNodes(oldPlaceHolderRow);
 
                   // need to ensure we wait for child busy states of deferred contents to clear properly
                   placeHolderRow._ojReportBusy = tableBody;
@@ -4840,6 +4862,28 @@ var __oj_table_metadata =
   };
 
   /**
+   * Checks whether the current platform is iOS or Android.
+   * @return {boolean}
+   * @private
+   */
+  Table.prototype._isIosOrAndroid = function () {
+    return DataCollectionUtils.isIos() || DataCollectionUtils.isAndroid();
+  };
+
+  /**
+   * Sets the accessible role and label for the sort icon on mobile screen readers.
+   * @param {Element} sortIcon the sort icon
+   * @param {string} label accessible label text
+   * @private
+   */
+  Table.prototype._setSortIconAccessibleAttributes = function (sortIcon, label) {
+    sortIcon.setAttribute(Table.DOM_ATTR._ROLE, 'img'); // @HTMLUpdateOK
+    sortIcon.setAttribute(Table.DOM_ATTR._ARIA_LABEL, label); // @HTMLUpdateOK
+    var roleDescription = ojtranslation.getTranslatedString('oj-internal.table.accessibleButtonRoleDescription');
+    sortIcon.setAttribute(Table.DOM_ATTR._ARIA_ROLEDESCRIPTION, roleDescription); // @HTMLUpdateOK
+  };
+
+  /**
    * Hide the column header sort icon
    * @param {number} columnIdx  column index
    * @private
@@ -4854,7 +4898,7 @@ var __oj_table_metadata =
         var sortContainer = this._getSortIconContainer(tableHeaderColumn);
         var sortIcon = this._getSortIcon(tableHeaderColumn);
         if (sortContainer != null && sortIcon != null) {
-          if (DataCollectionUtils.isIos()) {
+          if (this._isIosOrAndroid()) {
             var sortLabel = this.getTranslatedString('accessibleSortable', { id: '' });
             sortIcon.setAttribute(Table.DOM_ATTR._ARIA_LABEL, sortLabel); // @HTMLUpdateOK
           }
@@ -4915,7 +4959,7 @@ var __oj_table_metadata =
       $(tableHeaderColumn).data('sorted', Table._COLUMN_SORT_ORDER._ASCENDING);
 
       if (sortIcon != null) {
-        if (DataCollectionUtils.isIos()) {
+        if (this._isIosOrAndroid()) {
           sortLabel = this.getTranslatedString('accessibleSortAscending', { id: '' });
           sortIcon.setAttribute(Table.DOM_ATTR._ARIA_LABEL, sortLabel); // @HTMLUpdateOK
         }
@@ -4927,7 +4971,7 @@ var __oj_table_metadata =
       // store sort order on the DOM element
       $(tableHeaderColumn).data('sorted', Table._COLUMN_SORT_ORDER._DESCENDING);
       if (sortIcon != null) {
-        if (DataCollectionUtils.isIos()) {
+        if (this._isIosOrAndroid()) {
           sortLabel = this.getTranslatedString('accessibleSortDescending', { id: '' });
           sortIcon.setAttribute(Table.DOM_ATTR._ARIA_LABEL, sortLabel); // @HTMLUpdateOK
         }
@@ -13219,6 +13263,11 @@ var __oj_table_metadata =
     }
     this._stateInfo.textContent = stateInfo;
 
+    if (DataCollectionUtils.isIos() && this._accStatus != null) {
+      this._accStatus.textContent = '';
+      this._accStatus.textContent = stateInfo;
+    }
+
     // apply new label
     this._applyAccStatusLabel(this._stateInfo.id);
   };
@@ -13293,7 +13342,87 @@ var __oj_table_metadata =
       labelledbyString += columnHeaderCell.id + ' ';
     }
     labelledbyString += tableBodyCell.id + ' ';
+    var tableBodyRow = tableBodyCell.parentElement;
+    var rowStateInfo = this._applyVoiceOverRowStateInfo(tableBodyRow, true);
+    if (rowStateInfo != null && tableBodyRow[Table._ROW_ITEM_EXPANDO] != null) {
+      this._updateVoiceOverRowStateInfo(
+        tableBodyRow,
+        this._getRowKeySetFromSelected(this.options.selected).has(
+          tableBodyRow[Table._ROW_ITEM_EXPANDO][Table._CONST_KEY]
+        )
+      );
+      labelledbyString += rowStateInfo.id + ' ';
+    }
     return labelledbyString;
+  };
+
+  /**
+   * @private
+   */
+  Table.prototype._applyVoiceOverRowStateInfo = function (tableBodyRow, createIfMissing) {
+    if (tableBodyRow == null) {
+      return null;
+    }
+
+    var rowStateInfoId = tableBodyRow[Table._DATA_OJ_VOICEOVER_ROW_STATE_ID];
+    var rowStateInfo = rowStateInfoId == null ? null : document.getElementById(rowStateInfoId);
+    if (
+      rowStateInfo == null &&
+      createIfMissing &&
+      DataCollectionUtils.isIos() &&
+      this._isRowSelectionEnabled()
+    ) {
+      var row = tableBodyRow[Table._ROW_ITEM_EXPANDO];
+      var rowKey = row == null ? this._getTableBodyRows().indexOf(tableBodyRow) : row[Table._CONST_KEY];
+      rowStateInfoId = this._getTableUID() + ':rowState:' + this._hashCode(rowKey);
+      rowStateInfo = document.getElementById(rowStateInfoId);
+      if (rowStateInfo == null) {
+        rowStateInfo = document.createElement(Table.DOM_ELEMENT._SPAN); // @HTMLUpdateOK
+        rowStateInfo.id = rowStateInfoId;
+        rowStateInfo.classList.add(Table.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+        var contextInfo = this._getTableElementByClassName(
+          Table.CSS_CLASSES._TABLE_ACC_CONTEXT_INFO_CLASS
+        );
+        (contextInfo || this._getTableContainer()).appendChild(rowStateInfo); // @HTMLUpdateOK
+      }
+      // eslint-disable-next-line no-param-reassign
+      tableBodyRow[Table._DATA_OJ_VOICEOVER_ROW_STATE_ID] = rowStateInfoId;
+    }
+
+    return rowStateInfo;
+  };
+
+  /**
+   * @private
+   */
+  Table.prototype._updateVoiceOverRowStateInfo = function (tableBodyRow, selected) {
+    var rowStateInfo = this._applyVoiceOverRowStateInfo(tableBodyRow, false);
+    if (rowStateInfo == null) {
+      return;
+    }
+
+    if (
+      this._isRowSelectionEnabled() &&
+      tableBodyRow[Table._DATA_OJ_SELECTABLE] !== Table._CONST_OFF
+    ) {
+      rowStateInfo.textContent = this.getTranslatedString(
+        selected ? 'accessibleStateSelected' : 'accessibleStateUnselected'
+      );
+    } else {
+      rowStateInfo.textContent = '';
+    }
+  };
+
+  /**
+   * @private
+   */
+  Table.prototype._removeVoiceOverRowStateInfo = function (tableBodyRow) {
+    var rowStateInfo = this._applyVoiceOverRowStateInfo(tableBodyRow, false);
+    if (rowStateInfo != null) {
+      rowStateInfo.remove();
+    }
+    // eslint-disable-next-line no-param-reassign
+    delete tableBodyRow[Table._DATA_OJ_VOICEOVER_ROW_STATE_ID];
   };
 
   /**
@@ -14350,22 +14479,16 @@ var __oj_table_metadata =
   };
 
   /**
-   * Add a default context menu container to the table container if there is
-   * no custom context menu.
+   * Returns the supplied or previously generated context menu, or creates the
+   * generated default menu when the table has supported commands and no menu exists.
    * @return {Element} ul DOM element
    * @private
    */
-  Table.prototype._createContextMenuContainer = function () {
-    var menuContainer = this._GetContextMenu();
-    var enableNonContiguousSelectionMenu =
-      !this._isStickyLayoutEnabled() && this._isTouchDevice()
-        ? this._getRowSelectionMode() === Table._OPTION_SELECTION_MODES._MULTIPLE
-        : false;
+  Table.prototype._ensureContextMenuContainer = function () {
+    var menuContainer = this._GetContextMenu() || this._GetDefaultContextMenu();
+    var isDefaultContextMenuNeeded = this._isDefaultContextMenuNeeded();
 
-    if (
-      !menuContainer &&
-      (this._isTableSortable() || enableNonContiguousSelectionMenu || this._isTableColumnsResizable())
-    ) {
+    if (!menuContainer && isDefaultContextMenuNeeded) {
       if (this._IsCustomElement()) {
         menuContainer = document.createElement('oj-menu');
         menuContainer.setAttribute(Table._DATA_OJ_BINDING_PROVIDER, 'none'); // @HTMLUpdateOK
@@ -14387,6 +14510,36 @@ var __oj_table_metadata =
     return menuContainer;
   };
 
+  Table.prototype._syncContextMenuLifecycle = function () {
+    var menuContainer = this._ensureContextMenuContainer();
+    var isGeneratedMenu = menuContainer && menuContainer === this._GetDefaultContextMenu();
+    var shouldListenForContextMenu =
+      menuContainer && (!isGeneratedMenu || this._isDefaultContextMenuNeeded());
+
+    if (!shouldListenForContextMenu) {
+      if (this._contextMenuResourcesActive && this._contextMenuGestureInit !== undefined) {
+        this._ReleaseContextMenu();
+      }
+      if (isGeneratedMenu) {
+        menuContainer.style[Table.CSS_PROP._DISPLAY] = Table.CSS_VAL._NONE;
+      }
+      return;
+    }
+
+    if (this._contextMenuResourcesActive && this._contextMenuGestureInit !== menuContainer) {
+      if (this._contextMenuGestureInit !== undefined) {
+        this._ReleaseContextMenu();
+      }
+      this._SetupContextMenu();
+    }
+  };
+
+  Table.prototype._invalidateContextMenuCommands = function () {
+    if (this._menuContainer === this._GetDefaultContextMenu()) {
+      this._menuContainer = null;
+    }
+  };
+
   /**
    * Populate default context menu options and add listeners
    * for context menu before show and select.
@@ -14396,8 +14549,19 @@ var __oj_table_metadata =
    * @private
    */
   Table.prototype._populateContextMenuItems = function (contextMenuNode, handleContextMenuSelect) {
+    if (
+      this._menuContainer === contextMenuNode &&
+      this._GetDefaultContextMenu() === contextMenuNode &&
+      contextMenuNode.querySelectorAll('[data-oj-command]').length === 0 &&
+      (this._isTableSortable() || this._isTableColumnsResizable())
+    ) {
+      this._menuContainer = null;
+    }
     if (!this._menuContainer) {
       if (this._GetDefaultContextMenu()) {
+        while (contextMenuNode.firstChild) {
+          contextMenuNode.removeChild(contextMenuNode.firstChild);
+        }
         const isRedwood = ThemeUtils.parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
         if (!isRedwood) {
           /* ***** ALTA ONLY CODE BLOCK BELOW ***** */
@@ -14406,10 +14570,7 @@ var __oj_table_metadata =
             let sortMenu = this._createContextMenuItem('sort', this._IsCustomElement());
             contextMenuNode.appendChild(sortMenu); // @HTMLUpdateOK
           }
-          var enableNonContiguousSelectionMenu = this._isTouchDevice()
-            ? this._getRowSelectionMode() === Table._OPTION_SELECTION_MODES._MULTIPLE
-            : false;
-          if (enableNonContiguousSelectionMenu) {
+          if (this._isNonContiguousSelectionMenuNeeded()) {
             let nonContiguousSelectionMenu = this._createContextMenuItem(
               'enableNonContiguousSelection',
               this._IsCustomElement()
@@ -14441,9 +14602,11 @@ var __oj_table_metadata =
         this._menuContainer = contextMenuNode;
         if (this._IsCustomElement()) {
           contextMenuNode.refresh();
+          contextMenuNode.removeEventListener('ojAction', handleContextMenuSelect);
           contextMenuNode.addEventListener('ojAction', handleContextMenuSelect);
         } else {
           $(contextMenuNode).ojMenu('refresh');
+          $(contextMenuNode).off('ojselect', handleContextMenuSelect);
           $(contextMenuNode).on('ojselect', handleContextMenuSelect);
         }
       } else {
@@ -14479,8 +14642,10 @@ var __oj_table_metadata =
           }
 
           if (this._IsCustomElement()) {
+            contextMenuNode.removeEventListener('ojAction', handleContextMenuSelect);
             contextMenuNode.addEventListener('ojAction', handleContextMenuSelect);
           } else {
+            $(contextMenuNode).off('ojselect', handleContextMenuSelect);
             $(contextMenuNode).on('ojselect', handleContextMenuSelect);
           }
         }
@@ -16922,7 +17087,7 @@ var __oj_table_metadata =
    * Refresh any translated strings in the context menu.
    * @private
    */
-  Table.prototype._refreshContextMenu = function () {
+  Table.prototype._refreshContextMenuLabels = function () {
     var menuContainer = this._menuContainer;
     if (menuContainer) {
       var listItems = menuContainer.querySelectorAll('[data-oj-command]');
@@ -16942,6 +17107,10 @@ var __oj_table_metadata =
             commandString = this.getTranslatedString('labelSortAsc');
           } else if (command === 'sortDsc') {
             commandString = this.getTranslatedString('labelSortDsc');
+          } else if (command === 'enableNonContiguousSelection') {
+            commandString = this.getTranslatedString('labelEnableNonContiguousSelection');
+          } else if (command === 'disableNonContiguousSelection') {
+            commandString = this.getTranslatedString('labelDisableNonContiguousSelection');
           } else if (command === 'resize') {
             commandString = this.getTranslatedString('labelResizeColumn');
           }
@@ -17001,6 +17170,7 @@ var __oj_table_metadata =
     }
     if (tableBodyRow != null) {
       Components.subtreeDetached(tableBodyRow);
+      this._removeVoiceOverRowStateInfo(tableBodyRow);
 
       if (this._hasCellTemplate || this._hasRowTemplate) {
         this._cleanTemplateNodes(tableBodyRow);
@@ -17022,6 +17192,7 @@ var __oj_table_metadata =
       if (tableBody != null) {
         Components.subtreeDetached(tableBody);
         for (var i = 0; i < tableBodyRows.length; i++) {
+          this._removeVoiceOverRowStateInfo(tableBodyRows[i]);
           if (this._hasCellTemplate || this._hasRowTemplate) {
             this._cleanTemplateNodes(tableBodyRows[i]);
           }
@@ -18402,6 +18573,7 @@ var __oj_table_metadata =
     _DRAGGABLE: 'draggable',
     _ROLE: 'role',
     _ARIA_LABEL: 'aria-label',
+    _ARIA_ROLEDESCRIPTION: 'aria-roledescription',
     _ARIA_LABELLEDBY: 'aria-labelledby',
     _ARIA_DESCRIBEDBY: 'aria-describedby',
     _ARIA_HIDDEN: 'aria-hidden'
@@ -23620,12 +23792,11 @@ var __oj_table_metadata =
     var sortContainer = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
     var sortIcon = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
     sortContainer.classList.add(Table.CSS_CLASSES._TABLE_SORT_ICON_CONTAINER_CLASS);
-    if (!DataCollectionUtils.isIos()) {
+    if (!this._isIosOrAndroid()) {
       sortContainer.setAttribute(Table.DOM_ATTR._ARIA_HIDDEN, 'true'); // @HTMLUpdateOK
     } else {
-      sortIcon.setAttribute(Table.DOM_ATTR._ROLE, 'img'); // @HTMLUpdateOK
       var sortLabel = this.getTranslatedString('accessibleSortable', { id: '' });
-      sortIcon.setAttribute(Table.DOM_ATTR._ARIA_LABEL, sortLabel); // @HTMLUpdateOK
+      this._setSortIconAccessibleAttributes(sortIcon, sortLabel);
     }
     this._AddHoverable($(sortContainer));
     headerColumnDiv.appendChild(sortContainer); // @HTMLUpdateOK
@@ -25019,6 +25190,7 @@ var __oj_table_metadata =
    * @private
    */
   Table.prototype._applyRowSelection = function (rowIdx, tableBodyRow, selected) {
+    this._updateVoiceOverRowStateInfo(tableBodyRow, selected);
     var rowSelected = tableBodyRow.classList.contains(Table.MARKER_STYLE_CLASSES._SELECTED);
     if (rowSelected !== selected) {
       if (!selected) {
@@ -28362,8 +28534,7 @@ var __oj_table_metadata =
    */
   Table.prototype._AfterCreate = function () {
     this._super();
-    // create the context menu
-    this._createContextMenuContainer();
+    this._ensureContextMenuContainer();
     this._isInitFetch = true;
   };
 
@@ -28375,7 +28546,9 @@ var __oj_table_metadata =
    * @memberof! oj.ojTable
    */
   Table.prototype._SetupResources = function () {
+    this._contextMenuResourcesActive = true;
     this._super();
+    this._syncContextMenuLifecycle();
     this._registerResizeListener();
     // register event listeners for table on the datasource so that the table
     // component is notified when rows are added, deleted, etc from the datasource.
@@ -28413,10 +28586,16 @@ var __oj_table_metadata =
    */
   Table.prototype._SetupContextMenu = function () {
     const options = {};
+    const contextMenu = this._GetContextMenu();
     if (this._isStickyLayoutEnabled() && !this._isTouchDevice()) {
       options.allowBrowserContextMenu = true;
     }
-    this._super(options);
+    if (
+      this._isDefaultContextMenuNeeded() ||
+      (contextMenu != null && contextMenu !== this._GetDefaultContextMenu())
+    ) {
+      this._super(options);
+    }
   };
 
   /**
@@ -28426,6 +28605,7 @@ var __oj_table_metadata =
    * @memberof! oj.ojTable
    */
   Table.prototype._ReleaseResources = function () {
+    this._contextMenuResourcesActive = false;
     this._super();
     this._cleanComponent();
   };
@@ -28549,6 +28729,22 @@ var __oj_table_metadata =
     return this._defaultContextMenu;
   };
 
+  Table.prototype._isDefaultContextMenuNeeded = function () {
+    return (
+      this._isTableSortable() ||
+      this._isNonContiguousSelectionMenuNeeded() ||
+      this._isTableColumnsResizable()
+    );
+  };
+
+  Table.prototype._isNonContiguousSelectionMenuNeeded = function () {
+    return (
+      !this._isStickyLayoutEnabled() &&
+      this._isTouchDevice() &&
+      this._getRowSelectionMode() === Table._OPTION_SELECTION_MODES._MULTIPLE
+    );
+  };
+
   /**
    * @param {Object} contextMenu The JET Menu to open as a context menu
    * @param {Event} event What triggered the menu launch
@@ -28556,6 +28752,11 @@ var __oj_table_metadata =
    * @private
    */
   Table.prototype._NotifyContextMenuGesture = function (contextMenu, event, eventType) {
+    var contextMenuNode = contextMenu.element ? contextMenu.element[0] : contextMenu;
+    if (contextMenuNode === this._GetDefaultContextMenu() && !this._isDefaultContextMenuNeeded()) {
+      return;
+    }
+
     var openOptions = {};
     this._contextMenuEvent = event.originalEvent ? event.originalEvent : event;
     var altClickthrough = ojgestureutils.getContextMenuAltClickthrough(
@@ -28640,10 +28841,11 @@ var __oj_table_metadata =
 
     this._contextMenuEventHeaderColumn = headerColumn;
 
-    // for jQuery it's the menu instance, for custom element it's the element node
-    var contextMenuNode = contextMenu.element ? contextMenu.element[0] : contextMenu;
+    if (!this._handleContextMenuSelectBound) {
+      this._handleContextMenuSelectBound = this._handleContextMenuSelect.bind(this);
+    }
     // Populate context menu items
-    this._populateContextMenuItems(contextMenuNode, this._handleContextMenuSelect.bind(this));
+    this._populateContextMenuItems(contextMenuNode, this._handleContextMenuSelectBound);
     var contextMenuItemAsc = contextMenuNode.querySelectorAll('[data-oj-command=oj-table-sortAsc]');
     if (contextMenuItemAsc.length > 0) {
       contextMenuItemAsc = contextMenuItemAsc[0];
@@ -28707,11 +28909,16 @@ var __oj_table_metadata =
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i];
       var value = options[key];
-      if (this._isTableRefreshNeeded(key, value, flags)) {
-        if (key === 'columns') {
+      var isColumnsMetadataUpdated = key === 'columns' && this._isColumnMetadataUpdated(value);
+      if (key === 'selectionMode') {
+        this._invalidateContextMenuCommands();
+      }
+      if (isColumnsMetadataUpdated || this._isTableRefreshNeeded(key, value, flags)) {
+        if (isColumnsMetadataUpdated) {
           // an external change in 'columns' must reset any previous column reorder operations
           this._columnsDestMap = null;
           this._clearCachedMetadata();
+          this._invalidateContextMenuCommands();
           requiresHeaderRefresh = true;
         } else if (
           key === 'selectionMode' &&

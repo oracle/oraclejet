@@ -321,6 +321,13 @@ var __oj_film_strip_metadata =
    * @ojcomponent oj.ojFilmStrip
    * @augments oj.baseComponent
    * @since 1.1.0
+   * @ojdeprecated [
+   *  {
+   *    type: "maintenance",
+   *    since: "21.1.0",
+   *    value: ["oj-c-film-strip"]
+   *  }
+   * ]
    *
    * @ojshortdesc A filmstrip lays out its children in a single row or column across logical pages and allows navigating through them.
    * @ojrole application
@@ -439,6 +446,100 @@ var __oj_film_strip_metadata =
    * navigation arrows built into FilmStrip can be used, or if they are hidden,
    * then alternative means, such as a paging control, must be provided.
    *
+   *
+   * <h3 id="migration-section">
+   *   Migration
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#migration-section"></a>
+   * </h3>
+   * <p>To migrate to <a href="oj-c.FilmStrip.html">oj-c-film-strip</a>, change the import from
+   * <code>ojs/ojfilmstrip</code> to <code>oj-c/film-strip</code> and replace the element name.
+   * Continue supplying consistently sized direct children. Review the differences below;
+   * Core Pack does not expose the legacy PagingModel.</p>
+   *
+   * <h5>Current item and application IDs</h5>
+   * <p>In Core Pack, <code>currentItem</code> is readonly and reports the zero-based index of
+   * the first item on the committed page. It is undefined before initialization and when empty.
+   * Request navigation with <code>currentItemOverride = { index: targetIndex }</code> instead.
+   * Supply a new object for each intentional request, including repeated requests for the same
+   * item. Do not bind currentItem back into currentItemOverride: arrows, dots and gestures report
+   * state without changing the application's navigation request. An unchanged override is not
+   * reapplied on resize.</p>
+   * <p>Core Pack does not accept or report an item ID. Keep IDs in application data. Find the
+   * target's index in the array used to render the direct children, then pass that index to
+   * currentItemOverride. Handle a missing ID before requesting navigation. To report an ID,
+   * look up the item at <code>currentItem.index</code> in that same array. This is the first
+   * item on the page, not necessarily the requested item. Keep the array in rendered order,
+   * including after filtering or reordering. See the
+   * <a href="https://jet.oraclecorp.com/trunk/jetCookbook.html?component=filmStripCorepack&amp;demo=filmStripItemNavigation">Navigate by Item ID demo</a>.</p>
+   *
+   * <h5>Paging information</h5>
+   * <p>Core Pack manages paging internally. Use its built-in navigation arrows or paging dots,
+   * and replace <code>getPagingModel()</code> reads with readonly <code>pageInfo</code>.
+   * No application-owned PagingModel or adapter is needed.</p>
+   * <table class="keyboard-table">
+   *   <thead><tr><th>Legacy PagingModel API</th><th>Core Pack approach</th></tr></thead>
+   *   <tbody>
+   *     <tr><td>getPage()</td><td>pageInfo.page (zero-based)</td></tr>
+   *     <tr><td>getPageCount()</td><td>pageInfo.pageCount</td></tr>
+   *     <tr><td>totalSize()</td><td>pageInfo.totalItems</td></tr>
+   *     <tr><td>getStartItemIndex()</td><td>pageInfo.page * pageInfo.itemsPerPage</td></tr>
+   *     <tr><td>getEndItemIndex()</td><td>Math.min((pageInfo.page + 1) * pageInfo.itemsPerPage,
+   *       pageInfo.totalItems) - 1, when there are items</td></tr>
+   *     <tr><td>setPage(page)</td><td>Set currentItemOverride to
+   *       { index: page * pageInfo.itemsPerPage }, using the latest committed pageInfo and
+   *       a page in the range 0 through pageInfo.pageCount - 1.</td></tr>
+   *     <tr><td>getItemsPerPage() on FilmStrip</td><td>pageInfo.itemsPerPage</td></tr>
+   *     <tr><td>page and pageCount events</td><td>Listen to pageInfoChanged or capture readonly
+   *       pageInfo with a writeback binding.</td></tr>
+   *   </tbody>
+   * </table>
+   * <p>Use one committed pageInfo value for page and item-range calculations. Check for
+   * uninitialized or empty state before calculating item indexes.
+   * Use the latest values after navigation or resize; the number of items per page can change.
+   * The <code>maxItemsPerPage</code> property limits page size; zero lets items fit the available
+   * space. Do not pass a PagingModel pageSize option.</p>
+   * <p>See the
+   * <a href="https://jet.oraclecorp.com/trunk/jetCookbook.html?component=filmStripCorepack&amp;demo=filmStripPageInfo">Paging Information demo</a>
+   * for page counts, page size, total item count and item ranges. The legacy
+   * PagingModel's cancellable <code>beforePage</code> event has no Core Pack equivalent.
+   * Property-change notifications report completed state; they cannot veto navigation.</p>
+   *
+   * <h5>Built-in paging dots</h5>
+   * <p>Replace a separate oj-paging-control with <code>pagingControlDisplay</code> when built-in
+   * dots meet the application's needs. Use top or bottom for a horizontal Film Strip, start or
+   * end for a vertical one, or none to hide dots. Use <code>pageLabel</code> to supply content
+   * labels for their destination pages. Start and end follow the reading direction. Core Pack
+   * provides outside paging-dot placements only. Applications using the legacy overlaid paging
+   * control need to choose an outside placement when migrating.</p>
+   *
+   * <h5>Translations</h5>
+   * <p>Core Pack uses top-level properties for configurable instance strings, rather than a
+   * nested translations object. Supply translated strings; unset properties use the bundle.</p>
+   * <table class="keyboard-table">
+   *   <thead><tr><th>Legacy translation</th><th>Core Pack property</th></tr></thead>
+   *   <tbody>
+   *     <tr><td>translations.labelAccArrowPreviousPage</td><td>previousPage</td></tr>
+   *     <tr><td>translations.labelAccArrowNextPage</td><td>nextPage</td></tr>
+   *     <tr><td>translations.tipArrowPreviousPage</td><td>previousPage (also the accessible label)</td></tr>
+   *     <tr><td>translations.tipArrowNextPage</td><td>nextPage (also the accessible label)</td></tr>
+   *   </tbody>
+   * </table>
+   * <p>Each arrow uses one message for its accessible label and tooltip.</p>
+   * <p>The legacy <code>translations.labelAccFilmStrip</code> formats page status. Core Pack's
+   * page-status message comes from the <code>filmStrip_pageStatus</code> translation-bundle entry,
+   * not an instance property.</p>
+   * <p>The carousel role description comes from the translation bundle by default. Use the
+   * global <code>aria-roledescription</code> attribute to supply a translated role description;
+   * there is no separate <code>roleDescription</code> property. Use <code>aria-label</code> or
+   * <code>aria-labelledby</code> to name the content.</p>
+   *
+   * <h5>Keyboard and accessibility</h5>
+   * <p>Both arrow-key pairs page in either orientation when Film Strip itself has focus;
+   * Left/Right reverse in right-to-left locales. Child controls retain their own keyboard
+   * behavior. Core Pack uses a group role with a carousel role description rather than the
+   * legacy application role. Continue providing an accessible content label and accessible
+   * paging controls when built-in arrows are hidden. See the
+   * <a href="oj-c.FilmStrip.html#keyboard-section">Core Pack interaction guidance</a>.</p>
    *
    * <h3 id="perf-section">
    *   Performance
